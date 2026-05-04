@@ -45,6 +45,8 @@ import { FEATURES as APP_HISTORY_FEATURES } from '@modules/app-history/constants
 import { FEATURES as CRM_FEATURES } from '@modules/CRM/constants/feature';
 import { FEATURES as METRICS } from '@modules/metrices/constants/features';
 import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
+import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
+import { FEATURES as DATA_QUERY_FOLDERS_FEATURES } from '@modules/data-query-folders/constants/features';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -98,4 +100,6 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...APP_HISTORY_FEATURES,
   ...CRM_FEATURES,
   ...SCIM_FEATURES,
+  ...CUSTOM_DOMAINS_FEATURES,
+  ...DATA_QUERY_FOLDERS_FEATURES,
 };

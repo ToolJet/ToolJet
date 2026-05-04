@@ -5,6 +5,7 @@ import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 import { getModifiedColor } from './utils';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const DropDown = function DropDown({
   height,
@@ -24,6 +25,7 @@ export const DropDown = function DropDown({
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState(validate(value));
   const { isValid, validationError } = validationStatus;
   function findDefaultItem(schema) {
@@ -296,6 +298,7 @@ export const DropDown = function DropDown({
       >
         <div className="col-auto my-auto">
           <label
+            data-cy={`${String(dataCy).toLowerCase()}-label`}
             style={{ marginRight: label !== '' ? '1rem' : '0.001rem', color: 'var(--cc-primary-text)' }}
             className="form-label py-0 my-0"
             id={`${id}-label`}

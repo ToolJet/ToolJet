@@ -47,6 +47,8 @@ export const ButtonGroup = function Button({
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
+    const filteredItems = defaultSelected.filter((item) => values.includes(item));
+    setExposedVariable('selected', filteredItems);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(defaultSelected)]);
 
@@ -134,7 +136,6 @@ export const ButtonGroup = function Button({
     <div
       className="widget-buttongroup"
       style={{ height, alignItems: mapAlignment(alignment) }}
-      data-cy={dataCy}
       aria-hidden={!visibility}
       aria-disabled={disabledState}
       role="group"
@@ -144,6 +145,7 @@ export const ButtonGroup = function Button({
       <div>
         {label && (
           <p
+            data-cy={`${dataCy}-label`}
             style={{ display: computedStyles.display }}
             className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
             id={`${id}-label`}
@@ -154,6 +156,7 @@ export const ButtonGroup = function Button({
         <div>
           {data?.map((item, index) => (
             <button
+              data-cy={`${dataCy}-button-${index}`}
               style={{
                 ...computedStyles,
                 backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,

@@ -58,6 +58,7 @@ export const BaseInput = ({
     borderColor,
     backgroundColor,
     textColor,
+    placeholderTextColor,
     boxShadow,
     width,
     alignment,
@@ -75,19 +76,31 @@ export const BaseInput = ({
   const { label, placeholder } = properties;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const hasLabel =
-    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const hasValue = value !== '' && value !== null && value !== undefined;
   const shouldShowClearBtn = showClearBtn && hasValue && !disable && !loading;
+  const shouldOverridePlaceholderTextColor =
+    typeof placeholderTextColor === 'string' &&
+    placeholderTextColor.length > 0 &&
+    placeholderTextColor !== 'var(--cc-placeholder-text)';
+  const shouldUsePlaceholderTextColorForIcon =
+    shouldOverridePlaceholderTextColor &&
+    (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
+  const computedIconColor = shouldUsePlaceholderTextColorForIcon
+    ? placeholderTextColor
+    : iconColor !== '#CFD3D859'
+    ? iconColor
+    : 'var(--icons-weak-disabled)';
 
   const inputStyles = {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disable || loading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     textOverflow: 'ellipsis',
     backgroundColor: 'inherit',
+    ...(shouldOverridePlaceholderTextColor && { '--cc-placeholder-text': placeholderTextColor }),
   };
 
   let loaderStyle;
@@ -145,12 +158,12 @@ export const BaseInput = ({
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input scrollbar-container d-flex ${defaultAlignment === 'top' &&
+        className={`text-input scrollbar-container d-flex ${
+          defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-          ? 'flex-column'
-          : ''
-          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+            ? 'flex-column'
+            : ''
+        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
         style={{
@@ -181,9 +194,11 @@ export const BaseInput = ({
               'tw-flex-shrink-0': defaultAlignment === 'top',
             }),
           }}
+          dataCy={`${String(dataCy).toLowerCase()}`}
         />
 
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className={cn(
             'tw-px-2.5 tw-py-2 tw-border tw-border-solid tw-flex tw-items-center tw-gap-1.5 tj-text-input-widget-container',
             classes?.inputContainer
@@ -194,23 +209,23 @@ export const BaseInput = ({
               !isValid && showValidationError
                 ? 'var(--cc-error-systemStatus)'
                 : isFocused
-                  ? accentColor != '4368E3'
-                    ? accentColor
-                    : 'var(--primary-accent-strong)'
-                  : borderColor != '#CCD1D5'
-                    ? borderColor
-                    : disable || loading
-                      ? '1px solid var(--borders-disabled-on-white)'
-                      : 'var(--borders-default)',
+                ? accentColor != '4368E3'
+                  ? accentColor
+                  : 'var(--primary-accent-strong)'
+                : borderColor != '#CCD1D5'
+                ? borderColor
+                : disable || loading
+                ? '1px solid var(--borders-disabled-on-white)'
+                : 'var(--borders-default)',
             '--tblr-input-border-color-darker': getModifiedColor(borderColor, 8),
             backgroundColor:
               backgroundColor != '#fff'
                 ? backgroundColor
                 : disable || loading
-                  ? darkMode
-                    ? 'var(--surfaces-app-bg-default)'
-                    : 'var(--surfaces-surface-03)'
-                  : 'var(--surfaces-surface-01)',
+                ? darkMode
+                  ? 'var(--surfaces-app-bg-default)'
+                  : 'var(--surfaces-surface-03)'
+                : 'var(--surfaces-surface-01)',
             boxShadow,
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
@@ -224,12 +239,12 @@ export const BaseInput = ({
           {showLeftIcon && (
             <TablerIcon
               iconName={icon}
-              data-cy={'text-input-icon'}
+              data-cy={`${String(dataCy).toLowerCase()}-icon`}
               className={cn('tw-shrink-0', classes?.leftIcon)}
               style={{
                 width: '16px',
                 height: '16px',
-                color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
+                color: computedIconColor,
                 zIndex: 3,
                 ...(inputType === 'textarea' && { alignSelf: 'start' }),
               }}
@@ -239,7 +254,7 @@ export const BaseInput = ({
 
           <RenderInput
             inputType={inputType}
-            data-cy={dataCy}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
             ref={inputRef}
             type={inputType}
             className={cn(

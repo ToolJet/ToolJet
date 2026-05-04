@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { extractAndReplaceReferencesFromString as extractAndReplaceReferencesFromStringAst } from '@/AppBuilder/_stores/ast';
+import { ACTIONS } from '@/AppBuilder/_stores/constants/actions';
 
 var _ = require('lodash');
 
@@ -432,8 +433,8 @@ export const replaceEntityReferencesWithIds = (code, componentNameIdMapping = {}
     const entityId = componentNameIdMapping[entityName]
       ? componentNameIdMapping[entityName]
       : queryNameIdMapping[entityName]
-        ? queryNameIdMapping[entityName]
-        : entityName;
+      ? queryNameIdMapping[entityName]
+      : entityName;
     diffObj = dfs(diffObj, entityName, entityId);
   });
   return diffObj;
@@ -478,29 +479,7 @@ export function createReferencesLookup(
   if (forQueryParams && _.isEmpty(currentState['parameters'])) {
     return { suggestionList: [] };
   }
-  const actions = [
-    'runQuery',
-    'resetQuery',
-    'setVariable',
-    'unsetAllVariables',
-    'unSetVariable',
-    'showAlert',
-    'logout',
-    'showModal',
-    'closeModal',
-    'setLocalStorage',
-    'copyToClipboard',
-    'goToApp',
-    'generateFile',
-    'setPageVariable',
-    'unsetAllPageVariables',
-    'unsetPageVariable',
-    'switchPage',
-    'logInfo',
-    'log',
-    'logError',
-    'toggleAppMode',
-  ];
+  const actions = ACTIONS;
 
   const suggestionList = [];
   const map = new Map();
@@ -786,7 +765,7 @@ export const baseTheme = {
         weak: {
           light: '#E4E7EB',
           dark: '#2B3036',
-        }
+        },
       },
     },
     systemStatus: {

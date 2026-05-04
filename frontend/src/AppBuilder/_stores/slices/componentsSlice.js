@@ -24,7 +24,47 @@ import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
-import { TOP_ALIGNMENT_HEIGHT_INCREMENT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  TOP_ALIGNMENT_HEIGHT_INCREMENT,
+  ROW_SCOPED_WIDGET_TYPES,
+  NESTING_LEVEL_LIMITS,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
+
+// Debounce timers for query re-runs triggered by dependency changes
+const queryRerunTimers = new Map();
+
+// Debounce delay for dependency-triggered query re-runs.
+// RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
+function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
+  if (queryRerunTimers.has(queryId)) {
+    clearTimeout(queryRerunTimers.get(queryId));
+  }
+  const delay = 500;
+  const timerId = setTimeout(() => {
+    queryRerunTimers.delete(queryId);
+    const store = getStore();
+    const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
+    if (query?.options?.runOnDependencyChange) {
+      store.queryPanel.runQuery(queryId, queryName, undefined, undefined, {}, false, false, moduleId);
+    }
+  }, delay);
+  queryRerunTimers.set(queryId, timerId);
+}
+
+/** Clear any pending rerun timer for a query (e.g., on deletion). */
+export function clearQueryRerunTimer(queryId) {
+  if (queryRerunTimers.has(queryId)) {
+    clearTimeout(queryRerunTimers.get(queryId));
+    queryRerunTimers.delete(queryId);
+  }
+}
+
+/** Clear ALL pending rerun timers (e.g., on page switch). */
+function clearAllQueryRerunTimers() {
+  queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
+  queryRerunTimers.clear();
+}
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -140,7 +180,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'addNewComponentNameIdMapping'
     );
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildComponentHints(moduleId);
   },
 
   renameComponentNameIdMapping: (oldName, newName, moduleId = 'canvas') => {
@@ -148,7 +188,7 @@ export const createComponentsSlice = (set, get) => ({
       state.modules[moduleId].componentNameIdMapping[newName] = state.modules[moduleId].componentNameIdMapping[oldName];
       delete state.modules[moduleId].componentNameIdMapping[oldName];
     });
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildComponentHints(moduleId);
   },
 
   deleteComponentNameIdMapping: (componentName, moduleId = 'canvas') => {
@@ -159,7 +199,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponentNameIdMapping'
     );
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildComponentHints(moduleId);
   },
 
   setComponentNameIdMapping: (moduleId = 'canvas') => {
@@ -227,6 +267,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = [];
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab =
             state.activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.PAGES
@@ -244,7 +286,7 @@ export const createComponentsSlice = (set, get) => ({
       delete state.modules[moduleId].queryNameIdMapping[oldName];
       state.modules[moduleId].queryIdNameMapping[queryId] = newName;
     });
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildQueryHints(moduleId);
   },
 
   deleteQueryMapping: (queryName, queryId, moduleId = 'canvas') => {
@@ -256,7 +298,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteQueryMapping'
     );
-    get().checkAndSetTrueBuildSuggestionsFlag();
+    get().rebuildQueryHints(moduleId);
   },
 
   generateDependencyGraphForRefs: (
@@ -296,16 +338,39 @@ export const createComponentsSlice = (set, get) => ({
   ) => {
     const {
       getCustomResolvableReference,
-      checkIfParentIsListviewOrKanban,
+      findNearestSubcontainerAncestor,
       getCustomResolvables,
       setAllValueToComponent,
+      getComponentDefinition,
+      getBaseParentId,
     } = get();
     let customResolvables = {};
     const parentId = component?.parent;
     const componentDetails = { componentId, paramType, property };
-    let index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
+    // Nearest row-scoped ancestor (Listview / Kanban / Table) — the one whose per-row customResolvables this component resolves against.
+    const nearestRowScopedAncestorId = findNearestSubcontainerAncestor(parentId, moduleId);
+    let index = nearestRowScopedAncestorId ? 0 : null;
     if (index !== null) {
-      customResolvables = getCustomResolvables(parentId, null);
+      // For components nested inside row-scoped ancestors, build parentIndices by walking up the ancestor chain.
+      // Row-scoped parent IDs don't contain row indices — the row info is only available at render time.
+      // At drop time, we use index 0 for each row-scoped ancestor as a default for initial resolution.
+      const parentIndices = [];
+
+      // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
+      const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
+      let ancestorId = nearestDef?.component?.parent;
+      while (ancestorId) {
+        const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
+        const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+        const ancestorType = ancestorDef?.component?.component;
+        if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
+          // Add 0 at the beginning for each row-scoped ancestor (outer-most first)
+          parentIndices.unshift(0);
+        }
+        ancestorId = ancestorDef?.component?.parent;
+      }
+
+      customResolvables = getCustomResolvables(nearestRowScopedAncestorId, null, moduleId, parentIndices);
     }
     if (typeof value === 'string' && value?.includes('{{') && value?.includes('}}')) {
       let valueWithId, allRefs, valueWithBrackets;
@@ -324,9 +389,9 @@ export const createComponentsSlice = (set, get) => ({
         allRefs = res.allRefs;
       }
       if (index !== null) {
-        const customResolvablePath = getCustomResolvableReference(value, parentId, moduleId);
-        if (customResolvablePath) {
-          allRefs.push(customResolvablePath);
+        const customResolvableRefs = getCustomResolvableReference(value, parentId, moduleId);
+        if (customResolvableRefs.length > 0) {
+          allRefs.push(...customResolvableRefs);
         }
       }
       if (updatePassedValue)
@@ -365,9 +430,20 @@ export const createComponentsSlice = (set, get) => ({
     componentResolvedValues = {},
     moduleId
   ) => {
-    const { getAllExposedValues, getComponentTypeFromId } = get();
+    const {
+      getAllExposedValues,
+      getComponentTypeFromId,
+      getComponentDefinition,
+      findNearestSubcontainerAncestor,
+      prepareRowScope,
+      updateRowScope,
+    } = get();
     const { componentId, paramType, property } = componentDetails;
     const length = Object.keys(customResolvables).length;
+
+    // Find nearest ListView for row-scoped component resolution
+    const parentId = getComponentDefinition(componentId, moduleId)?.component?.parent;
+    const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
 
     const updateResolvedValueForNonNullIndex = (resolvedValue, idx) => {
       if (!componentResolvedValues[componentId] || Object.keys(componentResolvedValues[componentId]).length === 0) {
@@ -423,10 +499,30 @@ export const createComponentsSlice = (set, get) => ({
         }
       }
     } else {
-      // Loop all the index and set the resolved value
+      // Component is inside a ListView — resolve once per row with row-scoped components.
+      //
+      // How this works:
+      //   1. getAllExposedValues returns the full state: { components, variables, queries, ... }
+      //      where components['checkbox-uuid'] = [row0, row1, row2, ...] (per-row arrays)
+      //   2. prepareRowScope creates a prototype overlay on state.components (done once)
+      //   3. For each row, updateRowScope overwrites descendants on the overlay with that row's
+      //      values, so the resolver sees e.g. components['checkbox-uuid'] = { value: true }
+      //      instead of the full array
+      //   4. scopedState holds a reference to the overlay object, so mutating the overlay
+      //      in updateRowScope is automatically visible to the resolver — no need to recreate
+      //      scopedState each iteration
+      const state = getAllExposedValues(moduleId);
+      const scopeCtx = nearestListviewId ? prepareRowScope(state.components, nearestListviewId, moduleId) : null;
+      // { ...state, components: scopeCtx.scoped } only spreads ~10 top-level keys
+      // (components, variables, queries, globals, page, etc.) — trivially cheap.
+      // When scopeCtx is null (not in ListView), we pass state as-is (no copy).
+      const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+
       for (let i = 0; i < length; i++) {
+        // Mutate the overlay in place: swap descendant entries to row i's values
+        if (scopeCtx) updateRowScope(scopeCtx, i);
         const resolvedValue = shouldResolve
-          ? resolveDynamicValues(value, getAllExposedValues(moduleId), customResolvables[i], false, [])
+          ? resolveDynamicValues(value, scopedState, customResolvables[i] || {}, false, [])
           : value;
 
         updateResolvedValueForNonNullIndex(resolvedValue, i);
@@ -448,15 +544,15 @@ export const createComponentsSlice = (set, get) => ({
       setResolvedComponentByProperty,
       getAllExposedValues,
       getCustomResolvables,
-      checkIfParentIsListviewOrKanban,
+      findNearestSubcontainerAncestor,
+      getComponentDefinition,
+      getBaseParentId,
+      prepareRowScope,
+      updateRowScope,
     } = get();
 
-    let customResolvables = {},
-      shouldResolve = false;
-    let index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
-    if (index !== null) {
-      customResolvables = getCustomResolvables(parentId, null);
-    }
+    let shouldResolve = false;
+    const isInListview = !!findNearestSubcontainerAncestor(parentId, moduleId);
 
     if (
       typeof unResolvedValue === 'string' &&
@@ -467,21 +563,100 @@ export const createComponentsSlice = (set, get) => ({
       shouldResolve = true;
     }
 
-    const length = Object.keys(customResolvables).length;
-    if (length === 0) {
+    if (!isInListview) {
+      // Not in a ListView - simple case
       const resolvedValue = shouldResolve
-        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), customResolvables, false, [])
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
         : value;
-      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, index, moduleId);
-    } else {
-      // Loop all the index and set the resolved value
-      for (let i = 0; i < length; i++) {
-        const resolvedValue = shouldResolve
-          ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), customResolvables[i], false, [])
-          : value;
-        setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, i, moduleId);
-      }
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
     }
+
+    // Component is inside a ListView - need to handle N-level nesting
+    // Build the parent hierarchy to find all ListView ancestors
+    const listviewAncestors = [];
+    let currentParentId = parentId;
+    while (currentParentId) {
+      const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+      const parentDef = getComponentDefinition(baseId, moduleId);
+      const parentType = parentDef?.component?.component;
+      if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
+        listviewAncestors.unshift(baseId); // Add to front to maintain order from outer to inner
+      }
+      currentParentId = parentDef?.component?.parent;
+    }
+
+    if (listviewAncestors.length === 0) {
+      // Fallback - shouldn't happen but handle gracefully
+      const resolvedValue = shouldResolve
+        ? resolveDynamicValues(unResolvedValue, getAllExposedValues(moduleId), {}, false, [])
+        : value;
+      setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, null, moduleId);
+      return;
+    }
+
+    // Get the innermost (immediate parent) ListView's customResolvables
+    const innermostListview = listviewAncestors[listviewAncestors.length - 1];
+    const baseCustomResolvables = getCustomResolvables(innermostListview, null, moduleId, []);
+
+    // Helper function to recursively iterate through all index combinations
+    const iterateNestedIndices = (resolvables, currentIndices, depth) => {
+      if (!resolvables || typeof resolvables !== 'object') return;
+
+      // Check if this is the leaf level (array of listItem objects)
+      const isLeafLevel =
+        Array.isArray(resolvables) &&
+        resolvables.length > 0 &&
+        resolvables[0] &&
+        typeof resolvables[0] === 'object' &&
+        ('listItem' in resolvables[0] || 'cardData' in resolvables[0] || 'rowData' in resolvables[0]);
+
+      if (isLeafLevel) {
+        // At the leaf level of nested ListView traversal — resolvables is an array of
+        // per-row { listItem } objects. Now resolve the expression for each row, with
+        // row-scoped components so that {{components.checkbox1.value}} returns the
+        // row-specific value, not the full per-row array.
+
+        // For lazy parents (eg. Table expandable rows),
+        // only resolve index 0 (template) + any currently needed rows.
+        // Remaining rows are resolved on-demand.
+        const { isLazyResolvableParent, getLazyRowIndices } = get();
+        const isLazy = isLazyResolvableParent(innermostListview, moduleId);
+        const indicesToResolve = isLazy
+          ? getLazyRowIndices(innermostListview, moduleId, true)
+          : Array.from({ length: resolvables.length }, (_, i) => i);
+
+        const state = getAllExposedValues(moduleId);
+        const scopeCtx = innermostListview ? prepareRowScope(state.components, innermostListview, moduleId) : null;
+        const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+
+        for (const i of indicesToResolve) {
+          if (i >= resolvables.length) continue;
+          const fullIndices = [...currentIndices, i];
+          if (scopeCtx) updateRowScope(scopeCtx, i);
+          const resolvedValue = shouldResolve
+            ? resolveDynamicValues(unResolvedValue, scopedState, resolvables[i] || {}, false, [])
+            : value;
+          setResolvedComponentByProperty(componentId, paramType, property, resolvedValue, fullIndices, moduleId);
+        }
+      } else if (Array.isArray(resolvables)) {
+        // Array but not leaf level - iterate through
+        for (let i = 0; i < resolvables.length; i++) {
+          iterateNestedIndices(resolvables[i], [...currentIndices, i], depth + 1);
+        }
+      } else {
+        // Object keyed by parent indices - iterate through keys
+        const keys = Object.keys(resolvables);
+        for (const key of keys) {
+          const idx = parseInt(key, 10);
+          if (!isNaN(idx)) {
+            iterateNestedIndices(resolvables[key], [...currentIndices, idx], depth + 1);
+          }
+        }
+      }
+    };
+
+    iterateNestedIndices(baseCustomResolvables, [], 0);
   },
 
   validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
@@ -564,13 +739,41 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
+    // only option-based widgets (DropdownV2, MultiselectV2) can have false as a legitimate user-defined option value. For everything else, false correctly means "empty/unfulfilled."
+    const optionValueWidgets = ['DropdownV2', 'MultiselectV2'];
+    const isEmpty = Array.isArray(widgetValue)
+      ? widgetValue.length === 0
+      : !widgetValue && widgetValue !== 0 && !(widgetValue === false && optionValueWidgets.includes(componentType));
 
-    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
+    if (resolvedMandatory == true && isEmpty) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
       };
     }
+
+    // Selection count validations (for array-based widgets like TreeSelect, Multiselect)
+    if (Array.isArray(widgetValue)) {
+      const minSelection = validationObject?.minSelection?.value ?? validationObject?.minSelection;
+      const maxSelection = validationObject?.maxSelection?.value ?? validationObject?.maxSelection;
+
+      const resolvedMinSelection = parseInt(getResolvedValue(minSelection, customResolveObjects)) || 0;
+      if (resolvedMinSelection > 0 && widgetValue.length < resolvedMinSelection) {
+        return {
+          isValid: false,
+          validationError: `Minimum ${resolvedMinSelection} selections required`,
+        };
+      }
+
+      const resolvedMaxSelection = parseInt(getResolvedValue(maxSelection, customResolveObjects)) || 0;
+      if (resolvedMaxSelection > 0 && widgetValue.length > resolvedMaxSelection) {
+        return {
+          isValid: false,
+          validationError: `Maximum ${resolvedMaxSelection} selections allowed`,
+        };
+      }
+    }
+
     return {
       isValid,
       validationError,
@@ -789,8 +992,16 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   initDependencyGraph: (moduleId) => {
-    console.log('here--- initDependencyGraph--- ');
-    const { getCurrentPageComponents, addToDependencyGraph, setResolvedComponents, resolveOthers } = get();
+    // Cancel any pending rerun timers from the previous page/context
+    clearAllQueryRerunTimers();
+
+    const {
+      getCurrentPageComponents,
+      addToDependencyGraph,
+      setResolvedComponents,
+      resolveOthers,
+      registerQueryDependencies,
+    } = get();
     const components = getCurrentPageComponents(moduleId);
 
     //TODO: Replace with object of component types
@@ -801,6 +1012,52 @@ export const createComponentsSlice = (set, get) => ({
     });
     setResolvedComponents(resolvedComponentValues, moduleId);
     resolveOthers(moduleId);
+
+    // Register query option dependencies for queries with runOnDependencyChange enabled
+    const queries = get().dataQuery?.queries?.modules?.[moduleId] || [];
+    queries.forEach((query) => {
+      if (query.options?.runOnDependencyChange) {
+        registerQueryDependencies(query.id, query.name, query.kind, query.options, moduleId);
+      }
+    });
+  },
+
+  registerQueryDependencies: (queryId, queryName, kind, options, moduleId = 'canvas') => {
+    // RunJS/RunPy do not support dependency-triggered re-runs
+    if (kind === 'runjs' || kind === 'runpy') return;
+
+    const { addDependency } = get();
+    const optionsPath = `queries.${queryId}.__options__`;
+
+    // Clean up existing __options__ node and all its edges
+    const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
+    if (depGraph && depGraph.hasNode(optionsPath)) {
+      set(
+        (state) => {
+          state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
+          return { ...state };
+        },
+        false,
+        'clearQueryOptionsDeps'
+      );
+    }
+
+    // Extract all {{}} refs from the query's active options
+    const refs = extractQueryReferences(kind, options);
+    if (!refs.length) return;
+
+    const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+    const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
+
+    refs.forEach((ref) => {
+      const { allRefs } = extractAndReplaceReferencesFromString(ref, componentNameIdMapping, queryNameIdMapping);
+      allRefs.forEach(({ entityType, entityNameOrId, entityKey }) => {
+        const sourcePath = entityNameOrId
+          ? `${entityType}.${entityNameOrId}.${entityKey}`
+          : `${entityType}.${entityKey}`;
+        addDependency(sourcePath, optionsPath, { queryId, queryName }, moduleId);
+      });
+    });
   },
 
   //It can be extended if any of the fx needs to be resolved dynamically outside components
@@ -902,15 +1159,37 @@ export const createComponentsSlice = (set, get) => ({
     setResolvedValueForOthers(resolvedValues, moduleId);
   },
   canAddToParent: (parentId, currentWidget, moduleId = 'canvas') => {
-    const { getComponentTypeFromId } = get();
+    const { getComponentTypeFromId, getComponentDefinition, getBaseParentId } = get();
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
     const parentWidget = getParentWidgetFromId(parentType, parentId);
     const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
-    if (!isParentChangeAllowed)
+    if (!isParentChangeAllowed) {
       toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
-    return isParentChangeAllowed;
+      return false;
+    }
+
+    // Check nesting depth restrictions from NESTING_LEVEL_LIMITS (e.g., Listview: 2, Table: 3)
+    const nestingLimit = NESTING_LEVEL_LIMITS[currentWidget];
+    if (nestingLimit) {
+      let currentParentId = parentId;
+      let count = 0;
+      while (currentParentId) {
+        const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+        const parentDef = getComponentDefinition(baseId, moduleId);
+        if (parentDef?.component?.component === currentWidget) {
+          count++;
+          if (count >= nestingLimit) {
+            toast.error(`${currentWidget} nesting is limited to ${nestingLimit} levels`);
+            return false;
+          }
+        }
+        currentParentId = parentDef?.component?.parent;
+      }
+    }
+
+    return true;
   },
   addComponentToCurrentPage: (
     componentDefinitions,
@@ -961,6 +1240,33 @@ export const createComponentsSlice = (set, get) => ({
           deleteComponentNameIdMapping(oldName, moduleId);
         }
         updateComponentDependencyGraph(moduleId, newComponent);
+
+        // For ListView, initialize customResolvables immediately after processing
+        // so that child components processed later can access them
+        if (newComponent.component.component === 'Listview') {
+          const { getResolvedComponent, updateCustomResolvables, getBaseParentId, getComponentDefinition } = get();
+          const resolvedComponent = getResolvedComponent(newComponent.id, null, moduleId);
+          const data = resolvedComponent?.properties?.data;
+          if (Array.isArray(data) && data.length > 0) {
+            // Build parentIndices for each row-scoped ancestor (outer-most first)
+            const parentIndices = [];
+            const componentParentId = newComponent.component.parent;
+            if (componentParentId) {
+              let ancestorId = componentParentId;
+              while (ancestorId) {
+                const baseAncestorId = getBaseParentId(ancestorId);
+                const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
+                if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
+                  parentIndices.unshift(0);
+                }
+                ancestorId = ancestorDef?.component?.parent;
+              }
+            }
+            const listItems = data.map((listItem) => ({ listItem }));
+            updateCustomResolvables(newComponent.id, listItems, 'listItem', moduleId, parentIndices);
+          }
+        }
+
         const parentId = newComponent.component.parent || 'canvas';
         // Check if parent is a Form and add the component to form fields if needed
         !skipFormUpdate && checkIfParentIsFormAndAddField(newComponent.id, newComponent, parentId, moduleId);
@@ -1021,7 +1327,8 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       getCurrentPageIndex,
     } = get();
-    const shouldFreeze = getShouldFreeze();
+    const isAppBeingEditedByAI = get().ai?.isLoading ?? false;
+    const shouldFreeze = getShouldFreeze(isAppBeingEditedByAI);
     const currentPageId = getCurrentPageId(moduleId);
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
@@ -1191,7 +1498,7 @@ export const createComponentsSlice = (set, get) => ({
 
     // If no components were added, return early
     if (!diff || Object.keys(diff).length === 0) {
-      return;
+      return false;
     }
 
     // Collect all events from all components for bulk creation
@@ -1202,6 +1509,7 @@ export const createComponentsSlice = (set, get) => ({
         // Only add events that have required fields
         if (event?.event && event?.target && component.id != null && event?.index != null) {
           allEvents.push({
+            name: event?.name,
             event: {
               ...event.event,
             },
@@ -1233,9 +1541,11 @@ export const createComponentsSlice = (set, get) => ({
       }
 
       get().multiplayer.broadcastUpdates(components, 'components', 'create');
+      return true;
     } catch (error) {
       console.error('Error pasting components with events:', error);
       toast.error('Failed to paste components');
+      return false;
     }
   },
 
@@ -1265,6 +1575,8 @@ export const createComponentsSlice = (set, get) => ({
       getCurrentPageIndex,
       performBatchComponentOperations,
       updateContainerAutoHeight,
+      addToDependencyGraph,
+      removeNode,
     } = get();
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
@@ -1335,10 +1647,8 @@ export const createComponentsSlice = (set, get) => ({
       const { component } = getComponentDefinition(componentId, moduleId);
 
       if (
-        newParentComponentType === 'Listview' ||
-        newParentComponentType === 'Kanban' ||
-        oldParentComponentType === 'Listview' ||
-        oldParentComponentType === 'Kanban'
+        ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
+        ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
       ) {
         // Add the component to the resolved store
         let resolvedComponentValues = { [componentId]: {} };
@@ -1363,6 +1673,38 @@ export const createComponentsSlice = (set, get) => ({
           }
         });
         setResolvedComponent(componentId, resolvedComponentValues[componentId], moduleId);
+
+        // // Clean up old dependency graph edges, rebuild deps, and re-resolve for the moved component
+        // const rebuildComponentDeps = (cId, comp) => {
+        //   // Remove all old dependency edges for this component
+        //   removeNode(`components.${cId}`, moduleId);
+        //   // Rebuild dependency graph and get fresh resolved values
+        //   const resolvedValues = addToDependencyGraph(moduleId, cId, comp);
+        //   // Set the resolved store to the flat result (replaces any stale array format)
+        //   setResolvedComponent(cId, resolvedValues, moduleId);
+        // };
+
+        // rebuildComponentDeps(componentId, component);
+
+        // // Also rebuild all descendant components so their resolved store entries
+        // // and dependency graph edges match the new nesting depth
+        // const allComponents = get().getCurrentPageComponents(moduleId);
+        // const descendants = getAllChildComponents(allComponents, componentId);
+        // descendants.forEach((child) => {
+        //   const childComp = child.component;
+        //   if (childComp?.definition) {
+        //     rebuildComponentDeps(child.id, childComp);
+        //   }
+        // });
+
+        // // After rebuilding deps, trigger the new parent ListView/Kanban's listItem/cardData
+        // // dependency update so moved children get re-resolved with correct custom resolvables
+        // if (newParentComponentType === 'Listview' || newParentComponentType === 'Kanban') {
+        //   const customResolvableKey = newParentComponentType === 'Listview' ? 'listItem' : 'cardData';
+        //   // Get the base parent ID (strip any row suffix like -0)
+        //   const baseNewParentId = get().getBaseParentId(newParentId);
+        //   get().updateDependencyValues(`components.${baseNewParentId}.${customResolvableKey}`, moduleId);
+        // }
       }
     });
 
@@ -1469,7 +1811,7 @@ export const createComponentsSlice = (set, get) => ({
       getResolvedComponent,
       setResolvedComponent,
       saveComponentPropertyChanges,
-      checkIfParentIsListviewOrKanban,
+      findNearestSubcontainerAncestor,
       getCurrentMode,
       getCustomResolvables,
       setResolvedComponentByProperty,
@@ -1485,7 +1827,8 @@ export const createComponentsSlice = (set, get) => ({
     const parentId = component.parent;
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId, null, moduleId) ?? {}) };
-      const index = checkIfParentIsListviewOrKanban(parentId, moduleId) ? 0 : null;
+      const nearestListviewId = findNearestSubcontainerAncestor(parentId, moduleId);
+      const index = nearestListviewId ? 0 : null;
       if (index === null) {
         resolvedComponent[componentId][paramType][property] = [];
       }
@@ -1501,7 +1844,7 @@ export const createComponentsSlice = (set, get) => ({
       );
 
       if (index !== null) {
-        const customResolvables = getCustomResolvables(parentId, null);
+        const customResolvables = getCustomResolvables(nearestListviewId, null);
         const length = Object.keys(customResolvables).length;
         const limit = length === 0 ? 1 : length;
         for (let i = 0; i < limit; i++) {
@@ -1636,10 +1979,8 @@ export const createComponentsSlice = (set, get) => ({
     const oldParentComponentType = getComponentTypeFromId(oldParentId, moduleId);
 
     if (
-      newParentComponentType === 'Listview' ||
-      newParentComponentType === 'Kanban' ||
-      oldParentComponentType === 'Listview' ||
-      oldParentComponentType === 'Kanban'
+      ROW_SCOPED_WIDGET_TYPES.includes(newParentComponentType) ||
+      ROW_SCOPED_WIDGET_TYPES.includes(oldParentComponentType)
     ) {
       // Add the component to the resolved store
       const { component } = getComponentDefinition(componentId, moduleId);
@@ -1688,6 +2029,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = components;
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (components.length === 1) {
           if (state.isRightSidebarOpen) {
             state.activeRightSideBarTab = RIGHT_SIDE_BAR_TAB.CONFIGURATION;
@@ -1706,6 +2049,8 @@ export const createComponentsSlice = (set, get) => ({
     set(
       (state) => {
         state.selectedComponents = componentId ? [componentId] : [];
+        state.isCanvasHeaderSelected = false;
+        state.isCanvasFooterSelected = false;
         if (state.isRightSidebarOpen) {
           state.activeRightSideBarTab = componentId ? RIGHT_SIDE_BAR_TAB.CONFIGURATION : RIGHT_SIDE_BAR_TAB.COMPONENTS;
         }
@@ -1894,7 +2239,7 @@ export const createComponentsSlice = (set, get) => ({
       }, {});
     return childComponents;
   },
-  updateDependencyValues: (path, moduleId = 'canvas') => {
+  updateDependencyValues: (path, moduleId = 'canvas', parentIndices = []) => {
     const {
       getAllExposedValues,
       getDependencies,
@@ -1907,10 +2252,23 @@ export const createComponentsSlice = (set, get) => ({
     const dependecies = getDependencies(path, moduleId);
     if (dependecies?.length) {
       dependecies.forEach((dependency) => {
-        const itemsLength = getEntityResolvedValueLength(dependency, moduleId);
+        // Handle query options sentinel — trigger re-run instead of resolution
+        if (dependency.endsWith('.__options__')) {
+          const nodeData = getNodeData(dependency, moduleId);
+          if (nodeData?.queryId) {
+            const query = get().dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === nodeData.queryId);
+            if (query?.options?.runOnDependencyChange) {
+              // Use live name from store (queryIdNameMapping is updated on rename)
+              const queryName = get().modules[moduleId]?.queryIdNameMapping?.[nodeData.queryId] || query.name;
+              scheduleQueryRerun(nodeData.queryId, queryName, query.kind, moduleId, get);
+            }
+          }
+          return;
+        }
+        const itemsLength = getEntityResolvedValueLength(dependency, moduleId, parentIndices);
         // If the component is depend on listView/Kanban then update all child components (0 to listItem length) with new value
         if (itemsLength) {
-          updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId);
+          updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId, parentIndices);
         } else {
           const [entityType, entityId, type, ...keys] = dependency.split('.');
           const key = keys.join('.');
@@ -1941,8 +2299,13 @@ export const createComponentsSlice = (set, get) => ({
               if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
                 set(
                   (state) => {
+                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+                    if (Array.isArray(entity)) {
+                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+                    }
                     lodashSet(
-                      state.resolvedStore.modules[moduleId][entityType][entityId],
+                      entity,
                       ['properties', 'shouldRender'],
                       (getResolvedComponent(entityId, null, moduleId)?.['properties']?.['shouldRender'] ?? 0) + 1
                     );
@@ -1953,8 +2316,13 @@ export const createComponentsSlice = (set, get) => ({
               } else {
                 set(
                   (state) => {
+                    let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+                    if (Array.isArray(entity)) {
+                      entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+                      state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+                    }
                     lodashSet(
-                      state.resolvedStore.modules[moduleId][entityType][entityId],
+                      entity,
                       [type, ...keys],
                       getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
                     );
@@ -1966,7 +2334,16 @@ export const createComponentsSlice = (set, get) => ({
             } else {
               set(
                 (state) => {
-                  state.resolvedStore.modules[moduleId][entityType][entityId][type][key] = validatedValue;
+                  let entity = state.resolvedStore.modules[moduleId][entityType][entityId];
+                  // Guard: stale array format from previous ListView/Kanban parent
+                  if (Array.isArray(entity)) {
+                    entity = entity[0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+                    state.resolvedStore.modules[moduleId][entityType][entityId] = entity;
+                  }
+                  if (!entity[type]) {
+                    entity[type] = {};
+                  }
+                  entity[type][key] = validatedValue;
                 },
                 false,
                 'updateDependencyValues'
@@ -2000,43 +2377,131 @@ export const createComponentsSlice = (set, get) => ({
     return component?.component?.parent;
   },
 
-  updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas') => {
-    const { getCustomResolvables, getNodeData, getAllExposedValues, getParentIdFromDependency } = get();
+  updateChildComponentResolvedValues: (dependency, path, length, moduleId = 'canvas', parentIndices = []) => {
+    const {
+      getCustomResolvables,
+      getNodeData,
+      getAllExposedValues,
+      getParentIdFromDependency,
+      findNearestSubcontainerAncestor,
+      prepareRowScope,
+      updateRowScope,
+    } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
     const parentId = getParentIdFromDependency(dependency, moduleId);
+    // Walk up to find the nearest ListView ancestor for customResolvables lookup
+    const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
+    const resolvableParentId = nearestListviewId || parentId;
     const unResolvedValue = getNodeData(dependency, moduleId);
+    const shouldValidate = entityType === 'components' && entityId;
 
-    // Loop through the customResolvables and update the resolved value
-    for (let i = 0; i < length; i++) {
-      const resolvedValue = resolveDynamicValues(
-        unResolvedValue,
-        getAllExposedValues(moduleId),
-        getCustomResolvables(parentId, i, moduleId), // passing the parent ID and index to get the custom resolvables of the child
-        false,
-        []
-      );
-      // If the index is not in the resolved store then add it with first index data
-      const shouldValidate = entityType === 'components' && entityId;
+    // Collect all resolved values first, then apply in a single batched store update.
+    //
+    // Row-scoped resolution: when a dependency like components.checkbox-uuid.value fires,
+    // we re-resolve the dependent expression for ALL rows. For each row, updateRowScope
+    // swaps the overlay's descendant entries to that row's values, so the resolver sees
+    // components['checkbox-uuid'] as a plain object (row-specific) instead of the full array.
+    //
+    // Note: currently re-resolves all rows even if only one row changed. The store update
+    // below is batched, and React skips re-renders for rows where the resolved value didn't
+    // change, so the DOM cost is minimal.
+    const state = getAllExposedValues(moduleId);
+    const scopeCtx = resolvableParentId ? prepareRowScope(state.components, resolvableParentId, moduleId) : null;
+    const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+
+    // For lazy parents (eg. Table expandable rows),
+    // only resolve required rows instead of all 0..length-1.
+    // This is a no-op for ListView/Kanban.
+    const { isLazyResolvableParent, getLazyRowIndices } = get();
+    const isLazy = isLazyResolvableParent(resolvableParentId, moduleId);
+    const indicesToResolve = isLazy
+      ? getLazyRowIndices(resolvableParentId, moduleId)
+      : Array.from({ length }, (_, i) => i);
+    if (isLazy && indicesToResolve.length === 0) return;
+
+    const updates = [];
+    for (const i of indicesToResolve) {
+      const rowCustomResolvables = getCustomResolvables(resolvableParentId, i, moduleId, parentIndices);
+      if (scopeCtx) updateRowScope(scopeCtx, i);
+      const resolvedValue = resolveDynamicValues(unResolvedValue, scopedState, rowCustomResolvables, false, []);
       const validatedValue = shouldValidate
         ? get().debugger.validateProperty(entityId, type, key, resolvedValue, moduleId)
         : resolvedValue;
 
-      set(
-        (state) => {
-          if (!state.resolvedStore.modules[moduleId][entityType][entityId][i])
-            state.resolvedStore.modules[moduleId][entityType][entityId][i] = {
-              ...state.resolvedStore.modules[moduleId][entityType][entityId][0],
-              [type]: {
-                ...(state.resolvedStore.modules[moduleId][entityType][entityId]?.[0]?.[type] || {}),
-                [key]: validatedValue,
-              },
-            };
-          else state.resolvedStore.modules[moduleId][entityType][entityId][i][type][key] = validatedValue;
-        },
-        false,
-        'updateChildComponentResolvedValues'
-      );
+      updates.push({ index: i, value: validatedValue });
     }
+
+    // Single batched update instead of N individual set() calls
+    set(
+      (state) => {
+        const entityStore = state.resolvedStore.modules[moduleId][entityType][entityId];
+        if (parentIndices.length === 0) {
+          updates.forEach(({ index, value }) => {
+            // Guard: if entityStore[index] is a stale nested array, unwrap to first element
+            if (entityStore[index] && Array.isArray(entityStore[index])) {
+              entityStore[index] = entityStore[index][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            }
+            // Also guard entityStore[0] used as template
+            const template = Array.isArray(entityStore[0]) ? entityStore[0][0] : entityStore[0];
+            if (!entityStore[index]) {
+              entityStore[index] = {
+                ...template,
+                [type]: {
+                  ...(template?.[type] || {}),
+                  [key]: value,
+                },
+              };
+            } else {
+              if (!entityStore[index][type]) {
+                entityStore[index][type] = {};
+              }
+              entityStore[index][type][key] = value;
+            }
+          });
+        } else {
+          // Navigate to the correct nested level using parentIndices
+          updates.forEach(({ index, value }) => {
+            const indices = [...parentIndices, index];
+            // Ensure root is an array
+            if (!Array.isArray(state.resolvedStore.modules[moduleId][entityType][entityId])) {
+              state.resolvedStore.modules[moduleId][entityType][entityId] = [];
+            }
+            let current = state.resolvedStore.modules[moduleId][entityType][entityId];
+            for (let j = 0; j < indices.length - 1; j++) {
+              if (!current[indices[j]]) {
+                current[indices[j]] = [];
+              } else if (!Array.isArray(current[indices[j]])) {
+                // Transition flat→nested: wrap existing resolved component in array
+                current[indices[j]] = [current[indices[j]]];
+              }
+              current = current[indices[j]];
+            }
+            const lastIdx = indices[indices.length - 1];
+            // Guard: if current[lastIdx] is a stale nested array, unwrap to first element
+            if (current[lastIdx] && Array.isArray(current[lastIdx])) {
+              current[lastIdx] = current[lastIdx][0] || { ...DEFAULT_COMPONENT_STRUCTURE };
+            }
+            if (!current[lastIdx]) {
+              // Also guard source (current[0]) if it's an array
+              let source = current[0];
+              if (source && Array.isArray(source)) {
+                source = source[0];
+              }
+              current[lastIdx] = source
+                ? { ...source, [type]: { ...(source[type] || {}), [key]: value } }
+                : { ...DEFAULT_COMPONENT_STRUCTURE, [type]: { [key]: value } };
+            } else {
+              if (!current[lastIdx][type]) {
+                current[lastIdx][type] = {};
+              }
+              current[lastIdx][type][key] = value;
+            }
+          });
+        }
+      },
+      false,
+      'batchUpdateChildComponents'
+    );
   },
 
   getParentComponentType: (parentId, moduleId) => {
@@ -2051,41 +2516,91 @@ export const createComponentsSlice = (set, get) => ({
     return component.component.component;
   },
 
-  // Return the length of the resolved value of the component
-  getEntityResolvedValueLength: (dependency, moduleId = 'canvas') => {
-    const { resolvedStore } = get();
+  // Return the length of the resolved value of the component.
+  // For components inside a ListView, the authoritative row count comes from
+  // the nearest ListView ancestor's customResolvables — not from the component's
+  // own resolved array, which may still be undersized on refresh (grandchildren
+  // are initialised at index 0 only during initDependencyGraph because the
+  // ListView data isn't available yet at that point).
+  getEntityResolvedValueLength: (dependency, moduleId = 'canvas', parentIndices = []) => {
+    const { resolvedStore, getParentIdFromDependency, findNearestSubcontainerAncestor, getCustomResolvables } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
-    const data = resolvedStore.modules[moduleId]?.[entityType]?.[entityId];
+    let data = resolvedStore.modules[moduleId]?.[entityType]?.[entityId];
     if (typeof data === 'string') return undefined;
+    // Navigate to nested level if parentIndices are provided
+    for (let i = 0; i < parentIndices.length; i++) {
+      if (!Array.isArray(data)) return undefined; // Not yet nested, treat as flat
+      data = data?.[parentIndices[i]];
+      if (!data) return undefined;
+    }
+
+    // If the component is inside a ListView, use the ListView's data length
+    // so that all rows are resolved even if this component's array hasn't
+    // been fully sized yet (e.g. grandchildren on page refresh).
+    if (Array.isArray(data)) {
+      const parentId = getParentIdFromDependency(dependency, moduleId);
+      const nearestListviewId = parentId ? findNearestSubcontainerAncestor(parentId, moduleId) : null;
+      if (nearestListviewId) {
+        const customResolvables = getCustomResolvables(nearestListviewId, null, moduleId, parentIndices);
+        const lvLength = Array.isArray(customResolvables) ? customResolvables.length : 0;
+        if (lvLength > 0) return lvLength;
+      }
+    }
+
     return data?.length;
   },
 
-  // Check if the value contains any customResolvables like listItem or cardData and return the entityType, entityNameOrId, entityKey
+  // Returns dependency references for the listItem custom resolvable keyword.
+  // Called during dependency graph construction to register what store paths an expression depends on.
+  //
+  // Note: this function previously also handled the `siblings` keyword, which required mapping
+  // siblings.componentName.property → components.<uuid>.property. That handling was removed
+  // because sibling references now use the standard {{components.componentName.value}} syntax.
+  // The AST already converts component names to UUIDs (components.radiobutton1 → components['uuid']),
+  // so these references are registered as normal component dependencies automatically — no special
+  // handling needed here. Row-scoping is handled transparently at resolution time via
+  // prepareRowScope/updateRowScope.
   getCustomResolvableReference: (value, parentId, moduleId) => {
-    const { getParentComponentType } = get();
-    const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (
-      (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
-      value === '{{listItem}}'
-    ) {
-      return { entityType: 'components', entityNameOrId: parentId, entityKey: 'listItem' };
-    } else if (
-      parentComponentType === 'Kanban' &&
-      value.includes('cardData') &&
-      checkSubstringRegex(value, 'cardData')
-    ) {
-      return { entityType: 'components', entityNameOrId: parentId, entityKey: 'cardData' };
+    const { findNearestSubcontainerAncestor } = get();
+    const nearestAncestorId = findNearestSubcontainerAncestor(parentId, moduleId);
+    if (!nearestAncestorId) return [];
+
+    const refs = [];
+
+    // listItem — coarse dependency on the ListView.
+    // listItem changes atomically (the entire data array is replaced at once via updateCustomResolvables),
+    // so property-level tracking (e.g., tracking listItem.name vs listItem.price separately) wouldn't help —
+    // all properties change in the same event. One coarse trigger is correct and sufficient.
+    if ((value.includes('listItem') && checkSubstringRegex(value, 'listItem')) || value === '{{listItem}}') {
+      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'listItem' });
     }
-    return null;
+
+    // cardData — coarse dependency on the Kanban (same pattern as listItem above).
+    if ((value.includes('cardData') && checkSubstringRegex(value, 'cardData')) || value === '{{cardData}}') {
+      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'cardData' });
+    }
+
+    // rowData — coarse dependency on the Table (same pattern as listItem above).
+    if ((value.includes('rowData') && checkSubstringRegex(value, 'rowData')) || value === '{{rowData}}') {
+      refs.push({ entityType: 'components', entityNameOrId: nearestAncestorId, entityKey: 'rowData' });
+    }
+
+    return refs;
   },
 
-  checkIfParentIsListviewOrKanban: (parentId, moduleId) => {
-    const { getParentComponentType } = get();
-    const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (parentComponentType === 'Listview' || parentComponentType === 'Kanban') {
-      return true;
+  // Walk up from startParentId through component.parent links to find the nearest row-scoped ancestor whose widget type is included in ROW_SCOPED_WIDGET_TYPES.
+  // Returns the base UUID of that ancestor, or null if none found.
+  findNearestSubcontainerAncestor: (startParentId, moduleId) => {
+    const { getBaseParentId, getComponentDefinition } = get();
+    let currentId = startParentId;
+    while (currentId) {
+      const baseId = getBaseParentId(currentId) || currentId;
+      const def = getComponentDefinition(baseId, moduleId);
+      if (!def) return null;
+      if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;
+      currentId = def.component?.parent;
     }
-    return false;
+    return null;
   },
 
   replaceIdsWithName: (input, moduleId = 'canvas') => {
@@ -2376,87 +2891,198 @@ export const createComponentsSlice = (set, get) => ({
     return value;
   },
   performDeletionUpdationAndCreationOfComponentsInPages: (pagesInfo, moduleId = 'canvas') => {
-    const { deleteComponents, getCurrentPageId, setComponentPropertyByComponentIds, addComponentToCurrentPage } = get();
+    const {
+      deleteComponents,
+      getCurrentPageId,
+      setComponentPropertyByComponentIds,
+      addComponentToCurrentPage,
+      deletePage,
+    } = get();
 
     const currentPageId = getCurrentPageId(moduleId);
 
-    pagesInfo?.length &&
-      pagesInfo.forEach((page) => {
-        if (page.id === currentPageId) {
-          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
-          const componentsToUpdate =
-            page.components?.update?.reduce((acc, comp) => {
-              acc[comp.id] = comp;
-              return acc;
-            }, {}) ?? {};
-          // Convert create operations format to match addComponentToCurrentPage expectations
-          const componentsToCreate = (page.components?.create ?? []).map((component) => ({
-            id: component.id,
-            name: component.component?.name,
-            component: component.component,
-            layouts: component.layouts,
-          }));
+    Object.entries(pagesInfo).forEach(([action, pages]) => {
+      switch (action) {
+        case 'create': {
+          if (!(Array.isArray(pages) && pages.length)) return;
 
-          // Delete Components
-          componentIdsToDelete.length && deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+          const formattedPages = pages.map((page) => {
+            if (page.components) {
+              return {
+                ...page,
+                components:
+                  page.components?.create?.reduce((componentMapById, comp) => {
+                    const { id, component, layouts } = comp;
 
-          // Update Components
-          !isEmpty(componentsToUpdate) &&
-            setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
+                    if (id) {
+                      componentMapById[id] = { id, component, layouts, name: component?.name ?? '' };
+                    }
 
-          // Create Components
-          componentsToCreate.length &&
-            addComponentToCurrentPage(componentsToCreate, moduleId, {
-              saveAfterAction: false,
-              skipFormUpdate: true,
-            });
-        } else {
-          const componentIdsToDelete = page.components?.delete?.map((component) => component.id) ?? [];
-          const componentsToUpdate = page.components?.update ?? [];
-          const componentsToCreate = page.components?.create ?? [];
+                    return componentMapById;
+                  }, {}) ?? {},
+              };
+            }
+
+            return { ...page, components: {} };
+          });
 
           set(
             (state) => {
-              const componentsInState = state.modules[moduleId].pages.find((p) => p.id === page.id)?.components;
-
-              // Delete components
-              componentIdsToDelete.forEach((id) => {
-                delete componentsInState[id];
-              });
-
-              // Update components
-              componentsToUpdate.forEach((componentToUpdate) => {
-                componentsInState[componentToUpdate.id] = componentToUpdate;
-              });
-
-              // Create/Add components
-              componentsToCreate.forEach((component) => {
-                componentsInState[component.id] = {
-                  component: component.component,
-                  layouts: component.layouts,
-                  id: component.id,
-                  name: component.component?.name,
-                };
-              });
+              state.modules[moduleId].pages.push(...formattedPages);
             },
-            undefined,
-            'performDeletionUpdationAndCreationOfComponentsInPages'
+            false,
+            'addNewPages'
           );
+          break;
         }
-      });
+        case 'update': {
+          if (pages?.length) {
+            pages.forEach((item) => {
+              if (item?.id) {
+                const { components, ...restOfPageProperties } = item;
+
+                if (item.id === currentPageId) {
+                  const componentIdsToDelete = Array.isArray(components?.delete) ? components.delete : [];
+
+                  const componentsToUpdate =
+                    components?.update?.reduce((acc, comp) => {
+                      acc[comp.id] = comp;
+                      return acc;
+                    }, {}) ?? {};
+
+                  // Convert create operations format to match addComponentToCurrentPage expectations
+                  const componentsToCreate = (components?.create ?? []).map((component) => ({
+                    id: component.id,
+                    name: component.component?.name,
+                    component: component.component,
+                    layouts: component.layouts,
+                  }));
+
+                  // Update page properties except components
+                  set(
+                    (state) => {
+                      const page = state.modules[moduleId].pages.find((p) => p.id === item.id);
+
+                      if (page) Object.assign(page, restOfPageProperties);
+                    },
+                    false,
+                    'updateCurrentPageProperties'
+                  );
+
+                  // Delete Components
+                  componentIdsToDelete.length &&
+                    deleteComponents(componentIdsToDelete, moduleId, { saveAfterAction: false });
+
+                  // Update Components
+                  !isEmpty(componentsToUpdate) &&
+                    setComponentPropertyByComponentIds(componentsToUpdate, moduleId, { saveAfterAction: false });
+
+                  // Create Components
+                  componentsToCreate.length &&
+                    addComponentToCurrentPage(componentsToCreate, moduleId, {
+                      saveAfterAction: false,
+                      skipFormUpdate: true,
+                    });
+                } else {
+                  const componentIdsToDelete = Array.isArray(components?.delete) ? components.delete : [];
+                  const componentsToUpdate = components?.update ?? [];
+                  const componentsToCreate = components?.create ?? [];
+
+                  set(
+                    (state) => {
+                      const pageToUpdate = state.modules[moduleId].pages.find((p) => p.id === item.id) ?? null;
+
+                      if (!pageToUpdate) return;
+
+                      // Update page properties except components
+                      Object.assign(pageToUpdate, restOfPageProperties);
+
+                      if (!pageToUpdate.components) pageToUpdate.components = {};
+                      const componentsInState = pageToUpdate.components;
+
+                      // Delete components
+                      componentIdsToDelete.forEach((id) => {
+                        delete componentsInState[id];
+                      });
+
+                      // Update components
+                      componentsToUpdate.forEach((componentToUpdate) => {
+                        componentsInState[componentToUpdate.id] = componentToUpdate;
+                      });
+
+                      // Create/Add components
+                      componentsToCreate.forEach((component) => {
+                        componentsInState[component.id] = {
+                          component: component.component,
+                          layouts: component.layouts,
+                          id: component.id,
+                          name: component.component?.name,
+                        };
+                      });
+                    },
+                    undefined,
+                    'performDeletionUpdationAndCreationOfComponentsInPages'
+                  );
+                }
+              }
+            });
+          }
+
+          break;
+        }
+        case 'delete': {
+          if (!pages?.length) return;
+
+          pages.forEach((pageIdToDelete) => {
+            deletePage(pageIdToDelete, { saveAfterAction: false });
+          });
+
+          break;
+        }
+        default:
+          break;
+      }
+    });
   },
-  getExposedPropertyForAdditionalActions: (componentId, subcontainerIndex, property, moduleId = 'canvas') => {
-    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition } = get();
+  getExposedPropertyForAdditionalActions: (componentId, indices, property, moduleId = 'canvas') => {
+    const { getExposedValueOfComponent, getComponentTypeFromId, getComponentDefinition, getBaseParentId } = get();
     const component = getComponentDefinition(componentId, moduleId)?.component;
     const componentName = component?.name;
     const parentId = component?.parent;
-    const parentType = getComponentTypeFromId(parentId);
+    // Strip row suffix to get the actual ListView ID (e.g., 'listview-abc-0' → 'listview-abc')
+    const baseParentId = getBaseParentId?.(parentId) || parentId;
+    const parentType = getComponentTypeFromId(baseParentId);
+
+    // Normalize indices: accept both scalar (legacy) and array (N-level) formats
+    // For ListView, we use the last index (immediate parent's row index)
+    const lastIndex = Array.isArray(indices) ? indices[indices.length - 1] : indices;
+
     if (parentType === 'Listview') {
-      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
-      const subcontainerParentComponent = parentComponent?.children?.[subcontainerIndex];
+      let parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
+      if (lastIndex == null) {
+        return undefined;
+      }
+      // For nested Listviews (Listview-inside-Listview), the parent Listview's
+      // exposed value is itself an array indexed by outer-row indices — each
+      // outer-row entry holds a separate `{ children: [...] }` structure for
+      // that row's copy of the inner Listview. Walk through every index
+      // except the last to reach the correct leaf, then index `children`
+      // with the last (immediate-row) index. Without this traversal the
+      // lookup falls through at the array level and returns undefined, which
+      // makes callers like `resolveContainerHeight` (Accordion's
+      // `isExpanded` check) treat the component as its default state
+      // (expanded) regardless of actual runtime state.
+      const outerIndices = Array.isArray(indices) ? indices.slice(0, -1) : [];
+      for (const idx of outerIndices) {
+        parentComponent = parentComponent?.[idx];
+        if (parentComponent == null) {
+          return undefined;
+        }
+      }
+      const subcontainerParentComponent = parentComponent?.children?.[lastIndex];
       return subcontainerParentComponent?.[componentName]?.[property];
     } else if (parentType === 'Form') {
-      const parentComponent = getExposedValueOfComponent(parentId, moduleId);
+      const parentComponent = getExposedValueOfComponent(baseParentId, moduleId);
       const subcontainerParentComponent = parentComponent?.children?.[componentName];
       return subcontainerParentComponent?.[property];
     } else {

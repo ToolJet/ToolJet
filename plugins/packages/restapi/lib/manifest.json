@@ -67,6 +67,21 @@
       },
       "root_cert": {
         "encrypted": true
+      },
+       "use_credential_provider_chain": {
+        "type": "boolean"
+      },
+      "aws_access_key_id": {
+        "encrypted": true
+      },
+      "aws_secret_access_key": {
+        "encrypted": true
+      },
+      "aws_region": {
+        "type": "string"
+      },
+      "aws_service": {
+        "type": "string"
       }
     },
     "exposedVariables": {

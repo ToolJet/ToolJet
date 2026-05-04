@@ -357,7 +357,7 @@ class BaseManageGranularAccess extends React.Component {
   };
 
   renderResourcePermissions = (props) => {
-    const { permissions, currentGroupPermission, isBasicPlan, index } = props;
+    const { permissions, currentGroupPermission, isEditable, index } = props;
     const { type } = permissions;
 
     switch (type) {
@@ -368,7 +368,7 @@ class BaseManageGranularAccess extends React.Component {
             permissions={permissions}
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
-            isBasicPlan={isBasicPlan}
+            isEditable={isEditable}
             key={index}
           />
         );
@@ -379,7 +379,7 @@ class BaseManageGranularAccess extends React.Component {
             permissions={permissions}
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
-            isBasicPlan={isBasicPlan}
+            isEditable={isEditable}
             key={index}
           />
         );
@@ -390,7 +390,7 @@ class BaseManageGranularAccess extends React.Component {
             permissions={permissions}
             currentGroupPermission={currentGroupPermission}
             openEditPermissionModal={this.openEditPermissionModal}
-            isBasicPlan={isBasicPlan}
+            isEditable={isEditable}
             key={index}
           />
         );
@@ -704,6 +704,14 @@ class BaseManageGranularAccess extends React.Component {
     this.handleAutoRoleChangeModalClose();
   };
 
+  getIsEditable = (isBasicPlan, isFeatureEnabled) => {
+    if (isBasicPlan && isFeatureEnabled) {
+      throw new Error('Invalid State: Basic plan should not have access to granular permissions feature');
+    }
+
+    return !isBasicPlan && isFeatureEnabled;
+  };
+
   render() {
     const {
       showAddPermissionModal,
@@ -856,7 +864,7 @@ class BaseManageGranularAccess extends React.Component {
                 resourcesOptions={resourcesOptions}
                 currentGroupPermission={currentGroupPermission}
                 darkMode={this.props.darkMode}
-                isBasicPlan={isBasicPlan}
+                isEditable={this.getIsEditable(isBasicPlan, this.props.isFeatureEnabled)}
               />
             </div>
           </div>
@@ -897,7 +905,7 @@ class BaseManageGranularAccess extends React.Component {
                       return this.renderResourcePermissions({
                         permissions,
                         currentGroupPermission,
-                        isBasicPlan,
+                        isEditable: this.getIsEditable(isBasicPlan, this.props.isFeatureEnabled),
                         index,
                       });
                     })}
@@ -912,7 +920,7 @@ class BaseManageGranularAccess extends React.Component {
               openAddPermissionModal={this.openAddPermissionModal}
               resourcesOptions={resourcesOptions}
               currentGroupPermission={currentGroupPermission}
-              isBasicPlan={isBasicPlan}
+              isEditable={this.getIsEditable(isBasicPlan, this.props.isFeatureEnabled)}
               darkMode={this.props.darkMode}
             />
           </div>

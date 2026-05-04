@@ -161,7 +161,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
 };
 
 export const verifyValueOnInspector = (queryName, value) => {
-  cy.get('[data-cy="left-sidebar-inspect-button"]').click();
+  cy.get('[data-cy="left-sidebar-inspector-button"]').click();
   cy.hideTooltip();
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()
@@ -300,4 +300,13 @@ export const createRestAPIQuery = (
       });
     });
   });
+};
+
+export const verifyPreviewData = (expectedData) => {
+  cy.get('[data-cy="query-preview-button"]').click();
+  cy.wait(2000);
+  cy.get('[data-cy="preview-json-data-container"]>ul>li>ul>li>div').click();
+  cy.get('[data-cy="preview-json-data-container"]')
+    .should("be.visible")
+    .and("contain", expectedData);
 };

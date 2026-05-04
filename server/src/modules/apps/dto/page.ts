@@ -21,6 +21,7 @@ export enum PageType {
   GROUP = 'group',
   URL = 'url',
   APP = 'app',
+  CUSTOM = 'custom',
 }
 
 export class CreatePageDto {
@@ -46,6 +47,12 @@ export class CreatePageDto {
 
   @IsOptional()
   hidden: Record<string, any>;
+
+  @IsOptional()
+  pageHeader: Record<string, any>;
+
+  @IsOptional()
+  pageFooter: Record<string, any>;
 
   @IsOptional()
   isPageGroup: boolean;

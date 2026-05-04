@@ -32,6 +32,7 @@ export const BaseDateComponent = ({
   customDateInputProps,
   id,
   showClearBtn,
+  dataCy,
 }) => {
   const { i18n } = useTranslation();
   const currentLocale = getDateLocale(i18n.language);
@@ -66,26 +67,26 @@ export const BaseDateComponent = ({
         ? accentColor
         : 'var(--primary-accent-strong)'
       : fieldBorderColor != '#CCD1D5'
-        ? fieldBorderColor
-        : disable || loading
-          ? '1px solid var(--borders-disabled-on-white)'
-          : 'var(--borders-default)',
+      ? fieldBorderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(fieldBorderColor, 24),
     borderRadius: `${fieldBorderRadius || borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
       ? selectedTextColor
       : disable || loading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     boxShadow: boxShadow,
     backgroundColor:
       fieldBackgroundColor != '#fff'
         ? fieldBackgroundColor
         : disable || loading
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-surface-03)'
-          : 'var(--surfaces-surface-01)',
+        ? darkMode
+          ? 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-03)'
+        : 'var(--surfaces-surface-01)',
     paddingLeft: '10px',
     ...(iconVisibility && {
       ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
@@ -96,16 +97,17 @@ export const BaseDateComponent = ({
   const loaderStyles = {
     right:
       direction === 'right' &&
-        alignment === 'side' &&
-        ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+      alignment === 'side' &&
+      ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
         ? `${labelWidth + 11}px`
         : '11px',
-    top: `${alignment === 'top'
+    top: `${
+      alignment === 'top'
         ? ((label?.length > 0 && labelWidth > 0) ||
-          (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
-        '50%'
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
+          '50%'
         : 'calc(50% - 7px)'
-      }`,
+    }`,
     transform:
       alignment === 'top' &&
       ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
@@ -130,10 +132,9 @@ export const BaseDateComponent = ({
 
   return (
     <div
-      data-cy={`label-${String(componentName).toLowerCase()}`}
       className={cx('d-flex datetimepicker-component', {
         [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+        ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
           ? 'flex-column'
           : 'align-items-center']: true,
         'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -159,6 +160,7 @@ export const BaseDateComponent = ({
         _width={_width}
         widthType={widthType}
         inputId={`component-${id}`}
+        dataCy={dataCy}
       />
       <div
         className="px-0 h-100"
@@ -203,6 +205,7 @@ export const BaseDateComponent = ({
               {...customDateInputProps}
               inputId={id}
               clearButtonRightOffset={iconVisibility && iconDirection === 'right' ? 20 : 0}
+              dataCy={dataCy}
             />
           }
           customTimeInput={<TimepickerInput darkMode={darkMode} {...customTimeInputProps} />}

@@ -12,7 +12,7 @@ function AppResourcePermissions({
   permissions,
   currentGroupPermission,
   openEditPermissionModal,
-  isBasicPlan,
+  isEditable,
 }) {
   const [onHover, setHover] = useState(false);
   const [notClickable, setNotClickable] = useState(false);
@@ -34,7 +34,7 @@ function AppResourcePermissions({
         setHover(false);
       }}
       onClick={() => {
-        !isRoleGroup && !isBasicPlan && !notClickable && openEditPermissionModal(permissions);
+        !isRoleGroup && isEditable && !notClickable && openEditPermissionModal(permissions);
       }}
       data-cy="apps-granular-access"
     >
@@ -79,7 +79,7 @@ function AppResourcePermissions({
                       });
                   }}
                   checked={appsPermissions.canEdit}
-                  disabled={isRoleGroup || disableEditUpdate || isBasicPlan}
+                  disabled={isRoleGroup || disableEditUpdate || !isEditable}
                   data-cy="app-edit-radio"
                 />
                 <span className="form-check-label" data-cy="app-edit-label">
@@ -112,7 +112,7 @@ function AppResourcePermissions({
                     });
                 }}
                 checked={appsPermissions.canView}
-                disabled={isRoleGroup || disableEditUpdate || isBasicPlan}
+                disabled={isRoleGroup || disableEditUpdate || !isEditable}
                 data-cy="app-view-radio"
               />
               <span className="form-check-label" data-cy="app-view-label">
@@ -151,7 +151,7 @@ function AppResourcePermissions({
                     });
                   }}
                   checked={appsPermissions.hideFromDashboard}
-                  disabled={isRoleGroup || !appsPermissions.canView || isBasicPlan}
+                  disabled={isRoleGroup || !appsPermissions.canView || !isEditable}
                   data-cy="app-hide-from-dashboard-radio"
                 />
                 <span className="form-check-label" data-cy="app-hide-from-dashboard-label">
@@ -180,7 +180,7 @@ function AppResourcePermissions({
             onClick={() => {
               openEditPermissionModal(permissions);
             }}
-            disabled={isRoleGroup || isBasicPlan}
+            disabled={isRoleGroup || !isEditable}
             data-cy="edit-apps-granular-access"
           />
         )}

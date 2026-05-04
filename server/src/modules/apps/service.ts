@@ -8,7 +8,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
   AppListDto,
@@ -44,6 +44,10 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -218,6 +222,28 @@ export class AppsService implements IAppsService {
     return { id: app.id, slug: app.slug };
   }
 
+  async getAppAuthenticationConfig(slug: string) {
+    if (!slug || slug.length > 250) {
+      throw new BadRequestException('Invalid app slug');
+    }
+
+    const app = await this.appRepository.findOne({
+      where: { slug },
+      select: ['id', 'name', 'slug', 'isPublic', 'organizationId'],
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return {
+      name: app.name,
+      slug: app.slug,
+      isPublic: app.isPublic,
+      organizationId: app.organizationId,
+    };
+  }
+
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name } = appUpdateDto;
@@ -278,6 +304,24 @@ export class AppsService implements IAppsService {
         });
       }
 
+      // Clean up query folder data — no CASCADE exists for these tables
+      const versions = await manager.find(AppVersion, { select: ['id'], where: { appId: id } });
+      const versionIds = versions.map((v) => v.id);
+      if (versionIds.length > 0) {
+        const folders = await manager.find(DataQueryFolder, { where: { appVersionId: In(versionIds) } });
+        const folderIds = folders.map((f) => f.id);
+        const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: In(versionIds) } });
+        const queryIds = queries.map((q) => q.id);
+        const allChildIds = [...folderIds, ...queryIds];
+
+        if (allChildIds.length > 0) {
+          await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+        }
+        if (folderIds.length > 0) {
+          await manager.delete(DataQueryFolder, { appVersionId: In(versionIds) });
+        }
+      }
+
       await manager.delete(App, { id, organizationId });
     });
 
@@ -294,7 +338,7 @@ export class AppsService implements IAppsService {
     });
   }
 
-  async getAllApps(user: User, appListDto: AppListDto): Promise<any> {
+  async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
     let apps = [];
     let totalFolderCount = 0;
 
@@ -313,14 +357,23 @@ export class AppsService implements IAppsService {
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+      }
+
+      if (isGetAll) {
+        const response = {
+          apps,
+        };
+        return decamelizeKeys(response);
       }
 
       if (type === 'module') {
-        for (const app of apps) {
-          const appVersionId = app?.appVersions?.[0]?.id;
-          app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
-        }
+        await Promise.all(
+          apps.map(async (app) => {
+            const appVersionId = app?.appVersions?.[0]?.id;
+            app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
+          })
+        );
       }
 
       const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES);
@@ -450,6 +503,7 @@ export class AppsService implements IAppsService {
 
       // serialize
       return {
+        id: app.id,
         current_version_id: app['currentVersionId'],
         data_queries: versionToLoad?.dataQueries,
         definition: versionToLoad?.definition,

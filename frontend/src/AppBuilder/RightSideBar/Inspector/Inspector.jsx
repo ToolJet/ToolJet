@@ -41,7 +41,7 @@ import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
-import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import { copyComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
@@ -51,8 +51,10 @@ import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
+import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
+import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import '../ComponentManagerTab/styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -123,6 +125,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'Link',
   'Steps',
   'FilePicker',
+  'FileInput',
   'Tags',
   'Chat',
   'PopoverMenu',
@@ -140,6 +143,13 @@ export const NEW_REVAMPED_COMPONENTS = [
   'JSONEditor',
   'KeyValuePair',
   'IFrame',
+  'Navigation',
+  'TreeSelect',
+  'Accordion',
+  'ReorderableList',
+  'ColorPicker',
+  'FileButton',
+  'ButtonGroupV2',
 ];
 
 export const Inspector = ({
@@ -452,7 +462,7 @@ export const Inspector = ({
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
-    if (!componentMeta?.definition?.generalStyles) {
+    if (!componentMeta?.definition?.generalStyles || componentMeta?.styles?.boxShadow) {
       return null;
     }
     const items = [];
@@ -868,7 +878,9 @@ const GetAccordion = React.memo(
       case 'Chart':
         return <Chart {...restProps} />;
 
+      case 'FileButton': // fall-through to FilePicker
       case 'FilePicker':
+      case 'FileInput':
         return <FilePicker {...restProps} />;
 
       case 'ModalV2':
@@ -915,11 +927,17 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
-      case 'PopoverMenu':
-        return <PopoverMenu {...restProps} />;
 
+      case 'ButtonGroupV2':
+      case 'PopoverMenu':
+      case 'ReorderableList':
+        return <PopoverMenu {...restProps} />;
       case 'KeyValuePair':
         return <KeyValuePair {...restProps} />;
+      case 'Navigation':
+        return <Navigation {...restProps} />;
+      case 'TreeSelect':
+        return <TreeSelect {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

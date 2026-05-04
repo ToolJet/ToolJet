@@ -2,6 +2,7 @@ import React from 'react';
 import { generateActionColumns } from './generateActionColumns';
 import generateColumnsData from './generateColumnsData';
 import IndeterminateCheckbox from '../_components/IndeterminateCheckbox';
+import { ChevronDown } from 'lucide-react';
 
 export const buildTableColumn = (
   showBulkSelector,
@@ -17,15 +18,57 @@ export const buildTableColumn = (
   globalFilter,
   serverSideSearch,
   tableBodyRef,
-  t
+  t,
+  enableExpandableRows,
+  toggleRowExpansion
 ) => {
+  const expansionColumn = enableExpandableRows
+    ? {
+        id: 'expansion',
+        enableSorting: false,
+        enableResizing: false,
+        meta: { columnType: 'expansion', skipExport: true, skipFilter: true, skipAddNewRow: true },
+        size: 40,
+        header: () => null,
+        cell: ({ row, table }) => {
+          const isExpanded = row.id in (table.options.meta?.expandedRows ?? {});
+
+          return (
+            <button
+              className="table-expansion-toggle"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleRowExpansion?.(id, row.id, row.index);
+              }}
+              aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
+              title={isExpanded ? 'Collapse row' : 'Expand row'}
+            >
+              <ChevronDown
+                width={16}
+                height={16}
+                color="var(--cc-default-icon)"
+                style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              />
+            </button>
+          );
+        },
+      }
+    : null;
+
   return [
+    expansionColumn,
     {
       id: 'selection',
       accessorKey: 'selection',
       enableSorting: false,
       enableResizing: false,
-      meta: { columnType: 'selector', skipExport: true, skipFilter: true, skipAddNewRow: true },
+      meta: {
+        columnType: 'selector',
+        skipExport: true,
+        skipFilter: true,
+        skipAddNewRow: true,
+        pinPosition: 'unpinned',
+      },
       size: 40,
       header: ({ table }) =>
         showBulkSelector ? (
@@ -62,6 +105,7 @@ export const buildTableColumn = (
       id,
       darkMode,
       fireEvent,
+      setExposedVariables,
       tableRef: tableBodyRef,
       handleCellValueChange,
       searchText: globalFilter,

@@ -240,7 +240,7 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword(email: string, redirectTo?: string) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       // No need to throw error - To prevent Username Enumeration vulnerability
@@ -261,6 +261,8 @@ export class AuthService implements IAuthService {
         to: email,
         token: forgotPasswordToken,
         firstName: user.firstName,
+        organizationId: user.defaultOrganizationId,
+        ...(redirectTo && { redirectTo }),
       },
     });
   }

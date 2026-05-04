@@ -14,7 +14,7 @@ const EditVersionModal = ({ showEditAppVersion, setShowEditAppVersion, versionTo
     (state) => ({
       updateVersionNameAction: state.updateVersionNameAction,
       selectedVersion: state.selectedVersion,
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
     }),
     shallow
   );

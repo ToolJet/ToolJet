@@ -31,10 +31,21 @@ const EditorSelecto = () => {
   };
 
   const onAreaSelectStart = (e) => {
-    canvasStartId.current =
-      e.inputEvent.target.getAttribute('component-id') !== 'canvas'
-        ? e.inputEvent.target.closest('.real-canvas').getAttribute('data-parentId')
-        : null;
+    const target = e.inputEvent.target;
+    const componentId = target.getAttribute('component-id');
+
+    // For canvas header/footer, we don't have a specific canvasStartId to track
+    if (componentId === 'canvas-header' || componentId === 'canvas-footer') {
+      canvasStartId.current = null;
+      return;
+    }
+
+    if (componentId !== 'canvas') {
+      const realCanvasEl = target.closest('.real-canvas');
+      canvasStartId.current = realCanvasEl ? realCanvasEl.getAttribute('data-parentId') : null;
+    } else {
+      canvasStartId.current = null;
+    }
   };
 
   const onAreaSelection = (e) => {
@@ -56,7 +67,8 @@ const EditorSelecto = () => {
 
   const onAreaSelectionEnd = useCallback(
     (e) => {
-      const canvasSelectEndId = e.inputEvent.target.closest('.real-canvas').getAttribute('data-parentId');
+      const realCanvasEl = e.inputEvent.target.closest('.real-canvas');
+      const canvasSelectEndId = realCanvasEl ? realCanvasEl.getAttribute('data-parentId') : null;
       const isCanvasSelectStartEndSame = canvasStartId.current === canvasSelectEndId;
       let isMultiSelect = null;
       let selectedIds = e.added.map((el, index) => {
@@ -108,12 +120,14 @@ const EditorSelecto = () => {
         selection.removeAllRanges();
       }
       const target = e.inputEvent.target;
-
       // Condition to allow group selection using drawing of square using cursor in canvas and main subcontainer
-      if (
-        target.getAttribute('component-id') === 'canvas' ||
-        (e.inputEvent.shiftKey && (target.getAttribute('component-id') || target.getAttribute('data-parentId')))
-      ) {
+      const isAppCanvas = target.getAttribute('component-id') === 'canvas';
+      const isSubContainer = target.getAttribute('component-id') !== 'canvas' || target.getAttribute('data-parentId');
+      const isShiftKeyPressed = e.inputEvent.shiftKey;
+      const isPageCanvasHeaderOrFooter =
+        target.getAttribute('component-id') === 'canvas-header' ||
+        target.getAttribute('component-id') === 'canvas-footer';
+      if (isAppCanvas || (isShiftKeyPressed && isSubContainer) || isPageCanvasHeaderOrFooter) {
         return true;
       }
 

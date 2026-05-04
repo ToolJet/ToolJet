@@ -22,6 +22,8 @@ import { useOthers, useSelf } from '@y-presence/react';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import AppHistoryIcon from './AppHistory/AppHistoryIcon';
 import AppHistory from './AppHistory';
+import AppLibrariesIcon from './AppLibraries/AppLibrariesIcon';
+import AppLibraries from './AppLibraries';
 import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasConstants';
 
 // TODO: remove passing refs to LeftSidebarItem and use state
@@ -34,7 +36,6 @@ export const BaseLeftSidebar = ({
   switchDarkMode,
   renderAISideBarTrigger = () => null,
   renderAIChat = () => null,
-  isUserInZeroToOneFlow,
 }) => {
   const { moduleId, isModuleEditor, appType } = useModuleContext();
   const [
@@ -68,7 +69,9 @@ export const BaseLeftSidebar = ({
 
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
-  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const multiPlayerEditEnabled = featureAccess?.multiPlayerEdit ?? false;
+  const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && multiPlayerEditEnabled;
 
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
@@ -85,27 +88,21 @@ export const BaseLeftSidebar = ({
   };
 
   useEffect(() => {
-    if (isUserInZeroToOneFlow) {
-      setPopoverContentHeight(((window.innerHeight - APP_HEADER_HEIGHT) / window.innerHeight) * 100);
-      return;
-    }
-
     if (!isDraggingQueryPane) {
       setPopoverContentHeight(
         ((window.innerHeight - (queryPanelHeight == 0 ? QUERY_PANE_HEIGHT : queryPanelHeight) - APP_HEADER_HEIGHT) /
           window.innerHeight) *
-        100
+          100
       );
     } else {
       setPopoverContentHeight(100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUserInZeroToOneFlow, queryPanelHeight, isDraggingQueryPane]);
+  }, [queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
-
       case 'page': // this handles cases where user has page pinned in old layout before LTS 3.16 update
       case 'inspect':
         return (
@@ -117,9 +114,11 @@ export const BaseLeftSidebar = ({
           />
         );
       case 'tooljetai':
-        return renderAIChat({ darkMode, isUserInZeroToOneFlow });
+        return renderAIChat({ darkMode });
       case 'apphistory':
         return <AppHistory darkMode={darkMode} setPinned={setPinned} pinned={pinned} />;
+      case 'libraries':
+        return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
         return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'settings':
@@ -174,7 +173,17 @@ export const BaseLeftSidebar = ({
 
   const renderLeftSidebarItems = () => {
     if (isModuleEditor) {
-      return renderCommonItems();
+      return (
+        <>
+          {renderAISideBarTrigger({
+            darkMode,
+            setSideBarBtnRefs,
+            selectedSidebarItem,
+            handleSelectedSidebarItem,
+          })}
+          {renderCommonItems()}
+        </>
+      );
     }
     return (
       <>
@@ -185,34 +194,38 @@ export const BaseLeftSidebar = ({
           handleSelectedSidebarItem,
         })}
 
-        {!isUserInZeroToOneFlow && (
-          <>
-            {renderCommonItems()}
-            {/* App history temporarily disabled: setup is incomplete in cloud environment and caused a prod bug.
-                TODO: Re-enable queueing only after the setup flow is finished and validated end-to-end in cloud environment. */}
-            {/* <AppHistoryIcon
-              darkMode={darkMode}
-              selectedSidebarItem={selectedSidebarItem}
-              handleSelectedSidebarItem={handleSelectedSidebarItem}
-              setSideBarBtnRefs={setSideBarBtnRefs}
-            /> */}
-            <SidebarItem
-              icon="settings"
-              selectedSidebarItem={selectedSidebarItem}
-              darkMode={darkMode}
-              // eslint-disable-next-line no-unused-vars
-              onClick={(e) => handleSelectedSidebarItem('settings')}
-              className={`left-sidebar-item  left-sidebar-layout`}
-              badge={true}
-              tip="Settings"
-              ref={setSideBarBtnRefs('settings')}
-              isModuleEditor={isModuleEditor}
-              data-cy="left-sidebar-settings-button"
-            >
-              <Bolt width="16" height="16" className="tw-text-icon-strong" />
-            </SidebarItem>
-          </>
+        {renderCommonItems()}
+        {featureAccess?.appHistory && (
+          <AppHistoryIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
         )}
+        {featureAccess?.appJsLibraries && (
+          <AppLibrariesIcon
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            handleSelectedSidebarItem={handleSelectedSidebarItem}
+            setSideBarBtnRefs={setSideBarBtnRefs}
+          />
+        )}
+        <SidebarItem
+          icon="settings"
+          selectedSidebarItem={selectedSidebarItem}
+          darkMode={darkMode}
+          // eslint-disable-next-line no-unused-vars
+          onClick={(e) => handleSelectedSidebarItem('settings')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          tip="Settings"
+          ref={setSideBarBtnRefs('settings')}
+          isModuleEditor={isModuleEditor}
+          data-cy="left-sidebar-settings-button"
+        >
+          <Bolt width="16" height="16" className="tw-text-icon-strong" />
+        </SidebarItem>
       </>
     );
   };
@@ -221,13 +234,13 @@ export const BaseLeftSidebar = ({
     <div
       className={cx('left-sidebar !tw-z-10 tw-gap-1.5', { 'dark-theme theme-dark': darkMode })}
       data-cy="left-sidebar-inspector"
-      style={{ zIndex: 9999 , maxWidth: '304px'}}
+      style={{ zIndex: 9999, maxWidth: '304px' }}
     >
       {renderLeftSidebarItems()}
       <Popover
         onInteractOutside={(e) => {
           // if tooljetai is open don't close
-          if (['tooljetai', 'inspect', 'debugger', 'settings'].includes(selectedSidebarItem)) return;
+          if (['tooljetai', 'inspect', 'debugger', 'settings', 'libraries'].includes(selectedSidebarItem)) return;
           const isWithinSidebar = e.target.closest('.left-sidebar');
           const isClickOnInspect = e.target.closest('.config-handle-inspect');
           if (pinned || isWithinSidebar || isClickOnInspect) return;
@@ -247,7 +260,7 @@ export const BaseLeftSidebar = ({
           {shouldEnableMultiplayer && <AvatarGroupWrapper darkMode={darkMode} maxDisplay={2} />}
           {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
-          <SupportButton />
+          <SupportButton darkMode={darkMode} />
         </div>
       </div>
     </div>

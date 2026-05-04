@@ -51,7 +51,7 @@
  */
 import { getMouseDistanceFromParentDiv } from '../gridUtils';
 
-import { DROPPABLE_PARENTS } from '../../appCanvasConstants';
+import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
 import { isDroppingRestrictedWidget } from '../gridUtils';
 
 const CANVAS_ID = 'canvas';
@@ -166,7 +166,8 @@ export class DragContext {
   }
 
   get isDroppable() {
-    const { dragged, target, isModuleEditor } = this;
+    const { dragged, target, isModuleEditor, widgets } = this;
+
     // If the target is the canvas and we are in module editor,
     // then we don't want to drop the widget outside the module
     if (isModuleEditor && target.id === 'canvas') {
@@ -175,7 +176,16 @@ export class DragContext {
 
     const isRestrictedWidget = isDroppingRestrictedWidget(target, dragged);
 
-    return !isRestrictedWidget;
+    if (isRestrictedWidget) {
+      return false;
+    }
+
+    // Check nesting depth restrictions (e.g., Listview: 2, Table: 3)
+    if (isNestingLimitReached(target.slotId, widgets, dragged.widgetType)) {
+      return false;
+    }
+
+    return true;
   }
 }
 
@@ -270,6 +280,39 @@ export function getWidgetById(boxList, targetId) {
 }
 
 /**
+ * Checks if a target slot is inside a NESTED ListView (has 2+ ListView ancestors).
+ * This allows: Canvas → ListView → ListView (2 levels)
+ * But blocks: Canvas → ListView → ListView → ListView (3+ levels)
+ *
+ * Performance: O(depth) - typically 2-3 iterations max.
+ *
+ * @param {string} slotId - The slot ID to check
+ * @param {Array} widgets - Array of all widgets
+ * @param {string} widgetType - The widget type to check nesting for
+ * @returns {boolean} - True if nesting limit (from NESTING_LEVEL_LIMITS) is reached
+ */
+export function isNestingLimitReached(slotId, widgets, widgetType) {
+  const limit = NESTING_LEVEL_LIMITS[widgetType];
+  if (!limit) return false;
+
+  let currentParentId = slotId;
+  let count = 0;
+
+  while (currentParentId && currentParentId !== 'canvas' && currentParentId !== 'real-canvas') {
+    const baseId = currentParentId?.length > 36 ? currentParentId.slice(0, 36) : currentParentId;
+    const parentWidget = widgets.find((w) => w.id === baseId);
+
+    if (parentWidget?.component?.component === widgetType) {
+      count++;
+      if (count >= limit) return true;
+    }
+
+    currentParentId = parentWidget?.component?.parent;
+  }
+  return false;
+}
+
+/**
  * Extracts the **slot ID** from a given DOM element.
  */
 const extractSlotId = (element) => {
@@ -317,7 +360,12 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
  */
 export const isTargetModuleContainer = (targetSlotId, isModuleEditor) => {
   if (isModuleEditor) return false;
-  return document.getElementById(`canvas-${targetSlotId}`)?.getAttribute('component-type') === 'ModuleContainer';
+  let el = document.getElementById(`canvas-${targetSlotId}`);
+  while (el) {
+    if (el.getAttribute && el.getAttribute('component-type') === 'ModuleContainer') return true;
+    el = el.parentElement;
+  }
+  return false;
 };
 
 /**

@@ -30,9 +30,18 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.REGENERATE_MESSAGE,
           FEATURE_KEY.VOTE_MESSAGE,
           FEATURE_KEY.GET_CREDITS_BALANCE,
+          FEATURE_KEY.LIST_CONVERSATIONS,
+          FEATURE_KEY.CREATE_CONVERSATION,
+          FEATURE_KEY.GET_CONVERSATION,
+          FEATURE_KEY.AUTO_SORT_QUERIES,
         ],
         AiConversation
       );
+    }
+
+    if (isAdmin || superAdmin) {
+      can([FEATURE_KEY.UPDATE_KEY], AiConversation);
+      can([FEATURE_KEY.GET_KEY_SETTINGS], AiConversation);
     }
   }
 }

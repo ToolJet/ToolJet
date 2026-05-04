@@ -5,15 +5,15 @@ const sectionConfig = {
   },
   buttons: {
     title: 'Buttons',
-    valueSet: new Set(['Button', 'ButtonGroup', 'PopoverMenu']),
+    valueSet: new Set(['Button', 'ButtonGroupV2', 'PopoverMenu', 'FileButton']),
   },
   data: {
     title: 'Data',
-    valueSet: new Set(['Table', 'Chart']),
+    valueSet: new Set(['Table', 'Chart', 'KeyValuePair']),
   },
   layouts: {
     title: 'Layouts',
-    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
+    valueSet: new Set(['Form', 'ModalV2', 'Container', 'Accordion', 'Tabs', 'Listview', 'Kanban', 'Calendar']),
   },
   textInputs: {
     title: 'Text inputs',
@@ -41,7 +41,7 @@ const sectionConfig = {
   },
   navigation: {
     title: 'Navigation',
-    valueSet: new Set(['Link', 'Pagination', 'Steps']),
+    valueSet: new Set(['Navigation', 'Link', 'Pagination', 'Steps']),
   },
   media: {
     title: 'Media',
@@ -69,11 +69,29 @@ const sectionConfig = {
   },
   miscellaneous: {
     title: 'Miscellaneous',
-    valueSet: new Set(['FilePicker', 'CodeEditor', 'ColorPicker', 'BoundedBox', 'QrScanner', 'Chat', 'JSONEditor']),
+    valueSet: new Set([
+      'FilePicker',
+      'CodeEditor',
+      'ColorPicker',
+      'BoundedBox',
+      'QrScanner',
+      'Chat',
+      'ReorderableList',
+      'JSONEditor',
+    ]),
   },
   legacy: {
     title: 'Legacy',
-    valueSet: new Set(['Modal', 'Datepicker', 'RadioButton', 'ToggleSwitch', 'DropDown', 'Multiselect', 'RangeSlider']),
+    valueSet: new Set([
+      'Modal',
+      'Datepicker',
+      'RadioButton',
+      'ToggleSwitch',
+      'DropDown',
+      'Multiselect',
+      'RangeSlider',
+      'ButtonGroup',
+    ]),
   },
 };
 

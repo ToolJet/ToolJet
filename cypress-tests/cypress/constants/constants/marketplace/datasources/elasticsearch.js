@@ -1,5 +1,3 @@
-import { invalid } from "moment/moment";
-
 export const elasticsearchUIConfig = {
     defaultFields: [
         {
@@ -53,7 +51,7 @@ export const elasticsearchUIConfig = {
                 disabled: true,
                 hasEditButton: true,
                 showEncrypted: true,
-                hasEyeIcon: true
+                hasEyeIcon: false
             }
         },
 

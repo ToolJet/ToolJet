@@ -15,7 +15,7 @@ import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'phone',
@@ -59,8 +59,7 @@ export const PhoneInput = (props) => {
   } = styles;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const hasLabel =
-    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const isInitialRender = useRef(true);
 
   const options = useMemo(
@@ -126,16 +125,9 @@ export const PhoneInput = (props) => {
   const disabledState = disable || loading;
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      hasLabel
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
-    transform:
-      defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
+    right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
+    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
   const countryCode = getCountryCallingCodeSafe(country);
@@ -190,7 +182,6 @@ export const PhoneInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input d-flex phone-input-widget ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -221,8 +212,10 @@ export const PhoneInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -246,6 +239,7 @@ export const PhoneInput = (props) => {
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <Input
             ref={inputRef}
@@ -269,6 +263,7 @@ export const PhoneInput = (props) => {
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
         {shouldShowClearBtn && (

@@ -3,11 +3,10 @@ import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../../Forms/TableForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
 
 export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tablesLimit, setTablesLimit }) {
   const { organizationId, setSelectedTable, setTables, tables } = useContext(TooljetDatabaseContext);

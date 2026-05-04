@@ -8,4 +8,10 @@ export enum FEATURE_KEY {
   REGENERATE_MESSAGE = 'regenerateMessage',
   VOTE_MESSAGE = 'voteMessage',
   GET_CREDITS_BALANCE = 'getCreditsBalance',
+  LIST_CONVERSATIONS = 'listConversations',
+  CREATE_CONVERSATION = 'createConversation',
+  GET_CONVERSATION = 'getConversation',
+  UPDATE_KEY = 'updateKey',
+  GET_KEY_SETTINGS = 'getKeySettings',
+  AUTO_SORT_QUERIES = 'autoSortQueries',
 }

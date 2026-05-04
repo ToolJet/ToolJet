@@ -52,6 +52,14 @@ export const daterangepickerConfig = {
       },
       accordian: 'Data',
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select Date Range',
+      },
+    },
     defaultStartDate: {
       type: 'code',
       displayName: 'Default start date',
@@ -98,6 +106,13 @@ export const daterangepickerConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -386,8 +401,11 @@ export const daterangepickerConfig = {
       defaultStartDate: { value: '01/04/2022' },
       defaultEndDate: { value: '10/04/2022' },
       format: { value: 'DD/MM/YYYY' },
+      placeholder: { value: 'Select Date Range' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       showClearBtn: { value: '{{false}}' },

@@ -49,7 +49,6 @@ import BlankHomePage from '@/HomePage/BlankHomePage.jsx';
 // import EmbedApp from '@/AppBuilder/EmbedApp';
 import withAdminOrBuilderOnly from '@/GetStarted/withAdminOrBuilderOnly';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import hubspotHelper from '@/modules/common/helpers/hubspotHelper';
 import DesktopOnlyRoute from '@/Routes/DesktopOnlyRoute';
 
 const GuardedHomePage = withAdminOrBuilderOnly(BlankHomePage);
@@ -123,7 +122,6 @@ class AppComponent extends React.Component {
   async componentDidMount() {
     setFaviconAndTitle();
     authorizeWorkspace();
-    hubspotHelper.loadHubspot();
     this.fetchMetadata();
     // check if version is cloud or ee
     const data = localStorage.getItem('currentVersion');

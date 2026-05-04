@@ -26,6 +26,7 @@
     "start:watch": "lerna run watch --stream --parallel",
     "build": "npm run build --workspaces",
     "start:dev": "npm run build && npm run start:watch",
+    "upload-to-s3": "bash scripts/upload-to-s3.sh",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
   }

@@ -5,8 +5,18 @@ import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop, useDragLayer } from 'react-dnd';
-import { computeViewerBackgroundColor, getSubContainerWidthAfterPadding } from './appCanvasUtils';
-import { NO_OF_GRIDS, GRID_HEIGHT } from './appCanvasConstants';
+import {
+  computeViewerBackgroundColor,
+  getSubContainerWidthAfterPadding,
+  getSubContainerHeightAfterPadding,
+} from './appCanvasUtils';
+import {
+  NO_OF_GRIDS,
+  GRID_HEIGHT,
+  HOVER_CLICK_OUTLINE_BORDER,
+  PAGE_CANVAS_HEADER_FOOTER_PADDING,
+  ROW_SCOPED_WIDGET_TYPES,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -74,14 +84,16 @@ const Container = React.memo(
     }, [id, isDragging, deactivateMoveableGhost]);
 
     const isContainerReadOnly = useMemo(() => {
-      return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
+      return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
     const setCurrentDragCanvasId = useGridStore((state) => state.actions.setCurrentDragCanvasId);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
+        if (isContainerReadOnly) return;
         const clientOffset = monitor.getClientOffset();
 
         const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
@@ -116,19 +128,23 @@ const Container = React.memo(
         if (id === 'canvas') return canvasWidth;
         return getSubContainerWidthAfterPadding(canvasWidth, componentType, id, realCanvasRef);
       }
+      if (componentType === 'canvas-header' || componentType === 'canvas-footer') {
+        return realCanvasRef?.current?.offsetWidth - 2 * PAGE_CANVAS_HEADER_FOOTER_PADDING;
+      }
       return realCanvasRef?.current?.offsetWidth;
     }
 
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasWidth, listViewMode, columns, id]);
+    }, [gridWidth, listViewMode, columns, id]);
 
     const handleCanvasClick = useCallback(
       (e) => {
         const realCanvas = e.target.closest('.real-canvas');
-        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        const canvasId = realCanvas?.getAttribute('data-parentId');
         setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
@@ -168,29 +184,25 @@ const Container = React.memo(
     const sortedComponents = useSortedComponents(components, currentLayout, id, moduleId);
     return (
       <div
-        // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
         ref={(el) => {
           realCanvasRef.current = el;
           drop(el);
         }}
         style={{
-          height: id === 'canvas' ? `${canvasHeight}` : '100%',
+          height: id === 'canvas' ? `${canvasHeight}` : getSubContainerHeightAfterPadding(componentType),
           backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
+          padding: `${HOVER_CLICK_OUTLINE_BORDER}px`, // This is required to prevent the hover click outline from being cut off
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
               : id === 'canvas'
-                ? canvasBgColor
-                : '#f0f0f0',
+              ? canvasBgColor
+              : '#f0f0f0',
           width: '100%',
           maxWidth: (() => {
             // For Main Canvas
-            if (id === 'canvas') {
-              if (currentMode === 'view') {
-                return '100%';
-              } else {
-                return canvasMaxWidth;
-              }
+            if (id === 'canvas' || componentType === 'canvas-header' || componentType === 'canvas-footer') {
+              return '100%';
             }
             // For Subcontainers
             return canvasWidth;

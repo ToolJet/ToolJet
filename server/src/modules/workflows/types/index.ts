@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { FEATURE_KEY } from '../constants';
 import { FeatureConfig } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
@@ -9,7 +10,7 @@ export const WORKFLOW_TRIGGER_TYPE = {
   WEBHOOK: 'webhook',
 } as const;
 
-export type WorkflowTriggerType = typeof WORKFLOW_TRIGGER_TYPE[keyof typeof WORKFLOW_TRIGGER_TYPE];
+export type WorkflowTriggerType = (typeof WORKFLOW_TRIGGER_TYPE)[keyof typeof WORKFLOW_TRIGGER_TYPE];
 
 // Execution metadata interface for job data
 export interface ExecutionMetadata {
@@ -56,6 +57,24 @@ interface Features {
 
 export interface FeaturesConfig {
   [MODULES.WORKFLOWS]: Features;
+}
+
+export class WorkflowVersionEnvironmentError extends BadRequestException {
+  public readonly versionName: string;
+  public readonly versionEnvName: string;
+  public readonly executionEnvName: string;
+
+  constructor(versionName: string, versionEnvName: string, executionEnvName: string) {
+    super(
+      `Workflow version "${versionName}" is in the "${versionEnvName}" environment ` +
+        `and cannot run in "${executionEnvName}". ` +
+        `Please promote this version to "${executionEnvName}" or higher first.`
+    );
+    this.name = 'WorkflowVersionEnvironmentError';
+    this.versionName = versionName;
+    this.versionEnvName = versionEnvName;
+    this.executionEnvName = executionEnvName;
+  }
 }
 
 /**

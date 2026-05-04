@@ -1,4 +1,5 @@
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { getHostURL } from '@/_helpers/routes';
 import { appVersionService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
@@ -66,6 +67,9 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageVisibility = createPageUpdateCommand(['hidden']);
 
   const disableOrEnablePage = createPageUpdateCommand(['disabled']);
+
+  const _togglePageHeaderCmd = createPageUpdateCommand(['pageHeader']);
+  const _togglePageFooterCmd = createPageUpdateCommand(['pageFooter']);
 
   const updatePageName = createPageUpdateCommand(['name'], (state) => {
     state.showEditPageNameInput = false;
@@ -177,6 +181,38 @@ export const createPageMenuSlice = (set, get) => {
     // page actions
     updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
     disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
+    togglePageHeader: (pageId, checked, mode) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    updatePageHeaderStyle: (pageId, styleName, value) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        [styleName]: value,
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    togglePageFooter: (pageId, checked, mode) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageFooterStyle: (pageId, styleName, value) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        [styleName]: value,
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
     updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
@@ -256,7 +292,7 @@ export const createPageMenuSlice = (set, get) => {
         });
       }
     },
-    deletePage: async (pageId) => {
+    deletePage: async (pageId, { saveAfterAction = true } = {}) => {
       const { getAppId, getHomePageId, currentVersionId } = get();
       const appId = getAppId('canvas');
       const homePageId = getHomePageId('canvas');
@@ -280,7 +316,11 @@ export const createPageMenuSlice = (set, get) => {
         state.showEditingPopover = false;
         state.editingPage = null;
       });
-      await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+
+      if (saveAfterAction) {
+        await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+      }
+
       toast.success('Page deleted successfully');
     },
     /*
@@ -364,16 +404,28 @@ export const createPageMenuSlice = (set, get) => {
     reorderPages: async (reorderdPages) => {
       const diff = {};
       const currentPageId = get().getCurrentPageId('canvas');
+      const currentPageIndex = get().getCurrentPageIndex('canvas');
+      let newCurrentPageIndex = null;
+
       // update index of everything to avoid inconsistencies
       reorderdPages.forEach((page, index) => {
+        // update currentPageIndex in state in case index of current page was changed
+        if (page?.id === currentPageId && index !== currentPageIndex) {
+          newCurrentPageIndex = index;
+        }
+
         diff[page.id] = {
           index,
           pageGroupId: page.pageGroupId,
         };
       });
+
       // @todo come back to this, components can be segregated which will make this update fast compaaed to the current approach
       set((state) => {
         state.modules.canvas.pages = reorderdPages;
+        if (newCurrentPageIndex !== null) {
+          state.modules.canvas.currentPageIndex = newCurrentPageIndex;
+        }
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
@@ -520,11 +572,13 @@ export const createPageMenuSlice = (set, get) => {
         modeStore,
         isPreviewInEditor,
         setCurrentPageHandle,
+        eventsSlice,
       } = get();
       const pages = modules[moduleId].pages;
       const selectedVersionName = selectedVersion?.name;
       const selectedEnvironmentName = selectedEnvironment?.name;
       const currentMode = modeStore.modules[moduleId].currentMode;
+      const { fireEvent } = eventsSlice;
 
       if (page?.type === 'url') {
         if (page?.url) {
@@ -539,28 +593,33 @@ export const createPageMenuSlice = (set, get) => {
           }
         } else {
           toast.error('No URL provided');
-          return;
+          return false;
         }
-        return;
+        return true;
       }
 
       if (page?.type === 'app') {
         if (page?.appId) {
-          const baseUrl = `${window.public_config?.TOOLJET_HOST}/applications/${page.appId}`;
+          const appUrl = `${getHostURL()}/applications/${page.appId}`;
           if (page.openIn === 'new_tab') {
-            window.open(baseUrl, '_blank');
+            window.open(appUrl, '_blank');
           } else {
-            window.location.href = baseUrl;
+            window.location.href = appUrl;
           }
         } else {
           toast.error('No app selected');
-          return;
+          return false;
         }
+        return true;
+      }
+
+      if (page?.type === 'custom') {
+        fireEvent('onClick', page?.id, moduleId, {}, {});
         return;
       }
 
       if (currentPageId === page?.id) {
-        return;
+        return false;
       }
 
       const queryParams = {
@@ -574,6 +633,7 @@ export const createPageMenuSlice = (set, get) => {
         currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
       );
       currentMode !== 'view' && setCurrentPageHandle(page.handle);
+      return true;
     },
   };
 };

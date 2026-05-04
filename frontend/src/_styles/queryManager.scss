@@ -155,6 +155,17 @@ $border-radius: 4px;
     background: transparent;
   }
 
+  .query-folder-handler.ghost {
+    background-color: #eceef0;
+    border-radius: 4px;
+    position: relative;
+    width: 100%;
+    opacity: 0.8;
+    &.dark-theme {
+      background-color: var(--slate4);
+    }
+  }
+
   .query-row:hover .query-rename-delete-btn {
     display: flex !important;
   }
@@ -166,13 +177,12 @@ $border-radius: 4px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0px;
+    padding: 7px 8px;
     font-weight: 500;
     width: 100%;
     height: 32px;
     color: var(--slate12);
     border-radius: 6px;
-    margin-bottom: 4px;
 
     .query-copy-button {
       display: none;
@@ -202,7 +212,11 @@ $border-radius: 4px;
     }
 
     .query-icon {
-      margin: auto 8px auto 12px;
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 18px;
     }
 
     .delete-query,
@@ -220,12 +234,13 @@ $border-radius: 4px;
       background: var(--slate3) !important;
 
     }
+  }
 
-    .query-row-query-name {
-      padding-top: '4px';
-      padding-bottom: '4px';
-      transition-delay: '10ms';
-    }
+  .query-card-leading {
+    display: flex;
+    align-items: center;
+    flex: 1 0 0;
+    min-width: 0;
   }
 
   .query-row.border {
@@ -233,7 +248,7 @@ $border-radius: 4px;
   }
 
   .query-row-selected {
-    background: var(--indigo4) !important;
+    background: var(--interactive-selected) !important;
 
     .delete-query {
       svg:hover {
@@ -373,10 +388,9 @@ $border-radius: 4px;
         --tblr-gutter-x: 0rem;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-between;
         padding: 8px;
-        gap: 12px;
-        flex-direction: row-reverse;
+        flex-direction: row;
 
         .queries-search {
           height: 28px !important;
@@ -496,7 +510,7 @@ $border-radius: 4px;
       .query-list {
         display: flex;
         flex-direction: column;
-        padding: 8px 8px 8px 8px; // Reduced right padding to minimize gap when scrollbar is visible
+        padding: 4px;
         gap: 2px;
         width: 100%;
 
@@ -1374,6 +1388,13 @@ $border-radius: 4px;
         color: var(--slate11);
       }
     }
+
+    .query-hinter {
+      // Gets applied to multiline codeeditor only inside query panel
+      .cm-editor {
+          border-radius: 0 0 8px 8px;
+      }
+    }
   }
 
   .runjs-editor {
@@ -1508,19 +1529,9 @@ $border-radius: 4px;
 }
 
 .runps-editor {
-  .query-hinter {
-    border-radius: 6px !important;
-  }
-
   .CodeMirror.cm-s-monokai.CodeMirror-wrap,
   .cm-s-monokai .CodeMirror-gutters {
     background-color: var(--slate3) !important;
-  }
-}
-
-.rest-api-tabpanes-body {
-  .query-hinter {
-    border-radius: 6px !important;
   }
 }
 
@@ -1802,8 +1813,8 @@ $border-radius: 4px;
 .copilot-section-header {
   background-color: var(--surfaces-surface-01);
   border: 1px solid var(--borders-disabled-on-white);
-  border-top-right-radius: 6px;
-  border-top-left-radius: 6px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 
 .query-manager-input-elem {
@@ -1814,8 +1825,6 @@ $border-radius: 4px;
 }
 
 .query-hinter {
-  border-radius: 0px 0px 6px 6px;
-
   .cm-s-base16-light.CodeMirror,
   .CodeMirror-scroll,
   .CodeMirror-gutters {
@@ -1923,4 +1932,189 @@ $border-radius: 4px;
 .query-manager-query-timeout {
   max-width: 400px;
   width: 330px;
+}
+
+// ─── Query Folder Feature ──────────────────────────────────────────────────────
+
+// Cursor hint on query/folder name spans (enables text selection on double-click)
+.query-name .text-truncate {
+  cursor: text;
+}
+
+// Shared rename input used in QueryRenameInput.jsx and FolderCard.jsx
+.query-rename-input {
+  flex: 1;
+  width: 100%;
+  height: 28px;
+  border: 2px solid #4368e3;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text-default, #1b1f24);
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 6px;
+  outline: none;
+
+  .dark-theme &,
+  .theme-dark & {
+    background: var(--surfaces-surface-02, #1f2936);
+    color: #fff;
+  }
+}
+
+// Shared delete-confirm modal structure (DeleteQueryModal + DeleteFolderModal)
+.query-folder-delete-modal {
+  .modal-header {
+    border: none;
+    padding: 16px 16px 8px;
+  }
+
+  .modal-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .modal-body {
+    padding: 0 16px 16px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .modal-footer {
+    border: none;
+    padding: 0 16px 16px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// Lock / restricted-access icon wrapper in QueryCard
+.query-card-lock-wrapper {
+  margin-left: 8px;
+  margin-right: auto;
+}
+
+// Local-DS deprecation warning icon in QueryCard
+.query-card-local-ds-icon {
+  height: 20px;
+}
+
+// Filter + search icon row in QueryDataPane header
+.queries-header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+// Inner padding wrapper inside .query-list scroll container
+.query-list-inner {
+  padding: 0px;
+}
+
+// Centered empty-state wrapper inside .query-list
+.query-empty-state-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Empty datasource illustration (QueryDataPane)
+.empty-data-source {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  &__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    background: var(--surfaces-surface-02, #f6f8fa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-placeholder, #6a727c);
+    text-align: center;
+  }
+}
+
+// Transparent popover shell – strips Bootstrap's border/shadow/bg
+// Used by AddDataSourceButton (QueryDataPane) and folder overlays (FolderCard)
+.transparent-popover {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+// Filter/sort trigger button – active (open) state
+.btn-query-panel-header {
+  &.active {
+    background: var(--slate5);
+  }
+}
+
+// Sort/filter main menu scroll body
+.query-editor-sort-filter-body {
+  height: 315px;
+  overflow-y: auto;
+}
+
+// Datasource filter list scroll body
+.query-ds-filter-list {
+  height: 281px;
+  overflow-y: auto;
+}
+
+.query-folder-handler.ghost {
+
+  .query-row {
+    cursor: pointer;
+    border-radius: $border-radius;
+    --tblr-gutter-x: 0rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 7px 8px;
+    font-weight: 500;
+    width: 100%;
+    height: 32px;
+    color: var(--slate12);
+    border-radius: 6px;
+
+    .query-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      display: flex;
+      font-weight: 400;
+    }
+    .query-icon {
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 18px;
+    }
+    .query-card-leading {
+      display: flex;
+      align-items: center;
+      flex: 1 0 0;
+      min-width: 0;
+    }
+  }
+
 }

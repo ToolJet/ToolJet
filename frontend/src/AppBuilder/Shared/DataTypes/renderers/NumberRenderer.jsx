@@ -167,7 +167,7 @@ export const NumberRenderer = ({
           onFocus={(e) => e.stopPropagation()}
         />
         <div className="arror-container">
-          <div onClick={handleIncrement}>
+          <div onMouseDown={handleIncrement}>
             <SolidIcon
               width="16px"
               style={{ top: '1px', right: '1px', zIndex: 3 }}
@@ -176,7 +176,7 @@ export const NumberRenderer = ({
               fill="var(--icons-default)"
             />
           </div>
-          <div onClick={handleDecrement}>
+          <div onMouseDown={handleDecrement}>
             <SolidIcon
               style={{ right: '1px', bottom: '1px', zIndex: 3 }}
               width="16px"

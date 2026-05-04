@@ -145,10 +145,11 @@ function SettingsPage(props) {
       setConfirmPassword('');
     } catch (error) {
       const backendMessage = error?.data?.message;
-      const specificRequirementMessage = 'Password must be 12–24 characters and may include letters, numbers and special characters';
+      const specificRequirementMessage =
+        'Password must be 12–24 characters and may include letters, numbers and special characters';
 
       // Check if the backend message exactly matches the specific password requirement message
-      const errorMessage = 
+      const errorMessage =
         backendMessage === specificRequirementMessage
           ? backendMessage
           : 'Please verify that you have entered the correct password';

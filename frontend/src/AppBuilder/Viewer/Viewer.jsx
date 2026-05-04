@@ -154,6 +154,13 @@ export const Viewer = ({
                 'offset-top-bar-navigation': !isReleasedVersionId,
                 'mobile-view': currentLayout === 'mobile',
               })}
+              style={{
+                '--preview-header-height': !isReleasedVersionId
+                  ? currentLayout === 'mobile'
+                    ? '44px'
+                    : '32px'
+                  : '0px',
+              }}
             >
               <DndProvider backend={HTML5Backend}>
                 <ModuleProvider moduleId={moduleId} isModuleMode={moduleMode} appType={appType} isModuleEditor={false}>
@@ -179,8 +186,8 @@ export const Viewer = ({
                                 isPagesSidebarHidden || currentLayout === 'mobile'
                                   ? 'auto'
                                   : position === 'top'
-                                    ? '0px'
-                                    : '256px',
+                                  ? '0px'
+                                  : '256px',
                             }}
                           >
                             <div

@@ -44,10 +44,10 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 
 Cypress.Commands.add(
   "verifyToastMessage",
-  (selector, message, closeAction = true) => {
-    cy.get(selector, { timeout: 15000 })
+  (selector, message, closeAction = true, timeout = 15000) => {
+    cy.get(selector, { timeout: timeout })
       .as("toast")
-      .should("contain.text", message, { timeout: 15000 });
+      .should("contain.text", message, { timeout: timeout });
     if (closeAction) {
       cy.get("body").then(($body) => {
         if ($body.find(commonSelectors.toastCloseButton).length > 0) {
@@ -96,7 +96,7 @@ Cypress.Commands.add(
     const dataTransfer = new DataTransfer();
 
     // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-plus-button"]').click();
+    cy.get('[data-cy="right-sidebar-components-button"]').click();
     cy.get(commonSelectors.searchField)
       .should("be.visible")
       .first()
@@ -194,7 +194,7 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
@@ -220,7 +220,7 @@ Cypress.Commands.add(
     };
 
     if (Array.isArray(value)) {
-      cy.wrap(subject).last().realType(value, {
+      cy.wrap(subject).last().realType(value.join(""), {
         parseSpecialCharSequences: false,
         delay: 0,
         force: true,
@@ -272,7 +272,7 @@ Cypress.Commands.add("scrollToElement", (selector) => {
 });
 
 Cypress.Commands.add("openInCurrentTab", (selector) => {
-  cy.get(selector).first().invoke("removeAttr", "target").click({ force: true });
+  cy.get(selector).parent().invoke("removeAttr", "target").click({ force: true });
 });
 
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
@@ -597,7 +597,7 @@ Cypress.Commands.add("openComponentSidebar", (selector, value) => {
       .is(":visible");
 
     if (!isSearchVisible) {
-      cy.get('[data-cy="right-sidebar-plus-button"]').click();
+      cy.get('[data-cy="right-sidebar-components-button"]').click();
     }
   });
 });

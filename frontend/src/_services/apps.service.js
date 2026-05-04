@@ -1,14 +1,16 @@
 import config from 'config';
-import { authHeader, handleResponse } from '@/_helpers';
+import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
 import queryString from 'query-string';
 
 export const appsService = {
+  getAppAuthenticationConfig,
   validatePrivateApp,
   validateReleasedApp,
   setVisibility,
   setMaintenance,
   setSlug,
   getAll,
+  getAllAddableApps,
   createApp,
   cloneApp,
   exportApp,
@@ -29,6 +31,13 @@ export const appsService = {
   getWorkflowLimit,
   releaseVersion,
 };
+
+function getAppAuthenticationConfig(slug) {
+  const requestOptions = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
+  return fetch(`${config.apiUrl}/apps/app-authentication-config/${slug}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
+}
 
 function getWorkflows(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -64,6 +73,12 @@ function getAll(page, folder, searchKey, type = 'front-end') {
       `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
       requestOptions
     ).then(handleResponse);
+}
+
+// get all addable apps
+function getAllAddableApps() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {

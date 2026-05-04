@@ -12,6 +12,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
+// eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
@@ -184,7 +185,13 @@ export const QueryPanel = ({ darkMode }) => {
               className="d-flex items-center justify-start mb-0 font-weight-500 text-dark select-none query-manager-toggle-button tw-gap-1.5"
               onClick={toggleQueryEditor}
             >
-              <span>{isQueryPaneExpanded ? <PanelBottomClose size='14' color='var(--icon-strong)' /> : <PanelBottomOpen size='14' color='var(--icon-strong)' />}</span>
+              <span>
+                {isQueryPaneExpanded ? (
+                  <PanelBottomClose size="14" color="var(--icon-strong)" />
+                ) : (
+                  <PanelBottomOpen size="14" color="var(--icon-strong)" />
+                )}
+              </span>
               <span>Queries</span>
             </button>
           </div>

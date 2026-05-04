@@ -3,124 +3,40 @@ import { authHeader, handleResponse } from '@/_helpers';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export const aiService = {
-  generateApp,
-  createQuery,
-  updateComponent,
-  createEvent,
-  updateEvent,
-  updateQuery,
-  fetchZeroState,
-  enrichPrompt,
-  agentic,
-  createConversation,
-  getConversation,
   sendMessage,
   voteMessage,
-  regenerateResponse,
-  approvePrd,
-  rewindStep,
   getCopilotSuggestion,
   getCreditBalance,
   fixWithAI,
-  fixLayout,
+  updateKey,
+  getKeySettings,
+  updateMessageData,
+  listConversations,
+  createConversation,
+  getConversation,
+  autoSort,
 };
 
-async function fixLayout(body) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/fixLayout`, requestOptions).then(handleResponse);
-}
+function handleAITextResponse(response) {
+  return response.text().then((text) => {
+    let data = null;
 
-function enrichPrompt(prompt) {
-  const body = {
-    prompt,
-  };
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+    if (!response.ok) {
+      throw {
+        error: data?.message || text || response.statusText,
+        data: data || { message: text },
+        statusCode: response?.status,
+      };
+    }
 
-  return fetch(`${config.apiUrl}/agents/prompt-enrichment`, requestOptions).then(handleResponse);
-}
-
-function agentic(prompt) {
-  const body = {
-    prompt,
-  };
-
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-
-  return fetch(`${config.apiUrl}/agents/agentic`, requestOptions).then(handleResponse);
-}
-
-function generateApp(prompt) {
-  const body = {
-    prompt,
-  };
-
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-
-  return fetch(`${config.apiUrl}/ai/generateApp`, requestOptions).then(handleResponse);
-}
-
-function createQuery(prompt) {
-  const body = {
-    prompt,
-    dataSource: null,
-    columns: null,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/create-query`, requestOptions).then(handleResponse);
-}
-
-async function updateComponent(prompt, pageId) {
-  const body = {
-    prompt,
-    pageId,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/update-components`, requestOptions).then(handleResponse);
-}
-
-async function createEvent(prompt, pageId) {
-  const body = {
-    prompt,
-    pageId,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/create-events`, requestOptions).then(handleResponse);
-}
-
-async function updateEvent(prompt, app_version_id) {
-  const body = {
-    prompt,
-    app_version_id,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/update-events`, requestOptions).then(handleResponse);
-}
-
-async function updateQuery(prompt) {
-  const body = {
-    prompt,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/agents/update-query`, requestOptions).then(handleResponse);
-}
-
-async function fetchZeroState() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/ai/zeroState`, requestOptions).then(handleResponse);
-}
-
-async function createConversation() {
-  const body = {
-    prompt,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/conversation`, requestOptions).then(handleResponse);
-}
-
-async function getConversation(conversationId) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
+    return data ?? text;
+  });
 }
 
 async function voteMessage(messageId, voteType) {
@@ -130,14 +46,6 @@ async function voteMessage(messageId, voteType) {
   };
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/ai/conversation/vote-message`, requestOptions).then(handleResponse);
-}
-
-async function regenerateResponse(parentMessageId) {
-  const body = {
-    parentMessageId,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/conversation/regenerate-response`, requestOptions).then(handleResponse);
 }
 
 async function sendMessage(body, onMessage, isDocs = false) {
@@ -153,90 +61,12 @@ async function sendMessage(body, onMessage, isDocs = false) {
     },
     openWhenHidden: true,
     onopen: async (response) => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    },
-    onmessage: (event) => {
-      if (!event.data) return;
-      try {
-        const parsed = JSON.parse(event.data);
-        fullResponse.push(parsed);
-        const { event: type } = event;
-        onMessage({
-          data: parsed,
-          type,
-        });
-      } catch (e) {
-        console.log(e);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const err = new Error(data?.message || `HTTP error! status: ${response.status}`);
+        err.statusCode = response.status;
+        throw err;
       }
-    },
-    onerror: (error) => {
-      console.log(error);
-      throw new Error(error);
-    },
-    onclose: () => {
-      console.log('Connection closed');
-    },
-  });
-
-  return fullResponse;
-}
-
-async function approvePrd(body, onMessage) {
-  const fullResponse = [];
-
-  await fetchEventSource(`${config.apiUrl}/ai/conversation/approve-prd`, {
-    method: 'POST',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    credentials: 'include',
-    retryStrategy: {
-      next: () => null,
-    },
-    openWhenHidden: true,
-    onopen: async (response) => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    },
-    onmessage: (event) => {
-      if (!event.data) return;
-      try {
-        const parsed = JSON.parse(event.data);
-        fullResponse.push(parsed);
-        const { event: type } = event;
-        onMessage({
-          data: parsed,
-          type,
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    },
-    onerror: (error) => {
-      console.log(error);
-      throw new Error(error);
-    },
-    onclose: () => {
-      console.log('Connection closed');
-    },
-  });
-
-  return fullResponse;
-}
-
-// TODO: make event logic reusable
-async function rewindStep(body, onMessage) {
-  const fullResponse = [];
-
-  await fetchEventSource(`${config.apiUrl}/ai/conversation/rewind-step`, {
-    method: 'POST',
-    headers: { ...authHeader(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    credentials: 'include',
-    retryStrategy: {
-      next: () => null,
-    },
-    openWhenHidden: true,
-    onopen: async (response) => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     },
     onmessage: (event) => {
       if (!event.data) return;
@@ -266,7 +96,7 @@ async function rewindStep(body, onMessage) {
 
 async function getCopilotSuggestion(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleAITextResponse);
 }
 async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -278,5 +108,54 @@ async function getCreditBalance() {
 
 async function fixWithAI(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleAITextResponse);
+}
+
+async function updateKey(body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/update-key`, requestOptions).then(handleResponse);
+}
+
+async function getKeySettings(licenseType) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/key-settings?licenseType=${licenseType}`, requestOptions).then(handleResponse);
+}
+
+async function updateMessageData(messageId, body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+
+  return fetch(`${config.apiUrl}/ai/conversation/message/${messageId}`, requestOptions).then(handleResponse);
+}
+
+async function listConversations(appId, conversationType = 'generate') {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/ai/conversations?appId=${appId}&conversationType=${conversationType}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+async function createConversation(appId, conversationType = 'generate') {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ appId, conversationType }),
+  };
+  return fetch(`${config.apiUrl}/ai/conversation`, requestOptions).then(handleResponse);
+}
+
+async function getConversation(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
+}
+
+async function autoSort(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/ai/autosort`, requestOptions).then(handleAITextResponse);
 }

@@ -1,8 +1,8 @@
 import properties from './properties';
 
 export default {
-  title: 'Woocommerce datasource',
-  description: 'A schema defining Woocommerce datasource',
+  title: 'WooCommerce datasource',
+  description: 'A schema defining WooCommerce datasource',
   type: 'api',
   defaults: {},
   properties,

@@ -13,6 +13,7 @@ import { createDataSourceSlice } from './slices/dataSourceSlice';
 import { createUndoRedoSlice } from './slices/undoRedoSlice';
 import { createLayoutSlice } from './slices/layoutSlice';
 import { immer } from 'zustand/middleware/immer';
+// eslint-disable-next-line import/no-unresolved
 import { enableMapSet } from 'immer';
 import { createResolvedSlice } from './slices/resolvedSlice';
 import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
@@ -29,9 +30,13 @@ import { createGitSyncSlice } from './slices/gitSyncSlice';
 import { createAiSlice } from './slices/aiSlice';
 import { createFixWithAiSlice } from './slices/fixWithAi';
 import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
-import { createFormComponentSlice } from './slices/formComponentSlice';
+import { createFormComponentSlice } from './slices/componentSlices/formComponentSlice';
 import { createInspectorSlice } from './slices/inspectorSlice';
 import { createModuleSlice } from './slices/moduleSlice';
+import { createLibrarySlice } from './slices/librarySlice';
+import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
+import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
+import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
 enableMapSet();
 
 export default create(
@@ -65,9 +70,14 @@ export default create(
       ...createAiSlice(...state),
       ...createFixWithAiSlice(...state),
       ...createWhiteLabellingSlice(...state),
-      ...createFormComponentSlice(...state),
       ...createInspectorSlice(...state),
       ...createModuleSlice(...state),
+      ...createLibrarySlice(...state),
+      ...createDataQueryFolderSlice(...state),
+      // component slices
+      ...createFormComponentSlice(...state),
+      ...listViewComponentSlice(...state),
+      ...tableComponentSlice(...state),
     })),
     { name: 'App Builder Store', anonymousActionType: 'unknown' }
   )

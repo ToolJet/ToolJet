@@ -43,6 +43,14 @@ export const timePickerConfig = {
       },
       accordian: 'Data',
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select time',
+      },
+    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -68,6 +76,13 @@ export const timePickerConfig = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
 
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -334,9 +349,12 @@ export const timePickerConfig = {
     properties: {
       label: { value: 'Label' },
       defaultValue: { value: '00:00' },
+      placeholder: { value: 'Select time' },
       timeFormat: { value: 'HH:mm' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       showClearBtn: { value: '{{false}}' },

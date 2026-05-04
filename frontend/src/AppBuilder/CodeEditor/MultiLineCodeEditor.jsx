@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap, tooltips } from '@codemirror/view';
+import { keymap, tooltips, EditorView } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -25,6 +25,8 @@ import { useQueryPanelKeyHooks } from './useQueryPanelKeyHooks';
 import { isInsideParent } from './utils';
 import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 import useWorkflowStore from '@/_stores/workflowStore';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -33,6 +35,8 @@ const langSupport = Object.freeze({
   jsx: javascript({ jsx: true }),
   css: sass(),
 });
+
+const lineWrappingExtension = EditorView.lineWrapping;
 
 const MultiLineCodeEditor = (props) => {
   const {
@@ -56,12 +60,19 @@ const MultiLineCodeEditor = (props) => {
     setCodeEditorView,
     onInputChange, // Added this prop to immediately handle value changes
     foldGutter = true, // controls the left gray bar
+    componentId,
   } = props;
+  const { moduleId: contextModuleId } = useModuleContext();
+  const moduleId = props.moduleId || contextModuleId || 'canvas';
   const editorRef = useRef(null);
 
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  // Context-aware hints for components inside ListView/Kanban and table columns
+  const getContextHints = useStore((state) => state.getContextHints, shallow);
+  const getTableColumnContextHints = useStore((state) => state.getTableColumnContextHints, shallow);
+  const tableColumnComponentId = useContext(TableColumnContext)?.tableId; // Set at ColumnPopover level
   const getServerSideGlobalResolveSuggestions = useStore(
     (state) => state.getServerSideGlobalResolveSuggestions,
     shallow
@@ -158,9 +169,14 @@ const MultiLineCodeEditor = (props) => {
     const hints = hasWorkflowSuggestions ? workflowSuggestions : getSuggestions();
     const serverHints = getServerSideGlobalResolveSuggestions(isInsideQueryManager);
 
+    // Prepend context-aware hints (listItem, cardData, rowData, siblings) before app hints
+    const contextHints = componentId ? getContextHints(componentId, moduleId) : [];
+    const tableContextHints = tableColumnComponentId
+      ? getTableColumnContextHints(tableColumnComponentId, moduleId)
+      : [];
     const allHints = {
       ...hints,
-      appHints: [...hints.appHints, ...serverHints],
+      appHints: [...tableContextHints, ...contextHints, ...hints.appHints, ...serverHints],
     };
 
     return getSuggestionsForMultiLine(context, allHints, hints, lang, paramList);
@@ -271,6 +287,8 @@ const MultiLineCodeEditor = (props) => {
           selectors={{ className: 'preview-block-portal' }}
           dragResizePortal={true}
           callgpt={null}
+          onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
+          canRefresh={portalProps?.canRefresh}
         >
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
@@ -285,6 +303,7 @@ const MultiLineCodeEditor = (props) => {
                 theme={theme}
                 extensions={[
                   langExtention,
+                  lineWrappingExtension,
                   search({
                     createPanel: handleSearchPanel,
                   }),

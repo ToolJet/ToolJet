@@ -1,6 +1,7 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
+import { getHostURL } from '@/_helpers/routes';
 import { withTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -14,7 +15,7 @@ import Spinner from 'react-bootstrap/Spinner';
 import ConfirmDisableAutoSSOModal from '@/_components/ConfirmDisableAutoSSOLoginModal';
 import { AutoSSOLogin, SSOConfigurationList } from './components';
 class OrganizationLogin extends React.Component {
-  protectedSSO = ['openid', 'ldap', 'saml'];
+  protectedSSO = ['openid', 'ldap', 'saml', 'google', 'github'];
   constructor(props) {
     super(props);
     this.state = {
@@ -572,9 +573,7 @@ class OrganizationLogin extends React.Component {
                             data-cy="workspace-login-url"
                             style={{ margin: 0, flexGrow: 1, minWidth: 0 }}
                           >
-                            {`${window.public_config?.TOOLJET_HOST}${
-                              window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                            }login/${
+                            {`${getHostURL()}/login/${
                               authenticationService?.currentSessionValue?.current_organization_slug ||
                               authenticationService?.currentSessionValue?.current_organization_id
                             }`}

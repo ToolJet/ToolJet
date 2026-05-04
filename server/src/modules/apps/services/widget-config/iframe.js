@@ -82,6 +82,10 @@ export const iframeConfig = {
       displayName: 'Set visibility',
       params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+    {
+      handle: 'reload',
+      displayName: 'Reload',
+    }
   ],
   definition: {
     others: {

@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
 import Select from '@/_ui/Select';
 import { dataqueryService } from '@/_services';
 import { get, debounce } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
-
 import { shallow } from 'zustand/shallow';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { IconAlertTriangle } from '@tabler/icons-react';
+import { components as RSComponents } from 'react-select';
+import Spinner from '@/_ui/Spinner';
 
 const DynamicSelector = ({
   operation,
@@ -16,6 +17,7 @@ const DynamicSelector = ({
   selectedDataSource,
   currentAppEnvironmentId = '',
   optionsChanged,
+  optionchanged,
   options = {},
   label,
   description,
@@ -26,6 +28,11 @@ const DynamicSelector = ({
   propertyKey,
   value,
   fxEnabled = false,
+  isMulti = false,
+  autoFetch = false,
+  sizeStyles = {},
+  pagination = false,
+  pageSize = 25,
 }) => {
   const isDependentField = dependsOn?.length > 0;
 
@@ -36,7 +43,13 @@ const DynamicSelector = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [noAccessError, setNoAccessError] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const isLoadMoreRef = useRef(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const isSearchRef = useRef(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isFxMode, setIsFxMode] = useState(() => {
     if (options?.[`${propertyKey}_fx`] !== undefined) {
       return options[`${propertyKey}_fx`];
@@ -69,7 +82,7 @@ const DynamicSelector = ({
 
   const compositeDependencyKey = useMemo(() => Object.values(dependencyValues).join('_'), [dependencyValues]);
 
-  const handleFetch = async () => {
+  const handleFetch = async (searchOverride) => {
     if (!selectedDataSource?.id || !invokeMethod) {
       console.error('[DynamicSelector] Missing data source or invoke method', { invokeMethod });
       setError('Configuration error: missing data source or invoke method');
@@ -78,17 +91,62 @@ const DynamicSelector = ({
 
     const environmentId = currentAppEnvironmentId != null ? String(currentAppEnvironmentId) : '';
 
-    setIsLoading(true);
+    if (isLoadMoreRef.current) {
+      setIsLoadingMore(true);
+    } else if (isSearchRef.current) {
+      setIsSearching(true);
+    } else {
+      setIsLoading(true);
+    }
+
     setError(null);
 
     try {
-      const args = depKeys.length ? { values: depValues } : undefined;
+      const effectiveSearch = typeof searchOverride === 'string' ? searchOverride : searchTerm;
+      const args =
+        depKeys.length || pagination || effectiveSearch
+          ? {
+              ...(depKeys.length ? { values: depValues } : {}),
+              ...(pagination ? { page: currentPage, limit: pageSize } : {}),
+              ...(effectiveSearch ? { search: effectiveSearch } : {}),
+            }
+          : undefined;
       const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
-
+      if (response?.status === 'failed') {
+        setError(response?.errorMessage || 'Failed to fetch data');
+        setFetchedData([]);
+        return;
+      }
       const payload = response?.data ?? response;
-      const items = payload?.data || [];
-      setFetchedData(items);
-      validateSelectedValue(items);
+      let items;
+      if (pagination && payload?.items !== undefined) {
+        items = payload.items;
+        setTotalCount(payload.totalCount ?? 0);
+        if (isLoadMoreRef.current) {
+          setFetchedData((prev) => [...prev, ...items]);
+          isLoadMoreRef.current = false;
+        } else if (isSearchRef.current) {
+          setFetchedData(items);
+          isSearchRef.current = false;
+        } else {
+          setFetchedData(items);
+        }
+      } else {
+        items = Array.isArray(payload) ? payload : payload?.data || [];
+        setFetchedData(items);
+      }
+      // Skip access validation for autoFetch fields (e.g. gRPC services discovered from proto files)
+      // — "no access" warnings only apply to OAuth-scoped resources like Google Sheets.
+      // If this needs per-field control, consider a `validateAccess` manifest prop instead.
+      if (!autoFetch) {
+        validateSelectedValue(items);
+      }
+
+      // When autoFetch is enabled, skip persisting cache to options
+      // to avoid triggering "Unsaved Changes" on mount
+      if (autoFetch) {
+        return;
+      }
 
       if (isDependentField) {
         // Store in cache based on dependency value
@@ -168,12 +226,29 @@ const DynamicSelector = ({
       setError(err?.message || 'Failed to fetch data');
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
+      setIsSearching(false);
+      isSearchRef.current = false;
+      isLoadMoreRef.current = false;
     }
   };
+
+  // Auto-fetch on mount when autoFetch is enabled
+  useEffect(() => {
+    if (!autoFetch || isDependentField || !selectedDataSource?.id) {
+      return;
+    }
+
+    // Always fetch fresh data for autoFetch — don't use stale cache
+    handleFetch();
+  }, [selectedDataSource?.id, currentAppEnvironmentId]);
 
   // Check queryOptions for cached value on mount
   useEffect(() => {
     if (!selectedDataSource || !selectedDataSource.options) return;
+    // autoFetch has its own effect that handles fetching and validation;
+    // skip cache-checking here since autoFetch never persists cache to options
+    if (autoFetch) return;
 
     const storedValue = get(options, propertyKey);
     if (storedValue) {
@@ -241,8 +316,31 @@ const DynamicSelector = ({
     }
   }, [selectedDataSource]);
 
+  useEffect(() => {
+    if (autoFetch && !isDependentField && selectedDataSource?.id && invokeMethod && !isFxMode) {
+      const cacheKey = `${propertyKey}_cache`;
+      const existingCache = get(options, cacheKey) || {};
+
+      const isMultiAuth = selectedDataSource?.options?.multiple_auth_enabled;
+      const userId = currentUser?.id;
+
+      let cachedData = null;
+      if (isMultiAuth) {
+        if (userId && existingCache[userId]) {
+          cachedData = existingCache[userId]['nonDependentCache'];
+        }
+      } else {
+        cachedData = existingCache['nonDependentCache'];
+      }
+
+      if (!cachedData || cachedData.length === 0) {
+        handleFetch();
+      }
+    }
+  }, [autoFetch, selectedDataSource?.id, invokeMethod, isFxMode]);
   // Watch for changes in dependency state
   useEffect(() => {
+    if (isFxMode) return; // do not fetch while in expression mode
     if (isDependentField && compositeDependencyKey && depsReady) {
       const cacheKey = `${propertyKey}_cache`;
       const existingCache = get(options, cacheKey) || {};
@@ -273,11 +371,37 @@ const DynamicSelector = ({
     }
   }, [compositeDependencyKey]);
 
-  const handleSelectionChange = (selectedOption) => {
-    const selectedValue = selectedOption?.value ?? selectedOption;
+  // Re-fetch when page changes (pagination mode)
+  useEffect(() => {
+    if (!pagination || !selectedDataSource?.id || !invokeMethod || currentPage === 1) return;
+    handleFetch();
+  }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const searchTermMountedRef = useRef(false);
+  useEffect(() => {
+    if (!pagination) return;
+    if (!searchTermMountedRef.current) {
+      searchTermMountedRef.current = true;
+      return;
+    }
+    handleFetch(searchTerm);
+  }, [searchTerm]);
+
+  const handleSelectionChange = (selectedOption) => {
     // Clear no access error since user is making a new valid selection
     setNoAccessError(false);
+
+    if (isMulti) {
+      const selectedValues = selectedOption ? selectedOption.map((item) => item.value) : [];
+      if (typeof optionchanged === 'function') {
+        optionchanged(propertyKey, selectedValues);
+      } else {
+        optionsChanged({ ...options, [propertyKey]: selectedValues });
+      }
+      return;
+    }
+
+    const selectedValue = selectedOption?.value ?? selectedOption;
 
     // Update the options based on the new selection
     const updatedOptions = {
@@ -297,9 +421,24 @@ const DynamicSelector = ({
 
   const debouncedHandleCodeChange = React.useCallback(debounce(handleCodeChange, 300), [options, propertyKey]);
 
+  const handleLoadMore = () => {
+    isLoadMoreRef.current = true;
+    setCurrentPage((p) => p + 1);
+  };
+
+  const debouncedSearchRef = useRef(
+    debounce((val) => {
+      isSearchRef.current = true;
+      setSearchTerm(val);
+      setCurrentPage(1);
+    }, 300)
+  );
   const handleFxChange = () => {
     const newFxMode = !isFxMode;
     setIsFxMode(newFxMode);
+
+    // Clear any stale error when switching back to dropdown mode
+    if (!newFxMode) setError(null);
 
     const updatedOptions = {
       ...options,
@@ -311,6 +450,15 @@ const DynamicSelector = ({
   // Get the current selected value to display
   const getCurrentValue = () => {
     const currentValue = options[propertyKey]?.value ?? options[propertyKey] ?? value;
+
+    if (isMulti) {
+      const values = Array.isArray(currentValue) ? currentValue : [];
+      return values.map((v) => {
+        const found = fetchedData.find((opt) => String(opt.value) === String(v));
+        return found || { value: v, label: v };
+      });
+    }
+
     if (!currentValue) return null;
 
     // If we have fetched data, try to find the matching option
@@ -333,6 +481,21 @@ const DynamicSelector = ({
   const validateSelectedValue = (cachedData) => {
     const currentValue = options[propertyKey]?.value ?? options[propertyKey] ?? value;
 
+    if (isMulti) {
+      const values = Array.isArray(currentValue) ? currentValue : [];
+      if (values.length === 0) {
+        setNoAccessError(false);
+        return;
+      }
+      if (!cachedData?.length) {
+        setNoAccessError(true);
+        return;
+      }
+      const allHaveAccess = values.every((v) => cachedData.some((option) => String(option.value) === String(v)));
+      setNoAccessError(!allHaveAccess);
+      return;
+    }
+
     if (!currentValue) {
       setNoAccessError(false);
       return;
@@ -351,8 +514,160 @@ const DynamicSelector = ({
     }
   };
 
+  const paginationRef = useRef({});
+  paginationRef.current = { handleLoadMore, isLoadingMore, fetchedData, totalCount, pageSize, pagination, isLoading };
+
+  const CustomMenu = useMemo(
+    () =>
+      function MenuWithLoadMore({ children, ...props }) {
+        const {
+          handleLoadMore: onLoadMore,
+          isLoadingMore: loading,
+          fetchedData: data,
+          totalCount: total,
+          pageSize: size,
+          pagination: paginated,
+        } = paginationRef.current;
+
+        if (!paginated) return <RSComponents.Menu {...props}>{children}</RSComponents.Menu>;
+
+        const hasMore = total > 0 ? data.length < total : data.length > 0 && data.length % size === 0;
+
+        return (
+          <RSComponents.Menu {...props}>
+            {children}
+            {hasMore && (
+              <div
+                style={{
+                  padding: '6px 12px',
+                  borderTop: '1px solid var(--slate5)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  backgroundColor: localStorage.getItem('darkMode') === 'true' ? 'rgb(31,40,55)' : 'white',
+                  borderBottomLeftRadius: '4px',
+                  borderBottomRightRadius: '4px',
+                }}
+              >
+                <button
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onClick={onLoadMore}
+                  disabled={loading}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 12px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: 'var(--primary-color)',
+                    background: 'transparent',
+                    border: '1px solid var(--slate7)',
+                    borderRadius: '6px',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.7 : 1,
+                  }}
+                >
+                  {loading ? <Spinner size="small" /> : 'Load more'}
+                </button>
+              </div>
+            )}
+          </RSComponents.Menu>
+        );
+      },
+    []
+  );
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const multiSelectStyles = useMemo(
+    () => ({
+      control: (provided, state) => ({
+        ...provided,
+        minHeight: 32,
+        height: 'auto',
+        border: '1px solid var(--slate7)',
+        boxShadow: 'none',
+        backgroundColor: state.isDisabled
+          ? darkMode
+            ? '#1f2936'
+            : '#f4f6fa'
+          : darkMode
+          ? '#2b3547'
+          : state.menuIsOpen
+          ? '#F1F3F5'
+          : '#fff',
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: darkMode ? '' : '#F8F9FA',
+          border: '1px solid hsl(0, 0%, 80%)',
+        },
+      }),
+      valueContainer: (provided) => ({
+        ...provided,
+        padding: '2px 8px',
+        flexWrap: 'wrap',
+      }),
+      indicatorSeparator: () => ({ display: 'none' }),
+      input: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#232e3c',
+        margin: 0,
+        padding: '2px 0',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
+      }),
+      option: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#2b3547' : '#fff',
+        color: darkMode ? '#fff' : '#232e3c',
+        cursor: 'pointer',
+        ':hover': { backgroundColor: darkMode ? '#323C4B' : '#d8dce9' },
+        minHeight: 36,
+        padding: '8px 12px',
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '12px',
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#808080',
+        fontSize: '12px',
+      }),
+      multiValue: (provided) => ({
+        ...provided,
+        backgroundColor: darkMode ? '#3e4a5c' : '#E8EDFF',
+        borderRadius: 4,
+      }),
+      multiValueLabel: (provided) => ({
+        ...provided,
+        color: darkMode ? '#fff' : '#232e3c',
+        fontSize: '12px',
+      }),
+      multiValueRemove: (provided) => ({
+        ...provided,
+        color: darkMode ? '#a0aec0' : '#6e7b8b',
+        borderRadius: '50%',
+        padding: '0 4px',
+        ':hover': {
+          backgroundColor: 'transparent',
+          color: darkMode ? '#fff' : '#E54D2E',
+        },
+      }),
+      menuPortal: (provided) => ({ ...provided, zIndex: 2000 }),
+    }),
+    [darkMode]
+  );
+
   return (
-    <div className="dynamic-selector-container">
+    <div
+      className="dynamic-selector-container"
+      onKeyDown={isMulti ? (e) => e.key === 'Escape' && e.stopPropagation() : undefined}
+    >
       <div className="d-flex align-items-center gap-2 mb-1">
         <div className="flex-grow-1">
           {isFxMode ? (
@@ -368,7 +683,7 @@ const DynamicSelector = ({
           ) : (
             <div
               style={{
-                border: error || noAccessError ? '1px solid #E54D2E' : 'none',
+                border: error || (noAccessError && !isLoading) ? '1px solid #E54D2E' : 'none',
                 borderRadius: '6px',
               }}
             >
@@ -376,12 +691,35 @@ const DynamicSelector = ({
                 options={fetchedData}
                 value={getCurrentValue()}
                 onChange={handleSelectionChange}
-                placeholder={`Select ${label ?? ''}`}
+                placeholder={
+                  pagination
+                    ? isLoading
+                      ? 'Discovering...'
+                      : `Search or Select ${label ?? ''}`
+                    : isMulti
+                    ? isLoading
+                      ? 'Discovering...'
+                      : `Select ${label ?? ''}`
+                    : `Select ${label ?? ''}`
+                }
                 isDisabled={disabled || (isDependentField && !depsReady)}
-                isLoading={isLoading}
+                isLoading={isMulti ? isLoading && getCurrentValue().length === 0 : isLoading}
                 useMenuPortal={disableMenuPortal ? false : !!queryName}
-                styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
-                useCustomStyles={!!computeSelectStyles}
+                styles={isMulti ? multiSelectStyles : computeSelectStyles ? computeSelectStyles('100%') : {}}
+                useCustomStyles={isMulti || !!computeSelectStyles}
+                isMulti={isMulti}
+                closeMenuOnSelect={isMulti ? false : undefined}
+                components={{
+                  ...(isMulti ? { DropdownIndicator: null, ClearIndicator: null } : {}),
+                  ...(pagination ? { Menu: CustomMenu } : {}),
+                }}
+                onInputChange={(val) => {
+                  if (pagination) debouncedSearchRef.current(val);
+                }}
+                filterOption={pagination ? () => true : undefined}
+                width={sizeStyles.width ?? '100%'}
+                height={sizeStyles.height}
+                borderRadius={sizeStyles.borderRadius}
               />
             </div>
           )}
@@ -393,7 +731,7 @@ const DynamicSelector = ({
           </div>
         )}
 
-        {!dependsOn.length && (
+        {!dependsOn.length && !autoFetch && (
           <ButtonSolid
             variant="tertiary"
             size="sm"
@@ -421,7 +759,7 @@ const DynamicSelector = ({
         </div>
       )}
 
-      {noAccessError && !error && (
+      {noAccessError && !error && !isLoading && (
         <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
           <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
           <span>

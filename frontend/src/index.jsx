@@ -10,6 +10,19 @@ import { RootRouter } from './RootRouter';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Backend from 'i18next-http-backend';
+import config from 'config';
+
+// When on a custom domain, use relative API path so requests go through the
+// Cloudflare Worker proxy, making cookies first-party (fixes incognito sign-in).
+// Compare hostnames (not origins) so local dev with different ports is unaffected.
+try {
+  const apiHostname = new URL(config.apiUrl, window.location.origin).hostname;
+  if (apiHostname !== window.location.hostname) {
+    config.apiUrl = '/api';
+  }
+} catch {
+  // apiUrl is already relative — no override needed
+}
 
 const AppWithProfiler = Sentry.withProfiler(RootRouter);
 

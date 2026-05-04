@@ -58,7 +58,7 @@ export const dataSourceSelector = {
   editorDSPopover: '[data-cy="show-ds-popover-button"]',
   runjsQuery: '[data-cy="ds-run javascript code"]',
   runjsInputField: '[data-cy="runjs-input-field"]',
-  runjsAddParamButton: '[data-cy="runjs-add-param-button"]',
+  queryAddParamButton: '[data-cy="query-param-add-button"]',
   queryCardDeleteButton: '[data-cy="query-card-delete-button"]',
   headerQueryPreview: ".py-2",
   previewTabJson: '[data-cy="preview-tab-json"]',
@@ -88,6 +88,7 @@ export const dataSourceSelector = {
   deleteModalMessage: '[data-cy="modal-message"]',
   deleteModalCancelButton: '[data-cy="modal-cancel-button"]',
   deleteModalConfirmButton: '[data-cy="modal-confirm-button"]',
+  deleteQueryConfirmButton: '[data-cy="confirm-delete-query"]',
 
   querySelectDropdown: "[data-cy='query-select-dropdown']",
   opetionQuerySave: "[data-cy='query-save-option']",

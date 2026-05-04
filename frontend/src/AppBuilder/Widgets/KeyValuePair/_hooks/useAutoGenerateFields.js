@@ -26,17 +26,20 @@ export const useAutoGenerateFields = ({
       return;
     }
 
-    const generatedFields = autoGenerateFields(data, fields, fieldDeletionHistory, useDynamicField, []);
+    // Read raw (unresolved) field definitions to preserve fx expressions
+    const componentDef = useStore.getState().getComponentDefinition(id);
+    const rawFields = componentDef?.component?.definition?.properties?.fields?.value ?? [];
+    const generatedFields = autoGenerateFields(data, rawFields, fieldDeletionHistory, useDynamicField, []);
 
     // Only persist if fields have changed
-    if (!isEqual(fields, generatedFields)) {
+    if (!isEqual(rawFields, generatedFields)) {
       const setComponentProperty = useStore.getState().setComponentProperty;
       setComponentProperty(id, 'fields', generatedFields, 'properties', 'value', false, 'canvas', {
         skipUndoRedo: true,
         saveAfterAction: true,
       });
     }
-  }, [data, prevData, fields, fieldDeletionHistory, useDynamicField, id]);
+  }, [data, prevData, fieldDeletionHistory, useDynamicField, id]);
 
   // Resolve fields for rendering (handles dynamic field mode and visibility filtering)
   const resolvedFields = useMemo(() => {

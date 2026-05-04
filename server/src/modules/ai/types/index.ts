@@ -12,6 +12,12 @@ interface Features {
   [FEATURE_KEY.REGENERATE_MESSAGE]: FeatureConfig;
   [FEATURE_KEY.VOTE_MESSAGE]: FeatureConfig;
   [FEATURE_KEY.GET_CREDITS_BALANCE]: FeatureConfig;
+  [FEATURE_KEY.LIST_CONVERSATIONS]: FeatureConfig;
+  [FEATURE_KEY.CREATE_CONVERSATION]: FeatureConfig;
+  [FEATURE_KEY.GET_CONVERSATION]: FeatureConfig;
+  [FEATURE_KEY.UPDATE_KEY]: FeatureConfig;
+  [FEATURE_KEY.GET_KEY_SETTINGS]: FeatureConfig;
+  [FEATURE_KEY.AUTO_SORT_QUERIES]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

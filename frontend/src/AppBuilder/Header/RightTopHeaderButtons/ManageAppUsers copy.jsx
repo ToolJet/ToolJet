@@ -241,9 +241,9 @@ class ManageAppUsersComponent extends React.Component {
                         onClick={this.toggleAppVisibility}
                         checked={this?.props?.isPublic}
                         disabled={this.state.ischangingVisibility}
-                        data-cy="make-public-app-toggle"
+                        data-cy="make-application-public-toggle"
                       />
-                      <span className="form-check-label field-name" data-cy="make-public-app-label">
+                      <span className="form-check-label field-name" data-cy="make-application-public-label">
                         {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
                       </span>
                     </div>

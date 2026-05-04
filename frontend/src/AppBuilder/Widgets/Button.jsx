@@ -6,18 +6,24 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
   const {
     backgroundColor,
+    hoverBackgroundMode,
+    hoverBackgroundColor,
     textColor,
+    textSize = 14,
+    fontWeight,
     borderRadius,
     loaderColor,
     borderColor,
     boxShadow,
     iconColor,
     direction,
+    contentAlignment,
     type,
     padding,
     iconVisibility,
@@ -75,13 +81,33 @@ export const Button = function Button(props) {
       ? backgroundColor
       : 'transparent';
 
+  const computedHoverBgColor =
+    type === 'primary'
+      ? hoverBackgroundMode === 'manual'
+        ? hoverBackgroundColor || getModifiedColor(computedBgColor, 'hover')
+        : getModifiedColor(computedBgColor, 'hover')
+      : 'transparent';
+  const normalizedTextSize = Number(textSize);
+  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
+  const computedLineHeight = computedFontSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
+  const isReverseDirection = direction === 'left';
+  const computedContentAlignment =
+    {
+      left: isReverseDirection ? 'flex-end' : 'flex-start',
+      center: 'center',
+      right: isReverseDirection ? 'flex-start' : 'flex-end',
+    }[contentAlignment] ?? 'center';
+
   const computedStyles = {
     backgroundColor: computedBgColor,
     color: computedTextColor,
     width: '100%',
     borderRadius: `${borderRadius}px`,
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
-    '--tblr-btn-color-darker': getModifiedColor(computedBgColor, 'hover'),
+    '--tblr-btn-color-darker': computedHoverBgColor,
     '--tblr-btn-color-clicked': getModifiedColor(computedBgColor, 'active'),
     '--loader-color': tinycolor(computedLoaderColor ?? 'var(--icons-on-solid)').toString(),
     borderColor: computedBorderColor,
@@ -188,7 +214,7 @@ export const Button = function Button(props) {
         className={cx('overflow-hidden jet-btn')}
         style={computedStyles}
         onClick={handleClick}
-        data-cy={dataCy}
+        data-cy={`${generateCypressDataCy(dataCy)}-button`}
         type="default"
         onMouseOver={() => {
           //cannot use mouseEnter here since mouse enter does not trigger consistently. Mouseover gets triggered for all child components
@@ -211,7 +237,7 @@ export const Button = function Button(props) {
               display: !loading ? 'flex' : 'none',
               alignItems: 'center',
               flexDirection: direction == 'left' ? 'row-reverse' : 'row',
-              justifyContent: 'center',
+              justifyContent: computedContentAlignment,
               gap: label?.length > 0 && '6px',
             }}
           >
@@ -223,7 +249,15 @@ export const Button = function Button(props) {
               <span style={{ maxWidth: ' 100%', minWidth: '0' }}>
                 <p
                   className="tj-text-sm"
-                  style={{ fontWeight: '500', margin: '0px', padding: '0px', color: computedTextColor }}
+                  style={{
+                    fontWeight: computedFontWeight,
+                    fontSize: `${computedFontSize}px`,
+                    lineHeight: `${computedLineHeight}px`,
+                    margin: '0px',
+                    padding: '0px',
+                    color: computedTextColor,
+                  }}
+                  data-cy={`${dataCy}-label`}
                 >
                   {getSafeRenderableValue(label)}
                 </p>
@@ -235,11 +269,12 @@ export const Button = function Button(props) {
                   <TablerIcon
                     iconName={iconName}
                     style={{
-                      width: '16px',
-                      height: '16px',
+                      width: `${computedIconSize}px`,
+                      height: `${computedIconSize}px`,
                       color: computedIconColor,
                     }}
                     stroke={1.5}
+                    data-cy={`${dataCy}-icon`}
                   />
                 )}
               </div>

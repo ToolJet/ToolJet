@@ -386,7 +386,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         const versionIsAvailableInEnvironment = environment?.priority <= get().appVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
           // Current version doesn't exist in target environment - fetch a version that does
-          const { appId } = useStore.getState().appStore.modules.canvas.app;
+          const modules = useStore.getState().appStore.modules;
+          const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
           const response = await appEnvironmentService.postEnvironmentChangedAction({
             appId,
             editorEnvironmentId: environmentId,
@@ -435,7 +436,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
 
   promoteAppVersionAction: async (versionId, onSuccess, onFailure) => {
     try {
-      const { appId } = useStore.getState().appStore.modules.canvas.app;
+      const modules = useStore.getState().appStore.modules;
+      const appId = modules.canvas?.app?.appId || modules.workflow?.app?.appId;
 
       const response = await appVersionService.promoteEnvironment(appId, versionId, get().selectedEnvironment.id);
 

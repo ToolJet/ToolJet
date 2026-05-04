@@ -6,17 +6,21 @@ import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import Popover from 'react-bootstrap/Popover';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useTableRefresh } from '@/AppBuilder/Widgets/NewTable/_hooks/useTableRefresh';
 
 export const ControlButtons = memo(
   ({ id, table, darkMode, height, componentName, showAddNewRowPopup, setShowAddNewRowPopup, fireEvent }) => {
     const showAddNewRowButton = useTableStore((state) => state.getTableProperties(id)?.showAddNewRowButton, shallow);
     const showDownloadButton = useTableStore((state) => state.getTableProperties(id)?.showDownloadButton, shallow);
+    const showRefreshButton = useTableStore((state) => state.getTableProperties(id)?.showRefreshButton, shallow);
     const hideColumnSelectorButton = useTableStore(
       (state) => state.getTableProperties(id)?.hideColumnSelectorButton,
       shallow
     );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
     const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
+    const { handleRefresh, isRefreshing } = useTableRefresh(id);
 
     const RenderButton = ({ icon, tooltipId, tooltipContent, className, label, fill, ...restProps }) => {
       return (
@@ -40,7 +44,7 @@ export const ControlButtons = memo(
       );
     };
 
-    const renderOverlay = (icon, callBack, tooltipId, tooltipContent) => {
+    const renderOverlay = (icon, callBack, tooltipId, tooltipContent, dataCy) => {
       const onClick = (e) => {
         if (document.activeElement === e.currentTarget) {
           e.currentTarget.blur();
@@ -56,7 +60,13 @@ export const ControlButtons = memo(
           placement={'top-end'}
           tooltipId={tooltipId}
         >
-          <RenderButton icon={icon} onClick={onClick} tooltipId={tooltipId} tooltipContent={tooltipContent} />
+          <RenderButton
+            icon={icon}
+            onClick={onClick}
+            tooltipId={tooltipId}
+            tooltipContent={tooltipContent}
+            data-cy={dataCy}
+          />
         </OverlayTriggerComponent>
       );
     };
@@ -72,7 +82,7 @@ export const ControlButtons = memo(
         <Popover.Body>
           <RenderButton
             label="Selects All"
-            data-cy={`options-select-all-coloumn`}
+            data-cy={`option-select-all-column`}
             onClick={table.getToggleAllColumnsVisibilityHandler()}
             icon={table.getIsAllColumnsVisible() ? 'tickv3' : ''}
             fill="var(--cc-primary-brand)"
@@ -89,7 +99,7 @@ export const ControlButtons = memo(
                 <RenderButton
                   key={column.id}
                   label={header}
-                  data-cy={`options-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
+                  data-cy={`option-column-${generateCypressDataCy(header)}`}
                   onClick={column.getToggleVisibilityHandler()}
                   icon={column.getIsVisible() ? 'tickv3' : ''}
                   fill="var(--cc-primary-brand)"
@@ -117,21 +127,21 @@ export const ControlButtons = memo(
         <Popover.Body>
           <RenderButton
             label="Download as CSV"
-            data-cy={`option-download-CSV`}
+            data-cy={`option-download-as-csv`}
             onClick={() => exportToCSV(table, componentName)}
             variant="ghostBlack"
             className="tw-w-full justify-content-start tw-px-[8px]"
           />
           <RenderButton
             label="Download as Excel"
-            data-cy={`option-download-execel`}
+            data-cy={`option-download-as-excel`}
             onClick={() => exportToExcel(table, componentName)}
             variant="ghostBlack"
             className="tw-w-full justify-content-start tw-px-[8px]"
           />
           <RenderButton
             label="Download as PDF"
-            data-cy={`option-download-pdf`}
+            data-cy={`option-download-as-pdf`}
             onClick={() => exportToPDF(table, componentName)}
             variant="ghostBlack"
             className="tw-w-full justify-content-start tw-px-[8px]"
@@ -147,10 +157,29 @@ export const ControlButtons = memo(
             <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
             <RenderButton
               icon="IconPlus"
+              data-cy={`${generateCypressDataCy(componentName)}-add-new-row-button`}
               onClick={() => setShowAddNewRowPopup(true)}
               tooltipId="tooltip-for-add-new-row"
               tooltipContent="Add new row"
               className={`${showAddNewRowPopup && 'always-active-btn'}`}
+            />
+          </span>
+        </>
+      );
+    };
+
+    const renderRefreshButton = () => {
+      return (
+        <>
+          <span>
+            <Tooltip id="tooltip-for-refresh" className="tooltip" />
+            <RenderButton
+              icon="IconReload"
+              data-cy={`${generateCypressDataCy(componentName)}-refresh-button`}
+              onClick={handleRefresh}
+              tooltipId="tooltip-for-refresh"
+              tooltipContent="Refresh data"
+              disabled={isRefreshing}
             />
           </span>
         </>
@@ -176,16 +205,29 @@ export const ControlButtons = memo(
         );
       }
 
-      return renderOverlay('IconFileDownload', downlaodPopover, 'tooltip-for-download', 'Download');
+      return renderOverlay(
+        'IconFileDownload',
+        downlaodPopover,
+        'tooltip-for-download',
+        'Download',
+        `${generateCypressDataCy(componentName)}-file-download-button`
+      );
     };
 
     const renderColumnSelectorButton = () => {
-      return renderOverlay('IconFreezeColumn', hideColumnsPopover, 'tooltip-for-manage-columns', 'Manage columns');
+      return renderOverlay(
+        'IconFreezeColumn',
+        hideColumnsPopover,
+        'tooltip-for-manage-columns',
+        'Manage columns',
+        `${generateCypressDataCy(componentName)}-manage-columns-button`
+      );
     };
 
     const btns = [];
 
     if (showAddNewRowButton) btns.push(renderAddRowButton());
+    if (showRefreshButton) btns.push(renderRefreshButton());
     if (showDownloadButton) btns.push(renderDownloadButton());
     if (!hideColumnSelectorButton) btns.push(renderColumnSelectorButton());
 

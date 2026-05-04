@@ -219,7 +219,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
 
       {isOpen && (
         <div className="grpcv2-dropdown__menu">
-          {(isLoading || (options.length === 0 && !debouncedSearchTerm.trim())) ? (
+          {isLoading || (options.length === 0 && !debouncedSearchTerm.trim()) ? (
             <div className="grpcv2-dropdown__loading">Loading services...</div>
           ) : getFilteredOptions.length === 0 ? (
             <div className="grpcv2-dropdown__no-results">No results found</div>
@@ -350,7 +350,21 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
     setIsLoadingServices(showLoading);
 
     try {
-      const result = await dataqueryService.invoke(selectedDataSource.id, 'discoverServices', currentEnvironment?.id);
+      const protoMode = selectedDataSource?.options?.proto_files?.value;
+      const selectedServices = selectedDataSource?.options?.selected_services?.value;
+      const hasSelectedServices = Array.isArray(selectedServices) && selectedServices.length > 0;
+
+      // Filesystem mode requires at least one service selected in DS config
+      if (protoMode === 'import_protos_from_filesystem' && !hasSelectedServices) {
+        throw new Error('Please select at least one service in the data source configuration');
+      }
+
+      const result = await dataqueryService.invoke(
+        selectedDataSource.id,
+        'getServiceDefinitions',
+        currentEnvironment?.id,
+        hasSelectedServices ? { serviceNames: selectedServices } : undefined
+      );
 
       if (result.status === 'failed') {
         console.error('Failed to discover services:', result.errorMessage);
@@ -538,10 +552,10 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                   options?.service && options?.method
                     ? `${options.service} → ${options.method}`
                     : isLoadingServices
-                      ? 'Loading services...'
-                      : hierarchicalOptions.length === 0
-                        ? 'No services found'
-                        : 'Select service'
+                    ? 'Loading services...'
+                    : hierarchicalOptions.length === 0
+                    ? 'No services found'
+                    : 'Select service'
                 }
                 disabled={
                   (!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)
@@ -714,8 +728,9 @@ const TabContent = ({
                 />
               </div>
               <button
-                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${darkMode ? 'delete-field-option-dark' : ''
-                  }`}
+                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${
+                  darkMode ? 'delete-field-option-dark' : ''
+                }`}
                 role="button"
                 onClick={() => {
                   removeKeyValuePair(index);

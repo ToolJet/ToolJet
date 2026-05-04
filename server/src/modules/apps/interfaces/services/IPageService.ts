@@ -1,8 +1,44 @@
-import { Page } from '@entities/page.entity';
-import { AppVersion } from '@entities/app_version.entity';
-import { EventHandler } from 'src/entities/event_handler.entity';
-import { CreatePageDto, UpdatePageDto } from '@modules/apps/dto/page';
-import { EntityManager } from 'typeorm';
+import { Page } from "@entities/page.entity";
+import { AppVersion } from "@entities/app_version.entity";
+import { EventHandler } from "src/entities/event_handler.entity";
+import { CreatePageDto, UpdatePageDto } from "@modules/apps/dto/page";
+import { EntityManager } from "typeorm";
+
+export interface DeletePageOptions {
+  /** Skip app history tracking (useful for bulk AI operations) */
+  skipHistoryCapture?: boolean;
+  /** Skip page reordering after deletion (useful when deleting multiple pages) */
+  skipReorder?: boolean;
+  /** Delete associated pages when deleting a page group */
+  deleteAssociatedPages?: boolean;
+}
+
+/**
+ * Context interfaces for history capture hooks
+ */
+export interface PageCreateContext {
+  pageData: CreatePageDto;
+}
+
+export interface PageUpdateContext {
+  pageId: string;
+  diff: any;
+  oldPageDto: any;
+  pageName: string;
+}
+
+export interface PageDeleteContext {
+  pageId: string;
+  pageName: string;
+  childPageIds?: string[];
+  /** Pre-captured entity changes for components/layouts/events that will be deleted with the page(s) */
+  deletedEntityChanges?: any[];
+  deletedEntityIds?: string[];
+}
+
+export interface PageReorderContext {
+  diff: any;
+}
 
 export interface IPageService {
   findPagesForVersion(
@@ -10,14 +46,25 @@ export interface IPageService {
     manager?: EntityManager
   ): Promise<Page[]>;
   findOne(id: string): Promise<Page>;
-  createPage(page: CreatePageDto, appVersionId: string, organizationId: string): Promise<Page>;
+  createPage(
+    page: CreatePageDto,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<Page>;
   clonePage(
     pageId: string,
     appVersionId: string,
     organizationId: string
   ): Promise<{ pages: Page[]; events: EventHandler[] }>;
-  clonePageEventsAndComponents(pageId: string, clonePageId: string): Promise<void>;
-  reorderPages(diff: any, appVersionId: string, organizationId: string): Promise<void>;
+  clonePageEventsAndComponents(
+    pageId: string,
+    clonePageId: string
+  ): Promise<void>;
+  reorderPages(
+    diff: any,
+    appVersionId: string,
+    organizationId: string
+  ): Promise<void>;
   updatePage(pageUpdates: UpdatePageDto, appVersionId: string): Promise<void>;
   deletePage(
     pageId: string,
@@ -25,5 +72,19 @@ export interface IPageService {
     editingVersion: AppVersion,
     deleteAssociatedPages?: boolean,
     organizationId?: string
+  ): Promise<void>;
+  /**
+   * Delete a page using an existing EntityManager (for use within transactions).
+   * This method is intended for internal use by services that already have a transaction context.
+   * @param pageId - The ID of the page to delete
+   * @param manager - The EntityManager to use for the deletion
+   * @param organizationId - The organization ID for license validation
+   * @param options - Optional deletion options
+   */
+  deletePageWithManager(
+    pageId: string,
+    manager: EntityManager,
+    organizationId: string,
+    options?: DeletePageOptions
   ): Promise<void>;
 }

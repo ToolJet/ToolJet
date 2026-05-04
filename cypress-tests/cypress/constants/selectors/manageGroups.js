@@ -113,6 +113,7 @@ export const groupsSelector = {
   viewPermissionLabel: '[data-cy="view-permission-label"]',
   viewPermissionHelperText: '[data-cy="view-permission-info-text"]',
   hidePermissionInput: '[data-cy="hide-from-dashboard-permission-input"]',
+  environmentLabel: '[data-cy="environment-label"]',
   editPermissionRadio: '[data-cy="edit-permission-radio"]',
   viewPermissionRadio: '[data-cy="view-permission-radio"]',
   deletePermissionIcon: '[data-cy="delete-button"]',
@@ -139,6 +140,13 @@ export const groupsSelector = {
   updateGroupNameModalTitle: '[data-cy="update-group-title"]',
   editGranularPermissionIcon: '[data-cy="edit-permission-button"]',
   granularAccessPermission: '[data-cy="apps-granular-access"]',
+  editGranularPermissionAccess: '[data-cy="edit-apps-granular-access"]',
+  environmentSelectionContainer: '[data-cy="environment-selection-container"]',
+  environmentTagsContainer: '[data-cy="environment-tags"]',
+  environmentTag: '.environment-tag',
+  selectedEnvironments: '[data-cy="environment-selection-container"] .selected-value',
+  envContainerArrowIcon: '[data-cy="environment-selection-container"] .css-1wy0on6',
+  envOptionList: "div.select-option",
   groupChip: (accessType) => `[data-cy="${cyParamName(accessType)}-group-chip"]`,
   resourceContainer: '[data-cy="resources-container"]',
   groupLink: (groupname) => {
@@ -149,6 +157,9 @@ export const groupsSelector = {
   },
   deleteGroupLink: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-group-delete-link"]`;
+  },
+  environmentName: (envName) => {
+    return `[data-cy="${cyParamName(envName)}-environment-name"]`;
   },
   mutiSelectAddButton: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-group-add-button"]`;

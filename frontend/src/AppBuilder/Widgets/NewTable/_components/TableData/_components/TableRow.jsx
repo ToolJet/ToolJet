@@ -4,6 +4,8 @@ import { flexRender } from '@tanstack/react-table';
 import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { getPinnedStyles } from '../pinColumnsUtils';
 
 export const TableRow = ({
   id,
@@ -19,6 +21,8 @@ export const TableRow = ({
   fireEvent,
   rowStyles,
   measureElement,
+  componentName,
+  table,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
@@ -42,8 +46,9 @@ export const TableRow = ({
         selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
         'table-row-condensed': cellHeight === 'condensed',
       })}
-      onClick={() => {
-        handleRowClick(row);
+      onClick={(e) => {
+        const isCheckbox = e?.target?.classList.contains('table-selector-checkbox-icon') ?? false;
+        handleRowClick(row, isCheckbox);
       }}
       onMouseEnter={() => {
         if (hasHoveredEvent) {
@@ -52,18 +57,37 @@ export const TableRow = ({
           fireEvent('onRowHovered');
         }
       }}
+      data-cy={`${generateCypressDataCy(componentName)}-row-${virtualRow.index}`}
     >
       {row.getVisibleCells().map((cell) => {
+        const isButtonColumn = cell.column.columnDef?.meta?.columnType === 'button';
+        const {
+          pinnedPosition,
+          isPinnedBoundary,
+          style: pinnedStyles,
+        } = getPinnedStyles({
+          column: cell.column,
+          table,
+        });
+        const resolvedCellBackgroundColor = getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor, {
+          rowData: row.original,
+          cellValue: cell.getValue(),
+        });
+        const cellBackgroundColor =
+          pinnedPosition && [undefined, null, '', 'inherit', 'transparent'].includes(resolvedCellBackgroundColor)
+            ? 'var(--cc-table-pinned-column-bg, var(--cc-surface1-surface))'
+            : resolvedCellBackgroundColor ?? 'inherit';
         const cellStyles = {
-          backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
-            rowData: row.original,
-            cellValue: cell.getValue(),
-          }),
-          justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
+          backgroundColor: cellBackgroundColor,
+          justifyContent: isButtonColumn
+            ? undefined
+            : determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
           display: 'flex',
           alignItems: 'center',
-          textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
+          textAlign: isButtonColumn ? undefined : cell.column.columnDef?.meta?.horizontalAlignment,
           width: cell.column.getSize(),
+          flex: '0 0 auto',
+          ...pinnedStyles,
         };
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
@@ -76,9 +100,15 @@ export const TableRow = ({
         return (
           <td
             key={cell.id}
+            data-cy={`${generateCypressDataCy(componentName)}-${generateCypressDataCy(
+              typeof cell.column.columnDef?.header === 'string' ? cell.column.columnDef?.header : cell.column.id
+            )}-row-${virtualRow.index}`}
             style={cellStyles}
             className={cx('table-cell td', {
-              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+              'has-actions':
+                cell.column.id === 'rightActions' ||
+                cell.column.id === 'leftActions' ||
+                cell.column.columnDef?.meta?.columnType === 'button',
               'has-left-actions': cell.column.id === 'leftActions',
               'has-right-actions': cell.column.id === 'rightActions',
               'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
@@ -94,7 +124,7 @@ export const TableRow = ({
                 ['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
                 !contentWrap,
               'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
-              'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnDef?.meta?.columnType),
+              'has-select': ['select', 'newMultiSelect', 'tagsV2'].includes(cell.column.columnDef?.meta?.columnType),
               'has-tags': cell.column.columnDef?.meta?.columnType === 'tags',
               'has-link': cell.column.columnDef?.meta?.columnType === 'link',
               'has-radio': cell.column.columnDef?.meta?.columnType === 'radio',
@@ -104,10 +134,20 @@ export const TableRow = ({
               'has-dropdown': cell.column.columnDef?.meta?.columnType === 'dropdown',
               isEditable: isEditable,
               isEdited: isEdited,
+              'pinned-column': !!pinnedPosition,
+              'pinned-column-left': pinnedPosition === 'left',
+              'pinned-column-right': pinnedPosition === 'right',
+              'pinned-column-boundary-left': pinnedPosition === 'left' && isPinnedBoundary,
+              'pinned-column-boundary-right': pinnedPosition === 'right' && isPinnedBoundary,
             })}
             onClick={(e) => {
+              const columnType = cell.column.columnDef?.meta?.columnType;
               // if the cell is an action button and the row is selected, don't unselect the row and fire the onRowClicked event
               if (['rightActions', 'leftActions'].includes(cell.column.id) && allowSelection && row.getIsSelected()) {
+                e.stopPropagation();
+                fireEvent('onRowClicked');
+              } else if (columnType === 'button' && allowSelection && row.getIsSelected()) {
+                // if the cell is a button column and the row is selected, don't unselect the row and fire the onRowClicked event
                 e.stopPropagation();
                 fireEvent('onRowClicked');
               } else if (isEditable && allowSelection && (!selectRowOnCellEdit || row.getIsSelected())) {

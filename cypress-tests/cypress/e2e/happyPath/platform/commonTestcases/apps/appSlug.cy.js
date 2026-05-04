@@ -80,6 +80,7 @@ describe("App Slug", () => {
     cy.get(commonSelectors.leftSideBarSettingsButton).click();
     cy.get(commonWidgetSelector.appSlugInput).clear();
     cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
+    cy.wait(500);
     cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
       "have.text",
       "This app slug is already taken."
@@ -133,6 +134,7 @@ describe("App Slug", () => {
     releaseApp();
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, newSlug);
+    cy.wait(500);
     cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
       "have.text",
       "This app slug is already taken."

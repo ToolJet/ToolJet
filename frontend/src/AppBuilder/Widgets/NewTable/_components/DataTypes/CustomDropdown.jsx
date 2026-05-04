@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import SelectSearch from 'react-select-search';
-import '@/_styles/editor/react-select-search.scss';
 import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 

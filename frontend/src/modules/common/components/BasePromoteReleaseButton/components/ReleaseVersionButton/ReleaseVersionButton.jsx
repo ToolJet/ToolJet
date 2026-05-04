@@ -27,7 +27,7 @@ const ReleaseVersionButton = function DeployVersionButton({ version = null, vari
       name: version?.name || state?.selectedVersion?.name,
       isEditorFreezed: state.isEditorFreezed,
       updateReleasedVersionId: state.updateReleasedVersionId,
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appStore.modules[moduleId]?.app?.appId ?? state.appId,
       versionToBeReleased: version?.id || state.currentVersionId,
       // selectedVersionId: state.selectedVersion.id,
     }),

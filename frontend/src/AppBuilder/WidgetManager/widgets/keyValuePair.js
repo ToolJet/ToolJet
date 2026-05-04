@@ -54,6 +54,23 @@ export const keyValuePairConfig = {
           "[{name: 'First name', key: 'firstName', fieldType: 'string'}, {name: 'Last name', key: 'lastName', fieldType: 'string'}]",
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    showUpdateActions: {
+      type: 'toggle',
+      displayName: 'Show update buttons',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Show loading state',
@@ -64,6 +81,13 @@ export const keyValuePairConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -81,7 +105,10 @@ export const keyValuePairConfig = {
     },
   },
   events: {
+    onFieldClick: { displayName: 'Field clicked' },
     onSaveKeyValuePairChanges: { displayName: 'Save changes' },
+    onFieldValueChanged: { displayName: 'Field edited' },
+    onCancelKeyValuePairChanges: { displayName: 'Cancel changes' },
   },
   styles: {
     // Label section
@@ -177,6 +204,7 @@ export const keyValuePairConfig = {
   exposedVariables: {
     data: {},
     changeSet: {},
+    lastClickedField: {},
   },
   actions: [
     {
@@ -369,11 +397,15 @@ export const keyValuePairConfig = {
       fieldDynamicData: {
         value: "{{[{name: 'Name', key: 'name'}, {name: 'Email', key: 'email'}, {name: 'Website', key: 'website'}]}}",
       },
+      dynamicHeight: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       fieldDeletionHistory: { value: [] },
+      showUpdateActions: { value: '{{true}}' },
     },
     events: [],
     styles: {

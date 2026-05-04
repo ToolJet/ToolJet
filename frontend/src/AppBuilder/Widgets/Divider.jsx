@@ -1,18 +1,23 @@
+import { max, min } from 'lodash';
 import React from 'react';
 
 const DASH_WIDTH = 4;
 const DASH_GAP = 4;
 
 export const Divider = function Divider({ dataCy, height, width, darkMode, styles, properties }) {
-  const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding } = styles;
+  const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding, textWrap } = styles;
   const { label, visibility } = properties;
   const color =
     dividerColor === '' || ['#000', '#000000'].includes(dividerColor) ? (darkMode ? '#fff' : '#000') : dividerColor;
+
+  const shouldWrap = textWrap !== 'nowrap';
 
   const dividerLineStyle = {
     width: '100%',
     padding: '0rem',
     boxShadow,
+    flexShrink: 1,
+    minWidth: '10%',
     ...(dividerStyle === 'dashed'
       ? {
           backgroundImage: `linear-gradient(to right, ${color} ${DASH_WIDTH}px, transparent ${DASH_GAP}px)`,
@@ -35,6 +40,15 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '16px',
+    ...(shouldWrap
+      ? {}
+      : {
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: labelAlignment === 'center' ? '80%' : '90%',
+          flexShrink: 0,
+        }),
   };
 
   // If no label, render the original divider
@@ -62,6 +76,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
         width: '100%',
         height: '100%',
         alignItems: 'center',
+        overflow: 'hidden',
         justifyContent: labelAlignment === 'left' ? 'flex-start' : labelAlignment === 'right' ? 'flex-end' : 'center',
       }}
       data-cy={dataCy}
@@ -80,6 +95,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
             alignItems: 'center',
             width: '100%',
             justifyContent: 'center',
+            overflow: 'hidden',
           }}
         >
           <div style={{ ...dividerLineStyle }}></div>

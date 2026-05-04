@@ -368,7 +368,6 @@ export const rangeSliderV2Config = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       visibility: { value: '{{true}}' },
-      padding: { value: 'default' },
       widthType: { value: 'ofComponent' },
     },
   },

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -19,12 +19,13 @@ import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { checkDiff } from '@/AppBuilder/Widgets/componentUtils';
 import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import FormValidationContext from './FormValidationContext';
 
 const FormComponent = (props) => {
   const {
@@ -46,10 +47,10 @@ const FormComponent = (props) => {
     onComponentClick,
     subContainerIndex,
     currentMode,
+    componentType,
   } = props;
 
   const { moduleId } = useModuleContext();
-  const childComponents = useStore((state) => state.getChildComponents(id, moduleId), checkDiff);
   const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
   const themeChanged = useStore((state) => state.themeChanged);
 
@@ -158,28 +159,106 @@ const FormComponent = (props) => {
     value: isJSONSchema,
     visibility: isVisible,
     subContainerIndex,
+    componentType,
   });
 
   const parentRef = useRef(null);
-  const childDataRef = useRef({});
 
-  const [childrenData, setChildrenData] = useState({});
+  const { contextPath } = useSubcontainerContext();
+  const indices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
+
+  // Lightweight selector: returns raw exposed value references (no spreading).
+  // shallow comparison works because immer only creates new references for mutated paths.
+  const childExposedMap = useStore((state) => {
+    const childIds = state.containerChildrenMapping?.[id] || [];
+    const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components;
+    const result = {};
+    childIds.forEach((childId) => {
+      let val = exposedComponents?.[childId];
+      // If per-row (Form is inside a ListView), navigate to correct row
+      if (Array.isArray(val) && indices.length > 0) {
+        for (const idx of indices) {
+          val = val?.[idx];
+          if (!val) break;
+        }
+      }
+      result[childId] = val || null;
+    });
+    return result;
+  }, shallow);
+
+  // Derive childrenData from raw exposed values + component definitions (read imperatively).
+  // Only recomputes when childExposedMap actually changes.
+  const childrenData = useMemo(() => {
+    const state = useStore.getState();
+    const result = {};
+    Object.entries(childExposedMap).forEach(([childId, exposed]) => {
+      const componentDef = state.getComponentDefinition(childId, moduleId)?.component;
+      result[childId] = {
+        ...(exposed || {}),
+        name: componentDef?.name,
+        formKey: componentDef?.formKey,
+      };
+    });
+    return result;
+  }, [childExposedMap, moduleId]);
+  // JSON schema form callbacks for RenderSchema (advanced mode only — not used by SubContainer)
+  const jsonSchemaChildDataRef = useRef({});
+  const [jsonSchemaChildrenData, setJsonSchemaChildrenData] = useState({});
+
+  const onComponentOptionChangedForSubcontainer = useMemo(() => {
+    return (component, key, value, schemaId = '') => {
+      const optionData = {
+        ...(jsonSchemaChildDataRef.current[schemaId] ?? {}),
+        name: component?.name,
+        [key]: value,
+        formKey: component?.formKey,
+      };
+      jsonSchemaChildDataRef.current = { ...jsonSchemaChildDataRef.current, [schemaId]: optionData };
+      setJsonSchemaChildrenData(jsonSchemaChildDataRef.current);
+    };
+  }, []);
+
+  const onComponentOptionsChangedForSubcontainer = useMemo(() => {
+    return (component, exposedValues, schemaId) => {
+      Object.entries(exposedValues).forEach(([key, value]) => {
+        const optionData = {
+          name: component?.name,
+          ...(jsonSchemaChildDataRef.current[schemaId] ?? {}),
+          [key]: value,
+          formKey: component?.formKey,
+        };
+        jsonSchemaChildDataRef.current = { ...jsonSchemaChildDataRef.current, [schemaId]: optionData };
+      });
+      setJsonSchemaChildrenData(jsonSchemaChildDataRef.current);
+    };
+  }, []);
+
+  // Use JSON schema children data for advanced path, store-derived data for normal path
+  const effectiveChildrenData = advanced ? jsonSchemaChildrenData : childrenData;
+
   const [isValid, setValidation] = useState(true);
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
   useEffect(() => {
     const exposedVariables = {
       resetForm: async function () {
+        setSubmitAttemptCount(0);
         resetComponent();
       },
       submitForm: async function () {
         if (validateOnSubmit) {
           if (!isValid) {
+            setSubmitAttemptCount((n) => n + 1);
             return fireEvent('onInvalid');
           }
         }
-        fireEvent('onSubmit').then(() => resetOnSubmit && resetComponent());
+        fireEvent('onSubmit').then(() => {
+          setSubmitAttemptCount(0);
+          if (resetOnSubmit) resetComponent();
+        });
       },
     };
 
@@ -208,7 +287,10 @@ const FormComponent = (props) => {
   };
 
   useEffect(() => {
-    if (mounted) resetComponent();
+    if (mounted) {
+      setSubmitAttemptCount(0);
+      resetComponent();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
 
@@ -223,7 +305,7 @@ const FormComponent = (props) => {
   }, [JSONSchema, advanced]);
 
   const checkJsonChildrenValidtion = () => {
-    const isValid = Object.values(childrenData).every((item) => item?.isValid !== false);
+    const isValid = Object.values(effectiveChildrenData).every((item) => item?.isValid !== false);
     return isValid;
   };
 
@@ -232,7 +314,8 @@ const FormComponent = (props) => {
     let childValidation = true;
     let formData = {}; // New object to store form data
 
-    if (!childComponents) {
+    const childIds = Object.keys(effectiveChildrenData || {});
+    if (childIds.length === 0) {
       const exposedVariables = {
         data: formattedChildData,
         isValid: childValidation,
@@ -245,29 +328,29 @@ const FormComponent = (props) => {
     }
 
     if (advanced) {
-      formattedChildData = extractData(childrenData);
+      formattedChildData = extractData(effectiveChildrenData);
       childValidation = checkJsonChildrenValidtion();
     } else {
-      Object.keys(childComponents ?? {}).forEach((childId) => {
-        const componentName = childComponents?.[childId]?.component?.component?.name;
-        if (childrenData?.[childId]?.name || componentName) {
+      childIds.forEach((childId) => {
+        const childData = effectiveChildrenData[childId];
+        const componentName = childData?.name;
+        if (componentName) {
           const componentValue = (() => {
-            const childData = childrenData[childId];
-            if (!childData) return null; // Default to null if childData is undefined
+            if (!childData) return null;
 
             if (childData.hasOwnProperty('value')) return childData.value;
             if (childData.hasOwnProperty('values')) return childData.values;
             if (childData.hasOwnProperty('file')) return childData.file;
             if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
 
-            return null; // Default to null if no matching key is found
+            return null;
           })();
 
           if (componentValue !== null) {
-            formData[componentName] = componentValue; // Populate formData
+            formData[componentName] = componentValue;
           }
-          formattedChildData[componentName] = { ...omit(childrenData[childId], 'name'), id: childId };
-          childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
+          formattedChildData[componentName] = { ...omit(childData, 'name'), id: childId };
+          childValidation = childValidation && (childData?.isValid ?? true);
         }
       });
     }
@@ -285,7 +368,7 @@ const FormComponent = (props) => {
 
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
-  }, [childrenData, advanced, childComponents]);
+  }, [effectiveChildrenData, advanced]);
 
   useEffect(() => {
     document.addEventListener('submitForm', handleFormSubmission);
@@ -299,10 +382,12 @@ const FormComponent = (props) => {
   const fireSubmissionEvent = () => {
     if (validateOnSubmit) {
       if (!isValid) {
+        setSubmitAttemptCount((n) => n + 1);
         return fireEvent('onInvalid');
       }
     }
     fireEvent('onSubmit').then(() => {
+      setSubmitAttemptCount(0);
       if (resetOnSubmit) {
         debounce(() => resetComponent(), 100)();
       }
@@ -318,50 +403,6 @@ const FormComponent = (props) => {
       fireSubmissionEvent();
     }
   };
-
-  function onComponentOptionChangedForSubcontainer(component, key, value, id = '') {
-    onOptionChange(key, value, id, component);
-  }
-
-  function onComponentOptionsChangedForSubcontainer(component, exposedValues, id) {
-    onOptionsChange(exposedValues, id, component);
-  }
-
-  const onOptionChange = useCallback(
-    (key, value, id, component) => {
-      if (!component) {
-        component = childComponents?.[id]?.component?.component;
-      }
-      const optionData = {
-        ...(childDataRef.current[id] ?? {}),
-        name: component?.name,
-        [key]: value,
-        formKey: component?.formKey,
-      };
-      childDataRef.current = { ...childDataRef.current, [id]: optionData };
-      setChildrenData(childDataRef.current);
-    },
-    [childComponents]
-  );
-
-  const onOptionsChange = useCallback(
-    (exposedValues, id, component) => {
-      if (!component) {
-        component = childComponents?.[id]?.component?.component;
-      }
-      Object.entries(exposedValues).forEach(([key, value]) => {
-        const optionData = {
-          name: component?.name,
-          ...(childDataRef.current[id] ?? {}),
-          [key]: value,
-          formKey: component?.formKey,
-        };
-        childDataRef.current = { ...childDataRef.current, [id]: optionData };
-      });
-      setChildrenData(childDataRef.current);
-    },
-    [childComponents]
-  );
 
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
@@ -413,12 +454,14 @@ const FormComponent = (props) => {
           isActive={activeSlot === `${id}-header`}
           onResize={updateHeaderSizeInStore}
           componentType="Form"
+          dataCy={dataCy}
         />
       )}
       <div
         className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
           isDynamicHeightEnabled && `dynamic-${id}`
         }`}
+        data-cy={`${dataCy}-body-section`}
         style={formContent}
       >
         {isLoading ? (
@@ -427,56 +470,56 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            {!advanced && (
-              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
-                <SubContainer
-                  id={id}
-                  canvasHeight={parseInt(computedFormBodyHeight, 10)}
-                  canvasWidth={width}
-                  onOptionChange={onOptionChange}
-                  onOptionsChange={onOptionsChange}
-                  styles={{
-                    backgroundColor: computedStyles.backgroundColor,
-                    height: '100%',
-                  }}
-                  darkMode={darkMode}
-                  componentType="Form"
-                />
-              </div>
-            )}
-            {advanced &&
-              uiComponents?.map((item, index) => {
-                return (
-                  <div
-                    //check to avoid labels for these widgets as label is already present for them
-                    className={
-                      ![
-                        'Checkbox',
-                        'StarRating',
-                        'Multiselect',
-                        'DropDown',
-                        'RadioButton',
-                        'ToggleSwitch',
-                        'ToggleSwitchV2',
-                      ].includes(uiComponents?.[index + 1]?.component)
-                        ? `json-form-wrapper json-form-wrapper-disabled`
-                        : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
-                    }
-                    key={index}
-                  >
-                    <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
-                      <RenderSchema
-                        component={item}
-                        parent={id}
-                        id={index}
-                        darkMode={darkMode}
-                        onOptionChange={onComponentOptionChangedForSubcontainer}
-                        onOptionsChange={onComponentOptionsChangedForSubcontainer}
-                      />
+            <FormValidationContext.Provider value={submitAttemptCount}>
+              {!advanced && (
+                <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
+                  <SubContainer
+                    id={id}
+                    canvasHeight={parseInt(computedFormBodyHeight, 10)}
+                    canvasWidth={width}
+                    styles={{
+                      backgroundColor: computedStyles.backgroundColor,
+                      height: '100%',
+                    }}
+                    darkMode={darkMode}
+                    componentType="Form"
+                  />
+                </div>
+              )}
+              {advanced &&
+                uiComponents?.map((item, index) => {
+                  return (
+                    <div
+                      //check to avoid labels for these widgets as label is already present for them
+                      className={
+                        ![
+                          'Checkbox',
+                          'StarRating',
+                          'Multiselect',
+                          'DropDown',
+                          'RadioButton',
+                          'ToggleSwitch',
+                          'ToggleSwitchV2',
+                        ].includes(uiComponents?.[index + 1]?.component)
+                          ? `json-form-wrapper json-form-wrapper-disabled`
+                          : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
+                      }
+                      key={index}
+                    >
+                      <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
+                        <RenderSchema
+                          component={item}
+                          parent={id}
+                          id={index}
+                          darkMode={darkMode}
+                          onOptionChange={onComponentOptionChangedForSubcontainer}
+                          onOptionsChange={onComponentOptionsChangedForSubcontainer}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+            </FormValidationContext.Provider>
           </fieldset>
         )}
       </div>
@@ -492,6 +535,7 @@ const FormComponent = (props) => {
           onResize={updateFooterSizeInStore}
           isActive={activeSlot === `${id}-footer`}
           componentType="Form"
+          dataCy={dataCy}
         />
       )}
     </form>

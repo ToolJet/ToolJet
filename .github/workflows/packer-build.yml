@@ -7,23 +7,55 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
+      branch:
+        description: "Branch to build from (e.g. lts-3.16)"
+        required: true
+        default: "lts-3.16"
       version:
         description: "RELEASE_VERSION"
+        required: true
+      region:
+        description: "AWS region to build AMI in (default: us-west-1)"
+        required: false
+        default: "us-west-1"
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    name: check-version
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: Check if version is AMI-eligible (multiple of 10)
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch — always build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            TAG="${GITHUB_REF#refs/*/}"
+            # Extract patch number: v3.20.100-lts → 100
+            PATCH=$(echo "$TAG" | sed 's/^v//' | cut -d'.' -f3 | cut -d'-' -f1)
+            if (( PATCH % 10 == 0 )); then
+              echo "Version $TAG is AMI-eligible (patch $PATCH is multiple of 10)"
+              echo "should_build=true" >> $GITHUB_OUTPUT
+            else
+              echo "Skipping AMI build — $TAG patch $PATCH is not a multiple of 10"
+              echo "should_build=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
   packer-ee:
+    needs: check-version
+    if: needs.check-version.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     name: packer-ee
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Checkout code to lts-3.16 branch
-        if: contains(github.event.release.tag_name, '-lts')
-        uses: actions/checkout@v2
         with:
-          ref: refs/heads/lts-3.16
+          ref: refs/heads/${{ github.event.inputs.branch || 'lts-3.16' }}
 
       - name: Setting tag
         if: "${{ github.event.inputs.version != '' }}"
@@ -38,7 +70,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-1
+          aws-region: ${{ github.event.inputs.region || 'us-west-1' }}
 
       # Initialize Packer templates
       - name: Initialize Packer Template
@@ -73,7 +105,7 @@ jobs:
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy -var ami_region=${{ github.event.inputs.region || 'us-west-1' }}
           target: .
           working_directory: deploy/ec2/ee
         env:
@@ -85,13 +117,13 @@ jobs:
           echo "Listing all EC2 instances..."
 
           INSTANCE_IDS=$(aws ec2 describe-instances \
-            --region us-west-2 \
+            --region ${{ github.event.inputs.region || 'us-west-1' }} \
             --query 'Reservations[*].Instances[*].InstanceId' \
             --output text)
 
           if [ -n "$INSTANCE_IDS" ] && [ "$INSTANCE_IDS" != "None" ]; then
             echo "Found instances: $INSTANCE_IDS"
-            aws ec2 terminate-instances --region us-west-2 --instance-ids $INSTANCE_IDS
+            aws ec2 terminate-instances --region ${{ github.event.inputs.region || 'us-west-1' }} --instance-ids $INSTANCE_IDS
             echo "Terminated instances: $INSTANCE_IDS"
           else
             echo "No instances found to cleanup"
@@ -101,6 +133,6 @@ jobs:
         if: success()
         run: |
           ami_name="tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy"
-          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`lts-3.16\`\nAMI Name: \`${ami_name}\`"
+          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ github.event.inputs.branch || 'lts-3.16' }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

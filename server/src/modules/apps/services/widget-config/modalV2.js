@@ -38,6 +38,13 @@ export const modalV2Config = {
         defaultValue: true,
       },
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledTrigger: {
       type: 'toggle',
       displayName: 'Disable modal trigger',
@@ -262,12 +269,67 @@ export const modalV2Config = {
       },
       accordian: 'trigger button',
     },
+    triggerButtonHoverBackgroundMode: {
+      type: 'switch',
+      displayName: 'Hover background',
+      validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+      options: [
+        { displayName: 'Auto', value: 'auto' },
+        { displayName: 'Manual', value: 'manual' },
+      ],
+      accordian: 'trigger button',
+      isFxNotRequired: true,
+    },
+    triggerButtonHoverBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: false,
+      },
+      conditionallyRender: {
+        key: 'triggerButtonHoverBackgroundMode',
+        value: 'manual',
+      },
+      accordian: 'trigger button',
+    },
     triggerButtonTextColor: {
       type: 'colorSwatches',
       displayName: 'Text',
       validation: {
         schema: { type: 'string' },
         defaultValue: false,
+      },
+      accordian: 'trigger button',
+    },
+    triggerButtonTextSize: {
+      type: 'numberInput',
+      displayName: 'Font size',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 14,
+      },
+      accordian: 'trigger button',
+    },
+    triggerButtonFontWeight: {
+      type: 'select',
+      displayName: 'Font Weight',
+      options: [
+        { name: 'normal', value: 'normal' },
+        { name: 'medium', value: 'medium' },
+        { name: 'bold', value: 'bold' },
+        { name: 'lighter', value: 'lighter' },
+        { name: 'bolder', value: 'bolder' },
+      ],
+      accordian: 'trigger button',
+    },
+    triggerButtonContentAlignment: {
+      type: 'alignButtons',
+      displayName: 'Content alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
       },
       accordian: 'trigger button',
     },
@@ -344,6 +406,8 @@ export const modalV2Config = {
       loadingState: { value: `{{false}}` },
       dynamicHeight: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledTrigger: { value: '{{false}}' },
       disabledModal: { value: '{{false}}' },
       useDefaultButton: { value: `{{true}}` },
@@ -368,7 +432,12 @@ export const modalV2Config = {
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       bodyBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
+      triggerButtonHoverBackgroundMode: { value: 'auto' },
+      triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      triggerButtonTextSize: { value: '{{14}}' },
+      triggerButtonFontWeight: { value: 'normal' },
+      triggerButtonContentAlignment: { value: 'center' },
       headerDividerColor: { value: 'var(--cc-default-border)' },
       footerDividerColor: { value: 'var(--cc-default-border)' },
     },

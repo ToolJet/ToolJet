@@ -9,19 +9,11 @@
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx}": [
       "eslint --fix"
-    ],
-    "./server/{src,test,plugins,scripts,migrations}/**/*.ts": [
-      "eslint --fix"
-    ],
-    "./plugins/{packages}/**/*.ts": [
-      "eslint --fix"
     ]
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
-    "eslint": "^9.28.0",
-    "eslint-plugin-jest": "^28.13.3",
-    "eslint-plugin-prettier": "^5.4.1",
+    "eslint": "^9.26.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.0"
   },
@@ -34,6 +26,9 @@
     "postbuild:plugins:prod": "npm --prefix plugins prune --production",
     "prebuild:frontend": "npm --prefix frontend install --production=false",
     "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
+    "prebuild:frontend:cloud": "npm --prefix frontend install --production=false",
+    "build:frontend:cloud": "NODE_ENV=production TOOLJET_EDITION=cloud npm --prefix frontend run build:cloud",
+    "postbuild:frontend:cloud": "npm --prefix frontend prune --production",
     "postbuild:frontend": "npm --prefix frontend prune --production",
     "prebuild:server": "npm --prefix server install --production=false",
     "build:server": "NODE_ENV=production npm --prefix server run build",
@@ -66,8 +61,5 @@
     "prepare": "husky install",
     "update-version": "node update-version.js"
   },
-  "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.34.0",
-    "eslint-config-prettier": "^10.1.5"
-  }
+  "dependencies": {}
 }

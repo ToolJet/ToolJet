@@ -20,6 +20,7 @@ import { SubModule } from '@modules/app/sub-module';
 import { OnboardingModule } from '@modules/onboarding/module';
 import { UserMfaRepository } from './mfa/repository';
 import { EncryptionModule } from '@modules/encryption/module';
+import { CustomDomainsModule } from '@modules/custom-domains/module';
 
 @Module({})
 export class AuthModule extends SubModule {
@@ -69,6 +70,7 @@ export class AuthModule extends SubModule {
         await AppEnvironmentsModule.register(configs),
         await OnboardingModule.register(configs),
         await EncryptionModule.register(configs),
+        await CustomDomainsModule.register(configs),
       ],
       controllers: isMainImport ? [AuthController, OauthController, WebsiteAuthController, WebsiteOtpController] : [],
       providers: [

@@ -11,62 +11,10 @@ export const ProgramaticallyHandleProperties = ({
   paramMeta,
 }) => {
   const getValueBasedOnProperty = (property, props) => {
-    switch (property) {
-      case 'isEditable':
-        return props.isEditable;
-      case 'disableActionButton':
-        return props.disableActionButton;
-      case 'columnVisibility':
-        return props.columnVisibility;
-      case 'fieldVisibility':
-        return props.fieldVisibility;
-      case 'linkTarget':
-        return props.linkTarget;
-      case 'isAllColumnsEditable':
-        return props?.isAllColumnsEditable;
-      case 'isAllFieldsEditable':
-        return props?.isAllFieldsEditable;
-      case 'underlineColor':
-        return props.underlineColor;
-      case 'linkColor':
-        return props.linkColor;
-      case 'useDynamicOptions':
-        return props?.useDynamicOptions;
-      case 'autoAssignColors':
-        return props?.autoAssignColors;
-      case 'makeDefaultOption':
-        return props?.[index]?.makeDefaultOption;
-      case 'textColor':
-        return props?.textColor;
-      case 'cellBackgroundColor':
-        return props?.cellBackgroundColor;
-      case 'optionsLoadingState':
-        return props?.optionsLoadingState;
-      case 'isTimeChecked':
-        return props?.isTimeChecked;
-      case 'isTwentyFourHrFormatEnabled':
-        return props?.isTwentyFourHrFormatEnabled;
-      case 'parseInUnixTimestamp':
-        return props?.parseInUnixTimestamp;
-      case 'isDateSelectionEnabled':
-        return props?.isDateSelectionEnabled;
-      case 'jsonIndentation':
-        return props?.jsonIndentation;
-      case 'labelColor':
-        return props?.labelColor;
-      case 'optionColor':
-        return props?.optionColor;
-      case 'allowHalfStar':
-        return props?.allowHalfStar;
-      case 'selectedBgColorStars':
-        return props?.selectedBgColorStars;
-      case 'selectedBgColorHearts':
-        return props?.selectedBgColorHearts;
-      case 'unselectedBgColor':
-        return props?.unselectedBgColor;
-      default:
-        return;
+    if (property === 'makeDefaultOption') {
+      return props?.[index]?.makeDefaultOption;
     }
+    return props?.[property];
   };
 
   const getInitialValue = (property, definitionObj) => {
@@ -84,7 +32,7 @@ export const ProgramaticallyHandleProperties = ({
       return value || '{{true}}';
     }
     if (property === 'cellBackgroundColor') {
-      return definitionObj?.value ?? '';
+      return definitionObj?.value || 'var(--cc-surface1-surface)';
     }
     if (property === 'textColor') {
       return definitionObj?.value ?? '#11181C';
@@ -108,6 +56,33 @@ export const ProgramaticallyHandleProperties = ({
     }
     if (property === 'jsonIndentation') {
       return definitionObj?.value ?? `{{true}}`;
+    }
+    if (property === 'buttonVisibility') {
+      return definitionObj?.value ?? '{{true}}';
+    }
+    if (property === 'disableButton') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'loadingState') {
+      return definitionObj?.value ?? '{{false}}';
+    }
+    if (property === 'buttonBackgroundColor') {
+      return definitionObj?.value ?? 'var(--cc-primary-brand)';
+    }
+    if (property === 'buttonLabelColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonIconColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonLoaderColor') {
+      return definitionObj?.value ?? 'var(--cc-surface1-surface)';
+    }
+    if (property === 'buttonBorderColor') {
+      return definitionObj?.value ?? 'var(--cc-weak-border)';
+    }
+    if (property === 'buttonBorderRadius') {
+      return definitionObj?.value ?? '6';
     }
     return definitionObj?.value ?? `{{false}}`;
   };

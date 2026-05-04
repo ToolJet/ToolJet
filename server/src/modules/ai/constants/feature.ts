@@ -32,5 +32,23 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_CREDITS_BALANCE]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.LIST_CONVERSATIONS]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.CREATE_CONVERSATION]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.GET_CONVERSATION]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.UPDATE_KEY]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.GET_KEY_SETTINGS]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.AUTO_SORT_QUERIES]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };

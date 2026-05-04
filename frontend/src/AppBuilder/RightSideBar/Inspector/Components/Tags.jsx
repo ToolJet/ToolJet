@@ -136,7 +136,12 @@ export const Tags = ({
       if (i === index) {
         return {
           ...option,
-          [property]: value,
+          [property]: ['visible'].includes(property)
+            ? {
+                ...option[property],
+                ...value,
+              }
+            : value,
         };
       }
       return option;

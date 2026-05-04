@@ -206,8 +206,9 @@
       }
 
       .table-row.selected {
-        --tblr-table-accent-bg: var(--indigo3, #F0F4FF) !important;
-        background: var(--indigo3, #F0F4FF) !important;
+        --tblr-table-accent-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
+        background: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
+        --cc-table-pinned-column-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface));
       }
 
       td {
@@ -395,6 +396,30 @@
       .th {
         white-space: normal;
       }
+
+      .pinned-column {
+        background-clip: padding-box;
+      }
+
+      td.pinned-column {
+        background-color: var(--cc-table-pinned-column-bg, var(--cc-surface1-surface));
+      }
+
+      .th.pinned-column {
+        z-index: 3;
+      }
+
+      td.pinned-column {
+        z-index: 2;
+      }
+
+      .pinned-column-boundary-left {
+        border-right: 1px solid var(--cc-weak-border);
+      }
+
+      .pinned-column-boundary-right {
+        border-left: 1px solid var(--cc-weak-border);
+      }
     }
 
     .jet-data-table>table:not(.table-resizing) {
@@ -402,12 +427,14 @@
       .table-row:hover,
       .table-row:focus {
         background: var(--cc-table-row-hover, #ECEEF0) !important;
+        --cc-table-pinned-column-bg: var(--cc-table-row-hover, #ECEEF0);
       }
 
       &.table-striped {
         .table-row[data-index]:nth-child(even) {
           &:hover, &:focus {
             background: var(--cc-table-striped-row-hover, #ECEEF0) !important;
+            --cc-table-pinned-column-bg: var(--cc-table-striped-row-hover, #ECEEF0);
           }
         }
       }
@@ -625,6 +652,12 @@
           border: 0;
           padding: 0 !important;
           overflow: visible !important;
+        }
+
+        &:has(.table-expansion-toggle) {
+          border: none;
+          background-color: transparent !important;
+          box-shadow: none;
         }
       }
 
@@ -1207,6 +1240,7 @@
   z-index: 999 !important;
   min-width: 280px;
   max-height: 85vh !important;
+  background-color: var(--cc-surface1-surface);
 
   .popover-body {
     display: flex;
@@ -1214,8 +1248,10 @@
     padding: 16px 0px 16px !important;
     gap: 16px !important;
     align-self: stretch;
-    background-color: var(--slate1) !important;
+    // background-color: var(--slate1) !important;
     border-radius: 0;
+    overflow-y: auto;
+    max-height: calc(85vh - 40px);
 
     .optional-properties-when-editable-true {
       // background-color: var(--slate3);
@@ -1238,6 +1274,10 @@
       flex: 1 1 0;
     }
 
+    .pin-column-control .ToggleGroupItem[data-state='on'] .toggle-item svg path {
+      fill: none !important;
+    }
+
     .table-column-date-picker-accordion {
 
       .accordion-button {
@@ -1258,8 +1298,12 @@
   }
 
   .popover-header {
-    padding: 4px 0 0 0 !important;
-    background-color: var(--slate3);
+    padding: 8px 16px 0px 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background-color: var(--surfaces-surface-01);
+    border-bottom: 1px solid var(--borders-weak-disabled) !important;
 
     .active-column-tab {
       border-bottom: 1px solid var(--indigo9);
@@ -1488,8 +1532,7 @@
     // height: 100%;
     /* Set a minimum height */
     // max-height: 200px;
-    resize: vertical;
-    /* Allow vertical resizing */
+
     overflow-y: auto;
     /* Enable vertical scrolling */
     position: absolute;
@@ -1657,6 +1700,7 @@
       tr[data-index]:nth-child(even) {
         background-color: var(--cc-table-striped-row-bg-color);
         --tblr-table-accent-bg: none;
+        --cc-table-pinned-column-bg: var(--cc-table-striped-row-bg-color);
         color: inherit !important;
       }
     }

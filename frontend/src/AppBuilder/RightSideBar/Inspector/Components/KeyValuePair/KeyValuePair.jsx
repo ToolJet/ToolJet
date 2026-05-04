@@ -9,7 +9,15 @@ import { FieldPopoverContent, FieldsList } from './FieldManager';
 import { useFieldManager, usePopoverState } from './hooks';
 
 // Constants
-const ADDITIONAL_ACTIONS = ['loadingState', 'visibility', 'disabledState', 'tooltip'];
+const ADDITIONAL_ACTIONS = [
+  'dynamicHeight',
+  'showUpdateActions',
+  'loadingState',
+  'visibility',
+  'collapseWhenHidden',
+  'disabledState',
+  'tooltip',
+];
 
 export const KeyValuePair = (props) => {
   const {

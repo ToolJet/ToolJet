@@ -226,6 +226,7 @@ import BooleanCol from './BooleanCol.jsx';
 import SerialCol from './SerialCol.jsx';
 import DatetimeCol from './DatetimeCol';
 import AITag from './AITag.jsx';
+import AITripleSparkles from './AITripleSparkles.jsx';
 import SectionCollapse from './SectionCollapse.jsx';
 import SectionExpand from './SectionExpand.jsx';
 import Reset from './Reset.jsx';
@@ -292,6 +293,7 @@ import Google from './Google.jsx';
 import GitHub from './GitHub.jsx';
 import BackWithoutArrow from './BackWithoutArrow.jsx';
 import PlayLucide from './PlayLucide.jsx';
+import Slack from './Slack.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -795,6 +797,8 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'ai-triple-sparkles':
+      return <AITripleSparkles {...props} />;
     case 'clearhistory':
       return <ClearHistory {...props} />;
     case 'pagedownload':
@@ -882,6 +886,8 @@ const Icon = (props) => {
       return <BackWithoutArrow {...props} />;
     case 'play-lucide':
       return <PlayLucide {...props} />;
+    case 'slack':
+      return <Slack {...props} />;
     default:
       return <Apps {...props} />;
   }

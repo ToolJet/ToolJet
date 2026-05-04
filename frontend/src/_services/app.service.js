@@ -4,6 +4,7 @@ import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_
 export const appService = {
   getConfig,
   getAll,
+  getAllAddableApps,
   createApp,
   cloneApp,
   exportApp,
@@ -39,6 +40,11 @@ function getAll(page, folder, searchKey) {
       `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
       requestOptions
     ).then(handleResponse);
+}
+
+function getAllAddableApps() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {

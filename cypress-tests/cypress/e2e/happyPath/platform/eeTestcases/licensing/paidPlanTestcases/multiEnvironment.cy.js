@@ -42,7 +42,7 @@ describe("License - Multi-Environment Flow", () => {
   it("should verify basic plan restricts multi-env in datasource, workspace constants, app editor, and released app uses dev environment", () => {
     // Navigate to datasources and verify environment restrictions
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    addAndVerifyConstants("rest_api_url_global", "http://20.29.40.108:4000");
+    addAndVerifyConstants("rest_api_url_global", "http://130.131.160.149:4000");
 
     // Navigate to app editor and verify environment restrictions
     cy.get(commonSelectors.dashboardIcon).click();

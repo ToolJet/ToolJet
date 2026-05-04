@@ -451,7 +451,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
           manager
         );
       }
-      const updatedUser = await this.createOrUpdateUser(userParams, user, null, manager);
+      const updatedUser = await this.createOrUpdateUser(userParams, user, currentUser.organizationId, manager);
       if (inviteNewUserDto.userMetadata) {
         await this.updateUserMetadata(
           manager,

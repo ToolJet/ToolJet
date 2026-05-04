@@ -17,6 +17,7 @@ import {
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const MultiselectV2 = ({
   id,
@@ -45,6 +46,7 @@ export const MultiselectV2 = ({
     showAllSelectedLabel,
     showClearBtn,
     showSearchInput,
+    maxLimit,
   } = properties;
   const {
     selectedTextColor,
@@ -84,6 +86,13 @@ export const MultiselectV2 = ({
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
+  const menuBackgroundColor = getInputBackgroundColor({
+    fieldBackgroundColor,
+    darkMode,
+    isLoading: isMultiSelectLoading,
+    isDisabled: isMultiSelectDisabled,
+  });
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -103,6 +112,7 @@ export const MultiselectV2 = ({
             ...data,
             label: getSafeRenderableValue(data?.label),
             value: data?.value,
+            caption: data?.caption ?? null,
             isDisabled: data?.disable ?? false,
           }))
       : [];
@@ -110,16 +120,45 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
 
+  const hasMaxLimit = maxLimit !== '' && maxLimit !== null && maxLimit !== undefined && !Number.isNaN(Number(maxLimit));
+  const maxSelectionLimit = hasMaxLimit ? Math.max(0, Math.floor(Number(maxLimit))) : null;
+  const isLimitReached = maxSelectionLimit !== null && selected.length >= maxSelectionLimit;
+
   const modifiedSelectOptions = useMemo(() => {
+    const SELECT_ALL = 'multiselect-custom-menulist-select-all';
     // Adding select all option dynamically to the options
-    if (showAllOption && !optionsLoadingState) {
-      return [
-        // Appended search input value so that it is always visible
-        { label: `Select all ${searchInputValue}`, value: 'multiselect-custom-menulist-select-all' },
-        ...selectOptions,
-      ];
-    } else return selectOptions;
-  }, [showAllOption, JSON.stringify(selectOptions), optionsLoadingState, searchInputValue]);
+    const baseOptions =
+      showAllOption && !optionsLoadingState
+        ? [
+            // Appended search input value so that it is always visible
+            { label: `Select all ${searchInputValue}`, value: SELECT_ALL },
+            ...selectOptions,
+          ]
+        : selectOptions;
+
+    if (maxSelectionLimit === null) return baseOptions;
+
+    const selectedValues = new Set(selected.map((item) => item.value));
+    return baseOptions.map((opt) => {
+      if (opt.value === SELECT_ALL) {
+        return { ...opt, isDisabled: maxSelectionLimit < selectOptions.length };
+      }
+      const alreadySelected = selectedValues.has(opt.value);
+      return {
+        ...opt,
+        isDisabled: opt.isDisabled || (isLimitReached && !alreadySelected),
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    showAllOption,
+    JSON.stringify(selectOptions),
+    optionsLoadingState,
+    searchInputValue,
+    maxSelectionLimit,
+    isLimitReached,
+    selected,
+  ]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
@@ -148,23 +187,24 @@ export const MultiselectV2 = ({
 
   const onChangeHandler = (items, action) => {
     const SELECT_ALL = 'multiselect-custom-menulist-select-all';
+    const applyLimit = (list) => (maxSelectionLimit !== null ? list.slice(0, maxSelectionLimit) : list);
 
     if (action.option?.value === SELECT_ALL) {
       // Case 1 - If select all is selected
       if (action.action === 'select-option') {
-        setInputValue(selectOptions);
+        setInputValue(applyLimit(selectOptions));
       } else {
         setInputValue([]);
       }
     } else if (items?.some((item) => item.value === SELECT_ALL)) {
       // Case 2 - If select all is not selected but selected options include select all
-      setInputValue(items.filter((item) => item.value !== SELECT_ALL));
+      setInputValue(applyLimit(items.filter((item) => item.value !== SELECT_ALL)));
     } else if (selectOptions?.length === items?.length) {
       // Case 3 - If all options are selected except select all
-      setInputValue(selectOptions);
+      setInputValue(applyLimit(selectOptions));
     } else {
       // Case 4 - Normal selection
-      setInputValue(items);
+      setInputValue(applyLimit(items));
     }
 
     fireEvent('onSelect');
@@ -197,7 +237,8 @@ export const MultiselectV2 = ({
     if (isInitialRender.current) return;
     setExposedVariable(
       'options',
-      Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value }))
+      Array.isArray(selectOptions) &&
+        selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
@@ -259,8 +300,12 @@ export const MultiselectV2 = ({
       isDisabled: disabledState,
       isMandatory: isMandatory,
       isValid: isValid,
-      selectedOptions: Array.isArray(defaultItems) && defaultItems?.map(({ label, value }) => ({ label, value })),
-      options: Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value })),
+      selectedOptions:
+        Array.isArray(defaultItems) &&
+        defaultItems?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
+      options:
+        Array.isArray(selectOptions) &&
+        selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
@@ -286,7 +331,8 @@ export const MultiselectV2 = ({
             newSelected.push(...optionsToAdd);
           }
         });
-        setInputValue(newSelected);
+        const limited = maxSelectionLimit !== null ? newSelected.slice(0, maxSelectionLimit) : newSelected;
+        setInputValue(limited);
       }
     });
 
@@ -300,7 +346,7 @@ export const MultiselectV2 = ({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectOptions, selected]);
+  }, [selectOptions, selected, maxSelectionLimit]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -343,7 +389,9 @@ export const MultiselectV2 = ({
     setSelected(values);
     setExposedVariables({
       values: values.map((item) => item.value),
-      selectedOptions: Array.isArray(values) && values?.map(({ label, value }) => ({ label, value })),
+      selectedOptions:
+        Array.isArray(values) &&
+        values?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
     });
     const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
     setValidationStatus(validationStatus);
@@ -431,13 +479,17 @@ export const MultiselectV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--cc-surface1-surface)',
+      backgroundColor: _state.isFocused
+        ? 'var(--interactive-overlays-fill-hover)'
+        : menuBackgroundColor || 'var(--cc-surface1-surface)',
       color: selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)',
       borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
       opacity: _state.isDisabled ? 0.3 : 1,
       '&:hover': {
-        backgroundColor: _state.isDisabled ? 'var(--cc-surface1-surface)' : 'var(--interactive-overlays-fill-hover)',
+        backgroundColor: _state.isDisabled
+          ? menuBackgroundColor || 'var(--cc-surface1-surface)'
+          : 'var(--interactive-overlays-fill-hover)',
         borderRadius: '8px',
       },
       cursor: 'pointer',
@@ -450,13 +502,15 @@ export const MultiselectV2 = ({
       flexDirection: 'column',
       gap: '4px !important',
       overflowY: 'auto',
-      backgroundColor: 'var(--cc-surface1-surface)',
+      backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
     }),
     menu: (provided) => ({
       ...provided,
+      backgroundColor: menuBackgroundColor || 'var(--cc-surface1-surface)',
       marginTop: '5px',
       borderRadius: '8px',
     }),
+    menuPortal: (base) => ({ ...base, zIndex: 1040 }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
   return (
@@ -514,6 +568,13 @@ export const MultiselectV2 = ({
             value={selectOptions?.length === selected?.length ? modifiedSelectOptions : selected}
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
+            filterOption={(option, input) => {
+              if (!input) return true;
+              const needle = input.toLowerCase();
+              const label = String(option?.label ?? '').toLowerCase();
+              const caption = String(option?.data?.caption ?? '').toLowerCase();
+              return label.includes(needle) || caption.includes(needle);
+            }}
             styles={customStyles}
             aria-hidden={!visibility}
             aria-disabled={isMultiSelectDisabled}
@@ -565,6 +626,7 @@ export const MultiselectV2 = ({
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
+            menuBackgroundColor={menuBackgroundColor}
             menuPlacement="auto"
             menuPortalTarget={document.body}
             // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)

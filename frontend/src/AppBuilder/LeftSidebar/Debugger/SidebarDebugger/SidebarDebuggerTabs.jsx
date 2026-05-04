@@ -31,12 +31,8 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
 const SidebarDebuggerTabs = ({ darkMode, errors, allLog, activeTab }) => {
   return (
     <div className="">
-      {activeTab === 'allLog' && (
-        <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName="allLogs" />
-      )}
-      {activeTab === 'errors' && (
-        <DebuggerTabContent logs={errors} darkMode={darkMode} tabName="errors" />
-      )}
+      {activeTab === 'allLog' && <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName="allLogs" />}
+      {activeTab === 'errors' && <DebuggerTabContent logs={errors} darkMode={darkMode} tabName="errors" />}
     </div>
   );
 };

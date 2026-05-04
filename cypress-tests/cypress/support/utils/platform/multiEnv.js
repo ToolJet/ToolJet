@@ -40,6 +40,13 @@ export const createVersionFromDraft = (version) => {
   );
 
 };
+export const promoteEnv = (fromEnv) => {
+  cy.get(multiEnvSelector.environmentsTag(fromEnv)).click();
+  cy.waitForElement(commonEeSelectors.promoteVersionButton);
+  cy.get(commonEeSelectors.promoteVersionButton, { timeout: 10000 }).click();
+  cy.get(commonEeSelectors.promoteButton, { timeout: 10000 }).click();
+  cy.reload();
+};
 
 export const appPromote = (fromEnv, toEnv) => {
   const commonActions = () => {

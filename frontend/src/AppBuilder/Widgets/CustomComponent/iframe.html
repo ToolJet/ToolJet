@@ -16,14 +16,32 @@
                     fn(props);
                     callbackFn = fn;
                 },
+                // Returns a Promise that resolves with the query result, matching the behaviour of queries.queryName.run()
+                // Success: { status: 'ok', data: { ... } }
+                // Failure: { status: 'failed', message: '...', description: '...', data: { ... }, metadata: { ... } }
                 runQuery: (name, params) => {
-                    window.parent.postMessage({
-                    from: 'customComponent',
-                    message: "RUN_QUERY",
-                    queryName: name,
-                    parameters: JSON.stringify(params || {}),
-                    componentId: window.Tooljet.componentId
-                }, "*")},
+                    return new Promise((resolve) => {
+                        // Unique ID to correlate this request with its response when multiple queries run concurrently
+                        const requestId = 'rq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        const handler = (e) => {
+                            if (e.data.message === 'RUN_QUERY_RESPONSE' &&
+                                e.data.componentId === window.Tooljet.componentId &&
+                                e.data.requestId === requestId) {
+                                window.removeEventListener('message', handler);
+                                resolve(e.data.queryResult);
+                            }
+                        };
+                        window.addEventListener('message', handler);
+                        window.parent.postMessage({
+                            from: 'customComponent',
+                            message: "RUN_QUERY",
+                            queryName: name,
+                            parameters: JSON.stringify(params || {}),
+                            componentId: window.Tooljet.componentId,
+                            requestId: requestId,
+                        }, "*");
+                    });
+                },
                 updateProps: obj => window.parent.postMessage({
                     from: 'customComponent',
                     message: "UPDATE_DATA",

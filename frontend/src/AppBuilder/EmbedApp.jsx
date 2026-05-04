@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import useRouter from '@/_hooks/use-router';
 import config from 'config';
 import toast from 'react-hot-toast';
-import './embed-loader.scss'
+import './embed-loader.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 // In-memory PAT token store
@@ -24,7 +24,7 @@ export function getPatToken() {
 
 export default function EmbedAppRedirect() {
   const router = useRouter();
-  const { appId } = router.query;
+  const { appId, appSlug } = router.query;
 
   useEffect(() => {
     // 🔐 Ensure the page is embedded
@@ -68,7 +68,7 @@ export default function EmbedAppRedirect() {
         // ✅ Store PAT in memory
         setPatToken(result.signedPat);
         window.name = result.signedPat;
-        window.location.href = `applications/${appId}`;
+        window.location.href = `applications/${appSlug}`; // Redirect to the app route with slug
       } catch (error) {
         parent?.postMessage({ type: 'TJ_EMBED_APP_LOGOUT', error: 500, message: 'Network error' }, '*');
       }
@@ -78,13 +78,11 @@ export default function EmbedAppRedirect() {
   }, [appId]);
 
   return (
-  <div className="embed-loader">
-    <div className="embed-loader__content">
-      <Loader width={30} absolute={false} />
-      <div className="embed-loader__text">
-        Loading embedded app
+    <div className="embed-loader">
+      <div className="embed-loader__content">
+        <Loader width={30} absolute={false} />
+        <div className="embed-loader__text">Loading embedded app</div>
       </div>
     </div>
-  </div>
-);
+  );
 }

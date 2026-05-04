@@ -38,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 18.18.2
+          node-version: 22.15.1
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -63,12 +63,11 @@ jobs:
             npm run build --workspace=plugins/$plugin || exit 1
           done
 
-
       - name: Build marketplace plugins and capture summary
         run: |
           cd marketplace
           echo "🚀 Uploading to S3"
-          AWS_BUCKET=tooljet-plugins-stage node scripts/upload-to-s3.js | tee upload_summary.log
+          AWS_BUCKET=tooljet-plugins-stage bash scripts/upload-to-s3.sh | tee upload_summary.log
 
       - name: Extract upload summary
         id: upload_summary

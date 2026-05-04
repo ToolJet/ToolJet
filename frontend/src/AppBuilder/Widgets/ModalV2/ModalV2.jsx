@@ -4,7 +4,6 @@ import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
 import { useResetZIndex } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalZIndex';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
-import { useEventListener } from '@/_hooks/use-event-listener';
 import { ModalWidget } from '@/AppBuilder/Widgets/ModalV2/Components/Modal';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
@@ -17,6 +16,7 @@ import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/Modal
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -34,8 +34,10 @@ export const ModalV2 = function Modal({
   currentLayout,
   componentCount,
   subContainerIndex,
+  componentType,
 }) {
   const { moduleId } = useModuleContext();
+  const { contextPath } = useSubcontainerContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -59,16 +61,34 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     bodyBackgroundColor,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor = 'var(--cc-primary-brand)',
     triggerButtonTextColor,
+    triggerButtonTextSize = 14,
+    triggerButtonFontWeight,
+    triggerButtonContentAlignment,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
   } = styles;
+  const normalizedTriggerButtonTextSize = Number(triggerButtonTextSize);
+  const computedTriggerButtonFontSize = Number.isFinite(normalizedTriggerButtonTextSize)
+    ? normalizedTriggerButtonTextSize
+    : 14;
+  const computedTriggerButtonLineHeight = computedTriggerButtonFontSize * 1.42;
+  const computedTriggerButtonIconSize = computedTriggerButtonLineHeight * 0.8;
+  const normalizedTriggerButtonFontWeight = triggerButtonFontWeight === 'medium' ? 500 : triggerButtonFontWeight;
+  const computedTriggerButtonFontWeight = normalizedTriggerButtonFontWeight
+    ? normalizedTriggerButtonFontWeight
+    : normalizedTriggerButtonFontWeight === '0'
+    ? 0
+    : 'normal';
   const isInitialRender = useRef(true);
   const title = properties.title ?? '';
   const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
+  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
   const iconName = styles.icon;
@@ -80,19 +100,6 @@ export const ModalV2 = function Modal({
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
-
-  useDynamicHeight({
-    isDynamicHeightEnabled,
-    id,
-    height,
-    adjustComponentPositions,
-    currentLayout,
-    isContainer: true,
-    componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
-    visibility: isVisible,
-    subContainerIndex,
-  });
 
   useEffect(() => {
     const exposedVariables = {
@@ -127,6 +134,7 @@ export const ModalV2 = function Modal({
 
   const onHideModal = () => {
     hideModal();
+    clearSelectedComponents();
   };
 
   useEffect(() => {
@@ -171,6 +179,21 @@ export const ModalV2 = function Modal({
     onHideModal,
     onShowModal,
   });
+  const contextIndices = contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex;
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    value: JSON.stringify({ headerHeight, showHeader, showModal }),
+    visibility: isVisible,
+    subContainerIndex: contextIndices,
+    componentType,
+  });
 
   const customStyles = createModalStyles({
     height,
@@ -184,12 +207,15 @@ export const ModalV2 = function Modal({
     footerBackgroundColor,
     footerHeightPx,
     triggerButtonBackgroundColor,
+    triggerButtonHoverBackgroundMode,
+    triggerButtonHoverBackgroundColor,
     triggerButtonTextColor,
     isVisible,
     boxShadow,
     headerDividerColor,
     footerDividerColor,
     direction,
+    triggerButtonContentAlignment,
   });
 
   const { modalWidth, parentRef } = useModalEventSideEffects({
@@ -213,7 +239,7 @@ export const ModalV2 = function Modal({
       {useDefaultButton && isVisible && (
         <button
           disabled={isDisabledTrigger}
-          className="jet-button btn btn-primary overflow-hidden"
+          className="jet-btn btn btn-primary overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
             /**** Start - Logic to reduce the zIndex of modal control box ****/
@@ -229,7 +255,14 @@ export const ModalV2 = function Modal({
           data-cy={`${dataCy}-launch-button`}
         >
           {/* To maintain backward compatibility, apply class only if icon is visible */}
-          <span className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}>
+          <span
+            className={`${iconVisibility && 'tw-max-w-full tw-min-w-0 tw-overflow-hidden'}`}
+            style={{
+              fontSize: `${computedTriggerButtonFontSize}px`,
+              lineHeight: `${computedTriggerButtonLineHeight}px`,
+              fontWeight: computedTriggerButtonFontWeight,
+            }}
+          >
             {triggerButtonLabel ?? 'Show Modal'}
           </span>
           {iconVisibility && (
@@ -237,8 +270,8 @@ export const ModalV2 = function Modal({
               iconName={iconName}
               fallbackIcon="IconHome2"
               style={{
-                width: '16px',
-                height: '16px',
+                width: `${computedTriggerButtonIconSize}px`,
+                height: `${computedTriggerButtonIconSize}px`,
                 color: iconColor,
               }}
               className="tw-flex-shrink-0"
@@ -293,7 +326,7 @@ export const ModalV2 = function Modal({
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
-          subContainerIndex,
+          subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
         }}
       />

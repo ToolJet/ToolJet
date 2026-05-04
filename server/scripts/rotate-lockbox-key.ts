@@ -8,6 +8,9 @@ import { OrgEnvironmentConstantValue } from '../src/entities/org_environment_con
 import { SSOConfigs } from '../src/entities/sso_config.entity';
 import { OrganizationTjdbConfigurations } from '../src/entities/organization_tjdb_configurations.entity';
 import { UserDetails } from '../src/entities/user_details.entity';
+import { InstanceSettings } from '../src/entities/instance_settings.entity';
+import { OrganizationAiKey } from '../src/entities/organization_ai_key.entity';
+import { INSTANCE_SETTINGS_ENCRYPTION_KEY, INSTANCE_CONFIGS_DATA_TYPES } from '../src/modules/instance-settings/constants';
 import { getEnvVars } from './database-config-utils';
 import { dbTransactionWrap } from '../src/helpers/database.helper';
 
@@ -43,7 +46,7 @@ Object.keys(ENV_VARS).forEach((key) => {
  */
 
 class RotationProgress {
-  private totalTables = 5;
+  private totalTables = 7;
   private completedTables = 0;
   private currentTable = '';
   private currentTableRows = 0;
@@ -173,6 +176,8 @@ async function bootstrap() {
       await rotateSSOConfigs(entityManager, dualKeyService, progress);
       await rotateTJDBConfigs(entityManager, dualKeyService, progress);
       await rotateUserDetails(entityManager, dualKeyService, progress);
+      await rotateInstanceSettings(entityManager, dualKeyService, progress);
+      await rotateOrganizationAiKeys(entityManager, dualKeyService, progress);
 
       progress.complete();
 
@@ -474,6 +479,74 @@ async function rotateUserDetails(
   progress.completeTable();
 }
 
+// Table 6: instance_settings (password type rows, e.g. SMTP_PASSWORD)
+async function rotateInstanceSettings(
+  entityManager: EntityManager,
+  dualKeyService: DualKeyEncryptionService,
+  progress: RotationProgress
+): Promise<void> {
+  const settings = await entityManager.find(InstanceSettings, {
+    where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
+  });
+  progress.startTable('instance_settings', settings.length);
+
+  for (const setting of settings) {
+    if (!setting.value) {
+      progress.incrementRow();
+      continue; // Skip nulls/empty
+    }
+
+    try {
+      // table = INSTANCE_SETTINGS_ENCRYPTION_KEY ('instance_settings'), column = the row's key (e.g. 'SMTP_PASSWORD')
+      const plainValue = await dualKeyService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, setting.key, setting.value);
+      const newCiphertext = await dualKeyService.encryptWithNewKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, setting.key, plainValue);
+
+      setting.value = newCiphertext;
+      await entityManager.save(setting);
+
+      progress.incrementRow();
+    } catch (error) {
+      throw new Error(`Failed to rotate instance setting ${setting.key}: ${error.message}`);
+    }
+  }
+
+  progress.completeTable();
+}
+
+// Table 7: organization_ai_keys
+async function rotateOrganizationAiKeys(
+  entityManager: EntityManager,
+  dualKeyService: DualKeyEncryptionService,
+  progress: RotationProgress
+): Promise<void> {
+  const aiKeys = await entityManager.find(OrganizationAiKey);
+  progress.startTable('organization_ai_keys', aiKeys.length);
+
+  for (const aiKey of aiKeys) {
+    if (!aiKey.encryptedKey) {
+      progress.incrementRow();
+      continue;
+    }
+
+    try {
+      // Decrypt with old key
+      const plainValue = await dualKeyService.decryptWithOldKey('organization_ai_keys', 'encrypted_key', aiKey.encryptedKey);
+
+      // Encrypt with new key
+      const newCiphertext = await dualKeyService.encryptWithNewKey('organization_ai_keys', 'encrypted_key', plainValue);
+
+      aiKey.encryptedKey = newCiphertext;
+      await entityManager.save(aiKey);
+
+      progress.incrementRow();
+    } catch (error) {
+      throw new Error(`Failed to rotate organization AI key ${aiKey.id}: ${error.message}`);
+    }
+  }
+
+  progress.completeTable();
+}
+
 async function verifyRotation(entityManager: EntityManager, newKey: string): Promise<void> {
   const testService = new DualKeyEncryptionService(newKey, newKey);
 
@@ -520,6 +593,22 @@ async function verifyRotation(entityManager: EntityManager, newKey: string): Pro
   if (userDetail?.userMetadata) {
     await testService.decryptWithOldKey('user_details', 'userMetadata', userDetail.userMetadata);
     console.log('  ✓ User details table verified');
+  }
+
+  // Test instance settings
+  const instanceSetting = await entityManager.findOne(InstanceSettings, {
+    where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
+  });
+  if (instanceSetting?.value) {
+    await testService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, instanceSetting.key, instanceSetting.value);
+    console.log('  ✓ Instance settings table verified');
+  }
+
+  // Test organization AI keys
+  const orgAiKey = await entityManager.findOne(OrganizationAiKey, { where: {} });
+  if (orgAiKey?.encryptedKey) {
+    await testService.decryptWithOldKey('organization_ai_keys', 'encrypted_key', orgAiKey.encryptedKey);
+    console.log('  ✓ Organization AI keys table verified');
   }
 }
 
@@ -583,8 +672,26 @@ async function testDecryptionWithOldKey(
     testedCount++;
   }
 
+  // Test instance settings
+  const instanceSetting = await entityManager.findOne(InstanceSettings, {
+    where: { dataType: INSTANCE_CONFIGS_DATA_TYPES.PASSWORD },
+  });
+  if (instanceSetting?.value) {
+    await dualKeyService.decryptWithOldKey(INSTANCE_SETTINGS_ENCRYPTION_KEY, instanceSetting.key, instanceSetting.value);
+    console.log('  ✓ Instance settings table - old key works');
+    testedCount++;
+  }
+
   if (testedCount === 0) {
     console.log('  ⚠️  No encrypted data found to test (database might be empty)');
+  }
+
+  // Test organization AI keys
+  const orgAiKey = await entityManager.findOne(OrganizationAiKey, { where: {} });
+  if (orgAiKey?.encryptedKey) {
+    await dualKeyService.decryptWithOldKey('organization_ai_keys', 'encrypted_key', orgAiKey.encryptedKey);
+    console.log('  ✓ Organization AI keys table - old key works');
+    testedCount++;
   }
 }
 

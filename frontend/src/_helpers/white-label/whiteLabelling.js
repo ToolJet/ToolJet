@@ -74,7 +74,7 @@ export async function setFaviconAndTitle(location) {
     'reset-password': '',
     'workspace-constants': 'Workspace constants',
     setup: '',
-    'home': 'Home',
+    home: 'Home',
     '/': 'Dashboard',
   };
 
@@ -112,6 +112,7 @@ export async function fetchAndSetWindowTitle(pageDetails, organizationId = null)
       if (mode == 'edit') {
         pageTitle = `${appName}`;
       } else {
+        // eslint-disable-next-line no-constant-binary-expression
         pageTitle = `Preview - ${appName}` || 'My App';
       }
       break;

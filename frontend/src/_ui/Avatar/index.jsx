@@ -27,7 +27,9 @@ const Avatar = ({ text, image, avatarId, title = '', borderShape, indexId = 0, c
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
       className={cx(
-        `!tw-shadow-none animation-fade avatar tj-text-xsm ${className} ${realtime ? 'tj-header-avatar' : 'tj-avatar '}`,
+        `!tw-shadow-none animation-fade avatar tj-text-xsm ${className} ${
+          realtime ? 'tj-header-avatar' : 'tj-avatar '
+        }`,
         {
           'avatar-rounded': borderShape === 'rounded',
         }

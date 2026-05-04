@@ -3,6 +3,7 @@ import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
 import './datepicker.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import cx from 'classnames';
 import { IconX } from '@tabler/icons-react';
 
@@ -20,7 +21,15 @@ export const Datepicker = function Datepicker({
   dataCy,
 }) {
   const isInitialRender = useRef(true);
-  const { enableTime, enableDate, defaultValue, disabledDates, showClearBtn } = properties;
+  const {
+    enableTime,
+    enableDate,
+    defaultValue,
+    disabledDates,
+    placeholder: placeholderProp,
+    showClearBtn,
+  } = properties;
+  const placeholder = placeholderProp ?? 'Select date';
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
@@ -28,6 +37,7 @@ export const Datepicker = function Datepicker({
   const [date, setDate] = useState(defaultValue);
   const [excludedDates, setExcludedDates] = useState([]);
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -108,6 +118,7 @@ export const Datepicker = function Datepicker({
 
   const clearButton = shouldShowClearBtn ? (
     <button
+      data-cy={`${dataCy}-clear-button`}
       type="button"
       className="tj-input-clear-btn datepicker-clear-btn"
       aria-label="Clear"
@@ -135,7 +146,6 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={disabledState}
       className={`legacy-datepicker-widget datepicker-widget ${darkMode && 'theme-dark'}`}
-      data-cy={dataCy}
       style={{
         height,
         display: visibility ? '' : 'none',
@@ -154,7 +164,8 @@ export const Datepicker = function Datepicker({
         }`}
         popperClassName={cx('legacy-datepicker-poppper tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
-        value={date !== null ? computeDateString(date) : 'select date'}
+        value={date !== null ? computeDateString(date) : ''}
+        placeholderText={placeholder}
         onChange={(date) => onDateChange(date)}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}

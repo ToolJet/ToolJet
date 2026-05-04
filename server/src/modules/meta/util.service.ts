@@ -6,7 +6,11 @@ import { User } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
+import { Organization } from 'src/entities/organization.entity';
+import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { DataSource } from 'src/entities/data_source.entity';
+import { APP_TYPES } from '@modules/apps/constants';
+import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 import { LicenseCountsService } from '@modules/licensing/services/count.service';
 import License from '@modules/licensing/configs/License';
 import { MetadataType } from './types';
@@ -129,6 +133,12 @@ export class MetadataUtilService implements IMetaUtilService {
       const totalAppCount = await manager.count(App);
       const totalInternalTableCount = await manager.count(InternalTable);
       const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);
+      const totalWorkflowCount = await manager.count(App, { where: { type: APP_TYPES.WORKFLOW } });
+      const totalModuleCount = await manager.count(App, { where: { type: APP_TYPES.MODULE } });
+      const totalWorkspaceCount = await manager.count(Organization);
+      const totalCustomGroupCount = await manager.count(GroupPermissions, {
+        where: { type: GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP },
+      });
       try {
         return await got('https://hub.tooljet.io/telemetry', {
           method: 'post',
@@ -138,6 +148,10 @@ export class MetadataUtilService implements IMetaUtilService {
             total_editors: totalEditorCount,
             total_viewers: totalViewerCount,
             total_apps: totalAppCount,
+            total_workflows: totalWorkflowCount,
+            total_modules: totalModuleCount,
+            total_workspaces: totalWorkspaceCount,
+            total_custom_groups: totalCustomGroupCount,
             tooljet_db_table_count: totalInternalTableCount,
             tooljet_version: globalThis.TOOLJET_VERSION,
             data_sources_count: totalDatasourcesByKindCount,

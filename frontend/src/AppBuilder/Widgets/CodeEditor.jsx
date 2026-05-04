@@ -9,6 +9,7 @@ import { sql } from '@codemirror/lang-sql';
 import { sass } from '@codemirror/lang-sass';
 import { debounce } from 'lodash';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { EditorView } from '@codemirror/view';
 import './codeEditor.scss';
 
 const langSupport = Object.freeze({
@@ -18,6 +19,8 @@ const langSupport = Object.freeze({
   jsx: javascript({ jsx: true }),
   css: sass(),
 });
+
+const lineWrappingExtension = EditorView.lineWrapping;
 
 const CodeEditor = ({
   id,
@@ -32,6 +35,7 @@ const CodeEditor = ({
   width,
   currentMode,
   subContainerIndex,
+  componentType,
 }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
@@ -49,6 +53,7 @@ const CodeEditor = ({
     width,
     visibility,
     subContainerIndex,
+    componentType,
   });
 
   const codeChanged = debounce((code) => {
@@ -115,7 +120,7 @@ const CodeEditor = ({
           maxHeight={isDynamicHeightEnabled ? 'none' : editorHeight}
           width="100%"
           theme={theme}
-          extensions={[langExtention ?? javascript()]}
+          extensions={[langExtention ?? javascript(), lineWrappingExtension]}
           onChange={(value) => {
             setValue(value);
             setForceDynamicHeightUpdate((prev) => !prev);

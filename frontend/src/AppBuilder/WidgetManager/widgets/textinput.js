@@ -53,6 +53,13 @@ export const textinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -190,6 +197,12 @@ export const textinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'field',
+    },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
@@ -310,6 +323,8 @@ export const textinputConfig = {
       label: { value: 'Label' },
       placeholder: { value: 'Enter your input' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
@@ -318,6 +333,7 @@ export const textinputConfig = {
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },

@@ -1,54 +1,30 @@
 import { CompositePropagator, W3CTraceContextPropagator, W3CBaggagePropagator } from '@opentelemetry/core';
-import { trace, context, Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
+import { Span, DiagConsoleLogger, DiagLogLevel, diag, metrics } from '@opentelemetry/api';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as process from 'process';
 import { resourceFromAttributes } from '@opentelemetry/resources';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
+import { PeriodicExportingMetricReader, AggregationTemporality } from '@opentelemetry/sdk-metrics';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
   SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
 } from '@opentelemetry/semantic-conventions';
-
-const OTEL_EXPORTER_OTLP_TRACES = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
-const OTEL_EXPORTER_OTLP_METRICS = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
+import { getTooljetEdition } from '../helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '../modules/app/constants';
 
 // Set this up to see debug logs
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
-
-// Define the trace exporter
-const traceExporter = new OTLPTraceExporter({
-  url: OTEL_EXPORTER_OTLP_TRACES,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
-});
-
-// Define the metric exporter
-const metricExporter = new OTLPMetricExporter({
-  url: OTEL_EXPORTER_OTLP_METRICS,
-  ...(!!process.env.OTEL_HEADER ? { headers: { Authorization: process.env.OTEL_HEADER } } : {} ),
-});
-
-// Define the log exporter
-// TODO:
-// Add logs exporter when stable support for JS is available. Track here:
-// https://github.com/open-telemetry/opentelemetry-js
-
-const resource = resourceFromAttributes({
-  [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
-  [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
-  [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
-});
 
 const sanitizeObject = (obj: any) => {
   const sanitized: any = {};
@@ -66,7 +42,39 @@ const sanitizeObject = (obj: any) => {
 let sdk: NodeSDK | null = null;
 
 // Function to create the SDK (called only when startOpenTelemetry is invoked)
+// NOTE: URLs, headers, and resource are read here — AFTER loadEnvVars() has run —
+// so .env file values are correctly picked up.
 function createSDK(): NodeSDK {
+  const traceUrl = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
+  const metricsUrl = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
+  const authHeader = process.env.OTEL_HEADER ? { Authorization: process.env.OTEL_HEADER } : {};
+
+  // Define the trace exporter
+  const traceExporter = new OTLPTraceExporter({
+    url: traceUrl,
+    ...(process.env.OTEL_HEADER ? { headers: authHeader } : {}),
+  });
+
+  // Define the metric exporter
+  // Dynatrace (and many other backends) require DELTA temporality.
+  // The OTLPMetricExporter defaults to CUMULATIVE, which Dynatrace silently drops.
+  const metricExporter = new OTLPMetricExporter({
+    url: metricsUrl,
+    ...(process.env.OTEL_HEADER ? { headers: authHeader } : {}),
+    temporalityPreference: AggregationTemporality.DELTA,
+  });
+
+  // Define the log exporter
+  // TODO:
+  // Add logs exporter when stable support for JS is available. Track here:
+  // https://github.com/open-telemetry/opentelemetry-js
+
+  const resource = resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
+    [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
+    [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
+  });
+
   return new NodeSDK({
     resource: resource,
     traceExporter: traceExporter,
@@ -278,7 +286,7 @@ const initializeCustomMetrics = () => {
         // Report workspace-level aggregate
         observableResult.observe(users.size, {
           'workspace.id': workspaceId,
-          'metric_type': 'workspace_total',
+          metric_type: 'workspace_total',
         });
 
         // Report individual user metrics
@@ -286,7 +294,7 @@ const initializeCustomMetrics = () => {
           observableResult.observe(1, {
             'workspace.id': workspaceId,
             'user.id': userId,
-            'metric_type': 'per_user',
+            metric_type: 'per_user',
           });
         }
       }
@@ -299,7 +307,7 @@ const initializeCustomMetrics = () => {
       }
       observableResult.observe(totalUniqueUsers.size, {
         'workspace.id': 'all',
-        'metric_type': 'workspace_total',
+        metric_type: 'workspace_total',
       });
     } catch (error) {
       console.error('[OTEL] Error in concurrentUsersGauge callback:', error);
@@ -362,49 +370,19 @@ const initializeCustomMetrics = () => {
   });
 };
 
-// Custom Express middleware for tracing and metrics
-export const otelMiddleware = (req: any, res: any, next: () => void, ...args: any[]) => {
-  const span = trace.getSpan(context.active());
-  const route = req.route?.path || req.path || 'unknown_route';
-  const method = req.method || 'UNKNOWN_METHOD';
-  const startTime = Date.now();
-
-  if (span && route.startsWith('/api/') && route !== '/api/health') {
-    span.updateName(`${method} ${route}`);
-    span.setAttribute('http.route', route);
-    span.setAttribute('http.method', method);
-
-    // Track API hits
-    if (apiHitCounter) {
-      apiHitCounter.add(1, {
-        route: route,
-        method: method,
-      });
-    }
-
-    const originalJson = res.json;
-    res.json = function (body: any) {
-      const statusCode = res.statusCode;
-      const duration = Date.now() - startTime;
-
-      span.setAttribute('http.status_code', statusCode);
-
-      // Record API duration
-      if (apiDurationHistogram) {
-        apiDurationHistogram.record(duration, {
-          route: route,
-          method: method,
-          status_code: statusCode,
-        });
-      }
-
-      // eslint-disable-next-line prefer-rest-params
-      return originalJson.apply(this, arguments);
-    };
+export function recordApiHit(attrs: { route: string; method: string }) {
+  apiHitCounter.add(1, attrs);
+}
+export function recordApiDuration(
+  duration: number,
+  attrs: {
+    route: string;
+    method: string;
+    status_code: number | string;
   }
-
-  next();
-};
+) {
+  apiDurationHistogram.record(duration, attrs);
+}
 
 process.on('SIGTERM', () => {
   // Clear cleanup interval
@@ -532,11 +510,7 @@ export const trackUserActivity = (attributes: {
 };
 
 // Helper functions for user metrics tracking
-export const incrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const incrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -546,11 +520,7 @@ export const incrementConcurrentUsers = (attributes: {
   }
 };
 
-export const decrementConcurrentUsers = (attributes: {
-  workspaceId?: string;
-  userId?: string;
-  userRole?: string;
-}) => {
+export const decrementConcurrentUsers = (attributes: { workspaceId?: string; userId?: string; userRole?: string }) => {
   if (concurrentUsersCounter) {
     const metricAttributes: any = {};
     if (attributes.workspaceId) metricAttributes['workspace.id'] = attributes.workspaceId;
@@ -615,6 +585,26 @@ function loadEnvVars() {
 // Load environment variables
 loadEnvVars();
 
+// Guard: OTEL export transport errors (EPIPE, ECONNRESET) must never crash the server.
+// These are emitted as unhandled 'error' events on TLS sockets when the remote OTLP
+// endpoint closes the connection after sending an error response (e.g. 415, 401).
+// The OTEL SDK does not attach error listeners to the socket, so without this the
+// Node.js default behaviour is to throw and kill the process.
+// Only register when OTEL is actually enabled — no point installing a global handler otherwise.
+if (process.env.ENABLE_OTEL === 'true') {
+  process.on('uncaughtException', (err: any) => {
+    if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+      if (process.env.OTEL_LOG_LEVEL === 'debug') {
+        console.error('[OTEL] Suppressed transport error (server still running):', err.code, err.message);
+      }
+      return;
+    }
+    // For non-OTEL errors, log and exit — throwing inside uncaughtException causes a re-emit loop.
+    console.error('[OTEL] Uncaught non-transport exception:', err);
+    process.exit(1);
+  });
+}
+
 if (process.env.OTEL_LOG_LEVEL === 'debug') {
   console.log('[OTEL] Auto-start code reached');
   console.log('[OTEL] ENABLE_OTEL:', process.env.ENABLE_OTEL);
@@ -629,10 +619,6 @@ if (process.env.ENABLE_OTEL === 'true' && !isInitialized) {
 
   try {
     // Check edition - EE and Cloud support OTEL
-    // Use relative paths instead of TypeScript aliases for runtime compatibility
-    const { getTooljetEdition } = require('../helpers/utils.helper');
-    const { TOOLJET_EDITIONS } = require('../modules/app/constants');
-
     const tooljetEdition = getTooljetEdition();
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {

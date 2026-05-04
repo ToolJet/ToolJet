@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '@/HomePage/Modal';
 import { useTranslation } from 'react-i18next';
+import { getHostURL } from '@/_helpers/routes';
 import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
@@ -194,8 +195,7 @@ const GoogleSSOModal = ({ settings, onClose, onUpdateSSOSettings, isInstanceOpti
                         {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
                       </label>
                       <div className="d-flex justify-content-between form-control-org-login align-items-center">
-                        <p data-cy="redirect-url" id="redirect-url">{`${window.public_config?.TOOLJET_HOST}${window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                          }sso/google/${configId}`}</p>
+                        <p data-cy="redirect-url" id="redirect-url">{`${getHostURL()}/sso/google/${configId}`}</p>
                         <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
                       </div>
                     </div>

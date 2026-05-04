@@ -19,6 +19,7 @@ export const HorizontalSlot = React.memo(
     onResize,
     maxHeight,
     componentType,
+    dataCy,
   }) => {
     const { moduleId } = useModuleContext();
     const isEditing = useStore((state) => state.modeStore.modules[moduleId].currentMode === 'edit', shallow);
@@ -57,6 +58,7 @@ export const HorizontalSlot = React.memo(
         className={`jet-${componentType?.toLowerCase()}-${slotName} wj-${componentType?.toLowerCase()}-${slotName} ${
           isEditing ? 'tw-select-none' : ''
         }`}
+        data-cy={`${dataCy}-${slotName}-section`}
         style={slotStyle}
       >
         <div

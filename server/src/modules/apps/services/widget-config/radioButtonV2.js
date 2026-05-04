@@ -54,6 +54,20 @@ export const radiobuttonV2Config = {
       },
       accordian: 'Options',
     },
+    layout: {
+      type: 'select',
+      displayName: 'Layout',
+      options: [
+        { name: 'Row', value: 'row' },
+        { name: 'Column', value: 'column' },
+        { name: 'Wrap', value: 'wrap' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'row',
+      },
+      accordian: 'Options',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -65,6 +79,13 @@ export const radiobuttonV2Config = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
 
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -296,8 +317,11 @@ export const radiobuttonV2Config = {
         ],
       },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
+      layout: { value: 'row' },
       optionsLoadingState: { value: '{{false}}' },
       optionVisibility: { value: '{{[true, true, true]}}' },
       optionDisable: { value: '{{[false, false, false]}}' },

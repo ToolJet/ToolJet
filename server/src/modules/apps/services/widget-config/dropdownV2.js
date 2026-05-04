@@ -100,6 +100,13 @@ export const dropdownV2Config = {
 
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -229,6 +236,12 @@ export const dropdownV2Config = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'field',
+    },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
@@ -264,6 +277,34 @@ export const dropdownV2Config = {
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'field',
+    },
+    menuWidthMode: {
+      type: 'select',
+      displayName: 'Menu width',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'matchField',
+      },
+      options: [
+        { name: 'Match the field', value: 'matchField' },
+        { name: 'Match the content', value: 'matchContent' },
+        { name: 'Custom', value: 'custom' },
+      ],
+      accordian: 'field',
+      isFxNotRequired: true,
+      description: 'Control dropdown menu width: match field, match content, or set custom.',
+    },
+    menuCustomWidth: {
+      type: 'input',
+      displayName: 'Custom menu width',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      },
+      conditionallyRender: {
+        key: 'menuWidthMode',
+        value: 'custom',
       },
       accordian: 'field',
     },
@@ -324,13 +365,14 @@ export const dropdownV2Config = {
       advanced: { value: `{{false}}` },
       schema: {
         value:
-          "{{[\t{label: 'option1',value: 1,disable: false,visible: true,default: true},{label: 'option2',value: 2,disable: false,visible: true},{label: 'option3',value: 3,disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: 1,caption: null,disable: false,visible: true,default: true},{label: 'option2',value: 2,caption: null,disable: false,visible: true},{label: 'option3',value: 3,caption: null,disable: false,visible: true}\t]}}",
       },
       options: {
         value: [
           {
             label: 'option1',
             value: '1',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
@@ -338,6 +380,7 @@ export const dropdownV2Config = {
           {
             label: 'option2',
             value: '2',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: true },
@@ -345,6 +388,7 @@ export const dropdownV2Config = {
           {
             label: 'option3',
             value: '3',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
@@ -358,6 +402,8 @@ export const dropdownV2Config = {
       showClearBtn: { value: '{{true}}' },
       showSearchInput: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
@@ -369,6 +415,7 @@ export const dropdownV2Config = {
       auto: { value: '{{true}}' },
       fieldBorderRadius: { value: '6' },
       selectedTextColor: { value: 'var(--cc-primary-text)' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       fieldBorderColor: { value: 'var(--cc-default-border)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
@@ -381,6 +428,8 @@ export const dropdownV2Config = {
       iconColor: { value: 'var(--cc-default-icon)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       widthType: { value: 'ofComponent' },
+      menuWidthMode: { value: 'matchField' },
+      menuCustomWidth: { value: '' },
     },
   },
 };

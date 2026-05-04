@@ -2,9 +2,10 @@ import React from 'react';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import EmptyTabContent from './EmptyTabContent';
+import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export default ({
-  options = [],
+  options: optionsProp = [],
   theme,
   onChange,
   jsonBody, // FIXME: Remove this once data migration to raw_body is complete
@@ -19,9 +20,10 @@ export default ({
   onInputChange,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const options = Array.isArray(optionsProp) ? optionsProp : [];
 
   return (
-    <div className="tab-content-wrapper">
+    <div className="tab-content-wrapper" data-cy={`${generateCypressDataCy(tabType)}-tab-content`}>
       {options.length === 0 && !bodyToggle && (
         <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />
       )}
@@ -29,7 +31,11 @@ export default ({
         options.map((option, index) => {
           return (
             <>
-              <div className="row-container query-manager-border-color" key={index}>
+              <div
+                className="row-container query-manager-border-color"
+                key={index}
+                data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}
+              >
                 <div className="fields-container mb-1 restapi-key-value">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
@@ -39,6 +45,7 @@ export default ({
                       onChange={onChange(paramType, 0, index)}
                       onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::key::${index}`}
+                      cyLabel={`${tabType}-key-${index}`}
                     />
                   </div>
                   <div className="field col rest-api-options-codehinter" style={{ width: '200px' }}>
@@ -49,6 +56,7 @@ export default ({
                       onChange={onChange(paramType, 1, index)}
                       onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::value::${index}`}
+                      cyLabel={`${tabType}-value-${index}`}
                     />
                   </div>
                   <button
@@ -59,6 +67,7 @@ export default ({
                     onClick={() => {
                       removeKeyValuePair(paramType, index);
                     }}
+                    data-cy={`${generateCypressDataCy(tabType)}-delete-${index}`}
                   >
                     <Trash fill="var(--slate9)" style={{ height: '16px' }} />
                   </button>
@@ -76,6 +85,7 @@ export default ({
             className="query-hinter"
             onChange={(value) => onRawBodyChange(value)}
             componentName={`${componentName}/${tabType}`}
+            cyLabel={`${tabType}-raw-body`}
           />
         </div>
       )}

@@ -47,6 +47,13 @@ export const passinputConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -188,6 +195,12 @@ export const passinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'field',
     },
+    placeholderTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Placeholder Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-placeholder-text)' },
+      accordian: 'field',
+    },
     errTextColor: {
       type: 'colorSwatches',
       displayName: 'Error text',
@@ -289,6 +302,8 @@ export const passinputConfig = {
     properties: {
       placeholder: { value: 'Password' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
@@ -310,6 +325,7 @@ export const passinputConfig = {
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       textColor: { value: 'var(--cc-primary-text)' },
+      placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },

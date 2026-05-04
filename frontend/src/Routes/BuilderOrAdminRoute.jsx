@@ -34,12 +34,7 @@ export const BuilderOrAdminRoute = ({ children }) => {
 
     // allowed
     setLoading(false);
-  }, [
-    isValidSession,
-    session?.admin,
-    session?.user_permissions?.is_builder,
-    isEEorCloud,
-  ]);
+  }, [isValidSession, session?.admin, session?.user_permissions?.is_builder, isEEorCloud]);
 
   return <RouteLoader isLoading={isLoading}>{children}</RouteLoader>;
 };

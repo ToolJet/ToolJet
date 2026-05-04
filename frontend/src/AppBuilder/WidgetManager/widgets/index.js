@@ -28,6 +28,7 @@ import { qrscannerConfig } from './qrscanner';
 import { starratingConfig } from './starrating';
 import { dividerConfig } from './divider';
 import { filepickerConfig } from './filepicker';
+import { fileinputConfig } from './fileinput';
 import { calendarConfig } from './calendar';
 import { iframeConfig } from './iframe';
 import { codeEditorConfig } from './codeEditor';
@@ -69,10 +70,15 @@ import { popoverMenuConfig } from './popoverMenu';
 import { audioRecorderConfig } from './audioRecorder';
 import { cameraConfig } from './camera';
 import { tagsInputConfig } from './TagsInput';
+import { accordionConfig } from './accordion';
+import { reorderableListConfig } from './reorderableList';
 import { jsonExplorerConfig } from './jsonExplorer';
 import { jsonEditorConfig } from './jsonEditor';
 import { keyValuePairConfig } from './keyValuePair';
 import { progressbarConfig } from './progressbar';
+import { navigationConfig } from './navigation';
+import { fileButtonConfig } from './fileButton';
+import { buttonGroupV2Config } from './buttonGroupV2';
 
 export {
   buttonConfig,
@@ -111,6 +117,7 @@ export {
   starratingConfig,
   dividerConfig,
   filepickerConfig,
+  fileinputConfig,
   calendarConfig,
   iframeConfig,
   codeEditorConfig,
@@ -128,7 +135,8 @@ export {
   htmlConfig,
   verticalDividerConfig,
   customComponentConfig,
-  buttonGroupConfig,
+  buttonGroupConfig, //!Depreciated
+  buttonGroupV2Config,
   pdfConfig,
   stepsConfig,
   kanbanConfig,
@@ -146,8 +154,12 @@ export {
   audioRecorderConfig,
   cameraConfig,
   tagsInputConfig,
+  accordionConfig,
+  reorderableListConfig,
   jsonExplorerConfig,
   jsonEditorConfig,
   keyValuePairConfig,
   progressbarConfig,
+  navigationConfig,
+  fileButtonConfig,
 };

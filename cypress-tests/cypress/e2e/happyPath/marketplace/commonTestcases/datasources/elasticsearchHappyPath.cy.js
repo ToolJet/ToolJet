@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { elasticsearchUIConfig, elasticsearchFormConfig } from "Constants/constants/marketplace/datasources/elasticsearch";
 
 const data = {};
@@ -33,10 +33,10 @@ describe("Elasticsearch", () => {
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: "", encrypted: true },
-                { key: "ca_cert", value: null, encrypted: false },
-                { key: "client_key", value: null, encrypted: false },
-                { key: "client_cert", value: null, encrypted: false },
-                { key: "root_cert", value: null, encrypted: false },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -58,10 +58,10 @@ describe("Elasticsearch", () => {
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: "", encrypted: true },
-                { key: "ca_cert", value: null, encrypted: false },
-                { key: "client_key", value: null, encrypted: false },
-                { key: "client_cert", value: null, encrypted: false },
-                { key: "root_cert", value: null, encrypted: false },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -86,10 +86,10 @@ describe("Elasticsearch", () => {
                 { key: "ssl_certificate", value: "none", encrypted: false },
                 { key: "username", value: "", encrypted: false },
                 { key: "password", value: "", encrypted: true },
-                { key: "ca_cert", value: null, encrypted: false },
-                { key: "client_key", value: null, encrypted: false },
-                { key: "client_cert", value: null, encrypted: false },
-                { key: "root_cert", value: null, encrypted: false },
+                { key: "ca_cert", value: null, encrypted: true },
+                { key: "client_key", value: null, encrypted: true },
+                { key: "client_cert", value: null, encrypted: true },
+                { key: "root_cert", value: null, encrypted: true },
             ]
         );
         cy.visit('/my-workspace/data-sources');
@@ -97,12 +97,37 @@ describe("Elasticsearch", () => {
         cy.get(dsCommonSelector.dataSourceNameButton(elasticsearchDataSourceName)).click();
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidSsl);
-        verifyDSConnection("failed", "ConnectionError: write EPROTO 80A07CEF01000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:\n");
+        verifyDSConnection("failed", "wrong version number");
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidHost);
-        verifyDSConnection("failed", "ConnectionError: getaddrinfo ENOTFOUND invalid-host");
+        verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(elasticsearchFormConfig, elasticsearchFormConfig.invalidPort);
         verifyDSConnection("failed", "TimeoutError: Request timed out");
     });
 });
+
+/*
+ * Test Cases for Elasticsearch
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with http scheme and SSL enabled
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: scheme, host, port, ssl_enabled, ssl_certificate, username, password, ca_cert, client_key, client_cert, root_cert
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with http scheme and SSL disabled
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses elasticsearchFormConfig valid credentials
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with http scheme and SSL disabled
+ *   - Steps: Navigate to data sources page → Click on data source → Test invalid SSL → Test invalid host → Test invalid port → Verify error messages
+ *   - Expected:
+ *     - Invalid SSL: Connection fails with "wrong version number"
+ *     - Invalid host: Connection fails with "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid port: Connection fails with "TimeoutError: Request timed out"
+ */

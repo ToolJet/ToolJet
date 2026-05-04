@@ -189,9 +189,9 @@ const verifyCommonData = (values) => {
     values.text2
   );
   cy.get(
-    commonWidgetSelector.draggableWidget("textInput1")
+    '[data-cy="textinput1-input"]'
   ).verifyVisibleElement("have.value", values.textInput1);
   cy.get(
-    commonWidgetSelector.draggableWidget("textInput2")
+    '[data-cy="textinput2-input"]'
   ).verifyVisibleElement("have.value", values.textInput2);
 };

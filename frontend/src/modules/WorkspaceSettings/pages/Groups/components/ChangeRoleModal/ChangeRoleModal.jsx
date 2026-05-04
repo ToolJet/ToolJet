@@ -68,7 +68,9 @@ function ChangeRoleModal({
           </div>
         </div>
         <div style={{ width: '100%' }}>
-          <h3 className="modal-title" data-cy="modal-title">Cannot add this permission to the group</h3>
+          <h3 className="modal-title" data-cy="modal-title">
+            Cannot add this permission to the group
+          </h3>
           <div className="modal-description" data-cy="modal-description">
             <p>
               End-users can only be granted permissions in the scope of their role.{' '}

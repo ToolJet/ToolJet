@@ -1,13 +1,28 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
-import { NO_OF_GRIDS } from './appCanvasConstants';
+import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
-const DYNAMIC_HEIGHT_AUTO_LIST = ['CodeEditor', 'Listview', 'TextArea', 'TagsInput'];
+const DYNAMIC_HEIGHT_AUTO_LIST = [
+  'CodeEditor',
+  'Listview',
+  'TextArea',
+  'TagsInput',
+  'TreeSelect',
+  'KeyValuePair',
+  'JSONExplorer',
+  'JSONEditor',
+  'RichTextEditor',
+  'Text',
+  'Table',
+];
 
 const WidgetWrapper = memo(
   ({
@@ -24,6 +39,26 @@ const WidgetWrapper = memo(
     moduleId,
     parentId,
   }) => {
+    const { contextPath } = useSubcontainerContext();
+    const indices = useMemo(() => {
+      const result = contextPath.map((s) => s.index);
+      return result.length > 0 ? result : null;
+    }, [contextPath]);
+    // Use full indices array for resolved component lookups, keep subContainerIndex for DOM/layout
+    const resolveIndex = indices ?? subContainerIndex;
+
+    // Derive nearest ListView ancestor ID and effective row index from contextPath (no store access needed)
+    const nearestListviewId = useMemo(() => {
+      if (contextPath.length === 0) return null;
+      return contextPath[contextPath.length - 1].containerId;
+    }, [contextPath]);
+
+    const effectiveSubContainerIndex = useMemo(() => {
+      if (subContainerIndex != null) return subContainerIndex;
+      if (contextPath.length > 0) return contextPath[contextPath.length - 1].index;
+      return null;
+    }, [subContainerIndex, contextPath]);
+
     const calculateMoveableBoxHeightWithId = useStore((state) => state.calculateMoveableBoxHeightWithId, shallow);
     const incrementCanvasUpdater = useStore((state) => state.incrementCanvasUpdater, shallow);
     const stylesDefinition = useStore(
@@ -32,11 +67,8 @@ const WidgetWrapper = memo(
     );
     const layoutData = useStore((state) => state.getComponentDefinition(id, moduleId)?.layouts?.[currentLayout]);
     const temporaryLayouts = useStore((state) => {
-      let transformedId = id;
-      if (subContainerIndex || subContainerIndex === 0) {
-        transformedId = `${id}-${subContainerIndex}`;
-      }
-      return state.temporaryLayouts?.[transformedId];
+      const layoutContext = indices ?? subContainerIndex;
+      return state.temporaryLayouts?.[getDynamicLayoutKey(id, layoutContext)];
     }, shallow);
     const getExposedPropertyForAdditionalActions = useStore(
       (state) => state.getExposedPropertyForAdditionalActions,
@@ -51,12 +83,12 @@ const WidgetWrapper = memo(
       shallow
     );
     const isDynamicHeightEnabled = useStore(
-      (state) => state.getResolvedComponent(id, subContainerIndex, moduleId)?.properties?.dynamicHeight,
+      (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.dynamicHeight,
       shallow
     );
     const isDynamicHeightEnabledInModeView = isDynamicHeightEnabled && mode === 'view';
     // Dont remove this is being used to re-render the height calculations
-    const label = useStore(
+    const _label = useStore(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.properties?.label
     );
     // Dont remove - used to re-render height calculations when textSize changes (ProgressBar)
@@ -65,17 +97,17 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.definition?.styles?.textSize
     );
 
-    const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
+    const setHoveredComponentForGrid = useTransientStore((state) => state.setHoveredComponentForGrid);
     const canShowInCurrentLayout = useStore((state) => {
-      const others = state.getResolvedComponent(id, subContainerIndex, moduleId)?.others;
+      const others = state.getResolvedComponent(id, resolveIndex, moduleId)?.others;
       return others?.[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'];
     });
 
     const visibility = useStore((state) => {
-      const component = state.getResolvedComponent(id, subContainerIndex, moduleId);
+      const component = state.getResolvedComponent(id, resolveIndex, moduleId);
       const componentExposedVisibility = getExposedPropertyForAdditionalActions(
         id,
-        subContainerIndex,
+        resolveIndex,
         'isVisible',
         moduleId
       );
@@ -101,8 +133,13 @@ const WidgetWrapper = memo(
     const width = gridWidth * newLayoutData?.width;
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
 
-    // Calculate the final height based on visibility and temporary layouts
-    const finalHeight = visibility ? temporaryLayouts?.height ?? height : 10;
+    // Calculate the final height based on visibility and temporary layouts.
+    // Hidden widgets in edit mode keep a small placeholder height so designers
+    // can still see/select them; in view mode they collapse to 0 (and
+    // display:none is set below).
+    const finalHeight = visibility ? temporaryLayouts?.height ?? height : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
+    const layoutContext = indices ?? subContainerIndex;
+    const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
     // Sets height to auto for subcontainer or listview if dynamic height is enabled
     const styles = {
@@ -140,6 +177,7 @@ const WidgetWrapper = memo(
           component-type={componentType}
           parent-id={parentId}
           subcontainer-id={subContainerIndex}
+          data-layout-context={serializedLayoutContext}
           style={{
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
@@ -171,15 +209,19 @@ const WidgetWrapper = memo(
           <RenderWidget
             id={id}
             componentType={componentType}
-            widgetHeight={newLayoutData.height}
+            widgetHeight={!visibility && mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : newLayoutData.height}
             widgetWidth={width}
             inCanvas={inCanvas}
             subContainerIndex={subContainerIndex}
+            resolveIndex={resolveIndex}
+            nearestListviewId={nearestListviewId}
+            effectiveSubContainerIndex={effectiveSubContainerIndex}
             onOptionChange={onOptionChange}
             darkMode={darkMode}
             onOptionsChange={onOptionsChange}
             moduleId={moduleId}
             currentMode={mode}
+            currentLayout={currentLayout}
           />
         </div>
       </>

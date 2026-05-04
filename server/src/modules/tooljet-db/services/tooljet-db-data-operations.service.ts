@@ -173,8 +173,8 @@ export class TooljetDbDataOperationsService implements QueryService {
         }
         if (!isEmpty(whereQuery)) query.push(whereQuery);
         if (!isEmpty(orderQuery)) query.push(orderQuery);
-        if (!isEmpty(limit)) query.push(`limit=${limit}`);
-        if (!isEmpty(offset)) query.push(`offset=${offset}`);
+        if (limit != null && limit !== '') query.push(`limit=${limit}`);
+        if (offset != null && offset !== '') query.push(`offset=${offset}`);
       }
 
       const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
@@ -236,7 +236,7 @@ export class TooljetDbDataOperationsService implements QueryService {
       };
     }
     const { table_id: tableId, delete_rows: deleteRows = { whereFilters: {} } } = queryOptions;
-    const { where_filters: whereFilters, limit = 1 } = deleteRows;
+    const { where_filters: whereFilters, limit = 1, order_column: orderColumn } = deleteRows;
     const { organization_id: organizationId } = context.app;
 
     const query = [];
@@ -254,7 +254,13 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
 
     if (!isEmpty(whereQuery)) query.push(whereQuery);
-    if (limit && limit !== '') query.push(`limit=${limit}&order=id`);
+
+    if (limit && limit !== '') {
+      query.push(`limit=${limit}`);
+      if (orderColumn) {
+        query.push(`order=${orderColumn}`);
+      }
+    }
 
     const headers = { 'data-query-id': queryOptions.id, 'tj-workspace-id': organizationId };
     const url = maybeSetSubPath(`/api/tooljet-db/proxy/${tableId}?` + query.join('&'));

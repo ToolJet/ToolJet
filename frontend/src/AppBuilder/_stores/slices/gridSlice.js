@@ -1,12 +1,35 @@
-import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
-import { isProperNumber } from '../utils';
-import { isTruthyOrZero } from '@/_helpers/appUtils';
-import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import {
+  buildReflowPatch,
+  getDynamicElementSelector,
+  getDynamicLayoutKey,
+  getNextBubbleContext,
+  getNextBubbleTargetId,
+  normalizeLayoutContext,
+  resolveContainerHeight,
+  resolveWidgetMeasuredHeight,
+  resolveWidgetVisibility,
+  shouldBubbleToParent,
+} from '../utils/dynamicHeightReflow';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Grid slice — owns the mutable reflow state for dynamic-height layout.
+//
+// State kept here:
+//   - temporaryLayouts: per-widget override layouts (top/height) that the reflow
+//     engine writes after every pass. WidgetWrapper reads these to override
+//     canonical layouts during render. Cleared lazily (not on every reflow).
+//   - draggingComponentId / resizingComponentId / isGroupDragging / isGroupResizing:
+//     coarse UI flags consumed by mouse/keyboard handlers to decide whether to
+//     select, reflow, or noop.
+//   - reorderContainerChildren: incremented to trigger Tab-panel children to
+//     re-order on tab switches.
+//
+// The meat of dynamic-height reflow lives in `adjustComponentPositions` below.
+// ─────────────────────────────────────────────────────────────────────────────
 
 const initialState = {
-  hoveredComponentForGrid: '',
-  hoveredComponentBoundaryId: '',
   triggerCanvasUpdater: 0,
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
@@ -23,17 +46,12 @@ const initialState = {
 
 export const createGridSlice = (set, get) => ({
   ...initialState,
-  setHoveredComponentForGrid: (id) =>
-    set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
-  getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
   checkHoveredComponentDynamicHeight: (id) => {
     const { getResolvedComponent } = get();
     const resolvedProperties = getResolvedComponent(id)?.properties;
     const { dynamicHeight } = resolvedProperties || {};
     return dynamicHeight;
   },
-  setHoveredComponentBoundaryId: (id) =>
-    set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   incrementCanvasUpdater: () =>
     set((state) => ({ triggerCanvasUpdater: state.triggerCanvasUpdater + 1 }), false, {
       type: 'incrementCanvasUpdater',
@@ -116,9 +134,73 @@ export const createGridSlice = (set, get) => ({
     }
   },
 
+  // Clear temp layouts for a single container across all its subcontainer
+  // contexts (widget-level key + every row-index / slot-suffixed key). Used
+  // on dynamic-height toggle-off so the container's own inflated height
+  // override is dropped and WidgetWrapper immediately reads canonical.
+  //
+  // Descendants' own temps are NOT cleared — a TextArea inside the container
+  // keeps its own grown height (it's still grown), and a Button shifted to
+  // accommodate that TextArea stays shifted (the shift is still accurate).
+  // Descendants overflow/clip inside the now-canonical-sized container,
+  // which is the expected non-dynamic semantics.
+  //
+  // `contextPrefix` scopes to a branch (e.g., a Listview nested inside a
+  // parent row passes the parent row context so sibling rows stay untouched).
+  // `null`/empty matches the container's key at any context.
+  clearContainerTempLayouts: (containerId, contextPrefix = null) => {
+    const normalizedPrefix = normalizeLayoutContext(contextPrefix);
+    const prefix = normalizedPrefix ? normalizedPrefix.join('.') : null;
+
+    const matches = (key) => {
+      if (!prefix) {
+        return key === containerId || key.startsWith(`${containerId}-`);
+      }
+      return key === `${containerId}-${prefix}` || key.startsWith(`${containerId}-${prefix}.`);
+    };
+
+    set((state) => {
+      const next = {};
+      let changed = false;
+      for (const [key, value] of Object.entries(state.temporaryLayouts || {})) {
+        if (matches(key)) {
+          changed = true;
+          continue;
+        }
+        next[key] = value;
+      }
+      return changed ? { temporaryLayouts: next } : {};
+    });
+  },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // adjustComponentPositions — the single entry point for dynamic-height
+  // reflow. Invoked by `useDynamicHeight` whenever a widget changes size,
+  // visibility, content, or mounts.
+  //
+  // Flow:
+  //   1. Resolve the changed widget's visibility and target height.
+  //      - For container-like widgets (Container, Form, Tabs, Accordion,
+  //        Listview, Modal body) `resolveContainerHeight` computes the target
+  //        height from child layouts.
+  //      - For leaf widgets `resolveWidgetMeasuredHeight` reads the rendered
+  //        DOM `offsetHeight`; falls back to the last temp layout or canonical.
+  //   2. Short-circuit for ModalV2 bodies: write a synthetic `-body` key into
+  //      temporaryLayouts and return. Modal bodies aren't grid siblings, so the
+  //      usual sibling-reflow path doesn't apply.
+  //   3. Collect siblings (same `parent` id) and build visibility + resolved-
+  //      height maps. `resolvedHeights[componentId]` is the changed widget's
+  //      new target height; siblings use `calculateMoveableBoxHeightWithId` so
+  //      top-label inputs keep their bumped height.
+  //   4. Call `buildReflowPatch` (in dynamicHeightReflow.js) to produce
+  //      `temporaryLayoutPatch`: per-sibling {top, height} overrides.
+  //   5. Write the patch, bump `triggerCanvasUpdater`, then bubble to the
+  //      parent context if appropriate. Bubbling re-runs the same flow on the
+  //      parent (container / tab / listview row / form / accordion / canvas)
+  //      so child growth propagates upward.
+  // ───────────────────────────────────────────────────────────────────────────
   adjustComponentPositions: (componentId, currentLayout = 'desktop', isContainer = false, subContainerIndex = null) => {
     const {
-      getResolvedValue,
       getCurrentPageComponents,
       setTemporaryLayouts,
       incrementCanvasUpdater,
@@ -127,313 +209,272 @@ export const createGridSlice = (set, get) => ({
       getResolvedComponent,
       getComponentTypeFromId,
       getComponentDefinition,
-      getExposedValueOfComponent,
+      getExposedPropertyForAdditionalActions,
+      getResolvedValue,
+      getContainerChildrenMapping,
+      getBaseParentId,
+      calculateMoveableBoxHeightWithId,
     } = get();
 
     try {
-      // Getting all the components on the current page
       const currentPageComponents = getCurrentPageComponents();
-
-      // This is done in order to modify the component id if the sub container index exists
-      const doesSubContainerIndexExist = isTruthyOrZero(subContainerIndex);
-
-      // If the component parent is a subcontainer, we need to transform the component id and use this id when we are dealing with temporary layouts everywhere
-      let transformedComponentId = doesSubContainerIndexExist ? `${componentId}-${subContainerIndex}` : componentId;
-
-      // If the component is a container, we need to calculate the height of the container
-      let containerHeight = currentPageComponents?.[componentId]?.layouts[currentLayout]?.height;
       const componentType = getComponentTypeFromId(componentId);
+      const contextIndices = normalizeLayoutContext(subContainerIndex);
+      const changedComponent = currentPageComponents?.[componentId];
 
-      // If the component is a modal, change id further to include the body
-      if (componentType === 'ModalV2') {
-        transformedComponentId = `${transformedComponentId}-body`;
+      if (!changedComponent) {
+        return null;
       }
 
-      // Determine component visibility by checking multiple sources in priority order
-      const component = getResolvedComponent(componentId, isContainer ? null : subContainerIndex);
-      const displayProperty = currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop';
-      const componentDisplay = component?.others?.[displayProperty];
-
-      if (componentType === 'Listview' && doesSubContainerIndexExist) {
-        const rowHeight = component?.properties.rowHeight;
-        containerHeight = rowHeight;
-      }
-
-      // Priority: exposed visibility > component properties > component styles
-      const componentExposedVisibility = getExposedValueOfComponent(componentId)?.isVisible;
-      let visibility = componentExposedVisibility ?? component?.properties?.visibility ?? component?.styles?.visibility;
-
-      // Override visibility if component is set to not display on current layout
-      if (componentDisplay === false) {
-        visibility = false;
-      }
-
-      // If the component is a container, we go to each and every child component and calculate the height of the container
-      if (isContainer && (componentType !== 'Listview' || doesSubContainerIndexExist)) {
-        let contentHeight = 0;
-        const element = document.querySelector(`.dynamic-${componentId}`);
-        // If the component is not a dynamic component, we use the height of the component from the layouts
-        if (!element) {
-          contentHeight = visibility
-            ? currentPageComponents?.[componentId]?.layouts[currentLayout]?.height
-            : HIDDEN_COMPONENT_HEIGHT;
-        } else {
-          // If component is not visible, we set the height to HIDDEN_COMPONENT_HEIGHT (10px)
-          if (!visibility) {
-            contentHeight = HIDDEN_COMPONENT_HEIGHT;
-          } else {
-            // If the component is a tabs, we need to get the active tab
-            let modifiedComponentId = componentId;
-            if (componentType === 'Tabs') {
-              const activeTab = element?.getAttribute('activetab');
-              modifiedComponentId = `${componentId}-${activeTab}`;
-            }
-
-            // The normal component layouts
-            const componentLayouts = get()
-              .getContainerChildrenMapping(modifiedComponentId)
-              .reduce((acc, id) => {
-                const component = currentPageComponents[id];
-                if (!component) return acc;
-                return {
-                  ...acc,
-                  [id]: component.layouts[currentLayout],
-                };
-              }, {});
-
-            // Dynamic height layouts
-            const filteredTemporaryLayouts = Object.keys(componentLayouts).reduce((acc, id) => {
-              const transformedId = doesSubContainerIndexExist ? `${id}-${subContainerIndex}` : id;
-              return {
-                ...acc,
-                ...(temporaryLayouts[transformedId] && { [transformedId]: temporaryLayouts[transformedId] }),
-              };
-            }, {});
-
-            const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
-
-            // Calculate the height of the container
-            let currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
-              if (!layout) {
-                return max;
-              }
-              const sum = layout.top + layout.height;
-              return Math.max(max, sum);
-            }, 0);
-
-            let extraHeight = 0;
-
-            // If the component is a container, we need to get the header height
-            if (componentType === 'Container') {
-              const { properties = {} } = getResolvedComponent(modifiedComponentId) || {};
-              const { showHeader, headerHeight } = properties;
-              if (showHeader && isProperNumber(headerHeight)) {
-                extraHeight += headerHeight - HIDDEN_COMPONENT_HEIGHT;
-              }
-
-              // If the component is a form, we need to get the header and footer height
-            } else if (componentType === 'Form') {
-              const { properties = {}, styles = {} } = getResolvedComponent(modifiedComponentId) || {};
-              const { component } = getComponentDefinition(modifiedComponentId);
-              const generateFormFrom = component?.definition?.properties?.generateFormFrom?.value;
-              const resolvedGenerateFormFrom = getResolvedValue(generateFormFrom);
-              const { showHeader, showFooter, headerHeight, footerHeight } = properties;
-              if (resolvedGenerateFormFrom === 'jsonSchema') {
-                //Inside element go inside fieldset and then find the last element and get the height
-                const lastElement = element.querySelector('fieldset:last-child');
-                if (lastElement) {
-                  currentMax = lastElement.offsetHeight;
-                }
-              } else {
-                if (showHeader && isProperNumber(headerHeight)) {
-                  extraHeight += headerHeight;
-                }
-                if (showFooter && isProperNumber(footerHeight)) {
-                  extraHeight += footerHeight;
-                }
-                extraHeight += 20;
-              }
-
-              // If the component is a tabs, we add 20px for the bottom
-            } else if (componentType === 'Tabs') {
-              extraHeight = 40;
-            } else if (componentType === 'Listview' && isTruthyOrZero(subContainerIndex)) {
-              extraHeight -= 40;
-            }
-            contentHeight = currentMax + 50 + extraHeight;
-          }
-        }
-        if (visibility) {
-          containerHeight = Math.max(contentHeight, containerHeight);
-        } else {
-          containerHeight = HIDDEN_COMPONENT_HEIGHT;
-        }
-      }
-
-      // Get all the component layouts
-      const boxList = Object.keys(currentPageComponents).map((key) => {
-        const widget = currentPageComponents[key];
-        return {
-          id: key,
-          ...widget,
-          height: widget?.layouts?.[currentLayout]?.height,
-          left: widget?.layouts?.[currentLayout]?.left,
-          top: widget?.layouts?.[currentLayout]?.top,
-          width: widget?.layouts?.[currentLayout]?.width,
-          parent: widget?.component?.parent,
-          component: widget?.component,
-        };
+      // Resolve visibility from exposed state → properties.visibility → styles.visibility,
+      // overridden to false by `others.showOnMobile/Desktop === false`.
+      const visibility = resolveWidgetVisibility({
+        componentId,
+        contextIndices,
+        currentLayout,
+        getResolvedComponent,
+        getExposedPropertyForAdditionalActions,
       });
 
-      // If the component is not found in the box list, we return
-      const changedComponent = boxList.find((box) => box.id === componentId);
-      if (!changedComponent) return;
-
-      const componentElement =
-        doesSubContainerIndexExist && componentType !== 'Listview'
-          ? document.querySelector(`.ele-${componentId}[subcontainer-id="${subContainerIndex}"]`)
-          : document.querySelector(`.ele-${componentId}`);
-
-      if (!componentElement) return;
-
-      // Get the actual new height from the DOM
-      // If the component is a container, we use the container height calculated above
-      // If the component is not a container, we use the offset height of the component
-      const newHeight =
-        isContainer && (componentType !== 'Listview' || isTruthyOrZero(subContainerIndex))
-          ? containerHeight
-          : visibility
-          ? componentElement.offsetHeight
-          : HIDDEN_COMPONENT_HEIGHT;
-
-      // Get the old height of the component either from the temporary layout if exists (moved previously) or from the layouts
-      const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
-      const dynamicHeightDifference = newHeight - oldHeight;
-
-      // If the dynamic height difference is 0 and the component is not a container, we return
-      if (dynamicHeightDifference === 0 && !isContainer) return;
-
-      // Update the changed component's height in layouts
-      const updatedLayouts = {
-        [transformedComponentId]: {
-          ...changedComponent.layouts[currentLayout],
-          ...temporaryLayouts?.[transformedComponentId],
-          height: newHeight,
-        },
-      };
-
-      // Calculate the new top, bottom, left, right of the changed component
-      // Left and Width are always the same as normal component layouts
-      const changedCompLeft = changedComponent.layouts[currentLayout].left;
-      const changedCompWidth = changedComponent.layouts[currentLayout].width;
-      const changedCompRight = changedCompLeft + changedCompWidth;
-      const changedCompTop =
-        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
-      const changedCompBottom = changedCompTop + newHeight;
-      const oldChangedCompTop =
-        temporaryLayouts?.[transformedComponentId]?.top ?? changedComponent.layouts[currentLayout].top;
-      const oldChangedCompHeight =
-        temporaryLayouts?.[transformedComponentId]?.height ?? changedComponent.layouts[currentLayout].height;
-      const oldChangedCompBottom = oldChangedCompTop + oldChangedCompHeight;
-
-      //Fetch all the components that are below the changed component
-      const componentsToAdjust = boxList.filter((box) => {
-        if (box.id === componentId) return false;
-
-        // Only checking components below that have the same parent
-        const sameParent = box.component?.parent === changedComponent.component?.parent;
-
-        // Checking if changed component initial bottom is below the initial box top
-        const boxTop = temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top;
-        const isBelow = oldChangedCompBottom <= boxTop;
-        return sameParent && isBelow;
+      // Compute the container-derived target height. Only meaningful when the
+      // changed widget is a container; leaf widgets ignore this.
+      const containerHeight = resolveContainerHeight({
+        componentId,
+        componentType,
+        currentLayout,
+        currentPageComponents,
+        temporaryLayouts,
+        contextIndices,
+        visibility,
+        getResolvedComponent,
+        getResolvedValue,
+        getComponentDefinition,
+        getContainerChildrenMapping,
+        getExposedPropertyForAdditionalActions,
+        calculateMoveableBoxHeightWithId,
       });
 
-      const isHorizontallyOverlapping = (element1Left, element1Right, element2Left, element2Right) => {
-        return (
-          (element1Left <= element2Left && element1Right >= element2Right) || // Completely contains
-          (element1Left >= element2Left && element1Right <= element2Right) || // Completely contained
-          (element1Left < element2Left && element1Right > element2Left) || // Left edge of dynamic height component overlaps
-          (element1Left < element2Right && element1Right > element2Right) // Right edge of dynamic height component overlaps
-        );
-      };
-
-      let currentLeft = changedCompLeft;
-      let currentRight = changedCompRight;
-      let currentBottom = changedCompBottom;
-
-      const componentsToAdjustSorted = componentsToAdjust.sort((a, b) => {
-        const transformedAId = doesSubContainerIndexExist ? `${a.id}-${subContainerIndex}` : a.id;
-        const transformedBId = subContainerIndex !== null ? `${b.id}-${subContainerIndex}` : b.id;
-        return (
-          (temporaryLayouts?.[transformedAId]?.top ?? a.layouts[currentLayout].top) -
-          (temporaryLayouts?.[transformedBId]?.top ?? b.layouts[currentLayout].top)
-        );
+      // Target height for the changed widget. For containers: containerHeight.
+      // For leaves: DOM offsetHeight (falls back to last temp or canonical).
+      const newHeight = resolveWidgetMeasuredHeight({
+        componentId,
+        componentType,
+        currentLayout,
+        currentPageComponents,
+        temporaryLayouts,
+        contextIndices,
+        isContainer,
+        visibility,
+        containerHeight,
       });
 
-      const targetComponents = componentsToAdjustSorted.filter((component) => {
-        const compLeft = component.layouts[currentLayout].left;
-        const compWidth = component.layouts[currentLayout].width;
-        const compRight = compLeft + compWidth;
-        const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
-        if (hasHorizontalOverlap) {
-          if (compLeft < currentLeft) {
-            currentLeft = compLeft;
-          }
-          if (compRight > currentRight) {
-            currentRight = compRight;
-          }
-        }
-        return hasHorizontalOverlap;
-      });
-
-      for (let index = 0; index < targetComponents.length; index++) {
-        const component = targetComponents[index];
-        const element = document.querySelector(`.ele-${component.id}`);
-        if (!element) continue;
-        const transformedTargetComponentId = doesSubContainerIndexExist
-          ? `${component.id}-${subContainerIndex}`
-          : component.id;
-
-        const verticalGap =
-          (temporaryLayouts?.[transformedTargetComponentId]?.top ?? component.layouts[currentLayout].top) -
-          oldChangedCompBottom;
-        const newTop = changedCompBottom + verticalGap;
-
-        updatedLayouts[transformedTargetComponentId] = {
-          ...component.layouts[currentLayout],
-          ...temporaryLayouts?.[transformedTargetComponentId],
-          top: newTop,
-        };
-        const newBottom =
-          newTop +
-          (temporaryLayouts?.[transformedTargetComponentId]?.height ?? component.layouts[currentLayout].height);
-        if (newBottom > currentBottom) {
-          currentBottom = newBottom;
-        }
+      // ModalV2 bodies aren't siblings in the grid — stash height on a synthetic
+      // `-body` key and return without sibling reflow.
+      if (componentType === 'ModalV2' && isContainer) {
+        setTemporaryLayouts({
+          [getDynamicLayoutKey(componentId, contextIndices, '-body')]: {
+            ...changedComponent.layouts[currentLayout],
+            ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices, '-body')],
+            height: newHeight,
+          },
+        });
+        incrementCanvasUpdater();
+        return null;
       }
 
-      if (isContainer) {
-        if (componentType !== 'Listview' && componentType !== 'ModalV2') {
-          const element = document.querySelector(`.ele-${componentId}`);
+      // Listview with a non-null context: could be either
+      //   (a) a ROW context (no scoped DOM element exists for this listview
+      //       at this context — we're just computing ONE row's height), or
+      //   (b) a WIDGET context (the scoped DOM element DOES exist — this is
+      //       a nested inner Listview rendered inside its parent Listview's
+      //       row; the inner listview's wrapper lives at that parent-row
+      //       context).
+      //
+      // (a) needs the short-circuit: write the row's temp and self-bubble
+      // up one context level. Running the sibling reflow or normal bubble
+      // here would (1) reflow siblings of the Listview at the wrong level
+      // and (2) use the Listview's widget canonical height as the delta
+      // baseline against a row-level newHeight.
+      //
+      // (b) needs the FULL flow: sibling reflow at this context (so the
+      // inner listview's grown height pushes other template widgets in the
+      // parent row) AND a normal bubble to the parent Listview at the SAME
+      // context (so the parent's row temp gets updated). Without this, an
+      // inner listview's growth never reaches the outer listview's row
+      // tempstack and the outer listview refuses to grow.
+      if (componentType === 'Listview' && contextIndices && isContainer) {
+        const scopedElement = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+        const isAtWidgetContext = !!scopedElement;
+        if (!isAtWidgetContext) {
+          setTemporaryLayouts({
+            [getDynamicLayoutKey(componentId, contextIndices)]: {
+              ...changedComponent.layouts[currentLayout],
+              ...temporaryLayouts?.[getDynamicLayoutKey(componentId, contextIndices)],
+              height: newHeight,
+            },
+          });
+          incrementCanvasUpdater();
+          const nextBubbleContext = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
+          adjustComponentPositions(componentId, currentLayout, true, nextBubbleContext);
+          return null;
+        }
+        // Widget context (nested inner listview). Fall through to normal
+        // flow so sibling reflow + parent bubble run with the current
+        // context preserved.
+      }
+
+      // Sibling scope: widgets sharing the same `parent` id. Canvas-level
+      // widgets have parent === null.
+      const parentId = changedComponent?.component?.parent ?? null;
+      const siblingIds = Object.keys(currentPageComponents).filter((id) => {
+        const siblingParentId = currentPageComponents[id]?.component?.parent ?? null;
+        return siblingParentId === parentId;
+      });
+
+      // visibleMap = true rendered visibility. Used when we need to know
+      // "is the widget currently shown on screen?".
+      const visibleMap = siblingIds.reduce((accumulator, siblingId) => {
+        accumulator[siblingId] = resolveWidgetVisibility({
+          componentId: siblingId,
+          contextIndices,
+          currentLayout,
+          getResolvedComponent,
+          getExposedPropertyForAdditionalActions,
+        });
+        return accumulator;
+      }, {});
+
+      // inFlowMap = "does this widget occupy layout flow right now?".
+      // Equals visibility UNLESS the widget has opted in to `collapseWhenHidden`,
+      // in which case hidden widgets drop out of flow and downstream siblings
+      // collapse up. When `collapseWhenHidden` is false (default), a hidden
+      // widget still holds its authored slot for reflow anchor math, so
+      // siblings stay where they are.
+      const inFlowMap = siblingIds.reduce((accumulator, siblingId) => {
+        if (visibleMap[siblingId]) {
+          accumulator[siblingId] = true;
+          return accumulator;
+        }
+        const siblingResolved = getResolvedComponent(siblingId, contextIndices);
+        const collapseWhenHidden = siblingResolved?.properties?.collapseWhenHidden ?? false;
+        accumulator[siblingId] = !collapseWhenHidden;
+        return accumulator;
+      }, {});
+
+      // Per-sibling collapseWhenHidden flag. Used by buildReflowPatch to gate
+      // the placeholder-height correction in canonicalGap math — only widgets
+      // that opted into collapse-on-hide can have been authored against the
+      // HIDDEN_COMPONENT_HEIGHT placeholder, so the correction is scoped here.
+      const collapseWhenHiddenMap = siblingIds.reduce((accumulator, siblingId) => {
+        const siblingResolved = getResolvedComponent(siblingId, contextIndices);
+        accumulator[siblingId] = siblingResolved?.properties?.collapseWhenHidden === true;
+        return accumulator;
+      }, {});
+
+      // resolvedHeights[sibling] = the sibling's CURRENT height. Prefer any
+      // existing temp-layout height (siblings that previously grew via their
+      // own dynamic-height pass), so a reflow triggered by a different widget
+      // doesn't erase the grown height. Fall back to the authored/moveable-
+      // box height when no temp exists (covers top-label-alignment height
+      // bumps for inputs).
+      //
+      // The changed widget overrides with its freshly-measured `newHeight`
+      // below.
+      const resolvedHeights = siblingIds.reduce((accumulator, siblingId) => {
+        const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices)];
+        if (existingTemp?.height != null) {
+          accumulator[siblingId] = existingTemp.height;
+          return accumulator;
+        }
+        const siblingDefinition = getComponentDefinition(siblingId);
+        const siblingStylesDefinition = siblingDefinition?.component?.definition?.styles;
+        accumulator[siblingId] = calculateMoveableBoxHeightWithId(siblingId, currentLayout, siblingStylesDefinition);
+        return accumulator;
+      }, {});
+      resolvedHeights[componentId] = newHeight;
+
+      // Main reflow — max-over-blockers model. For each target in the
+      // connected lane, the target's top is the max of `(V.currentBottom +
+      // effectiveGap(V, target))` over every in-flow blocker V above it,
+      // where effectiveGap subtracts the footprints of any out-of-flow
+      // blockers sitting between V and the target. Returns per-sibling
+      // layout overrides.
+      const { temporaryLayoutPatch } = buildReflowPatch({
+        changedComponentId: componentId,
+        componentIds: siblingIds,
+        currentLayout,
+        currentPageComponents,
+        temporaryLayouts,
+        contextIndices,
+        inFlowMap,
+        resolvedHeights,
+        collapseWhenHiddenMap,
+      });
+
+      if (Object.keys(temporaryLayoutPatch).length === 0) {
+        return null;
+      }
+
+      // For non-Listview containers we also set the DOM element's height
+      // directly so its inner canvas reflows the same frame — Listview rows
+      // drive their own heights via per-row subcontainers.
+      if (isContainer && componentType !== 'Listview') {
+        const element = document.querySelector(getDynamicElementSelector(componentId, contextIndices));
+        if (element && visibility) {
           element.style.height = `${newHeight}px`;
         }
       }
 
-      setTemporaryLayouts(updatedLayouts);
+      setTemporaryLayouts(temporaryLayoutPatch);
 
       incrementCanvasUpdater();
-      if (changedComponent.component?.parent || (componentType === 'Listview' && doesSubContainerIndexExist)) {
-        adjustComponentPositions(
-          isContainer && isTruthyOrZero(subContainerIndex)
-            ? componentId
-            : changedComponent.component?.parent?.slice(0, 36),
-          currentLayout,
-          true,
-          componentType === 'Listview' ? null : subContainerIndex
-        );
+
+      // ── Bubble to parent ───────────────────────────────────────────────
+      // Parent propagation is how child height changes reach Tabs/Form/
+      // Accordion/Listview/Container/Canvas. getNextBubbleTargetId handles:
+      //   - Listview row-context vs Listview widget-context (separate steps).
+      //   - slot-like parent ids ("<id>-header", "<tabsId>-<tabId>") → resolve
+      //     to the real ancestor component id via getBaseParentId / suffix trim.
+      // shouldBubbleToParent guards against self-recursion when the next
+      // target resolves back to the current (componentId, contextIndices).
+      const scopedElement = contextIndices
+        ? document.querySelector(getDynamicElementSelector(componentId, contextIndices))
+        : null;
+      const isScopedContextRenderable = !!scopedElement;
+      const nextBubbleTargetId = getNextBubbleTargetId({
+        componentId,
+        componentType,
+        parentId,
+        contextIndices,
+        getBaseParentId,
+        isScopedContextRenderable,
+        currentPageComponents,
+      });
+      const nextBubbleContext = getNextBubbleContext(componentType, contextIndices, componentId, nextBubbleTargetId);
+
+      // If the next bubble target is a container-like parent with dynamic
+      // height DISABLED, stop bubbling. A fixed-height container is an
+      // isolation boundary — children growing inside should not resize the
+      // container and push its siblings. Children overflow / clip / scroll
+      // inside instead.
+      const nextBubbleResolved = nextBubbleTargetId
+        ? getResolvedComponent(nextBubbleTargetId, nextBubbleContext)
+        : null;
+      const nextBubbleHasDynamicHeight = nextBubbleResolved?.properties?.dynamicHeight !== false;
+
+      if (
+        nextBubbleHasDynamicHeight &&
+        shouldBubbleToParent({
+          currentComponentId: componentId,
+          nextComponentId: nextBubbleTargetId,
+          currentContextIndices: contextIndices,
+          nextContextIndices: nextBubbleContext,
+        })
+      ) {
+        adjustComponentPositions(nextBubbleTargetId, currentLayout, true, nextBubbleContext);
       }
-      return updatedLayouts;
+
+      return temporaryLayoutPatch;
     } catch (error) {
       console.error('Error adjusting component positions:', error);
       return null;
@@ -447,10 +488,29 @@ export const createGridSlice = (set, get) => ({
     }));
   },
   handleCanvasContainerMouseUp: (e) => {
-    const { clearSelectedComponents, isGroupResizing, isGroupDragging } = get();
+    const {
+      clearSelectedComponents,
+      isGroupResizing,
+      isGroupDragging,
+      setCanvasHeaderSelected,
+      setCanvasFooterSelected,
+      draggingComponentId,
+      resizingComponentId,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
+
+    const isClickedOnCanvasHeader = e.target.getAttribute('component-id') === 'canvas-header';
+    const isClickedOnCanvasFooter = e.target.getAttribute('component-id') === 'canvas-footer';
+
+    const isMovingComponent = draggingComponentId || resizingComponentId || isGroupDragging || isGroupResizing;
+
+    if (!isMovingComponent && isClickedOnCanvasHeader) {
+      setCanvasHeaderSelected(true);
+    } else if (!isMovingComponent && isClickedOnCanvasFooter) {
+      setCanvasFooterSelected(true);
+    }
 
     // Check if any inspector popover is currently open
     const isInspectorPopoverOpen = () => {

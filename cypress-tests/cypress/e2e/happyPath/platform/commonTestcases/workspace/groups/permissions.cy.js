@@ -270,19 +270,19 @@ describe("Manage Groups", () => {
                 cy.get(dataSourceSelector.listQuery("user1-datasource"))
                     .should("be.visible")
                     .click();
-                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryAddParamButton).eq(0).should("be.enabled");
                 cy.get(dataSourceSelector.queryCreateAndRunButton)
                     .eq(0)
                     .should("be.enabled");
                 cy.get(dataSourceSelector.queryPreviewButton).eq(0).should("be.enabled");
                 cy.get(dataSourceSelector.queryHandlerMenu("user1-datasource")).click();
                 cy.get(dataSourceSelector.queryCardDeleteButton).click();
-                cy.get(dataSourceSelector.deleteModalConfirmButton).click();
+                cy.get(dataSourceSelector.deleteQueryConfirmButton).click();
 
                 cy.get(dataSourceSelector.listQuery("user2-datasource"))
                     .should("be.visible")
                     .click();
-                cy.get(dataSourceSelector.runjsAddParamButton).eq(0).should("be.enabled");
+                cy.get(dataSourceSelector.queryAddParamButton).eq(0).should("be.enabled");
                 cy.get(dataSourceSelector.queryCreateAndRunButton)
                     .eq(0)
                     .should("be.enabled");
@@ -291,7 +291,7 @@ describe("Manage Groups", () => {
                 cy.get(dataSourceSelector.editorDSPopover).click();
                 cy.wait(500);
 
-                cy.get('[data-cy="ds-datasource 2"]').click();
+                cy.get('[data-cy="ds-datasource-2"]').click();
                 cy.verifyToastMessage(
                     commonSelectors.toastMessage,
                     "Failed to create query: You do not have permission to access this resource"

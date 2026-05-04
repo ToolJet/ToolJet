@@ -11,6 +11,14 @@ import { allSvgs } from '@tooljet/plugins/client';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { deepClone } from './utilities/utils.helpers';
 
+export function addToLocalStorage(object) {
+  localStorage.setItem(object['key'], object['value']);
+}
+
+export function getDataFromLocalStorage(key) {
+  return localStorage.getItem(key);
+}
+
 export const getDateTimeFormat = (
   dateDisplayFormat,
   isTimeChecked,
@@ -108,12 +116,12 @@ export function isPDFSupported() {
 
 function getBrowserUserAgent(userAgent) {
   var regexps = {
-    Chrome: [/Chrome\/(\S+)/],
-    Firefox: [/Firefox\/(\S+)/],
-    MSIE: [/MSIE (\S+);/],
-    Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
-    Safari: [/Version\/(\S+).*?Safari\//],
-  },
+      Chrome: [/Chrome\/(\S+)/],
+      Firefox: [/Firefox\/(\S+)/],
+      MSIE: [/MSIE (\S+);/],
+      Opera: [/Opera\/.*?Version\/(\S+)/ /* Opera 10 */, /Opera\/(\S+)/ /* Opera 9 and older */],
+      Safari: [/Version\/(\S+).*?Safari\//],
+    },
     re,
     m,
     browser,

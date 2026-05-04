@@ -6,6 +6,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import List from '@/ToolJetUI/List/List';
 import { capitalize } from 'lodash';
 import { getFieldIcon } from '../utils';
+import useStore from '@/AppBuilder/_stores/store';
 
 // Helper function to get display text for field type
 const getFieldTypeDisplayText = (fieldType) => {
@@ -44,10 +45,10 @@ export const FieldItem = ({
   onTogglePopover,
   renderFieldPopover,
 }) => {
-  const resolvedItemName = resolveReferences(item.name);
-  const isEditable = resolveReferences(item.isEditable);
-  const fieldVisibility = item?.visibility ?? true;
-
+  const getResolvedValue = useStore((state) => state.getResolvedValue);
+  const resolvedItemName = getResolvedValue(item.name);
+  const isEditable = getResolvedValue(item.isEditable);
+  const fieldVisibility = getResolvedValue(item?.visibility) ?? true;
   const handleMenuOptionClick = useCallback(
     (listItem, menuOptionLabel) => {
       if (menuOptionLabel === 'Delete') {
@@ -89,7 +90,7 @@ export const FieldItem = ({
                 deleteIconOutsideMenu
                 showCopyColumnOption
                 showVisibilityIcon
-                isColumnVisible={resolveReferences(fieldVisibility)}
+                isColumnVisible={fieldVisibility}
                 className={activeFieldPopoverIndex === index ? 'active-column-list' : ''}
                 columnType={item?.fieldType}
                 Icon={getFieldIcon(item?.fieldType)}

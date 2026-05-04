@@ -1,7 +1,6 @@
 import { OrganizationSubscriptionInvoice } from '@entities/organization_subscription_invoice.entity';
 import { PaymentRedirectDto, PortalDto, ProrationDto } from '../dto';
 import { OrganizationSubscription } from '@entities/organization_subscription.entity';
-import Stripe from 'stripe';
 
 export interface IOrganizationPaymentService {
   getUpcomingInvoice(organizationId: string): Promise<OrganizationSubscriptionInvoice>;
@@ -20,7 +19,7 @@ export interface IOrganizationPaymentService {
 
   UpdateOrInsertCloudLicense(
     organizationSubscription: OrganizationSubscription,
-    invoiceObject: Stripe.Response<Stripe.Invoice>,
+    period: { start: Date; end: Date },
     manager?: any
   ): Promise<void>;
 

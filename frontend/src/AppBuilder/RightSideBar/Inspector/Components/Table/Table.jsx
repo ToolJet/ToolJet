@@ -16,6 +16,8 @@ import NoListItem from './NoListItem';
 import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 import { ColumnPopoverContent } from './ColumnManager/ColumnPopover';
 import { checkIfTableColumnDeprecated } from './ColumnManager/DeprecatedColumnTypeMsg';
+import { ToolTip } from '@/_components/ToolTip';
+import Icon from '@/_ui/Icon/solidIcons/index';
 import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -42,9 +44,11 @@ const getColumnTypeDisplayText = (columnType) => {
     boolean: 'Boolean',
     select: 'Select',
     newMultiSelect: 'Multiselect',
+    tagsV2: 'Tags',
     json: 'JSON',
     markdown: 'Markdown',
     html: 'HTML',
+    button: 'Button',
   };
   return displayMap[columnType] ?? capitalize(columnType ?? '');
 };
@@ -153,6 +157,8 @@ export const Table = (props) => {
           props={props}
           columnEventChanged={handleColumnEventChange}
           handleEventManagerPopoverCallback={handleEventManagerPopoverCallback}
+          onDuplicateColumn={() => duplicateColumn(index)}
+          onDeleteColumn={() => removeColumn(index, `${column.name}-${index}`)}
         />
       </Popover>
     ),
@@ -166,6 +172,8 @@ export const Table = (props) => {
       props,
       handleColumnEventChange,
       handleEventManagerPopoverCallback,
+      duplicateColumn,
+      removeColumn,
     ]
   );
 
@@ -250,7 +258,10 @@ export const Table = (props) => {
               property="disableActionButton"
               props={action}
               component={component}
-              paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+              paramMeta={{
+                type: 'toggle',
+                displayName: 'Disable action button',
+              }}
               paramType="properties"
             />
             <EventManager
@@ -258,7 +269,9 @@ export const Table = (props) => {
               sourceId={component?.id}
               eventSourceType="table_action"
               customEventRefs={actionRef}
-              eventMetaDefinition={{ events: { onClick: { displayName: 'On click' } } }}
+              eventMetaDefinition={{
+                events: { onClick: { displayName: 'On click' } },
+              }}
               currentState={currentState}
               dataQueries={dataQueries}
               components={components}
@@ -384,8 +397,16 @@ export const Table = (props) => {
     () => [
       'allowSelection',
       ...(allowSelection
-        ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow', 'selectRowOnCellEdit']
+        ? [
+            'highlightSelectedRow',
+            'disableRowDeselection',
+            'showBulkSelector',
+            'defaultSelectedRow',
+            'selectRowOnCellEdit',
+          ]
         : []),
+      'enableExpandableRows',
+      'expansionHeight',
     ],
     [allowSelection]
   );
@@ -407,18 +428,23 @@ export const Table = (props) => {
       'enablePagination',
       ...(enablePagination ? ['serverSidePagination'] : []),
       ...(enablePagination && !serverSidePagination ? ['rowsPerPage'] : []),
-      ...(enablePagination && serverSidePagination ? ['enablePrevButton', 'enableNextButton', 'totalRecords'] : []),
+      ...(enablePagination && serverSidePagination
+        ? ['serverSideRowsPerPage', 'enablePrevButton', 'enableNextButton', 'totalRecords']
+        : []),
     ],
     [enablePagination, serverSidePagination]
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const additionalActions = [
     'showAddNewRowButton',
     'showDownloadButton',
+    'showRefreshButton',
     'hideColumnSelectorButton',
     'loadingState',
     'showBulkUpdateActions',
     'visibility',
+    'collapseWhenHidden',
     'disabledState',
     'dynamicHeight',
   ];
@@ -488,6 +514,7 @@ export const Table = (props) => {
                                   <OverlayTrigger
                                     trigger="click"
                                     placement="left"
+                                    flip={true}
                                     rootClose={isRootCloseEnabled}
                                     overlay={renderColumnPopover(item, index)}
                                     onToggle={(show) => handleToggleColumnPopover(index, show)}
@@ -543,9 +570,15 @@ export const Table = (props) => {
                     darkMode={darkMode}
                     callbackFunction={(index, property, value) => setAllColumnsEditable(value)}
                     property="isAllColumnsEditable"
-                    props={{ isAllColumnsEditable: `{{${isAllColumnsEditable}}}` }}
+                    props={{
+                      isAllColumnsEditable: `{{${isAllColumnsEditable}}}`,
+                    }}
                     component={component}
-                    paramMeta={{ type: 'toggle', displayName: 'Make all columns editable', isFxNotRequired: true }}
+                    paramMeta={{
+                      type: 'toggle',
+                      displayName: 'Make all columns editable',
+                      isFxNotRequired: true,
+                    }}
                     paramType="properties"
                   />
                 </div>
@@ -554,9 +587,33 @@ export const Table = (props) => {
           </div>
         ),
       },
-      // Action buttons section
+      // Action buttons section (deprecated — replaced by button column type)
       {
-        title: 'Action buttons',
+        title: (
+          <div className="d-flex flex-row align-items-center" style={{ gap: '6px' }}>
+            <span>Action buttons</span>
+            <ToolTip
+              message={
+                <div
+                  style={{
+                    padding: '8px 4px',
+                    textAlign: 'left',
+                    width: '185px',
+                  }}
+                >
+                  These Action buttons are deprecated and will be removed in a future update. Use the new Button column
+                  instead by adding a new column and selecting type as a button.
+                </div>
+              }
+              show={true}
+              placement="bottom"
+            >
+              <span>
+                <Icon name={'warning'} height={14} width={14} fill="#DB4324" />
+              </span>
+            </ToolTip>
+          </div>
+        ),
         children: (
           <div className="field">
             <div className="row g-2">

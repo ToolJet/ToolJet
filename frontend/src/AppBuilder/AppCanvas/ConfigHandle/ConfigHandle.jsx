@@ -2,6 +2,7 @@ import React, { useState, useRef, Suspense, lazy } from 'react';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
+import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { DROPPABLE_PARENTS } from '../appCanvasConstants';
@@ -59,16 +60,17 @@ export const ConfigHandle = ({
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
-  const _showHandle = useStore((state) => {
-    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
-    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
-    // If one component is hovered and one is selected, show the handle for the hovered component
+
+  // If one component is hovered and one is selected, show the handle for the hovered component
+  const _showHandle = useTransientStore((state) => {
+    const isWidgetHovered = state.hoveredComponentForGrid === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.hoveredComponentForGrid !== '' || state.hoveredComponentBoundaryId !== '';
     return (
       ((subContainerIndex === 0 || subContainerIndex === null) && (isModuleContainer || (isModal && isModalOpen))) ||
       isWidgetHovered ||
       (showHandle && !isMultipleComponentsSelected && !anyComponentHovered)
     );
-  }, shallow);
+  });
 
   const currentPageIndex = useStore((state) => state.modules.canvas.currentPageIndex);
   const component = useStore((state) => state.modules.canvas.pages[currentPageIndex]?.components[id]);
@@ -116,24 +118,24 @@ export const ConfigHandle = ({
   const isHiddenOrModalOpen = visibility === false || (componentType === 'Modal' && isModalOpen);
   const getConfigHandleButtonStyle = isHiddenOrModalOpen
     ? {
-      background: 'var(--interactive-selected)',
-      color: 'var(--text-default)',
-      padding: '2px 6px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: '6px',
-      height: '24px',
-    }
+        background: 'var(--interactive-selected)',
+        color: 'var(--text-default)',
+        padding: '2px 6px',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: '6px',
+        height: '24px',
+      }
     : {
-      color: 'var(--text-on-solid)',
-      padding: '2px 6px',
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: '6px',
-      height: '24px',
-    };
+        color: 'var(--text-on-solid)',
+        padding: '2px 6px',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: '6px',
+        height: '24px',
+      };
   if (isDynamicHeightEnabled && !isHiddenOrModalOpen) {
     getConfigHandleButtonStyle.background = '#9747FF';
   }
@@ -193,7 +195,6 @@ export const ConfigHandle = ({
     return null;
   }
 
-
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -203,8 +204,8 @@ export const ConfigHandle = ({
           componentType === 'Modal' && isModalOpen
             ? '0px'
             : position === 'top'
-              ? '-26px'
-              : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+            ? '-26px'
+            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle || visibility === false ? 'visible' : 'hidden',
         left: '-1px',
         display: 'flex',
@@ -213,6 +214,9 @@ export const ConfigHandle = ({
       }}
       onClick={(e) => {
         e.stopPropagation();
+        if (isModal) {
+          setSelectedComponentAsModal(id);
+        }
         if (componentType === 'Tabs') {
           setFocusedParentId(`${id}-${currentTab}`);
         } else {
@@ -283,24 +287,21 @@ export const ConfigHandle = ({
         <PencilRuler size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
 
-      {
-        licenseValid && isRestricted && (
-          <ConfigHandleButton
-            customStyles={iconOnlyButtonStyle}
-            message={getTooltip()}
-            show={licenseValid && isRestricted && !draggingComponentId}
-            dataCy={`${componentName.toLowerCase()}-permissions-button`}
-          >
-            <Lock size={14} color="var(--icon-strong)" />
-          </ConfigHandleButton>
-        )
-      }
-      {
-        !isMultipleComponentsSelected && !shouldFreeze && (
-          <Suspense fallback={null}>
-            <MentionComponentInChat componentName={componentName} />
-          </Suspense >
-        )}
+      {licenseValid && isRestricted && (
+        <ConfigHandleButton
+          customStyles={iconOnlyButtonStyle}
+          message={getTooltip()}
+          show={licenseValid && isRestricted && !draggingComponentId}
+          dataCy={`${componentName.toLowerCase()}-permissions-button`}
+        >
+          <Lock size={14} color="var(--icon-strong)" />
+        </ConfigHandleButton>
+      )}
+      {!isMultipleComponentsSelected && !shouldFreeze && (
+        <Suspense fallback={null}>
+          <MentionComponentInChat componentName={componentName} />
+        </Suspense>
+      )}
       <ConfigHandleButton
         customStyles={iconOnlyButtonStyle}
         onClick={() => {
@@ -314,17 +315,15 @@ export const ConfigHandle = ({
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {
-        (componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
-          <Tooltip
-            delay={{ show: 500, hide: 50 }}
-            id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-            className="tooltip"
-            isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
-            style={{ textAlign: 'center' }}
-          />
-        )
-      }
-    </div >
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
+        <Tooltip
+          delay={{ show: 500, hide: 50 }}
+          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+          className="tooltip"
+          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
+          style={{ textAlign: 'center' }}
+        />
+      )}
+    </div>
   );
 };

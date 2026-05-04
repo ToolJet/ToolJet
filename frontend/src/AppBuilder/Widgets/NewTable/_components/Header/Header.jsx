@@ -20,11 +20,13 @@ export const Header = memo(
     table,
     setFilters,
     appliedFiltersLength,
+    componentName,
   }) => {
     const displaySearchBox = useTableStore((state) => state.getTableProperties(id)?.displaySearchBox, shallow);
     const showFilterButton = useTableStore((state) => state.getTableProperties(id)?.showFilterButton, shallow);
 
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const headerVisibility = useTableStore((state) => state.getHeaderVisibility(id), shallow);
 
     const appliedFilters = table.getState().columnFilters;
@@ -35,9 +37,12 @@ export const Header = memo(
     if (!headerVisibility) return null;
 
     // Loading state for header
-    if (loadingState) {
+    if (loadingState || isRefreshing) {
       return (
-        <div className={'table-card-header d-flex justify-content-between align-items-center'}>
+        <div
+          className={'table-card-header d-flex justify-content-between align-items-center'}
+          data-cy={`${componentName}-header-section`}
+        >
           <Loader width={83} height={28} />
           <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
             <Loader width={100} height={28} />
@@ -71,9 +76,10 @@ export const Header = memo(
             size="md"
             data-tooltip-id="tooltip-for-filter-data"
             data-tooltip-content="Filter data"
+            data-cy={`${componentName}-filter-button`}
           ></ButtonSolid>
           {appliedFiltersLength > 0 && (
-            <div className="filter-applied-state position-absolute">
+            <div className="filter-applied-state position-absolute" data-cy={`${componentName}-filter-applied-state`}>
               <svg
                 className="filter-applied-svg"
                 xmlns="http://www.w3.org/2000/svg"
@@ -106,6 +112,7 @@ export const Header = memo(
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         id={id}
+        componentName={componentName}
       />
     );
 
@@ -118,7 +125,14 @@ export const Header = memo(
           </div>
         </div>
         {showFilter && (
-          <Filter id={id} table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} />
+          <Filter
+            id={id}
+            table={table}
+            darkMode={darkMode}
+            setFilters={setFilters}
+            setShowFilter={setShowFilter}
+            componentName={componentName}
+          />
         )}
       </>
     );

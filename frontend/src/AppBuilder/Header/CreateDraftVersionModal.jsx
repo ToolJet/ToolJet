@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -17,7 +17,7 @@ const CreateDraftVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
 }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
@@ -49,10 +49,7 @@ const CreateDraftVersionModal = ({
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   useEffect(() => {
-    const gitSyncEnabled =
-      orgGit?.git_ssh?.is_enabled ||
-      orgGit?.git_https?.is_enabled ||
-      orgGit?.git_lab?.is_enabled;
+    const gitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
     setIsGitSyncEnabled(gitSyncEnabled);
   }, [orgGit]);
 
@@ -92,9 +89,16 @@ const CreateDraftVersionModal = ({
   }, [savedVersions, selectedVersion, selectedVersionForCreation]);
 
   // Update version name when selectedVersionForCreation changes or when modal opens
+  const hasInitializedVersionName = useRef(false);
+
   useEffect(() => {
-    if (showCreateAppVersion && selectedVersionForCreation?.name) {
+    if (!showCreateAppVersion) {
+      hasInitializedVersionName.current = false;
+      return;
+    }
+    if (!hasInitializedVersionName.current && selectedVersionForCreation?.name) {
       setVersionName(selectedVersionForCreation.name);
+      hasInitializedVersionName.current = true;
     }
   }, [selectedVersionForCreation, showCreateAppVersion]);
 
@@ -105,8 +109,8 @@ const CreateDraftVersionModal = ({
     savedVersions.length > 0
       ? savedVersions.map((version) => ({ label: version.name, value: version.id }))
       : selectedVersion && selectedVersion.status !== 'DRAFT'
-        ? [{ label: selectedVersion.name, value: selectedVersion.id }]
-        : [];
+      ? [{ label: selectedVersion.name, value: selectedVersion.id }]
+      : [];
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {
@@ -149,14 +153,15 @@ const CreateDraftVersionModal = ({
           (error) => {
             console.error('Error switching to new draft version:', error);
             toast.error('Draft created but failed to switch to it');
-          }
+          },
+          null // Don't pass env - use the draft's own currentEnvironmentId (development)
         );
       },
       (error) => {
         if (error?.data?.code === '23505') {
           toast.error('Version name already exists.');
         } else {
-          toast.error(error);
+          toast.error(error?.message || error?.error || 'Error while creating version. Please try again.');
         }
         setIsCreatingVersion(false);
       }

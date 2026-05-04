@@ -16,7 +16,7 @@ export const jsonExplorerConfig = {
       type: 'code',
       displayName: 'Json',
       validation: {
-        schema: { type: 'union', schemas: [{ type: 'object' }, { type: 'array' }] },
+        schema: { type: 'union', schemas: [{ type: 'array' }, { type: 'object' }] },
         defaultValue: `{{{ \n\ttext : "Hello World", \n\tnumber : 64, \n\tboolean : true, \n\tnullValue : null, \n\tfruits : [\n\t\t"banana",\n\t\t"mango",\n\t\t"grape"\n\t], \n\tobjectA : { \n\t\tvalue : "testing", \n\t\tenabled : false \n\t}, \n\titems : [] \n}}}`,
       },
     },
@@ -65,6 +65,13 @@ export const jsonExplorerConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -170,6 +177,8 @@ export const jsonExplorerConfig = {
       shouldShowRootNode: { value: '{{true}}' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
     },

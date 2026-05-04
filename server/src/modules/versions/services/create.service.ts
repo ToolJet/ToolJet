@@ -21,6 +21,9 @@ import { DataSourceScopes } from '@modules/data-sources/constants';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { WorkflowBundle } from '@entities/workflow_bundle.entity';
+import { App } from '@entities/app.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 
 @Injectable()
@@ -38,9 +41,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+      ((appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
         (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+        (appVersion.pageSettings = versionFrom.pageSettings));
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -80,6 +83,11 @@ export class VersionsCreateService implements IVersionsCreateService {
         oldComponentToNewComponentMapping,
         oldPageToNewPageMapping
       );
+
+      const app = await manager.findOne(App, { where: { id: appVersion.appId } });
+      if (app?.type === APP_TYPES.WORKFLOW) {
+        await this.copyWorkflowBundlesForVersion(manager, appVersion.id, versionFrom.id);
+      }
     }, manager);
   }
 
@@ -292,6 +300,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
       }
     }
+
+    // Handle workflow definitions - remap DataQuery IDs in definition.queries
+    if (definition?.queries && Array.isArray(definition.queries)) {
+      definition.queries = definition.queries.map((query) => {
+        if (query.id && dataQueryMapping[query.id]) {
+          return {
+            ...query,
+            id: dataQueryMapping[query.id],
+          };
+        }
+        return query;
+      });
+    }
+
     return definition;
   }
 
@@ -400,6 +422,16 @@ export class VersionsCreateService implements IVersionsCreateService {
           index: page.index,
           disabled: page.disabled,
           hidden: page.hidden,
+          pageHeader: page.pageHeader,
+          pageFooter: page.pageFooter,
+          icon: page.icon,
+          type: page.type,
+          openIn: page.openIn,
+          appId: page.appId,
+          url: page.url,
+          pageGroupId: page.pageGroupId,
+          pageGroupIndex: page.pageGroupIndex,
+          isPageGroup: page.isPageGroup,
           appVersionId: appVersion.id,
         })
       );
@@ -465,28 +497,32 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
 
         if (parentId) {
-          const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
-          const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
-          const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
+            const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
+            const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
 
-          if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+            if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
+              const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              } else {
+                parentId = null;
+              }
+            } else if (isKanbanModalChildFlag) {
+              const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-modal`;
+              } else {
+                parentId = null;
+              }
             } else {
-              parentId = null;
+              parentId = oldComponentToNewComponentMapping[parentId];
             }
-          } else if (isKanbanModalChildFlag) {
-            const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-modal`;
-            } else {
-              parentId = null;
-            }
-          } else {
-            parentId = oldComponentToNewComponentMapping[parentId];
           }
         }
 
@@ -619,6 +655,33 @@ export class VersionsCreateService implements IVersionsCreateService {
       event.event = eventDefinition;
 
       await manager.save(event);
+    }
+  }
+
+  protected async copyWorkflowBundlesForVersion(
+    manager: EntityManager,
+    newAppVersionId: string,
+    sourceAppVersionId: string
+  ): Promise<void> {
+    const sourceBundles = await manager.find(WorkflowBundle, {
+      where: { appVersionId: sourceAppVersionId },
+    });
+
+    for (const bundle of sourceBundles) {
+      await manager.save(
+        manager.create(WorkflowBundle, {
+          appVersionId: newAppVersionId,
+          language: bundle.language,
+          runtimeVersion: bundle.runtimeVersion,
+          dependencies: bundle.dependencies,
+          bundleBinary: bundle.bundleBinary,
+          bundleSize: bundle.bundleSize,
+          bundleSha: bundle.bundleSha,
+          status: bundle.status,
+          generationTimeMs: bundle.generationTimeMs,
+          error: bundle.error,
+        })
+      );
     }
   }
 }

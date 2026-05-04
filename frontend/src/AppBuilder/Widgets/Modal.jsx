@@ -90,8 +90,7 @@ export const Modal = function Modal({
         setShowModal(true);
       },
       close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
+        onHideModal();
       },
     };
     setExposedVariables(exposedVariables);
@@ -170,6 +169,7 @@ export const Modal = function Modal({
       height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
+      overflow: 'hidden',
     },
     modalHeader: {
       backgroundColor:

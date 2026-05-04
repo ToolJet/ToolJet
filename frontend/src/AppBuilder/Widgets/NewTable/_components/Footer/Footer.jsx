@@ -31,6 +31,7 @@ export const Footer = memo(
   }) => {
     const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
     const containerBackgroundColor = useTableStore(
       (state) => state.getTableStyles(id)?.containerBackgroundColor,
@@ -49,7 +50,7 @@ export const Footer = memo(
     if (!isFooterVisible) return null;
 
     // Loading state for footer
-    if (loadingState) {
+    if (loadingState || isRefreshing) {
       return <LoadingFooter />;
     }
 
@@ -82,33 +83,37 @@ export const Footer = memo(
             backgroundColor: containerBackgroundColor,
           }}
         >
-          <div className={`table-footer d-flex justify-content-between align-items-center h-100`}>
-            {enablePagination && (
-              <Pagination
-                id={id}
-                tableWidth={width}
-                pageIndex={pageIndex}
-                table={table}
-                pageCount={pageCount}
-                paginationBtnClicked={paginationBtnClicked}
-                darkMode={darkMode}
-                height={height}
-              />
-            )}
-            <div className="d-flex custom-gap-4">
+          <div className={`table-footer d-flex align-items-center h-100`}>
+            <div className="tw-flex-1 d-flex align-items-center h-100">
+              {enablePagination && (
+                <Pagination
+                  id={id}
+                  tableWidth={width}
+                  pageIndex={pageIndex}
+                  table={table}
+                  pageCount={pageCount}
+                  paginationBtnClicked={paginationBtnClicked}
+                  darkMode={darkMode}
+                  height={height}
+                />
+              )}
+            </div>
+            <div className="tw-flex-1 d-flex justify-content-center custom-gap-4">
               {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
-            <ControlButtons
-              id={id}
-              table={table}
-              darkMode={darkMode}
-              height={height}
-              componentName={componentName}
-              showAddNewRowPopup={showAddNewRowPopup}
-              setShowAddNewRowPopup={setShowAddNewRowPopup}
-              fireEvent={fireEvent}
-              columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
-            />
+            <div className="tw-flex-1 d-flex justify-content-end align-items-center h-100">
+              <ControlButtons
+                id={id}
+                table={table}
+                darkMode={darkMode}
+                height={height}
+                componentName={componentName}
+                showAddNewRowPopup={showAddNewRowPopup}
+                setShowAddNewRowPopup={setShowAddNewRowPopup}
+                fireEvent={fireEvent}
+                columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
+              />
+            </div>
           </div>
         </div>
         {showAddNewRowPopup && (
@@ -119,6 +124,7 @@ export const Footer = memo(
             allColumns={allColumns}
             fireEvent={fireEvent}
             setExposedVariables={setExposedVariables}
+            componentName={componentName}
           />
         )}
       </>

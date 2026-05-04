@@ -18,7 +18,7 @@ const CreateVersionModal = ({
   canCommit,
   orgGit,
   fetchingOrgGit,
-  handleCommitOnVersionCreation = () => { },
+  handleCommitOnVersionCreation = () => {},
   versionId,
   onVersionCreated,
 }) => {
@@ -48,7 +48,7 @@ const CreateVersionModal = ({
       developmentVersions: state.developmentVersions,
       featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
-      appId: state.appStore.modules[moduleId].app.appId,
+      appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
       currentMode: state.currentMode,
@@ -229,8 +229,7 @@ const CreateVersionModal = ({
         toast.error('Version name already exists.');
       } else if (error?.error) {
         toast.error(error?.error);
-      }
-      else {
+      } else {
         toast.error('Error while creating version. Please try again.');
       }
     } finally {

@@ -1,12 +1,40 @@
 export const mssqlUIConfig = {
     defaultFields: [
         {
+            type: "toggle",
+            fieldName: "Allow dynamic connection parameters",
+            validations: {
+                defaultValue: false,
+                disabled: false
+            }
+        },
+
+        {
+            type: "dropdown",
+            fieldName: "Connection type",
+            validations: {
+                defaultValue: 'Manual connection',
+                disabled: false
+            }
+        },
+
+        {
             type: "input",
             fieldName: "Host",
             validations: {
                 isRequired: true,
-                placeholder: "Enter host",
+                placeholder: "localhost",
                 defaultValue: "localhost",
+                disabled: false
+            }
+        },
+        {
+            type: "input",
+            fieldName: "Port",
+            validations: {
+                isRequired: true,
+                placeholder: "1433",
+                defaultValue: "1433",
                 disabled: false
             }
         },
@@ -22,20 +50,10 @@ export const mssqlUIConfig = {
         },
         {
             type: "input",
-            fieldName: "Port",
+            fieldName: "Database",
             validations: {
-                isRequired: true,
-                placeholder: "Enter port",
-                defaultValue: "1433",
-                disabled: false
-            }
-        },
-        {
-            type: "input",
-            fieldName: "Database name",
-            validations: {
-                isRequired: true,
-                placeholder: "Name of the database",
+                isRequired: false,
+                placeholder: "Enter name of the database",
                 defaultValue: "",
                 disabled: false
             }
@@ -45,7 +63,7 @@ export const mssqlUIConfig = {
             type: "input",
             fieldName: "Username",
             validations: {
-                isRequired: true,
+                isRequired: false,
                 placeholder: "Enter username",
                 defaultValue: "",
                 disabled: false
@@ -56,22 +74,13 @@ export const mssqlUIConfig = {
             type: "encrypted",
             fieldName: "Password",
             validations: {
-                isRequired: true,
+                isRequired: false,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,
                 hasEditButton: true,
                 showEncrypted: true,
                 hasEyeIcon: true
-            }
-        },
-
-        {
-            type: "toggle",
-            fieldName: "Azure (encrypt connection)",
-            validations: {
-                defaultValue: false,
-                disabled: false
             }
         },
 
@@ -90,6 +99,24 @@ export const mssqlUIConfig = {
                     }
                 ]
             }
+        },
+
+        {
+            type: "toggle",
+            fieldName: "SSL/TLS",
+            validations: {
+                defaultValue: false,
+                disabled: false
+            }
+        },
+
+        {
+            type: "toggle",
+            fieldName: "Azure encrypt connection",
+            validations: {
+                defaultValue: false,
+                disabled: false
+            }
         }
     ]
 };
@@ -103,17 +130,17 @@ export const mssqlFormConfig = {
         },
         {
             type: "input",
-            fieldName: "Instance",
-            text: `${Cypress.env('sqlserver_instance')}`
-        },
-        {
-            type: "input",
             fieldName: "Port",
             text: "1433"
         },
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Instance",
+            text: `${Cypress.env('sqlserver_instance')}`
+        },
+        {
+            type: "input",
+            fieldName: "Database",
             text: `${Cypress.env('sqlserver_db')}`
         },
         {
@@ -128,7 +155,7 @@ export const mssqlFormConfig = {
         },
         {
             type: "toggle",
-            fieldName: "Azure (encrypt connection)",
+            fieldName: "Azure encrypt connection",
             shouldBeChecked: false
         }
     ],
@@ -163,7 +190,7 @@ export const mssqlFormConfig = {
     invalidDatabase: [
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             text: "nonexistent_database"
         }
     ],

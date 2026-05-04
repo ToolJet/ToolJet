@@ -77,8 +77,8 @@ export const DropdownArrowIcon = ({ open, disabled, isHovered }) => {
   );
 };
 
-export const CheckIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
+export const CheckIcon = ({ size = 16 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none">
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"

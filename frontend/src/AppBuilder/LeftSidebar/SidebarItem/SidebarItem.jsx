@@ -4,6 +4,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button/Button';
+import { generateCypressDataCy } from '../../../modules/common/helpers/cypressHelpers';
 
 // TODO: remove refs and related dependancies
 export const SidebarItem = forwardRef(
@@ -35,8 +36,9 @@ export const SidebarItem = forwardRef(
     const content = (
       <Button
         {...rest}
-        className={`${className} ${selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
-          } ${icon}-icon`}
+        className={`${className} ${
+          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
+        } ${icon}-icon`}
         onClick={onClick && onClick}
         ref={ref}
         type="button"
@@ -44,7 +46,7 @@ export const SidebarItem = forwardRef(
         variant="ghost"
         size="default"
         iconOnly
-        data-cy={`left-sidebar-${icon?.toLowerCase() || 'unknown'}-button`}
+        data-cy={`left-sidebar-${generateCypressDataCy(typeof tip === 'object' ? icon : tip) || 'unknown'}-button`}
       >
         {children && (
           <div className={'sidebar-svg-icon  position-relative'}>
@@ -97,7 +99,7 @@ function NotificationBadge({ count }) {
     <>
       {count > 0 && (
         <span className="badge bg-red rounded-circle debugger-badge p-0" style={{ fontSize: fontSize }}>
-          {count > 999 ? `999+` : count}
+          {count > 999 ? `999 + ` : count}
         </span>
       )}
     </>

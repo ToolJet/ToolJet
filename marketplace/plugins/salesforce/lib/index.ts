@@ -51,6 +51,13 @@ export default class Salesforce implements QueryService {
       switch (operation) {
         case 'soql': {
           const query = queryOptions.soql_query;
+          if (!query || query.trim() === '') {
+            throw new QueryError(
+              'Invalid Query', 
+              'The SOQL query cannot be empty. Please provide a valid query.', 
+              {}
+            );
+          }
           result = await conn.query(query);
           break;
         }
@@ -87,6 +94,9 @@ export default class Salesforce implements QueryService {
         }
       }
     } catch (error) {
+      if(error instanceof QueryError)
+        throw error;
+
       // Check for 401 status code in various locations where jsforce might set it
       const statusCode = error?.response?.statusCode || error?.statusCode || error?.response?.status;
 

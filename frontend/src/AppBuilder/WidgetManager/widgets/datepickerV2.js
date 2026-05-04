@@ -55,6 +55,14 @@ export const datePickerV2Config = {
     customDateFormat: {
       type: 'custom',
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select date',
+      },
+    },
     defaultValue: {
       type: 'code',
       displayName: 'Default value',
@@ -80,6 +88,13 @@ export const datePickerV2Config = {
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
 
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -361,9 +376,12 @@ export const datePickerV2Config = {
     properties: {
       label: { value: 'Label' },
       defaultValue: { value: '01/01/2022' },
+      placeholder: { value: 'Select date' },
       dateFormat: { value: 'DD/MM/YYYY' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
       showClearBtn: { value: '{{false}}' },

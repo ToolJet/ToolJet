@@ -6,6 +6,8 @@ import './keyValuePair.scss';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useAutoGenerateFields } from './_hooks/useAutoGenerateFields';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 /**
  * KeyValuePair Widget
@@ -23,6 +25,12 @@ export const KeyValuePair = ({
   dataCy,
   id,
   width: widgetWidth,
+  height,
+  adjustComponentPositions,
+  currentLayout,
+  currentMode,
+  subContainerIndex,
+  componentType,
 }) => {
   const {
     dataSourceSelector,
@@ -33,6 +41,8 @@ export const KeyValuePair = ({
     loadingState = false,
     visibility = true,
     disabledState = false,
+    dynamicHeight = false,
+    showUpdateActions = true,
   } = properties;
 
   const data = dataSourceSelector === 'rawJson' ? properties?.data : dataSourceSelector;
@@ -66,20 +76,50 @@ export const KeyValuePair = ({
   const containerRef = useRef(null);
   const [maxLabelWidth, setMaxLabelWidth] = useState(0);
 
+  // Dynamic height support
+  const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
+  const heightChangeValue = useHeightObserver(containerRef, isDynamicHeightEnabled);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    value: heightChangeValue,
+    adjustComponentPositions,
+    currentLayout,
+    width: widgetWidth,
+    visibility: isVisible,
+    subContainerIndex,
+    componentType,
+  });
+
   // Merge original data with edited values
   const currentData = useMemo(() => ({ ...data, ...editedData }), [data, editedData]);
 
   // Check if there are unsaved changes
   const hasChanges = Object.keys(editedData).length > 0;
+  const handleFieldClick = useCallback(
+    (fieldKey, fieldValue) => {
+      setExposedVariables({ lastClickedField: { key: fieldKey, value: fieldValue } });
+      fireEvent('onFieldClick');
+    },
+    [fireEvent, setExposedVariables]
+  );
+
   // Handle field value changes
-  const handleValueChange = useCallback((fieldKey, newValue) => {
-    setEditedData((prev) => ({ ...prev, [fieldKey]: newValue }));
-  }, []);
+  const handleValueChange = useCallback(
+    (fieldKey, newValue) => {
+      setEditedData((prev) => ({ ...prev, [fieldKey]: newValue }));
+      fireEvent('onFieldValueChanged');
+    },
+    [fireEvent]
+  );
 
   // Discard changes - reset to original data
   const discardChanges = useCallback(() => {
     setEditedData({});
-  }, []);
+    fireEvent('onCancelKeyValuePairChanges');
+  }, [fireEvent]);
 
   // Save changes
   const saveChanges = useCallback(() => {
@@ -92,8 +132,10 @@ export const KeyValuePair = ({
     setExposedVariables({
       data,
       changeSet: editedData,
+      resetChanges: discardChanges,
+      lastClickedField: {},
     });
-  }, [data, editedData, setExposedVariables]);
+  }, [data, editedData, setExposedVariables, discardChanges]);
 
   // Auto-generate fields using custom hook
   const resolvedFields = useAutoGenerateFields({
@@ -153,11 +195,12 @@ export const KeyValuePair = ({
         'kv-padding-none': padding === 'none',
         invisible: !isVisible,
         'dark-mode': darkMode,
+        [`dynamic-${id}`]: isDynamicHeightEnabled,
       })}
       data-cy={dataCy}
       id={`component-${id}`}
     >
-      <div className="key-value-pair-content">
+      <div className="key-value-pair-content" style={{ overflowY: isDynamicHeightEnabled ? 'hidden' : 'auto' }}>
         {resolvedFields.map((field, index) => (
           <KeyValueRow
             componentId={id}
@@ -165,6 +208,7 @@ export const KeyValuePair = ({
             field={field}
             value={currentData[field.key]}
             onChange={(newValue) => handleValueChange(field.key, newValue)}
+            onFieldClick={() => handleFieldClick(field.key, currentData[field.key])}
             labelColor={labelColor}
             textColor={textColor}
             accentColor={accentColor}
@@ -181,7 +225,7 @@ export const KeyValuePair = ({
       </div>
 
       {/* ChangeSet Popover */}
-      {hasChanges && (
+      {showUpdateActions && hasChanges && (
         <div className="kv-changeset-popover">
           <div className="kv-changeset-content">
             <div className="kv-changeset-actions">

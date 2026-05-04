@@ -32,11 +32,15 @@ const Table = memo(
     currentLayout,
     currentMode,
     subContainerIndex,
+    componentType,
   }) => {
     const { moduleId } = useModuleContext();
     // get table store functions
     const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
     const removeComponent = useTableStore((state) => state.removeComponent, shallow);
+    const expandedRows = useTableStore((state) => state.getExpandedRows(id), shallow);
+    const lastExpandedRowIndex = useTableStore((state) => state.components[id]?.lastExpandedRowIndex ?? null, shallow);
+    const collapseAllRows = useTableStore((state) => state.collapseAllRows, shallow);
     const setTableProperties = useTableStore((state) => state.setTableProperties, shallow);
     const setTableActions = useTableStore((state) => state.setTableActions, shallow);
     const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
@@ -58,10 +62,15 @@ const Table = memo(
       (state) => state.getTableStyles(id)?.containerBackgroundColor,
       shallow
     );
+    const selectedRowColor = useTableStore((state) => state.getTableStyles(id)?.selectedRowColor, shallow);
     // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
+    const updateCustomResolvablesLazy = useStore((state) => state.updateCustomResolvablesLazy, shallow);
+    const resolveExpandedRows = useStore((state) => state.resolveExpandedRows, shallow);
+    const cleanupLazyResolvables = useStore((state) => state.cleanupLazyResolvables, shallow);
     const themeChanged = useStore((state) => state.themeChanged);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const colorMode = getColorModeFromLuminance(containerBackgroundColor);
     const iconColor = getCssVarValue(document.documentElement, `var(--cc-default-icon-${colorMode})`);
     const hoverColor = getModifiedColor(containerBackgroundColor, 6);
@@ -87,7 +96,33 @@ const Table = memo(
 
     const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
-    const firstRowOfTable = !isEmpty(data?.[0]) ? data?.[0] : undefined;
+    const firstRowOfTable = useMemo(() => {
+      if (!Array.isArray(data) || data.length === 0 || isEmpty(data[0])) return undefined;
+
+      const firstRow = data[0];
+      const hasNullValues = Object.values(firstRow).some(
+        (columnValue) => columnValue === null || columnValue === undefined
+      );
+      if (!hasNullValues) return firstRow;
+
+      const representative = { ...firstRow };
+      const nullColumns = Object.keys(firstRow).filter(
+        (columnKey) => firstRow[columnKey] === null || firstRow[columnKey] === undefined
+      );
+
+      for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+        if (nullColumns.length === 0) break;
+        const row = data[rowIndex];
+        for (let i = nullColumns.length - 1; i >= 0; i--) {
+          const key = nullColumns[i];
+          if (row[key] !== null && row[key] !== undefined) {
+            representative[key] = row[key];
+            nullColumns.splice(i, 1);
+          }
+        }
+      }
+      return representative;
+    }, [data]);
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
@@ -118,6 +153,53 @@ const Table = memo(
       hasDataChanged.current = true;
     }, [data]);
 
+    const enableExpandableRows = restOfProperties?.enableExpandableRows ?? false;
+
+    // Store only index 0 as template for initial component setup (setResolvedComponentByProperty).
+    // Full row data is populated on-demand in resolveExpandedRows when rows expand.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) {
+        cleanupLazyResolvables(id, moduleId);
+        return;
+      }
+      updateCustomResolvablesLazy(id, [{ rowData: data[0] }], moduleId, []);
+    }, [data, enableExpandableRows, id, moduleId, updateCustomResolvablesLazy, cleanupLazyResolvables]);
+
+    // When rows expand/collapse or data changes, resolve only expanded rows.
+    // resolveExpandedRows populates customResolvables for expanded indices,
+    // then reuses updateDependencyValues which scopes to those rows via the guard.
+    useEffect(() => {
+      if (!enableExpandableRows || !Array.isArray(data) || data.length === 0) return;
+      const indices = Object.values(expandedRows).filter((v) => typeof v === 'number' && v < data.length);
+      resolveExpandedRows(id, indices, data, moduleId);
+    }, [expandedRows, data, enableExpandableRows, id, moduleId, resolveExpandedRows]);
+
+    // Collapse all rows and clear exposed variables when expandable rows is toggled
+    const prevEnableExpandableRowsRef = useRef(enableExpandableRows);
+    useEffect(() => {
+      if (prevEnableExpandableRowsRef.current === enableExpandableRows) return;
+      prevEnableExpandableRowsRef.current = enableExpandableRows;
+      collapseAllRows(id);
+      setExposedVariables({ currentExpandedRows: [], lastExpandedRow: null });
+    }, [enableExpandableRows, collapseAllRows, id, setExposedVariables]);
+
+    // Expose currentExpandedRows / lastExpandedRow and fire onExpand on new expansions
+    const prevExpandedRowsRef = useRef({});
+    useEffect(() => {
+      const prev = prevExpandedRowsRef.current;
+      const currentExpandedRows = Object.values(expandedRows)
+        .filter((v) => typeof v === 'number')
+        .sort((a, b) => a - b);
+
+      setExposedVariables({ currentExpandedRows, lastExpandedRow: lastExpandedRowIndex });
+
+      // Fire onExpand only when a row is newly expanded
+      const hasNewExpansion = Object.keys(expandedRows).some((rowId) => !(rowId in prev));
+      if (hasNewExpansion) fireEvent('onExpand');
+
+      prevExpandedRowsRef.current = { ...expandedRows };
+    }, [expandedRows, lastExpandedRowIndex, setExposedVariables, fireEvent]);
+
     // Create ref for height observation
     const tableRef = useRef(null);
     const heightChangeValue = useHeightObserver(tableBodyRef, isDynamicHeightEnabled);
@@ -125,8 +207,11 @@ const Table = memo(
     // Initialize component on the table store
     useEffect(() => {
       initializeComponent(id);
-      return () => removeComponent(id);
-    }, [id, initializeComponent, removeComponent]);
+      return () => {
+        removeComponent(id);
+        cleanupLazyResolvables(id, moduleId);
+      };
+    }, [id, initializeComponent, removeComponent, cleanupLazyResolvables, moduleId]);
 
     // Set properties to the table store
     useEffect(() => {
@@ -181,10 +266,10 @@ const Table = memo(
 
     useBatchedUpdateEffectArray([
       {
-        dep: loadingState,
+        dep: loadingState || isRefreshing,
         sideEffect: () => {
-          updateExposedVariablesState('isLoading', loadingState);
-          setExposedVariable('isLoading', loadingState);
+          updateExposedVariablesState('isLoading', loadingState || isRefreshing);
+          setExposedVariable('isLoading', loadingState || isRefreshing);
         },
       },
       {
@@ -230,17 +315,22 @@ const Table = memo(
     }, [getResolvedValue, data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
     // Added to handle the dynamic value (fx) on the table column properties
 
+    // Allow empty-table height recalculation only on visibility changes to avoid flicker during brief null/empty data states.
+    const prevVisibility = usePrevious(exposedVariablesTemporaryState?.isVisible);
+    const hasVisibilityChanged = prevVisibility !== exposedVariablesTemporaryState.isVisible;
+
     useDynamicHeight({
       isDynamicHeightEnabled,
       id: id,
       height,
-      value: JSON.stringify({ heightChangeValue, tableData }),
-      skipAdjustment: exposedVariablesTemporaryState.isLoading || tableData.length === 0,
+      value: JSON.stringify({ heightChangeValue, tableData, expandedRows }),
+      skipAdjustment: exposedVariablesTemporaryState.isLoading || (tableData.length === 0 && !hasVisibilityChanged),
       adjustComponentPositions,
       currentLayout,
       width,
       visibility: exposedVariablesTemporaryState.isVisible,
       subContainerIndex,
+      componentType,
     });
 
     return (
@@ -250,7 +340,7 @@ const Table = memo(
         data-disabled={exposedVariablesTemporaryState.isDisabled}
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
-          height: isDynamicHeightEnabled ? '100%' : `${height}px`,
+          height: isDynamicHeightEnabled ? (subContainerIndex != null ? 'auto' : '100%') : `${height}px`,
           ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
           display: exposedVariablesTemporaryState.isVisible ? '' : 'none',
           borderRadius: Number.parseFloat(borderRadius),
@@ -267,6 +357,8 @@ const Table = memo(
           '--cc-table-striped-row-bg-color': stripedBackgroundColor,
           '--cc-table-striped-row-hover': stripedHoverColor,
           '--cc-table-striped-editable-column-hover': stripedEditableColumnColor,
+          '--cc-table-pinned-column-bg': containerBackgroundColor,
+          '--cc-table-selected-row-bg': selectedRowColor,
         }}
       >
         <TableContainer
@@ -277,7 +369,7 @@ const Table = memo(
           darkMode={darkMode}
           componentName={componentName}
           setExposedVariables={setExposedVariables}
-          loadingState={exposedVariablesTemporaryState.isLoading}
+          loadingState={exposedVariablesTemporaryState.isLoading || isRefreshing}
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}

@@ -35,7 +35,7 @@ export const parseValueToNumber = (val, numberFormat) => {
 };
 
 export const CurrencyInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
+  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
   const transformedProps = {
     ...props,
     inputType: 'currency',
@@ -121,8 +121,7 @@ export const CurrencyInput = (props) => {
   } = styles;
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const hasLabel =
-    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
   const hasValue = value !== '' && value !== null && value !== undefined;
@@ -161,16 +160,9 @@ export const CurrencyInput = (props) => {
   };
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      hasLabel
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
-    transform:
-      defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
+    right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
+    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
   const clearButtonRight =
@@ -246,7 +238,6 @@ export const CurrencyInput = (props) => {
   return (
     <>
       <div
-        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input d-flex phone-input-widget ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -277,8 +268,10 @@ export const CurrencyInput = (props) => {
           widthType={widthType}
           inputId={`component-${id}`}
           classes={labelClasses}
+          dataCy={dataCy}
         />
         <div
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
           className="d-flex h-100"
           style={{
             boxShadow,
@@ -315,6 +308,7 @@ export const CurrencyInput = (props) => {
               }
             }}
             componentId={id}
+            dataCy={dataCy}
           />
           <ReactCurrencyInput
             ref={inputRef}
@@ -343,6 +337,7 @@ export const CurrencyInput = (props) => {
             aria-hidden={!visibility}
             aria-invalid={!isValid && showValidationError}
             aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            data-cy={`${String(dataCy).toLowerCase()}-input`}
           />
         </div>
         {shouldShowClearBtn && (
@@ -373,7 +368,7 @@ export const CurrencyInput = (props) => {
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(dataCy).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
             textAlign: direction == 'left' && 'end',

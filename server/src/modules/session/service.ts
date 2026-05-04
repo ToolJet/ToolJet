@@ -34,7 +34,7 @@ export class SessionService {
   ) {}
 
   async terminateSession(user: User, sessionId: string, response: Response): Promise<void> {
-    response.clearCookie('tj_auth_token');
+    response.clearCookie('tj_auth_token', this.sessionUtilService.getClearCookieOptions());
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.delete(UserSessions, { id: sessionId, userId: user.id });
 
