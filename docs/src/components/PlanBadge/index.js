@@ -43,7 +43,7 @@ const ServerIcon = () => (
 
 const PLANS = {
   pro: { label: 'Pro Plan', className: 'plan-badge--pro', Icon: LightningIcon },
-  teams: { label: 'Teams Plan', className: 'plan-badge--teams', Icon: GroupIcon },
+  teams: { label: 'Team Plan', className: 'plan-badge--teams', Icon: GroupIcon },
   enterprise: { label: 'Enterprise Plan', className: 'plan-badge--enterprise', Icon: BuildingIcon },
   'self-hosted': { label: 'Self Hosted', className: 'plan-badge--self-hosted', Icon: ServerIcon },
 };
