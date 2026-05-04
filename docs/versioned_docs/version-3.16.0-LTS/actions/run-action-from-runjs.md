@@ -72,6 +72,39 @@ await queries.getTodos.run()
 let value = queries.getTodos.getLoadingState();
 //replace getTodos with your query name
 ```
+### Callback Functions
+
+In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+
+| Parameter | Type | Description |
+|--------|--------------|--------------|
+| onSuccess  | Function | Triggered when the query executes successfully. |
+| onFailure  | Function | Triggered when the query execution fails. |
+| Parameters | Object   | (Optional) Key-value pairs passed to the query. |
+
+```javascript
+queries.getUsers.run(
+  { limit: 10 },
+  {
+    onSuccess: (data) => {
+      // data = { status: 'ok', data: <query result> }
+      console.log('Query succeeded:', data);
+
+      actions.showAlert('success', 'Users fetched successfully');
+    },
+    onFailure: (error) => {
+      // error contains failure response
+      console.error('Query failed:', error);
+
+      actions.showAlert('danger', error.message || 'Something went wrong');
+    }
+  }
+);
+```
+
+**Execution Behaviours are :**
+- `run()` triggers the query asynchronously.
+- Callback functions are executed after the query completion.
 
 ## Set Variables
 
