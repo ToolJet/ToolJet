@@ -14,23 +14,7 @@
           "type": "category",
           "label": "Deployment",
           "items": [
-            "setup/try-tooljet",
-            "setup/choose-your-tooljet",
-            "setup/system-requirements",
-            "setup/digitalocean",
             "setup/docker",
-            "setup/ami",
-            "setup/ecs",
-            "setup/openshift",
-            "setup/helm",
-            "setup/kubernetes",
-            "setup/kubernetes-gke",
-            "setup/kubernetes-aks",
-            "setup/kubernetes-eks",
-            "setup/azure-container",
-            "setup/google-cloud-run",
-            "setup/env-vars",
-            "setup/http-proxy",
             {
               "type": "category",
               "label": "Built-in SSL",
@@ -69,7 +53,6 @@
                 "setup/builtin-ssl/faq"
               ]
             },
-            "setup/tooljet-subpath",
             {
               "type": "category",
               "label": "Overview",
@@ -93,7 +76,6 @@
                 "setup/configuration/tooljet-subpath"
               ]
             },
-            "setup/docker",
             {
               "type": "category",
               "label": "Managed Cloud",
