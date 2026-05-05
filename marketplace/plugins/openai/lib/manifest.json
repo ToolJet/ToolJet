@@ -28,13 +28,8 @@
       "key": "apiKey",
       "type": "password",
       "description": "Enter your OpenAI API Key",
+      "placeholder": "sk-...",
       "helpText": "For generating API Key, visit: <a href='https://beta.openai.com/account/api-keys' target='_blank' rel='noreferrer'>OpenAI Console</a>"
-    },
-    "organizationId": {
-      "label": "Organization ID",
-      "key": "organizationId",
-      "type": "text",
-      "description": "Enter your OpenAI Organization ID"
     }
   },
   "required": [
