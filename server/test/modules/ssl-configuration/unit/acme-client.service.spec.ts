@@ -3,15 +3,16 @@
  *
  * Covers:
  * - getOrCreateAccountKey() 3-step resolution (filesystem → DB → generate)
- * - ACME challenge path-traversal prevention
- * - Challenge file write and removal
+ * - handleChallengeCreate / handleChallengeRemove — DB-based multi-pod storage
+ * - getChallengeResponse — DB lookup for serving challenge tokens
+ * - ACME challenge token validation (path-traversal prevention)
  *
  * @group platform
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AcmeClientService } from '@ee/ssl-configuration/acme-client.service';
 import { InstanceSettingsUtilService } from '@ee/instance-settings/util.service';
-import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
+import { INSTANCE_SYSTEM_SETTINGS, INSTANCE_SETTINGS_TYPE } from '@modules/instance-settings/constants';
 
 // ---------------------------------------------------------------------------
 // Mock fs/promises
@@ -19,13 +20,11 @@ import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 const mockReadFile = jest.fn();
 const mockWriteFile = jest.fn();
 const mockMkdir = jest.fn();
-const mockUnlink = jest.fn();
 
 jest.mock('fs/promises', () => ({
   readFile: (...args: any[]) => mockReadFile(...args),
   writeFile: (...args: any[]) => mockWriteFile(...args),
   mkdir: (...args: any[]) => mockMkdir(...args),
-  unlink: (...args: any[]) => mockUnlink(...args),
 }));
 
 // ---------------------------------------------------------------------------
@@ -46,6 +45,25 @@ jest.mock('acme-client', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+function makeModule(settingsOverrides: Partial<InstanceSettingsUtilService> = {}) {
+  return Test.createTestingModule({
+    providers: [
+      AcmeClientService,
+      {
+        provide: InstanceSettingsUtilService,
+        useValue: {
+          getSettings: jest.fn().mockResolvedValue(null),
+          updateSystemParams: jest.fn().mockResolvedValue(undefined),
+          ...settingsOverrides,
+        },
+      },
+    ],
+  }).compile();
+}
+
+// ---------------------------------------------------------------------------
 // Test suite
 // ---------------------------------------------------------------------------
 describe('AcmeClientService', () => {
@@ -53,19 +71,7 @@ describe('AcmeClientService', () => {
   let instanceSettingsUtil: jest.Mocked<InstanceSettingsUtilService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AcmeClientService,
-        {
-          provide: InstanceSettingsUtilService,
-          useValue: {
-            getSettings: jest.fn(),
-            updateSystemParams: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-      ],
-    }).compile();
-
+    const module: TestingModule = await makeModule();
     service = module.get<AcmeClientService>(AcmeClientService);
     instanceSettingsUtil = module.get(InstanceSettingsUtilService);
   });
@@ -76,66 +82,60 @@ describe('AcmeClientService', () => {
   // getOrCreateAccountKey — 3-step resolution
   // -------------------------------------------------------------------------
   describe('getOrCreateAccountKey (via acquireCertificate)', () => {
-    // We test indirectly through acquireCertificate() since getOrCreateAccountKey is private
-
     beforeEach(() => {
       mockCreateCsr.mockResolvedValue([
         { toString: () => 'mock-private-key' },
         { toString: () => 'mock-csr' },
       ]);
-      mockAcmeAuto.mockResolvedValue('-----BEGIN CERTIFICATE-----\nleaf\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nchain\n-----END CERTIFICATE-----\n');
+      mockAcmeAuto.mockResolvedValue('-----BEGIN CERTIFICATE-----\nleaf\n-----END CERTIFICATE-----\n');
       mockMkdir.mockResolvedValue(undefined);
       mockWriteFile.mockResolvedValue(undefined);
     });
 
     it('step 1: uses existing account key from filesystem when present', async () => {
-      const existingKey = 'existing-account-key-pem';
-      mockReadFile.mockResolvedValueOnce(existingKey); // account.pem read succeeds
+      mockReadFile.mockResolvedValueOnce('existing-account-key-pem');
 
       await service.acquireCertificate('app.example.com', 'admin@example.com', false);
 
-      // Should have read account.pem from filesystem
       expect(mockReadFile).toHaveBeenCalledWith('/etc/letsencrypt/account.pem', 'utf8');
-      // DB should NOT have been queried for account key
-      expect(instanceSettingsUtil.getSettings).not.toHaveBeenCalled();
+      expect(instanceSettingsUtil.getSettings).not.toHaveBeenCalledWith(
+        INSTANCE_SYSTEM_SETTINGS.SSL_ACCOUNT_KEY,
+        expect.anything(),
+        expect.anything()
+      );
     });
 
     it('step 2: falls back to DB when filesystem key is absent', async () => {
-      const dbKey = 'db-account-key-pem';
-      mockReadFile.mockRejectedValueOnce(new Error('ENOENT')); // filesystem miss
-      instanceSettingsUtil.getSettings.mockResolvedValue(dbKey);
+      mockReadFile.mockRejectedValueOnce(new Error('ENOENT'));
+      instanceSettingsUtil.getSettings.mockResolvedValue('db-account-key-pem');
 
       await service.acquireCertificate('app.example.com', 'admin@example.com', false);
 
-      // Should have queried DB
       expect(instanceSettingsUtil.getSettings).toHaveBeenCalledWith(
         INSTANCE_SYSTEM_SETTINGS.SSL_ACCOUNT_KEY,
         false,
         expect.anything()
       );
-      // Should have written the key back to filesystem
+      // Restores key to filesystem so next call hits step 1
       expect(mockWriteFile).toHaveBeenCalledWith(
         '/etc/letsencrypt/account.pem',
-        dbKey,
+        'db-account-key-pem',
         expect.objectContaining({ mode: 0o600 })
       );
     });
 
-    it('step 3: generates a new key and persists to both filesystem and DB when neither has it', async () => {
-      const generatedKey = { toString: () => 'generated-key-pem' };
-      mockReadFile.mockRejectedValueOnce(new Error('ENOENT')); // filesystem miss
-      instanceSettingsUtil.getSettings.mockResolvedValue(null);   // DB miss
-      mockCreatePrivateKey.mockResolvedValue(generatedKey);
+    it('step 3: generates a new key and persists to both filesystem and DB', async () => {
+      mockReadFile.mockRejectedValueOnce(new Error('ENOENT'));
+      instanceSettingsUtil.getSettings.mockResolvedValue(null);
+      mockCreatePrivateKey.mockResolvedValue({ toString: () => 'generated-key-pem' });
 
       await service.acquireCertificate('app.example.com', 'admin@example.com', false);
 
-      // New key written to filesystem
       expect(mockWriteFile).toHaveBeenCalledWith(
         '/etc/letsencrypt/account.pem',
         'generated-key-pem',
         expect.objectContaining({ mode: 0o600 })
       );
-      // And saved to DB
       expect(instanceSettingsUtil.updateSystemParams).toHaveBeenCalledWith(
         expect.objectContaining({
           [INSTANCE_SYSTEM_SETTINGS.SSL_ACCOUNT_KEY]: 'generated-key-pem',
@@ -143,14 +143,12 @@ describe('AcmeClientService', () => {
       );
     });
 
-    it('continues without throwing when DB save of generated key fails', async () => {
-      const generatedKey = { toString: () => 'generated-key-pem' };
+    it('does not throw when DB save of generated key fails (non-fatal)', async () => {
       mockReadFile.mockRejectedValueOnce(new Error('ENOENT'));
       instanceSettingsUtil.getSettings.mockResolvedValue(null);
-      mockCreatePrivateKey.mockResolvedValue(generatedKey);
+      mockCreatePrivateKey.mockResolvedValue({ toString: () => 'generated-key-pem' });
       instanceSettingsUtil.updateSystemParams.mockRejectedValue(new Error('DB write failed'));
 
-      // Should NOT throw — DB failure is non-fatal
       await expect(
         service.acquireCertificate('app.example.com', 'admin@example.com', false)
       ).resolves.not.toThrow();
@@ -158,85 +156,183 @@ describe('AcmeClientService', () => {
   });
 
   // -------------------------------------------------------------------------
-  // ACME challenge path-traversal prevention
+  // ACME challenge — DB-based multi-pod storage
   // -------------------------------------------------------------------------
-  describe('ACME challenge security', () => {
+  describe('handleChallengeCreate and handleChallengeRemove (DB storage)', () => {
     // Expose private methods via a test-specific subclass
     class TestableAcmeClientService extends AcmeClientService {
-      async testChallengeCreate(token: string) {
-        return (this as any).handleChallengeCreate({}, { token }, 'keyAuthorization');
+      async testChallengeCreate(token: string, keyAuth = 'keyAuth') {
+        return (this as any).handleChallengeCreate({}, { token }, keyAuth);
       }
-
       async testChallengeRemove(token: string) {
-        return (this as any).handleChallengeRemove({}, { token }, 'keyAuthorization');
+        return (this as any).handleChallengeRemove({}, { token }, '');
       }
     }
 
-    let testableService: TestableAcmeClientService;
+    let svc: TestableAcmeClientService;
+    let util: jest.Mocked<InstanceSettingsUtilService>;
 
     beforeEach(async () => {
-      const module: TestingModule = await Test.createTestingModule({
+      const module = await Test.createTestingModule({
         providers: [
           { provide: AcmeClientService, useClass: TestableAcmeClientService },
           {
             provide: InstanceSettingsUtilService,
-            useValue: { getSettings: jest.fn(), updateSystemParams: jest.fn() },
+            useValue: {
+              getSettings: jest.fn().mockResolvedValue(null),
+              updateSystemParams: jest.fn().mockResolvedValue(undefined),
+            },
           },
         ],
       }).compile();
 
-      testableService = module.get<AcmeClientService>(AcmeClientService) as TestableAcmeClientService;
-      mockMkdir.mockResolvedValue(undefined);
-      mockWriteFile.mockResolvedValue(undefined);
-      mockUnlink.mockResolvedValue(undefined);
+      svc = module.get<AcmeClientService>(AcmeClientService) as TestableAcmeClientService;
+      util = module.get(InstanceSettingsUtilService);
     });
 
-    it('accepts a valid alphanumeric challenge token', async () => {
-      await expect(testableService.testChallengeCreate('abc123XYZ')).resolves.not.toThrow();
-      expect(mockWriteFile).toHaveBeenCalled();
+    it('stores token → keyAuth JSON map in DB on create', async () => {
+      util.getSettings.mockResolvedValue(null); // no existing challenges
+
+      await svc.testChallengeCreate('abc123', 'abc123.fingerprint');
+
+      expect(util.updateSystemParams).toHaveBeenCalledWith({
+        [INSTANCE_SYSTEM_SETTINGS.SSL_ACME_CHALLENGE]: JSON.stringify({
+          abc123: 'abc123.fingerprint',
+        }),
+      });
     });
 
-    it('rejects tokens with path-traversal sequences (..)', async () => {
-      await expect(testableService.testChallengeCreate('../etc/passwd')).rejects.toThrow(
-        'Invalid ACME challenge token'
-      );
+    it('merges new token into existing challenges map', async () => {
+      util.getSettings.mockResolvedValue(JSON.stringify({ existing: 'existing.fp' }));
+
+      await svc.testChallengeCreate('newtoken', 'newtoken.fp');
+
+      expect(util.updateSystemParams).toHaveBeenCalledWith({
+        [INSTANCE_SYSTEM_SETTINGS.SSL_ACME_CHALLENGE]: JSON.stringify({
+          existing: 'existing.fp',
+          newtoken: 'newtoken.fp',
+        }),
+      });
+    });
+
+    it('removes token from DB map on challenge remove', async () => {
+      util.getSettings.mockResolvedValue(JSON.stringify({ abc123: 'abc123.fp', other: 'other.fp' }));
+
+      await svc.testChallengeRemove('abc123');
+
+      expect(util.updateSystemParams).toHaveBeenCalledWith({
+        [INSTANCE_SYSTEM_SETTINGS.SSL_ACME_CHALLENGE]: JSON.stringify({ other: 'other.fp' }),
+      });
+    });
+
+    it('does not throw when remove DB write fails (non-fatal)', async () => {
+      util.getSettings.mockResolvedValue(JSON.stringify({ abc123: 'abc123.fp' }));
+      util.updateSystemParams.mockRejectedValueOnce(new Error('DB error'));
+
+      await expect(svc.testChallengeRemove('abc123')).resolves.not.toThrow();
+    });
+
+    it('does NOT write to the filesystem on challenge create', async () => {
+      util.getSettings.mockResolvedValue(null);
+      await svc.testChallengeCreate('abc123', 'abc123.fp');
       expect(mockWriteFile).not.toHaveBeenCalled();
-    });
-
-    it('rejects tokens with forward slashes', async () => {
-      await expect(testableService.testChallengeCreate('a/b')).rejects.toThrow(
-        'Invalid ACME challenge token'
-      );
-    });
-
-    it('rejects tokens with null bytes', async () => {
-      await expect(testableService.testChallengeCreate('abc\0def')).rejects.toThrow(
-        'Invalid ACME challenge token'
-      );
-    });
-
-    it('accepts tokens with hyphens and underscores (valid ACME tokens)', async () => {
-      await expect(testableService.testChallengeCreate('abc-123_XYZ')).resolves.not.toThrow();
-    });
-
-    it('removes challenge file for a valid token', async () => {
-      await testableService.testChallengeRemove('validtoken123');
-      expect(mockUnlink).toHaveBeenCalledWith(
-        expect.stringContaining('validtoken123')
-      );
-    });
-
-    it('does not throw when challenge file removal fails (non-fatal)', async () => {
-      mockUnlink.mockRejectedValueOnce(new Error('ENOENT'));
-      await expect(testableService.testChallengeRemove('validtoken123')).resolves.not.toThrow();
-    });
-
-    it('rejects removal of path-traversal token', async () => {
-      await expect(testableService.testChallengeRemove('../../../etc/shadow')).rejects.toThrow(
-        'Invalid ACME challenge token'
-      );
-      expect(mockUnlink).not.toHaveBeenCalled();
     });
   });
 
+  // -------------------------------------------------------------------------
+  // getChallengeResponse — DB lookup used by the middleware
+  // -------------------------------------------------------------------------
+  describe('getChallengeResponse', () => {
+    it('returns the key authorization for a known token', async () => {
+      instanceSettingsUtil.getSettings.mockResolvedValue(
+        JSON.stringify({ abc123: 'abc123.fingerprint' })
+      );
+
+      const result = await service.getChallengeResponse('abc123');
+
+      expect(result).toBe('abc123.fingerprint');
+    });
+
+    it('returns null for an unknown token', async () => {
+      instanceSettingsUtil.getSettings.mockResolvedValue(
+        JSON.stringify({ other: 'other.fp' })
+      );
+
+      expect(await service.getChallengeResponse('abc123')).toBeNull();
+    });
+
+    it('returns null when no challenges are stored', async () => {
+      instanceSettingsUtil.getSettings.mockResolvedValue(null);
+
+      expect(await service.getChallengeResponse('abc123')).toBeNull();
+    });
+
+    it('returns null for a token with path-traversal sequences', async () => {
+      instanceSettingsUtil.getSettings.mockResolvedValue(
+        JSON.stringify({ '../etc/passwd': 'malicious' })
+      );
+
+      expect(await service.getChallengeResponse('../etc/passwd')).toBeNull();
+      expect(instanceSettingsUtil.getSettings).not.toHaveBeenCalled();
+    });
+
+    it('returns null for tokens with forward slashes', async () => {
+      expect(await service.getChallengeResponse('a/b')).toBeNull();
+    });
+
+    it('returns null when DB read throws (graceful degradation)', async () => {
+      instanceSettingsUtil.getSettings.mockRejectedValue(new Error('DB down'));
+
+      expect(await service.getChallengeResponse('abc123')).toBeNull();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Token validation — shared between create, remove, and getChallengeResponse
+  // -------------------------------------------------------------------------
+  describe('ACME challenge token validation', () => {
+    class TestableAcmeClientService extends AcmeClientService {
+      async testChallengeCreate(token: string) {
+        return (this as any).handleChallengeCreate({}, { token }, 'keyAuth');
+      }
+    }
+
+    let svc: TestableAcmeClientService;
+
+    beforeEach(async () => {
+      const module = await Test.createTestingModule({
+        providers: [
+          { provide: AcmeClientService, useClass: TestableAcmeClientService },
+          {
+            provide: InstanceSettingsUtilService,
+            useValue: {
+              getSettings: jest.fn().mockResolvedValue(null),
+              updateSystemParams: jest.fn().mockResolvedValue(undefined),
+            },
+          },
+        ],
+      }).compile();
+      svc = module.get<AcmeClientService>(AcmeClientService) as TestableAcmeClientService;
+    });
+
+    it('accepts valid alphanumeric token', async () => {
+      await expect(svc.testChallengeCreate('abc123XYZ')).resolves.not.toThrow();
+    });
+
+    it('accepts tokens with hyphens and underscores (valid ACME format)', async () => {
+      await expect(svc.testChallengeCreate('abc-123_XYZ')).resolves.not.toThrow();
+    });
+
+    it('rejects tokens with path-traversal sequences (..)', async () => {
+      await expect(svc.testChallengeCreate('../etc/passwd')).rejects.toThrow('Invalid ACME challenge token');
+    });
+
+    it('rejects tokens with forward slashes', async () => {
+      await expect(svc.testChallengeCreate('a/b')).rejects.toThrow('Invalid ACME challenge token');
+    });
+
+    it('rejects tokens with null bytes', async () => {
+      await expect(svc.testChallengeCreate('abc\0def')).rejects.toThrow('Invalid ACME challenge token');
+    });
+  });
 });
