@@ -239,6 +239,26 @@ When **false**, passwords will follow the default validations. When **true**, pa
 These validations apply to both the instance and workspace levels.
 :::
 
+#### Configure GitSync via Environment Variables
+
+GitSync can be configured using environment variables instead of the ToolJet UI, useful for self-hosted setups where you want to automate or version-control your GitSync configuration.
+
+ToolJet supports **GitHub (HTTPS)**, **GitLab**, and **Git (SSH)**. For example, to configure GitSync with GitHub (HTTPS), set the following variables:
+
+| **Key** | **Description** |
+| --- | --- |
+| `GITHUB_URL` | The HTTPS URL of your GitHub repository. (e.g. `https://github.com/your-org/your-repo`) |
+| `GITHUB_BRANCH` | The branch to sync with. |
+| `GITHUB_APP_ID` | Your GitHub App ID. |
+| `GITHUB_INSTALLATION_ID` | The installation ID for your GitHub App. |
+| `GITHUB_PRIVATE_KEY` | The private key generated when creating the GitHub App. Escape newlines as `\n`. |
+
+:::warning BETA
+This feature is currently in beta and is not recommended for production use.
+For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars).
+:::
+
+
 ### Third-Party Integrations
 
 #### Slack

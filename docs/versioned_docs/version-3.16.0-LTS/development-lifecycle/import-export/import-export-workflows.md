@@ -3,13 +3,7 @@ id: import-export-workflows
 title: Workflows
 ---
 
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-
-<div className="badge badge--self-hosted heading-badge" >   
- <span>Self Hosted</span>
-</div>
-
-</div>
+<PlanBadge type="self-hosted" />
 
 ToolJet supports exporting workflows as JSON files and importing them into any ToolJet workspace.
 

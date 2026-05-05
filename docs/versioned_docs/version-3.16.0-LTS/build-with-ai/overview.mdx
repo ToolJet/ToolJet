@@ -1,0 +1,302 @@
+---
+id: overview
+title: Build with AI
+sidebar_label: Overview
+hide_title: true
+---
+
+import Link from '@docusaurus/Link';
+
+export const FeatureCard = ({ icon, title, description, href, badge }) => (
+    <Link to={href} style={{ textDecoration: 'none' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px',
+            padding: '20px',
+            height: '100%',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '28px', lineHeight: 1 }}>{icon}</span>
+                {badge && (
+                    <span style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        padding: '2px 8px',
+                        borderRadius: '20px',
+                        background: badge === 'Paid' ? '#fef3c7' : '#dbeafe',
+                        color: badge === 'Paid' ? '#92400e' : '#1e40af',
+                        border: badge === 'Paid' ? '1px solid #fcd34d' : '1px solid #93c5fd',
+                    }}>{badge}</span>
+                )}
+            </div>
+            <div>
+                <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--ifm-font-color-base)', marginBottom: '6px' }}>{title}</div>
+                <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
+            </div>
+        </div>
+    </Link>
+);
+
+export const ConfigCard = ({ title, description, href, label, labelColor, labelBg, features }) => (
+    <Link to={href} style={{ textDecoration: 'none' }}>
+        <div style={{
+            border: '1px solid var(--ifm-toc-border-color)',
+            borderRadius: '10px',
+            padding: '22px',
+            height: '100%',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            background: 'var(--ifm-card-background-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.12)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
+            <div>
+                <span style={{
+                    display: 'inline-block',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    background: labelBg,
+                    color: labelColor,
+                    marginBottom: '10px',
+                    letterSpacing: '0.03em',
+                    textTransform: 'uppercase',
+                }}>{label}</span>
+                <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--ifm-font-color-base)', marginBottom: '6px' }}>{title}</div>
+                <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{description}</div>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {features.map((f, i) => <li key={i} style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)' }}>{f}</li>)}
+            </ul>
+        </div>
+    </Link>
+);
+
+export const SectionSubtitle = ({ text }) => (
+    <p style={{ color: 'var(--ifm-color-emphasis-600)', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>{text}</p>
+);
+
+<div style={{
+    padding: '28px 28px 24px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0f2fe 100%)',
+    border: '1px solid #e9d5ff',
+    marginBottom: '32px',
+}}>
+    <div style={{ fontSize: '13px', fontWeight: 600, color: '#7c3aed', marginBottom: '8px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>ToolJet AI</div>
+    <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '0 0 10px', color: '#1e1b4b' }}>Build with AI</h1>
+    <p style={{ fontSize: '15px', color: '#4c1d95', margin: 0, maxWidth: '620px', lineHeight: '1.6' }}>
+        With ToolJet, you can build business applications effortlessly using natural language. Whether you're starting from scratch or enhancing an existing app, ToolJet AI accelerates development by generating UI, queries, and data bindings; so your team ships internal tools faster.
+    </p>
+</div>
+
+## Generate an Application
+
+<SectionSubtitle text="Go from a prompt to a fully functional business app in minutes" />
+
+export const Step = ({ n, title, desc, img, alt, tip, tipHref, imgClass = 'img-full' }) => (
+    <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div style={{
+            minWidth: '28px', height: '28px', borderRadius: '50%',
+            background: '#ede9fe', color: '#6d28d9',
+            fontWeight: 700, fontSize: '13px', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginTop: '1px',
+        }}>{n}</div>
+        <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--ifm-font-color-base)', marginBottom: '4px' }}>{title}</div>
+            <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)', lineHeight: '1.5' }}>{desc}</div>
+            {tip && tipHref && (
+                <Link to={tipHref} style={{ textDecoration: 'none' }}>
+                    <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '5px',
+                        marginTop: '8px', padding: '3px 10px',
+                        borderRadius: '20px', fontSize: '13px', fontWeight: 500,
+                        border: '1px solid #ddd6fe', color: '#6d28d9',
+                        background: '#faf5ff',
+                    }}>
+                        ✍️ {tip}
+                    </span>
+                </Link>
+            )}
+            <img className={`screenshot-full ${imgClass}`} style={{ marginTop: '12px', marginBottom: '4px', display: 'block', width: '100%' }} src={img} alt={alt} />
+        </div>
+    </div>
+);
+
+<Step
+    n="1"
+    title="Describe your application"
+    desc='Enter a prompt on the dashboard. e.g., "Create a customer support dashboard to track ticket volume, response times, and agent performance using @postgresql "'
+    tip="Tips for writing better prompts"
+    tipHref="/docs/build-with-ai/prompting101"
+    img="/img/tooljet-ai/overview/step-1.png"
+    alt="Describe your application"
+    imgClass="img-s"
+/>
+
+<Step
+    n="2"
+    title="Select your data source"
+    desc="Choose from your existing database to connect your real schema, or proceed with sample data to prototype quickly."
+    img="/img/tooljet-ai/overview/step-2.png"
+    alt="Select your data source"
+    imgClass="img-m"
+/>
+
+<Step
+    n="3"
+    title="Review the spec document"
+    desc="AI generates a specification outlining features, pages, and navigation. Review and approve before anything is built."
+    img="/img/tooljet-ai/overview/step-3.png"
+    alt="Review the spec document"
+    imgClass="img-m"
+/>
+
+<Step
+    n="4"
+    title="Application is generated"
+    desc="A fully functional app is created with UI components, queries, and data bindings already configured. Customize from there."
+    img="/img/tooljet-ai/overview/step-4.png"
+    alt="Application is generated"
+/>
+
+## AI Capabilities
+
+<SectionSubtitle text="Everything you can do with ToolJet AI today" />
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '8px' }}>
+    <FeatureCard
+        icon="⚡"
+        title="Generate Applications"
+        description="Describe your app in plain language. ToolJet AI scaffolds the full UI, queries, and schema; ready to customize."
+        href="/docs/build-with-ai/generate-applications"
+    />
+    <FeatureCard
+        icon="🗄️"
+        title="Integrate Existing Data"
+        description="Connect your existing database. AI reads your table and builds apps on top of your schema."
+        href="/docs/build-with-ai/integrating-data"
+    />
+    <FeatureCard
+        icon="🔧"
+        title="Debug Components"
+        description="Broken bindings or invalid expressions? Click Fix with AI directly in the property editor to resolve errors in place."
+        href="/docs/build-with-ai/debug-components"
+    />
+    <FeatureCard
+        icon="📚"
+        title="Learn with AI"
+        description="Ask anything about ToolJet: components, queries, integrations. Get instant, contextual answers from the docs assistant."
+        href="/docs/build-with-ai/ai-docs-assistant"
+    />
+    <FeatureCard
+        icon="✍️"
+        title="Prompting 101"
+        description="Generic prompts produce generic apps. Learn how to write prompts that produce purpose-built tools for your business."
+        href="/docs/build-with-ai/prompting101"
+    />
+    <FeatureCard
+        icon="🔌"
+        title="ToolJet MCP"
+        description="Connect AI assistants like Cursor, Claude, or Copilot to your ToolJet instance via the Model Context Protocol."
+        href="/docs/build-with-ai/tooljet-mcp"
+        badge="Self Hosted"
+    />
+</div>
+
+## AI Configuration
+
+<SectionSubtitle text="Choose how AI requests are powered: based on your cost, compliance, and infrastructure needs" />
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px', marginBottom: '8px' }}>
+    <ConfigCard
+        label="Default"
+        labelBg="#dcfce7"
+        labelColor="#166534"
+        title="ToolJet Managed AI"
+        description="AI requests are routed through ToolJet AI Cloud and billed against your workspace's AI credits. Zero setup required."
+        href="/docs/build-with-ai/ai-credits"
+        features={[
+            'No configuration needed',
+            'Credit-based billing',
+            'Monthly + add-on credits',
+        ]}
+    />
+    <ConfigCard
+        label="Enterprise"
+        labelBg="#fef3c7"
+        labelColor="#92400e"
+        title="Bring Your Own Key"
+        description="Use your own LLM API key instead of consuming ToolJet credits. Requests still route through ToolJet AI Cloud."
+        href="/docs/build-with-ai/bring-your-own-key"
+        features={[
+            'Direct billing from your LLM provider',
+            'Full usage visibility',
+            'No ToolJet credits consumed',
+        ]}
+    />
+    <ConfigCard
+        label="Enterprise · Self Hosted"
+        labelBg="#e0e7ff"
+        labelColor="#3730a3"
+        title="ToolJet AI Enterprise"
+        description="Deploy ToolJet's AI server on your own infrastructure. No data leaves your environment ever."
+        href="/docs/build-with-ai/tj-ai-enterprise"
+        features={[
+            'Fully air-gapped deployment',
+            'Your own LLM keys',
+            'Meets strict data residency requirements',
+        ]}
+    />
+</div>
+
+## Data & Privacy
+
+<SectionSubtitle text="Understand how ToolJet handles your data when AI is involved" />
+
+<Link to="/docs/build-with-ai/privacy" style={{ textDecoration: 'none' }}>
+    <div style={{
+        border: '1px solid var(--ifm-toc-border-color)',
+        borderRadius: '10px',
+        padding: '18px 22px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        background: 'var(--ifm-card-background-color)',
+        display: 'flex',
+        alignItems: 'center',
+    }}
+    onMouseEnter={e => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.1)'; }}
+    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ifm-toc-border-color)'; e.currentTarget.style.boxShadow = 'none'; }}
+    >
+        <span style={{ fontSize: '24px', marginRight: '14px' }}>🔒</span>
+        <div>
+            <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--ifm-font-color-base)' }}>Privacy Policy</div>
+            <div style={{ fontSize: '14px', color: 'var(--ifm-color-emphasis-700)' }}>What data is shared with AI, how it's protected, and your deployment options.</div>
+        </div>
+    </div>
+</Link>
+
+<br/>
+
+---
+
+## Need Help?
+
+- Reach out via our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA)
+- Or email us at [support@tooljet.com](mailto:support@tooljet.com)
+- Found a bug? Please report it via [GitHub Issues](https://github.com/ToolJet/ToolJet/issues)

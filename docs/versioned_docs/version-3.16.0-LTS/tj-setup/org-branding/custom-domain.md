@@ -45,18 +45,8 @@ After setting the environment variable and DNS configurations, restart your Tool
 
 
 ## ToolJet Cloud
-<div style={{display:'flex',justifyContent:"start",alignItems:"center",gap:"8px"}}>
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
 
-</div>
+<PlanBadge type="teams" />
 
 ToolJet Cloud allows you to map a custom domain or subdomain to your workspace, so your team can access ToolJet from a URL like `tools.yourcompany.com` instead of the default ToolJet Cloud URL.
 
