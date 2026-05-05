@@ -54,7 +54,7 @@ services:
 After starting the container:
 
 1. Access ToolJet at `http://your-server-ip`
-2. Navigate to **Settings** → **SSL Configuration**
+2. Navigate to **Instance Settings** → **SSL/TLS Configuration**
 3. Enable SSL, enter your domain and email, then click **"Acquire Certificate"**
 4. See the [SSL configuration guide](../../configuration.md) for detailed instructions
 

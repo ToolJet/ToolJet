@@ -5,6 +5,10 @@ title: Built-in SSL Overview
 
 # Built-in SSL with Let's Encrypt
 
+:::info EE Feature
+Built-in SSL is available on **EE paid plans** only. Ensure your license includes SSL termination before configuring this feature.
+:::
+
 ToolJet includes built-in SSL certificate management via Let's Encrypt, served directly by the NestJS application server. This feature eliminates the need for external reverse proxies and simplifies HTTPS setup for production deployments.
 
 ## Overview

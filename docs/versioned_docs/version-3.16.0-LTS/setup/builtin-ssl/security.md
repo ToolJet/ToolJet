@@ -9,9 +9,8 @@ Important security information when using built-in SSL.
 
 ## Certificate Storage
 
-- Certificates are **encrypted** and stored in the PostgreSQL database
-- Certificates are **automatically restored** on container restart
-- Backup your database to preserve SSL certificates
+- Certificates are stored in the PostgreSQL database and **automatically restored** on container restart
+- Backup your database regularly to preserve SSL certificates
 
 ## Rate Limits
 

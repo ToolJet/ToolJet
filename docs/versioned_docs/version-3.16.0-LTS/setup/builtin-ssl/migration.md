@@ -5,6 +5,10 @@ title: Migration from External nginx
 
 # Migration from External nginx
 
+:::info EE Feature
+Built-in SSL is available on **EE paid plans** only. Ensure your license includes SSL termination before following this guide.
+:::
+
 If you're currently using an external nginx reverse proxy, you have two options when upgrading to ToolJet with built-in SSL support.
 
 ## Option 1: Switch to Built-in SSL
@@ -19,7 +23,7 @@ Recommended for most deployments as it simplifies configuration and provides aut
    - Add `SSL_PORT=3443` (optional — this is the default when `PORT=3000`)
 3. **Configure SSL** via dashboard (as described in the [Quick Start Guide](quickstart.md))
 
-No special environment variable is required to enable the built-in SSL — it is always available and controlled via the Settings dashboard.
+No special environment variable is required to enable built-in SSL. Once your EE license includes SSL termination, it is controlled via **Instance Settings → SSL/TLS Configuration**.
 
 ## Option 2: Keep External nginx
 

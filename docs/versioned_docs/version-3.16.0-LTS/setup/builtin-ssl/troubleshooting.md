@@ -14,7 +14,7 @@ Common issues and solutions when using built-in SSL.
 - Only HTTP is working after enabling SSL in the dashboard
 
 **Solution:**
-Ensure SSL is configured and a certificate has been acquired via the dashboard (**Settings → SSL Configuration → Acquire Certificate**). The app serves HTTPS only after a valid certificate is obtained.
+Ensure SSL is configured and a certificate has been acquired via the dashboard (**Instance Settings → SSL/TLS Configuration → Acquire Certificate**). The app serves HTTPS only after a valid certificate is obtained.
 
 **Verify the app is listening on both ports:**
 ```bash
@@ -76,7 +76,7 @@ Certificates are automatically renewed 30 days before expiry. If renewal fails:
 2. **Verify domain is still accessible** on port 80 (required for renewal)
 
 3. **Manually trigger renewal** (if needed):
-   - Go to **Settings → SSL Configuration**
+   - Go to **Instance Settings → SSL/TLS Configuration**
    - Click **"Acquire Certificate"** to force renewal
 
 ## Need More Help?

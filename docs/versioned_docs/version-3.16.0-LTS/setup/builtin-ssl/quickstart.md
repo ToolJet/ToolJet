@@ -38,8 +38,8 @@ The app listens on port `3000` (HTTP) and `3443` (HTTPS) by default. `SSL_PORT` 
 
 Once your instance is accessible via HTTP:
 
-1. **Login to ToolJet** as an administrator
-2. Navigate to **Settings → SSL Configuration**
+1. **Login to ToolJet** as a super admin
+2. Navigate to **Instance Settings → SSL/TLS Configuration**
 3. **Enable SSL** and enter your domain name
 4. Click **"Acquire Certificate"**
 5. Wait for certificate acquisition (usually takes 30-60 seconds)

@@ -34,7 +34,7 @@ Configure built-in SSL settings through environment variables and the ToolJet da
 
 1. **Access Settings**
    - Login as administrator
-   - Navigate to **Settings → SSL Configuration**
+   - Navigate to **Instance Settings → SSL/TLS Configuration**
 
 2. **Enable SSL**
    - Toggle **"Enable SSL"**
@@ -53,7 +53,7 @@ Configure built-in SSL settings through environment variables and the ToolJet da
    - Test with: `dig yourdomain.com` or `nslookup yourdomain.com`
 
 2. **Acquire Certificate**
-   - In **Settings → SSL Configuration**, click **"Acquire Certificate"**
+   - In **Instance Settings → SSL/TLS Configuration**, click **"Acquire Certificate"**
    - Let's Encrypt will verify domain ownership via HTTP-01 challenge
    - Process typically takes 30-60 seconds
 

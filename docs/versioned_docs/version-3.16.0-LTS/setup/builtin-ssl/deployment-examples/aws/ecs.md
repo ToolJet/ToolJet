@@ -86,7 +86,7 @@ After deploying to ECS:
 
 1. Ensure your domain points to your Application Load Balancer
 2. Access ToolJet at `http://your-domain`
-3. Navigate to **Settings** → **SSL Configuration**
+3. Navigate to **Instance Settings** → **SSL/TLS Configuration**
 4. Enable SSL, enter your domain and email, then click **"Acquire Certificate"**
 5. See the [SSL configuration guide](../../configuration.md) for detailed instructions
 

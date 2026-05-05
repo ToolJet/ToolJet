@@ -78,7 +78,7 @@ After deploying on EC2:
 2. Configure the environment variables in your ToolJet installation
 3. Restart the ToolJet service
 4. Access ToolJet at `http://your-domain`
-5. Navigate to **Settings** → **SSL Configuration**
+5. Navigate to **Instance Settings** → **SSL/TLS Configuration**
 6. Enable SSL, enter your domain and email, then click **"Acquire Certificate"**
 7. See the [SSL configuration guide](../../configuration.md) for detailed instructions
 

@@ -92,7 +92,7 @@ After deploying to Kubernetes:
 1. Get your load balancer's external IP: `kubectl get service tooljet`
 2. Point your domain to the load balancer IP
 3. Access ToolJet at `http://your-domain`
-4. Navigate to **Settings** → **SSL Configuration**
+4. Navigate to **Instance Settings** → **SSL/TLS Configuration**
 5. Enable SSL, enter your domain and email, then click **"Acquire Certificate"**
 6. See the [SSL configuration guide](../../configuration.md) for detailed instructions
 

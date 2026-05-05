@@ -134,14 +134,14 @@ For detailed workflow configuration and deployment examples, refer to the [Workf
 
 ### Optional Configurations
 
-#### Built-in SSL & nginx
+#### Built-in SSL
 
-- `ENABLE_BUILTIN_NGINX=true/false`: Enable built-in nginx reverse proxy with automatic SSL certificate management via Let's Encrypt. When enabled, nginx handles HTTP/HTTPS traffic on ports 80 and 443. Default: `false` (disabled for backward compatibility).
+- `SSL_PORT`: HTTPS port the NestJS application server listens on when SSL is active. Defaults to `PORT + 443` (e.g., `3443` when `PORT=3000`).
 
-For detailed setup instructions, see the [Built-in SSL guide](./builtin-ssl).
+SSL is configured via the dashboard (**Instance Settings → SSL/TLS Configuration**), not via environment variables. For detailed setup instructions, see the [Built-in SSL guide](../builtin-ssl/overview).
 
-:::warning
-When `ENABLE_BUILTIN_NGINX=true`, expose ports 80 and 443 instead of port 3000. The application will only be accessible through nginx.
+:::info
+Built-in SSL is available on EE paid plans. When SSL is active, expose both port 80 (HTTP, mapped to `PORT`) and port 443 (HTTPS, mapped to `SSL_PORT`) on your container or firewall.
 :::
 
 #### Comments Feature
