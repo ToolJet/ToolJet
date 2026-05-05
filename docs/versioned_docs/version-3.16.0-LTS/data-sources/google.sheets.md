@@ -20,6 +20,15 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
 
 To establish a connection with the Google Sheet data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
+### Authentication Types
+
+ToolJet allows you to select the authentication methods with Google Sheets and authorize access based on your security and access requirements.
+
+1. **OAuth 2.0** : Authenticates via a Google user account using OAuth consent, allowing ToolJet to access Google Sheets based on the granted permissions.
+2. **Service Account** : Authenticates using a Google Cloud service account, enabling server-to-server access to Google Sheets without user interaction.
+
+<img className="screenshot-full img-l" src="/img/datasource-reference/google-sheets/gs-connection.png" alt="Google Sheets Connection " />
+
 ### Authorization Scopes
 
 When connecting to a Google Sheets data source, you can choose between two permission scopes:
@@ -144,7 +153,7 @@ This operation allows you to update existing data in a sheet.
 - **Range**
 - **Sheet**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/upd-v2.png" alt="Google Sheet Operations" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/google-sheets/update-query.png" alt="Google Sheet Operations" />
 
 #### Example
 ```yaml

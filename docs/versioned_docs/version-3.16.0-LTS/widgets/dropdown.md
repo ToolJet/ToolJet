@@ -25,8 +25,7 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
 1. Passing an array of objects and specifying each value:
 
 ```js
-{
-  {
+{{
     [
       {
         label: "option1",
@@ -38,8 +37,7 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
       { label: "option2", value: 2, disable: false, visible: true },
       { label: "option3", value: 3, disable: false, visible: true },
     ];
-  }
-}
+}}
 ```
 
 2. Passing an array of objects with a default value from a **Table** component's selected row:
@@ -146,10 +144,10 @@ For example, if the code is:
 }
 ```
 
-You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+You should pass numeric values in the `selectOption` component-specific action since the value type is **Number**:
 
 ```javascript
-components.dropdown1.selectOption([2]);
+components.dropdown1.selectOption(2);
 ```
 
 ## Exposed Variables

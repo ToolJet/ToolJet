@@ -3,7 +3,7 @@ id: gitsync-backup
 title: GitSync Backup
 ---
 
-GitSync enables users to back up their applications by pushing changes to a Git repository, ensuring a secured history. Whenever a change is pushed to the git repository, a commit is created. And this changes can be restored in ToolJet easily ensuring smooth back-up and restoring process. For details on configuring GitSync, refer to the **[GitSync Configuration](/docs/development-lifecycle/gitsync/gitsync-config)** guide.
+GitSync enables users to back up their applications by pushing changes to a Git repository, ensuring a secured history. Whenever a change is pushed to the git repository, a commit is created. And this changes can be restored in ToolJet easily ensuring smooth back-up and restoring process. For details on configuring GitSync, refer to the **[GitSync Configuration](/docs/development-lifecycle/gitsync/overview)** guide.
 
 **Note**: Only the latest pushed version of the application is stored in the git repository, i.e. whenever a new version is pushed to the git repository, only the latest version is stored and all the previous versions are overridden.
 

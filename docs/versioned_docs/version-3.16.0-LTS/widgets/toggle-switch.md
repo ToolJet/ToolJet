@@ -7,10 +7,6 @@ The **Toggle Switch** component can be used for binary choices, such as turning 
 
 <div style={{paddingTop:'24px'}}>
 
-:::info
-To get the configuration of legacy Toggle Switch component, please refer to **[this](/docs/widgets/toggle-switch)** document.
-:::
-
 ## Properties
 
 ### Data

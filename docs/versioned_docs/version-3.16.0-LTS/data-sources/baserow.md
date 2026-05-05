@@ -5,8 +5,6 @@ title: Baserow
 
 ToolJet can connect to your Baserow account to read and write data.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Connection
 
 To establish a connection with the **Baserow** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
@@ -17,28 +15,16 @@ ToolJet requires the following to connect to Baserow:
 - **Host**
 - **Base URL**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-intro-v2.png" alt="Baserow intro" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-connection.png" alt="Baserow intro" />
 
 ## Querying Baserow
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the **Baserow** datasource added in previous step.
+2. Select the **Baserow** data source added in previous step.
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/operations.png" alt="Amazon SES" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-listops.png" alt="Query Operations of Baserow" />
 
 ## Supported Operations
 
@@ -58,7 +44,7 @@ This query lists all the fields in a table.
 
 - **Table ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields-v2.png" alt="Baserow list fields" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-listf.png" alt="Baserow list fields" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -67,7 +53,7 @@ This query lists all the fields in a table.
   [
     {
       "id": 331156,
-      "table_id": 57209,
+      "table_id": 56472,
       "name": "Name",
       "order": 0,
       "type": "text",
@@ -76,7 +62,7 @@ This query lists all the fields in a table.
     },
     {
       "id": 331157,
-      "table_id": 57209,
+      "table_id": 56472,
       "name": "Last name",
       "order": 1,
       "type": "text",
@@ -85,7 +71,7 @@ This query lists all the fields in a table.
     },
     {
       "id": 331158,
-      "table_id": 57209,
+      "table_id": 56472,
       "name": "Notes",
       "order": 2,
       "type": "long_text",
@@ -93,7 +79,7 @@ This query lists all the fields in a table.
     },
     {
       "id": 331159,
-      "table_id": 57209,
+      "table_id": 56472,
       "name": "Active",
       "order": 3,
       "type": "boolean",
@@ -112,7 +98,7 @@ This query lists all the rows in a table.
 
 - **Table ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows-v2.png" alt="Baserow list"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-listr.png" alt="Baserow list rows"/>
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -160,7 +146,7 @@ This query lists all the rows in a table.
 - **Table ID**
 - **Row ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row-v2.png" alt="Baserow get" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-getrow.png" alt="Baserow get" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -184,7 +170,7 @@ This query lists all the rows in a table.
 - **Table ID**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row-v2.png"  alt="Bserow create"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-createrow.png"  alt="Bserow create"/>
 
 #### Example
 
@@ -221,7 +207,7 @@ This query lists all the rows in a table.
 - **Row ID**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row-v2.png" alt="Baserow update" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-updaterow.png" alt="Baserow update" />
 
 #### Example
 
@@ -261,7 +247,7 @@ This query lists all the rows in a table.
 
 - **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row-v2.png" alt="Baserow move row" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-moverow.png" alt="Baserow move row" />
 
 <details id="tj-dropdown">
   <summary>**Response Example**</summary>
@@ -285,8 +271,6 @@ This query lists all the rows in a table.
 - **Table ID**
 - **Row ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row-v2.png" alt="Baserow delete" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/baserow/baserow-deleterow.png" alt="Baserow delete" />
 
 While deleting a row, the response will be either success or failure from Baserow.
-
-</div>

@@ -7,32 +7,6 @@ Control component action invokes the component specific actions. Component speci
 
 You can find the component specific actions for the specific component in their respective documentation. For example, you can find the component specific actions for the **Bounded Box** component in the [Bounded Box](/docs/widgets/bounded-box) documentation.
 
-<details id="tj-dropdown">
-  <summary>Currently, Component specific actions are supported only by the below listed components.</summary>
-  <div>
-    <ul>
-    <li><a href="/docs/widgets/button#component-specific-actions-csa">Button</a></li>
-    <li><a href="/docs/widgets/checkbox#component-specific-actions-csa">Checkbox</a></li>
-    <li><a href="/docs/widgets/color-picker#component-specific-actions-csa">Color Picker</a></li>
-    <li><a href="/docs/widgets/dropdown#component-specific-actions-csa">Dropdown</a></li>
-    <li><a href="/docs/widgets/file-picker#component-specific-actions-csa">File Picker</a></li>
-    <li><a href="/docs/widgets/form#component-specific-actions-csa">Form</a></li>
-    <li><a href="/docs/widgets/icon#component-specific-actions-csa">Icon</a></li>
-    <li><a href="/docs/widgets/kanban#component-specific-actions-csa">Kanban</a></li>
-    <li><a href="/docs/widgets/link#component-specific-actions-csa">Link</a></li>
-    <li><a href="/docs/widgets/map#component-specific-actions-csa">Map</a></li>
-    <li><a href="/docs/widgets/modal#component-specific-actions-csa">Modal</a></li>
-    <li><a href="/docs/widgets/multiselect#component-specific-actions-csa">Multiselect</a></li>
-    <li><a href="/docs/widgets/radio-button#component-specific-actions-csa">Radio button</a></li>
-    <li><a href="/docs/widgets/table#component-specific-actions-csa">Table</a></li>
-    <li><a href="/docs/widgets/tabs#component-specific-actions-csa">Tabs</a></li>
-    <li><a href="/docs/widgets/text-input#component-specific-actions-csa">Text Input</a></li>
-    <li><a href="/docs/widgets/text#component-specific-actions-csa">Text</a></li>
-    <li><a href="/docs/widgets/textarea#component-specific-actions-csa">Text Area</a></li>
-    </ul>
-  </div>
-</details>
-
 :::info
 Check out the **[demo](https://youtu.be/JIhSH3YeM3E)** of Component specific actions demonstrated in one of our community call.
 :::

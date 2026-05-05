@@ -1,12 +1,12 @@
 ---
 id: docker
-title: Docker
+title: Deploying ToolJet using Docker Compose
+slug: /setup/docker/
+sidebar_label: Docker
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-
-# Deploying ToolJet using Docker Compose
 
 Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for datasources and user authentication data.
 
@@ -46,11 +46,13 @@ There are two options to deploy ToolJet using Docker Compose:
 2. **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 
 Confused about which setup to select? Feel free to ask the community via [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-2rk4w42t0-ZV_KJcWU9VL1BBEjnSHLCA).
-<!-- 
+
+<!--
 <Tabs>
   <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default> -->
 
 #### 1. Download our production docker-compose file into the server.
+
   <Tabs>
 
     <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
@@ -65,10 +67,11 @@ Confused about which setup to select? Feel free to ask the community via [Slack]
       curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
       ```
     </TabItem>
+
   </Tabs>
 
-
 #### 2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
+
   <Tabs>
 
     <TabItem value="with-in-built-postgres" label="With in-built PostgreSQL" default>
@@ -90,6 +93,7 @@ Confused about which setup to select? Feel free to ask the community via [Slack]
       mv .env.external.example .env && ./external.sh
       ```
     </TabItem>
+
   </Tabs>
 
 #### 3. To start the docker container, use the following command:
@@ -130,6 +134,7 @@ If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your
       iv. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
       :::
     </TabItem>
+
 </Tabs>
 
 Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
@@ -139,21 +144,21 @@ Also, for setting up additional environment variables in the .env file, please c
 The below bash script will help with taking back-up and as well as restoring:
 
 1. Download the script:
-    ```bash
-    curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
-    ```
+   ```bash
+   curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-restore.sh && chmod +x backup-restore.sh
+   ```
 2. Run the script with the following command:
-    ```bash
-    ./backup-restore.sh
-    ```
-    <img className="screenshot-full img-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
+   ```bash
+   ./backup-restore.sh
+   ```
+   <img className="screenshot-full img-full" src="/img/setup/docker/backup-and-restore.gif" alt="Docker - Backup and Restore" />
 
 ## Workflows
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.
 
 :::info
-For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](./workflow-temporal-to-bullmq-migration).
+For users migrating from Temporal-based workflows, please refer to the [Workflow Migration Guide](/docs/setup/workflow-temporal-to-bullmq-migration/).
 :::
 
 ### Enabling Workflow Scheduling
@@ -284,10 +289,48 @@ Before starting the upgrade process, perform a **comprehensive backup of your Po
 Ensure both databases are included in your backup before proceeding with the upgrade.
 :::
 
-- Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+:::warning Critical
+Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the latest LTS version.
+:::
 
-<br/>
----
+### Upgrade Steps
+
+After completing the PostgreSQL backup, follow the steps below to upgrade to the latest LTS version:
+
+1. **Stop the Running Containers**  
+   Run the following command on your server (in the directory where your _docker-compose.yml_ file is located):
+
+   ```bash
+   docker compose down
+   ```
+
+   This will stop the running containers while preserving your volumes and data.
+
+2. **Get the Latest LTS Tag from Docker Hub**  
+   You can visit the official [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page to get the latest image tag.
+3. **Update the _docker-compose.yml_ File**  
+   Open your _docker-compose.yml_ file and update the _image_ field under the _tooljet_ service:
+
+   ```yaml
+   services:
+     tooljet:
+       image: tooljet/tooljet:v3.x.x-lts # Replace with the latest LTS tag
+   ```
+
+   :::note
+   Replace v3.x.x-lts with the exact LTS version tag copied from Docker Hub.
+   :::
+
+4. **Start ToolJet with the New Version**  
+   After updating the image tag in your _docker-compose.yml_ file, run the following command on your server (in the same directory):
+
+   ```bash
+   docker compose up -d
+   ```
+
+   Docker will pull the new image and recreate the containers using the updated version.
+
+## <br/>
 
 ## Need Help?
 

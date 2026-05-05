@@ -26,7 +26,7 @@ Role Required: **Admin** <br/>
    - **Base DN**: Enter the base distinguished name.
    - **SSL**: Toggle this option to enable the SSL. After enabling you can select the type of SSL: **None** or **Certificates**. If you choose Certificates, you'll need to provide the **Client Key**, **Client Certificate**, and **Server Certificate**.
    <br/>
-    <img className="screenshot-full img-l" src="/img/sso/ldap/fields-v2.png" alt="SSO :LDAP"/>
+    <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3.png" alt="SSO :LDAP"/>
 
 4. After making the necessary configurations, click the **Save Changes** button located at the bottom.
 
@@ -41,6 +41,16 @@ Role Required: **Admin** <br/>
 During the first login, ToolJet performs additional checks. It verifies the user groups in the LDAP server, and if the corresponding group exists in the ToolJet workspace, the user will be automatically added to that group. Additionally, ToolJet also looks for the user's profile picture in the LDAP server and updates the ToolJet account accordingly.
 :::
 
+### Group Synchronization
+
+ToolJet supports syncing user groups from your LDAP directory.
+    - Group sync is enabled by default.
+    - When enabled, users are automatically added to matching ToolJet groups during login.
+    - Group sync can be turned off using the *Enable group sync* toggle in the LDAP configuration.
+
+    <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3-group-sync.png" alt="SSO :LDAP"/>
+
+If disabled, users will still be authenticated via LDAP, but no group memberships will be synced.
 
 ## Support for Multiple Organizational Units
 

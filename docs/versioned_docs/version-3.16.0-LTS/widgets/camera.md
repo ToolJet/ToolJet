@@ -19,7 +19,7 @@ The **Camera** component allows users to capture photos and record videos direct
 | On image save | Triggers when the user saves a captured image (only applicable when Content is set to Image). |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)

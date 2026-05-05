@@ -50,3 +50,18 @@ Role Required: **Admin** <br/>
 3. Click on **Sign in with `SAML Name`** button and you will be redirected to the SAML provider's login page.
 
 4. Enter your credentials and click **Login**. If the user is signing in for the first time, they will be redirected to the ToolJet's onboarding page.
+
+## Custom SSO Variables (SAML Attributes)
+
+ToolJet allows you to use custom SSO variables provided by your Identity Provider (IdP) during login.
+
+For SAML based SSO, these values originate as SAML attributes included in the SAML assertion. After successful authentication, ToolJet exposes them as variables in the App Builder.
+
+You can access these variables using:
+```js
+{{globals.currentUser.ssoUserInfo.<variable_name>}}
+```
+
+:::note
+Custom attributes must be explicitly configured in the Identity Provider to be included in the SAML assertion.
+:::

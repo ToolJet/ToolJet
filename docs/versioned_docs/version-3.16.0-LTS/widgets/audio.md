@@ -18,7 +18,7 @@ The **Audio Recorder** component allows users to record audio directly from thei
 | On recording save | Triggers when the user saves the recorded audio. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/actions/run-query) docs to get detailed information about all the **Actions**.
 :::
 
 ## Component Specific Actions (CSA)

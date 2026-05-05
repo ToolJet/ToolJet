@@ -46,7 +46,7 @@ Build and refine interfaces with a drag-and-drop editor and 60+ pre-built compon
 <img  className="img-full screenshot-full" src="/img/platform-overview/v2/visual-app-builder.png" alt="Platform Overview - Visual App Builder" />
 
 ### Integrations  
-Connect instantly to 75+ data sources, APIs, and services. ToolJet also provides a CLI and plugin system to extend integrations.  
+Connect instantly to 80+ data sources, APIs, and services. ToolJet also provides a CLI and plugin system to extend integrations.  
 
 <img  className="img-full screenshot-full" src="/img/platform-overview/v2/integrations.png" alt="Platform Overview - Integrations List" />
 

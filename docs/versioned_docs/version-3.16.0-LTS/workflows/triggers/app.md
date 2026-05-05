@@ -33,7 +33,7 @@ To create a workflow follow the following steps:
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/workflows/trigger-from-app/workflow-section.png" alt="Navigate to Workflow Section" />
 2. Click on **Create new workflow**, enter a unique name for your workflow, and click on **+Create workflow** to create the workflow. <br/>
     <img className="screenshot-full img-s" style={{ marginTop: '15px' }} src="/img/workflows/trigger-from-app/new-wf.png" alt="Create a new workflow" />
-3. Configure your workflow. You can refer to the **[workflow overview documentation](/docs/workflows/overview)** to learn how you can configure a workflow.
+3. Configure your workflow. You can refer to the **[workflow overview documentation](/docs/workflows/overview/)** to learn how you can configure a workflow.
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/workflows/trigger-from-app/configure-wf.png" alt="Configure workflow" />
 
 ### Configure Workflow Query

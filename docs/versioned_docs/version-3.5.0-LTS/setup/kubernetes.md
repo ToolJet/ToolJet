@@ -59,7 +59,6 @@ kubectl get pods
 5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
 
    **Examples:**
-
    - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 
@@ -73,7 +72,7 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](/docs/setup/upgrade-to-v3/)
 
 #### Setting Up ToolJet Database
 

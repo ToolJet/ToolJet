@@ -108,10 +108,10 @@ Admin user has access to all the permission at workspace level, while an end use
 ## FAQ
 
 <details id="tj-dropdown">
-    <summary>
-Can applications and workspace settings be shared between workspaces?
-    </summary>
-**No**, applications and workspace settings cannot be shared directly between workspaces. Each workspace operates independently, maintaining its own applications and configurations. However, you can **export an application** from one workspace and **import it** into another. For more details, refer to the [Import and Export Applications](/docs/app-builder/importing-exporting-applications/) documentation.
+
+<summary> Can applications and workspace settings be shared between workspaces?</summary>
+
+**No**, applications and workspace settings cannot be shared directly between workspaces. Each workspace operates independently, maintaining its own applications and configurations. However, you can **export an application** from one workspace and **import it** into another. For more details, refer to the [Import and Export Applications](/docs/development-lifecycle/import-export/importing-exporting-applications) documentation.
 
 </details>
 
