@@ -151,8 +151,18 @@ async function bootstrap() {
     app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
     // Setup ACME challenge middleware (always available for certificate acquisition)
+    // In EE deployments, tokens are served from the shared DB so all pods can respond.
     const expressInstance = app.getHttpAdapter().getInstance();
-    expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware());
+    let acmeChallengeLookup: ((token: string) => Promise<string | null>) | undefined;
+    try {
+      // AcmeClientService is EE-only; app.get() throws in CE
+      const { AcmeClientService } = await import('@ee/ssl-configuration/acme-client.service');
+      const acmeClientService = app.get(AcmeClientService);
+      acmeChallengeLookup = acmeClientService.getChallengeResponse.bind(acmeClientService);
+    } catch {
+      // CE or module not loaded — fall back to filesystem serving
+    }
+    expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware(acmeChallengeLookup));
 
     // Initialize SSL server manager (stores Express app for HTTPS management)
     const httpPort = port;

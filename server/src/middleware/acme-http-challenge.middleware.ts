@@ -2,20 +2,40 @@ import * as express from 'express';
 import * as path from 'path';
 
 /**
- * Middleware to serve ACME HTTP-01 challenge files
- * Serves files from /var/www/certbot/.well-known/acme-challenge/
+ * Middleware to serve ACME HTTP-01 challenge tokens.
  *
- * This allows Let's Encrypt to verify domain ownership by accessing:
- * http://domain/.well-known/acme-challenge/<token>
+ * When a `lookup` function is provided (EE, multi-pod deployment), tokens are
+ * fetched from the shared database so any pod can respond to Let's Encrypt.
+ *
+ * Without a lookup function (CE or first-boot fallback) tokens are served
+ * from the local filesystem at /var/www/certbot/.well-known/acme-challenge/.
  *
  * Usage in main.ts:
- * app.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware());
+ *   app.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware(lookup));
  */
-export function acmeHttpChallengeMiddleware() {
-  const challengePath = path.join('/var/www/certbot', '.well-known', 'acme-challenge');
+export function acmeHttpChallengeMiddleware(
+  lookup?: (token: string) => Promise<string | null>
+): express.RequestHandler {
+  if (lookup) {
+    return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const token = req.path.replace(/^\//, '');
+      try {
+        const keyAuthorization = await lookup(token);
+        if (keyAuthorization) {
+          res.setHeader('Content-Type', 'text/plain');
+          return res.send(keyAuthorization);
+        }
+      } catch {
+        // fall through to next
+      }
+      next();
+    };
+  }
 
+  // Filesystem fallback (CE or when DB is unavailable)
+  const challengePath = path.join('/var/www/certbot', '.well-known', 'acme-challenge');
   return express.static(challengePath, {
-    dotfiles: 'allow', // Allow serving .well-known directory
-    index: false,      // Don't serve directory indexes
+    dotfiles: 'allow',
+    index: false,
   });
 }
