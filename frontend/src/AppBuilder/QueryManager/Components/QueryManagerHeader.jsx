@@ -386,6 +386,13 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
+/* 
+  Abort button is hidden for query kinds that execute in-browser (RunJS, RunPy, Workflows).
+  AbortController only cancels fetch — it cannot interrupt user code running in the
+  main thread, so showing the button would mislead users into thinking the script stops.
+ */
+const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
+
 const AbortButton = () => {
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const abortQuery = useStore((state) => state.queryPanel.abortQuery);
@@ -395,9 +402,11 @@ const AbortButton = () => {
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const isActive = isLoading || isPreviewQueryLoading;
 
+  if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind)) return null;
+
   return (
     <ToolTip
-      message="Stop waiting for the response (server keeps processing)"
+      message="Stop waiting for the response"
       placement="bottom"
       trigger={['hover']}
       show={true}
@@ -408,8 +417,9 @@ const AbortButton = () => {
         variant="outline"
         onClick={() => abortQuery(selectedQuery?.id)}
         disabled={!isActive}
-        leadingIcon="x"
+        leadingIcon="circle-slash"
         data-cy="query-abort-button"
+        isLucid={true}
       >
         Abort
       </ButtonComponent>
