@@ -57,9 +57,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
           workflowType: APP_TYPES.WORKFLOW,
         });
       } else {
-        query.andWhere('LOWER(app.name) like :searchKey', {
-          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-        });
+        query.andWhere(
+          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))`,
+          {
+            searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+            workflowType: APP_TYPES.WORKFLOW,
+          }
+        );
       }
     }
 
@@ -156,9 +160,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
           workflowType: APP_TYPES.WORKFLOW,
         });
       } else {
-        query.andWhere('LOWER(apps.name) LIKE :searchKey', {
-          searchKey: `%${searchKey.toLowerCase()}%`,
-        });
+        query.andWhere(
+          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
+          {
+            searchKey: `%${searchKey.toLowerCase()}%`,
+            workflowType: APP_TYPES.WORKFLOW,
+          }
+        );
       }
     }
 
@@ -186,8 +194,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         .where(
           branchId
             ? '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
-            : 'LOWER(app.name) LIKE :name',
-          { name: `%${(searchKey ?? '').toLowerCase()}%`, ...(branchId ? { workflowType: APP_TYPES.WORKFLOW } : {}) }
+            : `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
+          { name: `%${(searchKey ?? '').toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
         )
         .getMany();
 

@@ -662,7 +662,10 @@ export class AppImportExportService {
             .andWhere(
               new Brackets((qb: any) => {
                 if (moduleAppNames.length > 0) {
-                  qb.where('app.name IN (:...moduleAppNames)', { moduleAppNames });
+                  qb.where(
+                    `EXISTS (SELECT 1 FROM app_versions av WHERE av.app_id = app.id AND av.app_name IN (:...moduleAppNames))`,
+                    { moduleAppNames }
+                  );
                 }
                 if (moduleAppCoRelIds.length > 0) {
                   qb.orWhere('app.co_relation_id IN (:...moduleAppCoRelIds)', { moduleAppCoRelIds });
@@ -3044,12 +3047,15 @@ export class AppImportExportService {
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
-          // Branch-specific metadata: prefer version-level data, fall back to app-level __importMetadata
+          // Branch-specific metadata: only BRANCH-type versions carry slug/appName.
+          // icon and isPublic go on all versions.
           ...(importMeta && {
-            slug: appVersion.slug || importMeta.slug,
-            appName: appVersion.appName || importMeta.appName,
             icon: appVersion.icon !== undefined ? appVersion.icon : importMeta.icon,
             isPublic: appVersion.isPublic !== undefined ? appVersion.isPublic : importMeta.isPublic,
+          }),
+          ...(importMeta && isSubBranch && {
+            slug: appVersion.slug || importMeta.slug,
+            appName: appVersion.appName || importMeta.appName,
           }),
         });
       }
@@ -3117,8 +3123,8 @@ export class AppImportExportService {
             ...(importedApp.type === APP_TYPES.MODULE && {
               moduleReferenceId: lastImportedVersion.moduleReferenceId || uuid(),
             }),
-            slug: importMeta?.slug || lastImportedVersion.slug,
-            appName: importMeta?.appName || lastImportedVersion.appName,
+            // VERSION-type version on default branch: only icon/isPublic, no slug/appName.
+            // The BRANCH version on the default branch is the slug carrier.
             icon: importMeta?.icon ?? lastImportedVersion.icon ?? null,
             isPublic: importMeta?.isPublic ?? lastImportedVersion.isPublic ?? false,
           } as DeepPartial<AppVersion>);

@@ -32,12 +32,13 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    // Resolve app through released version's slug (app_versions)
+    // Resolve app through any version carrying this slug
+    // (BRANCH-type for git-sync workspaces, VERSION-type for non-git-sync)
     const result = await this.dataSource
       .createQueryBuilder()
-      .select('app')
+      .select(['app.id AS app_id', 'av.is_public AS av_is_public'])
       .from('apps', 'app')
-      .innerJoin('app_versions', 'av', 'app.current_version_id = av.id')
+      .innerJoin('app_versions', 'av', 'av.app_id = app.id')
       .where('av.slug = :slug', { slug })
       .getRawOne();
 

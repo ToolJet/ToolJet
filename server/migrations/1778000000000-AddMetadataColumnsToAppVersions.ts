@@ -40,12 +40,10 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       })
     );
 
-    // Step 2: Backfill from apps table for non-workflow apps
+    // Step 2: Backfill icon and is_public on ALL non-workflow versions
     await queryRunner.query(`
       UPDATE app_versions av
       SET
-        slug = a.slug,
-        app_name = a.name,
         icon = a.icon,
         is_public = a.is_public
       FROM apps a
@@ -53,7 +51,34 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         AND a.type IN ('front_end', 'module')
     `);
 
-    // Step 3: Add partial unique indexes (exclude NULL branch_id rows)
+    // Step 3: Backfill slug and app_name only on BRANCH-type versions.
+    // Each branch (including default) has exactly one BRANCH version per app —
+    // that's the canonical carrier of slug/app_name.
+    // All VERSION-type versions (draft, saved, released) keep NULL.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET slug = a.slug, app_name = a.name
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND a.type IN ('front_end', 'module')
+        AND av.version_type = 'branch'
+    `);
+
+    // Step 3b: Non-git-sync workspaces have no BRANCH versions.
+    // Backfill slug/app_name on ALL VERSION-type versions where branch_id IS NULL.
+    // The unique index uses WHERE branch_id IS NOT NULL, so these rows are excluded.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET slug = a.slug, app_name = a.name
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND a.type IN ('front_end', 'module')
+        AND av.version_type = 'version'
+        AND av.branch_id IS NULL
+    `);
+
+    // Step 4: Unique indexes — safe because only one version per app per branch
+    // has non-NULL slug/app_name
     await queryRunner.query(`
       CREATE UNIQUE INDEX "app_versions_slug_branch_id_unique"
       ON app_versions (slug, branch_id)
@@ -66,7 +91,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       WHERE branch_id IS NOT NULL
     `);
 
-    // Step 4: Drop old version name uniqueness and add new one with branchId
+    // Step 5: Drop old version name uniqueness and add new one with branchId
     await queryRunner.query(`
       ALTER TABLE app_versions DROP CONSTRAINT IF EXISTS "name_app_id_app_versions_unique"
     `);
@@ -77,7 +102,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       WHERE branch_id IS NOT NULL
     `);
 
-    // Step 5: Clean apps table for non-workflows (set slug = id to satisfy existing unique constraint)
+    // Step 6: Clean apps table for non-workflows (slug = id placeholder for existing constraint)
     await queryRunner.query(`
       UPDATE apps
       SET slug = id, name = NULL, icon = NULL, is_public = NULL
@@ -86,7 +111,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Restore apps table data from app_versions before dropping columns
+    // Restore apps table data from the BRANCH-type version (slug carrier)
     await queryRunner.query(`
       UPDATE apps a
       SET
@@ -97,7 +122,27 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       FROM app_versions av
       WHERE av.app_id = a.id
         AND a.type IN ('front_end', 'module')
-        AND av.version_type = 'version'
+        AND av.version_type = 'branch'
+        AND av.slug IS NOT NULL
+    `);
+
+    // Restore non-git-sync apps from VERSION versions (no BRANCH version exists)
+    await queryRunner.query(`
+      UPDATE apps a
+      SET
+        slug = sub.slug,
+        name = sub.app_name,
+        icon = sub.icon,
+        is_public = sub.is_public
+      FROM (
+        SELECT DISTINCT ON (app_id) app_id, slug, app_name, icon, is_public
+        FROM app_versions
+        WHERE version_type = 'version' AND branch_id IS NULL AND slug IS NOT NULL
+        ORDER BY app_id, updated_at DESC
+      ) sub
+      WHERE sub.app_id = a.id
+        AND a.type IN ('front_end', 'module')
+        AND a.name IS NULL
     `);
 
     // Drop new indexes

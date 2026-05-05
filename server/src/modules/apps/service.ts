@@ -261,10 +261,7 @@ export class AppsService implements IAppsService {
       throw new BadRequestException('Invalid app slug');
     }
 
-    const app = await this.appRepository.findOne({
-      where: { slug },
-      select: ['id', 'name', 'slug', 'isPublic', 'organizationId'],
-    });
+    const app = await this.appRepository.findByIdOrSlug(slug);
 
     if (!app) {
       throw new NotFoundException('App not found');
@@ -709,16 +706,29 @@ export class AppsService implements IAppsService {
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
 
       // Validate slug uniqueness against other released apps (non-workflow only)
-      if (app.type !== 'workflow' && releasedVersion?.slug) {
-        const conflictingReleasedApp = await manager
-          .createQueryBuilder(AppVersion, 'av')
-          .innerJoin('apps', 'a', 'a.current_version_id = av.id')
-          .where('av.slug = :slug', { slug: releasedVersion.slug })
-          .andWhere('a.organization_id = :orgId', { orgId: user.organizationId })
-          .andWhere('a.id != :appId', { appId })
-          .getOne();
-        if (conflictingReleasedApp) {
-          throw new BadRequestException('Cannot release — slug conflicts with another released app.');
+      if (app.type !== 'workflow') {
+        // Get canonical slug from BRANCH version (git-sync) or any version (non-git-sync)
+        const slugVersion = releasedVersion?.slug
+          ? releasedVersion
+          : await manager
+              .createQueryBuilder(AppVersion, 'av')
+              .where('av.app_id = :appId', { appId })
+              .andWhere('av.slug IS NOT NULL')
+              .select('av.slug')
+              .getOne();
+
+        if (slugVersion?.slug) {
+          const conflictingReleasedApp = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin('apps', 'a', 'a.id = av.app_id')
+            .where('av.slug = :slug', { slug: slugVersion.slug })
+            .andWhere('a.organization_id = :orgId', { orgId: user.organizationId })
+            .andWhere('a.id != :appId', { appId })
+            .andWhere('a.current_version_id IS NOT NULL')
+            .getOne();
+          if (conflictingReleasedApp) {
+            throw new BadRequestException('Cannot release — slug conflicts with another released app.');
+          }
         }
       }
 

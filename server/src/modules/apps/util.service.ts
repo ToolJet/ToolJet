@@ -450,19 +450,44 @@ export class AppsUtilService implements IAppsUtilService {
 
       // Write version-level fields to app_versions for non-workflows
       if (Object.keys(versionParams).length > 0 && !isWorkflow) {
-        const versionCondition: Record<string, any> = { appId };
-        if (branchId) {
-          versionCondition.branchId = branchId;
-        } else {
-          versionCondition.versionType = Not(AppVersionType.BRANCH);
+        const { slug: vSlug, appName: vAppName, ...broadParams } = versionParams;
+
+        // icon and is_public go to ALL versions on the branch
+        if (Object.keys(broadParams).length > 0) {
+          const broadCondition: Record<string, any> = { appId };
+          if (branchId) {
+            broadCondition.branchId = branchId;
+          } else {
+            broadCondition.versionType = Not(AppVersionType.BRANCH);
+          }
+          await manager.update(AppVersion, broadCondition, broadParams);
         }
 
-        await catchDbException(async () => {
-          await manager.update(AppVersion, versionCondition, versionParams);
-        }, [
-          { dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE, message: 'This app name is already taken.' },
-          { dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE, message: 'This slug is already taken.' },
-        ]);
+        // slug and app_name only go to the canonical version (released or BRANCH)
+        const uniqueParams: Record<string, any> = {};
+        if (vSlug !== undefined) uniqueParams.slug = vSlug;
+        if (vAppName !== undefined) uniqueParams.appName = vAppName;
+
+        if (Object.keys(uniqueParams).length > 0) {
+          if (branchId) {
+            // Git-sync workspace: slug/app_name go to the BRANCH-type version only
+            const canonicalCondition: Record<string, any> = {
+              appId,
+              versionType: AppVersionType.BRANCH,
+              branchId,
+            };
+
+            await catchDbException(async () => {
+              await manager.update(AppVersion, canonicalCondition, uniqueParams);
+            }, [
+              { dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE, message: 'This app name is already taken.' },
+              { dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE, message: 'This slug is already taken.' },
+            ]);
+          } else {
+            // Non-git-sync workspace: update all versions (all have branchId=NULL)
+            await manager.update(AppVersion, { appId }, uniqueParams);
+          }
+        }
       }
 
       // Write app-level fields to apps table
@@ -642,9 +667,13 @@ export class AppsUtilService implements IAppsUtilService {
     }
 
     if (searchKey) {
-      viewableAppsQb.andWhere('LOWER(apps.name) like :searchKey', {
-        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-      });
+      viewableAppsQb.andWhere(
+        `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
+        {
+          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+          workflowType: APP_TYPES.WORKFLOW,
+        }
+      );
     }
 
     if (select) {

@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { AppVersion } from '@entities/app_version.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
@@ -26,14 +26,15 @@ export class AppsRepository extends Repository<App> {
       return null;
     }
 
-    // Released/default context: resolve through current_version_id
-    const result = await this.createQueryBuilder('app')
-      .innerJoin('app_versions', 'av', 'app.current_version_id = av.id')
-      .where('av.slug = :slug', { slug })
-      .andWhere('app.organization_id = :organizationId', { organizationId })
-      .getOne();
-
-    if (result) return result;
+    // No branch context: resolve through any version carrying this slug
+    // (BRANCH-type for git-sync workspaces, VERSION-type for non-git-sync)
+    const version = await this.dataSource.getRepository(AppVersion).findOne({
+      where: { slug },
+      relations: ['app'],
+    });
+    if (version?.app && version.app.organizationId === organizationId) {
+      return version.app;
+    }
 
     // Fallback to apps table slug (for workflows or legacy)
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
@@ -48,18 +49,17 @@ export class AppsRepository extends Repository<App> {
   }
 
   async retrieveAppDataUsingSlug(slug: string): Promise<SessionAppData> {
-    // First try resolving through released version (app_versions.slug)
-    const result = await this.createQueryBuilder('app')
-      .innerJoin('app_versions', 'av', 'app.current_version_id = av.id')
-      .where('av.slug = :slug', { slug })
-      .select(['app.organization_id', 'av.is_public', 'app.current_version_id'])
-      .getRawOne();
+    // Resolve through any version carrying this slug
+    const version = await this.dataSource.getRepository(AppVersion).findOne({
+      where: { slug },
+      relations: ['app'],
+    });
 
-    if (result) {
+    if (version?.app) {
       return {
-        organizationId: result.app_organization_id,
-        isPublic: result.av_is_public,
-        isReleased: true,
+        organizationId: version.app.organizationId,
+        isPublic: version.isPublic,
+        isReleased: version.app.currentVersionId ? true : false,
       };
     }
 
@@ -79,6 +79,17 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findByAppName(name: string, organizationId: string, versionId?: string): Promise<App> {
+    // Check app_versions for non-workflow app names
+    // (BRANCH-type for git-sync workspaces, VERSION-type for non-git-sync)
+    const version = await this.dataSource.getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .innerJoinAndSelect('av.app', 'app')
+      .where('av.app_name = :name', { name })
+      .andWhere('app.organization_id = :organizationId', { organizationId })
+      .getOne();
+    if (version?.app) return version.app;
+
+    // Fallback to apps table (for workflows)
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
     return this.findOne({
       ...(versionId ? { relations: ['appVersions'] } : {}),
@@ -125,22 +136,37 @@ export class AppsRepository extends Repository<App> {
       .where('app.organizationId = :organizationId', { organizationId });
 
     if (branchId) {
-      // Show version-level metadata for branch context
+      // Show version-level metadata from the BRANCH-type version for this branch
       qb.addSelect('av_meta.app_name AS name')
         .addSelect('av_meta.slug AS slug')
         .addSelect('av_meta.icon AS icon')
         .addSelect('av_meta.is_public AS "isPublic"')
-        .innerJoin('app_versions', 'av_meta', 'av_meta.app_id = app.id AND av_meta.branch_id = :branchId', { branchId });
+        .innerJoin(
+          'app_versions',
+          'av_meta',
+          'av_meta.app_id = app.id AND av_meta.branch_id = :branchId AND av_meta.version_type = :branchType',
+          { branchId, branchType: 'branch' }
+        );
     } else {
-      // No branch context: resolve metadata from released version (current_version_id),
-      // falling back to the latest non-branch version (for unreleased apps), then apps table (workflows)
+      // No branch context: resolve metadata from BRANCH-type version (git-sync workspaces)
+      // or any VERSION-type version with slug set (non-git-sync workspaces),
+      // falling back to apps table (workflows)
       qb.addSelect(
-        `COALESCE(av_released.app_name, app.name) AS name`
+        `COALESCE(av_meta.app_name, app.name) AS name`
       )
-        .addSelect(`COALESCE(av_released.slug, app.slug) AS slug`)
-        .addSelect(`COALESCE(av_released.icon, app.icon) AS icon`)
-        .addSelect(`COALESCE(av_released.is_public, app.is_public) AS "isPublic"`)
-        .leftJoin('app_versions', 'av_released', 'av_released.id = app.current_version_id');
+        .addSelect(`COALESCE(av_meta.slug, app.slug) AS slug`)
+        .addSelect(`COALESCE(av_meta.icon, app.icon) AS icon`)
+        .addSelect(`COALESCE(av_meta.is_public, app.is_public) AS "isPublic"`)
+        .leftJoin(
+          'app_versions',
+          'av_meta',
+          `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
+            SELECT av_inner.id FROM app_versions av_inner
+            WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
+            ORDER BY CASE WHEN av_inner.version_type = 'branch' THEN 0 ELSE 1 END, av_inner.updated_at DESC
+            LIMIT 1
+          )`
+        );
     }
 
     return await qb
@@ -164,10 +190,11 @@ export class AppsRepository extends Repository<App> {
         const byId = await manager.findOne(App, { where: { id: idOrSlug }, relations: ['appVersions'] });
         if (byId) return byId;
       }
-      // Try resolving through released version slug
+      // Try resolving through any version carrying this slug
+      // (BRANCH-type for git-sync workspaces, VERSION-type for non-git-sync)
       const result = await manager
         .createQueryBuilder(App, 'app')
-        .innerJoin('app_versions', 'av', 'app.current_version_id = av.id')
+        .innerJoin('app_versions', 'av', 'av.app_id = app.id')
         .where('av.slug = :slug', { slug: idOrSlug })
         .getOne();
       if (result) return result;
