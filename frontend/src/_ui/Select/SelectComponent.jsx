@@ -1,13 +1,23 @@
 import React from 'react';
 import _ from 'lodash';
 import Select, { components } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import defaultStyles from './styles';
 const CustomInput = (props) => {
   return <components.Input {...props} data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`} />;
 };
-export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
+export const SelectComponent = ({
+  options = [],
+  value,
+  onChange,
+  closeMenuOnSelect,
+  darkMode,
+  creatable = false,
+  ...restProps
+}) => {
   const selectRef = React.useRef(null);
   const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
+  const SelectElement = creatable ? CreatableSelect : Select;
   const {
     isMulti = false,
     styles = {},
@@ -54,7 +64,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
     return option.label;
   };
   return (
-    <Select
+    <SelectElement
       {...restProps}
       ref={selectRef}
       selectRef={selectRef} // Exposed ref for custom components if needed

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 const Switch = ({
@@ -17,7 +18,7 @@ const Switch = ({
   visibility,
   isMandatory,
   isValid,
-  id,
+  inputId,
 }) => {
   const handleToggleChange = () => {
     setOn(!on);
@@ -65,7 +66,7 @@ const Switch = ({
       <div className="d-flex" style={switchStyle} onClick={handleToggleChange}>
         <input
           type="checkbox"
-          id={`component-${id}`}
+          id={inputId}
           style={{
             opacity: 0,
             width: 0,
@@ -105,9 +106,10 @@ export const ToggleSwitchV2 = ({
   componentName,
   validate,
   width,
-  id,
 }) => {
   const isInitialRender = useRef(true);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const defaultValue = properties.defaultValue ?? false;
   const [on, setOn] = useState(Boolean(defaultValue));
   const label = properties.label;
@@ -118,6 +120,7 @@ export const ToggleSwitchV2 = ({
   const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
@@ -272,7 +275,7 @@ export const ToggleSwitchV2 = ({
             whiteSpace="normal"
             width={width - 20}
           >
-            <label htmlFor={`component-${id}`}>{label}</label>
+            <label htmlFor={inputId}>{label}</label>
             {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
           </OverflowTooltip>
 
@@ -292,7 +295,7 @@ export const ToggleSwitchV2 = ({
             setUserInteracted={setUserInteracted}
             visibility={visibility}
             isMandatory={isMandatory}
-            id={id}
+            inputId={inputId}
           />
         </>
       )}

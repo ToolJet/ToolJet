@@ -34,6 +34,18 @@
       "role": {
         "type": "string"
       },
+      "bearer_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "private_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "private_key_passphrase": {
+        "type": "string",
+        "encrypted": true
+      },
       "client_id": {
         "type": "string"
       },
@@ -53,21 +65,16 @@
       "custom_query_params": {
         "type": "object"
       },
-      "private_key": {
-        "type": "string",
-        "encrypted": true
-      },
-      "private_key_passphrase": {
-        "type": "string",
-        "encrypted": true
+      "allow_dynamic_connection_parameters": {
+        "type": "boolean"
       }
     }
   },
   "defaults": {
-    "username": {
+    "account": {
       "value": ""
     },
-    "account": {
+    "username": {
       "value": ""
     },
     "password": {
@@ -93,6 +100,9 @@
     },
     "grant_type": {
       "value": "authorization_code"
+    },
+    "allow_dynamic_connection_parameters": {
+      "value": false
     }
   },
   "properties": {
@@ -100,7 +110,7 @@
       "label": "Account",
       "key": "account",
       "type": "text",
-      "description": "Enter account"
+      "description": "Enter Snowflake account identifier (e.g. xy12345.us-east-1)"
     },
     "auth_type": {
       "label": "Authentication type",
@@ -108,9 +118,22 @@
       "type": "dropdown-component-flip",
       "description": "Select the authentication type",
       "list": [
-        { "value": "basic", "name": "Basic" },
-        { "value": "oauth2", "name": "OAuth 2.0" },
-        { "value": "key_pair", "name": "Key pair" }
+        {
+          "value": "basic",
+          "name": "Basic"
+        },
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        },
+        {
+          "value": "bearer_token",
+          "name": "Bearer token"
+        },
+        {
+          "value": "key_pair",
+          "name": "Key pair"
+        }
       ]
     },
     "basic": {
@@ -169,6 +192,15 @@
         }
       }
     },
+    "bearer_token": {
+      "bearer_token": {
+        "label": "Bearer token",
+        "key": "bearer_token",
+        "type": "password",
+        "description": "Enter the OAuth bearer token",
+        "encrypted": true
+      }
+    },
     "key_pair": {
       "username": {
         "label": "Username",
@@ -195,25 +227,31 @@
       "label": "Database",
       "key": "database",
       "type": "text",
-      "description": "Enter database"
+      "description": "Enter database name"
     },
     "schema": {
       "label": "Schema",
       "key": "schema",
       "type": "text",
-      "description": "Enter schema"
+      "description": "Enter schema name"
     },
     "warehouse": {
       "label": "Warehouse",
       "key": "warehouse",
       "type": "text",
-      "description": "Enter warehouse"
+      "description": "Enter warehouse name"
     },
     "role": {
       "label": "Role",
       "key": "role",
       "type": "text",
       "description": "Enter role"
+    },
+    "allow_dynamic_connection_parameters": {
+      "label": "Allow dynamic connection parameters",
+      "key": "allow_dynamic_connection_parameters",
+      "type": "toggle",
+      "description": "Turning this on will allow dynamically setting database, warehouse and role from the application"
     }
   },
   "required": [

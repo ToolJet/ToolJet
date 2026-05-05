@@ -6,6 +6,14 @@
 
 Toggle switch component for binary on/off states. Single-part component (Shape D) wrapping shadcn Switch primitive (Radix `@radix-ui/react-switch`). No visual variants, no size variants — token overrides only.
 
+## Dimensions
+
+| Element | Size | Tailwind |
+|---|---|---|
+| track | 28×16 (inc. 2px transparent border) | `tw-h-4 tw-w-7 tw-border-2` |
+| thumb | 12×12 | `tw-h-3 tw-w-3` |
+| thumb travel | 0 → 12px | `data-[state=unchecked]:tw-translate-x-0` / `data-[state=checked]:tw-translate-x-3` |
+
 ## Props
 
 | Prop | Type | Values | Default |

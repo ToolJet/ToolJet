@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useId } from 'react';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
@@ -21,7 +21,6 @@ export const RadioButtonV2 = ({
   validate,
   validation,
   id,
-  subContainerIndex,
   dataCy,
 }) => {
   const { label, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } = properties;
@@ -42,6 +41,7 @@ export const RadioButtonV2 = ({
   } = styles;
 
   const isInitialRender = useRef(true);
+  const reactId = useId();
 
   const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -192,8 +192,9 @@ export const RadioButtonV2 = ({
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
   const computedLayoutStyles = {
+    height: '100%',
     flexDirection: layout === 'wrap' ? 'row' : layout,
-    ...(layout === 'wrap' && { flexWrap: 'wrap' }),
+    ...(layout === 'wrap' && { flexWrap: 'wrap', maxHeight: '100%', height: 'max-content' }),
     overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
   };
 
@@ -248,7 +249,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            className="d-flex px-0 h-100"
+            className="d-flex px-0"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,
@@ -257,9 +258,7 @@ export const RadioButtonV2 = ({
           >
             {selectOptions.map((option, index) => {
               const isChecked = checkedValue == option.value;
-              const inputId = `${id}${
-                subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
-              }-option-${index}`;
+              const inputId = `${reactId}-option-${index}`;
 
               return (
                 <label key={index} className="radio-button-container" htmlFor={inputId}>

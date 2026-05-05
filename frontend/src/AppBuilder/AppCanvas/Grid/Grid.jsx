@@ -32,7 +32,7 @@ import {
   dragContextBuilder,
   getAdjustedDropPosition,
   getDroppableSlotIdOnScreen,
-  isInsideNestedListview,
+  isNestingLimitReached,
   isTargetModuleContainer,
   computeWidgetDropPosition,
   getRevertPosition,
@@ -44,7 +44,12 @@ import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
 import { useGroupedTargetsScrollHandler } from './hooks/useGroupedTargetsScrollHandler';
 import { useCanvasAutoScroll } from './hooks/useCanvasAutoScroll';
-import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS, TOP_ALIGNMENT_HEIGHT_INCREMENT } from '../appCanvasConstants';
+import {
+  NO_OF_GRIDS,
+  SUBCONTAINER_WIDGETS,
+  TOP_ALIGNMENT_HEIGHT_INCREMENT,
+  NESTING_LEVEL_LIMITS,
+} from '../appCanvasConstants';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
@@ -548,15 +553,16 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           widgetsTypeToBeDropped.includes(widgetType)
         ) || [];
 
-      // Check ListView nesting restriction:
-      // If dragging a ListView into a slot inside a nested ListView, block it
-      let listviewDepthExceeded = false;
-      if (widgetsTypeToBeDropped.includes('Listview') && isInsideNestedListview(targetSlotId, boxList)) {
-        listviewDepthExceeded = true;
-        restrictedWidgetsTobeDropped = ['Listview'];
+      // Check nesting depth restrictions for all widget types in NESTING_LEVEL_LIMITS
+      let nestingDepthExceeded = false;
+      for (const type of Object.keys(NESTING_LEVEL_LIMITS)) {
+        if (widgetsTypeToBeDropped.includes(type) && isNestingLimitReached(targetSlotId, boxList, type)) {
+          nestingDepthExceeded = true;
+          restrictedWidgetsTobeDropped = [...restrictedWidgetsTobeDropped, type];
+        }
       }
 
-      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !listviewDepthExceeded;
+      const isParentChangeAllowed = restrictedWidgetsTobeDropped?.length === 0 && !nestingDepthExceeded;
 
       const isParentModuleContainer = isTargetModuleContainer(targetSlotId, isModuleEditor);
 
@@ -1060,11 +1066,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               left = revertPos.left;
               top = revertPos.top;
 
-              if (!isModalToCanvas) {
-                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
-              }
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
+              } else if (!isModalToCanvas) {
+                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
               }
             }
 

@@ -11,6 +11,12 @@ const buttonVariants = cva(
     'tw-border-0 tw-border-solid tw-appearance-none tw-outline-none',
     // Override shadcn focus ring with ToolJet token
     'focus-visible:tw-ring-2 focus-visible:tw-ring-interactive-focus-outline focus-visible:tw-ring-offset-1',
+    // Desaturate icons when the button is disabled. Lucide icons follow
+    // currentColor and are already monochrome, but colored SVGs and <img>
+    // visuals in leadingVisual/trailingVisual would otherwise stay vivid.
+    // Pairs with shadcn's disabled:tw-opacity-50 (whole-button fade).
+    'disabled:[&_svg]:tw-grayscale',
+    'disabled:[&_img]:tw-grayscale',
   ],
   {
     variants: {

@@ -1,112 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import Select from '@/_ui/Select';
-import defaultStyles from '@/_ui/Select/styles';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { Button } from '@/components/ui/Rocket';
+import { FieldRow, OptionCombobox } from './shared';
 
-export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMode }) {
+export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, component }) {
   const [isLoading, setIsLoading] = useState(true);
   const [appOptions, setAppOptions] = useState([]);
-
-  const queryParamChangeHandler = (index, key, value) => {
-    event.queryParams[index][key] = value;
-    handlerChanged(eventIndex, 'queryParams', event.queryParams);
-  };
-  const { t } = useTranslation();
-
-  const addQueryParam = () => {
-    if (!event.queryParams) {
-      event.queryParams = [];
-      handlerChanged(eventIndex, 'queryParams', event.queryParams);
-    }
-
-    event.queryParams.push(['', '']);
-    handlerChanged(eventIndex, 'queryParams', event.queryParams);
-    setNumberOfQueryparams(numberOfQueryParams + 1);
-  };
-
-  const deleteQueryParam = (index) => {
-    event.queryParams.splice(index, 1);
-    handlerChanged(eventIndex, 'queryParams', event.queryParams);
-    setNumberOfQueryparams(numberOfQueryParams - 1);
-  };
-
-  const [numberOfQueryParams, setNumberOfQueryparams] = useState(0);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (event.queryParams) {
-      setNumberOfQueryparams(event.queryParams.length);
-    }
-  });
+  const queryParams = event.queryParams ?? [];
 
   useEffect(() => {
     getAllApps()
-      .then((apps) => {
-        console.log(apps, 'appapapp');
-        setAppOptions(apps);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .then(setAppOptions)
+      .finally(() => setIsLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const styles = {
-    ...defaultStyles(darkMode),
-    menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-    menuList: (base) => ({
-      ...base,
-    }),
-  };
-  console.log(appOptions, 'appOptions');
-  return (
-    <div className="p-1 go-to-app">
-      <label className="form-label mt-1">App</label>
-      <Select
-        options={appOptions}
-        search={true}
-        value={event.slug}
-        onChange={(value) => {
-          handlerChanged(eventIndex, 'slug', value);
-        }}
-        isDisabled={isLoading}
-        isLoading={isLoading}
-        placeholder={t('globals.select', 'Select') + '...'}
-        styles={styles}
-        useMenuPortal={false}
-        className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
-        useCustomStyles={true}
-      />
-      <label className="form-label mt-2">Query params</label>
+  const updateQueryParams = (next) => handlerChanged(eventIndex, 'queryParams', next);
 
-      {Array(numberOfQueryParams)
-        .fill(0)
-        .map((_, index) => (
-          <div key={index} className="row input-group mt-1">
-            <div className="col">
+  const queryParamChangeHandler = (index, key, value) => {
+    const next = queryParams.map((p, i) => (i === index ? [...p] : p));
+    if (!next[index]) next[index] = ['', ''];
+    next[index][key] = value;
+    updateQueryParams(next);
+  };
+
+  const addQueryParam = () => updateQueryParams([...queryParams, ['', '']]);
+  const deleteQueryParam = (index) => updateQueryParams(queryParams.filter((_, i) => i !== index));
+
+  return (
+    <div className="tw-flex tw-flex-col tw-gap-3" data-cy="go-to-app-panel">
+      <FieldRow label="App" dataCy="go-to-app-label">
+        <OptionCombobox
+          options={appOptions}
+          value={event.slug}
+          onChange={(value) => handlerChanged(eventIndex, 'slug', value)}
+          placeholder={isLoading ? 'Loading…' : undefined}
+        />
+      </FieldRow>
+
+      <div className="tw-flex tw-flex-col tw-gap-2">
+        <span className="tw-font-body-default tw-text-text-default">Query params</span>
+        {queryParams.map((param, index) => (
+          <div key={index} className="tw-flex tw-items-center tw-gap-1.5">
+            <div className="tw-min-w-0 tw-flex-1">
               <CodeHinter
                 type="basic"
-                initialValue={event?.queryParams?.[index]?.[0]}
+                initialValue={param?.[0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
+                usePortalEditor={false}
+                component={component}
+                cyLabel="event-query-param-key"
               />
             </div>
-            <div className="col">
+            <div className="tw-min-w-0 tw-flex-1">
               <CodeHinter
                 type="basic"
-                initialValue={event?.queryParams?.[index]?.[1]}
+                initialValue={param?.[1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
+                usePortalEditor={false}
+                component={component}
+                cyLabel="event-query-param-value"
               />
             </div>
-            <span className="btn-sm col-auto my-1" role="button" onClick={() => deleteQueryParam(index)}>
-              x
-            </span>
+            <Button
+              variant="ghost"
+              size="small"
+              iconOnly
+              leadingVisual={<Trash2 className="tw-h-2.5 tw-w-2.5 tw-text-icon-strong" />}
+              onClick={() => deleteQueryParam(index)}
+              aria-label="Remove query param"
+            />
           </div>
         ))}
-
-      <button className="btn btn-sm btn-outline-azure mt-2 mx-0 mb-0" onClick={addQueryParam}>
-        +
-      </button>
+        <Button
+          variant="outline"
+          size="small"
+          leadingVisual={<Plus className="tw-h-2.5 tw-w-2.5" />}
+          onClick={addQueryParam}
+          data-cy="button-add-query-param"
+        >
+          Add param
+        </Button>
+      </div>
     </div>
   );
 }

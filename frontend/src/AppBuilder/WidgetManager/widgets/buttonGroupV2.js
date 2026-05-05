@@ -65,6 +65,13 @@ export const buttonGroupV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -154,30 +161,6 @@ export const buttonGroupV2Config = {
         },
       ],
       isFxNotRequired: true,
-    },
-    widthType: {
-      type: 'select',
-      showLabel: false,
-      options: [
-        { name: 'Of the Component', value: 'ofComponent' },
-        { name: 'Of the Field', value: 'ofField' },
-      ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'ofComponent',
-      },
-      accordian: 'label',
-      isFxNotRequired: true,
-      conditionallyRender: [
-        {
-          key: 'alignment',
-          value: 'side',
-        },
-        {
-          key: 'auto',
-          value: false,
-        },
-      ],
     },
     backgroundColor: {
       type: 'colorSwatches',
@@ -419,6 +402,8 @@ export const buttonGroupV2Config = {
       multiSelection: { value: '{{false}}' },
       layout: { value: 'row' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
@@ -430,7 +415,6 @@ export const buttonGroupV2Config = {
       auto: { value: '{{true}}' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
-      widthType: { value: 'ofComponent' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },
       textColor: { value: 'var(--cc-primary-text)' },
