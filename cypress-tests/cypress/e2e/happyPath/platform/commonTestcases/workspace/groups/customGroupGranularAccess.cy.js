@@ -921,7 +921,7 @@ describe("Custom Group Granular Access", () => {
                 cy.visit(previewUrl);
                 signup(data.firstName, data.email);
                 cy.wait(1500);
-                cy.get('[data-cy="preview-settings"]').should('be.visible');
+                cy.get(commonSelectors.previewSettings).should('be.visible');
                 cy.get(commonWidgetSelector.draggableWidget("text1")).should(
                     "contain",
                     "development",
