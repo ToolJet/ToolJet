@@ -202,7 +202,7 @@ Retrieve records from the selected table with optional filtering, sorting, and p
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/listrows-gui.png" alt="MSsql list row gui mode"/>
 
-### Create Rows
+### Create Row
 Insert a new row into the selected table by providing values for the required columns.
 
 In the editor, ensure the **Columns** input is provided in `string` format.
@@ -217,10 +217,10 @@ Modify existing row values in the selected table based on the specified conditio
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
-#### Required Parameters
+#### Required Parameter
 - **Columns**: Specify the column names and values to be updated in the selected row(s).
 
-#### Optional Parameters
+#### Optional Parameter
 - **Filter**: Apply conditions to identify which row(s) should be updated.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/updaterows-gui.png" alt="MSsql update row gui mode"/>
@@ -228,15 +228,15 @@ In the editor, ensure the **Columns** input is provided in `string` format.
 ### Delete Rows
 Remove one or more rows from the selected table that match the given conditions.
 
-#### Required Parameters
+#### Required Parameter
 - **Filter**: Apply conditions to specify which row(s) should be deleted.
 
-#### Optional Parameters
+#### Optional Parameter
 - **Limit**: Specify the maximum number of rows to delete.
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/deleterows-gui.png" alt="MSsql delete row gui mode"/>
 
-### Upsert Rows
+### Upsert Row
 Insert a new row or update an existing row if a matching primary or unique key already exists.
 
 In the editor, ensure the **Columns** input is provided in `string` format.
@@ -306,7 +306,7 @@ In this operation, if a row with the matching primary key exists, it is updated;
 ```
 </details>
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-upsert-gui.png" alt="MSsql bulk upsert gui mode"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-upsert-gui.png" alt="MSsql bulk upsert gui mode"/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
