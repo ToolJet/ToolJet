@@ -9,7 +9,11 @@ title: Migration from External nginx
 Built-in SSL is available on **EE paid plans** only. Ensure your license includes SSL termination before following this guide.
 :::
 
-If you're currently using an external nginx reverse proxy, you have two options when upgrading to ToolJet with built-in SSL support.
+:::tip Optional
+This guide is only relevant if you are **currently running an external nginx reverse proxy** and want to switch to ToolJet's built-in SSL. If you're setting up SSL for the first time, start with the [Quick Start Guide](quickstart.md) instead.
+:::
+
+If you're currently using an external nginx reverse proxy, you have two options:
 
 ## Option 1: Switch to Built-in SSL
 
