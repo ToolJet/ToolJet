@@ -13,10 +13,17 @@ export const gitSyncSelectors = {
   // ─── Header (Dashboard / Data Sources) ────────────────────────────────────
   wsBranchHeader: '[data-cy="workspace-branch-dropdown-header"]',
   wsCurrentBranch: '[data-cy="workspace-current-branch-name"]',
-  masterLockBanner: '.locked-branch-banner',
+  masterLockBanner: '[data-cy="locked-branch-banner"]',
   pullBtn: "Pull",
   lockBannerApps: "Create a branch to add or edit apps.",
   lockBannerDataSources: "Create a branch to add or edit data sources.",
+
+  // ─── Workspace Git CTA Buttons (Dashboard header) ─────────────────────────
+  wsGitPullBtn: '[data-cy="workspace-git-pull-button"]',
+  wsGitCommitBtn: '[data-cy="workspace-git-commit-button"]',
+
+  // ─── AppBuilder Lifecycle CTA Button ──────────────────────────────────────
+  lifecycleCTABtn: '[data-cy="lifecycle-cta-button"]',
 
   // ─── Branch Popover (Dashboard) ───────────────────────────────────────────
   wsBranchPopover: '[data-cy="workspace-branch-dropdown-popover"]',
@@ -49,11 +56,15 @@ export const gitSyncSelectors = {
   // ─── Push / Pull Modal ─────────────────────────────────────────────────────
   modalTitle: '[data-cy="modal-title"]',
   modalClose: '[data-cy="modal-close-button"]',
-  commitMessageInput: '[data-cy="commit-message-input"]', 
+  commitMessageInput: '[data-cy="commit-message-input"]',
   pullModalTitle: "Pull Commit",
   checkForUpdatesLabel: '[data-cy="check-for-updates-label"]',
-  pullModalCancelBtn: 'button:contains("Cancel")',
-  pullModalPullChangesBtn: 'button:contains("Pull changes")',
+  pullModalCancelBtn: '[data-cy="cancel-button"]',
+  pullModalPullChangesBtn: '[data-cy="pull-button"]',
+  modalCommitBtn: '[data-cy="commit-button"]',
+  modalContinueBtn: '[data-cy="continue-button"]',
+  branchSelect: '[data-cy="branch-select"]',
+  versionSelect: '[data-cy="version-select"]',
 
   // ─── Create Branch Modal ───────────────────────────────────────────────────
   createBranchModalTitle: "Create branch",

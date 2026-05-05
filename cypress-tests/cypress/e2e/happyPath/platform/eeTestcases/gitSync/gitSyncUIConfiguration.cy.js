@@ -11,22 +11,28 @@ describe("Git Sync — UI Configuration", () => {
   };
 
   beforeEach(() => {
-    cy.apiLogin();
-    cy.viewport(1800, 1400);
-  });
-
-  it("should configure GitHub git sync via UI, verify all modals on Dashboard and Data Sources, delete config via UI, then archive workspace", () => {
-    const wsName = `gitsync-${fake.firstName.toLowerCase()}`;
+    const wsName = `gitsync-create-${fake.firstName.toLowerCase()}`;
     const wsSlug = wsName;
     let createdWorkspaceId;
 
+    cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       createdWorkspaceId = res.body.organization_id;
+      Cypress.env("workspaceId", createdWorkspaceId);
+      Cypress.env("workspaceSlug", wsSlug);
     });
+    cy.viewport(1800, 1400);
+  });
 
+  afterEach(() => {
+    cy.apiLogin();
+    cy.apiArchiveWorkspace(Cypress.env("workspaceId"));
+  });
+
+  it("should configure GitHub git sync via UI, verify all modals on Dashboard and Data Sources, delete config via UI, then archive workspace", () => {
     // Open configure-git page — verify disabled state
     cy.intercept("GET", "**/api/git-sync/**").as("gitSyncInit");
-    cy.visit(`${Cypress.config("baseUrl")}/${wsSlug}/workspace-settings/configure-git`);
+    cy.visit(`${Cypress.config("baseUrl")}/${Cypress.env("workspaceSlug")}/workspace-settings/configure-git`);
     cy.contains("Configure git sync", { timeout: 15000 }).should("be.visible");
     cy.wait("@gitSyncInit");
     cy.wait(2000);
@@ -165,7 +171,7 @@ describe("Git Sync — UI Configuration", () => {
     cy.log("[gitSync] ✓ Switch branch modal content and search verified");
 
     // Data Sources page — verify lock banner and branch popover
-    cy.visit(`${Cypress.config("baseUrl")}/${wsSlug}/data-sources`);
+    cy.visit(`${Cypress.config("baseUrl")}/${Cypress.env("workspaceSlug")}/data-sources`);
     cy.wait(2000);
 
     cy.get(sel.wsCurrentBranch, { timeout: 15000 }).should(
@@ -196,7 +202,7 @@ describe("Git Sync — UI Configuration", () => {
     // Delete config via UI
     cy.intercept("GET", "**/api/git-sync/**").as("gitSyncLoad");
     cy.visit(
-      `${Cypress.config("baseUrl")}/${wsSlug}/workspace-settings/configure-git`,
+      `${Cypress.config("baseUrl")}/${Cypress.env("workspaceSlug")}/workspace-settings/configure-git`,
     );
     cy.contains("Configure git sync", { timeout: 15000 }).should("be.visible");
     cy.wait("@gitSyncLoad");
@@ -228,22 +234,9 @@ describe("Git Sync — UI Configuration", () => {
     cy.get('[data-cy="github-toggle"]').should("not.be.checked");
 
     cy.log("[gitSync] ✓ Delete config flow verified");
-
-    cy.then(() => cy.apiArchiveWorkspace(createdWorkspaceId));
   });
 
   it("Click on every app create option should show the create branch modal", () => {
-    const wsName = `gitsync-create-${fake.firstName.toLowerCase()}`;
-    const wsSlug = wsName;
-    let createdWorkspaceId;
-
-    cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-      createdWorkspaceId = res.body.organization_id;
-      Cypress.env("workspaceId", createdWorkspaceId);
-      Cypress.env("workspaceSlug", wsSlug);
-    });
-
-    cy.then(() => cy.apiLogin("dev@tooljet.io", "password", createdWorkspaceId));
     cy.gitSyncCheckAndConfigure();
     cy.gitSyncGoToDashboard();
 
@@ -293,7 +286,5 @@ describe("Git Sync — UI Configuration", () => {
     cy.contains("button", "Cancel").click();
     cy.contains("Import app from git repository").should("not.exist");
     cy.log("[gitSync] ✓ Import from git repository → Import modal verified");
-
-    cy.then(() => cy.apiArchiveWorkspace(createdWorkspaceId));
   });
 });

@@ -14,7 +14,7 @@ describe(
 
     const NEW_DEV_URL = "https://jsonplaceholder.typicode.com/posts";
     const NEW_STAGING_URL = "https://jsonplaceholder.typicode.com/todos";
-    
+
     // New desktop layout for the Table component 
     const NEW_TABLE_LAYOUT = { top: 50, left: 5, width: 40, height: 300 };
 
@@ -77,7 +77,7 @@ describe(
           // ── Capture live app definition AFTER editor push ─────────────
           // co_relation_ids are now guaranteed to be set in the DB.
           cy.apiGetAppDefinition(appId, branchName).then((appV2) => {
-            
+
 
             const ds = (appV2.dataSources || []).find((d) => d.kind === "restapi");
             expect(ds, "restapi datasource present").to.exist;
@@ -429,7 +429,7 @@ describe(
     //           (M1, M2, M3 from MISSING_CASES.md Priority 1)
     // =========================================================================
 
-it("branch isolation — app on branchA not visible on branchB before any merge", () => {
+    it("branch isolation — app on branchA not visible on branchB before any merge", () => {
       const branchA = `test-isolate-a-${testId}`;
       const branchB = `test-isolate-b-${testId}`;
       const appA = `app-isolate-a-${testId}`;

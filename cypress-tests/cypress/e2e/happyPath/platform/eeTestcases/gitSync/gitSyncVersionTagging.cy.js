@@ -51,16 +51,22 @@ describe(
     const buildTagName = (coRelationId, versionName) =>
       `${coRelationId}/${normalizeForTag(versionName)}`;
 
+    // testId is fixed at parse time — add a per-beforeEach counter so each test
+    // gets a unique workspace slug (avoids 409 "slug already taken" on re-runs).
     const testId = Date.now();
-    const wsName = `gitsync-tagging-${testId}`;
-    const wsSlug = wsName;
-    const FIXTURE = "gitSync/fixture-app.json";
-    const appName = `app-tag-${testId}`;
-    const branchName = `test-tag-${testId}`;
+    let testRunIndex = 0;
 
-    // Second workspace constants — defined here so Block 3 can reference them
-    const secondWsName = `gitsync-tagging-import-${testId}`;
-    const secondWsSlug = secondWsName;
+    // These are resolved inside beforeEach using the current testRunIndex.
+    let wsName;
+    let wsSlug;
+    let appName;
+    let branchName;
+
+    // Second workspace constants — resolved inside Block 2 test body from wsName.
+    let secondWsName;
+    let secondWsSlug;
+
+    const FIXTURE = "gitSync/fixture-app.json";
 
     const VERSION_V1 = "v1";
     const VERSION_V2 = "v2";
@@ -68,6 +74,9 @@ describe(
 
     let workspaceId;
     let secondWorkspaceId;
+    // Saved separately because beforeEach overwrites secondWsSlug on each test run.
+    // Block 2 sets this; Block 3 reads it.
+    let savedSecondWsSlug;
     let appId;
     let masterBranchId;
     let appCoRelationId;
@@ -82,6 +91,15 @@ describe(
     });
 
     beforeEach(() => {
+      // Each test gets a unique workspace/app/branch name to avoid slug conflicts.
+      const runId = `${testId}-${testRunIndex++}`;
+      wsName = `gitsync-tagging-${runId}`;
+      wsSlug = wsName;
+      appName = `app-tag-${runId}`;
+      branchName = `test-tag-${runId}`;
+      secondWsName = `gitsync-tagging-import-${runId}`;
+      secondWsSlug = secondWsName;
+
       cy.apiLogin();
       cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
         workspaceId = res.body.organization_id;
@@ -295,31 +313,40 @@ describe(
     // Block 2 — Import app using v1 tag in a new workspace (app name shown
     //           is the renamed name), then pull renamed v2 version in editor
     // =========================================================================
-
-    it.only("imports app using v1 tag (app shows renamed name) and pulls renamed v2 version in editor", () => {
+    it("imports app using v1 tag (app shows renamed name) and pulls renamed v2 version in editor", () => {
       // ── Phase 1: Create v1 + v2 versions via API and ensure tags exist ────
       // beforeEach leaves app pulled to master with no named versions/tags.
       // apiCreateAppVersion may not trigger auto-tag — check and create explicitly.
 
+      // After apiGitSyncPull, apps only have stub versions (isStub=true). The server
+      // lazily hydrates stubs when the editor opens via ensure-draft. We call it
+      // explicitly so the API-only test flow gets a real DRAFT before apiGetEditingVersionId.
+      cy.apiEnsureAppDraft(appId, masterBranchId);
+
+      // When platform branching is enabled, the default-branch pull creates a VERSION-type
+      // DRAFT. To name and publish it, we use apiSaveAppVersion (PUT with status=PUBLISHED)
+      // instead of apiCreateAppVersion (POST), which would fail with
+      // "Only one draft version is allowed when branching is enabled."
       cy.apiGetEditingVersionId(appId, masterBranchId).then((draftVersionId) => {
-        cy.apiCreateAppVersion(appId, VERSION_V1, draftVersionId, masterBranchId).then((v1) => {
+        cy.apiSaveAppVersion(appId, draftVersionId, VERSION_V1, masterBranchId).then((v1) => {
           v1VersionId = v1.id;
           cy.apiCheckTagExists(appId, VERSION_V1).then(({ exists }) => {
             if (!exists) {
-              cy.log("[gitSync] v1 tag not auto-created by API — creating explicitly");
+              cy.log("[gitSync] v1 tag not auto-created — creating explicitly");
               cy.apiCreateGitTag(appId, v1VersionId);
             }
           });
         });
       });
 
-      // Barrier: v1VersionId is set; create v2
+      // Barrier: v1VersionId is set; create v2 draft by POST /versions (allowed now because
+      // v1 is PUBLISHED — no non-BRANCH DRAFT remains for branchId=masterBranchId), then save it.
       cy.then(() => {
-        cy.apiCreateAppVersion(appId, VERSION_V2, v1VersionId, masterBranchId).then((v2) => {
-          v2VersionId = v2.id;
+        cy.apiCreateAppVersion(appId, VERSION_V2, v1VersionId, masterBranchId).then((v2Draft) => {
+          v2VersionId = v2Draft.id;
           cy.apiCheckTagExists(appId, VERSION_V2).then(({ exists }) => {
             if (!exists) {
-              cy.log("[gitSync] v2 tag not auto-created by API — creating explicitly");
+              cy.log("[gitSync] v2 tag not auto-created — creating explicitly");
               cy.apiCreateGitTag(appId, v2VersionId);
             }
           });
@@ -335,25 +362,28 @@ describe(
         cy.apiRenameAppVersion(appId, v2VersionId, VERSION_V2_RENAMED);
       });
 
-      // Barrier: verify tags are present (server-side) and wait for GitHub
-      // propagation before driving the import UI
+      // Barrier: verify v1 tag is present immediately (it was created synchronously above),
+      // then wait for the v2-renamed tag to appear on GitHub — the rename event is async
+      // (version-rename-commit is fire-and-forget), so we must poll rather than assert instantly.
       cy.then(() => {
         cy.apiCheckTagExists(appId, VERSION_V1).then(({ exists, tagName }) => {
           expect(exists, "v1 tag present before import").to.be.true;
           cy.log(`[gitSync] v1 tag confirmed: ${tagName}`);
         });
-        cy.apiCheckTagExists(appId, VERSION_V2_RENAMED).then(({ exists, tagName }) => {
-          expect(exists, "v2-renamed tag present before import").to.be.true;
-          cy.log(`[gitSync] v2-renamed tag confirmed: ${tagName}`);
+        // v2-renamed tag: poll GitHub until it appears (async rename propagation)
+        cy.gitHubWaitForTag(buildTagName(appCoRelationId, VERSION_V2_RENAMED)).then((tag) => {
+          expect(tag, "v2-renamed tag present on GitHub before import").to.not.be.null;
+          cy.log(`[gitSync] v2-renamed tag confirmed on GitHub: ${tag?.message}`);
         });
+        // Also wait for v1 tag on GitHub (belt-and-suspenders)
         cy.gitHubWaitForTag(buildTagName(appCoRelationId, VERSION_V1));
-        cy.gitHubWaitForTag(buildTagName(appCoRelationId, VERSION_V2_RENAMED));
       });
 
       // ── Phase 2: Create second workspace + configure git ──────────────────
       cy.apiLogin();
       cy.apiCreateWorkspace(secondWsName, secondWsSlug).then((res) => {
         secondWorkspaceId = res.body.organization_id;
+        savedSecondWsSlug = secondWsSlug; // persists across beforeEach for Block 3
         Cypress.env("workspaceId", secondWorkspaceId);
         Cypress.env("workspaceSlug", secondWsSlug);
         cy.log(`[gitSync] Second workspace: ${secondWsName} (${secondWorkspaceId})`);
@@ -365,22 +395,27 @@ describe(
       cy.gitSyncGoToDashboard();
 
       cy.get('[data-cy="import-dropdown-menu"]').click();
-      cy.get('[data-cy="import-from-git-button"]').should("be.visible").click();
+      // Wait for the dropdown to stabilize before clicking an option — the dashboard
+      // re-renders (template fetch) can detach menu items if clicked too soon.
+      cy.get('[data-cy="import-from-git-button"]').should("be.visible");
+      cy.wait(500);
+      cy.get('[data-cy="import-from-git-button"]').click();
       cy.contains("Import app from git repository").should("be.visible");
 
       // Select master branch
       cy.get('[data-cy="branch-select"] .react-select__control').click();
       cy.get(".react-select__option").contains("master").click();
 
-      // App dropdown shows the RENAMED app name (not original appName)
+      // App dropdown lists apps by their git folder name (the original name at push time).
+      // App rename does NOT auto-commit a folder rename — the git folder keeps the original name.
       cy.get('[data-cy="app-select"] .react-select__control', { timeout: 10000 }).click();
       cy.then(() => {
-        cy.get(".react-select__option").contains(renamedAppName).click();
+        cy.get(".react-select__option").contains(appName).click();
       });
 
-      // App name input field defaults to the renamed app name
+      // App name input field defaults to the app name read from git (original folder name).
       cy.then(() => {
-        cy.get('[data-cy="modal-body"] input.form-control').should("have.value", renamedAppName);
+        cy.get('[data-cy="modal-body"] input.form-control').should("have.value", appName);
       });
 
       // Select v1 tag in the version dropdown
@@ -394,17 +429,25 @@ describe(
       cy.log(`[gitSync] ✓ App imported from git using v1 tag`);
 
       // ── Phase 4: Pull renamed v2 version in the editor ───────────────────
-      cy.contains("button", /^Pull$/i, { timeout: 10000 }).click();
+      cy.get(GS.lifecycleCTABtn).click();
       cy.contains("Pull commit").should("be.visible");
 
-      cy.get('[data-cy="branch-select"] .react-select__control').click();
-      cy.get(".react-select__option").contains("master").click();
+      // Trigger the update check — click the "Check for updates" label
+      cy.get(GS.checkForUpdatesLabel, { timeout: 10000 })
+        .should("be.visible")
+        .click();
 
-      cy.get('[data-cy="version-select"] .react-select__control', { timeout: 10000 }).click();
-      cy.get(".react-select__option").contains(VERSION_V2_RENAMED).click();
+      // Wait for branch dropdown then select master
+      cy.get('[data-cy="branch-select"]', { timeout: 20000 }).should("be.visible").click();
+      cy.contains('[role="option"]', "master").click();
 
-      cy.contains("button", "Pull changes").should("be.enabled").click();
-      cy.contains("button", "Pull changes", { timeout: 30000 }).should("not.exist");
+      // Version dropdown appears only after branch === configuredBranch
+      cy.get('[data-cy="version-select"]', { timeout: 10000 }).should("be.visible").click();
+      cy.contains('[role="option"]', VERSION_V2_RENAMED).click();
+
+      // Pull
+      cy.get(GS.pullModalPullChangesBtn).should("be.enabled").click();
+      cy.get(GS.pullModalPullChangesBtn, { timeout: 30000 }).should("not.exist");
 
       cy.log(`[gitSync] ✓ Editor pulled renamed version '${VERSION_V2_RENAMED}'`);
     });
@@ -424,7 +467,8 @@ describe(
           "string",
         );
         Cypress.env("workspaceId", secondWorkspaceId);
-        Cypress.env("workspaceSlug", secondWsSlug);
+        // Use savedSecondWsSlug — beforeEach overwrites secondWsSlug for the new run
+        Cypress.env("workspaceSlug", savedSecondWsSlug);
       });
       cy.then(() =>
         cy.apiLogin("dev@tooljet.io", "password", secondWorkspaceId),
@@ -433,19 +477,19 @@ describe(
       cy.gitSyncGoToDashboard();
 
       // On master: Pull button is visible in the header
-      cy.contains("button", /^Pull$/i, { timeout: 10000 }).should("be.visible").click();
+      cy.get('[data-cy="workspace-git-pull-button"]').should("be.visible").click();
 
-      // Pull Commit modal opens
-      cy.contains("Pull commit").should("be.visible");
+      // Pull Commit modal opens (workspace modal uses "Pull Commit" with capital C)
+      cy.contains("Pull Commit").should("be.visible");
 
-      // Open branch dropdown — shows all branches available in the git repo
-      cy.get('[data-cy="branch-select"] .react-select__control').click();
-
-      // Select the test branch that was pushed to git but does not exist in
-      // this workspace's ToolJet
-      cy.get(".react-select__option", { timeout: 10000 })
-        .contains(branchName)
+      // Trigger update check — required before branch dropdown appears
+      cy.get('[data-cy="check-for-updates-label"]', { timeout: 10000 })
+        .should("be.visible")
         .click();
+
+      // Wait for branch dropdown then select the test branch
+      cy.get('[data-cy="branch-select"]', { timeout: 20000 }).should("be.visible").click();
+      cy.contains('[role="option"]', branchName, { timeout: 10000 }).click();
 
       // ── Verify the import confirmation dialog ─────────────────────────────
       // Screenshot 12.29.22: "{branchName} branch does not exist in ToolJet,
@@ -459,10 +503,10 @@ describe(
       cy.contains("pulling this will import it as a new branch").should("be.visible");
 
       // ── Confirm import ─────────────────────────────────────────────────────
-      cy.contains("button", "Continue").should("be.enabled").click();
+      cy.get('[data-cy="continue-button"]').should("be.enabled").click();
 
       // Wait for import to complete (dialog/modal closes)
-      cy.contains("button", "Continue", { timeout: 30000 }).should("not.exist");
+      cy.get('[data-cy="continue-button"]', { timeout: 30000 }).should("not.exist");
       cy.wait(3000);
 
       // ── Verify branch is now available in ToolJet ─────────────────────────

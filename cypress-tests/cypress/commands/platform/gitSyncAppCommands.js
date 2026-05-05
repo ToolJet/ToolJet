@@ -1221,3 +1221,140 @@ Cypress.Commands.add("gitHubAssertAppMetaPath", (branch, expectedPath) => {
       return meta;
     });
 });
+
+/**
+ * apiSaveAppVersion — saves (converts) an existing draft version to a named PUBLISHED version.
+ *
+ * When platform branching is enabled, you cannot create a second non-BRANCH draft.
+ * The UI "Save version" button does NOT call POST /api/apps/{id}/versions to create a new version;
+ * it calls PUT /api/v2/apps/{appId}/versions/{versionId} with { name, status: 'PUBLISHED' }
+ * to rename the existing draft and publish it.
+ *
+ * Returns a minimal version-like object { id: versionId, name: versionName } so callers can
+ * chain .then((v1) => { v1VersionId = v1.id; ... }).
+ */
+Cypress.Commands.add("apiSaveAppVersion", (appId, versionId, versionName, branchId = null) => {
+  return cy.getAuthHeaders().then((headers) => {
+    const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
+    return cy
+      .request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${versionId}`,
+        headers: reqHeaders,
+        body: { name: versionName, status: "PUBLISHED" },
+      })
+      .then((res) => {
+        expect(res.status, `Save version '${versionName}'`).to.be.oneOf([200, 201, 204]);
+        Cypress.log({
+          message: `[gitSync] Version ${versionId} saved as '${versionName}' (PUBLISHED)`,
+        });
+        // The PUT endpoint returns an empty body on 204; return a minimal version object.
+        return { id: versionId, name: versionName };
+      });
+  });
+});
+
+/**
+ * gitHubWaitForTag — polls GitHub until the annotated tag with the given name exists,
+ * then returns the tag object { sha, message, tagger, type }.
+ *
+ * Mirrors gitHubWaitForTagGone but waits for presence instead of absence.
+ */
+Cypress.Commands.add("gitHubWaitForTag", (tagName, retries = 15) => {
+  const owner = Cypress.env("GITHUB_REPO_OWNER");
+  const repo = Cypress.env("GITHUB_REPO_NAME");
+
+  const check = (remaining) =>
+    cy
+      .request({
+        method: "GET",
+        url: `https://api.github.com/repos/${owner}/${repo}/git/ref/tags/${tagName}`,
+        headers: {
+          Authorization: `Bearer ${Cypress.env("GITHUB_TOKEN")}`,
+          Accept: "application/vnd.github+json",
+        },
+        failOnStatusCode: false,
+      })
+      .then((refRes) => {
+        if (refRes.status === 200) {
+          const refObj = refRes.body.object;
+
+          if (refObj.type === "commit") {
+            // Lightweight tag — no message
+            Cypress.log({ message: `[gitHub] ✓ Tag '${tagName}' found (lightweight)` });
+            return { sha: refObj.sha, message: null, tagger: null, type: "lightweight" };
+          }
+
+          // Annotated tag — dereference to get message + tagger
+          return cy
+            .request({
+              method: "GET",
+              url: `https://api.github.com/repos/${owner}/${repo}/git/tags/${refObj.sha}`,
+              headers: {
+                Authorization: `Bearer ${Cypress.env("GITHUB_TOKEN")}`,
+                Accept: "application/vnd.github+json",
+              },
+            })
+            .then((tagRes) => {
+              Cypress.log({
+                message: `[gitHub] ✓ Tag '${tagName}' found: "${tagRes.body.message}"`,
+              });
+              return {
+                sha: tagRes.body.object.sha,
+                message: tagRes.body.message,
+                tagger: tagRes.body.tagger,
+                type: "annotated",
+              };
+            });
+        }
+
+        if (remaining <= 0) {
+          throw new Error(`Tag '${tagName}' not found on GitHub after waiting`);
+        }
+        Cypress.log({
+          message: `[gitHub] Waiting for tag '${tagName}'... (${remaining} left)`,
+        });
+        return cy.wait(4000).then(() => check(remaining - 1));
+      });
+
+  return check(retries);
+});
+
+/**
+ * apiEnsureAppDraft — triggers the server-side hydration of a stub app version.
+ *
+ * After a workspace pull (apiGitSyncPull), apps only have stub versions (isStub=true).
+ * The server's GET /api/apps/:id handler triggers hydration lazily when the editor opens.
+ * For API-only test flows that need a real draft (isStub=false) before the UI opens,
+ * call this command first — it hits POST /api/workspace-branches/ensure-draft which
+ * clones the app content from git and creates a proper DRAFT version.
+ *
+ * Returns { draftVersionId } — the hydrated draft's version ID.
+ */
+Cypress.Commands.add("apiEnsureAppDraft", (appId, branchId = null) => {
+  return cy.getAuthHeaders().then((headers) => {
+    const body = { appId };
+    if (branchId) body.branchId = branchId;
+
+    return cy
+      .request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/workspace-branches/ensure-draft`,
+        headers,
+        body,
+        failOnStatusCode: false,
+      })
+      .then((res) => {
+        if (res.status === 404 || res.status === 405) {
+          // Endpoint not available (CE build or older server) — skip silently.
+          Cypress.log({ message: `[gitSync] ensure-draft not available (${res.status}) — skipping` });
+          return { draftVersionId: null };
+        }
+        expect(res.status, `ensure-draft for app ${appId}`).to.be.oneOf([200, 201]);
+        Cypress.log({
+          message: `[gitSync] App ${appId} draft ensured on branch ${branchId}: ${res.body?.draftVersionId}`,
+        });
+        return res.body;
+      });
+  });
+});
