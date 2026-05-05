@@ -25,6 +25,30 @@ In the screenshot below, we are triggering two different queries using two diffe
 
 <img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 
+### Callback Functions
+
+In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+
+| Parameter | Type | Description |
+|--------|--------------|--------------|
+| Parameters | Object   | (Optional) Key-value pairs passed to the query. If no parameters are required but callbacks are provided, pass an empty object `{}` as the first argument.|
+| onSuccess  | Function | (Optional) Triggered when the query executes successfully. |
+| onFailure  | Function | (Optional) Triggered when the query execution fails. |
+
+```javascript
+queries.getUsers.run(
+  { limit: 10 },
+  {
+    onSuccess: (data) => {
+      actions.showAlert('success', 'Users fetched successfully');
+    },
+    onFailure: (error) => {
+      actions.showAlert('warning', error.message || 'Something went wrong');
+    }
+  }
+);
+```
+
 ## Reset Query
 
 To reset a query, you can use the below functions:
@@ -71,35 +95,6 @@ await queries.getTodos.run()
 
 let value = queries.getTodos.getLoadingState();
 //replace getTodos with your query name
-```
-### Callback Functions
-
-In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
-
-| Parameter | Type | Description |
-|--------|--------------|--------------|
-| onSuccess  | Function | Triggered when the query executes successfully. |
-| onFailure  | Function | Triggered when the query execution fails. |
-| Parameters | Object   | (Optional) Key-value pairs passed to the query. |
-
-```javascript
-queries.getUsers.run(
-  { limit: 10 },
-  {
-    onSuccess: (data) => {
-      // data = { status: 'ok', data: <query result> }
-      console.log('Query succeeded:', data);
-
-      actions.showAlert('success', 'Users fetched successfully');
-    },
-    onFailure: (error) => {
-      // error contains failure response
-      console.error('Query failed:', error);
-
-      actions.showAlert('danger', error.message || 'Something went wrong');
-    }
-  }
-);
 ```
 
 **Execution Behaviours are :**
