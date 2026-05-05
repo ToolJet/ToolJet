@@ -15,11 +15,10 @@ To establish a connection with the Snowflake data source, you can either click o
 
 Authenticates to Snowflake using a username and password to establish a direct connection with the specified account, role, and warehouse.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth-dynamic-conn.png" alt="ToolJet - Snowflake connection" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/basic-auth.png" alt="ToolJet - Snowflake connection" />
 
 :::info
-- ToolJet also allows you to dynamically override connection values (like database, schema, role, etc.) at runtime instead of using fixed configurations.
-- Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 
 You can find snowflake docs on network policies **[here](https://docs.snowflake.com/en/user-guide/network-policies.html)**.
 :::
@@ -27,7 +26,7 @@ You can find snowflake docs on network policies **[here](https://docs.snowflake.
 ToolJet requires the following to connect to Snowflake database.
 
 - **Account**
-- **Username**
+- **Username/Login name**
 - **Password**
 
 Use your Snowflake **Account Identifier** as the value for the **Account** field.
@@ -35,7 +34,7 @@ Use your Snowflake **Account Identifier** as the value for the **Account** field
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/snowflake/accounts-snowflake.png" alt="ToolJet - Snowflake" />
 
 :::info
-You can also configure for **[additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options)**.
+You can also configure **[additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options)**.
 :::
 
 ### OAuth 2.0 
@@ -112,50 +111,23 @@ Uses ToolJet’s preconfigured OAuth application to simplify authentication with
 :::info
 The **`scope`** parameter for OAuth token requests can include more than just a role. The format depends on the OAuth flow:
 
-`session:role:<role_name>` — specifies the role (e.g., `session:role:public`, `session:role:analyst`)
+`session:role:<role_name>` specifies the role (e.g., `session:role:public`, `session:role:analyst`)
 - You can also leave scope empty to use the user's default role.
 - For External OAuth, the scope is configured in the security integration and may map to different Snowflake roles.
 
 For more info, refer **[here](https://docs.snowflake.com/en/user-guide/oauth-ext-overview#scopes)**.
 :::
 
-### Key Pair Auth
-
-This is an authentication method that uses an RSA key pair (public/private) instead of a username/password. It's ideal for service accounts, automation, and CI/CD pipelines.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/key-pair-auth.png" alt="ToolJet - Snowflake connection" />
-
-:::info
-- Please refer to **[Key Pair Auth Docs](https://docs.snowflake.com/en/user-guide/key-pair-auth)** on how to generate the private key and passphrase.
-- Also, make sure when you start, open a terminal window and then generate a private key.
-:::
-
-### Bearer Auth
+### Bearer Token Auth
 This authentication method uses a pre-generated bearer token for secure, token-based access to Snowflake, eliminating the need to pass username and password in requests. The Bearer tokens authenticate requests to Snowflake REST APIs via the Authorization header.
-
-**Snowflake supports three types of bearer tokens:**
-
-- Programmatic Access Tokens (PATs)— recommended for automation / service accounts
-- JWT (key-pair)tokens
-- OAuth tokens
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/bearer-auth.png" alt="ToolJet - Snowflake connection" />
 
 :::info
 - After completing the configuration and authorization, Snowflake sends an authorization code to ToolJet, which is automatically exchanged for a Bearer Access Token used for subsequent queries.
 
-- Refer **[here](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens)** for more info on Bearer auth token provider.
+- The Bearer token is same as the PAT token key. Refer **[here](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens)** on how to generate a token key.
 :::
-
-### How to connect to Snowflake when MFA is enabled
-
-Multi-Factor Authentication (MFA) adds an extra layer of security to your Snowflake account by requiring a second form of verification during login. When MFA is enabled, password-based authentication is restricted for programmatic access.
-
-**How it works :**
-
-- During OAuth login, users will complete MFA verification via Snowflake UI.
-- For direct or programmatic connections (e.g., ToolJet queries), PAT replaces **password-based authentication**.
-- PAT ensures secure, token-based access when MFA blocks standard credentials.
 
 **Generate a Programmatic Access Token (PAT) in Snowflake :**
 
@@ -183,7 +155,21 @@ ALLOWED_IP_LIST = ('0.0.0.0/0');
 - The IP address in the network policy should be configured based on your system or organization's network setup.
 :::
 
-## Dynamic Connection 
+### Key Pair Auth
+
+This is an authentication method that uses an RSA key pair (public/private) instead of a username/password. It's ideal for service accounts, automation, and CI/CD pipelines.
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/datasource-reference/snowflake/key-pair-auth.png" alt="ToolJet - Snowflake connection"/>
+
+:::info
+Please refer to **[Key Pair Auth Docs](https://docs.snowflake.com/en/user-guide/key-pair-auth)** on how to generate the private key and passphrase.
+:::
+
+## Dynamic Connection Paramaters
+
+You can enable **Allow dynamic connection parameters** in the data source configuration page to directly use the values in the query builder.
+
+<img className="screenshot-full img-s" src="/img/datasource-reference/snowflake/dynamic-conn-config.png" alt="ToolJet - Snowflake query connection" />
 
 ToolJet allows you to override Snowflake connection parameters such as **Database, Warehouse and Role** directly at **query runtime** when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
 
@@ -225,7 +211,7 @@ Retrieves and displays rows from the selected table based on optional filters, s
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/list-rows-gui.png" alt="Snowflake list rows gui" />
 
-### Create Rows
+### Create Row
 Insert a new row into the selected table by providing values for the required columns.
 
 In the editor, ensure the **Columns** input is provided in `string` format.
@@ -256,7 +242,7 @@ Removes either all rows from the table or that match the specified filter condit
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/snowflake/delete-rows-gui.png" alt="Snowflake delete rows gui" />
 
-### Upsert Rows
+### Upsert Row
 Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
