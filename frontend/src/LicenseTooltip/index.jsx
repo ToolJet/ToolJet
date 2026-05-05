@@ -29,6 +29,7 @@ const LicenseTooltip = ({
     GitSync: 'gitSync',
     'Custom themes': 'customThemes',
     'Custom groups': 'customGroups',
+    'SSL termination': 'sslTermination',
   };
 
   const generateMessage = () => {

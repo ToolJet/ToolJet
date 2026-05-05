@@ -109,7 +109,6 @@ export class AppModule implements OnModuleInit, NestModule {
       await FolderAppsModule.register(configs, true),
       await DataQueryFoldersModule.register(configs, true),
       await SMTPModule.register(configs, true),
-      await SslConfigurationModule.register(configs, true),
       await RolesModule.register(configs, true),
       await GroupPermissionsModule.register(configs, true),
       await AppConfigModule.register(configs, true),
@@ -154,6 +153,10 @@ export class AppModule implements OnModuleInit, NestModule {
     ];
 
     const conditionalImports = [];
+
+    if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+      conditionalImports.push(await SslConfigurationModule.register(configs, true));
+    }
 
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
       conditionalImports.push(await WorkflowsModule.register(configs, true));

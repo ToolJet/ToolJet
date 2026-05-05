@@ -47,6 +47,7 @@ import { FEATURES as METRICS } from '@modules/metrices/constants/features';
 import { FEATURES as SCIM_FEATURES } from '@modules/scim/constants/feature';
 import { FEATURES as CUSTOM_DOMAINS_FEATURES } from '@modules/custom-domains/constant/feature';
 import { FEATURES as DATA_QUERY_FOLDERS_FEATURES } from '@modules/data-query-folders/constants/features';
+import { FEATURES as SSL_CONFIGURATION_FEATURES } from '@modules/ssl-configuration/constant/feature';
 
 const tooljetEdition = getTooljetEdition();
 const GROUP_PERMISSIONS_FEATURES =
@@ -102,4 +103,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...SCIM_FEATURES,
   ...CUSTOM_DOMAINS_FEATURES,
   ...DATA_QUERY_FOLDERS_FEATURES,
+  ...SSL_CONFIGURATION_FEATURES,
 };

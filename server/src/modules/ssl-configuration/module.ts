@@ -2,6 +2,8 @@ import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { SslServerManagerService } from '@services/ssl-server-manager.service';
+import { FeatureAbilityFactory } from './ability';
+import { FeatureAbilityGuard } from './ability/guard';
 
 export class SslConfigurationModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -27,8 +29,6 @@ export class SslConfigurationModule extends SubModule {
       ]
     );
 
-    // Include all services in providers array
-    // The lifecycle services have their own guards to check if SSL is enabled
     const providers = [
       SslConfigurationService,
       AcmeClientService,
@@ -37,6 +37,8 @@ export class SslConfigurationModule extends SubModule {
       SslBootstrapService,
       SslCertificateLifecycleService,
       SslCertificateRenewalScheduler,
+      FeatureAbilityFactory,
+      FeatureAbilityGuard,
     ];
 
     const exports = [
