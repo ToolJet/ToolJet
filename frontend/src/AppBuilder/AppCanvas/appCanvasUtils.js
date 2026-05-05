@@ -93,6 +93,44 @@ export const addNewWidgetToTheEditor = (
   }
 
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+
+  // When dropping into a FlexContainer, use flex layout fields instead of grid fields
+  const parentComponentType =
+    parentId && parentId !== 'canvas' ? useStore.getState().getComponentTypeFromId(parentId) : null;
+  const isFlexContainerParent = parentComponentType === 'FlexContainer';
+
+  let activeLayoutData;
+  let nonActiveLayoutData;
+
+  if (isFlexContainerParent) {
+    const existingChildren = useStore.getState().getContainerChildrenMapping(parentId) || [];
+    const allComponents = useStore.getState().getCurrentPageComponents();
+    const maxOrder = existingChildren.reduce((max, childId) => {
+      const childOrder = allComponents[childId]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+      return Math.max(max, childOrder);
+    }, 0);
+    const flexLayout = {
+      flexOrder: maxOrder + 1000,
+      mainSize: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
+      fillMain: false,
+    };
+    activeLayoutData = flexLayout;
+    nonActiveLayoutData = { ...flexLayout, flexOrder: maxOrder + 1000 };
+  } else {
+    activeLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[currentLayout].width : width,
+      height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
+    };
+    nonActiveLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+      height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
+    };
+  }
+
   const newComponent = {
     id: uuidv4(),
     name: componentName,
@@ -101,18 +139,8 @@ export const addNewWidgetToTheEditor = (
       parent: parentId === 'canvas' ? null : parentId,
     },
     layouts: {
-      [currentLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[currentLayout].width : width,
-        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
-      },
-      [nonActiveLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
-        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
-      },
+      [currentLayout]: activeLayoutData,
+      [nonActiveLayout]: nonActiveLayoutData,
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
   };

@@ -27,6 +27,7 @@ import {
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
+  computeFlexContainerInsertIndex,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -39,6 +40,7 @@ import {
   getParentFromSlotId,
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
+import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
@@ -106,6 +108,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const newDragParentId = useRef(null);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
+  const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   const pageMenuProperties = useStore((state) => state?.pageSettings?.definition?.properties ?? {});
@@ -113,12 +116,30 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
+  const flexDragRafRef = useRef(null);
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
     }
     return RESIZABLE_CONFIG;
   }, [virtualTarget]);
+
+  const isFlexContainerChild = useMemo(() => {
+    if (selectedComponents.length !== 1) return false;
+    const widget = boxList.find((b) => b.id === selectedComponents[0]);
+    const parentId = widget?.component?.parent ?? widget?.parent;
+    if (!parentId) return false;
+    return getComponentTypeFromId(parentId) === 'FlexContainer';
+  }, [selectedComponents, boxList, getComponentTypeFromId]);
+
+  const flexParentDirection = useMemo(() => {
+    if (!isFlexContainerChild) return 'column';
+    const widget = boxList.find((b) => b.id === selectedComponents[0]);
+    const parentId = widget?.component?.parent ?? widget?.parent;
+    if (!parentId) return 'column';
+    const parent = getResolvedComponent(parentId, null, moduleId);
+    return parent?.properties?.direction ?? 'column';
+  }, [isFlexContainerChild, selectedComponents, boxList, getResolvedComponent, moduleId]);
 
   const getMoveableTarget = useCallback(() => {
     if (virtualTarget) {
@@ -223,6 +244,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           top: y,
           left: Math.round(x / gw),
         };
+        console.log('batchedLayouts', batchedLayouts);
       });
 
       // Call setComponentLayout once with all updates
@@ -632,7 +654,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         origin={false}
         individualGroupable={virtualTarget ? false : groupedTargets.length <= 1}
         draggable={!shouldFreeze}
-        resizable={!shouldFreeze ? isWidgetResizable : false}
+        resizable={
+          !shouldFreeze
+            ? isFlexContainerChild
+              ? { ...RESIZABLE_CONFIG, renderDirections: [flexParentDirection === 'row' ? 'e' : 's'] }
+              : isWidgetResizable
+            : false
+        }
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
@@ -779,6 +807,20 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               x: transformX || 0,
               y: transformY || 0,
             };
+            // FlexContainer child: write mainSize only, no grid fields
+            // if (
+            //   currentWidget.component?.parent &&
+            //   getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
+            // ) {
+            //   const parentDir =
+            //     getResolvedComponent(currentWidget.component.parent, null, moduleId)?.properties?.direction ?? 'column';
+            //   const rawPx = parentDir === 'row' ? e.lastEvent?.width : e.lastEvent?.height;
+            //   const mainSize = Math.max(GRID_HEIGHT, Math.round((rawPx ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT);
+            //   setComponentLayout({ [currentWidget.id]: { mainSize } });
+            //   setReorderContainerChildren(currentWidget.component.parent);
+            //   incrementCanvasUpdater();
+            //   return;
+            // }
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }
@@ -1036,6 +1078,29 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             prevDragParentId.current = null;
             newDragParentId.current = null;
 
+            // FlexContainer child drag: route to flex-specific handler
+            if (flexDragRafRef.current) {
+              cancelAnimationFrame(flexDragRafRef.current);
+              flexDragRafRef.current = null;
+            }
+            const handledByFlex = handleFlexContainerDragEnd({
+              e,
+              boxList,
+              currentLayout,
+              gridWidth,
+              setComponentLayout,
+              getComponentTypeFromId,
+              incrementCanvasUpdater,
+              setReorderContainerChildren,
+              moduleId,
+              getResolvedComponent,
+            });
+            if (handledByFlex) {
+              setFlexContainerDropTarget(null);
+              setTimeout(() => setSelectedComponents([e.target.id]), 100);
+              return;
+            }
+
             if (!e.lastEvent) return;
 
             // Build the drag context from the event
@@ -1135,6 +1200,36 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             isDraggingRef.current = true;
           }
           const currentWidget = boxList.find((box) => box.id === e.target.id);
+          // FlexContainer children: skip grid snapping, allow free drag
+          if (
+            currentWidget?.component?.parent &&
+            getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
+          ) {
+            const scrollDelta = getScrollDelta();
+            e.target.style.transform = `translate(${e.translate[0] + scrollDelta.x}px, ${
+              e.translate[1] + scrollDelta.y
+            }px)`;
+            positionGhostElement(e.target, 'moveable-ghost-widget');
+            updateMousePosition(e.clientX, e.clientY, e.target);
+            // Update drop indicator (rAF-throttled)
+            if (!flexDragRafRef.current) {
+              flexDragRafRef.current = requestAnimationFrame(() => {
+                flexDragRafRef.current = null;
+                const parentId = currentWidget.component.parent;
+                const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
+                // Exclude the dragged element so its own rect doesn't skew the midpoint calculation
+                const idx = computeFlexContainerInsertIndex(
+                  parentId,
+                  e.clientX,
+                  e.clientY,
+                  parentDir,
+                  currentWidget.id
+                );
+                setFlexContainerDropTarget({ flexContainerId: parentId, index: idx });
+              });
+            }
+            return;
+          }
           const currentParentId =
             currentWidget?.component?.parent === null ? 'canvas' : currentWidget?.component?.parent;
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;

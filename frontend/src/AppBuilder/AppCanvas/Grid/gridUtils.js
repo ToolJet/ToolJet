@@ -7,6 +7,7 @@ import {
   RESTRICTED_WIDGETS_CONFIG,
   RESTRICTED_WIDGET_SLOTS_CONFIG,
 } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
@@ -672,6 +673,20 @@ export const findNewParentIdFromMousePosition = (clientX, clientY, currentTarget
 
   return newParentId || null;
 };
+
+/**
+ * Returns the insertion index (0-based) for a drag position inside a FlexContainer.
+ * Delegates to the canonical computeFlexInsertIndex from flexContainer.utils.
+ * Optionally pass excludeId to exclude the dragged element from midpoint calculations
+ * (e.g., during a moveable reorder where the item is still in the DOM).
+ */
+export const computeFlexContainerInsertIndex = (
+  flexContainerId,
+  clientX,
+  clientY,
+  direction = 'column',
+  excludeId = null
+) => computeFlexInsertIndex(flexContainerId, clientX, clientY, direction, excludeId);
 
 export const clearActiveTargetClassNamesAfterSnapping = (selectedComponents) => {
   const components = Array.from(document.querySelectorAll('.active-target')).filter(

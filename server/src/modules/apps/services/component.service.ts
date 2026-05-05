@@ -270,11 +270,12 @@ export class ComponentsService implements IComponentsService {
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
-    const layouts: Record<string, { top: number; left: number; width: number; height: number }> = {};
+    const layouts: Record<string, { top: number; left: number; width: number; height: number; flexOrder?: number }> =
+      {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height } = layout;
+        const { type, top, left, width, height, flexOrder } = layout;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
@@ -283,6 +284,7 @@ export class ComponentsService implements IComponentsService {
           left: left ?? 0, // Use the already adjusted 'left' value
           width: width ?? 0,
           height: height ?? 0,
+          ...(flexOrder != null ? { flexOrder } : {}),
         };
       }
     });
@@ -416,6 +418,7 @@ export class ComponentsService implements IComponentsService {
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
+          if (layout.flexOrder != null) newLayout.flexOrder = layout.flexOrder;
           newLayout.component = component;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

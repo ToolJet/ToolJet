@@ -536,6 +536,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
+          if (layout.flexOrder != null) newLayout.flexOrder = layout.flexOrder;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

@@ -86,6 +86,7 @@ type NewRevampedComponent =
   | 'DaterangePicker'
   | 'TextArea'
   | 'Container'
+  | 'FlexContainer'
   | 'Tabs'
   | 'Form'
   | 'Image'
@@ -136,6 +137,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'DaterangePicker',
   'TextArea',
   'Container',
+  'FlexContainer',
   'Tabs',
   'Form',
   'Image',
@@ -211,6 +213,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'Accordion',
   'CodeEditor',
   'Container',
+  'FlexContainer',
   'Form',
   'JSONEditor',
   'JSONExplorer',
@@ -954,6 +957,7 @@ export class AppImportExportService {
                   newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
+                  if (layout.flexOrder != null) newLayout.flexOrder = layout.flexOrder;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -1401,6 +1405,7 @@ export class AppImportExportService {
                 newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
+                if (layout.flexOrder != null) newLayout.flexOrder = layout.flexOrder;
                 newLayout.component = savedComponent;
 
                 await manager.save(newLayout);

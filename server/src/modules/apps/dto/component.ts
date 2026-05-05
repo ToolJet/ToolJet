@@ -32,6 +32,11 @@ export class ComponentLayoutDto {
   @IsNumber()
   @IsOptional()
   height?: number;
+
+  /** FlexContainer child sort key (persisted on `layouts.flex_order`; may be fractional for midpoint reorder). */
+  @IsNumber()
+  @IsOptional()
+  flexOrder?: number;
 }
 
 export class LayoutData {

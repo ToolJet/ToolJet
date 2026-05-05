@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-const useSortedComponents = (components, currentLayout, id, moduleId) => {
+const useSortedComponents = (components, currentLayout, id, moduleId, isFlexContainer = false) => {
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
   // Only subscribe to reorderContainerChildren when it's relevant to this specific container
   const reorderContainerChildren = useStore((state) => {
@@ -40,13 +40,22 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
     // 1. This container is not the target of reorder
     // 2. Components haven't changed
     // 3. No forced update occurred
-    if (!shouldReorder && !componentsChanged && !isForcedUpdate) {
+    // For FlexContainer, always re-sort on any components change because the
+    // array reference changes on reorder (same IDs, new positions) — membership
+    // check alone would falsely skip.
+    if (!isFlexContainer && !shouldReorder && !componentsChanged && !isForcedUpdate) {
       return prevComponentsOrder.current;
     }
 
     const currentPageComponents = getCurrentPageComponents();
 
     const newComponentsOrder = [...components].sort((a, b) => {
+      if (isFlexContainer) {
+        // FlexContainer children are ordered by flexOrder (persisted sort key).
+        const oA = currentPageComponents?.[a]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+        const oB = currentPageComponents?.[b]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+        return oA - oB;
+      }
       const aTop = currentPageComponents?.[a]?.layouts?.[currentLayout]?.top;
       const bTop = currentPageComponents?.[b]?.layouts?.[currentLayout]?.top;
       if (aTop !== bTop) {

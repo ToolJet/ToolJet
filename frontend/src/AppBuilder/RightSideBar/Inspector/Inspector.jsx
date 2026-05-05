@@ -56,6 +56,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import '../ComponentManagerTab/styles.scss';
+import { FlexChildLayoutPanel } from './Components/FlexChildLayoutPanel';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -588,6 +589,7 @@ export const Inspector = ({
     return (
       <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isContainerOrViewerModule}>
         <Tab eventKey="properties" title="Properties">
+          <FlexChildLayoutPanel selectedComponentId={selectedComponentId} allComponents={allComponents} />
           {propertiesTab}
         </Tab>
         <Tab eventKey="styles" title="Styles">

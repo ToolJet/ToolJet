@@ -21,6 +21,9 @@ export class Layout {
   @Column({ type: 'double precision' })
   height: number;
 
+  @Column({ type: 'double precision', name: 'flex_order', nullable: true })
+  flexOrder: number | null;
+
   @Column({ name: 'component_id' })
   componentId: string;
 

@@ -122,7 +122,7 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
 
-  setCurrentPageId: (id, moduleId = 'canvas') =>
+  setCurrentPageId: (id, moduleId = 'canvas') => {
     set(
       (state) => {
         const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === id);
@@ -142,7 +142,8 @@ export const createComponentsSlice = (set, get) => ({
       },
       false,
       'setCurrentPageId'
-    ),
+    );
+  },
   setCurrentPageHandle: (handle, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -1561,7 +1562,7 @@ export const createComponentsSlice = (set, get) => ({
     componentLayouts,
     newParentId,
     moduleId = 'canvas',
-    { skipUndoRedo = false, updateParent = false, saveAfterAction = true } = {}
+    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, reorderFlexContainerMapping = null } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1593,11 +1594,53 @@ export const createComponentsSlice = (set, get) => ({
           // ============ Component layout update logic ============
           Object.entries(componentLayouts).forEach(([componentId, layout]) => {
             const component = page.components[componentId];
+            const newParentComponentType = newParentId ? page.components[newParentId]?.component?.component : null;
+            const oldParentComponentType = component?.component?.parent
+              ? page.components[component.component.parent]?.component?.component
+              : null;
+
             if (component) {
-              component.layouts[currentLayout] = {
-                ...component.layouts[currentLayout],
-                ...layout,
-              };
+              if (newParentComponentType === 'FlexContainer' && updateParent) {
+                // FlexContainer children: write only flex-specific fields, strip grid fields
+                const { flexOrder, mainSize, fillMain, crossAlignSelf } = layout;
+                const flexLayout = {};
+                if (flexOrder !== undefined) flexLayout.flexOrder = flexOrder;
+                if (mainSize !== undefined) flexLayout.mainSize = mainSize;
+                if (fillMain !== undefined) flexLayout.fillMain = fillMain;
+                if (crossAlignSelf !== undefined) flexLayout.crossAlignSelf = crossAlignSelf;
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  ...flexLayout,
+                };
+                // Strip absolute-grid fields when moving into FlexContainer
+                delete component.layouts[currentLayout].top;
+                delete component.layouts[currentLayout].left;
+                delete component.layouts[currentLayout].width;
+                delete component.layouts[currentLayout].height;
+              } else if (
+                oldParentComponentType === 'FlexContainer' &&
+                newParentComponentType !== 'FlexContainer' &&
+                updateParent
+              ) {
+                // Moving OUT of FlexContainer: strip flex fields, write grid fields
+                const { top, left, width, height } = layout;
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  top,
+                  left,
+                  width,
+                  height,
+                };
+                delete component.layouts[currentLayout].flexOrder;
+                delete component.layouts[currentLayout].mainSize;
+                delete component.layouts[currentLayout].fillMain;
+                delete component.layouts[currentLayout].crossAlignSelf;
+              } else {
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  ...layout,
+                };
+              }
             }
             // ============ Component layout update logic ends ===========
 
@@ -1626,6 +1669,14 @@ export const createComponentsSlice = (set, get) => ({
                 if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
                   state.containerChildrenMapping[newParentId].push(componentId);
                 }
+                // Keep FlexContainer children sorted by order
+                if (newParentComponentType === 'FlexContainer') {
+                  state.containerChildrenMapping[newParentId].sort((a, b) => {
+                    const oA = page.components[a]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+                    const oB = page.components[b]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+                    return oA - oB;
+                  });
+                }
               } else {
                 if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
                   state.containerChildrenMapping[moduleId].push(componentId);
@@ -1635,6 +1686,11 @@ export const createComponentsSlice = (set, get) => ({
 
             // ============ Parent update logic ends ============
           });
+
+          if (reorderFlexContainerMapping?.containerId && Array.isArray(reorderFlexContainerMapping.childIds)) {
+            state.containerChildrenMapping[reorderFlexContainerMapping.containerId] =
+              reorderFlexContainerMapping.childIds;
+          }
         }
       }, skipUndoRedo),
       false,
@@ -1725,7 +1781,6 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
-
     if (saveAfterAction) {
       // Check if we need to batch multiple operations together
       if (updateParent) {
