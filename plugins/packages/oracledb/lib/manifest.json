@@ -68,6 +68,9 @@
     },
     "wallet_password": {
       "value": ""
+    },
+    "allow_dynamic_connection_parameters": {
+      "value": false
     }
   },
   "properties": {
@@ -146,6 +149,12 @@
         "key": "ssl_enabled",
         "type": "toggle",
         "description": "Toggle for ssl_enabled"
+      },
+      "allow_dynamic_connection_parameters": {
+        "label": "Allow dynamic connection parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "type": "toggle",
+        "description": "Turning this on will allow dynamically setting host name and database from application"
       },
       "client_path_type": {
         "label": "Client library location",
