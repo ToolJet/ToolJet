@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
@@ -386,13 +387,6 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
-/* 
-  Abort button is hidden for query kinds that execute in-browser (RunJS, RunPy, Workflows).
-  AbortController only cancels fetch — it cannot interrupt user code running in the
-  main thread, so showing the button would mislead users into thinking the script stops.
- */
-const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);
-
 const AbortButton = () => {
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const abortQuery = useStore((state) => state.queryPanel.abortQuery);
@@ -404,14 +398,11 @@ const AbortButton = () => {
 
   if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind)) return null;
 
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
+  const shortcutDisplay = `Stop waiting for the response  ${isMac ? '⌘.' : 'Ctrl+.'}`;
+
   return (
-    <ToolTip
-      message="Stop waiting for the response"
-      placement="bottom"
-      trigger={['hover']}
-      show={true}
-      tooltipClassName=""
-    >
+    <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <ButtonComponent
         size="medium"
         variant="outline"

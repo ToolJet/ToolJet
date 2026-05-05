@@ -130,3 +130,8 @@ export const workflowDefaultSources = {
   Loop: { kind: 'loop', id: 'loop', name: 'Loop' },
   Agent: { kind: 'agent', id: 'agent', name: 'Agent' },
 };
+
+// Query kinds where abort is unavailable. These execute outside fetch() so AbortController
+// cannot cancel the underlying work — runjs/runpy run in-browser, workflows use SSE.
+// Used by AbortButton (to hide it) and QueryKeyHooks (to disable Cmd+. shortcut).
+export const ABORT_UNSUPPORTED_KINDS = new Set(['runjs', 'runpy', 'workflows']);

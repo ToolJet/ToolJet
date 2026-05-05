@@ -1763,6 +1763,11 @@ export const createQueryPanelSlice = (set, get) => ({
       };
       previewQuery(query, false, undefined, moduleId);
     },
+    abortQueryOnShortcut: (moduleId = 'canvas') => {
+      const { queryPanel } = get();
+      const { abortQuery, selectedQuery } = queryPanel;
+      abortQuery(selectedQuery?.id, moduleId);
+    },
     toggleQueryPermissionModal: (show) => {
       set((state) => {
         state.queryPanel.showQueryPermissionModal = show;
