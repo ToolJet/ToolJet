@@ -42,7 +42,7 @@ OTEL_EXPORTER_OTLP_METRICS=http://localhost:4318/v1/metrics
 OTEL_SERVICE_NAME=tooljet
 
 # Authentication (if required by your OTEL collector)
-OTEL_EXPORTER_OTLP_HEADERS=api-key=your-api-key
+OTEL_HEADER=api-key=your-api-key
 
 # Advanced Configuration
 OTEL_LOG_LEVEL=debug                          # Enable debug logging for OTEL
@@ -82,7 +82,7 @@ Configure ToolJet to send metrics directly to Grafana Cloud:
 ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/metrics
-OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64-encoded-credentials>
+OTEL_HEADER=Authorization=Basic <base64-encoded-credentials>
 OTEL_SERVICE_NAME=tooljet-production
 ```
 
@@ -94,7 +94,7 @@ Send metrics to Datadog using the OTLP endpoint:
 ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=https://api.datadoghq.com/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://api.datadoghq.com/v1/metrics
-OTEL_EXPORTER_OTLP_HEADERS=dd-api-key=<your-datadog-api-key>
+OTEL_HEADER=dd-api-key=<your-datadog-api-key>
 OTEL_SERVICE_NAME=tooljet
 ```
 
@@ -106,7 +106,7 @@ Configure for New Relic OTLP endpoint:
 ENABLE_OTEL=true
 OTEL_EXPORTER_OTLP_TRACES=https://otlp.nr-data.net:4318/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://otlp.nr-data.net:4318/v1/metrics
-OTEL_EXPORTER_OTLP_HEADERS=api-key=<your-newrelic-license-key>
+OTEL_HEADER=api-key=<your-newrelic-license-key>
 OTEL_SERVICE_NAME=tooljet
 ```
 

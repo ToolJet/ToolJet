@@ -26,7 +26,7 @@ OTEL_SERVICE_NAME=tooljet
 # Last9 Agent endpoints (container-to-container)
 OTEL_EXPORTER_OTLP_TRACES=https://<YOUR-LAST9-ENDPOINT>/v1/traces
 OTEL_EXPORTER_OTLP_METRICS=https://<YOUR-LAST9-ENDPOINT>/v1/metrics
-OTEL_EXPORTER_OTLP_HEADERS=<YOUR-LAST9-AUTH-HEADER>
+OTEL_HEADER=<YOUR-LAST9-AUTH-HEADER>
 
 # Optional but useful while debugging
 OTEL_LOG_LEVEL=debug
