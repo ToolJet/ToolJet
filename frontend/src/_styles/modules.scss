@@ -99,6 +99,12 @@
     }
 }
 
+.module-viewer-wrapper.padding-none {
+    .real-canvas {
+        padding: 0 !important;
+    }
+}
+
 .empty-module-container{
     display: flex;
     align-items: center;
