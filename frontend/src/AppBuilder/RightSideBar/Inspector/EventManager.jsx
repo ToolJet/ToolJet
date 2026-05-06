@@ -530,8 +530,9 @@ export const EventManager = ({
               </FieldRow>
               <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
                 <Input
+                  key={eventHandler?.id}
                   type="text"
-                  value={eventHandler?.name ?? ''}
+                  defaultValue={eventHandler?.name ?? ''}
                   onChange={(e) => handlerChanged(index, 'name', e.target.value)}
                   className="tw-w-full"
                   data-cy="event-name-input"
