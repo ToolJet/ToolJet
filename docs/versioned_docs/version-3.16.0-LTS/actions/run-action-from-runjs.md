@@ -29,11 +29,10 @@ In the screenshot below, we are triggering two different queries using two diffe
 
 In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
 
-| Parameter | Type | Description |
-|--------|--------------|--------------|
-| Parameters | Object   | (Optional) Key-value pairs passed to the query. If no parameters are required but callbacks are provided, pass an empty object `{}` as the first argument.|
-| onSuccess  | Function | (Optional) Triggered when the query executes successfully. |
-| onFailure  | Function | (Optional) Triggered when the query execution fails. |
+| Parameter  | Type   | Description |
+|------------|--------|-------------|
+| Parameters | Object | (Optional) Key-value pairs passed as the first argument to the query (e.g., `{ limit: 10 }`). If no parameters are required but callbacks are provided, pass an empty object `{}`. |
+| Callbacks  | Object | (Optional) An object passed as the second argument containing lifecycle handlers such as **`onSuccess`** and **`onFailure`**. |
 
 ```javascript
 queries.getUsers.run(

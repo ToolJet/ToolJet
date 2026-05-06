@@ -81,6 +81,12 @@ Parameters can also be used to trigger other queries and pass custom values. Bel
 
 With this setup, the _multiply_ query can be called from other queries, such as _callMultiply_, by providing custom parameter values. This allows you to reuse the _multiply_ query with different inputs and display the results accordingly.
 
+:::info
+In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+
+For more info, refer **[here](/docs/actions/run-actions-from-runjs#callback-functions)**
+:::
+
 ## RunJS Example Queries
 
 ### Generating a Random Number
