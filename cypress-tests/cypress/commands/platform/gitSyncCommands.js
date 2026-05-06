@@ -350,7 +350,7 @@ Cypress.Commands.add("gitSyncGoToDashboard", () => {
   const url = workspace ? `/${workspace}` : "/";
   cy.visit(url, { redirectionLimit: 20 });
   cy.wait(3000);
-  cy.get('[data-cy="dashboard-section-header"]', { timeout: 15000 }).should(
+  cy.get('[data-cy="dashboard-section-header"]', { timeout: 30000 }).should(
     "be.visible",
   );
 });

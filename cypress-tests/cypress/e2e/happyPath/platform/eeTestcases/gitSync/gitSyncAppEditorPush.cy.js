@@ -1,12 +1,13 @@
 import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
+import { fake } from "Fixtures/fake";
+
 
 describe(
   "Git Sync — App Push from Editor + Branch Pull",
   { retries: 0 },
   () => {
-    const testId = Date.now();
-    const wsName = `gitsync-editor-push-${testId}`;
-    const wsSlug = wsName;
+    let data = {}
+
     const FIXTURE = "gitSync/fixture-app.json";
     const DS_BASE_URL = "https://jsonplaceholder.typicode.com";
     const CONSTANT_NAME = "API_BASE_URL";
@@ -19,36 +20,38 @@ describe(
 
     before(() => {
       Cypress.config("redirectionLimit", 20);
-    });
-
-    before(() => {
-      cy.apiLogin();
-      cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
-        workspaceId = res.body.organization_id;
-        Cypress.env("workspaceId", workspaceId);
-        Cypress.env("workspaceSlug", wsSlug);
-        cy.log(`[gitSync] Workspace: ${wsName} (${workspaceId})`);
-      });
-      cy.then(() => cy.apiLogin("dev@tooljet.io", "password", workspaceId));
-      cy.gitSyncCheckAndConfigure();
       cy.gitHubResetRepo();
     });
 
     beforeEach(() => {
+      data.testId = fake.firstName.toLowerCase().replace(/\s+/g, "-");
+      data.wsName = fake.firstName.toLowerCase().replace(/\s+/g, "-");
+      data.wsSlug = `gitsync-editor-push-${data.testId}`;
+      cy.apiLogin();
+      cy.apiCreateWorkspace(data.wsName, data.wsSlug).then((res) => {
+        workspaceId = res.body.organization_id;
+        Cypress.env("workspaceId", workspaceId);
+        Cypress.env("workspaceSlug", data.wsSlug);
+        cy.log(`[gitSync] Workspace: ${data.wsName} (${workspaceId})`);
+      });
       cy.then(() => cy.apiLogin("dev@tooljet.io", "password", workspaceId));
+      cy.gitSyncCheckAndConfigure();
     });
 
-    after(() => {
+    afterEach(() => {
       cy.apiLogin();
       cy.then(() => cy.apiArchiveWorkspace(workspaceId));
       cy.then(() => {
-        if (secondWorkspaceId) cy.apiArchiveWorkspace(secondWorkspaceId);
+        if (secondWorkspaceId) {
+          cy.apiArchiveWorkspace(secondWorkspaceId);
+          secondWorkspaceId = null;
+        }
       });
     });
 
     it("Configure workspace constant → import + editor push + DS push → PR → merge → master pull → verify app data in editor", () => {
-      const branchName = `test-editor-push-${testId}`;
-      const appName = `app-editor-push-${testId}`;
+      const branchName = `test-editor-push-${data.testId}`;
+      const appName = `app-editor-push-${data.testId}`;
       const editorMsg = `test: editor push ${appName}`;
       const dsMsg = "feat: update datasource to workspace constant";
 
@@ -125,9 +128,9 @@ describe(
     });
 
     it("New workspace → configure git + branch (API) → import app from git via UI modal → verify data in editor", () => {
-      const secondWsName = `gitsync-editor-push-second-${testId}`;
+      const secondWsName = `gitsync-editor-push-second-${data.testId}`;
       const secondWsSlug = secondWsName;
-      const importBranch = `test-git-import-${testId}`;
+      const importBranch = `test-git-import-${data.testId}`;
 
       cy.apiLogin();
       cy.then(() => {

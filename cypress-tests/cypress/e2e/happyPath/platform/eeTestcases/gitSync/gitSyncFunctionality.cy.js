@@ -90,14 +90,12 @@ describe("Git Sync — E2E Flow", () => {
   });
 
   describe("Block 1: Branch Creation and Nav Bar UI", () => {
-    beforeEach(() => {
-      cy.apiLogin();
-    });
 
     it("creates feature branch from dashboard and verifies nav bar UI", () => {
       cy.gitSyncGoToDashboard();
 
       // On master: lock banner should be visible
+      cy.wait(2000)
       cy.get(GS.masterLockBanner).should("be.visible");
 
       // Branch dropdown shows master
@@ -291,6 +289,7 @@ describe("Git Sync — E2E Flow", () => {
       cy.gitSyncGoToDashboard();
 
       // Lock banner and Pull-only state restored on master
+      cy.wait(2000)
       cy.get(GS.masterLockBanner).should("be.visible");
       cy.get(GS.wsGitPullBtn).should("be.visible");
       cy.get(GS.wsGitCommitBtn).should("not.exist");

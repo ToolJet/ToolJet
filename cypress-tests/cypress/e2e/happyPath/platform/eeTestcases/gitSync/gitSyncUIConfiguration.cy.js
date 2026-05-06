@@ -90,6 +90,7 @@ describe("Git Sync — UI Configuration", () => {
       "contain.text",
       gitConfig.branch,
     );
+    cy.wait(2000)
     cy.get(sel.masterLockBanner).should("be.visible");
     cy.get(sel.masterLockBanner).should("contain.text", sel.lockBannerApps);
     cy.contains("button", sel.pullBtn).should("be.visible");
@@ -241,7 +242,7 @@ describe("Git Sync — UI Configuration", () => {
     cy.gitSyncGoToDashboard();
 
     // On master the branch is locked — every app-creation entry point must
-    // redirect to the "Create branch" modal instead of proceeding.
+    cy.wait(2000)
     cy.get(sel.wsCurrentBranch, { timeout: 15000 }).should(
       "contain.text",
       "master",
