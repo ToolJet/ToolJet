@@ -4,7 +4,7 @@ title: Modules
 sidebar_label: Overview
 ---
 
-<PlanBadge type="teams" />
+<PlanBadge type="team" />
 
 **Modules** in ToolJet are reusable user interfaces that bundle components, queries, actions, and logic. Think of them as mini-apps you can plug into multiple applications within the same workspace. They help eliminate duplication, ensure consistency, and speed up development, especially for repeatable patterns like headers, forms, dashboards, or table views.
 

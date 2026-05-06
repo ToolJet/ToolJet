@@ -3,7 +3,7 @@ id: custom-theme
 title: App Themes
 ---
 
-<PlanBadge type="teams" />
+<PlanBadge type="team" />
 
 ToolJet supports App Themes giving teams complete control over the look and feel of their applications. With this feature, you can define and manage multiple themes and apply them across your apps in a consistent and reusable way.
 
@@ -23,6 +23,7 @@ This is especially useful for teams with apps across different environments (e.g
 ## How to Use App Themes
 
 An App Theme allows you to customize the UI components of your ToolJet apps by configuring a set of visual styles such as:
+
 - Brand Colors (Primary, Secondary, Tertiary)
 - Text colors
 - Border and surface styling
@@ -51,7 +52,7 @@ Role Required: **Admin**
   - Choose styles for both **Light** and **Dark** modes
 - Click **Save** once you're done.<br/>
 
- You can create multiple themes as per your needs — for different teams, environments, or clients.
+You can create multiple themes as per your needs — for different teams, environments, or clients.
 
 ### 2. Apply the Theme to Your Application
 

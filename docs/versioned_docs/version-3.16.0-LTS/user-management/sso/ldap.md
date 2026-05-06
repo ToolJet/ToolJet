@@ -3,7 +3,7 @@ id: ldap
 title: LDAP
 ---
 
-<PlanBadge type="teams" />
+<PlanBadge type="team" />
 
 Lightweight Directory Access Protocol (LDAP) is a protocol used to access and manage directory information, enabling centralized authentication and user management. By configuring LDAP with directory services you can streamline secure user authentication and access control in ToolJet.
 
@@ -15,27 +15,25 @@ Role Required: **Admin** <br/>
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
-2. Go to **Workspace settings > Workspace login**. <br/> 
-    (Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
+2. Go to **Workspace settings > Workspace login**. <br/>
+(Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
 
-    <img className="screenshot-full" src="/img/sso/ldap/url-v4.png" alt="SSO :LDAP"/>
+<img className="screenshot-full" src="/img/sso/ldap/url-v4.png" alt="SSO :LDAP"/>
 
 3. To **enable** LDAP, toggle the switch. Then, add the configuration:
-
    - **Name**: Enter the name of the SSO.
    - **Hostname**: Provide the hostname or IP address of your LDAP server.
    - **Port**: Enter the Port number of LDAP server.
    - **Base DN**: Enter the base distinguished name.
    - **SSL**: Toggle this option to enable the SSL. After enabling you can select the type of SSL: **None** or **Certificates**. If you choose Certificates, you'll need to provide the **Client Key**, **Client Certificate**, and **Server Certificate**.
-   <br/>
-    <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3.png" alt="SSO :LDAP"/>
+     <br/>
+     <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3.png" alt="SSO :LDAP"/>
 
 4. After making the necessary configurations, click the **Save Changes** button located at the bottom.
 
 5. Next, proceed to the **Workspace login** and copy the **Login URL** provided.
-    
 6. The **Login URL** obtained can be utilized for accessing the workspace. Please note that ToolJet supports LDAP login at the workspace level and not at the instance level. Thus, users will be logged in specifically to the chosen workspace.
-    <img className="screenshot-full" src="/img/sso/ldap/login-v2.png" alt="SSO :LDAP"/>
+   <img className="screenshot-full" src="/img/sso/ldap/login-v2.png" alt="SSO :LDAP"/>
 
 7. Click on the **Sign in with `<LDAP Name>`** button, and provide your username and password to log in to the workspace. For signing in, ToolJet uses the **common name (cn)** associated with each LDAP server user as the **Username**. Upon the initial login, users will be redirected to the **Workspace Invite** page, while subsequent logins will lead them directly to the ToolJet dashboard.
 
@@ -45,10 +43,7 @@ During the first login, ToolJet performs additional checks. It verifies the user
 
 ### Group Synchronization
 
-ToolJet supports syncing user groups from your LDAP directory.
-    - Group sync is enabled by default.
-    - When enabled, users are automatically added to matching ToolJet groups during login.
-    - Group sync can be turned off using the *Enable group sync* toggle in the LDAP configuration.
+ToolJet supports syncing user groups from your LDAP directory. - Group sync is enabled by default. - When enabled, users are automatically added to matching ToolJet groups during login. - Group sync can be turned off using the _Enable group sync_ toggle in the LDAP configuration.
 
     <img className="screenshot-full img-m" src="/img/sso/ldap/fields-v3-group-sync.png" alt="SSO :LDAP"/>
 
@@ -68,11 +63,13 @@ Set the `TOOLJET_LDAP_BASE_DNS__<workspace_slug>` environment variable with a JS
 Example:
 
 ```javascript
-TOOLJET_LDAP_BASE_DNS__nexus_corps='["ou=team1,dc=company,dc=com","ou=team2,dc=company,dc=com"]'
+TOOLJET_LDAP_BASE_DNS__nexus_corps =
+  '["ou=team1,dc=company,dc=com","ou=team2,dc=company,dc=com"]';
 ```
 
 ToolJet will iterate through the provided list during login attempts, checking each base DN until a matching user is found or all options are exhausted.
 
 **Notes**
+
 - If `TOOLJET_LDAP_BASE_DNS__<workspace_slug>` is not set, ToolJet will default to the single OU behavior to maintain backward compatibility.
 - The order of base DNs matters—authentication will follow the sequence defined in the array.

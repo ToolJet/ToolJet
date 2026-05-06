@@ -27,26 +27,23 @@ In a self-hosted deployment of ToolJet, you can configure a custom domain by set
 - A registered domain name.
 - A configured DNS record pointing your domain to the ToolJet server.
 
-
 ### Configuration Steps
 
 #### 1. Set the TOOLJET_HOST Environment Variable
 
 The `TOOLJET_HOST` variable defines the public URL where ToolJet will be accessible. You need to update this variable with your desired domain.
 
-| Variable     | Description                                                      |
-| ------------ | ---------------------------------------------------------------- |
+| Variable       | Description                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------------- |
 | `TOOLJET_HOST` | the public URL of ToolJet client ( eg: `https://app.corp.com`,`https://corp.org`,`https://corp.ai` ) |
-
 
 #### 2. Restart Services
 
 After setting the environment variable and DNS configurations, restart your ToolJet deployment to apply the changes.
 
-
 ## ToolJet Cloud
 
-<PlanBadge type="teams" />
+<PlanBadge type="team" />
 
 ToolJet Cloud allows you to map a custom domain or subdomain to your workspace, so your team can access ToolJet from a URL like `tools.yourcompany.com` instead of the default ToolJet Cloud URL.
 
@@ -55,10 +52,10 @@ ToolJet Cloud allows you to map a custom domain or subdomain to your workspace, 
 In ToolJet Cloud, custom domains are configured per workspace. This means the domain you configure will apply only to that specific workspace and all applications within it.
 
 For example:
-| Workspace            | Custom Domain               |
+| Workspace | Custom Domain |
 | -------------------- | --------------------------- |
-| Finance Workspace    | `finance-tools.company.com` |
-| Operations Workspace | `ops-tools.company.com`     |
+| Finance Workspace | `finance-tools.company.com` |
+| Operations Workspace | `ops-tools.company.com` |
 
 Once configured, users will access the workspace and its applications using the custom domain instead of the default ToolJet Cloud URL.
 
@@ -73,9 +70,9 @@ Once configured, users will access the workspace and its applications using the 
 
 Log in to your domain provider's DNS management console and create a **CNAME** record that points your desired subdomain to `app.tooljet.com`.
 
-| Record Type | Host/Name | Value |
-| ----------- | --------- | ----- |
-| CNAME | `tools` (or your preferred subdomain) | `app.tooljet.com` |
+| Record Type | Host/Name                             | Value             |
+| ----------- | ------------------------------------- | ----------------- |
+| CNAME       | `tools` (or your preferred subdomain) | `app.tooljet.com` |
 
 For example, if your domain is `yourcompany.com` and you want to use `tools.yourcompany.com`, create a CNAME record with the host `tools` pointing to `app.tooljet.com`.
 
@@ -87,7 +84,7 @@ If you want to use a root domain (e.g., `yourcompany.com`) instead of a subdomai
 
 1. Go to **Settings** > **Custom Domain** in your ToolJet Cloud workspace.
 2. Enter the domain or subdomain you configured in the previous step (e.g., `tools.yourcompany.com`).
-3. Click *Save changes*.
+3. Click _Save changes_.
 
 #### 3. Wait for DNS Propagation
 
@@ -98,6 +95,7 @@ DNS changes can take a few minutes to propagate, depending on your DNS provider 
 After some time, click **Test connection** on the Custom Domain settings page to verify that your domain is correctly mapped. Once the test passes, your ToolJet workspace will be accessible at your custom domain.
 
 ### Impact of Updating a Custom Domain
+
 When a custom domain is configured or updated for a ToolJet Cloud workspace, the workspace will start resolving from the new domain once DNS propagation completes.
 
 Because authentication flows depend on the application URL, you may need to update redirect URLs in your authentication providers. For example, if you are using SSO providers such as Okta, Azure AD, or Google OAuth, ensure that the redirect/callback URLs include the new custom domain.
