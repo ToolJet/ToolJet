@@ -27,20 +27,19 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     if (!(app instanceof App) && !(app instanceof AppBase)) return;
     if (!app || (app as any).__loaded) return;
 
-    (app as any).__loaded = true;
+    (app as any).__loaded = true; // mark entity as processed
 
-    let editingVersion = await this.appVersionRepository.findOne({
+    // Prefer VERSION-type versions (canonical, user-named) over BRANCH-type versions.
+    // With the new single-App-per-logical-app model, multiple branches share one App
+    // entity. Without this filter the most-recently-updated BRANCH-type version from
+    // any branch could be returned here, giving the wrong context to callers that have
+    // no branch information (e.g. background jobs, non-git-sync paths).
+    // Branch-specific context is layered on top by the service layer when a branchId
+    // is available (see EE AppsService.getOne).
+    const editingVersion = await this.appVersionRepository.findOne({
       where: { appId: app.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
       order: { updatedAt: 'DESC' },
     });
-
-    // Apps created on a feature branch only have a BRANCH-type version — fall back to it
-    if (!editingVersion) {
-      editingVersion = await this.appVersionRepository.findOne({
-        where: { appId: app.id, versionType: AppVersionType.BRANCH },
-        order: { updatedAt: 'DESC' },
-      });
-    }
 
     if (!editingVersion) {
       (app as any).isStub = true;
@@ -49,30 +48,5 @@ export class AppsSubscriber implements EntitySubscriberInterface {
 
     (app as any).isStub = false;
     (app as any).editingVersion = editingVersion;
-
-    if (app.type !== 'workflow') {
-      // icon and is_public exist on every version
-      if (editingVersion.icon !== undefined) (app as any).icon = editingVersion.icon;
-      if (editingVersion.isPublic !== undefined) (app as any).isPublic = editingVersion.isPublic;
-
-      if (editingVersion.versionType === AppVersionType.BRANCH) {
-        // This IS the BRANCH version — read slug/appName directly
-        if (editingVersion.slug) (app as any).slug = editingVersion.slug;
-        if (editingVersion.appName) (app as any).name = editingVersion.appName;
-      } else if (editingVersion.branchId) {
-        // VERSION-type on a branch — look up the sibling BRANCH version for slug/appName
-        const branchVersion = await this.appVersionRepository.findOne({
-          where: { appId: app.id, versionType: AppVersionType.BRANCH, branchId: editingVersion.branchId },
-        });
-        if (branchVersion) {
-          if (branchVersion.slug) (app as any).slug = branchVersion.slug;
-          if (branchVersion.appName) (app as any).name = branchVersion.appName;
-        }
-      } else {
-        // Non-git-sync: slug/appName on the VERSION itself
-        if (editingVersion.slug) (app as any).slug = editingVersion.slug;
-        if (editingVersion.appName) (app as any).name = editingVersion.appName;
-      }
-    }
   }
 }

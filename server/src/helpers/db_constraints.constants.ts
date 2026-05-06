@@ -6,7 +6,6 @@ export enum DataBaseConstraints {
   WORKSPACE_SLUG_UNIQUE = 'slug_organizations_unique',
   USER_ORGANIZATION_UNIQUE = 'user_organization_unique',
   APP_VERSION_NAME_UNIQUE = 'name_app_id_app_versions_unique',
-  APP_VERSION_NAME_APP_BRANCH_UNIQUE = 'name_app_id_branch_id_app_versions_unique',
   APP_VERSION_SLUG_BRANCH_UNIQUE = 'app_versions_slug_branch_id_unique',
   APP_VERSION_APP_NAME_BRANCH_UNIQUE = 'app_versions_app_name_branch_id_unique',
   CONFIG_SCOPE_ORGANIZATION_SSO_UNIQUE = 'config_scope_organization_sso_unique',

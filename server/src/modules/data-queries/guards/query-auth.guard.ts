@@ -4,6 +4,8 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
+import { VersionRepository } from '@modules/versions/repository';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class QueryAuthGuard extends AuthGuard('jwt') {
@@ -11,6 +13,7 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
   constructor(
     private readonly organizationRepository: OrganizationRepository,
     private readonly appRepository: AppsRepository,
+    private readonly versionRepository: VersionRepository,
     private readonly transactionLogger: TransactionLogger
   ) {
     super();
@@ -34,6 +37,20 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
       const organization = await this.organizationRepository.getSingleOrganizationWithId(app?.organizationId);
       if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
         throw new BadRequestException('Organization is Archived');
+      }
+
+      // Workflows keep is_public on apps.*; non-workflows carry it on the branch-specific
+      // app_version. Look up the version that owns this data query and overlay so the
+      // public-app gate below uses the correct flag.
+      if (app.type !== APP_TYPES.WORKFLOW) {
+        const version = await this.versionRepository
+          .createQueryBuilder('av')
+          .innerJoin('av.dataQueries', 'dq', 'dq.id = :dqId', { dqId: id })
+          .select(['av.id', 'av.isPublic'])
+          .getOne();
+        if (version) {
+          app.isPublic = version.isPublic;
+        }
       }
 
       request.tj_app = app;

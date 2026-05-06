@@ -1,4 +1,5 @@
 import { AppBase } from '@entities/app_base.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
@@ -14,6 +15,7 @@ import { USER_ROLE } from '../constants';
 import { User } from '@entities/user.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -55,18 +57,36 @@ export class GranularPermissionsService implements IGranularPermissionsService {
   }
   async getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const apps = await manager.find(AppBase, {
-        where: {
-          organizationId,
-        },
+      // Non-workflow apps carry their display name on the BRANCH-type version of the
+      // default branch (when git-sync is configured). Workflows keep name on apps.*.
+      // TODO: Git disabled flow, should pick from versions id
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
       });
-      return apps.map((app) => {
-        return {
-          name: app.name,
-          id: app.id,
-          type: app.type,
-        };
-      });
+
+      const qb = manager
+        .createQueryBuilder(AppBase, 'app')
+        .where('app.organizationId = :organizationId', { organizationId })
+        .select(['app.id AS id', 'app.type AS type']);
+
+      if (defaultBranch?.id) {
+        qb.leftJoin(
+          'app_versions',
+          'av',
+          'av.app_id = app.id AND av.branch_id = :branchId AND av.version_type = :branchType',
+          { branchId: defaultBranch.id, branchType: 'branch' }
+        ).addSelect('COALESCE(av.app_name, app.name) AS name');
+      } else {
+        qb.addSelect('app.name AS name');
+      }
+
+      const rows: { id: string; type: APP_TYPES; name: string | null }[] = await qb.getRawMany();
+      return rows.map((row) => ({
+        name: row.name,
+        id: row.id,
+        type: row.type,
+      }));
     });
   }
 

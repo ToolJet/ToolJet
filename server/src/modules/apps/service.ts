@@ -426,6 +426,7 @@ export class AppsService implements IAppsService {
     const { folderId, page, searchKey, type } = appListDto;
     // When no branchId is provided (e.g. end users), fall back to the default branch
     // so that only default-branch apps are shown instead of all apps across all branches.
+    // TODO: Git disabled flow, should pick from versions id
     let branchId = appListDto.branchId;
     if (!branchId && type === 'front-end') {
       const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
@@ -453,6 +454,22 @@ export class AppsService implements IAppsService {
         totalFolderCount = totalCount;
       } else {
         apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
+      }
+
+      // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
+      // version. Overlay its metadata (name/slug/icon/isPublic) onto the app so the
+      // dashboard shows branch-specific values instead of the apps.* fallback.
+      // Workflows keep metadata on apps.* and are skipped.
+      if (branchId) {
+        for (const app of apps) {
+          if (app.type === APP_TYPES.WORKFLOW) continue;
+          const branchVersion = app?.appVersions?.[0];
+          if (!branchVersion) continue;
+          if (branchVersion.appName != null) app.name = branchVersion.appName;
+          if (branchVersion.slug != null) app.slug = branchVersion.slug;
+          if (branchVersion.icon != null) app.icon = branchVersion.icon;
+          if (branchVersion.isPublic != null) app.isPublic = branchVersion.isPublic;
+        }
       }
 
       if (isGetAll) {
