@@ -377,6 +377,29 @@ export const TableExposedVariables = ({
     setExposedVariables({ clearFilters, setFilters });
   }, [setColumnFilters, setExposedVariables, columns]);
 
+  // CSA to set sort programmatically
+  useEffect(() => {
+    function setSort(columnKey, direction) {
+      if (columnKey === undefined && direction === undefined) {
+        table.setSorting([]);
+        return;
+      }
+      if (direction !== 'asc' && direction !== 'desc') {
+        // eslint-disable-next-line no-console
+        console.warn(`setSort: invalid direction "${direction}" — expected 'asc' or 'desc'`);
+        return;
+      }
+      const tanstackId = columns.find((col) => col.columnDef?.accessorKey === columnKey)?.id;
+      if (!tanstackId) {
+        // eslint-disable-next-line no-console
+        console.warn(`setSort: column key "${columnKey}" not found`);
+        return;
+      }
+      table.setSorting([{ id: tanstackId, desc: direction === 'desc' }]);
+    }
+    setExposedVariables({ setSort });
+  }, [setExposedVariables, columns, table]);
+
   // CSA to download table data
   useEffect(() => {
     function downloadTableData(format) {

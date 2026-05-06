@@ -650,6 +650,23 @@ export const tableConfig = {
       displayName: 'Set visibility',
       params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+    {
+      handle: 'setSort',
+      displayName: 'Set sort',
+      params: [
+        { handle: 'columnKey', displayName: 'Column key' },
+        {
+          handle: 'direction',
+          displayName: 'Direction',
+          options: [
+            { name: 'Ascending', value: 'asc' },
+            { name: 'Descending', value: 'desc' },
+          ],
+          defaultValue: '{{asc}}',
+          type: 'select',
+        },
+      ],
+    },
   ],
   definition: {
     others: {
