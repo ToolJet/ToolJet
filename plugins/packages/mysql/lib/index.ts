@@ -773,14 +773,15 @@ export default class MysqlQueryService implements QueryService {
   }
   async listTables(
     sourceOptions: SourceOptions,
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string,
     queryOptions?: { search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
 
-      const search = queryOptions?.search || '';
-      const searchPattern = `%${search}%`;
+      const search = typeof queryOptions?.search === 'string' ? queryOptions.search : '';      const searchPattern = `%${search}%`;
 
       if (queryOptions?.limit) {
         const limit = queryOptions.limit;
@@ -909,11 +910,11 @@ export default class MysqlQueryService implements QueryService {
       if (methodName === 'getTables') {
         // return await this.listTables(sourceOptions);
         const isPaginated = !!args?.limit;
-        const result = await this.listTables(sourceOptions, {
-          search: args?.search,
-          page: args?.page,
-          limit: args?.limit,
-        });
+        const result = await this.listTables(sourceOptions, undefined, undefined, {
+            search: args?.search,
+            page: args?.page,
+            limit: args?.limit,
+          });
 
         const payload = (result as any)?.data ?? [];
 
