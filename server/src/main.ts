@@ -157,7 +157,10 @@ async function bootstrap() {
     try {
       // AcmeClientService is EE-only; app.get() throws in CE
       const { AcmeClientService } = await import('@ee/ssl-configuration/acme-client.service');
-      const acmeClientService = app.get(AcmeClientService);
+      // Cast to any: getChallengeResponse is added in the EE submodule; type resolution
+      // across the src/ee boundary is unreliable at build time.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const acmeClientService = app.get(AcmeClientService) as any;
       acmeChallengeLookup = acmeClientService.getChallengeResponse.bind(acmeClientService);
     } catch {
       // CE or module not loaded — fall back to filesystem serving
