@@ -269,15 +269,10 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
-# Create directories for inbuilt SSL/TLS support
-RUN mkdir -p /var/www/certbot /etc/letsencrypt \
-    && chown -R appuser:0 /var/www/certbot /etc/letsencrypt \
-    && chmod -R g=u /var/www/certbot /etc/letsencrypt
-
-# Pre-create ACME challenge directory structure
-RUN mkdir -p /var/www/certbot/.well-known/acme-challenge \
-    && chown -R appuser:0 /var/www/certbot/.well-known \
-    && chmod -R g=u /var/www/certbot/.well-known
+# Create directory for inbuilt SSL/TLS certificate storage
+RUN mkdir -p /etc/letsencrypt \
+    && chown -R appuser:0 /etc/letsencrypt \
+    && chmod -R g=u /etc/letsencrypt
 
 ENV HOME=/home/appuser
 # Switch back to appuser

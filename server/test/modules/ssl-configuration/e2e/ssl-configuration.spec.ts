@@ -306,7 +306,7 @@ describe('SslConfigurationController (e2e)', () => {
 
         expect(body.ssl_enabled).toBe(false);
         expect(body.certificate_acquired).toBe(false);
-        expect(body.nginx_state).toBe('HTTP_ONLY_DISABLED');
+        expect(body.server_state).toBe('HTTP_ONLY_DISABLED');
       });
 
       it('returns certificate_acquired: false when no cert has been issued', async () => {
