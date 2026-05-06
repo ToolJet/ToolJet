@@ -200,6 +200,19 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       expect(res.body.app.length).toBeGreaterThan(0);
       expect(res.body.app[0]).toHaveProperty('definition');
     });
+
+    it('excludes TJDB from export when exportTJDB=false', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const mod = await createApplication(app, { name: 'Auth Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+
+      const res = await request(app.getHttpServer())
+        .post(`/api/ext/export/workspace/${user.defaultOrganizationId}/modules/${mod.id}?exportTJDB=false`)
+        .set('Authorization', getExtAuth())
+        .expect(201);
+
+      expect(res.body).not.toHaveProperty('tooljet_database');
+    });
   });
 
   // ---------------------------------------------------------------------------

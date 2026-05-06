@@ -12,7 +12,7 @@ export class ExternalApisModulesController {
     throw new Error('Method not implemented.');
   }
 
-  exportModule(moduleId: string, workspaceId: string): Promise<any> {
+  exportModule(moduleId: string, workspaceId: string, exportTjdb: boolean): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
