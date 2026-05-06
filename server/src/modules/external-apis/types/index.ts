@@ -18,6 +18,7 @@ interface Features {
   [FEATURE_KEY.GET_USER_METADATA]: FeatureConfig;
   [FEATURE_KEY.CREATE_ORG_GIT]: FeatureConfig;
   [FEATURE_KEY.AUTO_RELEASE_APP]: FeatureConfig;
+  [FEATURE_KEY.SAVE_APP_VERSION]: FeatureConfig;
   [FEATURE_KEY.GET_ALL_WORKSPACE_APPS]: FeatureConfig;
   [FEATURE_KEY.IMPORT_APP]: FeatureConfig;
   [FEATURE_KEY.EXPORT_APP]: FeatureConfig;
