@@ -73,7 +73,7 @@ const buildPermissions = (
 
 /** @group platform */
 describe('defineAppVersionAbility', () => {
-  const EDIT_ACTIONS = [
+  const ALL_ACTIONS = [
     FEATURE_KEY.GET,
     FEATURE_KEY.DELETE,
     FEATURE_KEY.CREATE,
@@ -109,7 +109,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any);
       const ability = build();
 
-      EDIT_ACTIONS.forEach((action) => {
+      ALL_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(true);
       });
     });
@@ -121,7 +121,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any, resourceId);
       const ability = build();
 
-      EDIT_ACTIONS.forEach((action) => {
+      ALL_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(true);
       });
     });
@@ -132,8 +132,9 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any, 'module-uuid-1');
       const ability = build();
 
-      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.CREATE_PAGES, App)).toBe(false);
+      ALL_ACTIONS.forEach((action) => {
+        expect(ability.can(action, App)).toBe(false);
+      });
     });
 
     it('grants view actions when isAllViewable is true', () => {
@@ -169,6 +170,7 @@ describe('defineAppVersionAbility', () => {
 
       expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.CREATE_COMPONENTS, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENT_LAYOUT, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.DELETE_COMPONENTS, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.GET_EVENTS, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.CREATE_EVENT, App)).toBe(true);
@@ -183,7 +185,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any);
       const ability = build();
 
-      EDIT_ACTIONS.forEach((action) => {
+      ALL_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(false);
       });
     });
@@ -196,7 +198,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any);
       const ability = build();
 
-      EDIT_ACTIONS.forEach((action) => {
+      ALL_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(true);
       });
     });
@@ -208,7 +210,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any, resourceId);
       const ability = build();
 
-      EDIT_ACTIONS.forEach((action) => {
+      ALL_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(true);
       });
     });
@@ -221,7 +223,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any);
       const ability = build();
 
-      [...EDIT_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
         expect(ability.can(action, App)).toBe(false);
       });
     });
@@ -243,7 +245,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any);
       const ability = build();
 
-      const editOnlyActions = EDIT_ACTIONS.filter((a) => !VIEW_ACTIONS.includes(a));
+      const editOnlyActions = ALL_ACTIONS.filter((a) => !VIEW_ACTIONS.includes(a));
       editOnlyActions.forEach((action) => {
         expect(ability.can(action, App)).toBe(false);
       });
@@ -302,7 +304,7 @@ describe('defineAppVersionAbility', () => {
         defineAppVersionAbility(can, perms as any);
         const ability = build();
 
-        EDIT_ACTIONS.forEach((action) => {
+        ALL_ACTIONS.forEach((action) => {
           expect(ability.can(action, App)).toBe(true);
         });
       }
@@ -315,7 +317,7 @@ describe('defineAppVersionAbility', () => {
         defineAppVersionAbility(can, perms as any);
         const ability = build();
 
-        EDIT_ACTIONS.forEach((action) => {
+        ALL_ACTIONS.forEach((action) => {
           expect(ability.can(action, App)).toBe(true);
         });
       }
@@ -346,7 +348,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any);
       const ability = build();
 
-      [...EDIT_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
         expect(ability.can(action, App)).toBe(true);
       });
     });
@@ -438,7 +440,7 @@ describe('defineAppVersionAbility', () => {
       defineAppVersionAbility(can, perms as any, undefined);
       const ability = build();
 
-      EDIT_ACTIONS.forEach((action) => {
+      ALL_ACTIONS.forEach((action) => {
         expect(ability.can(action, App)).toBe(true);
       });
     });
