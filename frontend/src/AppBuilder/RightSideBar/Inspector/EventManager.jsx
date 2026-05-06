@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useMemo } from 'react';
 
 import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
@@ -112,13 +112,38 @@ export const EventManager = ({
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
 
-    const sortedEvents = currentEvents.sort((a, b) => {
-      return a.index - b.index;
+    const sortedEvents = (currentEvents || []).slice().sort((a, b) => a.index - b.index);
+
+    // Preserve local `name` when the user has typed ahead of the debounced save —
+    // store may carry a stale name during the debounce/in-flight window.
+    const merged = sortedEvents.map((storeEvent) => {
+      const localEvent = events.find((e) => e.id === storeEvent.id);
+      if (localEvent && localEvent.name !== storeEvent.name) {
+        return { ...storeEvent, name: localEvent.name };
+      }
+      return storeEvent;
     });
 
-    setEvents(sortedEvents || [], moduleId);
+    setEvents(merged, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
+
+  const eventsRef = useRef(events);
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+
+  const debouncedSaveName = useMemo(
+    () =>
+      _.debounce((eventId) => {
+        const current = eventsRef.current.find((e) => e.id === eventId);
+        if (!current) return;
+        updateAppVersionEventHandlers([{ event_id: eventId, diff: current }], 'update', 'name');
+      }, 400),
+    [updateAppVersionEventHandlers]
+  );
+
+  useEffect(() => () => debouncedSaveName.flush(), [debouncedSaveName]);
 
   let groupedOptions = ActionTypes.reduce((acc, action) => {
     const groupName = action.group;
@@ -364,6 +389,16 @@ export const EventManager = ({
     const shouldUpdateEvent = !_.isEmpty(diff(events[index], updatedEvent));
     if (!shouldUpdateEvent) return;
 
+    if (param === 'name') {
+      // Sync local state immediately so the controlled input stays in lockstep
+      // with the user's typing; defer the API call via debounce. The save reads
+      // the freshest event from eventsRef at fire time to avoid clobbering
+      // changes to other params made during the debounce window.
+      setEvents(newEvents);
+      debouncedSaveName(updatedEvent.id);
+      return;
+    }
+
     handleLowPriorityWork(() => {
       updateAppVersionEventHandlers(
         [
@@ -532,8 +567,9 @@ export const EventManager = ({
                 <Input
                   key={eventHandler?.id}
                   type="text"
-                  defaultValue={eventHandler?.name ?? ''}
+                  value={eventHandler?.name ?? ''}
                   onChange={(e) => handlerChanged(index, 'name', e.target.value)}
+                  onBlur={() => debouncedSaveName.flush()}
                   className="tw-w-full"
                   data-cy="event-name-input"
                 />
@@ -1136,6 +1172,9 @@ export const EventManager = ({
                                 lastFocusedEventIndex.current = index;
                               } else {
                                 setFocusedEventIndex(null);
+                                // Commit any pending name save before the popover unmounts —
+                                // covers Esc, outside-click, and switching to another event.
+                                debouncedSaveName.flush();
                               }
                               if (typeof popOverCallback === 'function') popOverCallback(showing);
                             }}
