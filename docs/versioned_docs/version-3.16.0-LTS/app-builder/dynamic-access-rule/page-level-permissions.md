@@ -3,6 +3,8 @@ id: page-level
 title: Page Level Permissions
 ---
 
+<PlanBadge type="enterprise" />
+
 Page permissions control who can access a particular page in your application. When a user doesn't have permission to access a page, they won't be able to navigate to it.
 
 :::note

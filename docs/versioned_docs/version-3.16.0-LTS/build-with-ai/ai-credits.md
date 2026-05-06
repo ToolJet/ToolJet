@@ -98,6 +98,8 @@ These values are only average estimates to help plan your operations. **Actual c
 Monthly credits are recurring credits included with your purchased license. They renew every month on the billing cycle date and are valid for one month. Any unused credits will not carry forward to the next month. Even if you are on an annual plan, credits are still renewed on a monthly basis.
 
 ### Add-on Credits
+<PlanBadge type="pro" />
+
 
 Add-on credits can be purchased in addition to your monthly credits and are a one-time purchase that do not renew monthly. These credits can only be purchased in multiples of 100 and are valid for one year from the date of purchase. If you buy additional credits after an initial purchase, the validity of the entire pool of credits is extended based on the latest purchase date. Checkout the [pricing](https://www.tooljet.com/pricing) page for more information.
 

@@ -3,6 +3,8 @@ id: row-level-security
 title: Row Level Security
 ---
 
+<PlanBadge type="enterprise" />
+
 Row-level security in ToolJet lets you control which records a user can see or interact with, even when multiple users access the same table. This is useful when you want to restrict access to specific rows based on [custom groups](/docs/user-management/role-based-access/custom-groups/) or [default user roles](/docs/user-management/role-based-access/user-roles#default-user-roles). Row-level security is applied on the server side, ensuring the logic is secure and hidden from the client.
 
 ## Common Use Cases

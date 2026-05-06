@@ -3,7 +3,7 @@ id: scheduler
 title: Trigger Using Scheduler
 ---
 
-<br/>
+<PlanBadge type="teams" />
 
 You can automate workflow execution by adding scheduled triggers that run at regular intervals. Use **Interval mode** to set the frequency with predefined options or **Cron mode** for more granular control with cron syntax. Additionally, you can specify a timezone to ensure the schedule aligns with local time. 
 

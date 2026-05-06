@@ -3,6 +3,8 @@ id: ldap
 title: LDAP
 ---
 
+<PlanBadge type="teams" />
+
 Lightweight Directory Access Protocol (LDAP) is a protocol used to access and manage directory information, enabling centralized authentication and user management. By configuring LDAP with directory services you can streamline secure user authentication and access control in ToolJet.
 
 ## Configure LDAP SSO

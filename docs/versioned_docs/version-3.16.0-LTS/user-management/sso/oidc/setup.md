@@ -3,7 +3,7 @@ id: setup
 title: OpenID Connect Setup
 ---
 
-<PlanBadge type="enterprise" />
+<PlanBadge type="teams" />
 
 OpenID Connect (OIDC) is an authentication protocol that helps applications verify users' identities using an identity provider. By configuring OIDC with identity providers like **[Azure AD](/docs/user-management/sso/oidc/azuread)**, **[Google](/docs/user-management/sso/oidc/google)** or **[Okta](/docs/user-management/sso/oidc/okta)**, you can set up easy and safe authentication for your users in ToolJet.
 
@@ -53,6 +53,8 @@ Go to **Settings > Instance login**. <br/>
 Upon saving, OIDC SSO will be successfully enabled using your configured Identity Provider, allowing your users to seamlessly authenticate via OpenID Connect for enhanced security and ease of use.
 
 ## Configuring Multiple OIDC Providers
+
+<PlanBadge type="enterprise" />
 
 ToolJet allows you to configure multiple OpenID Connect (OIDC) configurations simultaneously. This enables you to authenticate users using different identity providers such as Okta, Auth0, Microsoft Entra ID, Google or multiple tenants of the same provider within the same ToolJet workspace.
 
