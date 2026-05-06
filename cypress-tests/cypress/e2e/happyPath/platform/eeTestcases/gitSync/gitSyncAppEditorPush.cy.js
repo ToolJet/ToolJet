@@ -232,7 +232,7 @@ describe(
       cy.get('[data-cy="last-commit-message"]', { timeout: 10000 }).should(
         "be.visible",
       );
-      cy.get('[data-cy="auther-info"]').should("be.visible");
+      cy.get('[data-cy="author-info"]').should("be.visible");
 
       // Cancel button present
       cy.contains("button", "Cancel").should("be.visible");

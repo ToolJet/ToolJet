@@ -14,16 +14,15 @@ const gitConfig = {
 
 describe("Git Sync — E2E Flow", () => {
   const testId = Date.now();
+  let testRunIndex = 0;
 
-  const wsName = `gitsync-e2e-${testId}`;
-  const wsSlug = wsName;
-
-  const secondWsName = `gitsync-e2e-second-${testId}`;
-  const secondWsSlug = secondWsName;
-
-  const branchName = `test-feature-${testId}`;
-  const appName = `git-sync-app-${testId}`;
-  const commitMessage = `test: import fixture app [${testId}]`;
+  let wsName;
+  let wsSlug;
+  let secondWsName;
+  let secondWsSlug;
+  let branchName;
+  let appName;
+  let commitMessage;
 
   const DS_BASE_URL = "https://jsonplaceholder.typicode.com";
   const FIXTURE_DS_NAME = "REST API";
@@ -60,6 +59,15 @@ describe("Git Sync — E2E Flow", () => {
   };
 
   beforeEach(() => {
+    const runId = `${testId}-${testRunIndex++}`;
+    wsName = `gitsync-e2e-${runId}`;
+    wsSlug = wsName;
+    secondWsName = `gitsync-e2e-second-${runId}`;
+    secondWsSlug = secondWsName;
+    branchName = `test-feature-${runId}`;
+    appName = `git-sync-app-${runId}`;
+    commitMessage = `test: import fixture app [${runId}]`;
+
     cy.apiLogin();
 
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
