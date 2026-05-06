@@ -8,11 +8,12 @@ import { MODULES } from '@modules/app/constants/modules';
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string,
+  resourceId?: string
 ): void {
   const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
-  const userAppPermissions = userPermission?.[resource[0].resourceType];
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+  const permissionKey = resourceType === MODULES.MODULES ? MODULES.APP : resourceType;
+  const userAppPermissions = userPermission?.[permissionKey];
 
   if (isAdmin || superAdmin) {
     can(
