@@ -412,6 +412,22 @@ export const PropertiesTabElements = ({
           )}
         </div>
       )}
+      <div className="border mx-3 tw-rounded-md column-popover-card-ui">
+        <div className="tw-bg-background-surface-layer-02 tw-px-3 tw-py-2">
+          <ProgramaticallyHandleProperties
+            label="disable column sort"
+            currentState={currentState}
+            index={index}
+            darkMode={darkMode}
+            callbackFunction={onColumnItemChange}
+            property="disableSort"
+            props={column}
+            component={component}
+            paramMeta={{ type: 'toggle', displayName: 'Disable column sort' }}
+            paramType="properties"
+          />
+        </div>
+      </div>
       {column.columnType === 'json' && (
         <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
           <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
