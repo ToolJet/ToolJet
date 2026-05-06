@@ -25,28 +25,11 @@ In the screenshot below, we are triggering two different queries using two diffe
 
 <img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 
-### Callback Functions
-
+:::info
 In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
 
-| Parameter  | Type   | Description |
-|------------|--------|-------------|
-| Parameters | Object | (Optional) Key-value pairs passed as the first argument to the query (e.g., `{ limit: 10 }`). If no parameters are required but callbacks are provided, pass an empty object `{}`. |
-| Callbacks  | Object | (Optional) An object passed as the second argument containing lifecycle handlers such as **`onSuccess`** and **`onFailure`**. |
-
-```javascript
-queries.getUsers.run(
-  { limit: 10 },
-  {
-    onSuccess: (data) => {
-      actions.showAlert('success', 'Users fetched successfully');
-    },
-    onFailure: (error) => {
-      actions.showAlert('warning', error.message || 'Something went wrong');
-    }
-  }
-);
-```
+For more info, refer **[here](/docs/data-sources/run-js#callback-functions)**
+:::
 
 ## Reset Query
 
