@@ -164,7 +164,9 @@ const CreateVersionModal = ({
           setIsCreatingVersion(false);
           return;
         }
+      }
 
+      if (isGitSyncEnabled) {
         try {
           const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
           if (tagCheck.exists) {
@@ -215,7 +217,7 @@ const CreateVersionModal = ({
       //     });
       // }
 
-      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
+      if (isGitSyncEnabled) {
         gitSyncService
           .createGitTag(
             appId,
