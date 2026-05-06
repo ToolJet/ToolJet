@@ -1,6 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { resetDB, initTestApp, closeTestApp, createUser, createApplication, getDefaultDataSource } from 'test-helper';
+import {
+  resetDB,
+  initTestApp,
+  closeTestApp,
+  createUser,
+  createApplication,
+  createApplicationVersion,
+  getDefaultDataSource,
+} from 'test-helper';
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { App } from 'src/entities/app.entity';
@@ -64,34 +72,18 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
     return createApplication(nestApp, { user, name: `App-${Date.now()}`, isPublic: false });
   }
 
+  // Use createApplicationVersion (handles all required columns correctly) then
+  // patch just the status field — avoids the module_reference_id column issue.
   async function seedDraftVersion(app: App & { organizationId: string }, name = 'v1'): Promise<AppVersion> {
-    const devEnv = await envRepo.findOne({
-      where: { organizationId: app.organizationId },
-      order: { priority: 'ASC' },
-    });
-    return versionRepo.save(
-      versionRepo.create({
-        appId: app.id,
-        name,
-        status: AppVersionStatus.DRAFT,
-        currentEnvironmentId: devEnv.id,
-      })
-    );
+    const version = await createApplicationVersion(nestApp, app, { name });
+    await versionRepo.update(version.id, { status: AppVersionStatus.DRAFT });
+    return versionRepo.findOne({ where: { id: version.id } });
   }
 
   async function seedPublishedVersion(app: App & { organizationId: string }, name = 'v1-pub'): Promise<AppVersion> {
-    const devEnv = await envRepo.findOne({
-      where: { organizationId: app.organizationId },
-      order: { priority: 'ASC' },
-    });
-    return versionRepo.save(
-      versionRepo.create({
-        appId: app.id,
-        name,
-        status: AppVersionStatus.PUBLISHED,
-        currentEnvironmentId: devEnv.id,
-      })
-    );
+    const version = await createApplicationVersion(nestApp, app, { name });
+    await versionRepo.update(version.id, { status: AppVersionStatus.PUBLISHED });
+    return versionRepo.findOne({ where: { id: version.id } });
   }
 
   // ---------------------------------------------------------------------------
