@@ -10,7 +10,7 @@ export function defineAppVersionAbility(
   UserAllPermissions: UserAllPermissions,
   resourceId?: string
 ): void {
-  const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
   const permissionKey = resourceType === MODULES.MODULES ? MODULES.APP : resourceType;
   const userAppPermissions = userPermission?.[permissionKey];
