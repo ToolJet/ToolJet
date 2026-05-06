@@ -305,6 +305,7 @@ import GitHub from './GitHub.jsx';
 import BackWithoutArrow from './BackWithoutArrow.jsx';
 import PlayLucide from './PlayLucide.jsx';
 import Slack from './Slack.jsx';
+import UserStar from './UserStar.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -718,6 +719,8 @@ const Icon = (props) => {
       return <UpArrow {...props} />;
     case 'user':
       return <User {...props} />;
+    case 'userstar':
+      return <UserStar {...props} />;
     case 'useradd':
       return <UserAdd {...props} />;
     case 'usergroup':

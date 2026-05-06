@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useId } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
@@ -65,6 +65,8 @@ const TreeSelect = ({
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const containerRef = useRef(null);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -340,7 +342,7 @@ const TreeSelect = ({
       checkModel="all"
       noCascade={true}
       disabled={isDisabled}
-      id={`component-${id}`}
+      id={inputId}
       icons={{
         check: (
           <TreeSelectCheckbox
@@ -411,7 +413,7 @@ const TreeSelect = ({
         aria-disabled={isDisabled}
       >
         <div className="card-title" style={{ marginBottom: '0.5rem' }}>
-          <label htmlFor={`component-${id}`}>{label}</label>
+          <label htmlFor={inputId}>{label}</label>
         </div>
         {renderCheckboxTree()}
         {renderValidationError()}
@@ -456,7 +458,7 @@ const TreeSelect = ({
           defaultAlignment={defaultAlignment}
           darkMode={darkMode}
           isMandatory={isMandatory}
-          inputId={`component-${id}`}
+          inputId={inputId}
         />
         <div
           style={{

@@ -150,3 +150,67 @@ export const IconOnlyVariants = {
   ),
   parameters: { layout: 'padded' },
 };
+
+// ── Disabled icons — proves the grayscale filter ─────────────────────────
+//
+// Lucide icons follow currentColor and are already monochrome, so the
+// disabled-state grayscale is invisible on them. The visible cases are:
+//   - colored inline SVG (custom branded glyph, status icon, etc.)
+//   - <img> visuals (logos, profile pics, third-party brand marks)
+//
+// Compare each enabled column to its disabled twin: the colored content
+// should desaturate when disabled.
+
+const ColoredSvg = (props) => (
+  <svg width="14" height="14" viewBox="0 0 14 14" {...props}>
+    <circle cx="7" cy="7" r="6" fill="#22c55e" />
+    <path d="M4 7l2 2 4-4" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ColoredImage = (props) => (
+  // Tiny inline SVG-as-data-URL so the story works offline
+  <img
+    {...props}
+    width={14}
+    height={14}
+    alt=""
+    src={
+      'data:image/svg+xml;utf8,' +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14"><rect width="14" height="14" rx="3" fill="%23f97316"/><text x="7" y="10" font-size="9" font-family="sans-serif" fill="white" text-anchor="middle">A</text></svg>'
+      )
+    }
+  />
+);
+
+export const DisabledWithColoredIcons = {
+  render: () => (
+    <div className="tw-grid tw-grid-cols-[auto_auto_auto] tw-gap-3 tw-p-4 tw-items-center">
+      <span className="tw-text-xs tw-text-text-placeholder">Lucide (currentColor)</span>
+      <Button variant="primary" leadingVisual={<Plus size={14} />}>
+        Enabled
+      </Button>
+      <Button variant="primary" disabled leadingVisual={<Plus size={14} />}>
+        Disabled
+      </Button>
+
+      <span className="tw-text-xs tw-text-text-placeholder">Colored SVG</span>
+      <Button variant="secondary" leadingVisual={<ColoredSvg />}>
+        Enabled
+      </Button>
+      <Button variant="secondary" disabled leadingVisual={<ColoredSvg />}>
+        Disabled
+      </Button>
+
+      <span className="tw-text-xs tw-text-text-placeholder">Image (data URL)</span>
+      <Button variant="outline" leadingVisual={<ColoredImage />}>
+        Enabled
+      </Button>
+      <Button variant="outline" disabled leadingVisual={<ColoredImage />}>
+        Disabled
+      </Button>
+    </div>
+  ),
+  parameters: { layout: 'padded' },
+};

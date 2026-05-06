@@ -9,6 +9,7 @@ export const RESTRICTED_WIDGETS_CONFIG = {
   Tabs: ['Calendar', 'Kanban'],
   Kanban_popout: ['Calendar', 'Kanban'],
   Listview: ['Calendar', 'Kanban'],
+  Table: ['Kanban'],
 };
 
 export const RESTRICTED_WIDGET_SLOTS_CONFIG = {

@@ -361,6 +361,12 @@
           "className": "codehinter-plugins",
           "placeholder": "Enter limit"
         },
+        "allow_multiple_updates": {
+          "label": "Allow this query to delete multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can delete multiple rows at once"
+        },
         "zero_records_as_success": {
           "label": "Consider query that deletes zero records as success",
           "key": "zero_records_as_success",

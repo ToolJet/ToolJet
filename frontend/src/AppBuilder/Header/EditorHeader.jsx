@@ -84,19 +84,15 @@ export const EditorHeader = ({ darkMode }) => {
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
               <div className="d-flex align-items-center p-0">
                 <div className="d-flex version-manager-container p-0  align-items-center gap-0">
-                  {!isModuleEditor && (
-                    <>
-                      <PreviewAndShareIcons />
-                      {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                      {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
-                      {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
-                        <VersionManagerErrorBoundary>
-                          <VersionManagerDropdown darkMode={darkMode} />
-                        </VersionManagerErrorBoundary>
-                      )}
-                      <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
-                    </>
+                  {!isModuleEditor && <PreviewAndShareIcons />}
+                  <BranchDropdown appId={appId} organizationId={organizationId} />
+                  {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
+                  {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
+                    <VersionManagerErrorBoundary>
+                      <VersionManagerDropdown darkMode={darkMode} />
+                    </VersionManagerErrorBoundary>
                   )}
+                  <RightTopHeaderButtons isModuleEditor={isModuleEditor} />
                 </div>
               </div>
             </div>

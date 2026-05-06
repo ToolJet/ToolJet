@@ -5,6 +5,7 @@ import moment from 'moment';
 import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const TimePicker = ({
   height,
@@ -47,6 +48,7 @@ export const TimePicker = ({
   );
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(

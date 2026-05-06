@@ -9,7 +9,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
   AppListDto,
@@ -28,7 +28,8 @@ import { AppEnvironmentUtilService } from '@modules/app-environments/util.servic
 import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppVersionStatus } from '@entities/app_version.entity';
+import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -46,6 +47,9 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
@@ -72,7 +76,7 @@ export class AppsService implements IAppsService {
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
     protected readonly organizationEnvRegistryService: GitSyncEnvUtilService
-  ) { }
+  ) {}
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -189,8 +193,8 @@ export class AppsService implements IAppsService {
 
       // Validate environment access for all users (both builders and viewers)
       // Skip validation only for released environment (everyone with view access can see released)
-      // Also skip validation for module apps - they don't have environment restrictions
-      if (environment && app.type !== APP_TYPES.MODULE) {
+      // Also skip validation for modules and workflows
+      if (environment && app.type === APP_TYPES.FRONT_END) {
         const envName = environment.name.toLowerCase();
 
         // Always allow access to released environment for all users who can view the app
@@ -249,6 +253,28 @@ export class AppsService implements IAppsService {
     }
 
     return { id: app.id, slug: app.slug };
+  }
+
+  async getAppAuthenticationConfig(slug: string) {
+    if (!slug || slug.length > 250) {
+      throw new BadRequestException('Invalid app slug');
+    }
+
+    const app = await this.appRepository.findOne({
+      where: { slug },
+      select: ['id', 'name', 'slug', 'isPublic', 'organizationId'],
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return {
+      name: app.name,
+      slug: app.slug,
+      isPublic: app.isPublic,
+      organizationId: app.organizationId,
+    };
   }
 
   private resolveGitSyncEnabled(orgGit: OrganizationGitSync | null | undefined): boolean {
@@ -359,6 +385,24 @@ export class AppsService implements IAppsService {
           appId: id,
           scheduleIds: scheduleIds,
         });
+      }
+
+      // Clean up query folder data — no CASCADE exists for these tables
+      const versions = await manager.find(AppVersion, { select: ['id'], where: { appId: id } });
+      const versionIds = versions.map((v) => v.id);
+      if (versionIds.length > 0) {
+        const folders = await manager.find(DataQueryFolder, { where: { appVersionId: In(versionIds) } });
+        const folderIds = folders.map((f) => f.id);
+        const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: In(versionIds) } });
+        const queryIds = queries.map((q) => q.id);
+        const allChildIds = [...folderIds, ...queryIds];
+
+        if (allChildIds.length > 0) {
+          await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+        }
+        if (folderIds.length > 0) {
+          await manager.delete(DataQueryFolder, { appVersionId: In(versionIds) });
+        }
       }
 
       await manager.delete(App, { id, organizationId });
@@ -538,6 +582,8 @@ export class AppsService implements IAppsService {
       const editingVersion = response['editing_version'];
       const isDraft = editingVersion?.status === 'DRAFT';
 
+      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
+      // AppGitSync may be keyed by app.id (legacy) or co_relation_id (platform git sync).
       let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
       // Branch-copy apps (platform git sync) don't have their own app_git_sync record
       if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
@@ -546,6 +592,11 @@ export class AppsService implements IAppsService {
       if (appGit && !isDraft) {
         // Only apply git-based freezing for non-draft versions
         response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
+      }
+
+      // Modules also freeze when the editing version is non-draft, regardless of git state
+      if (app.type === APP_TYPES.MODULE && editingVersion?.status && editingVersion.status !== AppVersionStatus.DRAFT) {
+        response['should_freeze_editor'] = true;
       }
       response['editorEnvironment'] = {
         id: appVersionEnvironment.id,
@@ -587,6 +638,7 @@ export class AppsService implements IAppsService {
 
       // serialize
       return {
+        id: app.id,
         current_version_id: app['currentVersionId'],
         data_queries: versionToLoad?.dataQueries,
         definition: versionToLoad?.definition,
@@ -650,6 +702,8 @@ export class AppsService implements IAppsService {
         throw new BadRequestException('You can only release when the version is promoted to production');
       }
 
+      await this.appsUtilService.checkModulesReleasedInApp(versionToBeReleased, user.organizationId, manager);
+
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
 
@@ -661,6 +715,7 @@ export class AppsService implements IAppsService {
         organizationId: user.organizationId,
         resourceId: app.id,
         resourceName: app.name,
+        ...(app.type === 'module' && { actionType: MODULE_VERSION_AUDIT_KEYS.RELEASE }),
         resourceData: {
           appSlug: app.slug,
           isPublic: app.isPublic,

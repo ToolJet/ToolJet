@@ -21,7 +21,7 @@ function getAll(appVersionId, mode) {
   return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
+function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id, folder_id) {
   const body = {
     app_id,
     app_version_id,
@@ -30,6 +30,7 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     options,
     data_source_id,
     plugin_id,
+    ...(folder_id ? { folder_id } : {}),
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
@@ -144,7 +145,11 @@ function invoke(dataSourceId, methodName, environmentId, args) {
     args: args,
   };
 
-  const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  let url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
 
   const requestOptions = {
     method: 'POST',

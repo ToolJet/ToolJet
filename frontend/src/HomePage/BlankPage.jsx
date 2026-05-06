@@ -23,6 +23,7 @@ export const BlankPage = function BlankPage({
   appType,
   canCreateApp,
   workflowsLimit,
+  onImportFromDeviceClick,
 }) {
   const { t } = useTranslation();
   const whiteLabelText = retrieveWhiteLabelText();
@@ -181,6 +182,11 @@ export const BlankPage = function BlankPage({
                             })}
                             style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
                             data-cy={appType !== 'workflow' ? 'import-an-application' : 'import-a-workflow'}
+                            onClick={(e) => {
+                              if (onImportFromDeviceClick && onImportFromDeviceClick(e) === false) {
+                                e.preventDefault();
+                              }
+                            }}
                           >
                             &nbsp;
                             {appType !== 'workflow'

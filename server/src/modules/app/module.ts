@@ -34,6 +34,7 @@ import { WhiteLabellingModule } from '@modules/white-labelling/module';
 import { EmailModule } from '@modules/email/module';
 import { OrganizationConstantModule } from '@modules/organization-constants/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
+import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
@@ -50,7 +51,6 @@ import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
-import { BranchContextModule } from '@modules/branch-context/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
@@ -77,6 +77,7 @@ import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { WorkspaceContextModule } from '@modules/workspace-context/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -103,7 +104,6 @@ export class AppModule implements OnModuleInit, NestModule {
      * ████████████████████████████████████████████████████████████████████
      */
     const baseImports = [
-      await BranchContextModule.register(configs),
       await AbilityModule.forRoot(configs),
       await LicenseModule.forRoot(configs),
       await FilesModule.register(configs, true),
@@ -111,6 +111,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await InstanceSettingsModule.register(configs, true),
       await FoldersModule.register(configs, true),
       await FolderAppsModule.register(configs, true),
+      await DataQueryFoldersModule.register(configs, true),
       await SMTPModule.register(configs, true),
       await RolesModule.register(configs, true),
       await GroupPermissionsModule.register(configs, true),
@@ -156,6 +157,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
       await BackgroundProcessorModule.register(configs, true),
+      await WorkspaceContextModule.register(configs, true),
     ];
 
     const conditionalImports = [];

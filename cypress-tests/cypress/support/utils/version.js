@@ -172,3 +172,31 @@ export const openPreviewSettings = () => {
   cy.wait(1000);
   // Note: add alias wait for version and env load
 };
+
+export const createDraftVersion = (versionName, fromVersion) => {
+  openCreateDraftVersionModal();
+  cy.wait(500);
+
+  cy.get(
+    versionModalSelector.createDraftVersionModal.createDraftVersionFromInput
+  ).click();
+  cy.waitForElement(`[id*="react-select-"]`);
+  cy.contains(`[id*="react-select-"]`, fromVersion).click();
+
+  cy.waitForElement(versionModalSelector.versionNameInput);
+  cy.get(versionModalSelector.versionNameInput).clear().type(versionName);
+
+  cy.get(versionModalSelector.createDraftVersionModal.createButton).click();
+};
+
+export const openVersionSwitcher = () => {
+  cy.get(versionSwitcherSelectors.versionName)
+    .eq(0)
+    .should("be.visible")
+    .click();
+  cy.wait(300);
+};
+export const openCreateDraftVersionModal = () => {
+  cy.get('[data-cy="create-draft-version-button"]').should("be.visible").click();
+  cy.wait(300);
+};

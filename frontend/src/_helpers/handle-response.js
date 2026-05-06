@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
-import { sessionService } from '@/_services';
+import { sessionService, authenticationService } from '@/_services';
 import { redirectToSwitchOrArchivedAppPage, redirectToErrorPage } from './routes';
 import { handleError } from './handleAppAccess';
 import { fetchEdition } from '@/modules/common/helpers/utils';
@@ -50,10 +50,25 @@ export function handleResponse(
         }
       }
       if ([401].indexOf(response.status) !== -1) {
-        // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
-        const errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
-        const workspaceId = errorMessageJson?.organizationId;
-        avoidRedirection ? sessionService.logout(false, workspaceId) : location.reload(true);
+        // Skip redirect on app-scoped auth pages — they handle their own auth
+        const isAppAuthPage = /^\/applications\/[^/]+\/(login|signup|forgot-password|reset-password)/.test(
+          window.location.pathname
+        );
+        // Skip reload for public app viewers — they operate without auth,
+        // so 401 on authenticated-only endpoints is expected and not an error
+        const currentSession = authenticationService?.currentSessionValue;
+        const isPublicAppAccess = currentSession?.authentication_failed && currentSession?.load_app;
+        if (!isAppAuthPage && !isPublicAppAccess) {
+          // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
+          let errorMessageJson;
+          try {
+            errorMessageJson = typeof data.message === 'string' ? JSON.parse(data.message) : undefined;
+          } catch {
+            // data.message is not valid JSON (e.g., "license violation - Maximum user limit reached")
+          }
+          const workspaceId = errorMessageJson?.organizationId;
+          avoidRedirection ? sessionService.logout(false, workspaceId) : location.reload(true);
+        }
       } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.NO_ACCESSIBLE_PAGES) {
         handleError('', { data });
       } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.RESTRICTED_PREVIEW) {
@@ -98,8 +113,9 @@ export function handleResponse(
           edition: edition,
         });
 
-        if (!message?.includes('expired') && !avoidUpgradeModal) {
-          ReactDOM.render(modalEl, document.getElementById('modal-div'));
+        const modalContainer = document.getElementById('modal-div');
+        if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
+          ReactDOM.render(modalEl, modalContainer);
         }
       } else if ([400].indexOf(response.status) !== -1) {
         redirectToSwitchOrArchivedAppPage(data);
