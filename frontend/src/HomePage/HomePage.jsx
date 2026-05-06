@@ -2002,7 +2002,7 @@ class HomePageComponent extends React.Component {
                                 </div>
                                 {this.getSelectedVersionCommitInfo().author &&
                                   this.getSelectedVersionCommitInfo().date && (
-                                    <div className="author-info" data-cy="auther-info">
+                                    <div className="author-info" data-cy="author-info">
                                       {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
                                         new Date(this.getSelectedVersionCommitInfo().date)
                                       ).format('DD MMM YYYY, h:mm a')}`}
