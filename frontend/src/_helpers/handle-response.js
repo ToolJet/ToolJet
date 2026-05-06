@@ -150,3 +150,26 @@ export function handleResponseWithoutValidation(response) {
     return data;
   });
 }
+
+// SSL-specific response handler with whitespace trimming
+// Used during certificate acquisition where the server may return empty or whitespace-only responses
+export function handleResponseForSSL(
+  response,
+  avoidRedirection = false,
+  queryParamToUpdate = null,
+  avoidUpgradeModal = false
+) {
+  return response.text().then((text) => {
+    // Trim whitespace before parsing — guards against empty responses during server state transitions
+    const trimmedText = text?.trim();
+    const data = trimmedText && JSON.parse(trimmedText);
+
+    // Reuse the existing error handling logic from handleResponse
+    if (!response.ok) {
+      const error = (data && data.message) || response.statusText;
+      return Promise.reject({ error, data, statusCode: response?.status });
+    }
+
+    return data;
+  });
+}

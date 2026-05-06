@@ -269,6 +269,11 @@ RUN mkdir -p /var/lib/redis /var/log/redis /etc/redis \
     && chmod g+s /var/lib/redis /var/log/redis /etc/redis \
     && chmod -R g=u /var/lib/redis /var/log/redis /etc/redis
 
+# Create directory for inbuilt SSL/TLS certificate storage
+RUN mkdir -p /etc/letsencrypt \
+    && chown -R appuser:0 /etc/letsencrypt \
+    && chmod -R g=u /etc/letsencrypt
+
 ENV HOME=/home/appuser
 # Switch back to appuser
 USER appuser

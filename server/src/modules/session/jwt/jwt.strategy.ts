@@ -11,6 +11,7 @@ import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
 import { trackUserActivity } from '@otel/tracing';
+import { isRequestSecure } from '@helpers/utils.helper';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -27,7 +28,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (request.headers['tj_auth_token']) {
           return request.headers['tj_auth_token'];
         }
-        return request.cookies['tj_auth_token'];
+
+        const token = request.cookies['tj_auth_token'];
+
+        // Log when cookie is missing on HTTPS requests (potential protocol transition issue)
+        if (!token && isRequestSecure(request)) {
+          console.warn('JWT cookie missing on HTTPS request - possible protocol transition issue', {
+            path: request.path,
+            method: request.method,
+            'x-forwarded-proto': request.headers['x-forwarded-proto'],
+          });
+        }
+
+        return token;
       },
       ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),

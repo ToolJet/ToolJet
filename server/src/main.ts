@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { custom } from 'openid-client';
 import { join } from 'path';
 import * as express from 'express';
+import * as http from 'http';
 import { AppModule } from '@modules/app/module';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
 import { validateEdition } from '@helpers/edition.helper';
@@ -19,6 +20,9 @@ import { ResponseInterceptor } from '@modules/app/interceptors/response.intercep
 import { SsoInfoUpdatedInterceptor } from '@modules/session/interceptors/sso-info-updated.interceptor';
 import { Reflector } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SslServerManagerService } from '@services/ssl-server-manager.service';
+import { acmeHttpChallengeMiddleware } from '@middleware/acme-http-challenge.middleware';
+import { HttpToHttpsRedirectMiddleware } from '@middleware/http-to-https-redirect.middleware';
 
 // Import helper functions
 import {
@@ -34,11 +38,15 @@ import {
   logShutdownInfo,
   initSentry,
   initializeOtel,
+  validateSslEnvironmentVariables,
 } from '@helpers/bootstrap.helper';
 
 async function bootstrap() {
   const logger = createLogger('Bootstrap');
   logger.log('🚀 Starting ToolJet application bootstrap...');
+
+  // Validate SSL environment variables on startup
+  validateSslEnvironmentVariables(logger);
 
   try {
     logger.log('Creating NestJS application...');
@@ -142,7 +150,38 @@ async function bootstrap() {
     // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
     app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
-    appLogger.log(`Starting server on ${listen_addr}:${port}...`);
+    // Setup ACME challenge middleware (always available for certificate acquisition)
+    // In EE deployments, tokens are served from the shared DB so all pods can respond.
+    const expressInstance = app.getHttpAdapter().getInstance();
+    let acmeChallengeLookup: ((token: string) => Promise<string | null>) | undefined;
+    try {
+      // AcmeClientService is EE-only; app.get() throws in CE
+      const { AcmeClientService } = await import('@ee/ssl-configuration/acme-client.service');
+      // Cast to any: getChallengeResponse is added in the EE submodule; type resolution
+      // across the src/ee boundary is unreliable at build time.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const acmeClientService = app.get(AcmeClientService) as any;
+      acmeChallengeLookup = acmeClientService.getChallengeResponse.bind(acmeClientService);
+    } catch {
+      // CE or module not loaded — fall back to filesystem serving
+    }
+    expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware(acmeChallengeLookup));
+
+    // Initialize SSL server manager (stores Express app for HTTPS management)
+    const httpPort = port;
+    const httpsPort = parseInt(process.env.SSL_PORT) || (httpPort + 443);
+    const sslServerManager = app.get(SslServerManagerService);
+    await sslServerManager.initialize(expressInstance, httpPort, httpsPort, listen_addr);
+
+    // Setup HTTP to HTTPS redirect middleware (will activate when HTTPS is running)
+    const httpToHttpsRedirect = new HttpToHttpsRedirectMiddleware(sslServerManager);
+    expressInstance.use((req, res, next) => httpToHttpsRedirect.use(req, res, next));
+
+    appLogger.log('✅ SSL middleware registered (ACME challenge + HTTP-to-HTTPS redirect)');
+
+    // Start HTTP server using standard NestJS approach
+    // SslServerManagerService will handle HTTPS separately when SSL is configured
+    appLogger.log(`Starting HTTP server on ${listen_addr}:${port}...`);
     await app.listen(port, listen_addr, async function () {
       logStartupInfo(configService, appLogger);
     });
@@ -156,6 +195,8 @@ function setupGracefulShutdown(app: NestExpressApplication, logger: any) {
   const gracefulShutdown = async (signal: string) => {
     logShutdownInfo(signal, logger);
     try {
+      // Close NestJS app (handles HTTP server and all cleanup via OnModuleDestroy)
+      // SslServerManagerService will handle HTTPS shutdown via OnModuleDestroy
       await app.close();
       logger.log('✅ Application closed successfully');
       process.exit(0);

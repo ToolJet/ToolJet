@@ -144,6 +144,7 @@ export enum LICENSE_FIELD {
   OBSERVABILITY_ENABLED = 'observabilityEnabled',
   MULTIPLAYER_EDIT = 'multiPlayerEditEnabled',
   QUERY_FOLDERS = 'queryFoldersEnabled',
+  SSL_TERMINATION = 'sslTerminationEnabled',
 }
 
 export enum LICENSE_LIMITS_LABEL {

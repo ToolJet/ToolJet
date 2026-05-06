@@ -16,6 +16,7 @@ import { AppController } from './controller';
 import { AppService } from './service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
+import { SslConfigurationModule } from '@modules/ssl-configuration/module';
 import { UsersModule } from '@modules/users/module';
 import { FilesModule } from '@modules/files/module';
 import { RolesModule } from '@modules/roles/module';
@@ -152,6 +153,10 @@ export class AppModule implements OnModuleInit, NestModule {
     ];
 
     const conditionalImports = [];
+
+    if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+      conditionalImports.push(await SslConfigurationModule.register(configs, true));
+    }
 
     if (getTooljetEdition() !== TOOLJET_EDITIONS.Cloud) {
       conditionalImports.push(await WorkflowsModule.register(configs, true));
