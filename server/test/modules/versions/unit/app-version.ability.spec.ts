@@ -8,17 +8,19 @@ import { App } from '@entities/app.entity';
 
 const makeBuilder = () => new AbilityBuilder<FeatureAbility>(Ability as AbilityClass<FeatureAbility>);
 
-const buildPermissions = (overrides: {
-  superAdmin?: boolean;
-  isAdmin?: boolean;
-  isBuilder?: boolean;
-  isAllEditable?: boolean;
-  isAllViewable?: boolean;
-  editableAppsId?: string[];
-  viewableAppsId?: string[];
-  resourceType?: MODULES;
-  appPromote?: boolean;
-} = {}) => {
+const buildPermissions = (
+  overrides: {
+    superAdmin?: boolean;
+    isAdmin?: boolean;
+    isBuilder?: boolean;
+    isAllEditable?: boolean;
+    isAllViewable?: boolean;
+    editableAppsId?: string[];
+    viewableAppsId?: string[];
+    resourceType?: MODULES;
+    appPromote?: boolean;
+  } = {}
+) => {
   const {
     superAdmin = false,
     isAdmin = false,
