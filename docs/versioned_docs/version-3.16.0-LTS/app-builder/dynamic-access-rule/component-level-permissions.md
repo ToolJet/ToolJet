@@ -3,6 +3,8 @@ id: component-level
 title: Component Level Permissions
 ---
 
+<PlanBadge type="enterprise" />
+
 Component-level permissions control which UI elements users can see and interact with. Components that users don't have permission to access will not render at all in their interface.
 
 :::note Public Apps 
