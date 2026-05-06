@@ -10,7 +10,7 @@ export function defineAppVersionAbility(
   UserAllPermissions: UserAllPermissions,
   resourceId?: string,
 ): void {
-  const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, resource, isBuilder, isEndUser } = UserAllPermissions;
   const userAppPermissions = userPermission?.[resource[0].resourceType];
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
@@ -147,5 +147,9 @@ export function defineAppVersionAbility(
       ],
       App
     );
+  }
+
+  if (isEndUser && resourceType === MODULES.MODULES) {
+    can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   }
 }
