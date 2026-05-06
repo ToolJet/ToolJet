@@ -211,18 +211,23 @@ Cypress.Commands.add("gitSyncSwitchBranch", (branchName) => {
 });
 
 Cypress.Commands.add("gitSyncDashboardPush", (message) => {
-  cy.get(GS.wsBranchHeader).click();
-  cy.get(GS.wsBranchPopover).should("be.visible");
+  // The "Commit" CTA button is only rendered when the URL includes "data-sources".
+  // Navigate there so the button is visible, then open the push modal.
+  const workspace = Cypress.env("workspaceSlug") || "";
+  const dsUrl = workspace ? `/${workspace}/data-sources` : "/data-sources";
+  cy.visit(dsUrl, { redirectionLimit: 20 });
+  cy.wait(3000);
 
-  cy.get(":nth-child(3) > .tw-flex > span").click();
+  cy.get(GS.wsGitCommitBtn, { timeout: 15000 }).should("be.visible").click();
 
+  cy.get(GS.modalTitle).should("be.visible");
   cy.get(GS.commitMessageInput).should("be.visible").and("have.value", "");
-  cy.get(".modal-footer > .tj-primary-btn").should("be.disabled");
+  cy.get(GS.modalCommitBtn).should("be.disabled");
 
   cy.get(GS.commitMessageInput).type(message);
 
   cy.wait(2000);
-  cy.get(".modal-footer > .tj-primary-btn").should("be.enabled").click();
+  cy.get(GS.modalCommitBtn).should("be.enabled").click();
 
   // Wait for modal to close = success
   cy.get(GS.commitMessageInput, { timeout: 45000 }).should("not.exist");
