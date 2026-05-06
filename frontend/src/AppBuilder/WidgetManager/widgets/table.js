@@ -358,6 +358,7 @@ export const tableConfig = {
     onFilterChanged: { displayName: 'Filter changed' },
     onNewRowsAdded: { displayName: 'Add new rows' },
     onTableDataDownload: { displayName: 'Download data' },
+    onHeaderClick: { displayName: 'Header clicked' },
   },
   styles: {
     columnTitleColor: {
@@ -538,6 +539,7 @@ export const tableConfig = {
     filters: [],
     lastExpandedRow: null,
     currentExpandedRows: [],
+    selectedColumnHeader: {},
   },
   actions: [
     {
