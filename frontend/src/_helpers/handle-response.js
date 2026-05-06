@@ -152,7 +152,7 @@ export function handleResponseWithoutValidation(response) {
 }
 
 // SSL-specific response handler with whitespace trimming
-// Used to handle nginx reload scenarios during certificate acquisition
+// Used during certificate acquisition where the server may return empty or whitespace-only responses
 export function handleResponseForSSL(
   response,
   avoidRedirection = false,
@@ -160,8 +160,7 @@ export function handleResponseForSSL(
   avoidUpgradeModal = false
 ) {
   return response.text().then((text) => {
-    // Trim whitespace before parsing to avoid JSON.parse errors on whitespace-only responses
-    // This can happen during nginx reloads or when backend returns empty responses
+    // Trim whitespace before parsing — guards against empty responses during server state transitions
     const trimmedText = text?.trim();
     const data = trimmedText && JSON.parse(trimmedText);
 
