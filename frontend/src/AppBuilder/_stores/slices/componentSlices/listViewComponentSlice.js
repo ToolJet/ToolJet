@@ -263,17 +263,36 @@ export const listViewComponentSlice = (set, get) => ({
   // Called ONCE before the row loop. Collects descendant IDs and creates the
   // prototype overlay. Returns null if the ListView has no descendants.
   prepareRowScope: (components, listviewId, moduleId = 'canvas') => {
-    const { getContainerChildrenMapping } = get();
+    const { getContainerChildrenMapping, containerChildrenMapping } = get();
+
+    // Pre-build a map from base UUID → children that are stored under slot IDs.
+    // Some containers (e.g. Tabs) render their SubContainer with a slot suffix:
+    //   <SubContainer id={`${id}-${tab.id}`} />
+    // so their children have parent="tabs-uuid-tab0" and are stored in
+    // containerChildrenMapping["tabs-uuid-tab0"], NOT under "tabs-uuid".
+    // This map lets collectDescendants find those children when traversing down.
+    const slotChildrenByBase = {};
+    for (const key of Object.keys(containerChildrenMapping)) {
+      const match = key.match(/([a-fA-F0-9-]{36})-.+/);
+      if (match) {
+        const baseId = match[1];
+        if (!slotChildrenByBase[baseId]) slotChildrenByBase[baseId] = [];
+        slotChildrenByBase[baseId].push(...(containerChildrenMapping[key] || []));
+      }
+    }
 
     // Recursively collect ALL descendant component IDs of this ListView.
-    // This includes components nested inside sub-containers (Form, Container, etc.).
+    // This includes components nested inside sub-containers (Form, Container, Tabs, etc.).
     // Example: ListView → [Checkbox, Button, Form → [TextInput, Dropdown]]
     //   → allDescendants = [Checkbox, Button, Form, TextInput, Dropdown]
     const allDescendants = [];
     const collectDescendants = (containerId) => {
       const children = getContainerChildrenMapping(containerId, moduleId);
-      if (!children) return;
-      for (const childId of children) {
+      const slotChildren = slotChildrenByBase[containerId] || [];
+      // Combine direct children (base ID) and slot-keyed children (e.g. Tabs).
+      // A child can only have one parent so there is no overlap between the two arrays.
+      const allChildren = children.length > 0 ? children : slotChildren;
+      for (const childId of allChildren) {
         allDescendants.push(childId);
         collectDescendants(childId);
       }
