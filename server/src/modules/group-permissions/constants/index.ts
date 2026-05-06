@@ -174,4 +174,9 @@ export enum FEATURE_KEY {
   DELETE_GRANULAR_FOLDER_PERMISSIONS = 'delete_granular_folder_permissions',
   GET_ADDABLE_FOLDERS = 'get_addable_folders',
   USER_ROLE_CHANGE = 'change_user_role',
+  ASSIGN_GROUP_ADMIN = 'assign_group_admin',
+  REVOKE_GROUP_ADMIN = 'revoke_group_admin',
+  GET_GROUP_ADMINS = 'get_group_admins',
+  GET_ADDABLE_ADMINS = 'get_addable_admins',
+  GET_USER_ADMIN_GROUPS = 'get_user_admin_groups',
 }

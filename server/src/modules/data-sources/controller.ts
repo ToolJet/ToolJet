@@ -60,8 +60,10 @@ export class DataSourcesController implements IDataSourcesController {
     @Query('branch_id') branchId?: string
   ) {
     const shouldIncludeWorkflows = getTooljetEdition() === TOOLJET_EDITIONS.EE;
+    // appVersionId kept in route URL for backwards compatibility; no longer forwarded to service
+    // (released versions now use is_default DSV instead of version-specific DSV).
     return this.dataSourcesService.getForApp(
-      { appVersionId, environmentId, shouldIncludeWorkflows, branchId },
+      { environmentId, shouldIncludeWorkflows, branchId },
       user,
       userPermissions
     );

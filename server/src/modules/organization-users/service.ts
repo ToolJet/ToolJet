@@ -134,6 +134,7 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       );
       await this.organizationUsersUtilService.updateUserStatus(userId, USER_STATUS.ARCHIVED, manager);
       const organizationIds = archivedUserWorkspaces.map((user) => user.organizationId);
+      await this.onArchiveFromAll(userId, organizationIds, manager);
       const auditLogEntry = {
         userId: user.id,
         organizationIds: organizationIds,
@@ -151,6 +152,8 @@ export class OrganizationUsersService implements IOrganizationUsersService {
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogEntry);
     });
   }
+
+  protected async onArchiveFromAll(userId: string, organizationIds: string[], manager: EntityManager): Promise<void> {}
 
   async unarchiveUser(userId: string, user: User): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {

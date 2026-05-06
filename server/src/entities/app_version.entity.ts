@@ -112,6 +112,9 @@ export class AppVersion extends BaseEntity {
   @JoinColumn({ name: 'branch_id' })
   branch: WorkspaceBranch;
 
+  @Column({ name: 'module_reference_id', type: 'uuid', nullable: true })
+  moduleReferenceId: string;
+
   @Column({ name: 'pulled_at', type: 'timestamp', nullable: true, default: null })
   pulledAt: Date;
 

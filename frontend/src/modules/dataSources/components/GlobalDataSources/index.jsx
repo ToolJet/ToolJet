@@ -181,7 +181,22 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     setFilteredDataSources([...filtered]);
   };
 
-  const createDataSource = (dataSource) => {
+  const createDataSource = async (dataSource) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch) {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     const { id } = dataSource;
     const selectedDataSource = dataSource.manifestFile?.data?.source ?? dataSource;
     const name = dataSource.manifestFile?.data?.source?.kind ?? dataSource.kind;

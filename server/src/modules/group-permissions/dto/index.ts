@@ -105,4 +105,8 @@ export class DuplicateGroupDto extends DuplicateGroupDtoBase {
   @IsBoolean()
   @IsOptional()
   addFolders: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  addGroupAdmins?: boolean;
 }

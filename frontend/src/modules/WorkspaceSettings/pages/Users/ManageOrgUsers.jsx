@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationUserService, userService } from '@/_services';
+import { authenticationService, organizationUserService, userService, groupPermissionV2Service } from '@/_services';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { getQueryParams, getHostURL } from '@/_helpers/routes';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 import EditRoleErrorModal from '@/modules/common/components/ErrorModal';
+import ChangeRoleModal from '../Groups/components/ChangeRoleModal';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 
@@ -48,6 +49,9 @@ class ManageOrgUsersComponent extends React.Component {
       errorTitle: '',
       errorIconName: 'usergear',
       resetSearch: false,
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
     };
   }
 
@@ -297,47 +301,75 @@ class ManageOrgUsersComponent extends React.Component {
         ...(role && { role: role }),
         userMetadata: userMetadataObject,
       };
-      service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
-        .then(() => {
-          posthogHelper.captureEvent('click_invite_users', {
-            workspace_id:
-              authenticationService?.currentUserValue?.organization_id ||
-              authenticationService?.currentSessionValue?.current_organization_id,
-          });
-          this.fetchUserLimits();
-          toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
-          this.fetchUsers();
-          this.setState({
-            creatingUser: false,
-            fields: fields,
-            isInviteUsersDrawerOpen: false,
-            currentEditingUser: null,
-            userDrawerMode: USER_DRAWER_MODES.CREATE,
-            resetSearch: !this.state.resetSearch,
-          });
-        })
-        .catch(({ error, statusCode }) => {
-          if (!error?.error && error.includes('User is archived')) {
-            this.setState({
-              errors: {
-                ...this.state.errors,
-                email: error,
-              },
+
+      const proceed = () => {
+        service(currentOrgUserId, isEditing ? updateUserBody : createUserBody)
+          .then(() => {
+            posthogHelper.captureEvent('click_invite_users', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
             });
-          } else if (error?.error) {
+            this.fetchUserLimits();
+            toast.success(`User has been ${isEditing ? 'updated' : 'created'}`);
+            this.fetchUsers();
             this.setState({
-              showErrorModal: true,
-              errorModalMessage: error.error,
-              errorTitle: error?.title || 'Conflicting permissions',
-              errorItemList: error?.data,
-              errorIconName: 'usergear',
               creatingUser: false,
+              fields: fields,
+              isInviteUsersDrawerOpen: false,
+              currentEditingUser: null,
+              userDrawerMode: USER_DRAWER_MODES.CREATE,
+              resetSearch: !this.state.resetSearch,
             });
-            return;
-          }
-          this.setState({ creatingUser: false, uploadingUsers: false });
-          statusCode !== 451 && toast.error(error);
-        });
+          })
+          .catch(({ error, statusCode }) => {
+            if (!error?.error && error.includes('User is archived')) {
+              this.setState({
+                errors: {
+                  ...this.state.errors,
+                  email: error,
+                },
+              });
+            } else if (error?.error) {
+              this.setState({
+                showErrorModal: true,
+                errorModalMessage: error.error,
+                errorTitle: error?.title || 'Conflicting permissions',
+                errorItemList: error?.data,
+                errorIconName: 'usergear',
+                creatingUser: false,
+              });
+              return;
+            }
+            this.setState({ creatingUser: false, uploadingUsers: false });
+            statusCode !== 451 && toast.error(error);
+          });
+      };
+
+      if (isEditing && role === 'end-user') {
+        const userId = this.state.currentEditingUser?.user_id;
+        if (userId) {
+          groupPermissionV2Service
+            .getUserAdminGroups(userId)
+            .then(({ groups }) => {
+              if (groups.length > 0) {
+                this.setState({
+                  creatingUser: false,
+                  isInviteUsersDrawerOpen: false,
+                  showAutoRoleChangeModal: true,
+                  autoRoleChangeMessageType: 'DOWNGRADE_BLOCKED_BY_GROUP_ADMIN',
+                  autoRoleChangeModalList: groups.map((g) => g.name),
+                });
+              } else {
+                proceed();
+              }
+            })
+            .catch(() => proceed());
+          return;
+        }
+      }
+
+      proceed();
     } else {
       this.setState({ creatingUser: false, file: null, isInviteUsersDrawerOpen: true });
     }
@@ -371,6 +403,14 @@ class ManageOrgUsersComponent extends React.Component {
       errorItemList: [],
       errorTitle: '',
       errorIconName: '',
+    });
+  };
+
+  handleAutoRoleChangeModalClose = () => {
+    this.setState({
+      showAutoRoleChangeModal: false,
+      autoRoleChangeModalList: [],
+      autoRoleChangeMessageType: '',
     });
   };
 
@@ -419,10 +459,20 @@ class ManageOrgUsersComponent extends React.Component {
       errorTitle,
       errorIconName,
       resetSearch,
+      showAutoRoleChangeModal,
+      autoRoleChangeModalList,
+      autoRoleChangeMessageType,
     } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="org-wrapper org-users-page animation-fade">
+          <ChangeRoleModal
+            showAutoRoleChangeModal={showAutoRoleChangeModal}
+            autoRoleChangeModalList={autoRoleChangeModalList}
+            autoRoleChangeMessageType={autoRoleChangeMessageType}
+            handleAutoRoleChangeModalClose={this.handleAutoRoleChangeModalClose}
+            darkMode={this.props.darkMode}
+          />
           <EditRoleErrorModal
             darkMode={this.props.darkMode}
             show={showErrorModal}

@@ -48,6 +48,7 @@ import {
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -123,6 +124,7 @@ class HomePageComponent extends React.Component {
       featuresLoaded: false,
       showCreateAppModal: false,
       showSwitchBranchForCreate: false,
+      showSwitchBranchForDelete: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -355,6 +357,21 @@ class HomePageComponent extends React.Component {
   };
 
   createApp = async (appName, type, prompt) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
@@ -422,6 +439,10 @@ class HomePageComponent extends React.Component {
   };
 
   deleteApp = (app) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ appToBeDeleted: app, showSwitchBranchForDelete: true });
+      return;
+    }
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
@@ -580,6 +601,21 @@ class HomePageComponent extends React.Component {
   };
 
   importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     appName = appName?.trim().replace(/\s+/g, ' ');
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
@@ -647,10 +683,24 @@ class HomePageComponent extends React.Component {
 
   deployApp = async (event, appName, selectedApp) => {
     event.preventDefault();
+    const { currentBranch, actions, activeBranchId } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     const id = selectedApp.id;
     this.setState({ deploying: true });
     try {
-      const { activeBranchId } = useWorkspaceBranchesStore.getState();
       const data = await libraryAppService.deploy(
         id,
         appName,
@@ -807,8 +857,10 @@ class HomePageComponent extends React.Component {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
 
+    // Branching affects folder mutations for front-end apps and modules.
+    // Workflows are not branch-scoped, so folder operations there remain unrestricted.
     const isBranchingEnabled =
-      this.props.appType === 'front-end' // Branching is enabled only for front-end apps as of now
+      this.props.appType === 'front-end' || this.props.appType === 'module'
         ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
         : false;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
@@ -1154,8 +1206,23 @@ class HomePageComponent extends React.Component {
   handleCommitEnableChange = (e) => {
     this.setState({ commitEnabled: e.target.checked });
   };
-  toggleGitRepositoryImportModal = () => {
+  toggleGitRepositoryImportModal = async () => {
     if (!this.state.showGitRepositoryImportModal) {
+      const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+      if (currentBranch) {
+        try {
+          const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+          if (!exists) {
+            toast.error(
+              'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+            );
+            return;
+          }
+        } catch (_err) {
+          /* allow on network error */
+        }
+      }
+
       // Show modal immediately, then fetch branches in the background
       this.setState({
         showGitRepositoryImportModal: true,
@@ -1181,6 +1248,10 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppFromTemplateModal = async (template) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ showSwitchBranchForCreate: true });
+      return;
+    }
     try {
       const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
         (await libraryAppService.findDependentPluginsInTemplate?.(template.id)) || {};
@@ -1617,6 +1688,14 @@ class HomePageComponent extends React.Component {
             onBranchSwitch={() => {
               this.fetchApps(1, this.state.currentFolder.id);
               this.setState({ showSwitchBranchForCreate: false, showCreateAppModal: true });
+            }}
+          />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForDelete}
+            onClose={() => this.setState({ showSwitchBranchForDelete: false, appToBeDeleted: null })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForDelete: false, showAppDeletionConfirmation: true });
             }}
           />
           <AppActionModal
@@ -2105,7 +2184,15 @@ class HomePageComponent extends React.Component {
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
                           showTemplateLibraryModal={
-                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
+                            this.props.appType !== 'module'
+                              ? () => {
+                                  if (this.isWorkspaceBranchLocked()) {
+                                    this.setState({ showSwitchBranchForCreate: true });
+                                    return;
+                                  }
+                                  this.showTemplateLibraryModal();
+                                }
+                              : undefined
                           }
                           featureAccess={featureAccess}
                           orgGit={orgGit}
@@ -2113,6 +2200,12 @@ class HomePageComponent extends React.Component {
                             this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
                           }
                           readAndImport={this.readAndImport}
+                          onImportFromDeviceClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                              return false;
+                            }
+                          }}
                           appType={this.props.appType}
                         />
                       </Dropdown>
@@ -2169,9 +2262,8 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
-              {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
-              {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
-                <WorkspaceLockedBanner pageContext="apps" />
+              {this.props.appType !== 'workflow' && (
+                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
               )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
@@ -2191,6 +2283,8 @@ class HomePageComponent extends React.Component {
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
+
+                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
@@ -2236,6 +2330,12 @@ class HomePageComponent extends React.Component {
                       isLoading={true}
                       createApp={this.createApp}
                       readAndImport={this.readAndImport}
+                      onImportFromDeviceClick={() => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          this.setState({ showSwitchBranchForCreate: true });
+                          return false;
+                        }
+                      }}
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
                       openCreateAppModal={() => {
@@ -2288,7 +2388,13 @@ class HomePageComponent extends React.Component {
                         disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
-                        onClick={this.openCreateAppModal}
+                        onClick={() => {
+                          if (this.isWorkspaceBranchLocked()) {
+                            this.setState({ showSwitchBranchForCreate: true });
+                            return;
+                          }
+                          this.openCreateAppModal();
+                        }}
                         data-cy="button-import-an-app"
                         className="col"
                         variant="tertiary"
