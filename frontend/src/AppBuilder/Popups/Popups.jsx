@@ -11,7 +11,10 @@ export const Popups = ({ darkMode }) => {
     <div>
       <Confirm
         show={queryConfirmationList?.length > 0}
-        message={`Do you want to run this query - ${queryConfirmationList?.[0]?.queryName}?`}
+        message={
+          queryConfirmationList?.[0]?.confirmationMessage ||
+          `Do you want to run this query - ${queryConfirmationList?.[0]?.queryName}?`
+        }
         onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(queryConfirmationData, true)}
         onCancel={() => onQueryConfirmOrCancel(queryConfirmationList?.[0])}
         queryConfirmationData={queryConfirmationList?.[0]}
