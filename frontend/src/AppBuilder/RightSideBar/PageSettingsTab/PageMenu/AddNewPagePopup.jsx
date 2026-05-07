@@ -42,7 +42,7 @@ const OPEN_APP_MODES = [
   { label: 'Same tab', value: 'same_tab' },
 ];
 
-export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
+export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChange, ...props }, ref) => {
   const { moduleId } = useModuleContext();
   const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
   const editingPage = useStore((state) => state.editingPage);
@@ -598,13 +598,15 @@ export const AddEditPagePopup = forwardRef(({ darkMode, ...props }, ref) => {
             </label>
           </div>
         </div>
-        {['default', 'custom'].includes(type) && <PageEvents type={type} page={page} allPages={pages} />}
+        {['default', 'custom'].includes(type) && (
+          <PageEvents type={type} page={page} allPages={pages} onNestedPopoverOpenChange={onNestedPopoverOpenChange} />
+        )}
       </Popover.Body>
     </Popover>
   );
 });
 
-const PageEvents = ({ type, page, allPages }) => {
+const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
   const getComponents = useStore((state) => state.getCurrentPageComponents);
   const components = getComponents();
 
@@ -636,7 +638,7 @@ const PageEvents = ({ type, page, allPages }) => {
           eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
           components={components}
           pages={allPages}
-          popOverCallback={(showing) => showing}
+          popOverCallback={(showing) => onNestedPopoverOpenChange?.(showing)}
         />
       </div>
     </div>
