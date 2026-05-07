@@ -68,7 +68,7 @@ Provide the following details:
 - **Client ID** – The Application (client) ID from the Azure app registration
 - **Client Secret** – The client secret value generated for the app
 
-<img  className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/auth-type-azure.png" alt="MSsql Auth type connection"/>
 
 ### Enabling Encryption with a Self-Signed Certificate
 
@@ -177,22 +177,136 @@ SQL Server provides dynamic functions that return information about the current 
 
 ## Querying in GUI Mode
 
-GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries.
+GUI mode can be used to query MSSQL database without writing queries.
 
-1. Create a new query and select the MS SQL data source.
+1. Create a new query and select the MSSQL data source.
 2. Select **GUI mode** from the dropdown.
-3. Choose the operation **Bulk update using the primary key**.
-4. Enter the **Table** name and **Primary key** column name.
-5. In the editor, enter the records in the form of an array of objects.
-6. Click on the **Run** button to run the query.
+3. Choose the operation you want to perform.
+4. Fetch and select the **Table name**.
+5. Click on the **Preview** button to view the output or click on **Run** button to trigger the query.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-gui-query.png" alt="ToolJet mssql gui mode"/>
+### List Rows
+Retrieve records from the selected table with optional filtering, sorting, and pagination options.
 
-#### Example
+#### Required Parameters
+- **Schema**: Select the required schema either by using the `fx` expression for dynamic values or by clicking the **Fetch Schemas** button to choose schema from the dropdown list.
+- **Table**: Select the table from which rows need to be retrieved.
 
+#### Optional Parameters
+- **Filter**: Apply conditions to return only rows that match specific criteria.
+- **Sort**: Arrange the returned rows in ascending or descending order based on selected columns.
+- **Aggregate**: Apply aggregate functions such as count, sum, average, minimum, or maximum on selected columns.
+- **Group by**: Group rows that share the same values in selected columns into summarized results.
+- **Limit**: Restricts the number of rows returned in the result.
+- **Offset**: Skips a specified number of rows before starting to return results.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/listrows-gui.png" alt="MSsql list row gui mode"/>
+
+### Create Row
+Insert a new row into the selected table by providing values for the required columns.
+
+In the editor, ensure the **Columns** input is provided in `string` format.
+
+#### Required Parameter
+- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/createrows-gui.png" alt="MSsql create row gui mode"/>
+
+### Update Rows
+Modify existing row values in the selected table based on the specified conditions or identifiers.
+
+In the editor, ensure the **Columns** input is provided in `string` format.
+
+#### Required Parameter
+- **Columns**: Specify the column names and values to be updated in the selected row(s).
+
+#### Optional Parameter
+- **Filter**: Apply conditions to identify which row(s) should be updated.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/updaterows-gui.png" alt="MSsql update row gui mode"/>
+
+### Delete Rows
+Remove one or more rows from the selected table that match the given conditions.
+
+#### Required Parameter
+- **Filter**: Apply conditions to specify which row(s) should be deleted.
+
+#### Optional Parameter
+- **Limit**: Specify the maximum number of rows to delete.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/deleterows-gui.png" alt="MSsql delete row gui mode"/>
+
+### Upsert Row
+Insert a new row or update an existing row if a matching primary or unique key already exists.
+
+In the editor, ensure the **Columns** input is provided in `string` format.
+
+#### Required Parameters
+- **Primary key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
+- **Columns**: Provide the column names and values to be inserted or updated.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/upsertrows-gui.png" alt="MSsql upsert row gui mode"/>
+
+### Bulk Insert
+Inserts multiple rows into the table in a single operation using an array of records.
+
+#### Required Parameters
+- **Table** : Select the table into which multiple rows need to be inserted.
+- **Records to insert**: Provide the set of rows and corresponding column values to be inserted in a single operation.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
 ```json
-{{ [ {id: 1, channel: 33}, {id: 2, channel: 24} ] }}
+{{ [
+  { id: 101, first_name: 'Alice', email: 'alice@example.com' },
+  { id: 102, first_name: 'Bob', email: 'bob@example.com' },
+  { id: 103, first_name: 'Charlie', email: 'charlie@example.com' }
+] }}
 ```
+</details>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-insert-gui.png" alt="MSsql bulk insert gui mode"/>
+
+### Bulk Update using Primary Key
+Update multiple existing rows at once by matching records using their primary key values.
+
+#### Required Parameters
+- **Primary key column(s)**: Specify the primary key column(s) used to identify the rows that need to be updated.
+- **Records to update**: Provide multiple records with updated column values for the matching primary key rows. 
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+{{ [
+  { id: 101, first_name: 'Alice Charles', email: 'alice_charles@example.com' },
+  { id: 102, first_name: 'Bob Mark', email: 'bob_mark@example.com' }
+] }}
+```
+</details>
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-update-gui.png" alt="MSsql bulk update gui mode"/>
+
+### Bulk Upsert using Primary Key
+Insert multiple new rows or update existing ones by matching rows using primary key values.
+
+#### Required Parameters
+- **Primary key column(s)**: Specify the primary key column(s) used to determine whether each record should be updated or inserted.
+- **Records to upsert**: Provide multiple records that will be inserted as new rows or updated if matching primary key values already exist.
+
+In this operation, if a row with the matching primary key exists, it is updated; otherwise, a new row is inserted.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+{{ [
+  { id: 101, first_name: 'Alice Charlie', email: 'alice_charlie@example.com' },
+  { id: 104, first_name: 'David', email: 'david@example.com' }, 
+  { id: 105, first_name: 'Emma Jackson', email: 'emma_jack@example.com' }    
+] }}
+```
+</details>
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/mssql/bulk-upsert-gui.png" alt="MSsql bulk upsert gui mode"/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
