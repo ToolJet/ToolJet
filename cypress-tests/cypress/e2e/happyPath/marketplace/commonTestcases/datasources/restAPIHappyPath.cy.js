@@ -54,7 +54,7 @@ describe("Data source Rest API", () => {
     );
     cy.get('[data-cy="apis-datasource-button"]').should(
       "have.text",
-      "APIs (23)"
+      "APIs (24)"
     );
     cy.get('[data-cy="cloudstorage-datasource-button"]').should(
       "have.text",
