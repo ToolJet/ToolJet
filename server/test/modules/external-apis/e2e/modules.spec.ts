@@ -426,6 +426,56 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       expect(listing.total).toBe(1);
       expect(listing.modules[0].name).toBe('Portable Module');
     });
+
+    it('returns 400 when a front-end app JSON is sent to the module import endpoint', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const frontendApp = await createApplication(app, { name: 'Frontend App', user, type: APP_TYPES.FRONT_END });
+      await createApplicationVersion(app, frontendApp);
+
+      // Export the front-end app via the apps export endpoint
+      const exportRes = await request(app.getHttpServer())
+        .post(`/api/ext/export/workspace/${orgId}/apps/${frontendApp.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${orgId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: exportRes.body.tooljet_version ?? '1.0.0',
+          app: exportRes.body.app,
+          tooljet_database: exportRes.body.tooljet_database ?? [],
+        })
+        .expect(400);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /api/ext/import/workspace/:workspaceId/apps — module JSON rejection
+  // ---------------------------------------------------------------------------
+
+  describe('POST /api/ext/import/workspace/:workspaceId/apps', () => {
+    it('returns 400 when a module JSON is sent to the app import endpoint', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${orgId}/apps`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          app: exportBody.app,
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
+        .expect(400);
+    });
   });
 });
 
