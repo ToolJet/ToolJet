@@ -99,6 +99,16 @@
     }
 }
 
+.module-viewer-wrapper.padding-none {
+    .real-canvas {
+        padding: 0 !important;
+    }
+    .canvas-component._tooljet-ModuleContainer,
+    .canvas-component._tooljet-ModuleViewer {
+        padding: 0 !important;
+    }
+}
+
 .empty-module-container{
     display: flex;
     align-items: center;
