@@ -33,7 +33,7 @@ export default class S3QueryService implements QueryService {
     try {
       switch (operation) {
         case Operation.CreateBucket:
-          result = await createBucket(client, resolvedQueryOptions);
+          result = await createBucket(client, { ...resolvedQueryOptions, bucket: queryOptions.bucket });
           break;
         case Operation.ListBuckets:
           result = await listBuckets(client, {});
