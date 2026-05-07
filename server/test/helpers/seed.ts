@@ -536,7 +536,7 @@ export async function createUser(
       userRepository.create({
         firstName: firstName || 'test',
         lastName: lastName || 'test',
-        email: email || 'dev@tooljet.io',
+        email: email || 'dev@tooljet.com',
         password: 'password',
         userType,
         status: invitationToken ? 'invited' : userStatus,
