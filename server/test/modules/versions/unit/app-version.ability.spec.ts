@@ -6,6 +6,10 @@ import { FEATURE_KEY } from '@modules/versions/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { App } from '@entities/app.entity';
 
+import { UserAllPermissions } from '@modules/app/types';
+import { DEFAULT_USER_PERMISSIONS, DEFAULT_USER_APPS_PERMISSIONS } from '@modules/ability/constants';
+import { User } from '@entities/user.entity';
+
 const makeBuilder = () => new AbilityBuilder<FeatureAbility>(Ability as AbilityClass<FeatureAbility>);
 
 const buildPermissions = (
@@ -21,7 +25,7 @@ const buildPermissions = (
     resourceType?: MODULES;
     appPromote?: boolean;
   } = {}
-) => {
+): UserAllPermissions => {
   const {
     superAdmin = false,
     isAdmin = false,
@@ -40,32 +44,17 @@ const buildPermissions = (
     isAdmin,
     isBuilder,
     isEndUser,
-    user: {} as any,
+    user: {} as User,
     resource: [{ resourceType }],
     userPermission: {
-      isAdmin: false,
-      isSuperAdmin: false,
-      isBuilder: false,
-      isEndUser: false,
-      appCreate: false,
-      appDelete: false,
-      workflowCreate: false,
-      workflowDelete: false,
+      ...DEFAULT_USER_PERMISSIONS,
       appPromote,
-      appRelease: false,
-      dataSourceCreate: false,
-      dataSourceDelete: false,
-      folderCreate: false,
-      folderDelete: false,
-      orgConstantCRUD: false,
-      orgVariableCRUD: false,
       [MODULES.APP]: {
+        ...DEFAULT_USER_APPS_PERMISSIONS,
         isAllEditable,
         isAllViewable,
         editableAppsId,
         viewableAppsId,
-        hiddenAppsId: [],
-        hideAll: false,
       },
     },
   };
@@ -106,7 +95,7 @@ describe('defineAppVersionAbility', () => {
     it('grants all edit actions when isAllEditable is true', () => {
       const perms = buildPermissions({ isAllEditable: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
@@ -118,7 +107,7 @@ describe('defineAppVersionAbility', () => {
       const resourceId = 'module-uuid-1';
       const perms = buildPermissions({ editableAppsId: [resourceId], resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, resourceId);
+      defineAppVersionAbility(can, perms, resourceId);
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
@@ -129,7 +118,7 @@ describe('defineAppVersionAbility', () => {
     it('denies edit actions when resourceId is not in editableAppsId', () => {
       const perms = buildPermissions({ editableAppsId: ['other-uuid'], resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, 'module-uuid-1');
+      defineAppVersionAbility(can, perms, 'module-uuid-1');
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
@@ -140,7 +129,7 @@ describe('defineAppVersionAbility', () => {
     it('grants view actions when isAllViewable is true', () => {
       const perms = buildPermissions({ isAllViewable: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       VIEW_ACTIONS.forEach((action) => {
@@ -153,7 +142,7 @@ describe('defineAppVersionAbility', () => {
       const resourceId = 'module-uuid-2';
       const perms = buildPermissions({ viewableAppsId: [resourceId], resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, resourceId);
+      defineAppVersionAbility(can, perms, resourceId);
       const ability = build();
 
       VIEW_ACTIONS.forEach((action) => {
@@ -165,7 +154,7 @@ describe('defineAppVersionAbility', () => {
     it('grants component/event operations to isBuilder', () => {
       const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(true);
@@ -182,7 +171,7 @@ describe('defineAppVersionAbility', () => {
     it('denies all actions with no permissions', () => {
       const perms = buildPermissions({ resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
@@ -195,7 +184,7 @@ describe('defineAppVersionAbility', () => {
     it('grants all edit actions when isAllEditable is true', () => {
       const perms = buildPermissions({ isAllEditable: true, resourceType: MODULES.APP });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
@@ -207,7 +196,7 @@ describe('defineAppVersionAbility', () => {
       const resourceId = 'app-uuid-1';
       const perms = buildPermissions({ editableAppsId: [resourceId], resourceType: MODULES.APP });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, resourceId);
+      defineAppVersionAbility(can, perms, resourceId);
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
@@ -220,7 +209,7 @@ describe('defineAppVersionAbility', () => {
     it('denies all actions with no permissions', () => {
       const perms = buildPermissions({ isEndUser: true });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
@@ -231,7 +220,7 @@ describe('defineAppVersionAbility', () => {
     it('grants view actions when isAllViewable is true', () => {
       const perms = buildPermissions({ isEndUser: true, isAllViewable: true });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       VIEW_ACTIONS.forEach((action) => {
@@ -242,7 +231,7 @@ describe('defineAppVersionAbility', () => {
     it('denies edit actions even when isAllViewable is true', () => {
       const perms = buildPermissions({ isEndUser: true, isAllViewable: true });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       const editOnlyActions = ALL_ACTIONS.filter((a) => !VIEW_ACTIONS.includes(a));
@@ -255,7 +244,7 @@ describe('defineAppVersionAbility', () => {
       const resourceId = 'app-uuid-end-user';
       const perms = buildPermissions({ isEndUser: true, viewableAppsId: [resourceId] });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, resourceId);
+      defineAppVersionAbility(can, perms, resourceId);
       const ability = build();
 
       VIEW_ACTIONS.forEach((action) => {
@@ -266,7 +255,7 @@ describe('defineAppVersionAbility', () => {
     it('denies view actions when resourceId is not in viewableAppsId', () => {
       const perms = buildPermissions({ isEndUser: true, viewableAppsId: ['other-uuid'] });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, 'app-uuid-end-user');
+      defineAppVersionAbility(can, perms, 'app-uuid-end-user');
       const ability = build();
 
       VIEW_ACTIONS.forEach((action) => {
@@ -277,7 +266,7 @@ describe('defineAppVersionAbility', () => {
     it('does not get builder component grant on MODULES resource type', () => {
       const perms = buildPermissions({ isEndUser: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
@@ -288,7 +277,7 @@ describe('defineAppVersionAbility', () => {
       for (const resourceType of [MODULES.APP, MODULES.MODULES]) {
         const perms = buildPermissions({ isEndUser: true, resourceType });
         const { can, build } = makeBuilder();
-        defineAppVersionAbility(can, perms as any);
+        defineAppVersionAbility(can, perms);
         const ability = build();
 
         expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
@@ -301,7 +290,7 @@ describe('defineAppVersionAbility', () => {
       for (const resourceType of [MODULES.APP, MODULES.MODULES]) {
         const perms = buildPermissions({ isAdmin: true, resourceType });
         const { can, build } = makeBuilder();
-        defineAppVersionAbility(can, perms as any);
+        defineAppVersionAbility(can, perms);
         const ability = build();
 
         ALL_ACTIONS.forEach((action) => {
@@ -314,7 +303,7 @@ describe('defineAppVersionAbility', () => {
       for (const resourceType of [MODULES.APP, MODULES.MODULES]) {
         const perms = buildPermissions({ superAdmin: true, resourceType });
         const { can, build } = makeBuilder();
-        defineAppVersionAbility(can, perms as any);
+        defineAppVersionAbility(can, perms);
         const ability = build();
 
         ALL_ACTIONS.forEach((action) => {
@@ -326,7 +315,7 @@ describe('defineAppVersionAbility', () => {
     it('grants PROMOTE to isAdmin', () => {
       const perms = buildPermissions({ isAdmin: true });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(true);
@@ -335,7 +324,7 @@ describe('defineAppVersionAbility', () => {
     it('grants PROMOTE to superAdmin', () => {
       const perms = buildPermissions({ superAdmin: true });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(true);
@@ -345,7 +334,7 @@ describe('defineAppVersionAbility', () => {
       // admin bypasses all permission flag checks via early return
       const perms = buildPermissions({ isAdmin: true, isAllEditable: false, editableAppsId: [] });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
@@ -358,7 +347,7 @@ describe('defineAppVersionAbility', () => {
     it('grants PROMOTE when appPromote is true', () => {
       const perms = buildPermissions({ appPromote: true, resourceType: MODULES.APP });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(true);
@@ -367,7 +356,7 @@ describe('defineAppVersionAbility', () => {
     it('denies PROMOTE when appPromote is false', () => {
       const perms = buildPermissions({ appPromote: false, resourceType: MODULES.APP });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(false);
@@ -376,7 +365,7 @@ describe('defineAppVersionAbility', () => {
     it('grants PROMOTE via appPromote on MODULES resource type', () => {
       const perms = buildPermissions({ appPromote: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.PROMOTE, App)).toBe(true);
@@ -388,7 +377,7 @@ describe('defineAppVersionAbility', () => {
       // isBuilder + MODULES.APP → no special builder grant (only MODULES.MODULES triggers it)
       const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.APP });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       // no edit permissions set, so component actions should be denied
@@ -400,7 +389,7 @@ describe('defineAppVersionAbility', () => {
       // builder MODULES grant only covers component/event ops, not version lifecycle actions
       const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any);
+      defineAppVersionAbility(can, perms);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.APP_VERSION_CREATE, App)).toBe(false);
@@ -416,7 +405,7 @@ describe('defineAppVersionAbility', () => {
       const perms = buildPermissions({ editableAppsId: ['app-uuid-1'] });
       const { can, build } = makeBuilder();
       // no resourceId passed
-      defineAppVersionAbility(can, perms as any, undefined);
+      defineAppVersionAbility(can, perms, undefined);
       const ability = build();
 
       expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
@@ -426,7 +415,7 @@ describe('defineAppVersionAbility', () => {
     it('denies view actions when viewableAppsId is non-empty but resourceId is undefined', () => {
       const perms = buildPermissions({ viewableAppsId: ['app-uuid-1'] });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, undefined);
+      defineAppVersionAbility(can, perms, undefined);
       const ability = build();
 
       VIEW_ACTIONS.forEach((action) => {
@@ -437,7 +426,7 @@ describe('defineAppVersionAbility', () => {
     it('grants edit actions from isAllEditable even without resourceId', () => {
       const perms = buildPermissions({ isAllEditable: true });
       const { can, build } = makeBuilder();
-      defineAppVersionAbility(can, perms as any, undefined);
+      defineAppVersionAbility(can, perms, undefined);
       const ability = build();
 
       ALL_ACTIONS.forEach((action) => {
