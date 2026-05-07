@@ -149,8 +149,8 @@ describe("Git Sync — E2E Flow", () => {
 
       // Click Commit/Push CTA inside popover
       cy.get("[data-cy='datasources-icon']").click();
-      cy.contains("button", /^commit$/i).should("be.visible");
-      cy.contains("button", /^pull$/i).should("be.visible");
+      cy.get(GS.wsGitCommitBtn).should("be.visible");
+      cy.get(GS.wsGitPullBtn).should("be.visible");
       cy.get(GS.wsGitCommitBtn).click();
 
       // Push modal opens
@@ -214,7 +214,7 @@ describe("Git Sync — E2E Flow", () => {
       cy.log("[gitSync] ✓ Pull from master completed");
 
       cy.gitSyncGoToDashboard();
-      cy.get('[data-cy="workspace-current-branch-name"]').should(
+      cy.get(GS.wsCurrentBranch).should(
         "contain.text",
         "master",
       );

@@ -78,7 +78,7 @@ describe("Git Sync — UI Configuration", () => {
       cy.get(sel.branchInput).should("have.value", gitConfig.branch);
     });
 
-    cy.get('[style="cursor: pointer; display: flex; align-items: center; justify-content: center;"]').click();
+    cy.get(sel.modalClose).click();
 
     cy.log("[gitSync] ✓ Enabled badge and saved values verified");
 
@@ -93,8 +93,8 @@ describe("Git Sync — UI Configuration", () => {
     cy.wait(2000)
     cy.get(sel.masterLockBanner).should("be.visible");
     cy.get(sel.masterLockBanner).should("contain.text", sel.lockBannerApps);
-    cy.contains("button", sel.pullBtn).should("be.visible");
-    cy.contains("button", /^commit$/i).should("not.exist");
+    cy.get(sel.wsGitPullBtn).should("be.visible");
+    cy.get(sel.wsGitCommitBtn).should("not.exist");
 
     cy.log("[gitSync] ✓ Dashboard lock banner and branch header verified");
 
@@ -115,13 +115,13 @@ describe("Git Sync — UI Configuration", () => {
     cy.log("[gitSync] ✓ Branch popover elements verified");
 
     // Pull modal — verify content and cancel
-    cy.contains("button", sel.pullBtn).click();
+    cy.get(sel.wsGitPullBtn).click();
 
     cy.get(sel.modalTitle).should("contain.text", sel.pullModalTitle);
     cy.contains(gitConfig.repoUrl).should("be.visible");
     cy.get(sel.checkForUpdatesLabel).should("be.visible");
-    cy.contains("button", "Cancel").should("be.visible");
-    cy.contains("button", /pull changes/i).should("be.visible");
+    cy.get(sel.pullModalCancelBtn).should("be.visible");
+    cy.get(sel.pullModalPullChangesBtn).should("be.visible");
 
     cy.get(sel.pullModalCancelBtn).click();
     cy.get(sel.modalTitle).should("not.exist");
@@ -184,8 +184,8 @@ describe("Git Sync — UI Configuration", () => {
       "contain.text",
       sel.lockBannerDataSources,
     );
-    cy.contains("button", sel.pullBtn).should("be.visible");
-    cy.contains("button", /^commit$/i).should("not.exist");
+    cy.get(sel.wsGitPullBtn).should("be.visible");
+    cy.get(sel.wsGitCommitBtn).should("not.exist");
 
     cy.get(sel.wsBranchHeader).click();
     cy.get(sel.wsBranchPopover).should("be.visible");

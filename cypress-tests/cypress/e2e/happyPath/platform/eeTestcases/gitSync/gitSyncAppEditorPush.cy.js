@@ -185,7 +185,7 @@ describe(
       cy.get('[data-cy="select-branch-label"]')
         .should("be.visible")
         .and("contain.text", "Select branch");
-      cy.get('[data-cy="branch-select"]').should("be.visible");
+      cy.get(GS.branchSelect).should("be.visible");
 
       // "Import app" button disabled until branch + app are selected
       cy.contains("button", "Import app").should("be.disabled");
@@ -226,7 +226,7 @@ describe(
       cy.get('[data-cy="version-select-label"]')
         .should("be.visible")
         .and("contain.text", "Select version to pull from");
-      cy.get('[data-cy="version-select"]').should("be.visible");
+      cy.get(GS.versionSelect).should("be.visible");
 
       // "Last commit" label + commit message present
       cy.get('[data-cy="last-commit-label"]')

@@ -438,11 +438,11 @@ describe(
         .click();
 
       // Wait for branch dropdown then select master
-      cy.get('[data-cy="branch-select"]', { timeout: 20000 }).should("be.visible").click();
+      cy.get(GS.branchSelect, { timeout: 20000 }).should("be.visible").click();
       cy.contains('[role="option"]', "master").click();
 
       // Version dropdown appears only after branch === configuredBranch
-      cy.get('[data-cy="version-select"]', { timeout: 10000 }).should("be.visible").click();
+      cy.get(GS.versionSelect, { timeout: 10000 }).should("be.visible").click();
       cy.contains('[role="option"]', VERSION_V2_RENAMED).click();
 
       // Pull
@@ -477,18 +477,18 @@ describe(
       cy.gitSyncGoToDashboard();
 
       // On master: Pull button is visible in the header
-      cy.get('[data-cy="workspace-git-pull-button"]').should("be.visible").click();
+      cy.get(GS.wsGitPullBtn).should("be.visible").click();
 
       // Pull Commit modal opens (workspace modal uses "Pull Commit" with capital C)
       cy.contains("Pull Commit").should("be.visible");
 
       // Trigger update check — required before branch dropdown appears
-      cy.get('[data-cy="check-for-updates-label"]', { timeout: 10000 })
+      cy.get(GS.checkForUpdatesLabel, { timeout: 10000 })
         .should("be.visible")
         .click();
 
       // Wait for branch dropdown then select the test branch
-      cy.get('[data-cy="branch-select"]', { timeout: 20000 }).should("be.visible").click();
+      cy.get(GS.branchSelect, { timeout: 20000 }).should("be.visible").click();
       cy.contains('[role="option"]', branchName, { timeout: 10000 }).click();
 
       // ── Verify the import confirmation dialog ─────────────────────────────
@@ -503,10 +503,10 @@ describe(
       cy.contains("pulling this will import it as a new branch").should("be.visible");
 
       // ── Confirm import ─────────────────────────────────────────────────────
-      cy.get('[data-cy="continue-button"]').should("be.enabled").click();
+      cy.get(GS.modalContinueBtn).should("be.enabled").click();
 
       // Wait for import to complete (dialog/modal closes)
-      cy.get('[data-cy="continue-button"]', { timeout: 30000 }).should("not.exist");
+      cy.get(GS.modalContinueBtn, { timeout: 30000 }).should("not.exist");
       cy.wait(3000);
 
       // ── Verify branch is now available in ToolJet ─────────────────────────

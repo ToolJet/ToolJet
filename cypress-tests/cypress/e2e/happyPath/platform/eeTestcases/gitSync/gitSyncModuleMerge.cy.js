@@ -27,10 +27,10 @@ describe(
     const pullMaster = () => {
       cy.gitSyncGoToDashboard();
       cy.gitSyncSwitchBranch("master");
-      cy.contains("button", /^Pull$/i).click();
+      cy.get(GS.wsGitPullBtn).click();
       cy.get(GS.modalTitle).should("be.visible");
       cy.get(GS.checkForUpdatesLabel).click();
-      cy.contains("button", /pull changes/i, { timeout: 30000 })
+      cy.get(GS.pullModalPullChangesBtn, { timeout: 30000 })
         .should("be.enabled")
         .click();
       cy.get(GS.modalTitle, { timeout: 45000 }).should("not.exist");
