@@ -1,9 +1,13 @@
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not } from 'typeorm';
+import { AsyncLocalStorage } from 'async_hooks';
 import { App } from 'src/entities/app.entity';
 import { AppBase } from 'src/entities/app_base.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
+
+// List endpoints opt out of the per-entity afterLoad hydration and run a single bulk query instead.
+export const skipAppEditingVersionHydration = new AsyncLocalStorage<boolean>();
 
 @EventSubscriber()
 export class AppsSubscriber implements EntitySubscriberInterface {
@@ -27,7 +31,9 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     if (!(app instanceof App) && !(app instanceof AppBase)) return;
     if (!app || (app as any).__loaded) return;
 
-    (app as any).__loaded = true; // mark entity as processed
+    (app as any).__loaded = true;
+
+    if (skipAppEditingVersionHydration.getStore()) return;
 
     // Prefer VERSION-type versions (canonical, user-named) over BRANCH-type versions.
     // With the new single-App-per-logical-app model, multiple branches share one App

@@ -33,13 +33,22 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { APP_TYPES } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE } from './constants';
 import { Component } from 'src/entities/component.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
+
+// Permission resource that gates access to each app type. Workflows have their own
+// permission resource; everything else (front-end apps, modules) shares the APP resource.
+const PERMISSION_RESOURCE_BY_APP_TYPE: Record<string, MODULES> = {
+  [APP_TYPES.WORKFLOW]: MODULES.WORKFLOWS,
+  [APP_TYPES.FRONT_END]: MODULES.APP,
+  [APP_TYPES.MODULE]: MODULES.APP,
+};
+const DEFAULT_PERMISSION_RESOURCE = MODULES.APP;
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -498,72 +507,73 @@ export class AppsUtilService implements IAppsUtilService {
     isGetAll: boolean,
     branchId?: string
   ): Promise<AppBase[]> {
-    //Migrate it to app utility files
-    let resourceType: MODULES;
+    const qb = await this.buildViewableAppsQuery(user, type, searchKey, isGetAll, branchId, this.appRepository.manager);
+    if (isGetAll) return qb.getMany();
+    return qb.take(APPS_PAGE_SIZE).skip(APPS_PAGE_SIZE * (page - 1)).getMany();
+  }
 
-    switch (type) {
-      case APP_TYPES.WORKFLOW:
-        resourceType = MODULES.WORKFLOWS;
-        break;
-      case APP_TYPES.FRONT_END:
-        resourceType = MODULES.APP;
-        break;
-      case APP_TYPES.MODULE:
-        resourceType = MODULES.APP;
-        break;
-      default:
-        resourceType = MODULES.APP;
-    }
+  async allWithCount(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    branchId?: string
+  ): Promise<{ apps: AppBase[]; totalCount: number }> {
+    const qb = await this.buildViewableAppsQuery(user, type, searchKey, false, branchId, this.appRepository.manager);
+    const [apps, totalCount] = await qb
+      .take(APPS_PAGE_SIZE)
+      .skip(APPS_PAGE_SIZE * (page - 1))
+      .getManyAndCount();
+    return { apps, totalCount };
+  }
+
+  private async buildViewableAppsQuery(
+    user: User,
+    type: string,
+    searchKey: string,
+    isGetAll: boolean,
+    branchId: string | undefined,
+    manager: EntityManager
+  ) {
+    const resourceType = PERMISSION_RESOURCE_BY_APP_TYPE[type] ?? DEFAULT_PERMISSION_RESOURCE;
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const viewableAppsQb = this.viewableAppsQueryUsingPermissions(
-        user,
-        userPermission[resourceType],
-        manager,
-        searchKey,
-        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type,
-        branchId
-      );
+    const qb = this.viewableAppsQueryUsingPermissions(
+      user,
+      userPermission[resourceType],
+      manager,
+      searchKey,
+      isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+      type,
+      branchId
+    );
+    this.applyAppVersionsJoin(qb, type, branchId, isGetAll);
+    return qb;
+  }
 
-      // Eagerly load appVersions for modules, branch-filtered like apps.
-      // We intentionally DO NOT filter out stub versions at this outer join —
-      // after a branch-create or workspace pull a net-new module has only a
-      // stub version on the branch, and filtering it out would hide the module
-      // from the dashboard entirely (apps work the same way without the filter).
-      // The UUID-name-leak concern is handled by the inner `versions`-aliased
-      // join in viewableAppsQueryUsingPermissions, which is what ModuleManager
-      // reads when a user drags a ModuleViewer onto a canvas. Stubs clicked from
-      // the dashboard hydrate lazily via AppsService.getOne → hydrateStubApp.
-      if (type === APP_TYPES.MODULE && !isGetAll) {
-        if (branchId) {
-          viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-            branchId,
-          });
-        } else {
-          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-        }
-      } else if (branchId && type === APP_TYPES.FRONT_END) {
-        // If branchId is provided -> Gitsync -> need to load app versions of the branch.
-        // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-        // Workflows remain common across all branches - no branch filter applied.
-        viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-          branchId,
-        });
+  // Eagerly load appVersions for modules, branch-filtered like apps.
+  // We intentionally DO NOT filter out stub versions at this outer join —
+  // after a branch-create or workspace pull a net-new module has only a stub
+  // version on the branch; filtering it out would hide the module entirely.
+  // The UUID-name-leak concern is handled by the inner `versions`-aliased join
+  // in viewableAppsQueryUsingPermissions (read by ModuleManager).
+  private applyAppVersionsJoin(
+    qb: SelectQueryBuilder<AppBase>,
+    type: string,
+    branchId: string | undefined,
+    isGetAll: boolean
+  ): void {
+    if (type === APP_TYPES.MODULE && !isGetAll) {
+      if (branchId) {
+        qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+      } else {
+        qb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
-
-      if (isGetAll) {
-        return await viewableAppsQb.getMany();
-      }
-
-      return await viewableAppsQb
-        .take(9)
-        .skip(9 * (page - 1))
-        .getMany();
-    });
+    } else if (branchId && type === APP_TYPES.FRONT_END) {
+      qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+    }
   }
 
   protected viewableAppsQueryUsingPermissions(
@@ -678,33 +688,20 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async count(user: User, searchKey, type: APP_TYPES, branchId?: string): Promise<number> {
-    let resourceType: MODULES;
-
-    switch (type) {
-      case APP_TYPES.WORKFLOW:
-        resourceType = MODULES.WORKFLOWS;
-        break;
-      case APP_TYPES.FRONT_END:
-        resourceType = MODULES.APP;
-        break;
-      default:
-        resourceType = MODULES.APP;
-    }
+    const resourceType = PERMISSION_RESOURCE_BY_APP_TYPE[type] ?? DEFAULT_PERMISSION_RESOURCE;
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await this.viewableAppsQueryUsingPermissions(
-        user,
-        userPermission[resourceType],
-        manager,
-        searchKey,
-        undefined,
-        type,
-        branchId
-      ).getCount();
-    });
+    return this.viewableAppsQueryUsingPermissions(
+      user,
+      userPermission[resourceType],
+      this.appRepository.manager,
+      searchKey,
+      undefined,
+      type,
+      branchId
+    ).getCount();
   }
 
   mergeDefaultComponentData(pages) {
