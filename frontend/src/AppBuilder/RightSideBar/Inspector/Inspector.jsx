@@ -729,6 +729,9 @@ const getDocsLink = (componentMeta) => {
       return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
     case 'RangeSliderV2':
       return 'https://docs.tooljet.com/docs/widgets/range-slider';
+    case 'ModuleViewer':
+    case 'ModuleContainer':
+      return 'https://docs.tooljet.com/docs/app-builder/modules/overview';
     default:
       return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
   }

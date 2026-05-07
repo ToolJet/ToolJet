@@ -36,7 +36,11 @@ export const addNewWidgetToTheEditor = (
 ) => {
   const canvasBoundingRect = realCanvasRef?.getBoundingClientRect();
   const componentMeta = componentTypes.find((component) => component.component === componentType);
-  const componentName = computeComponentName(componentType, useStore.getState().getCurrentPageComponents());
+  const componentName = computeComponentName(
+    componentType,
+    useStore.getState().getCurrentPageComponents(),
+    moduleInfo?.moduleName
+  );
   const parentCanvasType = realCanvasRef?.getAttribute('component-type');
   const componentData = deepClone(componentMeta);
   const defaultWidth = componentData.defaultSize.width;
@@ -221,16 +225,15 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
   return childrenWidgets;
 }
 
-export function computeComponentName(componentType, currentComponents) {
-  const currentComponentsForKind = Object.values(currentComponents).filter(
-    (component) => component.component.component === componentType
-  );
+export function computeComponentName(componentType, currentComponents, moduleName) {
+  const widgetConfigName = componentTypes.find((component) => component?.component === componentType)?.name;
+  const rawBase = moduleName || widgetConfigName || '';
+  const sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
   let found = false;
-  const componentName = componentTypes.find((component) => component?.component === componentType)?.name;
-  let currentNumber = currentComponentsForKind.length + 1;
+  let currentNumber = 1;
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
+    _componentName = `${sanitizedBase}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
