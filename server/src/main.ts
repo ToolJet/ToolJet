@@ -1,6 +1,6 @@
 import './otel/tracing'; // CRITICAL: This MUST be the first import to ensure OTEL patches modules before they load
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import { NestExpressApplication, ExpressAdapter } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
@@ -49,8 +49,21 @@ async function bootstrap() {
   validateSslEnvironmentVariables(logger);
 
   try {
+    // Create raw Express instance first so we can register ACME challenge middleware
+    // BEFORE ServeStaticModule (which registers during NestFactory.create → app.init).
+    // Middleware order in Express is registration order, so this must come first.
+    const server = express();
+
+    // Mutable reference populated after NestJS modules load (EE only).
+    // The closure below captures this variable so the middleware can be registered
+    // once at startup but still delegate to the real implementation after init.
+    let acmeLookup: ((token: string) => Promise<string | null>) | undefined;
+    server.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware(
+      async (token: string) => (acmeLookup ? acmeLookup(token) : null)
+    ));
+
     logger.log('Creating NestJS application...');
-    const app = await NestFactory.create<NestExpressApplication>(await AppModule.register({ IS_GET_CONTEXT: false }), {
+    const app = await NestFactory.create<NestExpressApplication>(await AppModule.register({ IS_GET_CONTEXT: false }), new ExpressAdapter(server), {
       bufferLogs: true,
       abortOnError: false,
     });
@@ -150,10 +163,10 @@ async function bootstrap() {
     // Apply SCIM body parser ONLY for /scim routes, can cause streame not readable issues if not configured only for SCIM
     app.use('/api/scim', json({ type: ['application/json', 'application/scim+json'] }));
 
-    // Setup ACME challenge middleware (always available for certificate acquisition)
-    // In EE deployments, tokens are served from the shared DB so all pods can respond.
+    // Wire up the EE DB lookup for the ACME challenge middleware registered above.
+    // The middleware closure references `acmeLookup` by reference, so setting it here
+    // is sufficient — no need to re-register the middleware.
     const expressInstance = app.getHttpAdapter().getInstance();
-    let acmeChallengeLookup: ((token: string) => Promise<string | null>) | undefined;
     try {
       // AcmeClientService is EE-only; app.get() throws in CE
       const { AcmeClientService } = await import('@ee/ssl-configuration/acme-client.service');
@@ -161,11 +174,10 @@ async function bootstrap() {
       // across the src/ee boundary is unreliable at build time.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const acmeClientService = app.get(AcmeClientService) as any;
-      acmeChallengeLookup = acmeClientService.getChallengeResponse.bind(acmeClientService);
+      acmeLookup = acmeClientService.getChallengeResponse.bind(acmeClientService);
     } catch {
-      // CE or module not loaded — fall back to filesystem serving
+      // CE or module not loaded — filesystem fallback remains active (lookup stays undefined)
     }
-    expressInstance.use('/.well-known/acme-challenge', acmeHttpChallengeMiddleware(acmeChallengeLookup));
 
     // Initialize SSL server manager (stores Express app for HTTPS management)
     const httpPort = port;
