@@ -14,7 +14,30 @@
           "type": "category",
           "label": "Deployment",
           "items": [
+            {
+              "type": "category",
+              "label": "Overview",
+              "link": {
+                "type": "doc",
+                "id": "setup/overview/setup"
+              },
+              "items": [
+                "setup/overview/setup",
+                "setup/overview/system-requirements",
+                "setup/overview/choose-your-tooljet",
+                "setup/overview/try-tooljet"
+              ]
+            },
             "setup/docker",
+            {
+              "type": "category",
+              "label": "Configuration",
+              "items": [
+                "setup/configuration/env-vars",
+                "setup/configuration/http-proxy",
+                "setup/configuration/tooljet-subpath"
+              ]
+            },
             {
               "type": "category",
               "label": "Built-in SSL",
@@ -51,29 +74,6 @@
                 "setup/builtin-ssl/migration",
                 "setup/builtin-ssl/security",
                 "setup/builtin-ssl/faq"
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Overview",
-              "link": {
-                "type": "doc",
-                "id": "setup/overview/setup"
-              },
-              "items": [
-                "setup/overview/setup",
-                "setup/overview/system-requirements",
-                "setup/overview/choose-your-tooljet",
-                "setup/overview/try-tooljet"
-              ]
-            },
-            {
-              "type": "category",
-              "label": "Configuration",
-              "items": [
-                "setup/configuration/env-vars",
-                "setup/configuration/http-proxy",
-                "setup/configuration/tooljet-subpath"
               ]
             },
             {

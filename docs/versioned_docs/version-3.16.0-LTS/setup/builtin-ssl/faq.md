@@ -3,8 +3,6 @@ id: faq
 title: Frequently Asked Questions
 ---
 
-# Frequently Asked Questions
-
 Common questions about built-in SSL.
 
 <details id="tj-dropdown">

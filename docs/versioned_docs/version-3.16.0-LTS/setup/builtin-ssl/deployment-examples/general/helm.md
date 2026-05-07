@@ -1,9 +1,8 @@
 ---
 id: helm
-title: Helm Chart Deployment
+title: Deploying ToolJet with Built-in SSL using Helm
+sidebar_label: Helm Chart Deployment
 ---
-
-# Deploying ToolJet with Built-in SSL using Helm
 
 :::tip Don't need built-in SSL?
 If you're deploying on **Google Cloud Run** or **Azure Container Apps**, you don't need this guide. These platforms provide native HTTPS termination out-of-the-box. Simply deploy ToolJet normally without configuring SSL via the dashboard. See the [deployment examples overview](../overview) for more information.
@@ -30,7 +29,7 @@ apps:
 
     env:
       - name: TOOLJET_HOST
-        value: "https://tooljet.yourdomain.com"
+        value: "https://tooljet.example.com"
       - name: SSL_PORT
         value: "3443"
       # ... other environment variables
@@ -61,19 +60,15 @@ service:
    helm repo add tooljet https://tooljet.github.io/helm-charts
    helm repo update
    ```
-
 2. Create your `values.yaml` file with the configuration above
-
 3. Install the Helm chart:
    ```bash
    helm install tooljet tooljet/tooljet -f values.yaml
    ```
-
 4. Get your load balancer's external IP:
    ```bash
    kubectl get service tooljet
    ```
-
 5. Point your domain to the load balancer IP
 
 ## SSL Certificate Configuration

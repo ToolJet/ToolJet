@@ -3,16 +3,14 @@ id: requirements
 title: Requirements
 ---
 
-# Requirements
-
 Before using the built-in SSL feature, ensure your deployment meets the following requirements.
 
 ## Port Requirements
 
 Your deployment must expose the following ports:
 
-| External Port | Internal Port | Protocol | Required For | Notes |
-|--------------|---------------|----------|-------------|--------|
+| <div style={{ width:"100px"}}> External Port </div> | <div style={{ width:"150px"}}> Internal Port </div> | Protocol | Required For | Notes |
+|:-------------|:--------------|:---------|:------------|:-------|
 | 80 | 3000 (`PORT`) | HTTP | Always | Required for HTTP traffic and ACME challenges |
 | 443 | 3443 (`SSL_PORT`) | HTTPS | HTTPS mode only | Required after SSL certificate is acquired |
 
@@ -22,7 +20,7 @@ The internal ports (`PORT` and `SSL_PORT`) can be customized via environment var
 
 For SSL/HTTPS to work, you need:
 
-1. **A valid domain name** (e.g., `tooljet.yourdomain.com`)
+1. **A valid domain name** (e.g., `tooljet.example.com`)
 2. **DNS A record** pointing to your server's public IP
 3. **Port 80 accessible** from the internet (required for Let's Encrypt ACME challenges)
 

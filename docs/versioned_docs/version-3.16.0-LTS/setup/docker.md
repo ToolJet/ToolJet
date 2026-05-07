@@ -106,7 +106,7 @@ docker-compose up -d
 
 Examples:
 `TOOLJET_HOST=http://12.34.56.78` or
-`TOOLJET_HOST=https://tooljet.yourdomain.com`
+`TOOLJET_HOST=https://tooljet.example.com`
 
 If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 

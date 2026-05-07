@@ -55,6 +55,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    - Select your target region and click **Copy AMI**
 
    **Option B: Using AWS CLI**
+
    ```bash
    aws ec2 copy-image \
      --source-region us-west-1 \
@@ -62,6 +63,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
      --region <your-preferred-region> \
      --name "ToolJet-<version>"
    ```
+
    The copy process takes 2-5 minutes. Once complete, the AMI will be available in your selected region.
 
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
@@ -161,8 +163,8 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
 8. `TOOLJET_HOST` environment variable determines where you can access the ToolJet client. It can either be the public ipv4 address of your instance or a custom domain that you want to use. <br/>
    Examples: <br/>
    `TOOLJET_HOST=http://12.34.56.78` or <br/>
-   `TOOLJET_HOST=https://yourdomain.com` or <br/>
-   `TOOLJET_HOST=https://tooljet.yourdomain.com`
+   `TOOLJET_HOST=https://example.com` or <br/>
+   `TOOLJET_HOST=https://tooljet.example.com`
    :::info
    1. We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    2. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`

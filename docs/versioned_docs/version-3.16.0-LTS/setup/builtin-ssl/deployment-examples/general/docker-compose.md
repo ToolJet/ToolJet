@@ -1,9 +1,8 @@
 ---
 id: docker-compose
-title: Docker Compose Deployment
+title: Deploying ToolJet with Built-in SSL on Docker Compose
+sidebar_label: Docker Compose Deployment
 ---
-
-# Deploying ToolJet with Built-in SSL on Docker Compose
 
 :::tip Don't need built-in SSL?
 If you're deploying on **Google Cloud Run** or **Azure Container Apps**, you don't need this guide. These platforms provide native HTTPS termination out-of-the-box. Simply deploy ToolJet normally without configuring SSL via the dashboard. See the [deployment examples overview](../overview) for more information.
@@ -25,7 +24,7 @@ This guide shows how to configure ToolJet with built-in SSL in a Docker Compose 
 Add the following configuration to your ToolJet service in `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   tooljet:
@@ -34,7 +33,7 @@ services:
       - postgres
     environment:
       # ToolJet configuration
-      - TOOLJET_HOST=https://tooljet.yourdomain.com
+      - TOOLJET_HOST=https://tooljet.example.com
       - SSL_PORT=3443
 
     ports:

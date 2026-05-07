@@ -3,13 +3,12 @@ id: troubleshooting
 title: Troubleshooting
 ---
 
-# Troubleshooting
-
 Common issues and solutions when using built-in SSL.
 
 ## HTTPS Not Starting
 
 **Symptoms:**
+
 - Site not accessible on port 443
 - Only HTTP is working after enabling SSL in the dashboard
 
@@ -17,6 +16,7 @@ Common issues and solutions when using built-in SSL.
 Ensure SSL is configured and a certificate has been acquired via the dashboard (**Instance Settings → SSL/TLS Configuration → Acquire Certificate**). The app serves HTTPS only after a valid certificate is obtained.
 
 **Verify the app is listening on both ports:**
+
 ```bash
 # Docker
 docker exec <container-name> ss -tlnp | grep -E ':(3000|3443)'
@@ -33,19 +33,16 @@ docker exec <container-name> ss -tlnp | grep -E ':(3000|3443)'
 1. **DNS not configured**
    ```bash
    # Verify DNS points to your server
-   dig yourdomain.com
+   dig example.com
    ```
-
 2. **Port 80 not accessible**
    ```bash
    # Test from external machine
-   curl http://yourdomain.com
+   curl http://example.com
    ```
-
 3. **Domain doesn't match TOOLJET_HOST**
    - Ensure the domain in SSL settings matches `TOOLJET_HOST` (without protocol)
    - Example: If `TOOLJET_HOST=https://app.example.com`, use `app.example.com` in SSL settings
-
 4. **Firewall blocking port 80**
    - Check cloud provider security groups
    - Verify firewall rules allow inbound traffic on port 80
@@ -72,9 +69,7 @@ Certificates are automatically renewed 30 days before expiry. If renewal fails:
    ```bash
    docker logs <container-name> 2>&1 | grep -i "renewal"
    ```
-
 2. **Verify domain is still accessible** on port 80 (required for renewal)
-
 3. **Manually trigger renewal** (if needed):
    - Go to **Instance Settings → SSL/TLS Configuration**
    - Click **"Acquire Certificate"** to force renewal

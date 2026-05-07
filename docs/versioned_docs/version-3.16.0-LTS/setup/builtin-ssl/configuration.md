@@ -3,23 +3,21 @@ id: configuration
 title: Configuration
 ---
 
-# Configuration
-
 Configure built-in SSL settings through environment variables and the ToolJet dashboard.
 
 ## Environment Variables
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `TOOLJET_HOST` | Public URL of your ToolJet instance | `https://tooljet.yourdomain.com` or `http://12.34.56.78` |
+| Variable       | <div style={{ width:"300px"}}> Description </div> | Example                                               |
+| :------------- | :------------------------------------------------ | :---------------------------------------------------- |
+| `TOOLJET_HOST` | Public URL of your ToolJet instance               | `https://tooljet.example.com` or `http://12.34.56.78` |
 
 ### Optional Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | HTTP port the application listens on | `3000` |
+| Variable   | Description                           | Default                                      |
+| ---------- | ------------------------------------- | -------------------------------------------- |
+| `PORT`     | HTTP port the application listens on  | `3000`                                       |
 | `SSL_PORT` | HTTPS port the application listens on | `PORT + 443` (e.g., `3443` when `PORT=3000`) |
 
 ### Behavior
@@ -35,31 +33,27 @@ Configure built-in SSL settings through environment variables and the ToolJet da
 1. **Access Settings**
    - Login as administrator
    - Navigate to **Instance Settings → SSL/TLS Configuration**
-
 2. **Enable SSL**
    - Toggle **"Enable SSL"**
-   - Enter your **domain name** (e.g., `tooljet.yourdomain.com`)
+   - Enter your **domain name** (e.g., `tooljet.example.com`)
    - Enter your **email address** (for Let's Encrypt notifications)
-
 3. **Save Configuration**
    - Click **"Save"**
-   - At this point, SSL is enabled but no certificate exists yet
+   - At this point, SSL is enabled, but no certificate exists yet
    - The app continues serving HTTP on `PORT`
 
 ### Acquiring SSL Certificate
 
 1. **Verify DNS**
    - Ensure your domain's A record points to your server's public IP
-   - Test with: `dig yourdomain.com` or `nslookup yourdomain.com`
-
+   - Test with: `dig example.com` or `nslookup example.com`
 2. **Acquire Certificate**
    - In **Instance Settings → SSL/TLS Configuration**, click **"Acquire Certificate"**
    - Let's Encrypt will verify domain ownership via HTTP-01 challenge
    - Process typically takes 30-60 seconds
-
 3. **Automatic HTTPS**
    - Upon success, the app automatically starts serving HTTPS on `SSL_PORT`
-   - Your site is now accessible via `https://yourdomain.com`
+   - Your site is now accessible via `https://example.com`
    - HTTP requests automatically redirect to HTTPS
 
 ### Certificate Management

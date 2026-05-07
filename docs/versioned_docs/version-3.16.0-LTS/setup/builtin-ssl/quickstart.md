@@ -3,11 +3,9 @@ id: quickstart
 title: Quick Start Guide
 ---
 
-# Quick Start Guide
-
 Get started with built-in SSL in three simple steps.
 
-## Step 1: Configure Port Mapping
+### Step 1: Configure Port Mapping
 
 Map external ports 80 and 443 to the application's internal HTTP and HTTPS ports:
 
@@ -18,7 +16,7 @@ services:
   tooljet:
     image: tooljet/tooljet:latest
     environment:
-      - TOOLJET_HOST=https://tooljet.yourdomain.com
+      - TOOLJET_HOST=https://tooljet.example.com
       - SSL_PORT=3443
       # ... other environment variables
     ports:
@@ -28,13 +26,13 @@ services:
 
 The app listens on port `3000` (HTTP) and `3443` (HTTPS) by default. `SSL_PORT` defaults to `PORT + 443` if not set.
 
-## Step 2: Deploy and Access
+### Step 2: Deploy and Access
 
 1. **Deploy your ToolJet instance** with the updated configuration
-2. **Access via HTTP** at `http://your-domain.com` or `http://your-ip-address`
+2. **Access via HTTP** at `http://example.com` or `http://your-ip-address`
 3. The app will start in HTTP-only mode initially
 
-## Step 3: Configure SSL (Optional)
+### Step 3: Configure SSL (Optional)
 
 Once your instance is accessible via HTTP:
 

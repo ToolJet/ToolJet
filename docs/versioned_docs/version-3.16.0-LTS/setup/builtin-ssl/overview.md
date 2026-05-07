@@ -1,9 +1,8 @@
 ---
 id: overview
-title: Built-in SSL Overview
+title: Built-in SSL with Let's Encrypt
+sidebar_label: Built-in SSL Overview
 ---
-
-# Built-in SSL with Let's Encrypt
 
 :::info EE Feature
 Built-in SSL is available on **EE paid plans** only. Ensure your license includes SSL termination before configuring this feature.
@@ -24,7 +23,7 @@ The built-in SSL support:
 The application operates in three modes depending on SSL configuration:
 
 | Mode | SSL Status | Ports | Description |
-|------|-----------|-------|-------------|
+|:------|:-----------|:-------|:-------------|
 | **HTTP-only (SSL Disabled)** | SSL disabled in database | `PORT` (default 3000) | App serves HTTP traffic only. Ideal for initial setup or internal deployments. |
 | **HTTP-only (SSL Pending)** | SSL enabled, no certificate | `PORT` (default 3000) | App serves HTTP traffic and handles ACME challenges for certificate acquisition. |
 | **HTTPS Active** | SSL enabled, certificate acquired | `PORT` + `SSL_PORT` | App serves HTTPS on `SSL_PORT` (default 3443). `PORT` redirects to HTTPS. |

@@ -1,9 +1,8 @@
 ---
 id: kubernetes
-title: Kubernetes Deployment
+title: Deploying ToolJet with Built-in SSL on Kubernetes
+sidebar_label: Kubernetes Deployment
 ---
-
-# Deploying ToolJet with Built-in SSL on Kubernetes
 
 :::tip Don't need built-in SSL?
 If you're deploying on **Google Cloud Run** or **Azure Container Apps**, you don't need this guide. These platforms provide native HTTPS termination out-of-the-box. Simply deploy ToolJet normally without configuring SSL via the dashboard. See the [deployment examples overview](../overview) for more information.
@@ -66,7 +65,7 @@ spec:
           image: tooljet/tooljet:latest
           env:
             - name: TOOLJET_HOST
-              value: "https://tooljet.yourdomain.com"
+              value: "https://tooljet.example.com"
             - name: SSL_PORT
               value: "3443"
             # ... other environment variables

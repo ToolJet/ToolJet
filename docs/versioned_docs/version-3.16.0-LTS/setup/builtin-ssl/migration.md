@@ -3,8 +3,6 @@ id: migration
 title: Migration from External nginx
 ---
 
-# Migration from External nginx
-
 :::info EE Feature
 Built-in SSL is available on **EE paid plans** only. Ensure your license includes SSL termination before following this guide.
 :::
@@ -15,7 +13,7 @@ This guide is only relevant if you are **currently running an external nginx rev
 
 If you're currently using an external nginx reverse proxy, you have two options:
 
-## Option 1: Switch to Built-in SSL
+### Option 1: Switch to Built-in SSL
 
 Recommended for most deployments as it simplifies configuration and provides automatic SSL management directly from the NestJS application server.
 
@@ -29,7 +27,7 @@ Recommended for most deployments as it simplifies configuration and provides aut
 
 No special environment variable is required to enable built-in SSL. Once your EE license includes SSL termination, it is controlled via **Instance Settings → SSL/TLS Configuration**.
 
-## Option 2: Keep External nginx
+### Option 2: Keep External nginx
 
 If you prefer to keep your external nginx:
 - Do not configure SSL via the ToolJet dashboard
@@ -40,7 +38,7 @@ If you prefer to keep your external nginx:
 The built-in SSL is recommended for most deployments as it simplifies configuration and provides automatic SSL management.
 :::
 
-## Migration Checklist
+### Migration Checklist
 
 Before switching to built-in SSL, ensure you:
 
@@ -50,7 +48,7 @@ Before switching to built-in SSL, ensure you:
 - Have tested the new configuration in a staging environment (if available)
 - Understand the [configuration options](configuration.md) for built-in SSL
 
-## Related Topics
+### Related Topics
 
 - [Requirements](requirements.md) - Port and domain requirements
 - [Quick Start Guide](quickstart.md) - Step-by-step setup instructions

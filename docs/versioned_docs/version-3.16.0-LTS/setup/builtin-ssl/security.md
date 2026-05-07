@@ -3,8 +3,6 @@ id: security
 title: Security Considerations
 ---
 
-# Security Considerations
-
 Important security information when using built-in SSL.
 
 ## Certificate Storage
