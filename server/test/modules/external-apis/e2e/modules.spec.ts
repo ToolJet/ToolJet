@@ -22,6 +22,43 @@ const getExtAuth = () => `Basic ${process.env.EXTERNAL_API_ACCESS_TOKEN}`;
 // A valid UUID that will never exist in the test database.
 const NONEXISTENT_UUID = '00000000-0000-0000-0000-000000000001';
 
+// Helper: export a module and return the full export body.
+async function exportModule(
+  server: ReturnType<INestApplication['getHttpServer']>,
+  orgId: string,
+  moduleId: string,
+  query = ''
+) {
+  const res = await request(server)
+    .post(`/api/ext/export/workspace/${orgId}/modules/${moduleId}${query}`)
+    .set('Authorization', getExtAuth())
+    .expect(201);
+  return res.body;
+}
+
+// Helper: import a module and return the response body.
+async function importModule(
+  server: ReturnType<INestApplication['getHttpServer']>,
+  orgId: string,
+  payload: Record<string, unknown>
+) {
+  const res = await request(server)
+    .post(`/api/ext/import/workspace/${orgId}/modules`)
+    .set('Authorization', getExtAuth())
+    .send(payload)
+    .expect(201);
+  return res.body;
+}
+
+// Helper: list modules in a workspace.
+async function listModules(server: ReturnType<INestApplication['getHttpServer']>, orgId: string) {
+  const res = await request(server)
+    .get(`/api/ext/workspace/${orgId}/modules`)
+    .set('Authorization', getExtAuth())
+    .expect(200);
+  return res.body as { modules: any[]; total: number };
+}
+
 describe('ExternalApisModulesController (EE enterprise)', () => {
   let app: INestApplication;
 
@@ -99,7 +136,6 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
       const orgId = user.defaultOrganizationId;
 
-      // ensureAppEnvironments is idempotent per-org, skip on subsequent calls
       await createApplication(app, { name: 'Front-end app', user, type: APP_TYPES.FRONT_END });
       const module1 = await createApplication(app, { name: 'Auth Module', user, type: APP_TYPES.MODULE }, false);
       const module2 = await createApplication(app, { name: 'Payment Module', user, type: APP_TYPES.MODULE }, false);
@@ -188,17 +224,14 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       const mod = await createApplication(app, { name: 'Auth Module', user, type: APP_TYPES.MODULE });
       await createApplicationVersion(app, mod);
 
-      const res = await request(app.getHttpServer())
-        .post(`/api/ext/export/workspace/${user.defaultOrganizationId}/modules/${mod.id}`)
-        .set('Authorization', getExtAuth())
-        .expect(201);
+      const body = await exportModule(app.getHttpServer(), user.defaultOrganizationId, mod.id);
 
-      expect(res.body).toHaveProperty('tooljet_version');
-      expect(typeof res.body.tooljet_version).toBe('string');
-      expect(res.body).toHaveProperty('app');
-      expect(Array.isArray(res.body.app)).toBe(true);
-      expect(res.body.app.length).toBeGreaterThan(0);
-      expect(res.body.app[0]).toHaveProperty('definition');
+      expect(body).toHaveProperty('tooljet_version');
+      expect(typeof body.tooljet_version).toBe('string');
+      expect(body).toHaveProperty('app');
+      expect(Array.isArray(body.app)).toBe(true);
+      expect(body.app.length).toBeGreaterThan(0);
+      expect(body.app[0]).toHaveProperty('definition');
     });
 
     it('excludes TJDB from export when exportTJDB=false', async () => {
@@ -206,12 +239,21 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       const mod = await createApplication(app, { name: 'Auth Module', user, type: APP_TYPES.MODULE });
       await createApplicationVersion(app, mod);
 
-      const res = await request(app.getHttpServer())
-        .post(`/api/ext/export/workspace/${user.defaultOrganizationId}/modules/${mod.id}?exportTJDB=false`)
-        .set('Authorization', getExtAuth())
-        .expect(201);
+      const body = await exportModule(app.getHttpServer(), user.defaultOrganizationId, mod.id, '?exportTJDB=false');
 
-      expect(res.body).not.toHaveProperty('tooljet_database');
+      expect(body).not.toHaveProperty('tooljet_database');
+    });
+
+    it('does not exclude TJDB when exportTJDB=true explicitly', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const mod = await createApplication(app, { name: 'Auth Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+
+      // Should not error — TJDB inclusion is allowed even when the module has no tables
+      const body = await exportModule(app.getHttpServer(), user.defaultOrganizationId, mod.id, '?exportTJDB=true');
+
+      expect(body).toHaveProperty('tooljet_version');
+      expect(body).toHaveProperty('app');
     });
   });
 
@@ -260,25 +302,88 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
         .expect(400);
     });
 
-    it('imports module and returns success message', async () => {
+    it('accepts import body with only tooljet_version (no app, no tooljet_database)', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const res = await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({ tooljet_version: '1.0.0' })
+        .expect(201);
+
+      expect(res.body.message).toBe('Module imported successfully.');
+    });
+
+    it('accepts import body with tooljet_database as empty array', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const res = await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({ tooljet_version: '1.0.0', tooljet_database: [] })
+        .expect(201);
+
+      expect(res.body.message).toBe('Module imported successfully.');
+    });
+
+    it('returns 400 when tooljet_database entry is missing the id field', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: '1.0.0',
+          tooljet_database: [{ table_name: 'test_table', schema: { columns: [] } }],
+        })
+        .expect(400);
+    });
+
+    it('returns 400 when tooljet_database entry id is not a valid UUID', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: '1.0.0',
+          tooljet_database: [{ id: 'not-a-uuid', table_name: 'test_table', schema: { columns: [] } }],
+        })
+        .expect(400);
+    });
+
+    it('returns 400 when tooljet_database entry is missing table_name', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: '1.0.0',
+          tooljet_database: [{ id: NONEXISTENT_UUID, schema: { columns: [] } }],
+        })
+        .expect(400);
+    });
+
+    it('imports module, returns success message, and module appears in workspace listing', async () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
       const orgId = user.defaultOrganizationId;
 
       const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
       await createApplicationVersion(app, mod);
 
-      const exportRes = await request(app.getHttpServer())
-        .post(`/api/ext/export/workspace/${orgId}/modules/${mod.id}`)
-        .set('Authorization', getExtAuth())
-        .expect(201);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
 
       const importRes = await request(app.getHttpServer())
         .post(`/api/ext/import/workspace/${orgId}/modules`)
         .set('Authorization', getExtAuth())
-        .send({ tooljet_version: exportRes.body.tooljet_version, app: exportRes.body.app })
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          app: exportBody.app,
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
         .expect(201);
 
       expect(importRes.body.message).toBe('Module imported successfully.');
+
+      // Verify the imported module materialised in the workspace (total goes from 1 → 2)
+      const listing = await listModules(app.getHttpServer(), orgId);
+      expect(listing.total).toBe(2);
     });
 
     it('imports module with appName override and reflects the new name in workspace listing', async () => {
@@ -288,28 +393,39 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       const mod = await createApplication(app, { name: 'Original Name', user, type: APP_TYPES.MODULE });
       await createApplicationVersion(app, mod);
 
-      const exportRes = await request(app.getHttpServer())
-        .post(`/api/ext/export/workspace/${orgId}/modules/${mod.id}`)
-        .set('Authorization', getExtAuth())
-        .expect(201);
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
 
-      await request(app.getHttpServer())
-        .post(`/api/ext/import/workspace/${orgId}/modules`)
-        .set('Authorization', getExtAuth())
-        .send({
-          tooljet_version: exportRes.body.tooljet_version,
-          appName: 'Renamed Module',
-          app: exportRes.body.app,
-        })
-        .expect(201);
+      await importModule(app.getHttpServer(), orgId, {
+        tooljet_version: exportBody.tooljet_version,
+        appName: 'Renamed Module',
+        app: exportBody.app,
+        tooljet_database: exportBody.tooljet_database ?? [],
+      });
 
-      const listRes = await request(app.getHttpServer())
-        .get(`/api/ext/workspace/${orgId}/modules`)
-        .set('Authorization', getExtAuth())
-        .expect(200);
-
-      const names = listRes.body.modules.map((m: any) => m.name);
+      const listing = await listModules(app.getHttpServer(), orgId);
+      const names = listing.modules.map((m: any) => m.name);
       expect(names).toContain('Renamed Module');
+    });
+
+    it('imports into a different workspace than the source', async () => {
+      const { user: user1 } = await createUser(app, { email: 'user1@tooljet.io' });
+      const { user: user2 } = await createUser(app, { email: 'user2@tooljet.io' });
+
+      const mod = await createApplication(app, { name: 'Portable Module', user: user1, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+
+      const exportBody = await exportModule(app.getHttpServer(), user1.defaultOrganizationId, mod.id);
+
+      await importModule(app.getHttpServer(), user2.defaultOrganizationId, {
+        tooljet_version: exportBody.tooljet_version,
+        appName: 'Portable Module',
+        app: exportBody.app,
+        tooljet_database: exportBody.tooljet_database ?? [],
+      });
+
+      const listing = await listModules(app.getHttpServer(), user2.defaultOrganizationId);
+      expect(listing.total).toBe(1);
+      expect(listing.modules[0].name).toBe('Portable Module');
     });
   });
 });

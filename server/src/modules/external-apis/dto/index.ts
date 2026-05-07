@@ -325,4 +325,11 @@ export class ModuleImportRequestDto {
   @IsOptional()
   @IsString()
   appName?: string;
+
+  @IsOptional()
+  @Transform(TjdbSchemaToLatestVersion)
+  @ValidateNested({ each: true })
+  @Type(() => ImportTooljetDatabaseDto)
+  @ValidateTooljetDatabaseImportSchema({ each: true })
+  tooljet_database?: ImportTooljetDatabaseDto[];
 }
