@@ -6,7 +6,7 @@ import { USER_STATUS } from '@modules/users/constants/lifecycle';
 import { GROUP_PERMISSIONS_TYPE, ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, Not } from 'typeorm';
 import { EditUserRoleDto } from './dto';
 import { App } from '@entities/app.entity';
 import { _ } from 'lodash';
@@ -235,5 +235,23 @@ export class RolesUtilService implements IRolesUtilService {
 
       return false;
     }, manager);
+  }
+
+  async syncWorkspaceRolesToAdmin(userId: string, manager: EntityManager): Promise<void> {
+    const nonAdminGroups = await manager.find(GroupPermissions, {
+      where: {
+        type: GROUP_PERMISSIONS_TYPE.DEFAULT,
+        name: Not(USER_ROLE.ADMIN),
+        groupUsers: { userId },
+      },
+    });
+
+    for (const group of nonAdminGroups) {
+      await this.editDefaultGroupUserRole(
+        group.organizationId,
+        { userId, newRole: USER_ROLE.ADMIN, currentRole: group },
+        manager
+      );
+    }
   }
 }
