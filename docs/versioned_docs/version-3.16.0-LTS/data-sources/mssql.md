@@ -207,7 +207,7 @@ Insert a new row into the selected table by providing values for the required co
 
 In the editor, ensure the **Columns** input is provided in `string` format.
 
-#### Optional Parameter
+#### Required Parameter
 - **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/mssql/createrows-gui.png" alt="MSsql create row gui mode"/>
