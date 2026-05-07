@@ -344,6 +344,12 @@ export async function pasteComponents(targetParentId, copiedComponentObj) {
 
     const componentMeta = componentTypes.find((comp) => comp.component === component?.component?.component);
     const componentData = _.merge({}, componentMeta, component.component);
+    // Lodash deep-merges arrays by index, which leaks seed column properties (columnSize, objectFit, etc.)
+    // from the default Table widget config into the user's pasted columns. Override the columns array.
+    const pastedColumns = component.component?.definition?.properties?.columns;
+    if (componentData?.component === 'Table' && pastedColumns) {
+      componentData.definition.properties.columns = deepClone(pastedColumns);
+    }
     if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;
     }
