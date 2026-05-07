@@ -4,6 +4,7 @@ import { InstanceSettingsModule } from '@modules/instance-settings/module';
 import { SslServerManagerService } from '@services/ssl-server-manager.service';
 import { FeatureAbilityFactory } from './ability';
 import { FeatureAbilityGuard } from './ability/guard';
+import { AcmeChallengeController } from './acme-challenge.controller';
 
 export class SslConfigurationModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -55,7 +56,7 @@ export class SslConfigurationModule extends SubModule {
       module: SslConfigurationModule,
       imports: [await InstanceSettingsModule.register(configs)],
       providers,
-      controllers: isMainImport ? [SslConfigurationController] : [],
+      controllers: isMainImport ? [SslConfigurationController, AcmeChallengeController] : [AcmeChallengeController],
       exports,
     };
   }
