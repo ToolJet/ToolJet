@@ -52,10 +52,10 @@ export class FolderAppsService implements IFolderAppsService {
       const searchKey = query.searchKey;
       let branchId = query.branchId;
 
-      // When no branchId is provided (e.g. end users without branch switcher),
-      // fall back to the default branch so folders reflect only default-branch apps.
-      // Applies to both front-end apps and modules — both are branch-scoped resources.
-      // TODO: Git disabled flow, should pick from versions id
+      // When no branchId is provided (e.g. end users without branch switcher) and the
+      // workspace has git-sync configured, fall back to the default branch so folders
+      // reflect only default-branch apps. Non-git-sync workspaces have no orgGit and
+      // branchId stays undefined; downstream queries handle that path natively.
       if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
         const orgGit = await manager.findOne(OrganizationGitSync, {
           where: { organizationId: user.organizationId },

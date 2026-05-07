@@ -57,9 +57,10 @@ export class GranularPermissionsService implements IGranularPermissionsService {
   }
   async getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Non-workflow apps carry their display name on the BRANCH-type version of the
-      // default branch (when git-sync is configured). Workflows keep name on apps.*.
-      // TODO: Git disabled flow, should pick from versions id
+      // Non-workflow apps carry their display name on app_versions.app_name. For git-sync
+      // workspaces the BRANCH-type version on the default branch is the canonical carrier;
+      // for non-git-sync workspaces every version row carries the same metadata, so any
+      // version row works. Workflows keep name on apps.*.
       const defaultBranch = await manager.findOne(WorkspaceBranch, {
         where: { organizationId, isDefault: true },
         select: ['id'],
@@ -78,7 +79,18 @@ export class GranularPermissionsService implements IGranularPermissionsService {
           { branchId: defaultBranch.id, branchType: 'branch' }
         ).addSelect('COALESCE(av.app_name, app.name) AS name');
       } else {
-        qb.addSelect('app.name AS name');
+        // Non-git-sync: pick any version's app_name (DISTINCT ON returns one arbitrary row
+        // per app_id). COALESCE falls back to apps.name for workflows whose versions
+        // don't carry app_name.
+        qb.leftJoin(
+          (sub) =>
+            sub
+              .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
+              .addSelect('av.app_name', 'app_name')
+              .from('app_versions', 'av'),
+          'av',
+          'av.app_id = app.id'
+        ).addSelect('COALESCE(av.app_name, app.name) AS name');
       }
 
       const rows: { id: string; type: APP_TYPES; name: string | null }[] = await qb.getRawMany();

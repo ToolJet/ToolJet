@@ -1,6 +1,5 @@
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not } from 'typeorm';
 import { App } from 'src/entities/app.entity';
-import { AppBase } from 'src/entities/app_base.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
@@ -24,7 +23,11 @@ export class AppsSubscriber implements EntitySubscriberInterface {
   }
 
   async afterLoad(app: any): Promise<void> {
-    if (!(app instanceof App) && !(app instanceof AppBase)) return;
+    // Only fire for App entity loads (single-app/editor paths). AppBase is used by
+    // list/admin queries (e.g. /api/folder-apps, /api/apps listing) where the per-row
+    // editingVersion lookup would amount to N+1; those callers resolve metadata via
+    // explicit JOINs instead.
+    if (!(app instanceof App)) return;
     if (!app || (app as any).__loaded) return;
 
     (app as any).__loaded = true; // mark entity as processed

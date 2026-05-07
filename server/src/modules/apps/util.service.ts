@@ -57,7 +57,8 @@ export class AppsUtilService implements IAppsUtilService {
     type: APP_TYPES,
     isInitialisedFromPrompt: boolean = false,
     manager: EntityManager,
-    branchId?: string
+    branchId?: string,
+    icon?: string
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const isWorkflow = type === APP_TYPES.WORKFLOW;
@@ -65,7 +66,10 @@ export class AppsUtilService implements IAppsUtilService {
         return manager.save(
           manager.create(App, {
             type,
+            // Workflows still carry name/icon on apps.*; non-workflows store metadata
+            // on app_versions and leave apps.* fields null/placeholder.
             name: isWorkflow ? name : null,
+            ...(isWorkflow && icon !== undefined && { icon }),
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user.organizationId,
@@ -123,6 +127,14 @@ export class AppsUtilService implements IAppsUtilService {
             createdAt: new Date(),
             updatedAt: new Date(),
             ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
+            // Non-workflows carry slug/appName/icon/isPublic on app_versions.
+            // slug defaults to app.id placeholder; user can rename later.
+            ...(!isWorkflow && {
+              appName: name,
+              slug: app.id,
+              icon: icon ?? null,
+              isPublic: false,
+            }),
           })
         );
 
@@ -245,6 +257,14 @@ export class AppsUtilService implements IAppsUtilService {
           );
         }
 
+        // Non-workflows carry slug/appName/icon/isPublic on app_versions.
+        // slug defaults to app.id placeholder; user can rename later.
+        if (!isWorkflow) {
+          appVersion.appName = name;
+          appVersion.slug = app.id;
+          appVersion.icon = icon ?? null;
+          appVersion.isPublic = false;
+        }
         appVersion.showViewerNavigation = type === 'module' ? false : true;
         appVersion.homePageId = defaultHomePage.id;
         appVersion.globalSettings = {
@@ -480,12 +500,20 @@ export class AppsUtilService implements IAppsUtilService {
             await catchDbException(async () => {
               await manager.update(AppVersion, canonicalCondition, uniqueParams);
             }, [
-              { dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE, message: 'This app name is already taken.' },
-              { dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE, message: 'This slug is already taken.' },
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+                message: 'This app name is already taken.',
+              },
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE,
+                message: 'This slug is already taken.',
+              },
             ]);
           } else {
-            // Non-git-sync workspace: update all versions (all have branchId=NULL)
-            await manager.update(AppVersion, { appId }, uniqueParams);
+            // Non-git-sync workspace: update all VERSION-type rows under this app.
+            // No BRANCH-type rows exist here, but the explicit filter keeps the write
+            // narrow and parallel to the broadParams condition above.
+            await manager.update(AppVersion, { appId, versionType: AppVersionType.VERSION }, uniqueParams);
           }
         }
       }
@@ -1042,11 +1070,7 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
-  async checkModulesReleasedInApp(
-    versionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<void> {
+  async checkModulesReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
       // 4-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
       // for the cases. Predicate: the module's apps.current_version_id (released version)
@@ -1114,5 +1138,59 @@ export class AppsUtilService implements IAppsUtilService {
       console.error('Failed to check module release state', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions for release');
     }
+  }
+
+  /**
+   * Overlay name/slug/icon/isPublic from the right app_version row onto the App entity
+   * in-memory so single-app reads (`getOne`, `getBySlug`, etc.) return the correct
+   * user-facing metadata. Workflows are skipped — they keep metadata on apps.* directly.
+   *
+   * Source priority for non-workflows:
+   *   1. BRANCH-type version on the supplied branchId (active editor branch)
+   *   2. BRANCH-type version on the workspace's default branch (git-sync, no branch context)
+   *   3. Any version row (non-git-sync workspaces — every version carries the same metadata)
+   */
+  async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
+    if (!app || app.type === APP_TYPES.WORKFLOW) return;
+
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      let source: AppVersion | null = null;
+
+      if (branchId) {
+        source = await manager.findOne(AppVersion, {
+          where: { appId: app.id, branchId, versionType: AppVersionType.BRANCH },
+          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
+        });
+      }
+
+      if (!source) {
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: app.organizationId, isDefault: true },
+          select: ['id'],
+        });
+        if (defaultBranch) {
+          source = await manager.findOne(AppVersion, {
+            where: { appId: app.id, branchId: defaultBranch.id, versionType: AppVersionType.BRANCH },
+            select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
+          });
+        }
+      }
+
+      if (!source) {
+        // Non-git-sync workspaces (or apps without any branch row): pick any version.
+        // All versions carry identical metadata in this mode.
+        source = await manager.findOne(AppVersion, {
+          where: { appId: app.id },
+          order: { updatedAt: 'DESC' },
+          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
+        });
+      }
+
+      if (!source) return;
+      if (source.appName != null) app.name = source.appName;
+      if (source.slug != null) app.slug = source.slug;
+      if (source.icon != null) app.icon = source.icon;
+      if (source.isPublic != null) app.isPublic = source.isPublic;
+    });
   }
 }

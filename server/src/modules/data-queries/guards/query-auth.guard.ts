@@ -6,6 +6,8 @@ import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
 import { VersionRepository } from '@modules/versions/repository';
 import { APP_TYPES } from '@modules/apps/constants';
+import { AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class QueryAuthGuard extends AuthGuard('jwt') {
@@ -41,13 +43,33 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       // Workflows keep is_public on apps.*; non-workflows carry it on the branch-specific
       // app_version. Look up the version that owns this data query and overlay so the
-      // public-app gate below uses the correct flag.
+      // public-app gate below uses the correct flag. BRANCH-type versions are the canonical
+      // metadata carrier; if the version is VERSION-type, fall back to the default branch's
+      // BRANCH-type version. Non-git-sync workspaces have no default branch — the fallback
+      // returns null and the original VERSION-type row is used (it carries isPublic).
       if (app.type !== APP_TYPES.WORKFLOW) {
-        const version = await this.versionRepository
+        let version = await this.versionRepository
           .createQueryBuilder('av')
           .innerJoin('av.dataQueries', 'dq', 'dq.id = :dqId', { dqId: id })
-          .select(['av.id', 'av.isPublic'])
+          .select(['av.id', 'av.versionType', 'av.isPublic'])
           .getOne();
+        if (version && version.versionType !== AppVersionType.BRANCH) {
+          const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+            where: { organizationId: app.organizationId, isDefault: true },
+            select: ['id'],
+          });
+          if (defaultBranch) {
+            const fallback = await this.versionRepository.findOne({
+              where: {
+                appId: app.id,
+                branchId: defaultBranch.id,
+                versionType: AppVersionType.BRANCH,
+              },
+              select: ['id', 'isPublic'],
+            });
+            if (fallback) version = fallback;
+          }
+        }
         if (version) {
           app.isPublic = version.isPublic;
         }

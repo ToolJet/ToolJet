@@ -590,6 +590,32 @@ export class AppImportExportService {
           ? await manager.find(DataQueryFolderMapping, { where: { childId: In(allChildIds) } })
           : [];
 
+      // Non-workflow apps store name/slug/icon/isPublic on app_versions, not on apps.*.
+      // Project the metadata onto the top-level export object so the consumer sees it on
+      // app.json, then strip those fields from the version rows so they don't duplicate
+      // into per-version files. Workflows leave the export unchanged — apps.* already
+      // carries the canonical metadata for them.
+      if (appToExport?.type !== APP_TYPES.WORKFLOW) {
+        const sourceVersion =
+          appVersions.find(
+            (v) => v.versionType === AppVersionType.BRANCH && (v.appName != null || v.slug != null)
+          ) ||
+          appVersions.find((v) => v.appName != null || v.slug != null) ||
+          appVersions[0];
+        if (sourceVersion) {
+          if (sourceVersion.appName != null) (appToExport as any).name = sourceVersion.appName;
+          if (sourceVersion.slug != null) (appToExport as any).slug = sourceVersion.slug;
+          if (sourceVersion.icon != null) (appToExport as any).icon = sourceVersion.icon;
+          if (sourceVersion.isPublic != null) (appToExport as any).isPublic = sourceVersion.isPublic;
+        }
+        for (const v of appVersions) {
+          delete (v as any).appName;
+          delete (v as any).slug;
+          delete (v as any).icon;
+          delete (v as any).isPublic;
+        }
+      }
+
       appToExport['components'] = componentsWithPermissionGroups;
       appToExport['pages'] = pagesWithPermissionGroups;
       appToExport['events'] = events;
@@ -655,9 +681,10 @@ export class AppImportExportService {
     };
 
     // Module names live on app_versions.app_name post-migration. Scope the name match
-    // to the default branch's BRANCH-type version (the canonical carrier per branch);
-    // workflows are unaffected because modules can never be type=workflow.
-    // TODO: Git disabled flow, should pick from versions id
+    // to the default branch's BRANCH-type version (the canonical carrier per branch) for
+    // git-sync workspaces. Non-git-sync workspaces have no default branch — the lookup
+    // falls back to "any version's app_name" since every version row carries the metadata.
+    // Workflows are unaffected because modules can never be type=workflow.
     const defaultBranch = await manager.findOne(WorkspaceBranch, {
       where: { organizationId: user.organizationId, isDefault: true },
       select: ['id'],

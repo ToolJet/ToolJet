@@ -10,6 +10,7 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
@@ -34,8 +35,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     // Scope slug resolution to a specific branch. The same slug can appear on multiple
     // branches, so we must pin to one. Source of branch_id: x-branch-id header (sent by
     // authHeader() when the caller has an active branch). When absent, fall back to the
-    // default branch.
-    // TODO: Git disabled flow, should pick from versions id
+    // default branch (git-sync) or any version row (non-git-sync, where branch_id IS NULL).
     const branchId: string | null = (request.headers['x-branch-id'] as string) || null;
 
     // Resolve app through any version carrying this slug
@@ -51,13 +51,14 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       if (branchId) {
         qb.andWhere('av.branch_id = :branchId', { branchId });
       } else {
-        // No branch context — fall back to the default branch for git-sync workspaces,
-        // TODO: Git disabled flow, should pick from versions id
+        // No branch context: match either non-git-sync rows (branch_id IS NULL) or the
+        // default-branch row in git-sync workspaces. Entity-class join lets TypeORM
+        // resolve the workspace_branches table from metadata, not via raw schema lookup.
         qb.leftJoin(
-          'workspace_branches',
+          WorkspaceBranch,
           'wb',
           'wb.id = av.branch_id AND wb.organization_id = app.organization_id'
-        ).andWhere('wb.is_default = true');
+        ).andWhere('(av.branch_id IS NULL OR wb.is_default = true)');
       }
 
       return qb.getRawOne();
