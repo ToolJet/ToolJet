@@ -182,7 +182,13 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       }
 
       const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
-      this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
+      if (type === APP_TYPES.MODULE) {
+        // Modules have no permission gate on listing (all org members can see all modules).
+        // Still constrain to this folder's app IDs so we don't return unrelated apps.
+        viewableAppsInFolder.where('apps.id IN (:...folderAppIds)', { folderAppIds });
+      } else {
+        this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
+      }
 
       if (branchId) {
         viewableAppsInFolder.andWhere(
