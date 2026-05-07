@@ -104,6 +104,7 @@ const LifecycleCTAButton = () => {
         disabled={config.disabled}
         data-tooltip-id="editor-header-tooltip"
         data-tooltip-content={config.tooltip}
+        data-cy="lifecycle-cta-button"
       >
         <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name={config.icon} width="16" />
         <span>{config.label}</span>
