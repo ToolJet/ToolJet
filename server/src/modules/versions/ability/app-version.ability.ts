@@ -15,7 +15,7 @@ export function defineAppVersionAbility(
   const permissionKey = resourceType === MODULES.MODULES ? MODULES.APP : resourceType;
   const userAppPermissions = userPermission?.[permissionKey];
 
-  if (isAdmin || superAdmin) {
+  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     can(
       [
         FEATURE_KEY.GET,
@@ -132,21 +132,4 @@ export function defineAppVersionAbility(
     can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   }
 
-  if (isBuilder && resourceType === MODULES.MODULES) {
-    //For Modules
-    can(
-      [
-        FEATURE_KEY.UPDATE_COMPONENTS,
-        FEATURE_KEY.CREATE_COMPONENTS,
-        FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
-        FEATURE_KEY.DELETE_COMPONENTS,
-        FEATURE_KEY.GET_EVENTS,
-        FEATURE_KEY.CREATE_EVENT,
-        FEATURE_KEY.UPDATE_EVENT,
-        FEATURE_KEY.DELETE_EVENT,
-        FEATURE_KEY.GET_ONE,
-      ],
-      App
-    );
-  }
 }

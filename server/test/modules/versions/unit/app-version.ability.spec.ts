@@ -151,21 +151,15 @@ describe('defineAppVersionAbility', () => {
       expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(false);
     });
 
-    it('grants component/event operations to isBuilder', () => {
+    it('grants all actions to isBuilder via early return', () => {
       const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
       defineAppVersionAbility(can, perms);
       const ability = build();
 
-      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENTS, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.CREATE_COMPONENTS, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.UPDATE_COMPONENT_LAYOUT, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.DELETE_COMPONENTS, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.GET_EVENTS, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.CREATE_EVENT, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.UPDATE_EVENT, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.DELETE_EVENT, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.GET_ONE, App)).toBe(true);
+      [...ALL_ACTIONS, FEATURE_KEY.PROMOTE].forEach((action) => {
+        expect(ability.can(action, App)).toBe(true);
+      });
     });
 
     it('denies all actions with no permissions', () => {
@@ -385,18 +379,17 @@ describe('defineAppVersionAbility', () => {
       expect(ability.can(FEATURE_KEY.CREATE_COMPONENTS, App)).toBe(false);
     });
 
-    it('does not grant version management actions via the builder grant on MODULES', () => {
-      // builder MODULES grant only covers component/event ops, not version lifecycle actions
+    it('grants version management actions to isBuilder on MODULES', () => {
       const perms = buildPermissions({ isBuilder: true, resourceType: MODULES.MODULES });
       const { can, build } = makeBuilder();
       defineAppVersionAbility(can, perms);
       const ability = build();
 
-      expect(ability.can(FEATURE_KEY.APP_VERSION_CREATE, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.APP_VERSION_DELETE, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.APP_VERSION_UPDATE, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.DELETE, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.CREATE_PAGES, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.APP_VERSION_CREATE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.APP_VERSION_DELETE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.APP_VERSION_UPDATE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.DELETE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.CREATE_PAGES, App)).toBe(true);
     });
   });
 
