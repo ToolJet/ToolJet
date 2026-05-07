@@ -132,7 +132,16 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.pluginId) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
+      const manifestData = dataSource?.plugin?.manifestFile?.data;
+
+      // Handle new tj:version schema format
+      if (manifestData?.['tj:version']) {
+        const dsm = new DataSourceSchemaManager(manifestData);
+        return dsm.getSourceMetadata();
+      }
+
+      // // Old schema format
+      let dataSourceMeta = camelizeKeys(manifestData?.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
