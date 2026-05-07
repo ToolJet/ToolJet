@@ -23,6 +23,47 @@ import config from 'config';
 import './styles.scss';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
+function isOldJoinFormat(joinTable) {
+  return 'join_type' in (joinTable?.joins?.[0] || {});
+}
+
+function parseOldFormatJoinTable(joinTable) {
+  const parseField = (field) => {
+    if (!field) return field;
+    return { ...field, columnName: field.column_name };
+  };
+
+  const parseCondition = (condition) => ({
+    ...condition,
+    leftField: parseField(condition.left_field),
+    rightField: parseField(condition.right_field),
+  });
+
+  const parseConditions = (conditions) => {
+    if (!conditions) return conditions;
+    return {
+      ...conditions,
+      conditionsList: (conditions.conditions_list || []).map(parseCondition),
+    };
+  };
+
+  return {
+    ...joinTable,
+    joins: (joinTable.joins || []).map((join) => ({
+      ...join,
+      joinType: join.join_type,
+      conditions: parseConditions(join.conditions),
+    })),
+    ...(joinTable.conditions && { conditions: parseConditions(joinTable.conditions) }),
+    order_by: (joinTable.order_by || []).map((order) => ({ ...order, columnName: order.column_name })),
+  };
+}
+
+function parseJoinTableOptions(joinTable) {
+  if (!joinTable || !Object.keys(joinTable).length) return joinTable;
+  return isOldJoinFormat(joinTable) ? parseOldFormatJoinTable(joinTable) : joinTable;
+}
+
 const ToolJetDbOperations = ({
   optionchanged,
   options,
@@ -52,7 +93,7 @@ const ToolJetDbOperations = ({
       limit: 1,
     }
   );
-  const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
+  const [joinTableOptions, setJoinTableOptions] = useState(parseJoinTableOptions(options['join_table'] || {}));
   const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
 
   const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
@@ -75,7 +116,7 @@ const ToolJetDbOperations = ({
     return false;
   };
 
-  const joinOptions = options['join_table']?.['joins'] || [
+  const joinOptions = parseJoinTableOptions(options['join_table'])?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
   ];
 
@@ -154,7 +195,7 @@ const ToolJetDbOperations = ({
     });
   };
 
-  const joinOrderByOptions = options?.['join_table']?.['order_by'] || [];
+  const joinOrderByOptions = parseJoinTableOptions(options?.['join_table'])?.['order_by'] || [];
   const setJoinOrderByOptions = (values) => {
     if (values.length) {
       setJoinTableOptions((prevJoinOptions) => {
@@ -179,8 +220,8 @@ const ToolJetDbOperations = ({
       tableSet.add(selectedTableId);
     }
 
-    const joinOptions = options['join_table']?.['joins'];
-    (joinOptions || []).forEach((join) => {
+    const joinOptionsFromProp = parseJoinTableOptions(options['join_table'])?.joins;
+    (joinOptionsFromProp || []).forEach((join) => {
       const { table, conditions } = join;
       tableSet.add(table);
       conditions?.conditionsList?.forEach((condition) => {

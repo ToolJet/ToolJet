@@ -865,9 +865,48 @@ export class TooljetDbTableOperationsService {
     };
   }
 
+  protected isOldJoinFormat(joinQueryJson: Record<string, any>): boolean {
+    return 'join_type' in (joinQueryJson?.joins?.[0] || {});
+  }
+
+  protected parseOldFormatJoinQueryJson(joinQueryJson: Record<string, any>): Record<string, any> {
+    const parseField = (field: any) => {
+      if (!field) return field;
+      return { ...field, columnName: field.column_name };
+    };
+
+    const parseCondition = (condition: any) => ({
+      ...condition,
+      leftField: parseField(condition.left_field),
+      rightField: parseField(condition.right_field),
+    });
+
+    const parseConditions = (conditions: any) => {
+      if (!conditions) return conditions;
+      return {
+        ...conditions,
+        conditionsList: (conditions.conditions_list || []).map(parseCondition),
+      };
+    };
+
+    return {
+      ...joinQueryJson,
+      joins: (joinQueryJson.joins || []).map((join: any) => ({
+        ...join,
+        joinType: join.join_type,
+        conditions: parseConditions(join.conditions),
+      })),
+      ...(joinQueryJson.conditions && { conditions: parseConditions(joinQueryJson.conditions) }),
+      order_by: (joinQueryJson.order_by || []).map((order: any) => ({ ...order, columnName: order.column_name })),
+    };
+  }
+
   protected async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson, dataQuery, user } = params;
-    if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const { joinQueryJson: rawJoinQueryJson, dataQuery, user } = params;
+    if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const joinQueryJson = this.isOldJoinFormat(rawJoinQueryJson)
+      ? this.parseOldFormatJoinQueryJson(rawJoinQueryJson)
+      : rawJoinQueryJson;
 
     const tjdbTenantConfigs = isSQLModeDisabled()
       ? {
@@ -886,7 +925,7 @@ export class TooljetDbTableOperationsService {
     (joinOptions || []).forEach((join) => {
       const { table, conditions } = join;
       tableSet.add(table);
-      conditions?.conditionsList?.forEach((condition) => {
+      conditions?.conditionsList?.forEach((condition: any) => {
         const { leftField, rightField } = condition;
         if (leftField?.table) {
           tableSet.add(leftField?.table);
@@ -1022,7 +1061,7 @@ export class TooljetDbTableOperationsService {
       const joinAlias = internalTableIdToNameMap[join.table];
       const conditions = this.constructFilterConditions(join.conditions, internalTableIdToNameMap);
 
-      const joinFunction = queryBuilder[camelCase(join.joinType) + 'Join'];
+      const joinFunction = (queryBuilder as any)[camelCase(join.joinType) + 'Join'];
       joinFunction.call(queryBuilder, join.table, joinAlias, conditions.query, conditions.params);
     });
 
@@ -1070,7 +1109,7 @@ export class TooljetDbTableOperationsService {
       }
     };
 
-    conditions.conditionsList.forEach((condition, index) => {
+    conditions.conditionsList.forEach((condition: any, index: number) => {
       const paramName = `${condition.leftField.columnName}_${index}`;
 
       let leftField;
