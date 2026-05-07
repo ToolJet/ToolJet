@@ -654,6 +654,15 @@ export class AppImportExportService {
       moduleVersions: {},
     };
 
+    // Module names live on app_versions.app_name post-migration. Scope the name match
+    // to the default branch's BRANCH-type version (the canonical carrier per branch);
+    // workflows are unaffected because modules can never be type=workflow.
+    // TODO: Git disabled flow, should pick from versions id
+    const defaultBranch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId: user.organizationId, isDefault: true },
+      select: ['id'],
+    });
+
     const existingModules =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
         ? await manager
@@ -662,10 +671,24 @@ export class AppImportExportService {
             .andWhere(
               new Brackets((qb: any) => {
                 if (moduleAppNames.length > 0) {
-                  qb.where(
-                    `EXISTS (SELECT 1 FROM app_versions av WHERE av.app_id = app.id AND av.app_name IN (:...moduleAppNames))`,
-                    { moduleAppNames }
-                  );
+                  if (defaultBranch?.id) {
+                    qb.where(
+                      `EXISTS (
+                         SELECT 1 FROM app_versions av
+                         WHERE av.app_id = app.id
+                           AND av.branch_id = :defaultBranchId
+                           AND av.version_type = 'branch'
+                           AND av.app_name IN (:...moduleAppNames)
+                       )`,
+                      { defaultBranchId: defaultBranch.id, moduleAppNames }
+                    );
+                  } else {
+                    // Non-git-sync workspace: no branches. Match against any version's app_name.
+                    qb.where(
+                      `EXISTS (SELECT 1 FROM app_versions av WHERE av.app_id = app.id AND av.app_name IN (:...moduleAppNames))`,
+                      { moduleAppNames }
+                    );
+                  }
                 }
                 if (moduleAppCoRelIds.length > 0) {
                   qb.orWhere('app.co_relation_id IN (:...moduleAppCoRelIds)', { moduleAppCoRelIds });
@@ -676,11 +699,32 @@ export class AppImportExportService {
             .getMany()
         : [];
 
-    // Index existing modules by passport first, name as fallback.
+    // Index existing modules by passport first, name as fallback. Resolve each module's
+    // canonical name from the same source as the lookup above.
     const existingByCoRel = new Map<string, App>(
       existingModules.filter((m) => m.co_relation_id).map((m) => [m.co_relation_id, m])
     );
-    const existingByName = new Map<string, App>(existingModules.map((m) => [m.name, m]));
+    const existingByName = new Map<string, App>();
+    if (existingModules.length > 0 && moduleAppNames.length > 0) {
+      const nameQb = manager
+        .createQueryBuilder(AppVersion, 'av')
+        .select(['av.app_id AS app_id', 'av.app_name AS app_name'])
+        .where('av.app_id IN (:...appIds)', { appIds: existingModules.map((m) => m.id) })
+        .andWhere('av.app_name IN (:...moduleAppNames)', { moduleAppNames });
+      if (defaultBranch?.id) {
+        nameQb
+          .andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id })
+          .andWhere(`av.version_type = 'branch'`);
+      }
+      const moduleNameRows: { app_id: string; app_name: string }[] = await nameQb.getRawMany();
+      const appById = new Map(existingModules.map((m) => [m.id, m]));
+      for (const row of moduleNameRows) {
+        const app = appById.get(row.app_id);
+        if (app && row.app_name && !existingByName.has(row.app_name)) {
+          existingByName.set(row.app_name, app);
+        }
+      }
+    }
 
     // If consumer is on a non-default branch, we'll need to hydrate a BRANCH-type
     // stub row for each module on that branch so the module appears in the branch's
@@ -931,14 +975,7 @@ export class AppImportExportService {
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      const isWorkflow = newApp.type === APP_TYPES.WORKFLOW;
-      if (isWorkflow) {
-        newApp.slug = importedApp.slug || importedApp.id;
-      } else {
-        // For non-workflows, slug on apps table is just the app id (placeholder)
-        // Real slug lives on app_versions (written during createAppVersionsForImportedApp)
-        newApp.slug = newApp.slug || importedApp.id;
-      }
+      newApp.slug = importedApp.slug || importedApp.id;
       await manager.save(newApp);
       return { newApp, resourceMapping };
     }, manager);
@@ -1167,13 +1204,16 @@ export class AppImportExportService {
     return await catchDbException(async () => {
       const isWorkflow = appParams?.type === APP_TYPES.WORKFLOW;
       const appId = uuid();
+      // Workflows still carry name/slug/icon/isPublic on apps.*; non-workflow metadata
+      // lives on app_versions. apps.slug stays as the app id placeholder so the legacy
+      // unique constraint is satisfied for non-workflows.
       const importedApp = manager.create(App, {
         id: appId,
         name: isWorkflow ? appParams.name : null,
         type: appParams.type || APP_TYPES.FRONT_END,
         isMaintenanceOn: appParams.isMaintenanceOn || false,
         organizationId: user?.organizationId,
-        userId: user.id,
+        userId: user.id, //fetch super admin user id for EE
         slug: isWorkflow ? null : appId,
         icon: isWorkflow ? appParams.icon : null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
@@ -1185,10 +1225,12 @@ export class AppImportExportService {
 
       await manager.save(importedApp);
 
+      // Stage metadata for downstream (createAppVersionsForImportedApp,
+      // ensureDefaultBranchVersion) so they can write it to app_versions.
       if (!isWorkflow) {
         (importedApp as any).__importMetadata = {
           slug: appParams.slug || null,
-          appName: appParams.name,
+          appName: appParams.name || null,
           icon: appParams.icon || null,
           isPublic: appParams.isPublic ?? false,
         };
@@ -2992,6 +3034,10 @@ export class AppImportExportService {
       }
     }
 
+    // Track the most recently saved version so the post-loop ensureDefaultBranchVersion
+    // call can copy content from it.
+    let lastSavedVersion: AppVersion | undefined;
+
     for (const appVersion of appVersions) {
       const appEnvIds: string[] = [...organization.appEnvironments.map((env) => env.id)];
 
@@ -3026,9 +3072,10 @@ export class AppImportExportService {
         }
 
         const isLastVersion = appVersion === appVersions[appVersions.length - 1];
-        // For non-workflows, propagate metadata from __importMetadata or appVersion to the version row
+        // Non-workflows carry slug/appName/icon/isPublic on app_versions. Source the
+        // values from the staged importMetadata, falling back to per-version values
+        // in the import payload.
         const importMeta = !isWorkflow ? (importedApp as any).__importMetadata : null;
-
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
           definition: appVersion.definition,
@@ -3047,15 +3094,11 @@ export class AppImportExportService {
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
-          // Branch-specific metadata: only BRANCH-type versions carry slug/appName.
-          // icon and isPublic go on all versions.
           ...(importMeta && {
-            icon: appVersion.icon !== undefined ? appVersion.icon : importMeta.icon,
-            isPublic: appVersion.isPublic !== undefined ? appVersion.isPublic : importMeta.isPublic,
-          }),
-          ...(importMeta && isSubBranch && {
-            slug: appVersion.slug || importMeta.slug,
-            appName: appVersion.appName || importMeta.appName,
+            slug: appVersion.slug ?? importMeta.slug,
+            appName: appVersion.appName ?? importMeta.appName,
+            icon: appVersion.icon ?? importMeta.icon,
+            isPublic: appVersion.isPublic ?? importMeta.isPublic,
           }),
         });
       }
@@ -3086,54 +3129,75 @@ export class AppImportExportService {
       }
 
       await manager.save(version);
+      lastSavedVersion = version;
 
       appDefaultEnvironmentMapping[appVersion.id] = appEnvIds;
       appVersionMapping[appVersion.id] = version.id;
     }
 
-    // Dual-presence: when importing on a feature branch, also create a VERSION-type
-    // version on the default branch for sync integrity. This ensures the app appears
-    // in the default branch listing and can be discovered for merge/pull operations.
-    if (isSubBranch && !isWorkflow) {
-      const defaultBranch = await manager.findOne(WorkspaceBranch, {
-        where: { organizationId: user?.organizationId, isDefault: true },
-        select: ['id'],
-      });
-      if (defaultBranch) {
-        const existingDefaultVersion = await manager.findOne(AppVersion, {
-          where: { appId: importedApp.id, branchId: defaultBranch.id },
-        });
-        if (!existingDefaultVersion) {
-          const lastImportedVersion = appVersions[appVersions.length - 1];
-          const importMeta = (importedApp as any).__importMetadata;
-          const defaultVersion = manager.create(AppVersion, {
-            appId: importedApp.id,
-            definition: lastImportedVersion.definition || {},
-            name: lastImportedVersion.name || 'v1',
-            currentEnvironmentId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            status: AppVersionStatus.PUBLISHED,
-            versionType: AppVersionType.VERSION,
-            branchId: defaultBranch.id,
-            createdById: user.id,
-            showViewerNavigation: lastImportedVersion.showViewerNavigation ?? true,
-            globalSettings: lastImportedVersion.globalSettings || {},
-            pageSettings: lastImportedVersion.pageSettings || {},
-            ...(importedApp.type === APP_TYPES.MODULE && {
-              moduleReferenceId: lastImportedVersion.moduleReferenceId || uuid(),
-            }),
-            // VERSION-type version on default branch: only icon/isPublic, no slug/appName.
-            // The BRANCH version on the default branch is the slug carrier.
-            icon: importMeta?.icon ?? lastImportedVersion.icon ?? null,
-            isPublic: importMeta?.isPublic ?? lastImportedVersion.isPublic ?? false,
-          } as DeepPartial<AppVersion>);
-          await manager.save(AppVersion, defaultVersion);
-        }
-      }
+    // For non-workflows in git-sync workspaces, ensure the default branch carries a
+    // BRANCH-type metadata row. lastSavedVersion is the most recent AppVersion from the
+    // loop above (typically the editing version).
+    if (!isWorkflow && lastSavedVersion) {
+      await this.ensureDefaultBranchVersion(manager, importedApp, lastSavedVersion, user?.organizationId);
     }
 
     return appResourceMappings;
+  }
+
+  /**
+   * For non-workflows, ensure the workspace's default branch has an AppVersion row
+   * for this app. Skipped entirely for workflows (metadata stays on apps.*) and for
+   * non-git-sync workspaces (no default branch exists). If any row already exists for
+   * (appId, defaultBranch.id) — VERSION or BRANCH type — the helper is a no-op so it
+   * fires only on the first write.
+   *
+   * The inserted row is BRANCH-type, name is a fresh UUID (BRANCH names are not user-
+   * visible), and all content is copied from the just-created sourceVersion. Metadata
+   * (slug/appName/icon/isPublic) prefers the staged __importMetadata, falling back to
+   * the sourceVersion's own values.
+   */
+  private async ensureDefaultBranchVersion(
+    manager: EntityManager,
+    app: App,
+    sourceVersion: AppVersion,
+    organizationId: string
+  ): Promise<void> {
+    if (app.type === APP_TYPES.WORKFLOW) return;
+
+    const defaultBranch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    if (!defaultBranch) return;
+
+    const existing = await manager.findOne(AppVersion, {
+      where: { appId: app.id, branchId: defaultBranch.id },
+      select: ['id'],
+    });
+    if (existing) return;
+
+    const importMeta = (app as any).__importMetadata;
+    const branchVersion = manager.create(AppVersion, {
+      name: uuid(),
+      appId: app.id,
+      versionType: AppVersionType.BRANCH,
+      branchId: defaultBranch.id,
+      status: AppVersionStatus.DRAFT,
+      definition: sourceVersion.definition || {},
+      globalSettings: sourceVersion.globalSettings || {},
+      pageSettings: sourceVersion.pageSettings || {},
+      showViewerNavigation: sourceVersion.showViewerNavigation ?? true,
+      homePageId: sourceVersion.homePageId || null,
+      currentEnvironmentId: sourceVersion.currentEnvironmentId || null,
+      slug: importMeta?.slug ?? sourceVersion.slug,
+      appName: importMeta?.appName ?? sourceVersion.appName,
+      icon: importMeta?.icon ?? sourceVersion.icon,
+      isPublic: importMeta?.isPublic ?? sourceVersion.isPublic,
+      ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
+    } as DeepPartial<AppVersion>);
+
+    await manager.save(AppVersion, branchVersion);
   }
 
   async createDefaultDataSourceForVersion(organizationId: string, manager: EntityManager): Promise<any> {
@@ -3304,6 +3368,7 @@ export class AppImportExportService {
     const dataQueries = appParams?.dataQueries || [];
     let currentEnvironmentId = null;
 
+    const importMeta = importedApp.type !== APP_TYPES.WORKFLOW ? (importedApp as any).__importMetadata : null;
     const version = manager.create(AppVersion, {
       appId: importedApp.id,
       definition: appParams.definition,
@@ -3312,8 +3377,18 @@ export class AppImportExportService {
       createdAt: new Date(),
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
+      ...(importMeta && {
+        slug: importMeta.slug,
+        appName: importMeta.appName,
+        icon: importMeta.icon,
+        isPublic: importMeta.isPublic,
+      }),
     });
     await manager.save(version);
+
+    // Mirror metadata onto the default branch's BRANCH-type carrier (no-op for workflows
+    // and non-git-sync workspaces).
+    await this.ensureDefaultBranchVersion(manager, importedApp, version, user?.organizationId);
 
     // Create default data sources
     const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);

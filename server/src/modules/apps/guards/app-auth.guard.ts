@@ -10,7 +10,6 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { AppsUtilService } from '../util.service';
 import { AppsRepository } from '../repository';
 import { OrganizationRepository } from '@modules/organizations/repository';
-import { AppVersion } from '@entities/app_version.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
@@ -53,13 +52,12 @@ export class AppAuthGuard extends AuthGuard('jwt') {
         qb.andWhere('av.branch_id = :branchId', { branchId });
       } else {
         // No branch context — fall back to the default branch for git-sync workspaces,
-        // and accept NULL branch_id rows for non-git-sync workspaces.
         // TODO: Git disabled flow, should pick from versions id
         qb.leftJoin(
           'workspace_branches',
           'wb',
           'wb.id = av.branch_id AND wb.organization_id = app.organization_id'
-        ).andWhere('(av.branch_id IS NULL OR wb.is_default = true)');
+        ).andWhere('wb.is_default = true');
       }
 
       return qb.getRawOne();

@@ -9,6 +9,10 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class GroupPermissionsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       GroupPermissionsService,
       GroupPermissionsUtilService,
@@ -33,7 +37,7 @@ export class GroupPermissionsModule extends SubModule {
       'controllers/group-admin.controller',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: GroupPermissionsModule,
       imports: [await RolesModule.register(configs)],
       controllers: isMainImport
@@ -54,6 +58,6 @@ export class GroupPermissionsModule extends SubModule {
         FeatureAbilityFactory,
       ],
       exports: [GroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
-    };
+    });
   }
 }         

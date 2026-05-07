@@ -10,6 +10,10 @@ import { BackgroundProcessorModule } from '@modules/background-processor/module'
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { WorkspaceBranchController, WorkspaceBranchService } = await this.getProviders(
       configs,
       'workspace-branches',
@@ -22,7 +26,7 @@ export class WorkspaceBranchesModule extends SubModule {
       ['pull.service', 'push.service']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: WorkspaceBranchesModule,
       imports: [
         await GitSyncModule.register(configs),
@@ -35,6 +39,6 @@ export class WorkspaceBranchesModule extends SubModule {
       controllers: isMainImport ? [WorkspaceBranchController] : [],
       providers: [WorkspaceBranchService, FeatureAbilityFactory, PlatformGitPullService, PlatformGitPushService],
       exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService],
-    };
+    });
   }
 }

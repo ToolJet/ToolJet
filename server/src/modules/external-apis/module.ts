@@ -24,6 +24,10 @@ import { OrganizationUsersModule } from '@modules/organization-users/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       ExternalApisController,
       ExternalApisService,
@@ -38,7 +42,7 @@ export class ExternalApiModule extends SubModule {
       'controllers/groups.controller',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: ExternalApiModule,
       imports: [
         await UsersModule.register(configs),
@@ -73,6 +77,6 @@ export class ExternalApiModule extends SubModule {
         ? [ExternalApisController, ExternalApisAppsController, ExternalApisGroupsController]
         : [],
       exports: [ExternalApiUtilService],
-    };
+    });
   }
 }

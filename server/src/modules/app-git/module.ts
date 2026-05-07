@@ -14,6 +14,10 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 export class AppGitModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       AppGitController,
       AppGitService,
@@ -47,7 +51,7 @@ export class AppGitModule extends SubModule {
       'shared/branching-business.util',
       'shared/datasource-branch.util',
     ]);
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppGitModule,
       imports: [
         await FolderAppsModule.register(configs),
@@ -89,6 +93,6 @@ export class AppGitModule extends SubModule {
         DataSourceBranchUtil,
         HTTPSAppGitService,
       ],
-    };
+    });
   }
 }

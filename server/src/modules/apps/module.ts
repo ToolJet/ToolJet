@@ -31,6 +31,10 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       AppsController,
       WorkflowController,
@@ -55,7 +59,7 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppsModule,
       imports: [
         TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component, VersionRepository]),
@@ -94,6 +98,6 @@ export class AppsModule extends SubModule {
         GroupPermissionsRepository,
       ],
       exports: [AppsUtilService, AppImportExportService],
-    };
+    });
   }
 }

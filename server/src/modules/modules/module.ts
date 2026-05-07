@@ -1,5 +1,6 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
+import { SubModule } from '@modules/app/sub-module';
 import { ThemesModule } from '@modules/organization-themes/module';
 import { FoldersModule } from '@modules/folders/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
@@ -20,8 +21,12 @@ import { GroupPermissionsRepository } from '@modules/group-permissions/repositor
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 @Module({})
-export class ModulesModule {
+export class ModulesModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const importPath = await getImportPath(configs.IS_GET_CONTEXT);
     const { ModulesController } = await import(`${importPath}/modules/modules.controller`);
     const { AppsService } = await import(`${importPath}/apps/service`);
@@ -32,7 +37,7 @@ export class ModulesModule {
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { ValidAppGuard } = await import(`${importPath}/apps/guards/valid-app.guard`);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: ModulesModule,
       imports: [
         await FolderAppsModule.register(configs),
@@ -66,6 +71,6 @@ export class ModulesModule {
         OrganizationGitSyncRepository,
       ],
       exports: [AppsUtilService],
-    };
+    });
   }
 }
