@@ -67,6 +67,26 @@ export const fetchWorkspaceApps = (workspaceId, authToken) => {
     );
 }
 
+export const listWorkspaceModules = (workspaceId, headers) => {
+    const h = headers ? { Authorization: headers.Authorization } : {};
+    return apiRequest("GET", `${Cypress.env('API_URL')}/ext/workspace/${workspaceId}/modules`, {}, h);
+};
+
+export const exportModule = (workspaceId, moduleId, queryString = '', headers) => {
+    const h = headers ? { Authorization: headers.Authorization } : {};
+    return apiRequest(
+        "POST",
+        `${Cypress.env('API_URL')}/ext/export/workspace/${workspaceId}/modules/${moduleId}${queryString}`,
+        {},
+        h
+    );
+};
+
+export const importModule = (workspaceId, moduleData, headers) => {
+    const h = headers ? { Authorization: headers.Authorization } : {};
+    return apiRequest("POST", `${Cypress.env('API_URL')}/ext/import/workspace/${workspaceId}/modules`, moduleData, h);
+};
+
 export const createGroup = (groupName) => {
     cy.get(groupsSelector.createNewGroupButton).click();
     cy.clearAndType(groupsSelector.groupNameInput, groupName);
