@@ -591,6 +591,19 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
+        {isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'maxLimit',
+            'properties',
+            currentState,
+            allComponents,
+            darkMode,
+            componentMeta.properties?.maxLimit?.placeholder
+          )}
         {isSortingEnabled &&
           renderElement(
             component,

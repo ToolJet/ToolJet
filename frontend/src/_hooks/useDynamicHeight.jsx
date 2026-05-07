@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { getDynamicElementSelector, normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import useStore from '@/AppBuilder/_stores/store';
@@ -20,6 +21,11 @@ export const useDynamicHeight = ({
   isRowSubcontainer = false,
 }) => {
   const { contextPath } = useSubcontainerContext();
+  // Resolve moduleId from context so widgets calling this hook don't have to
+  // forward it. When a Module is consumed inside an app, the embedded module's
+  // components live under modules[widgetId] (not 'canvas'); without this the
+  // reflow pipeline silently misses them.
+  const { moduleId } = useModuleContext();
   const prevDynamicHeight = useRef(isDynamicHeightEnabled);
   const prevHeight = useRef(height);
 
@@ -92,7 +98,7 @@ export const useDynamicHeight = ({
       // For non-containers, we need the element at 'auto' height so the DOM can be measured.
       if (!isContainer && element) element.style.height = 'auto';
       requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
+        adjustComponentPositions(id, currentLayout, isContainer, contextIndices, moduleId);
       });
     } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       if (element) element.style.height = `${height}px`;
@@ -110,7 +116,7 @@ export const useDynamicHeight = ({
         clearContainerTempLayouts?.(id, contextIndices);
       }
       requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
+        adjustComponentPositions(id, currentLayout, isContainer, contextIndices, moduleId);
       });
     }
     if (element) prevHeight.current = element.offsetHeight;
@@ -130,6 +136,7 @@ export const useDynamicHeight = ({
     subContainerIndex,
     isRowSubcontainer,
     contextPath,
+    moduleId,
   ]);
 
   return;
