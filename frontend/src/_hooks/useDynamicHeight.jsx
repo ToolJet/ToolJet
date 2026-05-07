@@ -9,7 +9,6 @@ export const useDynamicHeight = ({
   id,
   height,
   value,
-  adjustComponentPositions,
   currentLayout,
   width,
   isContainer = false,
@@ -91,9 +90,7 @@ export const useDynamicHeight = ({
       // so we can adjust synchronously without setting height to 'auto' first.
       // For non-containers, we need the element at 'auto' height so the DOM can be measured.
       if (!isContainer && element) element.style.height = 'auto';
-      requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
-      });
+      useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices);
     } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       if (element) element.style.height = `${height}px`;
       // Container toggled off: drop the container's own inflated temp so
@@ -109,9 +106,7 @@ export const useDynamicHeight = ({
         const clearContainerTempLayouts = useStore.getState().clearContainerTempLayouts;
         clearContainerTempLayouts?.(id, contextIndices);
       }
-      requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
-      });
+      useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices);
     }
     if (element) prevHeight.current = element.offsetHeight;
     prevDynamicHeight.current = isDynamicHeightEnabled;
@@ -119,7 +114,6 @@ export const useDynamicHeight = ({
     isDynamicHeightEnabled,
     id,
     value,
-    adjustComponentPositions,
     currentLayout,
     height,
     width,

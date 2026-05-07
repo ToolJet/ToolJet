@@ -22,7 +22,6 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariables,
-  adjustComponentPositions,
   currentLayout,
   darkMode,
   dataCy,
@@ -220,7 +219,6 @@ export const Listview = function Listview({
                 darkMode={darkMode}
                 width={width}
                 isDynamicHeightEnabled={isDynamicHeightEnabled}
-                adjustComponentPositions={adjustComponentPositions}
                 data={data}
                 currentLayout={currentLayout}
                 visibility={visibility}
