@@ -30,7 +30,7 @@ const LockedBranchBanner = ({
       : 'This branch has been merged and is now read-only';
 
   return (
-    <div className={`locked-branch-banner locked-branch-banner--${variant}`}>
+    <div className={`locked-branch-banner locked-branch-banner--${variant}`} data-cy="locked-branch-banner">
       <div className="locked-branch-banner-content">
         {/* <svg
           className="locked-branch-banner-icon"
