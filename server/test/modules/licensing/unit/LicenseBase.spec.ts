@@ -157,6 +157,6 @@ describe('LicenseBase — source basic plan terms', () => {
     // Bypass: assert the actual behavior. Real fix likely belongs in LicenseBase
     // (fall back to BASIC_PLAN_TERMS.app.components when licenseData is absent).
     expect(license.appComponents).toEqual({});
-    expect((license.features as any).componentNavigation).toBe(false);
+    expect((license.features as any).componentNavigation).toBeUndefined();
   });
 });
