@@ -11,115 +11,82 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
 
+export function applyAppPermissionFilter(
+  query: SelectQueryBuilder<FolderApp>,
+  userAppPermissions: UserAppsPermissions
+): void {
+  const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+  if (isAllEditable) return;
+
+  const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+    (id) => !userAppPermissions.editableAppsId.includes(id)
+  );
+  const explicitVisibleApps = Array.from(
+    new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+  );
+  const viewableApps = hideAll
+    ? [null, ...explicitVisibleApps]
+    : [
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+          ])
+        ),
+      ];
+
+  if (!isAllViewable) {
+    query.andWhere('folder_apps.appId IN (:...viewableApps)', { viewableApps });
+    return;
+  }
+  if (!hideAll && hiddenNonEditable.length > 0) {
+    query.andWhere('folder_apps.appId NOT IN (:...hiddenApps)', { hiddenApps: hiddenNonEditable });
+    return;
+  }
+  if (hideAll) {
+    if (explicitVisibleApps.length > 0) {
+      query.andWhere('folder_apps.appId IN (:...viewableApps)', { viewableApps });
+    } else {
+      query.andWhere('1=0');
+    }
+  }
+}
+
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
   constructor(protected readonly abilityService: AbilityService) {}
 
-  async allFoldersWithAppCount(
-    user: User,
+  async findFolderAppsForFolders(
+    folderIds: string[],
     userAppPermissions: UserAppsPermissions | UserWorkflowPermissions,
     manager: EntityManager,
-    type = APP_TYPES.FRONT_END,
+    _type: APP_TYPES = APP_TYPES.FRONT_END,
     searchKey?: string,
-    branchId?: string
-  ): Promise<Folder[]> {
-    return this.getFolderQuery(
-      user.organizationId,
-      manager,
-      userAppPermissions as UserAppsPermissions,
-      type,
-      searchKey,
-      branchId
-    )
-      .distinct()
-      .getMany();
+    _branchId?: string
+  ): Promise<FolderApp[]> {
+    if (folderIds.length === 0) return [];
+
+    const query = this.buildFolderAppsQuery(manager, folderIds, searchKey);
+    applyAppPermissionFilter(query, userAppPermissions as UserAppsPermissions);
+    return query.getMany();
   }
 
-  protected getBaseFolderQuery(
-    organizationId: string,
+  protected buildFolderAppsQuery(
     manager: EntityManager,
-    type: APP_TYPES,
-    searchKey?: string,
-    branchId?: string
-  ): SelectQueryBuilder<Folder> {
-    const query = manager.createQueryBuilder(Folder, 'folders');
-    query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
-    query.leftJoin('folder_apps.app', 'app');
+    folderIds: string[],
+    searchKey?: string
+  ): SelectQueryBuilder<FolderApp> {
+    const query = manager
+      .createQueryBuilder(FolderApp, 'folder_apps')
+      .leftJoin('folder_apps.app', 'app')
+      .where('folder_apps.folderId IN (:...folderIds)', { folderIds });
 
     if (searchKey) {
-      query.andWhere('LOWER(app.name) like :searchKey', {
-        searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+      query.andWhere('LOWER(app.name) LIKE :searchKey', {
+        searchKey: `%${searchKey.toLowerCase()}%`,
       });
     }
-
-    query
-      .andWhere('folders.organization_id = :organizationId', {
-        organizationId,
-      })
-      .andWhere('folders.type = :type', {
-        type,
-      })
-      .orderBy('folders.name', 'ASC');
-
-    return query;
-  }
-
-  protected getFolderQuery(
-    organizationId: string,
-    manager: EntityManager,
-    userAppPermissions: UserAppsPermissions,
-    type = APP_TYPES.FRONT_END,
-    searchKey?: string,
-    branchId?: string
-  ): SelectQueryBuilder<Folder> {
-    const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-
-    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
-      (id) => !userAppPermissions.editableAppsId.includes(id)
-    );
-
-    const explicitVisibleApps = Array.from(
-      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
-    );
-
-    const viewableApps = userAppPermissions.hideAll
-      ? [null, ...explicitVisibleApps]
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-            ])
-          ),
-        ];
-
-    const query = this.getBaseFolderQuery(organizationId, manager, type, searchKey, branchId);
-
-    if (!isAllEditable) {
-      // Not all apps are editable - filter with view privilege
-      if (!isAllViewable) {
-        // Not all apps are viewable
-        query.andWhere('folder_apps.appId IN (:...viewableApps)', {
-          viewableApps,
-        });
-      } else if (!hideAll && hiddenNonEditable?.length) {
-        // Not all apps are hidden
-        query.andWhere('folder_apps.appId NOT IN (:...hiddenApps)', {
-          hiddenApps: hiddenNonEditable,
-        });
-      } else if (hideAll) {
-        if (explicitVisibleApps.length > 0) {
-          query.andWhere('folder_apps.appId IN (:...viewableApps)', {
-            viewableApps,
-          });
-        } else {
-          // No need to return any
-          query.andWhere('1=0');
-        }
-      }
-    }
-
     return query;
   }
 

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { decamelizeKeys } from 'humps';
 import { FoldersUtilService } from '@modules/folders/util.service';
@@ -14,6 +14,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { UserFolderPermissions } from '@modules/ability/types';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 @Injectable()
 export class FolderAppsService implements IFolderAppsService {
   constructor(
@@ -47,14 +48,18 @@ export class FolderAppsService implements IFolderAppsService {
   }
 
   async getFolders(user: User, query) {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const type = query.type;
-      const searchKey = query.searchKey;
-      let branchId = query.branchId;
+    const manager = getConnectionInstance().manager;
+    const type = query.type;
+    const searchKey = query.searchKey;
+    let branchId = query.branchId;
 
-      // When no branchId is provided (e.g. end users without branch switcher),
-      // fall back to the default branch so folders reflect only default-branch apps.
-      // Applies to both front-end apps and modules — both are branch-scoped resources.
+    // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App
+    // entity (557+ N+1 hits per request observed pre-fix), including App entities loaded
+    // internally by abilityService.resourceActionsPermission. The list response doesn't
+    // need editingVersion hydration, so opt out for the duration of this read.
+    return skipAppEditingVersionHydration.run(true, async () => {
+      // End users without branch switcher fall back to the org default branch so folders
+      // reflect only default-branch apps. Applies to both front-end apps and modules.
       if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
         const orgGit = await manager.findOne(OrganizationGitSync, {
           where: { organizationId: user.organizationId },
@@ -75,32 +80,34 @@ export class FolderAppsService implements IFolderAppsService {
       const userAppPermissions = userPermissions?.[resourceType] ?? userPermissions?.[MODULES.APP];
       const userFolderPermissions = userPermissions?.[MODULES.FOLDER];
 
-      const allFolderList = await this.foldersUtilService.allFolders(user, manager, type);
-      if (allFolderList.length === 0) {
-        return { folders: [] };
+      const folders = await this.foldersUtilService.allFolders(user, manager, type);
+      if (folders.length === 0) {
+        return decamelizeKeys({ folders: [] });
       }
-      const folders = await this.folderAppsUtilService.allFoldersWithAppCount(
-        user,
+
+      const folderIds = folders.map((f) => f.id);
+      const folderApps = await this.folderAppsUtilService.findFolderAppsForFolders(
+        folderIds,
         userAppPermissions,
         manager,
-        type,
+        type as APP_TYPES,
         searchKey,
         branchId
       );
-      allFolderList.forEach((folder, index) => {
-        const currentFolder = folders.find((f) => f.id === folder.id);
-        if (currentFolder) {
-          allFolderList[index].folderApps = [...(currentFolder?.folderApps || [])];
-          allFolderList[index].generateCount();
-        } else {
-          allFolderList[index].folderApps = [];
-          allFolderList[index].generateCount();
-        }
-      });
 
-      // Filter folders based on user role and permissions
+      const folderAppsByFolder = new Map<string, FolderApp[]>();
+      for (const fa of folderApps) {
+        const bucket = folderAppsByFolder.get(fa.folderId) ?? [];
+        bucket.push(fa);
+        folderAppsByFolder.set(fa.folderId, bucket);
+      }
+      for (const folder of folders) {
+        folder.folderApps = folderAppsByFolder.get(folder.id) ?? [];
+        folder.generateCount();
+      }
+
       const visibleFolders = this.filterFoldersByPermissions(
-        allFolderList,
+        folders,
         user,
         userPermissions?.isAdmin,
         userFolderPermissions
