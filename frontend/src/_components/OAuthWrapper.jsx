@@ -176,6 +176,7 @@ const OAuthWrapper = ({
               type="checkbox"
               checked={multiple_auth_enabled}
               onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+              disabled={isFieldsDisabled}
             />
             <div>
               <span className="form-check-label">Authentication required for all users</span>

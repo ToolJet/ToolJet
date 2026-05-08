@@ -187,6 +187,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
             onKeyDown={handleKeyDown}
             disabled={isCreating}
             autoFocus
+            data-cy="branch-name-input"
           />
           {validationError && <div className="form-error-message">{validationError}</div>}
           <div className="form-helper-text">
@@ -218,7 +219,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
 
         {/* Footer buttons */}
         <div className="col d-flex justify-content-end gap-2 mt-3">
-          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md">
+          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
             Cancel
           </ButtonSolid>
           <ButtonSolid
@@ -227,6 +228,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
             disabled={isCreating || !branchName.trim()}
             isLoading={isCreating}
             size="md"
+            data-cy="create-branch-button"
           >
             Create branch
           </ButtonSolid>

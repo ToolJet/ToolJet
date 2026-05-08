@@ -234,6 +234,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             onKeyDown={handleKeyDown}
             disabled={isCreating}
             autoFocus
+            data-cy="branch-name-input"
           />
           {validationError && <div className="form-error-message">{validationError}</div>}
           <div className="form-helper-text">Branch name must be unique and max 50 characters</div>
@@ -257,7 +258,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
 
         {/* Footer buttons */}
         <div className="col d-flex justify-content-end gap-2 mt-3">
-          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md">
+          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
             Cancel
           </ButtonSolid>
           <ButtonSolid
@@ -266,6 +267,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
             disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingTags}
             isLoading={isCreating}
             size="md"
+            data-cy="create-branch-button"
           >
             Create branch
           </ButtonSolid>
