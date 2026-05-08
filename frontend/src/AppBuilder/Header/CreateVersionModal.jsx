@@ -4,7 +4,6 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -30,9 +29,6 @@ const CreateVersionModal = ({
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
-  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
-  // fall back to the store value set by fetchAppGit.
-  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const {
     changeEditorVersionAction,
@@ -68,6 +64,10 @@ const CreateVersionModal = ({
     }),
     shallow
   );
+
+  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
+  // fall back to the store value set by fetchAppGit.
+  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
@@ -106,8 +106,8 @@ const CreateVersionModal = ({
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
         setSelectedVersionForCreation(versionToPromote);
-        setVersionName(versionToPromote.name);
-        setVersionDescription(versionToPromote.description || '');
+        setVersionName(isGitSyncEnabled ? '' : versionToPromote.name);
+        setVersionDescription(isGitSyncEnabled ? '' : versionToPromote.description || '');
       }
       return;
     }
@@ -117,17 +117,18 @@ const CreateVersionModal = ({
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
         setSelectedVersionForCreation(selected);
-        setVersionName(selected.name);
-        setVersionDescription(selected.description || '');
+        setVersionName(isGitSyncEnabled ? '' : selected.name);
+        setVersionDescription(isGitSyncEnabled ? '' : selected.description || '');
         return;
       }
     }
 
     // Fallback: if no version is selected or found, use the first development version
     if (developmentVersions.length > 0) {
-      setSelectedVersionForCreation(developmentVersions[0]);
-      setVersionName(developmentVersions[0].name);
-      setVersionDescription(developmentVersions[0].description || '');
+      const fallback = developmentVersions[0];
+      setSelectedVersionForCreation(fallback);
+      setVersionName(isGitSyncEnabled ? '' : fallback.name);
+      setVersionDescription(isGitSyncEnabled ? '' : fallback.description || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developmentVersions, versionId, showCreateAppVersion]);
@@ -151,6 +152,14 @@ const CreateVersionModal = ({
     if (!selectedVersionForCreation) {
       toast.error('Please wait while versions are loading...');
       return;
+    }
+
+    if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
+      if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
+        toast.error('Version name cannot contain spaces or special characters (~^:?*[\\@{) when git sync is enabled.');
+        setIsCreatingVersion(false);
+        return;
+      }
     }
 
     setIsCreatingVersion(true);

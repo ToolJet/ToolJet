@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -7,6 +7,7 @@ import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import '../../_styles/version-modal.scss';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
@@ -14,8 +15,7 @@ import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion, fetchingOrgGit }) => {
   const { moduleId } = useModuleContext();
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
-  const [versionName, setVersionName] = useState('');
-  const [isGitSyncEnabled, setIsGitSyncEnabled] = useState(false);
+  const { isGitSyncEnabled, defaultBranch } = useGitSyncConfig();
   const refreshVersions = useVersionManagerStore((state) => state.refreshVersions);
   const {
     createNewVersionAction,
@@ -25,8 +25,6 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     appId,
     selectedVersion,
     selectedEnvironment,
-    orgGit,
-    appGit,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -39,21 +37,12 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       appId: state.appStore.modules[moduleId].app.appId,
       currentVersionId: state.currentVersionId,
       selectedVersion: state.selectedVersion,
-      appGit: state.appGit,
-      orgGit: state.orgGit,
     }),
     shallow
   );
 
   // Filter out draft versions - show all saved versions (PUBLISHED + any released)
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
-  useEffect(() => {
-    const gitSyncEnabled =
-      appGit?.org_git?.git_ssh?.is_enabled ||
-      appGit?.org_git?.git_https?.is_enabled ||
-      appGit?.org_git?.git_lab?.is_enabled;
-    setIsGitSyncEnabled(gitSyncEnabled);
-  }, [appGit]);
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
 
   useEffect(() => {
@@ -89,20 +78,6 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     }
   }, [savedVersions, selectedVersion, selectedVersionForCreation]);
 
-  // Update version name when selectedVersionForCreation changes or when modal opens
-  const hasInitializedVersionName = useRef(false);
-
-  useEffect(() => {
-    if (!showCreateAppVersion) {
-      hasInitializedVersionName.current = false;
-      return;
-    }
-    if (!hasInitializedVersionName.current && selectedVersionForCreation?.name) {
-      setVersionName(selectedVersionForCreation.name);
-      hasInitializedVersionName.current = true;
-    }
-  }, [selectedVersionForCreation, showCreateAppVersion]);
-
   const { t } = useTranslation();
 
   // Create options from savedVersions (all non-draft versions)
@@ -113,32 +88,37 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       ? [{ label: selectedVersion.name, value: selectedVersion.id }]
       : [];
 
-  const createVersion = () => {
-    if (versionName.trim().length > 25) {
-      toast.error('Version name should not be longer than 25 characters');
-      return;
-    }
-    if (versionName.trim() == '') {
-      toast.error('Version name should not be empty');
-      return;
-    }
+  const [versionName, setVersionName] = useState('');
 
+  const createVersion = () => {
     if (!selectedVersionForCreation || selectedVersionForCreation === undefined) {
       toast.error('Please select a version from.');
       return;
     }
 
+    if (!isGitSyncEnabled) {
+      if (!versionName || versionName.trim() === '') {
+        toast.error('Version name should not be empty');
+        return;
+      }
+      if (versionName.trim().length > 25) {
+        toast.error('Version name should not be longer than 25 characters');
+        return;
+      }
+    }
+
     setIsCreatingVersion(true);
+
+    const draftName = isGitSyncEnabled ? defaultBranch : versionName.trim();
 
     //TODO: pass environmentId to the func
     createNewVersionAction(
       appId,
-      versionName,
+      draftName,
       selectedVersionForCreation.id,
-      '',
+      'Latest commit to main will appear here',
       (newVersion) => {
         toast.success('Version Created');
-        setVersionName('');
         setIsCreatingVersion(false);
         setShowCreateAppVersion(false);
         // Refresh development versions to update the list with the new draft
@@ -190,30 +170,28 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
           }}
         >
           <div className="create-draft-version-body">
-            <div className="mb-3">
-              <div className="col">
-                <label className="form-label mb-1 ms-1" data-cy="version-name-label">
+            {!isGitSyncEnabled && (
+              <div className="col mt-3 mb-3">
+                <label className="form-label mb-1 ms-1" data-cy="draft-version-name-label">
                   {t('editor.appVersionManager.versionName', 'Version Name')}
                 </label>
                 <input
                   type="text"
                   onChange={(e) => setVersionName(e.target.value)}
                   className="form-control"
-                  data-cy="version-name-input-field"
+                  data-cy="draft-version-name-input-field"
                   placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
                   disabled={isCreatingVersion}
                   value={versionName}
                   autoFocus={true}
                   minLength="1"
                   maxLength="25"
-                  style={{ height: '32px' }}
                 />
-                <small className="version-name-helper-text" data-cy="version-name-helper-text">
+                <small className="version-name-helper-text" data-cy="draft-version-name-helper-text">
                   {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
                 </small>
               </div>
-            </div>
-
+            )}
             <div className="mt-3 mb-3 version-select">
               <div className="col">
                 <label className="form-label mb-1 ms-1" data-cy="create-draft-version-from-label">
