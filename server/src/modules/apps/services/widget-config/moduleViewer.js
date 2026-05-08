@@ -13,7 +13,21 @@ export const moduleViewerConfig = {
     },
     properties: {},
     events: {},
-    styles: {},
+    styles: {
+      padding: {
+        type: 'switch',
+        displayName: 'Padding',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          defaultValue: 'default',
+        },
+        isFxNotRequired: true,
+        options: [
+          { displayName: 'Default', value: 'default' },
+          { displayName: 'None', value: 'none' },
+        ],
+      },
+    },
     exposedVariables: {},
     actions: [],
     definition: {
@@ -25,6 +39,7 @@ export const moduleViewerConfig = {
       events: [],
       styles: {
         backgroundColor: { value: '#fff' },
+        padding: { value: 'default' },
       },
     },
   };

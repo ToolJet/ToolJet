@@ -25,6 +25,9 @@ export enum FEATURE_KEY {
   LIST_GROUPS = 'LIST_GROUPS',
   GET_GROUP = 'GET_GROUP',
   DELETE_GROUP = 'DELETE_GROUP',
+  LIST_MODULES = 'LIST_MODULES',
+  EXPORT_MODULE = 'EXPORT_MODULE',
+  IMPORT_MODULE = 'IMPORT_MODULE',
 }
 
 export type DefaultDataSourceKind = 'restapi' | 'runjs' | 'runpy' | 'tooljetdb' | 'workflows';

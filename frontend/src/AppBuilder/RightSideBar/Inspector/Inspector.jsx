@@ -464,7 +464,11 @@ export const Inspector = ({
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
-    if (!componentMeta?.definition?.generalStyles || componentMeta?.styles?.boxShadow) {
+    if (
+      !componentMeta?.definition?.generalStyles ||
+      componentMeta?.styles?.boxShadow ||
+      ['ModuleContainer', 'ModuleViewer'].includes(componentMeta?.component)
+    ) {
       return null;
     }
     const items = [];
@@ -586,9 +590,8 @@ export const Inspector = ({
   };
 
   const renderTabs = () => {
-    const isContainerOrViewerModule = ['ModuleContainer', 'ModuleViewer'].includes(componentMeta.component);
     return (
-      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isContainerOrViewerModule}>
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">
           {propertiesTab}
         </Tab>
