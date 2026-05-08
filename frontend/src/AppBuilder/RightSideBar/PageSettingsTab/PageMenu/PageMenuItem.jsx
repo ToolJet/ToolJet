@@ -53,6 +53,7 @@ export const PageMenuItem = withRouter(
     const switchPageWrapper = useStore((state) => state.switchPageWrapper);
     const [showPageOptions, toggleShowPageOptions] = useState(false);
     const [showEditPopover, setShowEditPopover] = useState(false);
+    const [nestedPopoverOpen, setNestedPopoverOpen] = useState(false);
 
     const openPageEditPopover = useStore((state) => state.openPageEditPopover);
     const toggleEditPageNameInput = useStore((state) => state.toggleEditPageNameInput);
@@ -384,7 +385,7 @@ export const PageMenuItem = withRouter(
                   target={optionBtnRef.current}
                   show={showEditPopover && newPagePopupConfig?.mode == 'edit' && isEditingPage}
                   placement="left-start"
-                  rootClose
+                  rootClose={!nestedPopoverOpen}
                   onHide={() => {
                     setEditingPage(null);
                     setNewPagePopupConfig({ show: false, mode: null, type: null });
@@ -392,7 +393,7 @@ export const PageMenuItem = withRouter(
                     setShowEditPopover(false);
                   }}
                 >
-                  <AddEditPagePopup darkMode={darkMode} />
+                  <AddEditPagePopup darkMode={darkMode} onNestedPopoverOpenChange={setNestedPopoverOpen} />
                 </Overlay>
               </div>
             )}
