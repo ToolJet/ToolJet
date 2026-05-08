@@ -7,6 +7,7 @@ import {
   AppGitPushDto,
   AppImportRequestDto,
   AutoDeployBodyDto,
+  SaveVersionBodyDto,
 } from '../dto';
 import { EditUserRoleDto } from '@modules/roles/dto';
 
@@ -44,6 +45,8 @@ export interface IExternalApisAppsController {
   pushVersionToGit(appId: string, versionId: string, payload: AppGitPushDto): Promise<any>;
 
   autoDeployApp(appIdOrSlug: string, body: AutoDeployBodyDto): Promise<any>;
+
+  saveAppVersion(appIdOrSlug: string, body: SaveVersionBodyDto): Promise<any>;
 
   getAllWorkspaceApps(workspaceId: string): Promise<any>;
 
