@@ -12,12 +12,26 @@ export function defineDataQueryAppAbility(
   app: App
 ): void {
   const appId = app?.id;
-  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
+  const { superAdmin, isAdmin, userPermission, isBuilder, isEndUser } = UserAllPermissions;
   const resourcePermissions = userPermission?.[MODULES.APP];
   const isAllEditable = !!resourcePermissions?.isAllEditable;
   const isCanCreate = userPermission.appCreate;
   const isCanDelete = userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
+
+  console.log('Defining abilities for app', {
+    appId,
+    isAllEditable,
+    isCanCreate,
+    isCanDelete,
+    isAllViewable,
+    superAdmin,
+    isAdmin,
+    isBuilder,
+    appType: app?.type,
+    editableAppsId: JSON.stringify(resourcePermissions?.editableAppsId),
+    viewableAppsId: JSON.stringify(resourcePermissions?.viewableAppsId),
+  });
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
@@ -83,6 +97,11 @@ export function defineDataQueryAppAbility(
   }
 
   if (resourcePermissions?.viewableAppsId?.length && appId && resourcePermissions?.viewableAppsId?.includes(appId)) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
+    return;
+  }
+
+  if (isEndUser) {
     can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }

@@ -507,11 +507,13 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
     const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
     const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
+    // MODULE apps are not gated by app-level promote/release permissions
+    const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
-      isPromoteVersionEnabled: hasPromotePermission,
-      isReleaseVersionEnabled: hasReleasePermission,
+      isPromoteVersionEnabled: isModuleApp || hasPromotePermission,
+      isReleaseVersionEnabled: isModuleApp || hasReleasePermission,
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {
