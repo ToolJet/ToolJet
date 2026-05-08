@@ -11,7 +11,7 @@ export const listViewComponentSlice = (set, get) => {
   let _deriveChainScheduled = false;
 
   const scheduleDeriveChain = (nearestListviewId, indices, moduleId) => {
-    const key = `${nearestListviewId}|${indices.join(',')}|${moduleId}`;
+    const key = `${nearestListviewId}|${moduleId}`;
     _pendingDeriveChain.set(key, { nearestListviewId, indices, moduleId });
     if (!_deriveChainScheduled) {
       _deriveChainScheduled = true;
@@ -141,48 +141,7 @@ export const listViewComponentSlice = (set, get) => {
         return;
       }
 
-      set(
-        (state) => {
-          const components = state.resolvedStore.modules[moduleId].exposedValues.components;
-          if (!Array.isArray(components[componentId])) {
-            components[componentId] = [];
-          }
-          let current = components[componentId];
-          for (let i = 0; i < indices.length - 1; i++) {
-            const idx = indices[i];
-            if (!current[idx]) {
-              current[idx] = [];
-            } else if (!Array.isArray(current[idx])) {
-              current[idx] = [current[idx]];
-            }
-            current = current[idx];
-          }
-          const lastIdx = indices[indices.length - 1];
-          if (!current[lastIdx] || typeof current[lastIdx] !== 'object' || Array.isArray(current[lastIdx])) {
-            current[lastIdx] = {};
-          }
-          current[lastIdx][property] = value;
-        },
-        false,
-        {
-          type: 'setExposedValuePerRow',
-          payload: { componentId, property, value, indices, moduleId },
-        }
-      );
-      // Fire property-level dependency update.
-      // Example: user toggles checkbox in row 2 →
-      //   updateDependencyValues('components.checkbox-uuid.value')
-      //   → dependency graph finds: button's visibility depends on this key
-      //   → triggers updateChildComponentResolvedValues for the button
-      //   → which uses prepareRowScope/updateRowScope to resolve per row
-      get().updateDependencyValues(`components.${componentId}.${property}`, moduleId, []);
-
-      // Derive the ListView's children/data exposed values (used by {{components.listview1.data}})
-      const parentId = get().getComponentDefinition(componentId, moduleId)?.component?.parent;
-      const nearestListviewId = parentId ? get().findNearestSubcontainerAncestor(parentId, moduleId) : null;
-      if (nearestListviewId) {
-        scheduleDeriveChain(nearestListviewId, indices, moduleId);
-      }
+      scheduleExposedValuesPerRow(componentId, { [property]: value }, indices, moduleId);
     },
 
     // Batch per-row exposed value write for ListView children.
