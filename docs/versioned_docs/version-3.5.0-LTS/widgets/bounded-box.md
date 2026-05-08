@@ -25,12 +25,12 @@ A **Bounded Box** is an infinitely customizable image annotation component that 
 
 <br/>
 
-| <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div>                                        | <div style={{ width:"150px"}}> **Expected Value** </div>                                                                                                |
-| :------------------------------------------------- | :------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Image URL                                          | The URL or image data to show it on the component.                                           | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/). |
-| Default value                                      | The data that will load the default bounded boxes over the image when the app is loaded.     | Array of objects. Check the [Default value](#default-value) data properties.                                                                            |
-| Selector                                           | The bounded box support selection using rectangle or point.                                  | Click **fx** to set the value `RECTANGLE` or `POINT`.                                                                                                   |
-| List of labels                                     | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}`.                                                                                           |
+| <div style={{ width:"100px"}}> **Property** </div> | <div style={{ width:"100px"}}> **Description** </div>                                        | <div style={{ width:"150px"}}> **Expected Value** </div>                                                                                                       |
+| :------------------------------------------------- | :------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Image URL                                          | The URL or image data to show it on the component.                                           | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/widgets/image/loading-image-pdf-from-db/). |
+| Default value                                      | The data that will load the default bounded boxes over the image when the app is loaded.     | Array of objects. Check the [Default value](#default-value) data properties.                                                                                   |
+| Selector                                           | The bounded box support selection using rectangle or point.                                  | Click **fx** to set the value `RECTANGLE` or `POINT`.                                                                                                          |
+| List of labels                                     | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}`.                                                                                                  |
 
 #### Default value
 
@@ -49,22 +49,22 @@ Provide the data that will load the default bounding boxes over the image when t
 
 ```js
 [
-    {
-        type: 'RECTANGLE',
-        width: 40,
-        height: 24,
-        x: 41,
-        y: 12,
-        text: 'Tree'
-    },
-    {
-        type: 'POINT',
-        width: 0,
-        height: 0,
-        x: 10.28,
-        y: 81.14,
-        text: 'Car'
-    }
+  {
+    type: "RECTANGLE",
+    width: 40,
+    height: 24,
+    x: 41,
+    y: 12,
+    text: "Tree",
+  },
+  {
+    type: "POINT",
+    width: 0,
+    height: 0,
+    x: 10.28,
+    y: 81.14,
+    text: "Car",
+  },
 ];
 ```
 

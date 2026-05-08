@@ -17,6 +17,7 @@ You can also transform the query results using the **[Transformations](/docs/tut
 :::
 
 ToolJet supports the following REST HTTP methods:
+
 - **GET**
 - **POST**
 - **PUT**
@@ -39,7 +40,6 @@ Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is a
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/header.png" alt="ToolJet - Data source - REST API"/>
 
 </div>
-
 
 ## Request/Content Types
 
@@ -137,10 +137,9 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 ```
 </details>
 
-Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**.
+Read the guide on **[loading base64 data](/docs/widgets/image/loading-image-pdf-from-db)**.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
-
 
 ## Retry on Network Errors
 
@@ -160,12 +159,14 @@ ToolJet provides an option to automatically retry REST API requests in case of c
 You can configure this feature at two levels:
 
 ### Data Source Level
- In the REST API data source configuration, you'll find a toggle for **Retry on network errors** This sets the default behavior for all queries using this data source.
+
+In the REST API data source configuration, you'll find a toggle for **Retry on network errors** This sets the default behavior for all queries using this data source.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/rest-api-data-source.png" alt="ToolJet - Data source - REST API" />
 
 ### Query Level
- In the query builder for each REST API query, you'll find a similar toggle for for **Retry on network errors** under the **Settings** tab. This sets the behavior for that specific query.
+
+In the query builder for each REST API query, you'll find a similar toggle for for **Retry on network errors** under the **Settings** tab. This sets the behavior for that specific query.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/query-builder-retry.png" alt="ToolJet - Data source - REST API" />
 

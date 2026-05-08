@@ -109,7 +109,7 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 ```
 </details>
 
-Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**.
+Read the guide on **[loading base64 data](/docs/widgets/image/loading-image-pdf-from-db)**.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/image-comp-query.png" alt=" REST API image component mapping" />
 

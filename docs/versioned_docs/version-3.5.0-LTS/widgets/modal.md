@@ -86,7 +86,7 @@ There are currently no exposed variables for the component.
 | Trigger button label                         | It can be used to set the label of the trigger button.                                                                                                                                                  |
 
 :::info
-A modal can be triggered using the default trigger button, [action](/docs/actions/show-modal) or via [JavaScript](/docs/how-to/run-actions-from-runjs#show-modal).
+A modal can be triggered using the default trigger button, [action](/docs/actions/show-modal) or via [JavaScript](/docs/actions/run-actions-from-runjs/#show-modal).
 :::
 
 </div>

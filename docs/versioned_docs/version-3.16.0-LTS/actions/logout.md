@@ -7,8 +7,8 @@ The **Logout** action logs the current user out of their active ToolJet workspac
 
 ## Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
+| Parameter | Description                                              | Default          |
+| --------- | -------------------------------------------------------- | ---------------- |
 | Debounce  | Time in milliseconds to wait before executing the action | Empty (no delay) |
 
 Set a numeric value in the **Debounce** field to delay the logout. For example, entering `300` will trigger the logout after 300ms.
@@ -33,5 +33,5 @@ await actions.logout();
 ```
 
 :::info
-For a full guide on triggering actions from RunJS, see [Run Actions from RunJS](/docs/how-to/run-actions-from-runjs).
+For a full guide on triggering actions from RunJS, see [Run Actions from RunJS](/docs/actions/run-actions-from-runjs/).
 :::

@@ -14,6 +14,7 @@ By default, the debounce field is left empty. However, you can input a numeric v
 ## Using RunJS query to set page variable
 
 Alternatively, the set page variable action can be triggered via a RunJS query using the following syntax:
+
 ```js
 await actions.setPageVariable('<variablekey>',<variablevalue>)
 ```
@@ -23,6 +24,5 @@ await actions.setPageVariable('<variablekey>',<variablevalue>)
 <img className="screenshot-full" src="/img/actions/page/setpagevar33.png" alt="ToolJet - Action reference - Switch page" />
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/how-to/run-actions-from-runjs).
+For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/actions/run-actions-from-runjs/).
 :::
-
