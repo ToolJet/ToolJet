@@ -1,8 +1,9 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
 import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
+import { fillDSConnectionForm, verifyDSConnection, fillDSConnectionDropdown } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { bigqueryUIConfig, bigqueryFormConfig } from "Constants/constants/marketplace/datasources/bigquery";
+import { bigqueryText } from "Constants/texts/bigquery";
 
 const data = {};
 
@@ -33,6 +34,7 @@ describe("BigQuery", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName)).click();
+        fillDSConnectionDropdown({ type: "dropdown", fieldName: "Authentication type", text: bigqueryText.serviceAccount });
         verifyConnectionFormUI(bigqueryUIConfig.defaultFields);
     });
 
@@ -48,7 +50,7 @@ describe("BigQuery", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName)).click();
-
+        fillDSConnectionDropdown({ type: "dropdown", fieldName: "Authentication type", text: bigqueryText.serviceAccount });
         fillDSConnectionForm(bigqueryFormConfig, []);
 
         verifyDSConnection();
@@ -66,7 +68,7 @@ describe("BigQuery", () => {
         cy.visit('/my-workspace/data-sources');
         cy.waitForElement(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName));
         cy.get(dsCommonSelector.dataSourceNameButton(bigqueryDataSourceName)).click();
-
+        fillDSConnectionDropdown({ type: "dropdown", fieldName: "Authentication type", text: bigqueryText.serviceAccount });
         verifyConnectionFormUI(bigqueryUIConfig.defaultFields);
 
         fillDSConnectionForm(bigqueryFormConfig, bigqueryFormConfig.invalidPrivateKey);
