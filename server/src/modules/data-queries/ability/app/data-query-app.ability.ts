@@ -19,20 +19,6 @@ export function defineDataQueryAppAbility(
   const isCanDelete = userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
 
-  console.log('Defining abilities for app', {
-    appId,
-    isAllEditable,
-    isCanCreate,
-    isCanDelete,
-    isAllViewable,
-    superAdmin,
-    isAdmin,
-    isBuilder,
-    appType: app?.type,
-    editableAppsId: JSON.stringify(resourcePermissions?.editableAppsId),
-    viewableAppsId: JSON.stringify(resourcePermissions?.viewableAppsId),
-  });
-
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
   }
