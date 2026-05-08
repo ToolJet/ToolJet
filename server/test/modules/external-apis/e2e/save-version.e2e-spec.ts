@@ -13,6 +13,7 @@ import {
 import { AppVersion, AppVersionStatus } from 'src/entities/app_version.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { App } from 'src/entities/app.entity';
+import { SourceControlProviderService } from '@ee/app-git/source-control-provider';
 import { Repository } from 'typeorm';
 
 /**
@@ -289,6 +290,94 @@ describe('External API — POST /ext/apps/:appIdOrSlug/versions/save', () => {
       // Draft is now published
       const reloadedDraft = await versionRepo.findOne({ where: { id: draft.id } });
       expect(reloadedDraft.status).toBe(AppVersionStatus.PUBLISHED);
+    });
+
+    it('persists currentEnvironmentId to the development environment in the database', async () => {
+      const { user, organization } = await seedOrg();
+      const app = await seedApp(user);
+      const draft = await seedDraftVersion(app as any, 'v1');
+
+      const devEnv = await envRepo.findOne({
+        where: { organizationId: organization.id },
+        order: { priority: 'ASC' },
+      });
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/save`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(201);
+
+      const updated = await versionRepo.findOne({ where: { id: draft.id } });
+      expect(updated.currentEnvironmentId).toBe(devEnv.id);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Git tag creation
+  // ---------------------------------------------------------------------------
+
+  describe('git tag creation', () => {
+    it('creates a git tag when git sync is configured for the app', async () => {
+      const { user } = await seedOrg();
+      const app = await seedApp(user);
+      await seedDraftVersion(app as any, 'v1');
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      const mockStrategy = { createGitTag: jest.fn().mockResolvedValue({ success: true, tagName: 'co_rel/v1' }) };
+      jest.spyOn(scProvider, 'getSourceControlService').mockResolvedValue(mockStrategy as any);
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/save`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(201);
+
+      expect(mockStrategy.createGitTag).toHaveBeenCalledWith(
+        app.id,
+        expect.any(String),
+        expect.objectContaining({ id: expect.any(String) }),
+        expect.any(String)
+      );
+    });
+
+    it('returns 201 and persists the save even when git tag creation throws', async () => {
+      const { user } = await seedOrg();
+      const app = await seedApp(user);
+      const draft = await seedDraftVersion(app as any, 'v1');
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      const mockStrategy = { createGitTag: jest.fn().mockRejectedValue(new Error('git connection failed')) };
+      jest.spyOn(scProvider, 'getSourceControlService').mockResolvedValue(mockStrategy as any);
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/save`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(201);
+
+      const updated = await versionRepo.findOne({ where: { id: draft.id } });
+      expect(updated.status).toBe(AppVersionStatus.PUBLISHED);
+    });
+
+    it('returns 201 when no git sync is configured (getSourceControlService throws)', async () => {
+      const { user } = await seedOrg();
+      const app = await seedApp(user);
+      const draft = await seedDraftVersion(app as any, 'v1');
+
+      const scProvider = nestApp.get(SourceControlProviderService);
+      jest.spyOn(scProvider, 'getSourceControlService').mockRejectedValue(
+        new Error('No Git Provider is enabled for the workspace')
+      );
+
+      await request(nestApp.getHttpServer())
+        .post(`/api/ext/apps/${app.id}/versions/save`)
+        .set('Authorization', AUTH_HEADER)
+        .send({})
+        .expect(201);
+
+      const updated = await versionRepo.findOne({ where: { id: draft.id } });
+      expect(updated.status).toBe(AppVersionStatus.PUBLISHED);
     });
   });
 });
