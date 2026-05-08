@@ -1,7 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container as ContainerCanvas } from '@/AppBuilder/AppCanvas/Container';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
+function useShouldStackFlex({ stackBelow, currentLayout }) {
+  const [mediaMatches, setMediaMatches] = useState(false);
+
+  useEffect(() => {
+    if (!stackBelow || stackBelow === 'none') {
+      setMediaMatches(false);
+      return;
+    }
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      setMediaMatches(false);
+      return;
+    }
+    const query = stackBelow === 'mobile' ? '(max-width: 374px)' : '(max-width: 767px)';
+    const mql = window.matchMedia(query);
+    const handler = () => setMediaMatches(mql.matches);
+    handler();
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [stackBelow]);
+
+  if (!stackBelow || stackBelow === 'none') return false;
+  if (currentLayout === 'mobile') return true;
+  return mediaMatches;
+}
 
 export const FlexContainer = ({
   id,
@@ -14,24 +39,27 @@ export const FlexContainer = ({
   setExposedVariable,
   currentLayout,
 }) => {
-  const { isVisible } = useExposeState(
-    false,
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
     properties.visibility,
     properties.disabledState,
     setExposedVariables,
     setExposedVariable
   );
 
-  const { gap, padding, justify, align, direction = 'column', flexWrap = false } = properties;
+  const { gap, padding, justify, align, direction = 'column', flexWrap = false, stackBelow = 'none' } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
-  const isRow = direction === 'row';
+  const shouldStack = useShouldStackFlex({ stackBelow, currentLayout });
+  const effectiveDirection = shouldStack ? 'column' : direction;
+
+  const isRow = effectiveDirection === 'row';
   const overflowStyle = flexWrap ? {} : isRow ? { overflowX: 'auto' } : { overflowY: 'auto' };
 
   const outerStyles = {
     height: '100%',
     display: isVisible ? 'flex' : 'none',
-    flexDirection: direction,
+    flexDirection: effectiveDirection,
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
@@ -43,7 +71,7 @@ export const FlexContainer = ({
   // Flex layout styles are passed into ContainerCanvas and applied to the real-canvas div
   const flexCanvasStyles = {
     display: 'flex',
-    flexDirection: direction,
+    flexDirection: effectiveDirection,
     flexWrap: flexWrap ? 'wrap' : 'nowrap',
     gap: `${gap ?? 8}px`,
     padding: `${padding ?? 12}px`,
@@ -51,11 +79,12 @@ export const FlexContainer = ({
     alignItems: align ?? 'stretch',
     backgroundColor: 'transparent',
     height: '100%',
+    ...(isDisabled && { opacity: 0.5, pointerEvents: 'none' }),
     ...overflowStyle,
   };
 
   return (
-    <div style={outerStyles} className="flex-container-widget">
+    <div style={outerStyles} className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}>
       <ContainerCanvas
         id={id}
         styles={flexCanvasStyles}

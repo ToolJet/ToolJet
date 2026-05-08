@@ -9,6 +9,8 @@ import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { FlexChildLayoutPanel } from './FlexChildLayoutPanel';
+import { FlexContainerLayoutPanel } from './FlexContainerLayoutPanel';
 
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
@@ -56,6 +58,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'ReorderableList',
   'ColorPicker',
   'FileButton',
+  'FlexContainer',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -100,6 +103,7 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     apps,
     components,
     pages,
+    selectedComponentId,
   } = restProps;
 
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
@@ -136,7 +140,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     validations,
     darkMode,
     pages,
-    additionalActions
+    additionalActions,
+    selectedComponentId
   );
 
   return <Accordion items={accordionItems} />;
@@ -157,7 +162,8 @@ export const baseComponentProperties = (
   validations,
   darkMode,
   pages,
-  additionalActions
+  additionalActions,
+  selectedComponentId
 ) => {
   // Add widget title to section key to filter that property section from specified widgets' settings
   const accordionFilters = {
@@ -212,6 +218,10 @@ export const baseComponentProperties = (
     if (!resolveReferences(component.component.definition.properties?.enablePagination?.value)) {
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
+  }
+  if (component.component.component === 'FlexContainer') {
+    const layoutKeys = new Set(['direction', 'flexWrap', 'gap', 'padding', 'justify', 'align', 'stackBelow']);
+    properties = properties.filter((property) => !layoutKeys.has(property));
   }
   let items = [];
   if (properties.length > 0) {
@@ -273,6 +283,21 @@ export const baseComponentProperties = (
           darkMode,
           componentMeta.validation?.[property]?.placeholder
         )
+      ),
+    });
+  }
+
+  const flexParentId = allComponents?.[selectedComponentId]?.component?.parent;
+  const flexParentType = flexParentId ? allComponents?.[flexParentId]?.component?.component : null;
+  if (flexParentType === 'FlexContainer') {
+    items.push({
+      title: `${i18next.t('widget.flexChild.widthAndHeight', 'Width & height')}`,
+      children: (
+        <FlexChildLayoutPanel
+          selectedComponentId={selectedComponentId}
+          allComponents={allComponents}
+          darkMode={darkMode}
+        />
       ),
     });
   }
@@ -344,6 +369,15 @@ export const baseComponentProperties = (
       </>
     ),
   });
+
+  if (component?.component?.component === 'FlexContainer') {
+    items.unshift({
+      title: `${i18next.t('widget.flexContainer.layout', 'Layout')}`,
+      isOpen: true,
+      children: <FlexContainerLayoutPanel component={component} paramUpdated={paramUpdated} />,
+    });
+  }
+
   return items.filter(
     (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))
   );

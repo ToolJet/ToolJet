@@ -77,6 +77,38 @@ export const flexContainerConfig = {
         defaultValue: 'stretch',
       },
     },
+    stackBelow: {
+      type: 'select',
+      displayName: 'Stack below',
+      options: [
+        { name: 'None', value: 'none' },
+        { name: 'Mobile (375px)', value: 'mobile' },
+        { name: 'Tablet (768px)', value: 'tablet' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'mobile',
+      },
+    },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
@@ -159,6 +191,9 @@ export const flexContainerConfig = {
       padding: { value: '12' },
       justify: { value: 'flex-start' },
       align: { value: 'stretch' },
+      stackBelow: { value: 'mobile' },
+      loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
     },
