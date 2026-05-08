@@ -678,6 +678,18 @@ export const resolveWidgetMeasuredHeight = ({
     return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
   }
 
+  // Hidden ancestor subtree (inactive tab pane, collapsed accordion, closed
+  // modal) → offsetHeight reads 0 even though the widget itself is visible
+  // per its visibility flag. Returning that 0 would write temp.height=0 and
+  // poison every subsequent reflow: gridSlice's resolvedHeights treats 0 as
+  // a valid existing value (0 != null) and replays it for siblings, which
+  // collapse to height:0 in WidgetWrapper. Fall through to the last known /
+  // canonical height so the widget keeps its slot until it's actually
+  // measurable.
+  if (element && element.offsetParent === null) {
+    return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+  }
+
   return (
     element?.offsetHeight ??
     existingHeight ??
@@ -935,10 +947,66 @@ export const buildReflowPatch = ({
     // blocker loop doesn't inflate T past its true resting position.
     const collapsedCanonical = Math.max(0, targetTopCanonical - totalOutOfFlowSlot - totalAccordionShrinkage);
 
+    // Shadowing: when an in-flow blocker fully covers the target's
+    // horizontal lane, that blocker has already integrated every collapse
+    // happening above it (its own reflow pass ran top-to-bottom earlier
+    // and computed its `currentBottom` against the same out-of-flow set).
+    // Far-up blockers ABOVE the shadower would re-apply that collapse
+    // through canonical-gap math — but their slot-subtraction only counts
+    // out-of-flow widgets that overlap the *target's* (narrower) lane, so
+    // the cumulative gap they propose is too large. The shadower's
+    // constraint is the truthful one for everything sitting below it.
+    //
+    // Pick the LOWEST (canonically closest to target) in-flow blocker
+    // that fully covers target's lane. In-flow blockers strictly above
+    // that shadower are skipped — their contribution is already baked
+    // into the shadower's currentBottom.
+    const targetLeft = targetCanonical.left ?? 0;
+    const targetRight = targetLeft + (targetCanonical.width ?? 0);
+    let shadowerCanonicalTop = -Infinity;
+    let shadower = null;
+    for (let si = blockers.length - 1; si >= 0; si--) {
+      const v = blockers[si];
+      if (!v.isInFlow) continue;
+      const vLeft = v.canonicalLayout?.left ?? 0;
+      const vWidth = v.canonicalLayout?.width ?? 0;
+      const vRight = vLeft + vWidth;
+      if (vLeft <= targetLeft && vRight >= targetRight) {
+        shadowerCanonicalTop = v.canonicalLayout?.top ?? 0;
+        shadower = v;
+        break;
+      }
+    }
+
+    // When a shadower exists, replace `collapsedCanonical` with a floor
+    // anchored on the shadower. Reason: the original `collapsedCanonical`
+    // sums every out-of-flow slot in target's lane — which double-counts
+    // collapse that the shadower already absorbed. For widgets in narrow
+    // lanes, the lane-specific OOF total is smaller than what the shadower
+    // already integrated, so the original floor pins the target lower than
+    // where the shadower-based gap would put it (e.g., button row drifts
+    // below dropdown row in a multi-column layout). Anchoring the floor on
+    // the shadower keeps row partners aligned without breaking the
+    // structural-rest contract.
+    let effectiveCollapsedCanonical = collapsedCanonical;
+    if (shadower) {
+      const shadowerCanonicalBottom = shadowerCanonicalTop + (shadower.canonicalLayout?.height ?? 0);
+      let belowShadowerSubtraction = 0;
+      for (const [uid, slot] of slotSize) {
+        const uTop = outOfFlowTopsById.get(uid) ?? 0;
+        if (uTop >= shadowerCanonicalBottom && uTop < targetTopCanonical) {
+          belowShadowerSubtraction += slot;
+        }
+      }
+      const shadowerFloor =
+        shadower.currentBottom + (targetTopCanonical - shadowerCanonicalBottom) - belowShadowerSubtraction;
+      effectiveCollapsedCanonical = Math.max(0, shadowerFloor);
+    }
+
     // Baseline for delta propagation: existing temp if present (captures any
     // prior push/pull), otherwise the collapsed canonical (captures hide-
     // collapse on mount).
-    const baseTop = existingTemp?.top ?? collapsedCanonical;
+    const baseTop = existingTemp?.top ?? effectiveCollapsedCanonical;
 
     let nextTop;
 
@@ -982,11 +1050,13 @@ export const buildReflowPatch = ({
       // `collapsedCanonical` is the long-standing contract that widgets
       // (including Listview row templates) rely on to stay stable; only
       // the Accordion-shrink-below-canonical case needs to bypass it.
-      let otherMax = allowShrinkPullUp ? 0 : collapsedCanonical;
+      let otherMax = allowShrinkPullUp ? 0 : effectiveCollapsedCanonical;
       let hasInFlowBlocker = false;
       for (let vi = 0; vi < blockers.length; vi++) {
         const v = blockers[vi];
         if (!v.isInFlow) continue;
+        const vCanonicalTopForShadow = v.canonicalLayout?.top ?? 0;
+        if (vCanonicalTopForShadow < shadowerCanonicalTop) continue;
         hasInFlowBlocker = true;
         const vCanonicalTop = v.canonicalLayout?.top ?? 0;
         const vCanonicalBottom = vCanonicalTop + (v.canonicalLayout?.height ?? 0);
@@ -1048,14 +1118,14 @@ export const buildReflowPatch = ({
         if (constraint > otherMax) otherMax = constraint;
       }
       if (allowShrinkPullUp && !hasInFlowBlocker) {
-        otherMax = collapsedCanonical;
+        otherMax = effectiveCollapsedCanonical;
       }
 
       // On hide transitions (changed is going out of flow), existing temp
       // reflects the pre-hide layout — T needs to collapse to the structural
       // position regardless of its prior temp. In that case, ignore the
       // delta-propagation baseline and use the structural max directly.
-      nextTop = isChangedOutOfFlow ? Math.max(otherMax, collapsedCanonical) : Math.max(proposedTop, otherMax);
+      nextTop = isChangedOutOfFlow ? Math.max(otherMax, effectiveCollapsedCanonical) : Math.max(proposedTop, otherMax);
     }
 
     const currentEffectiveLayout = getEffectiveLayout(
