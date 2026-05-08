@@ -35,9 +35,9 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
 
 :::info
-If your connection string (username, password, database) contains any special characters, you need to URL-encode them. 
+If your connection string (username, password, database) contains any special characters, you need to URL-encode them.
 
-You can use this tool to encode or decode values:  [URL Encoder/Decoder](https://meyerweb.com/eric/tools/dencoder/).
+You can use this tool to encode or decode values: [URL Encoder/Decoder](https://meyerweb.com/eric/tools/dencoder/).
 
 For example, const POSTGRES_URL = `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}`;
 :::
@@ -52,7 +52,7 @@ For example, const POSTGRES_URL = `postgresql://${encodeURIComponent(user)}:${en
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 :::
 
-### SSH Tunnelling 
+### SSH Tunnelling
 
 ToolJet now supports SSH tunnelling for the PostgreSQL data source, allowing secure connections to databases hosted inside private networks. This can be used to :
 
@@ -132,8 +132,7 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 | `inet_server_port()` | Returns the server port                                               | `5432`                                      |
 | `pg_backend_pid()`   | Returns the process ID of the current backend                         | `56789`                                     |
 
-
-### Dynamic Connection 
+### Dynamic Connection
 
 ToolJet allows overriding PostgreSQL connection parameters such as host and database directly at **query runtime** when dynamic connection parameters are enabled. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
 
@@ -148,9 +147,11 @@ ToolJet allows overriding PostgreSQL connection parameters such as host and data
 5. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 ### List Rows
+
 Retrieves and displays rows from the selected table based on optional filters, sorting, and limits.
 
 #### Optional Parameters
+
 - **Filter**: Applies conditions to return only rows that match the specified criteria.
 - **Sort**: Orders the returned rows based on one or more selected columns.
 - **Aggregate**: Performs calculations such as count, sum, or average on selected columns.
@@ -161,50 +162,61 @@ Retrieves and displays rows from the selected table based on optional filters, s
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/list-rows-gui.png" alt="List Rows GUI Postgresql"/>
 
 ### Create Rows
+
 Inserts a new row into the selected table with the specified column values.
 
 In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
-- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row. 
+
+- **Columns**: Specifies the table columns and their corresponding values to be inserted when creating a new row.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/create-rows-gui.png" alt="Create Rows GUI Postgresql"/>
 
 ### Update Rows
+
 Modifies existing rows in the table that match the provided filter conditions.
 
 In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
+
 - **Columns**: Specify the columns and their new values that should be updated for the matching rows.
 
 #### Optional Parameters
+
 - **Filter**: Defines conditions to select which rows should be updated.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/update-rows-gui.png" alt="Update Rows GUI Postgresql"/>
 
 ### Delete Rows
+
 Removes either all rows from the table or that match the specified filter conditions.
 
 #### Optional Parameters
+
 - **Filter**: Specifies conditions to determine which rows should be deleted from the table.
 - **Limit**: Restricts the maximum number of rows that can be deleted in the operation.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/delete-rows-gui.png" alt="Delete Rows GUI Postgresql"/>
 
 ### Upsert Rows
+
 Inserts a new row or updates an existing row if a matching primary key already exists. In the editor, ensure to the input the **Columns** in `string` format.
 
 #### Required Parameters
+
 - **Primary Key column(s)**: Specifies the column(s) used to identify whether a row already exists for updating or if a new row should be inserted.
 - **Columns**: Defines the column–value pairs that will be inserted or updated in the row.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/upsert-rows-gui.png" alt="Upsert Rows GUI Postgresql"/>
 
 ### Bulk Insert
+
 Inserts multiple rows into the table in a single operation using an array of records.
 
 #### Required Parameters
+
 - **Records to Insert**: An array of objects representing multiple rows to be inserted into the selected table in a single operation.
 
 <details id="tj-dropdown">
@@ -237,11 +249,13 @@ Inserts multiple rows into the table in a single operation using an array of rec
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-insert-gui.png" alt="Bulk Insert GUI Postgresql"/>
 
 ### Bulk Update using Primary Key
+
 Updates multiple rows at once by matching each record with its corresponding primary key.
 
 #### Required Parameters
+
 - **Primary Key columns**: Specifies the column(s) used to uniquely identify the rows that should be updated.
-- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row. 
+- **Records to Update**: An array of objects containing the primary key and the column values to be updated for each row.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -265,13 +279,15 @@ Updates multiple rows at once by matching each record with its corresponding pri
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/postgresql/bulk-update-gui.png" alt="Bulk Update using GUI Postgresql"/>
 
 ### Bulk Upsert using Primary Key
+
 Inserts new rows or updates existing rows in bulk based on matching primary key values.
 
 #### Required Parameters
+
 - **Primary Key columns**: Specifies the column(s) used to determine whether a row already exists for updating or if a new row should be inserted.
 - **Records to Update**: An array of objects containing primary key values and column data that will be inserted as new rows or used to update existing rows.
 
-This basically means If the row exists then update, if not do insert. 
+This basically means If the row exists then update, if not do insert.
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -299,5 +315,5 @@ This basically means If the row exists then update, if not do insert.
 :::tip
 
 - You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/app-builder/custom-code/transform-data)**
-- Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
+- Check out this how-to guide on **[bulk updating multiple rows](/docs/widgets/table/bulk-row-operations#bulk-update-rows)** from a table component.
   :::

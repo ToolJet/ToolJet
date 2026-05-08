@@ -1,6 +1,6 @@
 ---
 id: anti-patterns
-title: Anti-Patterns to Avoid 
+title: Anti-Patterns to Avoid
 ---
 
 When building applications with ToolJet, it's essential to follow best practices to ensure your apps are efficient, maintainable, and provide a smooth user experience. This documentation outlines common anti-patterns to avoid while using ToolJet and offers solutions to optimize your applications.
@@ -47,7 +47,7 @@ When building applications with ToolJet, it's essential to follow best practices
 
 ---
 
-## 6. Loading All Tabs Simultaneously 
+## 6. Loading All Tabs Simultaneously
 
 - **Anti-Pattern**: Loading all items in the Tab component at once when there are numerous tabs.
 - **Solution**: **Enable the “Render only active tabs” option.**
@@ -80,14 +80,15 @@ When building applications with ToolJet, it's essential to follow best practices
 ---
 
 ## 10. Using Actions inside Loop Functions
+
 - **Anti-Pattern**: Using actions inside loop functions.
 
-Example: 
+Example:
 You have a Table displaying data from `{{page.variables.data}}` and a **Save Changes** button that updates the data. When users edit rows and click **Save Changes**, you might initially implement the update like this:
 
 ```javascript
 const data = page.variables.data;
-Object.values(components.table1.dataUpdates).forEach(ele => {
+Object.values(components.table1.dataUpdates).forEach((ele) => {
   data[ele.id] = ele;
   actions.setPageVariable("data", data);
 });
@@ -99,7 +100,7 @@ The setPageVariable action is executed inside the loop for each row update. This
 
 ```javascript
 const data = page.variables.data;
-Object.values(components.table1.dataUpdates).forEach(ele => {
+Object.values(components.table1.dataUpdates).forEach((ele) => {
   data[ele.id] = ele;
 });
 actions.setPageVariable("data", data);
@@ -112,8 +113,8 @@ actions.setPageVariable("data", data);
 ## 11. Direct Mutation of Data
 
 - **Anti-Pattern**: Directly mutating data structures through JavaScript code, such as using `queries.getEmployees.data = []`.
-- **Solution**: Always use ToolJet's built in **[actions](/docs/how-to/run-actions-from-runjs/)** to manipulate data.
-- **Reason**: Direct mutation of data can lead to unexpected bugs and make debugging more complex. 
+- **Solution**: Always use ToolJet's built in **[actions](/docs/actions/run-actions-from-runjs//)** to manipulate data.
+- **Reason**: Direct mutation of data can lead to unexpected bugs and make debugging more complex.
 
 ---
 
@@ -128,4 +129,3 @@ actions.setPageVariable("data", data);
 ## Conclusion
 
 Avoiding these anti-patterns when using ToolJet ensures that your applications are efficient, responsive, and maintainable. By following these best practices, you can enhance user experience and simplify app management. Always consider the impact of your development choices on both performance and scalability.
-

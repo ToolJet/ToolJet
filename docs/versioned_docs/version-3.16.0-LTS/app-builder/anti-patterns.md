@@ -74,7 +74,7 @@ When building applications with ToolJet, it's essential to follow best practices
 queries.getEmployees.data = [];
 ```
 
-- **Solution**: Always use ToolJet's built in **[actions](/docs/how-to/run-actions-from-runjs/)** to manipulate data.
+- **Solution**: Always use ToolJet's built in **[actions](/docs/actions/run-actions-from-runjs//)** to manipulate data.
 
 ```javascript
 // Correct: use actions to update data
@@ -121,7 +121,7 @@ You have a Table displaying data from `{{page.variables.data}}` and a **Save Cha
 
 ```javascript
 const data = page.variables.data;
-Object.values(components.table1.dataUpdates).forEach(ele => {
+Object.values(components.table1.dataUpdates).forEach((ele) => {
   data[ele.id] = ele;
   actions.setPageVariable("data", data);
 });
@@ -133,7 +133,7 @@ The setPageVariable action is executed inside the loop for each row update. This
 
 ```javascript
 const data = page.variables.data;
-Object.values(components.table1.dataUpdates).forEach(ele => {
+Object.values(components.table1.dataUpdates).forEach((ele) => {
   data[ele.id] = ele;
 });
 actions.setPageVariable("data", data);
@@ -165,8 +165,7 @@ actions.setPageVariable("data", data);
 
 Avoiding these anti-patterns when using ToolJet ensures that your applications are efficient, responsive, and maintainable. By following these best practices, you can enhance user experience and simplify app management. Always consider the impact of your development choices on both performance and scalability.
 
-<br/>
----
+## <br/>
 
 ## Need Help?
 

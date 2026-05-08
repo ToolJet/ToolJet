@@ -58,18 +58,22 @@ Once you enable **Allow dynamic connection parameters**, you can write custom lo
 You can use the following code to dynamically configure the host based on the current user's email domain:
 
 ```js
-{{(() => {
-    const domainMap = {
-      'tooljet.com': 'db1.internal.company.com',
-      'tenantA.com': 'db-tenant-a.company.com',
-      'tenantB.com': 'db-tenant-b.company.com',
-      'tenantC.com': 'db-tenant-c.company.com'
-    };
-    const email = globals.currentUser.email || '';
-    const domain = email.split('@')[1] || '';
-    
-    return domainMap[domain] || 'default-db.company.com';
-  })()}}
+{
+  {
+    (() => {
+      const domainMap = {
+        "tooljet.com": "db1.internal.company.com",
+        "tenantA.com": "db-tenant-a.company.com",
+        "tenantB.com": "db-tenant-b.company.com",
+        "tenantC.com": "db-tenant-c.company.com",
+      };
+      const email = globals.currentUser.email || "";
+      const domain = email.split("@")[1] || "";
+
+      return domainMap[domain] || "default-db.company.com";
+    })();
+  }
+}
 ```
 
 **Note:** We recommend creating a new PostgreSQL database user to have control over ToolJet's access levels.
@@ -106,7 +110,9 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 ```
+
 SQL Parameters: <br/>
+
 - Key: username <br/>
 - Value: oliver or `{{ components.username.value }}`
 
@@ -157,8 +163,9 @@ PostgreSQL offers dynamic functions that provide runtime information about the c
 ```
 
 :::tip
+
 - You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/tutorial/transformations)**
-- Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
-:::
+- Check out this how-to guide on **[bulk updating multiple rows](/docs/widgets/table/bulk-row-operations#bulk-update-rows)** from a table component.
+  :::
 
 </div>

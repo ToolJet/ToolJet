@@ -16,12 +16,13 @@ By default, the debounce field is left empty. However, you can input a numeric v
 ## Using RunJS query to unset variable
 
 Alternatively, the unset page variable action can be triggered via a RunJS query using the following syntax:
+
 ```js
-await actions.unsetPageVariable('<variablename>')
+await actions.unsetPageVariable("<variablename>");
 ```
 
 `variablename` is the key of the variable that was provided while creating the variable.
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/how-to/run-actions-from-runjs).
+For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/actions/run-actions-from-runjs/).
 :::

@@ -8,6 +8,7 @@ title: Stream Audit Logs to Datadog
 This guide demonstrates how to configure ToolJet to stream audit logs from Rsyslog to Datadog for **centralized log management**, **monitoring**, and **analysis**. This integration enables real-time visibility into user activities, resource changes, and system events, helping you maintain security, compliance, and operational awareness across your infrastructure.
 
 When to stream ToolJet audit logs to Datadog:
+
 - **Multi-server deployments**: Centralize logs from production, staging, and development environments
 - **Security monitoring**: Correlate user actions with infrastructure metrics to detect anomalies
 - **Compliance requirements**: Maintain tamper-proof audit trails with long-term retention
@@ -17,7 +18,7 @@ When to stream ToolJet audit logs to Datadog:
 
 Before setting up the Datadog integration, ensure you have:
 
-1. **ToolJet with rsyslog enabled** - Follow the **[Setup Rsyslog guide](/docs/how-to/setup-rsyslog)** to enable log file generation
+1. **ToolJet with rsyslog enabled** - Follow the **[Setup Rsyslog guide](/docs/security/audit-logs/setup-rsyslog)** to enable log file generation
 2. **Datadog account** - Sign up at [https://www.datadoghq.com/](https://www.datadoghq.com/)
 3. **Datadog API key** - Obtain from [Datadog Organization Settings](https://app.datadoghq.com/organization-settings/api-keys)
 4. **Docker Compose setup** - This guide uses Docker Compose for deployment
@@ -63,12 +64,13 @@ Replace `your_datadog_api_key_here` with your actual Datadog API key from [https
 
 :::tip Datadog Site
 The `DD_SITE` value depends on your Datadog region:
+
 - US1: `datadoghq.com` (default)
 - US3: `us3.datadoghq.com`
 - US5: `us5.datadoghq.com`
 - EU: `datadoghq.eu`
 - AP1: `ap1.datadoghq.com`
-:::
+  :::
 
 ### Step 2: Create Datadog Agent Configuration
 
@@ -87,6 +89,7 @@ log_processing_rules:
 ```
 
 This configuration:
+
 - Enables log collection in the Datadog Agent
 - Disables automatic collection from all containers (we'll target specific logs)
 - Sets up multiline processing for JSON-formatted logs
@@ -114,6 +117,7 @@ logs:
 ```
 
 This configuration:
+
 - **path**: Monitors all audit.log files using a wildcard pattern to match daily rotated logs
 - **service**: Tags logs with `service:tooljet` for filtering in Datadog
 - **source**: Identifies logs as `tooljet-audit` for parsing pipelines
@@ -123,9 +127,10 @@ This configuration:
 **Customize Tags**
 
 Modify the `tags` section to match your environment:
+
 ```yaml
 tags:
-  - env:staging  # or development, production
+  - env:staging # or development, production
   - application:tooljet
   - team:platform
   - region:us-east-1
@@ -148,25 +153,25 @@ services:
 #### Add Datadog Agent Service
 
 ```yaml
-  datadog-agent:
-    container_name: datadog-agent
-    image: gcr.io/datadoghq/agent:7
-    restart: always
-    environment:
-      - DD_API_KEY=${DD_API_KEY}
-      - DD_SITE=${DD_SITE:-datadoghq.com}
-      - DD_LOGS_ENABLED=true
-      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=false
-      - DD_PROCESS_AGENT_ENABLED=true
-      - DD_DOCKER_LABELS_AS_TAGS={"*":"%%label%%"}
-      - DD_TAGS=env:production application:tooljet
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /proc/:/host/proc/:ro
-      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
-      - tooljet-logs:/var/log/tooljet/rsyslog:ro
-      - ./datadog-agent-config.yml:/etc/datadog-agent/datadog.yaml:ro
-      - ./datadog-tooljet-logs.yaml:/etc/datadog-agent/conf.d/tooljet.d/conf.yaml:ro
+datadog-agent:
+  container_name: datadog-agent
+  image: gcr.io/datadoghq/agent:7
+  restart: always
+  environment:
+    - DD_API_KEY=${DD_API_KEY}
+    - DD_SITE=${DD_SITE:-datadoghq.com}
+    - DD_LOGS_ENABLED=true
+    - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=false
+    - DD_PROCESS_AGENT_ENABLED=true
+    - DD_DOCKER_LABELS_AS_TAGS={"*":"%%label%%"}
+    - DD_TAGS=env:production application:tooljet
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - /proc/:/host/proc/:ro
+    - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    - tooljet-logs:/var/log/tooljet/rsyslog:ro
+    - ./datadog-agent-config.yml:/etc/datadog-agent/datadog.yaml:ro
+    - ./datadog-tooljet-logs.yaml:/etc/datadog-agent/conf.d/tooljet.d/conf.yaml:ro
 ```
 
 #### Define the Shared Volume
@@ -176,7 +181,6 @@ volumes:
   tooljet-logs:
   # ... other volumes ...
 ```
-
 
 Complete docker-compose.yml Example
 
@@ -292,6 +296,7 @@ docker logs datadog-agent --tail 50
 #### Generate Test Audit Logs
 
 Perform actions in ToolJet to generate audit logs:
+
 - Create or delete an application
 - Modify data sources
 - Update user permissions
@@ -310,22 +315,22 @@ Perform actions in ToolJet to generate audit logs:
 
 ToolJet audit logs contain the following structured fields:
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| `level` | Log severity level | `info`, `warn`, `error` |
-| `message` | Human-readable log message | `PERFORM APP_CREATE OF MyApp` |
-| `timestamp` | When the event occurred | `2025-10-21 11:27:44` |
-| `auditLog.userId` | User who performed the action | `a59e1ec7-d015-47b9-8ef8-e5d3f4e5f8d4` |
-| `auditLog.resourceId` | ID of the affected resource | `95031c39-9d19-425d-b70c-3436c2805773` |
-| `auditLog.resourceType` | Type of resource | `APP`, `DATA_SOURCE`, `USER` |
-| `auditLog.actionType` | Action performed | `APP_CREATE`, `APP_DELETE`, `APP_UPDATE` |
-| `auditLog.resourceName` | Name of the resource | `MyApplication` |
-| `auditLog.ipAddress` | Client IP address | `::ffff:192.168.65.1` |
-| `auditLog.organizationId` | Organization ID | `e9de636b-e611-4b90-95f0-0fe20b540924` |
-| `auditLog.metadata.userAgent` | Browser/client information | `Mozilla/5.0...` |
-| `auditLog.metadata.tooljetVersion` | ToolJet version | `3.16.33-ee-lts` |
-| `auditLog.metadata.transactionId` | Unique transaction identifier | `732440597788045` |
-| `auditLog.metadata.route` | API endpoint called | `[POST] /api/apps` |
+| Field                              | Description                   | Example                                  |
+| ---------------------------------- | ----------------------------- | ---------------------------------------- |
+| `level`                            | Log severity level            | `info`, `warn`, `error`                  |
+| `message`                          | Human-readable log message    | `PERFORM APP_CREATE OF MyApp`            |
+| `timestamp`                        | When the event occurred       | `2025-10-21 11:27:44`                    |
+| `auditLog.userId`                  | User who performed the action | `a59e1ec7-d015-47b9-8ef8-e5d3f4e5f8d4`   |
+| `auditLog.resourceId`              | ID of the affected resource   | `95031c39-9d19-425d-b70c-3436c2805773`   |
+| `auditLog.resourceType`            | Type of resource              | `APP`, `DATA_SOURCE`, `USER`             |
+| `auditLog.actionType`              | Action performed              | `APP_CREATE`, `APP_DELETE`, `APP_UPDATE` |
+| `auditLog.resourceName`            | Name of the resource          | `MyApplication`                          |
+| `auditLog.ipAddress`               | Client IP address             | `::ffff:192.168.65.1`                    |
+| `auditLog.organizationId`          | Organization ID               | `e9de636b-e611-4b90-95f0-0fe20b540924`   |
+| `auditLog.metadata.userAgent`      | Browser/client information    | `Mozilla/5.0...`                         |
+| `auditLog.metadata.tooljetVersion` | ToolJet version               | `3.16.33-ee-lts`                         |
+| `auditLog.metadata.transactionId`  | Unique transaction identifier | `732440597788045`                        |
+| `auditLog.metadata.route`          | API endpoint called           | `[POST] /api/apps`                       |
 
 **Example Audit Log Entry**
 
@@ -359,7 +364,7 @@ ToolJet audit logs contain the following structured fields:
 
 ## Related Resources
 
-- **[Setup Rsyslog](/docs/how-to/setup-rsyslog)** - Configure audit log generation
+- **[Setup Rsyslog](/docs/security/audit-logs/setup-rsyslog)** - Configure audit log generation
 - **[Datadog Documentation](https://docs.datadoghq.com/)** - Official Datadog guides
 - **[Datadog Agent Configuration](https://docs.datadoghq.com/agent/guide/agent-configuration-files/)** - Detailed Agent setup
 - **[Log Collection](https://docs.datadoghq.com/logs/log_collection/)** - Datadog log collection guide

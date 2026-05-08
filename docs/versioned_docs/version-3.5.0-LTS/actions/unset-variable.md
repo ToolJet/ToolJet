@@ -7,13 +7,13 @@ This action allows you to remove the variable that was created using the set var
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| Key   | Name(String) of the variable through which you can access the value |
+| Option   | Description                                                                                                                                                 |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Key      | Name(String) of the variable through which you can access the value                                                                                         |
 | Debounce | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/how-to/run-actions-from-runjs).
+You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
 :::
 
 <div style={{textAlign: 'center'}}>
