@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import { EntityManager } from 'typeorm';
 import { ProcessInfo, ProcessOptions, ResolvedProcessInfo, SseProgressEvent } from './types';
 import { Subject } from 'rxjs';
 import { TransactionLogger } from '@modules/logging/service';
 import { BackgroundProcessorJobStore } from './store';
+import { dbTransactionWrap } from '@helpers/database.helper';
 
 /**
  * Background Processor Service
@@ -92,9 +94,24 @@ export class BackgroundProcessorUtilService {
   ): Promise<{ jobId: string; processInfo: ResolvedProcessInfo[] }> {
     this.transactionLogger.log(`[BackgroundProcessor] startJob invoked with ${processInfos.length} tasks`);
 
-    const { isRunParallel = false, isBreakOnError = true, userId } = options;
+    const { isRunParallel = false, isBreakOnError = true, userId, manager, onSuccess, onFailure } = options;
+    const useTransaction = manager !== undefined;
+
+    if (useTransaction) {
+      if (isRunParallel) {
+        throw new Error(
+          '[BackgroundProcessor] manager option requires isRunParallel: false (transactions cannot span parallel tasks)'
+        );
+      }
+      if (!isBreakOnError) {
+        throw new Error(
+          '[BackgroundProcessor] manager option requires isBreakOnError: true (transactions must abort on first failure)'
+        );
+      }
+    }
+
     this.transactionLogger.log(
-      `[BackgroundProcessor] startJob options - isRunParallel: ${isRunParallel}, isBreakOnError: ${isBreakOnError}, userId: ${userId}`
+      `[BackgroundProcessor] startJob options - isRunParallel: ${isRunParallel}, isBreakOnError: ${isBreakOnError}, userId: ${userId}, useTransaction: ${useTransaction}`
     );
 
     const jobId = uuidv4();
@@ -109,6 +126,9 @@ export class BackgroundProcessorUtilService {
     this.execute(jobId, processInfos, resolvedInfo, subject, {
       isRunParallel,
       isBreakOnError,
+      manager,
+      onSuccess,
+      onFailure,
     }).catch((err) => {
       this.transactionLogger.error(`[BackgroundProcessor] Execute failed for jobId: ${jobId}`, err);
     });
@@ -177,7 +197,13 @@ export class BackgroundProcessorUtilService {
     processInfos: ProcessInfo[],
     resolvedInfo: ResolvedProcessInfo[],
     subject: Subject<SseProgressEvent>,
-    options: { isRunParallel: boolean; isBreakOnError: boolean }
+    options: {
+      isRunParallel: boolean;
+      isBreakOnError: boolean;
+      manager?: EntityManager | true;
+      onSuccess?: (manager?: EntityManager) => Promise<void> | void;
+      onFailure?: (manager?: EntityManager) => Promise<void> | void;
+    }
   ) {
     this.transactionLogger.log(
       `[BackgroundProcessor] execute started for jobId: ${jobId}, tasks: ${processInfos.length}, parallel: ${options.isRunParallel}`
@@ -195,7 +221,7 @@ export class BackgroundProcessorUtilService {
       await this.jobStore.publishEvent(jobId, event);
     };
 
-    const runTask = async (index: number): Promise<boolean> => {
+    const runTask = async (index: number, taskManager?: EntityManager): Promise<boolean> => {
       const { task, process } = processInfos[index];
       const { weightage } = resolvedInfo[index];
 
@@ -213,7 +239,7 @@ export class BackgroundProcessorUtilService {
 
       try {
         this.transactionLogger.log(`[BackgroundProcessor] Executing process for task: "${task}", jobId: ${jobId}`);
-        const result = await process();
+        const result = await process(taskManager);
         completedWeightage += weightage;
 
         this.transactionLogger.log(
@@ -247,6 +273,27 @@ export class BackgroundProcessorUtilService {
       }
     };
 
+    const useTransaction = options.manager !== undefined;
+    const { onSuccess, onFailure } = options;
+
+    // Decide between onSuccess and onFailure based on outcome + isBreakOnError.
+    // - any failure AND isBreakOnError → onFailure
+    // - otherwise (no failures, or isBreakOnError is false) → onSuccess
+    const dispatchLifecycle = async (anyFailed: boolean, mgr: EntityManager | undefined): Promise<void> => {
+      const treatAsFailure = anyFailed && options.isBreakOnError;
+      if (treatAsFailure) {
+        if (onFailure) {
+          this.transactionLogger.log(`[BackgroundProcessor] Invoking onFailure for jobId: ${jobId}`);
+          await onFailure(mgr);
+        }
+      } else {
+        if (onSuccess) {
+          this.transactionLogger.log(`[BackgroundProcessor] Invoking onSuccess for jobId: ${jobId}`);
+          await onSuccess(mgr);
+        }
+      }
+    };
+
     try {
       if (options.isRunParallel) {
         // ── Parallel execution ────────────────────────────────────────────
@@ -264,21 +311,72 @@ export class BackgroundProcessorUtilService {
           `[BackgroundProcessor] Parallel execution completed for jobId: ${jobId} - success: ${successCount}, failed: ${failCount}, rejected: ${rejectedCount}`
         );
 
-        if (options.isBreakOnError) {
-          const hasFailed = results.some((r) => r.status === 'fulfilled' && r.value === false);
-          if (hasFailed) {
-            this.transactionLogger.warn(
-              `[BackgroundProcessor] Some tasks failed in parallel execution for jobId: ${jobId}`
-            );
-            // already emitted individual failures; just finish
-          }
+        const anyFailed = results.some(
+          (r) => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === false)
+        );
+
+        if (anyFailed && options.isBreakOnError) {
+          this.transactionLogger.warn(
+            `[BackgroundProcessor] Some tasks failed in parallel execution for jobId: ${jobId}`
+          );
+          // already emitted individual failures; just finish
         }
+
+        await dispatchLifecycle(anyFailed, undefined);
+      } else if (useTransaction) {
+        // ── Sequential + transactional execution ─────────────────────────
+        // All tasks share a single EntityManager. If any task fails, the
+        // whole transaction is rolled back. The failed event has already been
+        // emitted by runTask; we throw here so dbTransactionWrap rolls back.
+        // onSuccess runs inside the transaction as the final pre-commit step.
+        // onFailure runs inside the transaction just before the forced rollback.
+        this.transactionLogger.log(
+          `[BackgroundProcessor] Starting transactional sequential execution for jobId: ${jobId}, tasks: ${processInfos.length}`
+        );
+
+        const callerManager = options.manager === true ? undefined : options.manager;
+
+        await dbTransactionWrap(async (txnManager: EntityManager) => {
+          let txnFailed = false;
+          let failedAt = -1;
+
+          for (let i = 0; i < processInfos.length; i++) {
+            this.transactionLogger.log(
+              `[BackgroundProcessor] Transactional task ${i + 1}/${processInfos.length} starting for jobId: ${jobId}`
+            );
+
+            const success = await runTask(i, txnManager);
+
+            if (!success) {
+              txnFailed = true;
+              failedAt = i;
+              break;
+            }
+          }
+
+          if (txnFailed) {
+            this.transactionLogger.warn(
+              `[BackgroundProcessor] Transactional execution stopped due to failure at task ${failedAt + 1} for jobId: ${jobId} — rolling back`
+            );
+            await dispatchLifecycle(true, txnManager);
+            throw new Error(
+              `[BackgroundProcessor] Task "${processInfos[failedAt].task}" failed — rolling back transaction`
+            );
+          }
+
+          await dispatchLifecycle(false, txnManager);
+        }, callerManager);
+
+        this.transactionLogger.log(
+          `[BackgroundProcessor] Transactional sequential execution completed for jobId: ${jobId}`
+        );
       } else {
         // ── Sequential execution ──────────────────────────────────────────
         this.transactionLogger.log(
           `[BackgroundProcessor] Starting sequential execution for jobId: ${jobId}, tasks: ${processInfos.length}`
         );
 
+        let anyFailed = false;
         for (let i = 0; i < processInfos.length; i++) {
           this.transactionLogger.log(
             `[BackgroundProcessor] Sequential task ${i + 1}/${processInfos.length} starting for jobId: ${jobId}`
@@ -286,15 +384,20 @@ export class BackgroundProcessorUtilService {
 
           const success = await runTask(i);
 
-          if (!success && options.isBreakOnError) {
-            this.transactionLogger.warn(
-              `[BackgroundProcessor] Sequential execution stopped due to failure at task ${i + 1} for jobId: ${jobId}`
-            );
-            break;
+          if (!success) {
+            anyFailed = true;
+            if (options.isBreakOnError) {
+              this.transactionLogger.warn(
+                `[BackgroundProcessor] Sequential execution stopped due to failure at task ${i + 1} for jobId: ${jobId}`
+              );
+              break;
+            }
           }
         }
 
         this.transactionLogger.log(`[BackgroundProcessor] Sequential execution completed for jobId: ${jobId}`);
+
+        await dispatchLifecycle(anyFailed, undefined);
       }
     } catch (err) {
       this.transactionLogger.error(`[BackgroundProcessor] Unexpected error during execution for jobId: ${jobId}`, err);
