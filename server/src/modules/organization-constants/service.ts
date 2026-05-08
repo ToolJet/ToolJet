@@ -8,7 +8,6 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
-import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 const secretValue = '**********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
@@ -80,7 +79,6 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     environmentId: string,
     type?: OrganizationConstantType
   ): Promise<any[]> {
-    return skipAppEditingVersionHydration.run(true, async () => {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.organizationConstantRepository.findByEnvironment(organizationId, environmentId, type);
 
@@ -101,7 +99,6 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
           };
         })
       );
-    });
     });
   }
 

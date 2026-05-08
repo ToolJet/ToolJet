@@ -19,6 +19,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { AbilityUtilService } from './util.service';
 import { AbilityService as IAbilityService } from './interfaces/IService';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class AbilityService extends IAbilityService {
@@ -43,8 +44,13 @@ export class AbilityService extends IAbilityService {
     resourcePermissionsObject: ResourcePermissionQueryObject,
     manager?: EntityManager
   ): Promise<UserPermissions> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const permissions = await this.getResourcePermission(user, resourcePermissionsObject, manager);
+    // Permission resolution loads ~all org apps to compute editable/viewable sets.
+    // AppsSubscriber.afterLoad would otherwise fire one AppVersion N+1 per loaded App,
+    // but permissions never read editingVersion or isStub. Skip the subscriber for
+    // the entire resolution — single source-level wrap covers every caller.
+    return skipAppEditingVersionHydration.run(true, async () =>
+      dbTransactionWrap(async (manager: EntityManager) => {
+        const permissions = await this.getResourcePermission(user, resourcePermissionsObject, manager);
 
       const adminGroup = permissions.some((group) => group.name === USER_ROLE.ADMIN);
       const allGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
@@ -113,7 +119,8 @@ export class AbilityService extends IAbilityService {
       }
 
       return userPermissions;
-    }, manager);
+    }, manager)
+    );
   }
 
   createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {

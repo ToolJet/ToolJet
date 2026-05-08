@@ -17,7 +17,6 @@ import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDelet
 import { App } from '@entities/app.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { DataQueriesUtilService } from '@modules/data-queries/util.service';
-import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class DataQueriesService implements IDataQueriesService {
@@ -99,7 +98,6 @@ export class DataQueriesService implements IDataQueriesService {
   }
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
-    return skipAppEditingVersionHydration.run(true, async () => {
     const queries = await this.dataQueryRepository.getAll(versionId);
     const serializedQueries = [];
 
@@ -124,7 +122,6 @@ export class DataQueriesService implements IDataQueriesService {
     const response = { data_queries: serializedQueries };
 
     return response;
-    });
   }
 
   async create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto) {
@@ -232,12 +229,6 @@ export class DataQueriesService implements IDataQueriesService {
     mode?: string,
     app?: App
   ) {
-    // AppsSubscriber.afterLoad fires 1.1k+ AppVersion N+1 from permission resolution
-    // (60 s of cumulative SQL per query run pre-fix). The query-execution flow doesn't
-    // depend on subscriber-set editingVersion for non-module apps; for module apps the
-    // workflow-execution path reads `app.editingVersion.id`, but the primary `app` was
-    // already loaded (and hydrated) by ValidateQueryAppGuard before this method runs.
-    return skipAppEditingVersionHydration.run(true, async () => {
     const { options, resolvedOptions } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
@@ -251,7 +242,6 @@ export class DataQueriesService implements IDataQueriesService {
     }
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
-    });
   }
 
   async runQueryForApp(
@@ -261,7 +251,6 @@ export class DataQueriesService implements IDataQueriesService {
     response: Response,
     app?: App
   ) {
-    return skipAppEditingVersionHydration.run(true, async () => {
     const { resolvedOptions } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
@@ -270,7 +259,6 @@ export class DataQueriesService implements IDataQueriesService {
     });
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
-    });
   }
 
   async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {

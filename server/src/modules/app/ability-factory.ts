@@ -4,7 +4,6 @@ import { Injectable } from '@nestjs/common';
 import { ResourceDetails, UserAllPermissions } from './types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { UserPermissions } from '@modules/ability/types';
-import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export abstract class AbilityFactory<TActions extends string, TSubject> {
@@ -26,22 +25,16 @@ export abstract class AbilityFactory<TActions extends string, TSubject> {
       return { resource: resource.resourceType };
     });
 
-    // Permission resolution loads ~all org apps to compute editable/viewable sets.
-    // AppsSubscriber.afterLoad would fire one AppVersion N+1 per loaded App entity,
-    // even though permissions don't read editingVersion/isStub. Skip the subscriber
-    // for this hot path — runs on every authenticated request (every guard).
     const userPermission: UserPermissions =
       request?.tj_user_permissions ||
-      (await skipAppEditingVersionHydration.run(true, () =>
-        this.abilityService.resourceActionsPermission(user, {
-          organizationId: user.organizationId || user.defaultOrganizationId,
-          ...(resource?.length
-            ? {
-                resources: resourceArray,
-              }
-            : {}),
-        })
-      ));
+      (await this.abilityService.resourceActionsPermission(user, {
+        organizationId: user.organizationId || user.defaultOrganizationId,
+        ...(resource?.length
+          ? {
+              resources: resourceArray,
+            }
+          : {}),
+      }));
     if (request) {
       request.tj_user_permissions = userPermission;
     }

@@ -8,7 +8,6 @@ import { AppEnvironmentActionParametersDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 import { AppEnvironmentUtilService } from './util.service';
-import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { LICENSE_FIELD } from '@modules/licensing/constants';
 
@@ -19,14 +18,12 @@ export class AppEnvironmentService implements IAppEnvironmentService {
     protected readonly licenseTermsService: LicenseTermsService
   ) {}
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
-    return skipAppEditingVersionHydration.run(true, async () => {
-      return await dbTransactionWrap(async (manager: EntityManager) => {
-        const editorVersion = await manager.findOne(AppVersion, {
-          select: ['id', 'name', 'description', 'status', 'versionType', 'currentEnvironmentId', 'appId'],
-          where: { id: editingVersionId },
-        });
-        return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const editorVersion = await manager.findOne(AppVersion, {
+        select: ['id', 'name', 'description', 'status', 'versionType', 'currentEnvironmentId', 'appId'],
+        where: { id: editingVersionId },
       });
+      return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
     });
   }
 
@@ -187,7 +184,6 @@ export class AppEnvironmentService implements IAppEnvironmentService {
   }
 
   async getVersionsByEnvironment(organizationId: string, appId: string, currentEnvironmentId?: string) {
-    return skipAppEditingVersionHydration.run(true, async () => {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const conditions = { appId };
       if (currentEnvironmentId) {
@@ -233,7 +229,6 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'releasedAt',
         ],
       });
-    });
     });
   }
 
