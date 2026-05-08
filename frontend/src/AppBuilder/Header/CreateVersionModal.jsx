@@ -8,6 +8,7 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Warning from '@/_ui/Icon/solidIcons/Warning';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -400,6 +401,29 @@ const CreateVersionModal = ({
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
               </small>
             </div>
+
+            {isGitSyncEnabled && (
+              <div
+                className="mt-3 d-flex align-items-start"
+                style={{
+                  backgroundColor: 'var(--background-warning-weak)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  gap: '6px',
+                }}
+                data-cy="version-immutability-info"
+              >
+                <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
+                  <Warning fill="var(--text-warning)" width="18" />
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
+                >
+                  Name and description cannot be edited after saving
+                </span>
+              </div>
+            )}
 
             {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
