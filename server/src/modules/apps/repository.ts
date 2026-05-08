@@ -79,17 +79,23 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findByAppName(name: string, organizationId: string, versionId?: string): Promise<App> {
-    // Check app_versions for non-workflow app names
-    // (BRANCH-type for git-sync workspaces, VERSION-type for non-git-sync)
-    const version = await this.dataSource.getRepository(AppVersion)
+    // Used only by the git-sync disabled flow (workspace-wide name collision check
+    // when no currentBranchId is in scope). Git-sync workspaces use the
+    // branch-scoped findAppNameOnBranch instead, so we don't filter by branch here.
+    // For non-git-sync workspaces every row is VERSION-type with branch_id NULL —
+    // the version_type filter keeps the match narrow and prevents accidental hits
+    // on any BRANCH-type rows that might exist.
+    const version = await this.dataSource
+      .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .where('av.app_name = :name', { name })
+      .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
       .andWhere('app.organization_id = :organizationId', { organizationId })
       .getOne();
     if (version?.app) return version.app;
 
-    // Fallback to apps table (for workflows)
+    // Fallback to apps table (for workflows — they keep name on apps.*)
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
     return this.findOne({
       ...(versionId ? { relations: ['appVersions'] } : {}),
@@ -151,9 +157,7 @@ export class AppsRepository extends Repository<App> {
       // No branch context: resolve metadata from BRANCH-type version (git-sync workspaces)
       // or any VERSION-type version with slug set (non-git-sync workspaces),
       // falling back to apps table (workflows)
-      qb.addSelect(
-        `COALESCE(av_meta.app_name, app.name) AS name`
-      )
+      qb.addSelect(`COALESCE(av_meta.app_name, app.name) AS name`)
         .addSelect(`COALESCE(av_meta.slug, app.slug) AS slug`)
         .addSelect(`COALESCE(av_meta.icon, app.icon) AS icon`)
         .addSelect(`COALESCE(av_meta.is_public, app.is_public) AS "isPublic"`)
@@ -169,10 +173,7 @@ export class AppsRepository extends Repository<App> {
         );
     }
 
-    return await qb
-      .orderBy('app.created_At', 'ASC')
-      .addOrderBy('version.created_at', 'ASC')
-      .getRawMany();
+    return await qb.orderBy('app.created_At', 'ASC').addOrderBy('version.created_at', 'ASC').getRawMany();
   }
 
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
