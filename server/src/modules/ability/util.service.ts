@@ -11,6 +11,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { RESOURCE_TO_APP_TYPE_MAP } from './constants';
 import { RolesRepository } from '@modules/roles/repository';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class AbilityUtilService {
@@ -272,6 +273,7 @@ export class AbilityUtilService {
         where: {
           userId: user.id,
           organizationId: user.organizationId,
+          type: APP_TYPES.FRONT_END,
         },
       });
 
@@ -294,6 +296,7 @@ export class AbilityUtilService {
           .innerJoin('folderApp.folder', 'folder')
           .where('folder.createdBy = :userId', { userId: user.id })
           .andWhere('folder.organizationId = :orgId', { orgId: user.organizationId })
+          .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
           .select('folderApp.appId')
           .getMany();
 
@@ -338,6 +341,7 @@ export class AbilityUtilService {
           .createQueryBuilder(FolderApp, 'folderApp')
           .innerJoin('folderApp.folder', 'folder')
           .where('folder.organizationId = :orgId', { orgId: user.organizationId })
+          .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
           .select('folderApp.appId')
           .getMany();
         const allFolderAppIds = allFolderApps.map((fa) => fa.appId);
