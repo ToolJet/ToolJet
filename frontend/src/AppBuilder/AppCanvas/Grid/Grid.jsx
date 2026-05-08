@@ -657,7 +657,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         resizable={
           !shouldFreeze
             ? isFlexContainerChild
-              ? { ...RESIZABLE_CONFIG, renderDirections: [flexParentDirection === 'row' ? 'e' : 's'] }
+              ? {
+                  ...RESIZABLE_CONFIG,
+                  edge: flexParentDirection === 'row' ? ['e', 'w'] : ['n', 's'],
+                  renderDirections: flexParentDirection === 'row' ? ['e', 'w'] : ['n', 's'],
+                }
               : isWidgetResizable
             : false
         }
@@ -665,9 +669,40 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
+          const parentId = currentWidget?.component?.parent;
+          const isFlexChild = parentId && getComponentTypeFromId(parentId) === 'FlexContainer';
           const resizingComponentId = useStore.getState().resizingComponentId;
           if (resizingComponentId !== e.target.id) {
             useStore.getState().setResizingComponentId(e.target.id);
+          }
+
+          console.log('e', e);
+
+          if (isFlexChild) {
+            // FlexContainer children are sized by flex rules, not absolute grid coordinates.
+            showGridLines();
+            handleActivateTargets(parentId);
+            const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
+            if (parentDir === 'row') {
+              const nextMainSize = Math.max(
+                GRID_HEIGHT,
+                Math.round((e.width ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT
+              );
+              e.target.style.flexBasis = `${nextMainSize}px`;
+              e.target.style.width = `${nextMainSize}px`;
+            } else {
+              const nextMainSize = Math.max(
+                GRID_HEIGHT,
+                Math.round((e.height ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT
+              );
+              e.target.style.flexBasis = `${nextMainSize}px`;
+              e.target.style.height = `${nextMainSize}px`;
+            }
+            if (e.drag?.transform) {
+              e.target.style.transform = e.drag.transform;
+            }
+            positionGhostElement(e.target, 'moveable-ghost-widget');
+            return;
           }
 
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
@@ -749,6 +784,31 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             });
             hideGridLines();
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
+            if (
+              currentWidget.component?.parent &&
+              getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
+            ) {
+              const parentDir =
+                getResolvedComponent(currentWidget.component.parent, null, moduleId)?.properties?.direction ?? 'column';
+              const rawMainSize = parentDir === 'row' ? e.lastEvent?.width : e.lastEvent?.height;
+              const mainSize = Math.max(
+                GRID_HEIGHT,
+                Math.round((rawMainSize ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT
+              );
+              const flexPatch = { mainSize };
+
+              // Keep legacy fields in sync for render paths that still read them.
+              if (parentDir === 'row') {
+                flexPatch.width = Math.max(1, Math.round(mainSize / _gridWidth));
+              } else {
+                flexPatch.height = mainSize;
+              }
+
+              setComponentLayout({ [currentWidget.id]: flexPatch });
+              setReorderContainerChildren(currentWidget.component.parent);
+              incrementCanvasUpdater();
+              return;
+            }
             const directions = e.lastEvent?.direction;
             if (!e.lastEvent) {
               return;
@@ -821,6 +881,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             //   incrementCanvasUpdater();
             //   return;
             // }
+            console.log('resizeData', resizeData, currentWidget);
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }

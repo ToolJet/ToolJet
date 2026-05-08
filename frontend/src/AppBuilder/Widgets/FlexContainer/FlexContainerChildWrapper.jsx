@@ -58,13 +58,20 @@ const FlexContainerChildWrapper = memo(
       if (exposed !== undefined) return exposed;
       return component?.properties?.visibility ?? component?.styles?.visibility;
     });
-    const width = gridWidth * layoutData?.width;
+    const width = gridWidth * (layoutData?.width ?? 1);
 
     if (!canShowInCurrentLayout || !layoutData || !componentType) return null;
 
     const { mainSize, fillMain, crossAlignSelf, flexOrder } = layoutData;
     const isRow = flexDirection === 'row';
-    const effectiveMainSize = visibility ? layoutData.height ?? 100 : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
+    const fallbackMainSize = isRow ? width : layoutData.height;
+    const effectiveMainSize = visibility
+      ? mainSize ?? fallbackMainSize ?? 100
+      : mode === 'edit'
+      ? HIDDEN_COMPONENT_HEIGHT
+      : 0;
+    const widgetHeight = isRow ? layoutData.height : effectiveMainSize;
+    const widgetWidth = isRow ? effectiveMainSize : width;
     const styles = {
       flex: fillMain ? '1 1 0' : `0 0 ${effectiveMainSize}px`,
       ...(isRow ? { height: `${layoutData.height}px`, minWidth: 0 } : { width: '100%', minHeight: 0 }),
@@ -109,8 +116,8 @@ const FlexContainerChildWrapper = memo(
         <RenderWidget
           id={id}
           componentType={componentType}
-          widgetHeight={layoutData.height}
-          widgetWidth={width}
+          widgetHeight={widgetHeight}
+          widgetWidth={widgetWidth}
           inCanvas={true}
           subContainerIndex={null}
           resolveIndex={indices}

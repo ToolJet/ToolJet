@@ -5,17 +5,56 @@ const GRID_LAYOUT_FIELDS = ['top', 'left', 'width', 'height'];
 
 /**
  * Returns the insertion slot index for a given mouse position.
- * direction: 'column' (default) uses Y axis; 'row' uses X axis.
+ * direction: 'column' (default) uses Y as main axis; 'row' uses X as main axis.
+ *
+ * Wrap-aware: groups children into buckets by cross-axis position (row for row-direction,
+ * column for column-direction), picks the bucket containing the cursor's cross coord
+ * (or nearest if between buckets), then resolves the main-axis insertion index inside it.
  */
 export const computeInsertionIndex = (rects, mousePos, direction = 'column') => {
   if (!rects || rects.length === 0) return 0;
   const isRow = direction === 'row';
-  const coord = typeof mousePos === 'number' ? mousePos : isRow ? mousePos.x : mousePos.y;
-  for (let i = 0; i < rects.length; i++) {
-    const mid = isRow ? rects[i].left + rects[i].width / 2 : rects[i].top + rects[i].height / 2;
-    if (coord < mid) return i;
+  const mainStart = isRow ? 'left' : 'top';
+  const mainSize = isRow ? 'width' : 'height';
+  const crossStart = isRow ? 'top' : 'left';
+  const crossEnd = isRow ? 'bottom' : 'right';
+  const mouseMain = isRow ? mousePos.x : mousePos.y;
+  const mouseCross = isRow ? mousePos.y : mousePos.x;
+  const tolerance = 2;
+
+  // Group children that share approximately the same cross-axis start into buckets.
+  const buckets = [];
+  rects.forEach((rect, index) => {
+    const bucket = buckets.find((b) => Math.abs(b.start - rect[crossStart]) < tolerance);
+    if (bucket) {
+      bucket.end = Math.max(bucket.end, rect[crossEnd]);
+      bucket.items.push({ rect, index });
+    } else {
+      buckets.push({ start: rect[crossStart], end: rect[crossEnd], items: [{ rect, index }] });
+    }
+  });
+
+  // Cursor inside a bucket's cross-axis range, else nearest bucket by cross-axis distance.
+  let target = buckets.find((b) => mouseCross >= b.start && mouseCross <= b.end);
+  if (!target) {
+    let bestDist = Infinity;
+    buckets.forEach((b) => {
+      const dist = mouseCross < b.start ? b.start - mouseCross : mouseCross - b.end;
+      if (dist < bestDist) {
+        bestDist = dist;
+        target = b;
+      }
+    });
   }
-  return rects.length;
+
+  // Inside the chosen bucket, find first child whose main-axis midpoint is past the cursor.
+  for (let i = 0; i < target.items.length; i++) {
+    const r = target.items[i].rect;
+    const mid = r[mainStart] + r[mainSize] / 2;
+    if (mouseMain < mid) return target.items[i].index;
+  }
+  // Cursor past every child in this bucket — insert after the bucket's last item.
+  return target.items[target.items.length - 1].index + 1;
 };
 
 /**

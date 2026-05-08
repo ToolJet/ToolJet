@@ -55,8 +55,11 @@ export function handleFlexContainerDragEnd({
   // ── Case 1: same FlexContainer → reorder only, no grid writes ──────────────
   if (targetSlotId === sourceParentId || targetParentId === sourceParentId) {
     const parentDir = getResolvedComponent?.(sourceParentId, null, moduleId)?.properties?.direction ?? 'column';
-    // Index in child list after hypothetically removing the dragged item (see computeFlexInsertIndex).
-    const newIndex = computeFlexInsertIndex(sourceParentId, e.clientX, e.clientY, parentDir, widgetId);
+    // Prefer the slot last published to flexContainerDropTarget so the drop matches what
+    // the indicator showed; fall back to live compute if the store target is stale/missing.
+    const lockedTarget = useStore.getState().flexContainerDropTarget;
+    const lockedIndex = lockedTarget?.flexContainerId === sourceParentId ? lockedTarget.index : null;
+    const newIndex = lockedIndex ?? computeFlexInsertIndex(sourceParentId, e.clientX, e.clientY, parentDir, widgetId);
     const snapshot = useStore.getState().getCurrentPageComponents?.(moduleId) ?? {};
     const mapping = useStore.getState().containerChildrenMapping?.[sourceParentId] ?? [];
     const computed = computeFlexContainerReorder({
@@ -81,19 +84,44 @@ export function handleFlexContainerDragEnd({
     return true;
   }
 
-  // ── Case 2: different FlexContainer → reparent with order, no grid writes ──
+  // ── Case 2: different FlexContainer → reparent at the locked slot ──────────
   if (targetParentType === 'FlexContainer') {
     const targetMapping = useStore.getState().containerChildrenMapping?.[targetParentId] ?? [];
     const targetComponents = useStore.getState().getCurrentPageComponents?.(moduleId) ?? {};
-    const maxOrder = targetMapping.reduce((max, childId) => {
-      const order = targetComponents[childId]?.layouts?.[currentLayout]?.flexOrder ?? 0;
-      return Math.max(max, order);
-    }, 0);
+
+    // Honor the slot the indicator displayed; append at end if no live target.
+    const lockedTarget = useStore.getState().flexContainerDropTarget;
+    const targetIndex = lockedTarget?.flexContainerId === targetParentId ? lockedTarget.index : targetMapping.length;
+
+    const beforeId = targetMapping[targetIndex - 1];
+    const afterId = targetMapping[targetIndex];
+    const beforeOrder = beforeId ? targetComponents[beforeId]?.layouts?.[currentLayout]?.flexOrder ?? 0 : 0;
+    const afterOrder = afterId ? targetComponents[afterId]?.layouts?.[currentLayout]?.flexOrder ?? null : null;
+
+    const newFlexOrder = afterOrder === null ? beforeOrder + 1000 : (beforeOrder + afterOrder) / 2;
+    const gapTooSmall = afterOrder !== null && (newFlexOrder - beforeOrder < 1 || afterOrder - newFlexOrder < 1);
+
     const mainSize = currentWidget.layouts?.[currentLayout]?.mainSize ?? 100;
-    console.log('maxOrder', maxOrder, 'mainSize', mainSize, 'flexOrder', maxOrder + 1000);
-    setComponentLayout({ [widgetId]: { flexOrder: maxOrder + 1000, mainSize } }, targetParentId, undefined, {
-      updateParent: true,
-    });
+
+    if (gapTooSmall) {
+      // Rebase all target children + dragged widget onto multiples of 1000 to restore gaps.
+      const reordered = [...targetMapping];
+      reordered.splice(targetIndex, 0, widgetId);
+      const layoutPatch = {};
+      reordered.forEach((id, idx) => {
+        if (id === widgetId) {
+          layoutPatch[id] = { flexOrder: (idx + 1) * 1000, mainSize };
+        } else if (targetComponents[id]?.layouts?.[currentLayout]) {
+          layoutPatch[id] = { flexOrder: (idx + 1) * 1000 };
+        }
+      });
+      setComponentLayout(layoutPatch, targetParentId, undefined, { updateParent: true });
+    } else {
+      setComponentLayout({ [widgetId]: { flexOrder: newFlexOrder, mainSize } }, targetParentId, undefined, {
+        updateParent: true,
+      });
+    }
+
     e.target.style.transform = '';
     incrementCanvasUpdater();
     if (targetParentId) setReorderContainerChildren(targetParentId);
@@ -119,7 +147,6 @@ export function handleFlexContainerDragEnd({
   }
 
   const mainSize = currentWidget.layouts?.[currentLayout]?.mainSize ?? 100;
-  console.log('newTop', newTop, 'newLeft', newLeft, 'newWidth', newWidth, 'mainSize', mainSize);
   setComponentLayout(
     { [widgetId]: { top: newTop, left: newLeft, width: newWidth, height: mainSize } },
     targetParentId,

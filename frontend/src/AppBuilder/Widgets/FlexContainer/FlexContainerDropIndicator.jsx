@@ -2,96 +2,42 @@ import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
+const BAR = 3;
+
 const FlexContainerDropIndicator = ({ flexContainerId, direction = 'column' }) => {
   const target = useStore(
     (state) =>
       state.flexContainerDropTarget?.flexContainerId === flexContainerId ? state.flexContainerDropTarget : null,
     shallow
   );
-
   if (!target) return null;
 
   const inner = document.querySelector(`[data-parentId="${flexContainerId}"]`);
   if (!inner) return null;
 
-  const children = Array.from(inner.querySelectorAll(':scope > .flex-child-wrapper'));
-  const containerRect = inner.getBoundingClientRect();
+  const children = inner.querySelectorAll(':scope > .flex-child-wrapper');
   const isRow = direction === 'row';
 
-  let linePos;
-  if (isRow) {
-    if (children.length === 0) {
-      linePos = 8;
-    } else if (target.index >= children.length) {
-      const last = children[children.length - 1].getBoundingClientRect();
-      linePos = last.right - containerRect.left + inner.scrollLeft;
-    } else {
-      const child = children[target.index].getBoundingClientRect();
-      linePos = child.left - containerRect.left + inner.scrollLeft;
-    }
-  } else {
-    if (children.length === 0) {
-      linePos = 8;
-    } else if (target.index >= children.length) {
-      const last = children[children.length - 1].getBoundingClientRect();
-      linePos = last.bottom - containerRect.top + inner.scrollTop;
-    } else {
-      const child = children[target.index].getBoundingClientRect();
-      linePos = child.top - containerRect.top + inner.scrollTop;
-    }
+  const baseStyle = {
+    position: 'absolute',
+    backgroundColor: '#4d72fa',
+    borderRadius: '2px',
+    pointerEvents: 'none',
+    zIndex: 1000,
+  };
+
+  if (children.length === 0) {
+    return <div style={{ ...baseStyle, left: 8, top: 8, width: isRow ? BAR : 24, height: isRow ? 24 : BAR }} />;
   }
 
-  const lineStyle = isRow
-    ? { top: 0, bottom: 0, left: `${linePos}px`, width: '2px' }
-    : { left: 0, right: 0, top: `${linePos}px`, height: '2px' };
+  const idx = Math.min(target.index, children.length - 1);
+  const child = children[idx];
 
-  const capStartStyle = isRow
-    ? { width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4d72fa', marginTop: '-4px', flexShrink: 0 }
-    : {
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        backgroundColor: '#4d72fa',
-        marginLeft: '-4px',
-        flexShrink: 0,
-      };
+  const style = isRow
+    ? { left: child.offsetLeft - BAR / 2, top: child.offsetTop, bottom: 0, width: BAR }
+    : { top: child.offsetTop - BAR / 2, left: child.offsetLeft, right: 0, height: BAR };
 
-  const capEndStyle = isRow
-    ? {
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        backgroundColor: '#4d72fa',
-        marginBottom: '-4px',
-        flexShrink: 0,
-      }
-    : {
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        backgroundColor: '#4d72fa',
-        marginRight: '-4px',
-        flexShrink: 0,
-      };
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        backgroundColor: '#4d72fa',
-        pointerEvents: 'none',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: isRow ? 'column' : 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        ...lineStyle,
-      }}
-    >
-      <div style={capStartStyle} />
-      <div style={capEndStyle} />
-    </div>
-  );
+  return <div style={{ ...baseStyle, ...style }} />;
 };
 
 export { FlexContainerDropIndicator };
