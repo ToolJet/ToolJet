@@ -358,6 +358,28 @@ const CreateVersionModal = ({
           }}
         >
           <div className="create-version-body mb-3">
+            {isGitSyncEnabled && (
+              <div
+                className="mb-3 d-flex align-items-start"
+                style={{
+                  backgroundColor: 'var(--background-warning-weak)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  gap: '6px',
+                }}
+                data-cy="version-immutability-info"
+              >
+                <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
+                  <Warning fill="var(--text-warning)" width="18" />
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
+                >
+                  Name and description cannot be edited after saving
+                </span>
+              </div>
+            )}
             <div className="col">
               <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
@@ -401,29 +423,6 @@ const CreateVersionModal = ({
                 {t('editor.appVersionManager.versionDescriptionHelper', 'Description must be max 500 characters')}
               </small>
             </div>
-
-            {isGitSyncEnabled && (
-              <div
-                className="mt-3 d-flex align-items-start"
-                style={{
-                  backgroundColor: 'var(--background-warning-weak)',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  gap: '6px',
-                }}
-                data-cy="version-immutability-info"
-              >
-                <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
-                  <Warning fill="var(--text-warning)" width="18" />
-                </span>
-                <span
-                  className="tj-text-xsm"
-                  style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
-                >
-                  Name and description cannot be edited after saving
-                </span>
-              </div>
-            )}
 
             {/* <div className="mb-4 pb-2 version-select">
             <label className="form-label" data-cy="create-version-from-label">
