@@ -207,7 +207,48 @@ const PLACEHOLDER_DATE_TIME_COMPONENT: Record<string, string> = {
   DaterangePicker: 'Select Date Range',
 };
 
+const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
+  'Accordion',
+  'Button',
+  'ButtonGroupV2',
+  'Checkbox',
+  'CodeEditor',
+  'ColorPicker',
+  'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'DropdownV2',
+  'EmailInput',
+  'Form',
+  'Image',
+  'JSONEditor',
+  'JSONExplorer',
+  'KeyValuePair',
+  'Listview',
+  'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'RadioButtonV2',
+  'RichTextEditor',
+  'StarRating',
+  'Table',
+  'Tabs',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TextInput',
+  'TimePicker',
+  'ToggleSwitchV2',
+  'TreeSelect',
+];
+
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
+
+const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
 @Injectable()
 export class AppImportExportService {
@@ -2693,7 +2734,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
 function migrateProperties(
-  componentType: NewRevampedComponent | PartialRevampedComponent,
+  componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
@@ -2703,6 +2744,15 @@ function migrateProperties(
   const general = { ...component.general };
   const validation = { ...component.validation };
   const generalStyles = { ...component.generalStyles };
+
+  if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
+    properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
+  if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
+    properties.maxLimit = { value: '' };
+  }
+
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
@@ -3141,6 +3191,10 @@ function migrateProperties(
       }
       delete general?.tooltip;
     }
+  }
+
+  if (componentType === 'ModuleViewer' && styles.padding === undefined) {
+    styles.padding = { value: 'default' };
   }
 
   return { properties, styles, general, generalStyles, validation };

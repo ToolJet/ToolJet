@@ -17,6 +17,8 @@ interface Features {
   [FEATURE_KEY.GET_CONVERSATION]: FeatureConfig;
   [FEATURE_KEY.UPDATE_KEY]: FeatureConfig;
   [FEATURE_KEY.GET_KEY_SETTINGS]: FeatureConfig;
+  [FEATURE_KEY.AUTO_SORT_QUERIES]: FeatureConfig;
+  [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

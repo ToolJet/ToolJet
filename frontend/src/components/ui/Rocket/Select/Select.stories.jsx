@@ -10,6 +10,7 @@ import {
   SelectSeparator,
 } from './Select';
 import { Field, FieldLabel, FieldDescription, FieldError } from '../Field/Field';
+import { TruncatingText } from '../TruncatingText/TruncatingText';
 import { User, Globe, Mail, Pencil, Trash2 } from 'lucide-react';
 
 export default {
@@ -308,6 +309,71 @@ export const OpenDropdownWithSelection = {
   parameters: { layout: 'padded' },
 };
 
+// ── Long Selected Value — opt-in TruncatingText pattern ──────────────────
+//
+// Documents the "Truncating long values" pattern from Select.spec.md.
+//
+// Two pieces of overflow handling are demonstrated together:
+//
+//   Trigger (selected value):
+//   - `<TruncatingText title={QUERIES[value]}><SelectValue /></TruncatingText>`
+//     wrapped inside a div that escapes shadcn's `[&>span]:tw-line-clamp-1`.
+//     Hover the clipped trigger to see the OS tooltip with the full string.
+//
+//   Dropdown (option rows):
+//   - `<TruncatingText>{label}</TruncatingText>` per SelectItem.
+//   - PLUS the dropdown is bounded: `align="end"` is irrelevant here (trigger
+//     fills the host) but the popover needs `!tw-w-max !tw-max-w-[<inner>px]`
+//     and a `data-tj-fit-host` marker so the global `:has()` rule overrides
+//     Radix's popper-wrapper `min-width: max-content`. Without these, the
+//     dropdown grows to fit the longest row and TruncatingText never clips —
+//     because the rows always have enough room.
+//
+// The `<style>` tag is inline so the story is self-contained. In an app, the
+// rule lives once in a global stylesheet (e.g. EventManager.scss).
+//
+// Host: 240px outer, 16px padding (tw-p-4) → 208px inner. Cap is 208px.
+
+const QUERIES = {
+  short: 'getProducts',
+  medium: 'getProductsByCategory',
+  long: 'getProductsThatIsReallyLongToFitInaDropdownAndWillDefinitelyOverflow',
+};
+
+export const LongSelectedValue = {
+  render: () => {
+    const [value, setValue] = React.useState('long');
+    return (
+      <>
+        <style>{`
+          [data-radix-popper-content-wrapper]:has([data-tj-fit-host]) {
+            min-width: 0;
+          }
+        `}</style>
+        <div className="tw-w-[240px] tw-p-4">
+          <Select value={value} onValueChange={setValue}>
+            <SelectTrigger>
+              <div className="tw-min-w-0 tw-flex-1">
+                <TruncatingText title={QUERIES[value]}>
+                  <SelectValue placeholder="Select query" />
+                </TruncatingText>
+              </div>
+            </SelectTrigger>
+            <SelectContent data-tj-fit-host="" className="!tw-w-max !tw-max-w-[208px]">
+              {Object.entries(QUERIES).map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  <TruncatingText>{label}</TruncatingText>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </>
+    );
+  },
+  parameters: { layout: 'padded' },
+};
+
 // ── All Variants ──────────────────────────────────────────────────────────
 export const AllVariants = {
   render: () => (
@@ -332,6 +398,79 @@ export const AllVariants = {
         </div>
       ))}
     </div>
+  ),
+  parameters: { layout: 'padded' },
+};
+
+// ── Bounded inside a host (consumer-side pattern) ────────────────────────
+//
+// Pattern for narrow hosts (e.g. an inspector panel) where:
+//   - the trigger is smaller than the host
+//   - the trigger is right-aligned within the host
+//   - the dropdown should grow to fit long option labels but stay inside the
+//     host
+//
+// Select needs four pieces at the consumer site (no Rocket changes):
+//   1. `align="end"` on SelectContent — anchors the popover's right edge to
+//      the trigger's right edge, so it grows leftward as it expands.
+//   2. `!tw-w-max` — sizes the popover to its longest option (Tailwind
+//      utility for `width: max-content`).
+//   3. `!tw-max-w-[<inner-width>px]` — caps the popover at the host's INNER
+//      content width (outer width minus padding) so the popover's left edge
+//      stops at the same boundary as the trigger area.
+//   4. A global `:has()` CSS rule that overrides Radix's popper-wrapper
+//      `min-width: max-content`, gated by a `data-tj-fit-host` marker on the
+//      Content. Without this override, Radix's wrapper expands to fit the
+//      longest option's intrinsic width and our `max-width` on Content has no
+//      effect — the dropdown overflows the host.
+//
+// The `<style>` tag here is inline to make the story self-contained. In an
+// app, place the rule once in a global stylesheet (e.g. EventManager.scss)
+// — it only fires when an element with `data-tj-fit-host` is present.
+//
+// Mirrors the Inspector panel layout: 300px outer host with 12px padding, so
+// inner usable width is 276px. The 160px trigger is right-aligned within the
+// 276px inner area. Cap is 276px.
+
+const BOUNDED_QUERIES = [
+  { value: 'short', label: 'getProducts' },
+  { value: 'med', label: 'getProductsByCategory' },
+  { value: 'long', label: 'getProductsThatIsReallyLongToFitInaDropdownAndWillDefinitelyOverflow' },
+  { value: 'orders', label: 'getOrders' },
+  { value: 'update', label: 'updateUserShippingAddressForCheckoutFlowWithLongName' },
+];
+
+export const BoundedInHost = {
+  render: () => (
+    <>
+      <style>{`
+        [data-radix-popper-content-wrapper]:has([data-tj-fit-host]) {
+          min-width: 0;
+        }
+      `}</style>
+      <div className="tw-w-[300px] tw-rounded-md tw-border tw-border-solid tw-border-border-weak tw-p-3">
+        <div className="tw-mb-2 tw-text-xs tw-text-text-placeholder">
+          300px outer • 12px padding • 276px inner • 160px right-aligned trigger
+        </div>
+        <div className="tw-flex tw-h-8 tw-items-center tw-justify-between">
+          <span className="tw-text-sm tw-text-text-default">Query</span>
+          <div className="tw-w-[160px]">
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Pick query" />
+              </SelectTrigger>
+              <SelectContent align="end" data-tj-fit-host="" className="!tw-w-max !tw-max-w-[276px]">
+                {BOUNDED_QUERIES.map((q) => (
+                  <SelectItem key={q.value} value={q.value}>
+                    {q.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+    </>
   ),
   parameters: { layout: 'padded' },
 };
