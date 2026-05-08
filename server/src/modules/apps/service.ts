@@ -135,6 +135,9 @@ export class AppsService implements IAppsService {
     user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ) {
+    // No editingVersion read in this method's body; opt out of subscriber for the
+    // permission/version lookups inside.
+    return skipAppEditingVersionHydration.run(true, async () => {
     const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
     const response = {
       id: app.id,
@@ -249,6 +252,7 @@ export class AppsService implements IAppsService {
       response['environmentId'] = environment.id;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);
+    });
   }
 
   validateReleasedApp(ability: AppAbility, app: App): { id: string; slug: string } {
@@ -567,6 +571,11 @@ export class AppsService implements IAppsService {
   }
 
   async getOne(app: App, user: User, branchId?: string): Promise<any> {
+    // AppsSubscriber.afterLoad would otherwise fire 1k+ AppVersion N+1 queries from the
+    // permission-resolution path. The primary `app` already has editingVersion set from
+    // its initial load (before this method); subsequent App entities loaded for ability
+    // checks etc. don't need it. Same opt-out pattern Phase 1 applied to /api/apps.
+    return skipAppEditingVersionHydration.run(true, async () => {
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
@@ -658,6 +667,7 @@ export class AppsService implements IAppsService {
       response['editing_version']['global_settings']['theme'] = appTheme;
     }
     return response;
+    });
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
