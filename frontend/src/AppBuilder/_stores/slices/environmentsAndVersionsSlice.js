@@ -46,8 +46,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // Get app ID from the response (similar to how AppEnvironments.jsx gets it)
       const appId = response.editorVersion?.app?.id || response.editorVersion?.appId;
 
+      const storeState = get();
+      const isModuleApp = storeState.appStore?.modules?.canvas?.app?.appType === 'module';
+      const isWorkflowApp = !!storeState.appStore?.modules?.workflow?.app?.appId;
+      const bypassEnvCheck = isModuleApp || isWorkflowApp;
+
       const hasEditPermission =
-        app_group_permissions?.is_all_editable || (appId && app_group_permissions?.editable_apps_id?.includes(appId));
+        bypassEnvCheck ||
+        app_group_permissions?.is_all_editable ||
+        (appId && app_group_permissions?.editable_apps_id?.includes(appId));
 
       // Check if user is viewer without edit permission
       const isViewOnlyUser = !hasEditPermission;
@@ -96,8 +103,10 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         }
 
         // Check if user has access to the requested environment
-        // Skip this check if user is owner requesting development
-        const skipAccessCheck = isOwner && requestedEnvName === 'development';
+        // Skip this check if user is owner requesting development, or for module/workflow apps
+        // (module/workflow app IDs are absent from app_group_permissions env access maps, so the
+        // access check always falls back to development even when the backend returned a higher env)
+        const skipAccessCheck = (isOwner && requestedEnvName === 'development') || bypassEnvCheck;
 
         if (!skipAccessCheck && requestedEnvName && !hasEnvironmentAccess(environmentAccess, requestedEnvName)) {
           // User doesn't have access, find the closest available environment
@@ -498,11 +507,13 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
     const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
     const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
+    // MODULE apps are not gated by app-level promote/release permissions
+    const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
-      isPromoteVersionEnabled: hasPromotePermission,
-      isReleaseVersionEnabled: hasReleasePermission,
+      isPromoteVersionEnabled: isModuleApp || hasPromotePermission,
+      isReleaseVersionEnabled: isModuleApp || hasReleasePermission,
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {

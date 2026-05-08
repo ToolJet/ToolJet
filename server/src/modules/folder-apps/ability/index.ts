@@ -20,6 +20,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): void {
+    if (request?.tj_folder_app_type_mismatch) {
+      return;
+    }
+
     const { superAdmin, userPermission, isAdmin } = UserAllPermissions;
     const folderCreate = userPermission.folderCreate;
     const folderPermissions = userPermission[MODULES.FOLDER];
@@ -37,6 +41,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
       if (ownerCanDeleteFolderApp) {
         can(FEATURE_KEY.DELETE_FOLDER_APP, FolderApp);
+      }
+
+      if (request?.tj_app_is_module && userPermission.isBuilder) {
+        can([FEATURE_KEY.CREATE_FOLDER_APP, FEATURE_KEY.DELETE_FOLDER_APP], FolderApp);
       }
 
       if (folderPermissions) {
