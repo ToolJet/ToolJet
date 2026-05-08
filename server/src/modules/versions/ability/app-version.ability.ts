@@ -15,6 +15,15 @@ export function defineAppVersionAbility(
   const permissionKey = resourceType === MODULES.MODULES ? MODULES.APP : resourceType;
   const userAppPermissions = userPermission?.[permissionKey];
 
+  // For MODULE type apps every authenticated user can read the version --> modules are
+  // fetched as dependencies during app preview and cannot be added to permission groups
+  // (the app_type DB enum has no 'module' value), so the normal viewableAppsId path
+  // can never grant access to them.
+  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_EVENTS], App);
+    return;
+  }
+
   if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     can(
       [
@@ -131,5 +140,4 @@ export function defineAppVersionAbility(
   ) {
     can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
   }
-
 }

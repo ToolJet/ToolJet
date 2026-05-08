@@ -3,6 +3,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 import { FeatureAbility } from './index';
 
 export function defineDataQueryAppAbility(
@@ -17,13 +18,12 @@ export function defineDataQueryAppAbility(
   const isCanCreate = userPermission.appCreate;
   const isCanDelete = userPermission.appDelete;
   const isAllViewable = !!resourcePermissions?.isAllViewable;
-  const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
   if (app?.isPublic) {
     can([FEATURE_KEY.RUN_VIEWER], App);
   }
 
-  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
+  if (isAdmin || superAdmin || (app?.type === APP_TYPES.MODULE && isBuilder)) {
     can(
       [
         FEATURE_KEY.CREATE,
