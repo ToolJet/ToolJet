@@ -221,7 +221,7 @@ class HomePageComponent extends React.Component {
       return;
     }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    // Skip eager fetch when ?folder= is present; fetchFolders chains to fetchApps after slug resolves.
+    // ?folder= deep-link: fetchFolders will chain to fetchApps after slug resolves.
     const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
     if (!urlFolderSlug) {
       this.fetchApps(1, this.state.currentFolder.id);
@@ -231,9 +231,7 @@ class HomePageComponent extends React.Component {
     this.fetchAppsLimit();
     this.fetchWorkflowsInstanceLimit();
     this.fetchWorkflowsWorkspaceLimit();
-    // orgGit is fetched once by Layout via useWorkspaceBranchesStore.initialize()
-    // (same gitSyncService.getGitStatus call). Read from the store + subscribe
-    // for hydration instead of issuing a duplicate request.
+    // Layout already fetched orgGitConfig — mirror it instead of duplicating.
     const initialOrgGit = useWorkspaceBranchesStore.getState().orgGitConfig;
     if (initialOrgGit) this.setState({ orgGit: initialOrgGit });
     this.setQueryParameter();
@@ -241,10 +239,7 @@ class HomePageComponent extends React.Component {
     // Check module access permission
     this.props.checkModuleAccess();
 
-    // Re-fetch apps when workspace branch changes (client-side branch switching)
-    // Require prevState.activeBranchId to also be set so the initial null → <id>
-    // hydration after mount doesn't refire what componentDidMount already fetched.
-    // Also mirror orgGitConfig into local state so existing readers keep working.
+    // Refetch on real branch switch only (skip the initial null→<id> hydration).
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
       if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
         this.fetchApps(1, this.state.currentFolder.id);
@@ -349,8 +344,7 @@ class HomePageComponent extends React.Component {
       if (currentFolder) {
         this.fetchApps(1, currentFolder.id);
       } else if (slugIsStale) {
-        // Bookmarked / cross-tab URL points at a folder that no longer exists.
-        // Fall back to "All apps" so the dashboard isn't blank.
+        // Stale ?folder= (renamed/deleted) — load All apps so dashboard isn't blank.
         this.fetchApps(1, undefined);
       }
     });

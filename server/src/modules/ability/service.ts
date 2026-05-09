@@ -44,14 +44,8 @@ export class AbilityService extends IAbilityService {
     resourcePermissionsObject: ResourcePermissionQueryObject,
     manager?: EntityManager
   ): Promise<UserPermissions> {
-    // Permission resolution loads ~all org apps to compute editable/viewable sets.
-    // AppsSubscriber.afterLoad would otherwise fire one AppVersion N+1 per loaded App,
-    // but permissions never read editingVersion or isStub. Skip the subscriber for
-    // the entire resolution — single source-level wrap covers every caller.
-    //
-    // Read-only path: skip dbTransactionWrap. Same pattern as e57d841500 (perf:
-    // drop wrap on getFolders read path) — START/COMMIT pairs add 10–20ms each
-    // under contention with no value for pure SELECTs.
+    // skipAppEditingVersionHydration: permissions load all org apps; afterLoad
+    // would fire AppVersion N+1 per row (557+ pre-fix). Read-only — no txn needed.
     const m = manager || getConnectionInstance().manager;
     return skipAppEditingVersionHydration.run(true, async () => {
       const permissions = await this.getResourcePermission(user, resourcePermissionsObject, m);

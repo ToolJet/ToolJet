@@ -8,10 +8,7 @@ const initialState = {
 export const createEditorLicenseSlice = (set) => ({
   ...initialState,
   updateFeatureAccess: () => {
-    // Layout's useLicenseStore.fetchFeatureAccess already fetches /api/license/access
-    // on mount and populates the cache. Reuse it to avoid a duplicate request on
-    // every app open. Falls back to a real fetch if the cache hasn't hydrated yet
-    // (e.g., AppBuilder mounted before Layout's effect resolved).
+    // Reuse Layout's useLicenseStore fetch; fallback if not hydrated (deep-link race).
     const cached = useLicenseStore.getState().featureAccess;
     if (cached && Object.keys(cached).length > 0) {
       set({ featureAccess: cached });

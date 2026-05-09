@@ -125,8 +125,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     viewableApps: AppBase[];
     totalCount: number;
   }> {
-    // Read-only path: skip dbTransactionWrap. Body is SELECTs + a permission
-    // resolve (which itself is now wrap-free); no writes.
+    // Read-only — no txn needed.
     const manager = getConnectionInstance().manager;
     const folderApps = await manager
         .createQueryBuilder(FolderApp, 'folderApp')
