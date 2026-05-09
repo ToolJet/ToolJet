@@ -231,7 +231,11 @@ class HomePageComponent extends React.Component {
     this.fetchAppsLimit();
     this.fetchWorkflowsInstanceLimit();
     this.fetchWorkflowsWorkspaceLimit();
-    this.fetchOrgGit();
+    // orgGit is fetched once by Layout via useWorkspaceBranchesStore.initialize()
+    // (same gitSyncService.getGitStatus call). Read from the store + subscribe
+    // for hydration instead of issuing a duplicate request.
+    const initialOrgGit = useWorkspaceBranchesStore.getState().orgGitConfig;
+    if (initialOrgGit) this.setState({ orgGit: initialOrgGit });
     this.setQueryParameter();
 
     // Check module access permission
@@ -240,10 +244,14 @@ class HomePageComponent extends React.Component {
     // Re-fetch apps when workspace branch changes (client-side branch switching)
     // Require prevState.activeBranchId to also be set so the initial null → <id>
     // hydration after mount doesn't refire what componentDidMount already fetched.
+    // Also mirror orgGitConfig into local state so existing readers keep working.
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
       if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
+      }
+      if (state.orgGitConfig !== prevState.orgGitConfig) {
+        this.setState({ orgGit: state.orgGitConfig });
       }
     });
 
