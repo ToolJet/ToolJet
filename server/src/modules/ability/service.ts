@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import {
   DEFAULT_USER_DATA_SOURCE_PERMISSIONS,
@@ -48,9 +48,13 @@ export class AbilityService extends IAbilityService {
     // AppsSubscriber.afterLoad would otherwise fire one AppVersion N+1 per loaded App,
     // but permissions never read editingVersion or isStub. Skip the subscriber for
     // the entire resolution — single source-level wrap covers every caller.
-    return skipAppEditingVersionHydration.run(true, async () =>
-      dbTransactionWrap(async (manager: EntityManager) => {
-        const permissions = await this.getResourcePermission(user, resourcePermissionsObject, manager);
+    //
+    // Read-only path: skip dbTransactionWrap. Same pattern as e57d841500 (perf:
+    // drop wrap on getFolders read path) — START/COMMIT pairs add 10–20ms each
+    // under contention with no value for pure SELECTs.
+    const m = manager || getConnectionInstance().manager;
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const permissions = await this.getResourcePermission(user, resourcePermissionsObject, m);
 
       const adminGroup = permissions.some((group) => group.name === USER_ROLE.ADMIN);
       const allGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
@@ -99,7 +103,7 @@ export class AbilityService extends IAbilityService {
             appsGranularPermissions,
             foldersGranularPermissions,
             user,
-            manager
+            m
           );
         }
         if (resources.some((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE)) {
@@ -119,8 +123,7 @@ export class AbilityService extends IAbilityService {
       }
 
       return userPermissions;
-    }, manager)
-    );
+    });
   }
 
   createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {
