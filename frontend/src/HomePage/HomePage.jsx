@@ -221,7 +221,11 @@ class HomePageComponent extends React.Component {
       return;
     }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    this.fetchApps(1, this.state.currentFolder.id);
+    // Skip eager fetch when ?folder= is present; fetchFolders chains to fetchApps after slug resolves.
+    const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
+    if (!urlFolderSlug) {
+      this.fetchApps(1, this.state.currentFolder.id);
+    }
     this.fetchFolders();
     this.fetchFeatureAccesss();
     this.fetchAppsLimit();
@@ -234,8 +238,10 @@ class HomePageComponent extends React.Component {
     this.props.checkModuleAccess();
 
     // Re-fetch apps when workspace branch changes (client-side branch switching)
+    // Require prevState.activeBranchId to also be set so the initial null → <id>
+    // hydration after mount doesn't refire what componentDidMount already fetched.
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
-      if (state.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+      if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
       }
@@ -326,12 +332,19 @@ class HomePageComponent extends React.Component {
       const folder = data?.folders?.find((folder) => folder.name === folder_slug);
       const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
       const currentFolder = data?.folders?.find((folder) => currentFolderId && folder.id === currentFolderId);
+      const slugIsStale = !!folder_slug && !folder;
       this.setState({
         folders: data.folders,
         foldersLoading: false,
         currentFolder: currentFolder || {},
       });
-      currentFolder && this.fetchApps(1, currentFolder.id);
+      if (currentFolder) {
+        this.fetchApps(1, currentFolder.id);
+      } else if (slugIsStale) {
+        // Bookmarked / cross-tab URL points at a folder that no longer exists.
+        // Fall back to "All apps" so the dashboard isn't blank.
+        this.fetchApps(1, undefined);
+      }
     });
   };
 
