@@ -4,7 +4,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
@@ -125,8 +125,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     viewableApps: AppBase[];
     totalCount: number;
   }> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const folderApps = await manager
+    // Read-only path: skip dbTransactionWrap. Body is SELECTs + a permission
+    // resolve (which itself is now wrap-free); no writes.
+    const manager = getConnectionInstance().manager;
+    const folderApps = await manager
         .createQueryBuilder(FolderApp, 'folderApp')
         .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
           id: folder.id,
@@ -178,11 +180,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         viewableAppsInFolder.getCount(),
       ]);
 
-      return {
-        viewableApps,
-        totalCount,
-      };
-    });
+    return {
+      viewableApps,
+      totalCount,
+    };
   }
 
   async create(folderId: string, appId: string, skipGitSyncCheck = false): Promise<FolderApp> {
