@@ -27,8 +27,8 @@ import {
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
+  computeFlexContainerInsertIndex,
 } from './gridUtils';
-import { computeFlexInsertIndexFromDragTarget } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import {
   dragContextBuilder,
   getAdjustedDropPosition,
@@ -117,7 +117,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
   const flexDragRafRef = useRef(null);
-  const flexDragSampleRef = useRef(null);
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
@@ -1111,16 +1110,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               cancelAnimationFrame(flexDragRafRef.current);
               flexDragRafRef.current = null;
             }
-            const flexEndWidget = boxList.find((b) => b.id === e.target.id);
-            if (
-              flexEndWidget?.component?.parent &&
-              getComponentTypeFromId(flexEndWidget.component.parent) === 'FlexContainer'
-            ) {
-              const parentId = flexEndWidget.component.parent;
-              const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
-              const idx = computeFlexInsertIndexFromDragTarget(parentId, e.target, parentDir, e.target.id);
-              setFlexContainerDropTarget({ flexContainerId: parentId, index: idx });
-            }
             const handledByFlex = handleFlexContainerDragEnd({
               e,
               boxList,
@@ -1249,26 +1238,21 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }px)`;
             positionGhostElement(e.target, 'moveable-ghost-widget');
             updateMousePosition(e.clientX, e.clientY, e.target);
-            flexDragSampleRef.current = {
-              dragEl: e.target,
-              parentId: currentWidget.component.parent,
-              widgetId: currentWidget.id,
-            };
-            // Update drop indicator (rAF-throttled; ref holds latest drag geometry per frame)
+            // Update drop indicator (rAF-throttled)
             if (!flexDragRafRef.current) {
               flexDragRafRef.current = requestAnimationFrame(() => {
                 flexDragRafRef.current = null;
-                const sample = flexDragSampleRef.current;
-                if (!sample?.parentId || !sample.dragEl) return;
-                const parentDir =
-                  getResolvedComponent(sample.parentId, null, moduleId)?.properties?.direction ?? 'column';
-                const idx = computeFlexInsertIndexFromDragTarget(
-                  sample.parentId,
-                  sample.dragEl,
+                const parentId = currentWidget.component.parent;
+                const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
+                // Exclude the dragged element so its own rect doesn't skew the midpoint calculation
+                const idx = computeFlexContainerInsertIndex(
+                  parentId,
+                  e.clientX,
+                  e.clientY,
                   parentDir,
-                  sample.widgetId
+                  currentWidget.id
                 );
-                setFlexContainerDropTarget({ flexContainerId: sample.parentId, index: idx });
+                setFlexContainerDropTarget({ flexContainerId: parentId, index: idx });
               });
             }
             return;
