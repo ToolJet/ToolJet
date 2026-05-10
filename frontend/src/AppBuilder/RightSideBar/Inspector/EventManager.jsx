@@ -1,24 +1,46 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
+import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  Button,
+  Input,
+  Switch,
+  Spinner,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+  Select as RocketSelect,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+  ToggleGroup as RocketToggleGroup,
+  ToggleGroupItem as RocketToggleGroupItem,
+} from '@/components/ui/Rocket';
+import { cn } from '@/lib/utils';
+import { FieldRow, SelectContent, SelectItem, OptionCombobox } from './ActionConfigurationPanels/shared';
 import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 import _, { get } from 'lodash';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
-import Select from '@/_ui/Select';
-import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { useAppDataActions } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
-import NoListItem from './Components/Table/NoListItem';
-import ManageEventButton from './ManageEventButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -28,12 +50,8 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
-import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { components as selectComponents } from 'react-select';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import './EventManager.scss';
 
 export const EventManager = ({
   sourceId,
@@ -86,8 +104,8 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const lastFocusedEventIndex = useRef(null);
-  const shouldSkipOnToggle = useRef(null);
 
   const { t } = useTranslation();
 
@@ -121,64 +139,7 @@ export const EventManager = ({
     return { label: groupName, options: groupedOptions[groupName] };
   });
 
-  let checkIfClicksAreInsideOf = document.querySelector('.cm-completionListIncompleteBottom');
-  // Listen for click events on body
-  if (checkIfClicksAreInsideOf) {
-    document.body.addEventListener('mousedown', function (event) {
-      if (checkIfClicksAreInsideOf.contains(event.target)) {
-        event.stopPropagation();
-      }
-    });
-  }
-
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const styles = {
-    ...defaultStyles(darkMode),
-    menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-    menuList: (base) => ({
-      ...base,
-    }),
-  };
-
-  const actionStyles = {
-    ...styles,
-    menuList: (base) => ({
-      ...base,
-      padding: '8px 0 8px 8px',
-      '&::-webkit-scrollbar': {
-        width: '10px',
-      },
-      '&::-webkit-scrollbar-track': {
-        background: 'transparent',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#E4E7EB',
-        border: '1px solid transparent',
-        backgroundClip: 'content-box',
-      },
-      '&::-webkit-scrollbar-thumb:hover': {
-        background: '#E4E7EB !important',
-        border: '1px solid transparent !important',
-        backgroundClip: 'content-box !important',
-      },
-      '&:hover': {
-        '&::-webkit-scrollbar-thumb': {
-          background: '#E4E7EB !important',
-          border: '1px solid transparent !important',
-          backgroundClip: 'content-box !important',
-        },
-      },
-    }),
-    group: (base) => ({
-      ...base,
-      padding: 0,
-    }),
-    groupHeading: (base) => ({
-      ...base,
-      margin: 0,
-      padding: '0',
-    }),
-  };
 
   const actionLookup = Object.fromEntries(ActionTypes.map((actionType) => [actionType.id, actionType]));
 
@@ -417,26 +378,8 @@ export const EventManager = ({
     });
   }
 
-  function getEventSourceName() {
-    if (eventSourceType === 'component') {
-      return components?.[sourceId]?.component?.name || eventMetaDefinition?.name || 'Event';
-    }
-
-    if (eventSourceType === 'page') {
-      return pages?.find((page) => page.id === sourceId)?.name || 'Page';
-    }
-
-    if (eventSourceType === 'data_query') {
-      return callerQueryName || 'Query';
-    }
-
-    return '';
-  }
-
-  function getDefaultEventName(eventId) {
-    const sourceName = getEventSourceName();
-    const eventDisplayName = eventMetaDefinition?.events?.[eventId]?.displayName || eventId || 'event';
-    return `${sourceName} ${eventDisplayName}`.trim();
+  function getDefaultEventName() {
+    return `Event #${events.length + 1}`;
   }
 
   function removeHandler(index) {
@@ -445,10 +388,22 @@ export const EventManager = ({
     deleteAppVersionEventHandler(eventId, index);
   }
 
-  function addHandler() {
+  function duplicateHandler(index) {
+    const source = events[index];
+    if (!source) return;
+    createAppVersionEventHandlers({
+      name: `${source.name} copy`,
+      event: deepClone(source.event),
+      eventType: source.target,
+      attachedTo: source.sourceId,
+      index: events.length,
+    });
+  }
+
+  function addHandler(eventId) {
     let newEvents = events;
     const eventIndex = newEvents.length;
-    const defaultEventId = Object.keys(eventMetaDefinition?.events)[0];
+    const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
     //----------------- Posthog Analytics for event handlers -----------------//
     let postHogEventType = 'Event Handler';
 
@@ -472,9 +427,9 @@ export const EventManager = ({
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
     createAppVersionEventHandlers({
-      name: getDefaultEventName(defaultEventId),
+      name: getDefaultEventName(),
       event: {
-        eventId: defaultEventId,
+        eventId: selectedEventId,
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
@@ -521,145 +476,144 @@ export const EventManager = ({
     const moduleInputs = Object.entries(moduleInputDummyQueries).map(([key, value]) => ({ name: value, value: key }));
     return [...moduleInputs, ...queries];
   };
-  const formatGroupLabel = (data) => {
-    if (data.label === 'run-action') return;
-    return (
-      <div
-        className="tw-border-x-0 tw-border-t-0 tw-border-b-[1px] tw-border-solid tw-my-[4px]"
-        style={{ borderColor: 'var(--border-weak)' }}
-      ></div>
-    );
-  };
-
-  const CustomOption = (props) => {
-    return (
-      <selectComponents.Option {...props}>
-        <div className="d-flex align-items-center">
-          <div style={{ width: '16px', marginRight: '6px' }}>
-            {props.isSelected && <SolidIcon name="tickv3" width="16px" height="16px" />}
-          </div>
-          <span>{props.label}</span>
-        </div>
-      </selectComponents.Option>
-    );
-  };
-
   function eventPopover(eventHandler, index) {
     const event = eventHandler?.event || {};
 
     return (
-      <Popover
-        id="popover-basic"
-        style={{ width: '350px', maxWidth: '350px' }}
-        className={`${darkMode && 'dark-theme'} shadow inspector-event-manager-popover`}
-        data-cy="popover-card"
-      >
-        <Popover.Body
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <div className="row">
-            <div className="col-3 tw-py-2 tw-pl-2 tw-pr-0">
-              {t('editor.inspector.eventManager.enableEvent', 'Enable event')}
-            </div>
-            <div className="col-9 d-flex align-items-center justify-content-end tw-pr-0">
-              <label className="form-check form-switch my-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={!event.disabled}
-                  onChange={(e) => handlerChanged(index, 'disabled', !e.target.checked)}
-                  data-cy="event-disabled-toggle"
+      <>
+        <div className="tw-flex tw-h-11 tw-items-center tw-justify-between tw-border-0 tw-border-b tw-border-solid tw-border-border-weak tw-px-4 tw-py-2">
+          <span className="tw-font-title-default tw-text-text-default">
+            {t('editor.inspector.eventManager.editEvent', 'Edit event')}
+          </span>
+          <div className="tw-flex tw-items-center tw-gap-0.5">
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly
+              leadingVisual={<Copy className="tw-h-3.5 tw-w-3.5 tw-text-icon-strong" />}
+              onClick={() => {
+                setFocusedEventIndex(null);
+                duplicateHandler(index);
+              }}
+              aria-label={t('editor.inspector.eventManager.duplicate', 'Duplicate')}
+              data-cy="event-duplicate-btn"
+            ></Button>
+            <Button
+              variant="ghost"
+              size="medium"
+              iconOnly
+              leadingVisual={<Trash2 className="tw-h-3.5 tw-w-3.5 tw-text-icon-strong" />}
+              onClick={() => {
+                setFocusedEventIndex(null);
+                removeHandler(index);
+              }}
+              aria-label={t('editor.inspector.eventManager.delete', 'Delete')}
+              data-cy="event-delete-btn"
+            ></Button>
+          </div>
+        </div>
+        <div className="tw-p-4">
+          <div className="tw-flex tw-flex-col tw-gap-3">
+            <div className="tw-flex tw-flex-col tw-gap-2">
+              <FieldRow
+                label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
+                dataCy="event-enabled-label"
+              >
+                <div className="tw-flex tw-justify-end">
+                  <Switch
+                    checked={!event.disabled}
+                    onCheckedChange={(checked) => handlerChanged(index, 'disabled', !checked)}
+                    aria-label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
+                    data-cy="event-disabled-toggle"
+                  />
+                </div>
+              </FieldRow>
+              <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
+                <Input
+                  type="text"
+                  value={eventHandler?.name ?? ''}
+                  onChange={(e) => handlerChanged(index, 'name', e.target.value)}
+                  className="tw-w-full"
+                  data-cy="event-name-input"
                 />
-              </label>
+              </FieldRow>
             </div>
-          </div>
-          <div className="row mt-3">
-            <div className="col-3 tw-py-2 tw-pl-2 tw-pr-0">
-              <span data-cy="event-name-label">{t('editor.inspector.eventManager.eventName', 'Event name')}</span>
-            </div>
-            <div className="col-9" data-cy="event-name-input">
-              <CodeHinter
-                type="basic"
-                initialValue={eventHandler?.name}
-                onChange={(value) => handlerChanged(index, 'name', value)}
-                usePortalEditor={false}
-                component={component}
-                cyLabel={`event-name`}
-              />
-            </div>
-          </div>
-          <div className="row mt-3">
-            <div className="col-3 p-2">
-              <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
-            </div>
-            <div className="col-9" data-cy="event-selection">
-              <Select
-                className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                options={possibleEvents}
-                value={event.eventId}
-                search={false}
-                onChange={(value) => handlerChanged(index, 'eventId', value)}
-                placeholder={t('globals.select', 'Select') + '...'}
-                styles={styles}
-                useMenuPortal={false}
-                useCustomStyles={true}
-              />
-            </div>
-          </div>
-          <div className="row mt-3">
-            <div className="col-3 p-2">
-              <span data-cy="action-label">{t('editor.inspector.eventManager.action', 'Action')}</span>
-            </div>
-            <div className="col-9 popover-action-select-search" data-cy="action-selection">
-              <Select
-                className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                options={actionOptions}
-                value={actionOptions
-                  .flatMap((group) => group.options)
-                  .find((option) => option.value === event.actionId)}
-                components={{ Option: CustomOption }}
-                search={false}
-                onChange={(value) => handlerChanged(index, 'actionId', value)}
-                placeholder={t('globals.select', 'Select') + '...'}
-                styles={actionStyles}
-                useMenuPortal={false}
-                useCustomStyles={true}
-                formatGroupLabel={formatGroupLabel}
-              />
-            </div>
-          </div>
-
-          <div className="row mt-3">
-            <div className="col-3 p-2" data-cy="alert-type-label">
-              {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
-            </div>
-            <div className="col-9">
-              <CodeHinter
-                type="basic"
-                initialValue={event.runOnlyIf}
-                onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
-                usePortalEditor={false}
-                component={component}
-                cyLabel={`run-only-if`}
-              />
+            <div className="tw-flex tw-flex-col tw-gap-3">
+              <FieldRow label={t('editor.inspector.eventManager.event', 'Event')} dataCy="event-label">
+                <div data-cy="event-selection">
+                  <RocketSelect
+                    value={event.eventId}
+                    onValueChange={(value) => handlerChanged(index, 'eventId', value)}
+                  >
+                    <SelectTrigger className="tw-w-full">
+                      <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {possibleEvents.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </RocketSelect>
+                </div>
+              </FieldRow>
+              <FieldRow label={t('editor.inspector.eventManager.action', 'Action')} dataCy="action-label">
+                <div data-cy="action-selection">
+                  <RocketSelect
+                    value={event.actionId}
+                    onValueChange={(value) => handlerChanged(index, 'actionId', value)}
+                  >
+                    <SelectTrigger className="tw-w-full">
+                      <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {actionOptions.map((group) => (
+                        <SelectGroup key={group.label}>
+                          <SelectLabel>{group.label}</SelectLabel>
+                          {group.options.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </RocketSelect>
+                </div>
+              </FieldRow>
+              <FieldRow label={t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')} dataCy="alert-type-label">
+                <CodeHinter
+                  type="basic"
+                  initialValue={event.runOnlyIf}
+                  onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
+                  usePortalEditor={false}
+                  component={component}
+                  cyLabel={`run-only-if`}
+                />
+              </FieldRow>
             </div>
           </div>
 
           {actionLookup[event.actionId]?.options?.length > 0 && (
-            <div className="hr-text" data-cy="action-option">
-              {t('editor.inspector.eventManager.actionOptions', 'Action options')}
+            <div className="tw-my-3 tw-flex tw-h-5 tw-items-center tw-gap-1.5" data-cy="action-option">
+              <div className="tw-h-px tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-border-dashed" />
+              <span className="tw-font-title-small tw-text-text-placeholder">
+                {t('editor.inspector.eventManager.configureAction', 'Configure action')}
+              </span>
+              <div className="tw-h-px tw-flex-1 tw-border-0 tw-border-t tw-border-border-weak tw-border-dashed" />
             </div>
           )}
-          <div>
+          <div
+            className={cn(
+              'tw-flex tw-flex-col tw-gap-3',
+              !(actionLookup[event.actionId]?.options?.length > 0) && 'tw-mt-3'
+            )}
+          >
             {event.actionId === 'show-alert' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2" data-cy="message-label">
-                    {t('editor.inspector.eventManager.message', 'Message')}
-                  </div>
-                  <div className="col-9" data-cy="alert-message-input-field">
+                <FieldRow label={t('editor.inspector.eventManager.message', 'Message')} dataCy="message-label">
+                  <div data-cy="alert-message-input-field">
                     <CodeHinter
                       type="basic"
                       theme={darkMode ? 'monokai' : 'default'}
@@ -669,50 +623,56 @@ export const EventManager = ({
                       component={component}
                     />
                   </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2" data-cy="alert-type-label">
-                    {t('editor.inspector.eventManager.alertType', 'Alert Type')}
-                  </div>
-                  <div className="col-9" data-cy="alert-message-type">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100 w-100`}
-                      options={alertOptions}
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.alertType', 'Alert Type')} dataCy="alert-type-label">
+                  <div data-cy="alert-message-type">
+                    <RocketSelect
                       value={event.alertType}
-                      search={false}
-                      onChange={(value) => handlerChanged(index, 'alertType', value)}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
-                    />
+                      onValueChange={(value) => handlerChanged(index, 'alertType', value)}
+                    >
+                      <SelectTrigger className="tw-w-full">
+                        <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {alertOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </RocketSelect>
                   </div>
-                </div>
+                </FieldRow>
               </>
             )}
 
             {event.actionId === 'open-webpage' && (
-              <div>
-                <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
-                <CodeHinter
-                  type="basic"
-                  initialValue={event.url}
-                  onChange={(value) => handlerChanged(index, 'url', value)}
-                  usePortalEditor={false}
-                  component={component}
-                />
-                <div className="d-flex align-items-center justify-content-between mt-3">
-                  <label className="form-label mt-1">Open in</label>
-                  <ToggleGroup
-                    onValueChange={(_value) => handlerChanged(index, 'windowTarget', _value)}
-                    defaultValue={event?.windowTarget || 'newTab'}
-                    style={{ width: '74%' }}
+              <>
+                <FieldRow label={t('editor.inspector.eventManager.url', 'URL')} dataCy="url-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.url}
+                    onChange={(value) => handlerChanged(index, 'url', value)}
+                    usePortalEditor={false}
+                    component={component}
+                  />
+                </FieldRow>
+                <FieldRow label="Open in" dataCy="open-in-label">
+                  <RocketToggleGroup
+                    type="single"
+                    value={event?.windowTarget || 'newTab'}
+                    onValueChange={(_value) => _value && handlerChanged(index, 'windowTarget', _value)}
+                    className="tw-w-full"
                   >
-                    <ToggleGroupItem value="newTab">New tab</ToggleGroupItem>
-                    <ToggleGroupItem value="currentTab">Current tab</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-              </div>
+                    <RocketToggleGroupItem value="newTab" className="tw-flex-1">
+                      New tab
+                    </RocketToggleGroupItem>
+                    <RocketToggleGroupItem value="currentTab" className="tw-flex-1">
+                      Current tab
+                    </RocketToggleGroupItem>
+                  </RocketToggleGroup>
+                </FieldRow>
+              </>
             )}
 
             {event.actionId === 'go-to-app' && (
@@ -721,55 +681,32 @@ export const EventManager = ({
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
-                darkMode={darkMode}
+                component={component}
               />
             )}
 
             {event.actionId === 'show-modal' && (
-              <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
-                <div className="col-9">
-                  <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
-                    value={event.modal?.id ?? event.modal}
-                    search={true}
-                    onChange={(value) => {
-                      handlerChanged(index, 'modal', value);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={styles}
-                    useMenuPortal={false}
-                    useCustomStyles={true}
-                  />
-                </div>
-              </div>
+              <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
+                <OptionCombobox
+                  options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
+                  value={event.modal?.id ?? event.modal}
+                  onChange={(value) => handlerChanged(index, 'modal', value)}
+                />
+              </FieldRow>
             )}
 
             {event.actionId === 'close-modal' && (
-              <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
-                <div className="col-9">
-                  <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
-                    value={event.modal?.id ?? event.modal}
-                    search={true}
-                    onChange={(value) => {
-                      handlerChanged(index, 'modal', value);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={styles}
-                    useMenuPortal={false}
-                    useCustomStyles={true}
-                  />
-                </div>
-              </div>
+              <FieldRow label={t('editor.inspector.eventManager.modal', 'Modal')} dataCy="modal-label">
+                <OptionCombobox
+                  options={[...getComponentOptions('Modal'), ...getComponentOptions('ModalV2')]}
+                  value={event.modal?.id ?? event.modal}
+                  onChange={(value) => handlerChanged(index, 'modal', value)}
+                />
+              </FieldRow>
             )}
 
             {event.actionId === 'copy-to-clipboard' && (
-              <div className="p-1">
-                <label className="form-label mt-1">{t('editor.inspector.eventManager.text', 'Text')}</label>
+              <FieldRow label={t('editor.inspector.eventManager.text', 'Text')} dataCy="text-label">
                 <CodeHinter
                   type="basic"
                   initialValue={event.contentToCopy}
@@ -777,23 +714,19 @@ export const EventManager = ({
                   usePortalEditor={false}
                   component={component}
                 />
-              </div>
+              </FieldRow>
             )}
 
             {['run-query', 'reset-query'].includes(event.actionId) && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                  <div className="col-9" data-cy="query-selection-field">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                <FieldRow label={t('editor.inspector.eventManager.query', 'Query')} dataCy="query-label">
+                  <div data-cy="query-selection-field">
+                    <OptionCombobox
                       options={constructDataQueryOptions()}
                       value={event?.queryId}
-                      search={true}
                       onChange={(value) => {
+                        if (value == null) return;
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
-
-                        // If it is a module editor and the query is not found in the data queries, then it is a module input dummy query
                         if (isModuleEditor && query === undefined) {
                           handleQueryChange(index, {
                             queryId: value,
@@ -808,7 +741,6 @@ export const EventManager = ({
                             }),
                             {}
                           );
-
                           handleQueryChange(index, {
                             queryId: query.id,
                             queryName: query.name,
@@ -816,13 +748,9 @@ export const EventManager = ({
                           });
                         }
                       }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
                     />
                   </div>
-                </div>
+                </FieldRow>
                 {event.actionId === 'run-query' && (
                   <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
                 )}
@@ -831,201 +759,142 @@ export const EventManager = ({
 
             {event.actionId === 'set-localstorage-value' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      usePortalEditor={false}
-                      component={component}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.value}
-                      onChange={(value) => handlerChanged(index, 'value', value)}
-                      usePortalEditor={false}
-                      component={component}
-                    />
-                  </div>
-                </div>
+                <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.key}
+                    onChange={(value) => handlerChanged(index, 'key', value)}
+                    usePortalEditor={false}
+                    component={component}
+                  />
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.value}
+                    onChange={(value) => handlerChanged(index, 'value', value)}
+                    usePortalEditor={false}
+                    component={component}
+                  />
+                </FieldRow>
               </>
             )}
             {event.actionId === 'generate-file' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.type', 'Type')}</div>
-                  <div className="col-9">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={[
-                        { name: 'CSV', value: 'csv' },
-                        { name: 'Text', value: 'plaintext' },
-                        { name: 'PDF', value: 'pdf' },
-                      ]}
-                      value={event.fileType ?? 'csv'}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'fileType', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.fileName', 'File name')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.fileName}
-                      onChange={(value) => handlerChanged(index, 'fileName', value)}
-                      component={component}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.data', 'Data')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.data}
-                      onChange={(value) => handlerChanged(index, 'data', value)}
-                      component={component}
-                    />
-                  </div>
-                </div>
+                <FieldRow label={t('editor.inspector.eventManager.type', 'Type')} dataCy="type-label">
+                  <OptionCombobox
+                    options={[
+                      { name: 'CSV', value: 'csv' },
+                      { name: 'Text', value: 'plaintext' },
+                      { name: 'PDF', value: 'pdf' },
+                    ]}
+                    value={event.fileType ?? 'csv'}
+                    onChange={(value) => handlerChanged(index, 'fileType', value)}
+                  />
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.fileName', 'File name')} dataCy="file-name-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.fileName}
+                    onChange={(value) => handlerChanged(index, 'fileName', value)}
+                    component={component}
+                  />
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.data', 'Data')} dataCy="data-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.data}
+                    onChange={(value) => handlerChanged(index, 'data', value)}
+                    component={component}
+                  />
+                </FieldRow>
               </>
             )}
             {event.actionId === 'set-table-page' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.table', 'Table')}</div>
-                  <div className="col-9">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={getComponentOptions('Table')}
-                      value={event.table}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'table', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.pageIndex', 'Page index')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.pageIndex ?? '{{1}}'}
-                      onChange={(value) => handlerChanged(index, 'pageIndex', value)}
-                      usePortalEditor={false}
-                      component={component}
-                    />
-                  </div>
-                </div>
+                <FieldRow label={t('editor.inspector.eventManager.table', 'Table')} dataCy="table-label">
+                  <OptionCombobox
+                    options={getComponentOptions('Table')}
+                    value={event.table}
+                    onChange={(value) => handlerChanged(index, 'table', value)}
+                  />
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.pageIndex', 'Page index')} dataCy="page-index-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.pageIndex ?? '{{1}}'}
+                    onChange={(value) => handlerChanged(index, 'pageIndex', value)}
+                    usePortalEditor={false}
+                    component={component}
+                  />
+                </FieldRow>
               </>
             )}
             {event.actionId === 'set-custom-variable' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      enablePreview={true}
-                      cyLabel={`event-key`}
-                      component={component}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.value}
-                      onChange={(value) => handlerChanged(index, 'value', value)}
-                      cyLabel={`variable`}
-                      component={component}
-                    />
-                  </div>
-                </div>
+                <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.key}
+                    onChange={(value) => handlerChanged(index, 'key', value)}
+                    enablePreview={true}
+                    cyLabel={`event-key`}
+                    component={component}
+                  />
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.value}
+                    onChange={(value) => handlerChanged(index, 'value', value)}
+                    cyLabel={`variable`}
+                    component={component}
+                  />
+                </FieldRow>
               </>
             )}
             {event.actionId === 'unset-custom-variable' && (
-              <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      component={component}
-                    />
-                  </div>
-                </div>
-              </>
+              <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                <CodeHinter
+                  type="basic"
+                  initialValue={event.key}
+                  onChange={(value) => handlerChanged(index, 'key', value)}
+                  component={component}
+                />
+              </FieldRow>
             )}
             {event.actionId === 'set-page-variable' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      cyLabel={`key`}
-                      component={component}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.value', 'Value')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.value}
-                      onChange={(value) => handlerChanged(index, 'value', value)}
-                      cyLabel={`variable`}
-                      component={component}
-                    />
-                  </div>
-                </div>
+                <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.key}
+                    onChange={(value) => handlerChanged(index, 'key', value)}
+                    cyLabel={`key`}
+                    component={component}
+                  />
+                </FieldRow>
+                <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
+                  <CodeHinter
+                    type="basic"
+                    initialValue={event.value}
+                    onChange={(value) => handlerChanged(index, 'value', value)}
+                    cyLabel={`variable`}
+                    component={component}
+                  />
+                </FieldRow>
               </>
             )}
             {event.actionId === 'unset-page-variable' && (
-              <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.key', 'Key')}</div>
-                  <div className="col-9">
-                    <CodeHinter
-                      type="basic"
-                      initialValue={event.key}
-                      onChange={(value) => handlerChanged(index, 'key', value)}
-                      cyLabel={`key`}
-                      component={component}
-                    />
-                  </div>
-                </div>
-              </>
+              <FieldRow label={t('editor.inspector.eventManager.key', 'Key')} dataCy="key-label">
+                <CodeHinter
+                  type="basic"
+                  initialValue={event.key}
+                  onChange={(value) => handlerChanged(index, 'key', value)}
+                  cyLabel={`key`}
+                  component={component}
+                />
+              </FieldRow>
             )}
             {event.actionId === 'switch-page' && (
               <SwitchPage
@@ -1033,215 +902,176 @@ export const EventManager = ({
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={() => getPageOptions(event)}
-                darkMode={darkMode}
+                component={component}
               />
             )}
             {event.actionId === 'scroll-component-into-view' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-1">{t('editor.inspector.eventManager.component', 'Component')}</div>
-                  <div className="col-9">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={getComponentsOptionsWithoutModalChilds()}
-                      value={event.componentId}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'componentId', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-2">
-                  <div className="col-3 p-1">Behaviour</div>
-                  <div className="col-9">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={[
+                <FieldRow label={t('editor.inspector.eventManager.component', 'Component')} dataCy="component-label">
+                  <OptionCombobox
+                    options={getComponentsOptionsWithoutModalChilds()}
+                    value={event.componentId}
+                    onChange={(value) => handlerChanged(index, 'componentId', value)}
+                  />
+                </FieldRow>
+                <FieldRow label="Behaviour" dataCy="scroll-behavior-label">
+                  <RocketSelect
+                    value={event.scrollBehavior ?? 'smooth'}
+                    onValueChange={(value) => handlerChanged(index, 'scrollBehavior', value)}
+                  >
+                    <SelectTrigger className="tw-w-full">
+                      <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
                         { name: 'Smooth', value: 'smooth' },
                         { name: 'Instant', value: 'instant' },
                         { name: 'Auto', value: 'auto' },
-                      ]}
-                      value={event.scrollBehavior ?? 'smooth'}
-                      search={false}
-                      onChange={(value) => handlerChanged(index, 'scrollBehavior', value)}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
-                    />
-                  </div>
-                </div>
-                <div className="row mt-2">
-                  <div className="col-3 p-1">Block</div>
-                  <div className="col-9">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={[
+                      ].map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </RocketSelect>
+                </FieldRow>
+                <FieldRow label="Block" dataCy="scroll-block-label">
+                  <RocketSelect
+                    value={event.scrollBlock ?? 'nearest'}
+                    onValueChange={(value) => handlerChanged(index, 'scrollBlock', value)}
+                  >
+                    <SelectTrigger className="tw-w-full">
+                      <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[
                         { name: 'Nearest', value: 'nearest' },
                         { name: 'Start', value: 'start' },
                         { name: 'Center', value: 'center' },
                         { name: 'End', value: 'end' },
-                      ]}
-                      value={event.scrollBlock ?? 'nearest'}
-                      search={false}
-                      onChange={(value) => handlerChanged(index, 'scrollBlock', value)}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
-                    />
-                  </div>
-                </div>
+                      ].map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </RocketSelect>
+                </FieldRow>
               </>
             )}
             {event.actionId === 'control-component' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-1" data-cy="action-options-component-field-label">
-                    {t('editor.inspector.eventManager.component', 'Component')}
-                  </div>
-                  <div className="col-9" data-cy="action-options-component-selection-field">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                <FieldRow
+                  label={t('editor.inspector.eventManager.component', 'Component')}
+                  dataCy="action-options-component-field-label"
+                >
+                  <div data-cy="action-options-component-selection-field">
+                    <OptionCombobox
                       options={getComponentOptionsOfComponentsWithActions()}
                       value={event?.componentId}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'componentId', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
+                      onChange={(value) => handlerChanged(index, 'componentId', value)}
                     />
                   </div>
-                </div>
-                <div className="row mt-2">
-                  <div className="col-3 p-1" data-cy="action-options-action-field-label">
-                    {t('editor.inspector.eventManager.action', 'Action')}
-                  </div>
-                  <div className="col-9" data-cy="action-options-action-selection-field">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                </FieldRow>
+                <FieldRow
+                  label={t('editor.inspector.eventManager.action', 'Action')}
+                  dataCy="action-options-action-field-label"
+                >
+                  <div data-cy="action-options-action-selection-field">
+                    <OptionCombobox
                       options={getComponentActionOptions(event?.componentId)}
                       value={event?.componentSpecificActionHandle}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'componentSpecificActionHandle', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
+                      onChange={(value) => handlerChanged(index, 'componentSpecificActionHandle', value)}
                     />
                   </div>
-                </div>
+                </FieldRow>
                 {event?.componentId &&
                   event?.componentSpecificActionHandle &&
                   (getAction(event?.componentId, event?.componentSpecificActionHandle)?.params ?? []).map((param) => {
-                    let optionsList = param.isDynamicOpiton
+                    const optionsList = param.isDynamicOpiton
                       ? get({ ...components[event?.componentId] }, param.optionsGetter, []).map((tab) => ({
                           name: tab.title,
                           value: tab.id,
                         }))
                       : param.options;
+                    const currentValue = valueForComponentSpecificActionHandle(event, param);
+
+                    if (param.type === 'select') {
+                      return (
+                        <FieldRow
+                          key={param.handle}
+                          label={param?.displayName}
+                          dataCy={`action-options-${param?.displayName}-field-label`}
+                        >
+                          <div data-cy="action-options-action-selection-field">
+                            <OptionCombobox
+                              options={optionsList ?? []}
+                              value={currentValue}
+                              onChange={(value) =>
+                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event)
+                              }
+                            />
+                          </div>
+                        </FieldRow>
+                      );
+                    }
 
                     return (
-                      <div className="row mt-2" key={param.handle}>
-                        <div className="col-3 p-1" data-cy={`action-options-${param?.displayName}-field-label`}>
-                          {param?.displayName}
+                      <FieldRow
+                        key={param.handle}
+                        label={param?.displayName}
+                        dataCy={`action-options-${param?.displayName}-field-label`}
+                      >
+                        <div data-cy="action-options-text-input-field">
+                          <CodeHinter
+                            type="fxEditor"
+                            initialValue={currentValue}
+                            onChange={(value) => {
+                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                            }}
+                            paramLabel={' '}
+                            paramType={param?.type}
+                            fieldMeta={{ options: param?.options }}
+                            cyLabel={`event-${param.displayName}`}
+                            component={component}
+                            isEventManagerParam={true}
+                          />
                         </div>
-
-                        {param.type === 'select' ? (
-                          <div className="col-9" data-cy="action-options-action-selection-field">
-                            <Select
-                              className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                              options={optionsList}
-                              value={valueForComponentSpecificActionHandle(event, param)}
-                              search={true}
-                              onChange={(value) => {
-                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
-                              }}
-                              placeholder={t('globals.select', 'Select') + '...'}
-                              styles={styles}
-                              useMenuPortal={false}
-                              useCustomStyles={true}
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            className={`${
-                              param?.type ? '' : 'fx-container-eventmanager-code'
-                            } col-9 fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
-                            data-cy="action-options-text-input-field"
-                          >
-                            <CodeHinter
-                              type="fxEditor"
-                              initialValue={valueForComponentSpecificActionHandle(event, param)}
-                              onChange={(value) => {
-                                onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
-                              }}
-                              paramLabel={' '}
-                              paramType={param?.type}
-                              fieldMeta={{ options: param?.options }}
-                              cyLabel={`event-${param.displayName}`}
-                              component={component}
-                              isEventManagerParam={true}
-                            />
-                          </div>
-                        )}
-                      </div>
+                      </FieldRow>
                     );
                   })}
               </>
             )}
             {event.actionId === 'toggle-app-mode' && (
               <>
-                <div className="row">
-                  <div className="col-3 p-2">{t('editor.inspector.eventManager.appMode', 'App mode')}</div>
-                  <div className="col-9" data-cy="query-selection-field">
-                    <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                <FieldRow label={t('editor.inspector.eventManager.appMode', 'App mode')} dataCy="app-mode-label">
+                  <div data-cy="query-selection-field">
+                    <OptionCombobox
                       options={[
-                        { label: 'Light', value: 'light' },
-                        { label: 'Dark', value: 'dark' },
+                        { name: 'Light', value: 'light' },
+                        { name: 'Dark', value: 'dark' },
                       ]}
                       value={event?.appMode}
-                      search={true}
-                      onChange={(value) => {
-                        handlerChanged(index, 'appMode', value);
-                      }}
-                      placeholder={t('globals.select', 'Select') + '...'}
-                      styles={styles}
-                      useMenuPortal={false}
-                      useCustomStyles={true}
+                      onChange={(value) => handlerChanged(index, 'appMode', value)}
                     />
                   </div>
-                </div>
+                </FieldRow>
                 <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
               </>
             )}
-            <div className="row mt-3">
-              <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
-              <div className="col-9">
-                <CodeHinter
-                  type="basic"
-                  initialValue={event.debounce}
-                  onChange={(value) => handlerChanged(index, 'debounce', value)}
-                  usePortalEditor={false}
-                  component={component}
-                  cyLabel={'debounce'}
-                />
-              </div>
-            </div>
+            <FieldRow label={t('editor.inspector.eventManager.debounce', 'Debounce')} dataCy="debounce-label">
+              <CodeHinter
+                type="basic"
+                initialValue={event.debounce}
+                onChange={(value) => handlerChanged(index, 'debounce', value)}
+                usePortalEditor={false}
+                component={component}
+                cyLabel={'debounce'}
+              />
+            </FieldRow>
           </div>
-        </Popover.Body>
-      </Popover>
+        </div>
+      </>
     );
   }
 
@@ -1276,147 +1106,223 @@ export const EventManager = ({
   const renderDraggable = useDraggableInPortal();
   const renderHandlers = (events) => {
     return (
-      <DragDropContext
-        onDragEnd={(result) => {
-          onDragEnd(result);
-        }}
-        className="w-100"
-      >
-        <Droppable droppableId="droppable">
-          {({ innerRef, droppableProps, placeholder }) => (
-            <div {...droppableProps} ref={innerRef}>
-              {events.map((event, index) => {
-                const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
-                // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
-                return (
-                  <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
-                    {renderDraggable((provided, snapshot) => {
-                      if (snapshot.isDragging && focusedEventIndex !== null) {
-                        setFocusedEventIndex(null);
-                        document.body.click(); // Hack: Close overlay while dragging
-                      }
-                      return (
-                        <OverlayTrigger
-                          trigger="click"
-                          placement={popoverPlacement || 'left'}
-                          rootClose={true}
-                          overlay={eventPopover(event, index)}
-                          onToggle={(showing) => {
-                            // If the toggle action should be skipped (e.g., due to a previous state change), reset the flag and exit early.
-                            if (shouldSkipOnToggle.current) {
-                              shouldSkipOnToggle.current = false;
-                              return;
-                            }
-
-                            // If there is already a focused event, set the skip flag to prevent unnecessary state updates.
-                            if (focusedEventIndex !== null && showing) {
-                              shouldSkipOnToggle.current = true;
-                            }
-
-                            if (showing) {
-                              setFocusedEventIndex(index);
-                              lastFocusedEventIndex.current = index;
-                            } else {
-                              setFocusedEventIndex(null);
-                            }
-                            if (typeof popOverCallback === 'function') popOverCallback(showing);
-                          }}
-                        >
-                          <div
-                            key={index}
-                            id={`${sourceId}-${index}`}
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <ManageEventButton
-                              eventName={event?.name}
-                              eventDisplayName={eventMetaDefinition?.events[event.event.eventId]?.displayName}
-                              actionName={actionMeta.name}
-                              removeHandler={removeHandler}
-                              index={index}
-                              darkMode={darkMode}
-                              isDisabled={!!event.event.disabled}
-                              actionsUpdatedLoader={index === focusedEventIndex ? actionsUpdatedLoader : false}
-                              eventsUpdatedLoader={index === focusedEventIndex ? eventsUpdatedLoader : false}
-                              eventsDeletedLoader={
-                                index === eventToDeleteLoaderIndex
-                                  ? eventToDeleteLoaderIndex === 0
-                                    ? true
-                                    : !!eventToDeleteLoaderIndex
-                                  : false
+      <TooltipProvider delayDuration={100}>
+        <DragDropContext
+          onDragEnd={(result) => {
+            onDragEnd(result);
+          }}
+          className="w-100"
+        >
+          <Droppable droppableId="droppable">
+            {({ innerRef, droppableProps, placeholder }) => (
+              <div {...droppableProps} ref={innerRef}>
+                {events.map((event, index) => {
+                  const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+                  // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                  return (
+                    <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
+                      {renderDraggable((provided, snapshot) => {
+                        if (snapshot.isDragging && focusedEventIndex !== null) {
+                          setFocusedEventIndex(null);
+                        }
+                        const isOpen = focusedEventIndex === index && !snapshot.isDragging;
+                        return (
+                          <Popover
+                            open={isOpen}
+                            onOpenChange={(showing) => {
+                              if (showing) {
+                                setFocusedEventIndex(index);
+                                lastFocusedEventIndex.current = index;
+                              } else {
+                                setFocusedEventIndex(null);
                               }
-                            />
-                          </div>
-                        </OverlayTrigger>
-                      );
-                    })}
-                  </Draggable>
-                );
-              })}
-              {placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                              if (typeof popOverCallback === 'function') popOverCallback(showing);
+                            }}
+                          >
+                            <PopoverTrigger asChild>
+                              <div
+                                key={index}
+                                id={`${sourceId}-${index}`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                data-cy="event-handler-card"
+                                className="tw-mb-1 tw-h-14 tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-md tw-bg-interactive-default tw-p-2 hover:tw-bg-interactive-hover"
+                              >
+                                <div className="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-justify-center tw-gap-0.5">
+                                  <div className="tw-flex tw-w-full tw-items-center tw-gap-2">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span
+                                          className="tw-min-w-0 tw-leading-5 tw-flex-1 tw-truncate tw-font-title-default tw-text-text-default"
+                                          data-cy="event-handler-name"
+                                        >
+                                          {event?.name}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent
+                                        side="left"
+                                        showArrow={false}
+                                        className="tw-z-[10001] tw-max-w-[260px]"
+                                        data-cy="event-row-tooltip-name"
+                                      >
+                                        {event?.name}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
+                                    index === eventToDeleteLoaderIndex ? (
+                                      <Spinner size="default" className="tw-text-icon-brand" />
+                                    ) : (
+                                      <Switch
+                                        checked={!event.event.disabled}
+                                        onCheckedChange={(checked) => handlerChanged(index, 'disabled', !checked)}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
+                                        aria-label={t('editor.inspector.eventManager.enableEvent', 'Enable event')}
+                                        data-cy="event-row-switch"
+                                      />
+                                    )}
+                                  </div>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="tw-flex tw-w-full tw-min-w-0 tw-items-center tw-gap-1">
+                                        <span className="tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                          {eventMetaDefinition?.events[event.event.eventId]?.displayName}
+                                        </span>
+                                        <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
+                                        <span className="tw-min-w-0 tw-text-left tw-flex-1 tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                          {actionMeta.name}
+                                        </span>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent
+                                      side="left"
+                                      showArrow={false}
+                                      className="tw-z-[10001] tw-max-w-[260px]"
+                                      data-cy="event-row-tooltip-action"
+                                    >
+                                      {eventMetaDefinition?.events[event.event.eventId]?.displayName}
+                                      {' → '}
+                                      {actionMeta.name}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              side={popoverPlacement || 'left'}
+                              align="center"
+                              sideOffset={8}
+                              className={cn(
+                                'inspector-event-manager-popover tw-z-[1042] tw-w-[300px] tw-max-w-[300px] tw-gap-0 tw-overflow-hidden tw-p-0',
+                                darkMode && 'dark-theme'
+                              )}
+                              data-cy="popover-card"
+                              onInteractOutside={(e) => {
+                                const autocomplete = document.querySelector('.cm-completionListIncompleteBottom');
+                                if (autocomplete && autocomplete.contains(e.target)) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              {eventPopover(event, index)}
+                            </PopoverContent>
+                          </Popover>
+                        );
+                      })}
+                    </Draggable>
+                  );
+                })}
+                {placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </TooltipProvider>
     );
   };
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" isLoading={eventsCreatedLoader}>
-        {t('editor.inspector.eventManager.addHandler', 'New event handler')}
-      </AddNewButton>
+      <Popover
+        open={addMenuOpen}
+        onOpenChange={(showing) => {
+          setAddMenuOpen(showing);
+          if (typeof popOverCallback === 'function') popOverCallback(showing);
+        }}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            size="default"
+            leadingVisual={<Plus className="tw-h-4 tw-w-4" />}
+            className="tw-shadow-elevation-100 tw-mt-1"
+            data-cy="add-event-handler"
+          >
+            {t('editor.inspector.eventManager.addHandler', 'Add new event handler')}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="bottom"
+          align="center"
+          className={cn(
+            'tw-z-[10001] tw-max-h-[280px] tw-w-[260px] tw-gap-0 tw-overflow-auto tw-p-2',
+            darkMode && 'dark-theme'
+          )}
+          data-cy="add-event-menu"
+        >
+          {possibleEvents.length === 0 ? (
+            <div className="tw-px-2 tw-py-1.5 tw-font-body-default tw-text-text-placeholder">
+              {t('editor.inspector.eventManager.noEventsAvailable', 'No events available')}
+            </div>
+          ) : (
+            possibleEvents.map((e) => (
+              <button
+                key={e.value}
+                type="button"
+                onClick={() => {
+                  addHandler(e.value);
+                  setAddMenuOpen(false);
+                }}
+                className="tw-w-full tw-cursor-pointer tw-appearance-none tw-rounded-md tw-border-0 tw-bg-transparent tw-px-2 tw-py-1.5 tw-text-left tw-font-body-default tw-text-text-default hover:tw-bg-interactive-hover"
+                data-cy={`event-trigger-option-${e.value}`}
+              >
+                {e.name}
+              </button>
+            ))
+          )}
+        </PopoverContent>
+      </Popover>
     );
   };
 
-  const shouldUsePopoverObserver = events.length !== 0 && eventSourceType === 'data_query';
-
-  usePopoverObserver(
-    shouldUsePopoverObserver ? document.getElementsByClassName('query-details')[0] : null,
-    document.getElementById(`${sourceId}-${lastFocusedEventIndex.current}`),
-    document.getElementById('popover-basic'),
-    focusedEventIndex !== null,
-    () => (document.getElementById('popover-basic').style.display = 'block'),
-    () => (document.getElementById('popover-basic').style.display = 'none')
-  );
-
   if (events.length === 0) {
+    if (hideEmptyEventsAlert) {
+      return <div className="d-flex">{renderAddHandlerBtn()}</div>;
+    }
     return (
-      <>
-        {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
-        <div className="d-flex">{renderAddHandlerBtn()}</div>
-      </>
-    );
-  }
-
-  const componentName = eventMetaDefinition?.name ? eventMetaDefinition.name : 'query';
-
-  if (events.length === 0) {
-    return (
-      <div className="d-flex">
-        {renderAddHandlerBtn()}
-        {!hideEmptyEventsAlert ? (
-          <div className="text-left">
-            <small className="color-disabled" data-cy="no-event-handler-message">
-              {t(
-                'editor.inspector.eventManager.emptyMessage',
-                "This {{componentName}} doesn't have any event handlers",
-                {
-                  componentName: componentName.toLowerCase(),
-                }
-              )}
-            </small>
-          </div>
-        ) : null}
-      </div>
+      <Empty size="small" className="tw-px-0" data-cy="no-event-handler-message">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <MousePointerClick />
+          </EmptyMedia>
+          <EmptyTitle>{t('editor.inspector.eventManager.emptyTitle', 'No events added yet.')}</EmptyTitle>
+          <EmptyDescription>
+            {t(
+              'editor.inspector.eventManager.emptyDescription',
+              'Add events to make your component interactive — like button clicks or form submissions'
+            )}
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>{renderAddHandlerBtn()}</EmptyContent>
+      </Empty>
     );
   }
 
   return (
     <>
       {renderHandlers(events)}
-      {renderAddHandlerBtn()}
+      <div className="[&_button]:tw-w-full">{renderAddHandlerBtn()}</div>
     </>
   );
 };

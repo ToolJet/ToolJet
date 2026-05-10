@@ -3670,7 +3670,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
 function migrateProperties(
-  componentType: NewRevampedComponent | PartialRevampedComponent,
+  componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
@@ -4127,6 +4127,10 @@ function migrateProperties(
       }
       delete general?.tooltip;
     }
+  }
+
+  if (componentType === 'ModuleViewer' && styles.padding === undefined) {
+    styles.padding = { value: 'default' };
   }
 
   return { properties, styles, general, generalStyles, validation };

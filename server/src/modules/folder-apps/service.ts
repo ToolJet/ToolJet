@@ -80,6 +80,12 @@ export class FolderAppsService implements IFolderAppsService {
       const userAppPermissions = userPermissions?.[resourceType] ?? userPermissions?.[MODULES.APP];
       const userFolderPermissions = userPermissions?.[MODULES.FOLDER];
 
+      const isModuleBuilderAccess =
+        type === APP_TYPES.MODULE && (userPermissions?.isBuilder || userPermissions?.isAdmin);
+      const effectiveAppPermissions = isModuleBuilderAccess
+        ? { ...userAppPermissions, isAllEditable: true }
+        : userAppPermissions;
+
       const folders = await this.foldersUtilService.allFolders(user, manager, type);
       if (folders.length === 0) {
         return decamelizeKeys({ folders: [] });
@@ -88,7 +94,7 @@ export class FolderAppsService implements IFolderAppsService {
       const folderIds = folders.map((f) => f.id);
       const folderApps = await this.folderAppsUtilService.findFolderAppsForFolders(
         folderIds,
-        userAppPermissions,
+        effectiveAppPermissions,
         manager,
         type as APP_TYPES,
         searchKey,
@@ -109,7 +115,7 @@ export class FolderAppsService implements IFolderAppsService {
       const visibleFolders = this.filterFoldersByPermissions(
         folders,
         user,
-        userPermissions?.isAdmin,
+        isModuleBuilderAccess || userPermissions?.isAdmin,
         userFolderPermissions
       );
 

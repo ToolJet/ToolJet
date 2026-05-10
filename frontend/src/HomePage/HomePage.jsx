@@ -2057,6 +2057,9 @@ class HomePageComponent extends React.Component {
                         const currentSession = authenticationService.currentSessionValue;
                         if (currentSession?.super_admin || currentSession?.admin) return true;
 
+                        // Builders have admin-level access to module folders
+                        if (this.props.appType === 'module' && currentSession?.role?.name === 'builder') return true;
+
                         // Check if user has edit permissions for the folder
                         const folderPermissions = currentSession?.user_permissions?.folder;
                         if (folderPermissions?.is_all_editable) return true;
