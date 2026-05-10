@@ -5,6 +5,7 @@ import { getDroppableSlotIdOnScreen, getParentFromSlotId } from './dragEnd';
 import {
   computeFlexContainerReorder,
   computeFlexInsertIndex,
+  getEffectiveFlexDirectionForFlexContainer,
 } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 const GRID_HEIGHT = 10;
@@ -54,7 +55,7 @@ export function handleFlexContainerDragEnd({
 
   // ── Case 1: same FlexContainer → reorder only, no grid writes ──────────────
   if (targetSlotId === sourceParentId || targetParentId === sourceParentId) {
-    const parentDir = getResolvedComponent?.(sourceParentId, null, moduleId)?.properties?.direction ?? 'column';
+    const parentDir = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, sourceParentId, moduleId, null);
     // Prefer the slot last published to flexContainerDropTarget so the drop matches what
     // the indicator showed; fall back to live compute if the store target is stale/missing.
     const lockedTarget = useStore.getState().flexContainerDropTarget;
@@ -110,6 +111,8 @@ export function handleFlexContainerDragEnd({
     if (sourceLayout.widthPx !== undefined) carriedSizing.widthPx = sourceLayout.widthPx;
     if (sourceLayout.heightPx !== undefined) carriedSizing.heightPx = sourceLayout.heightPx;
     if (sourceLayout.crossAlignSelf !== undefined) carriedSizing.crossAlignSelf = sourceLayout.crossAlignSelf;
+    if (sourceLayout.stackedWidthBehavior !== undefined)
+      carriedSizing.stackedWidthBehavior = sourceLayout.stackedWidthBehavior;
 
     if (gapTooSmall) {
       // Rebase all target children + dragged widget onto multiples of 1000 to restore gaps.

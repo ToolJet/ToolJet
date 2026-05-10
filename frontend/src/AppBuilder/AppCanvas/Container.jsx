@@ -55,6 +55,8 @@ const Container = React.memo(
     componentType,
     appType,
     hasNoScroll = false,
+    flexEffectiveDirection,
+    flexShouldStack = false,
   }) => {
     const { moduleId, isModuleEditor } = useModuleContext();
     const realCanvasRef = useRef(null);
@@ -78,6 +80,7 @@ const Container = React.memo(
       (state) => (isFlexContainer ? state.getResolvedComponent?.(id)?.properties?.direction ?? 'column' : 'column'),
       shallow
     );
+    const flexDirectionForFlex = isFlexContainer ? flexEffectiveDirection ?? flexDirection : flexDirection;
 
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
@@ -120,7 +123,7 @@ const Container = React.memo(
               if (!flexRafRef.current) {
                 flexRafRef.current = requestAnimationFrame(() => {
                   flexRafRef.current = null;
-                  const index = computeFlexInsertIndex(id, clientOffset.x, clientOffset.y, flexDirection);
+                  const index = computeFlexInsertIndex(id, clientOffset.x, clientOffset.y, flexDirectionForFlex);
                   setFlexContainerDropTarget({ flexContainerId: id, index });
                 });
               }
@@ -267,11 +270,12 @@ const Container = React.memo(
                 darkMode={darkMode}
                 moduleId={moduleId}
                 parentId={id}
-                flexDirection={flexDirection}
+                flexDirection={flexDirectionForFlex}
+                flexShouldStack={flexShouldStack}
                 gridWidth={gridWidth}
               />
             ))}
-            <FlexContainerDropIndicator flexContainerId={id} direction={flexDirection} />
+            <FlexContainerDropIndicator flexContainerId={id} direction={flexDirectionForFlex} />
           </>
         ) : (
           <>

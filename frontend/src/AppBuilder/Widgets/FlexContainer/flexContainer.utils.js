@@ -1,5 +1,45 @@
 import { GRID_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
+/** Width breakpoints aligned with widget config labels (Mobile 375px, Tablet 768px). */
+export const STACK_THRESHOLD_PX = {
+  mobile: 375,
+  tablet: 768,
+};
+
+/**
+ * Returns the main app canvas width in CSS pixels, or +Infinity if unavailable (SSR / no DOM).
+ */
+export const getMainCanvasWidthPx = () => {
+  if (typeof document === 'undefined') return Number.POSITIVE_INFINITY;
+  const el = document.getElementById('real-canvas');
+  const w = el?.getBoundingClientRect()?.width;
+  return Number.isFinite(w) ? w : Number.POSITIVE_INFINITY;
+};
+
+/**
+ * Stacking when `#real-canvas` width is at or below the threshold for `stackBelow`.
+ * Nested FlexContainers still use the global main canvas width (PRD).
+ */
+export const computeShouldStackFlex = (stackBelow) => {
+  if (!stackBelow || stackBelow === 'none') return false;
+  const threshold = STACK_THRESHOLD_PX[stackBelow];
+  if (threshold === undefined) return false;
+  return getMainCanvasWidthPx() <= threshold;
+};
+
+export const computeEffectiveFlexDirection = (resolvedDirection = 'column', stackBelow) =>
+  computeShouldStackFlex(stackBelow) ? 'column' : resolvedDirection;
+
+/**
+ * Drag handlers (non-React): effective flex direction for a FlexContainer parent from the store snapshot.
+ */
+export const getEffectiveFlexDirectionForFlexContainer = (getResolvedComponent, parentId, moduleId, indices = null) => {
+  const props = getResolvedComponent?.(parentId, indices, moduleId)?.properties ?? {};
+  const direction = props.direction ?? 'column';
+  const stackBelow = props.stackBelow ?? 'none';
+  return computeEffectiveFlexDirection(direction, stackBelow);
+};
+
 const FLEX_LAYOUT_FIELDS = [
   'flexOrder',
   'fillWidth',
@@ -7,6 +47,7 @@ const FLEX_LAYOUT_FIELDS = [
   'widthPx',
   'heightPx',
   'crossAlignSelf',
+  'stackedWidthBehavior',
   // Legacy single-axis fields stripped during migration / reparenting.
   'mainSize',
   'fillMain',

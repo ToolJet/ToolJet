@@ -24,6 +24,7 @@ const FlexContainerChildWrapper = memo(
     parentId,
     flexDirection = 'column',
     gridWidth,
+    flexShouldStack = false,
   }) => {
     const { contextPath } = useSubcontainerContext();
     const indices = useMemo(() => {
@@ -65,6 +66,7 @@ const FlexContainerChildWrapper = memo(
 
     const { crossAlignSelf, flexOrder } = layoutData;
     const isRow = flexDirection === 'row';
+    const stackedWidthBehavior = layoutData.stackedWidthBehavior ?? 'fill-parent';
 
     // Resolve per-axis sizing with backward-compat fallback to legacy fillMain/mainSize.
     const { fillWidth, fillHeight, widthPx, heightPx } = resolveFlexChildSizing(layoutData, flexDirection, {
@@ -77,7 +79,8 @@ const FlexContainerChildWrapper = memo(
     const visibleHeightPx = heightPx ?? layoutData.height ?? 100;
     const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
 
-    const widgetWidth = fillWidth ? containerWidth ?? effectiveWidthPx : effectiveWidthPx;
+    const availableWidth = containerWidth ?? effectiveWidthPx;
+    let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;
     const widgetHeight = fillHeight ? effectiveHeightPx : effectiveHeightPx;
 
     // Main axis is determined by flex direction:
@@ -85,16 +88,38 @@ const FlexContainerChildWrapper = memo(
     //   row    → main = width,  cross = height
     const mainFill = isRow ? fillWidth : fillHeight;
     const mainPx = isRow ? effectiveWidthPx : effectiveHeightPx;
+
+    if (flexShouldStack && !isRow) {
+      if (fillWidth || stackedWidthBehavior === 'fill-parent') {
+        widgetWidth = availableWidth;
+      } else {
+        widgetWidth = Math.min(effectiveWidthPx, availableWidth);
+      }
+    }
+
     const styles = {
-      flex: mainFill ? '1 1 0' : `0 0 ${mainPx}px`,
-      ...(isRow
+      ...(flexShouldStack && !isRow
         ? {
+            flex: mainFill ? '1 1 0' : `0 0 ${mainPx}px`,
             height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
-            minWidth: 0,
+            minHeight: 0,
+            ...(fillWidth
+              ? { width: '100%', minWidth: 0 }
+              : stackedWidthBehavior === 'keep-original'
+              ? { width: `${effectiveWidthPx}px`, maxWidth: '100%', minWidth: 0 }
+              : { width: '100%', minWidth: 0 }),
           }
         : {
-            width: fillWidth ? '100%' : `${effectiveWidthPx}px`,
-            minHeight: 0,
+            flex: mainFill ? '1 1 0' : `0 0 ${mainPx}px`,
+            ...(isRow
+              ? {
+                  height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
+                  minWidth: 0,
+                }
+              : {
+                  width: fillWidth ? '100%' : `${effectiveWidthPx}px`,
+                  minHeight: 0,
+                }),
           }),
       alignSelf: crossAlignSelf || undefined,
       // CSS `order` mirrors flexOrder so visual position is always correct even if the

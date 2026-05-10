@@ -41,6 +41,7 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
+import { getEffectiveFlexDirectionForFlexContainer } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
@@ -1243,7 +1244,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               flexDragRafRef.current = requestAnimationFrame(() => {
                 flexDragRafRef.current = null;
                 const parentId = currentWidget.component.parent;
-                const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
+                const parentDir = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, parentId, moduleId);
                 // Exclude the dragged element so its own rect doesn't skew the midpoint calculation
                 const idx = computeFlexContainerInsertIndex(
                   parentId,

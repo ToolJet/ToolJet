@@ -10,6 +10,11 @@ const SIZE_OPTIONS = {
   fixed: { label: 'Fixed', value: 'fixed' },
 };
 
+const STACKED_WIDTH_OPTIONS = {
+  'fill-parent': { label: 'Fill parent', value: 'fill-parent' },
+  'keep-original': { label: 'Keep original', value: 'keep-original' },
+};
+
 const labelStyle = {
   fontSize: '12px',
   color: 'var(--text-default)',
@@ -44,6 +49,10 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
   const rawDirection = allComponents?.[parentId]?.component?.definition?.properties?.direction?.value ?? 'column';
   const direction = resolveReferences(rawDirection) || 'column';
 
+  const rawStackBelow = allComponents?.[parentId]?.component?.definition?.properties?.stackBelow?.value ?? 'none';
+  const stackBelowResolved = resolveReferences(rawStackBelow) || 'none';
+  const showStackedWidth = stackBelowResolved && stackBelowResolved !== 'none';
+
   const layoutData = allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {};
 
   // Backward-compat: derive new per-axis fields from legacy fillMain/mainSize when needed.
@@ -58,6 +67,7 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
   const heightMode = fillHeight ? 'fill-parent' : 'fixed';
   const widthValue = widthPx ?? fallbackWidthPx;
   const heightValue = heightPx ?? fallbackHeightPx;
+  const stackedWidthBehavior = layoutData.stackedWidthBehavior ?? 'fill-parent';
 
   const update = (patch) => {
     setComponentLayout({ [selectedComponentId]: patch });
@@ -91,6 +101,10 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
     if (!isNaN(parsed) && parsed > 0) {
       update({ fillHeight: false, heightPx: parsed });
     }
+  };
+
+  const handleStackedWidthBehaviorChange = (value) => {
+    update({ stackedWidthBehavior: value });
   };
 
   return (
@@ -132,6 +146,21 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <label style={labelStyle}>Height (px)</label>
           <input type="number" min={1} value={heightValue} onChange={handleHeightPxChange} style={inputStyle} />
+        </div>
+      )}
+
+      {showStackedWidth && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <label style={labelStyle}>When stacked, width</label>
+          <div style={{ width: '168px' }}>
+            <Dropdown
+              options={STACKED_WIDTH_OPTIONS}
+              value={stackedWidthBehavior}
+              size="small"
+              width="168px"
+              onChange={handleStackedWidthBehaviorChange}
+            />
+          </div>
         </div>
       )}
     </div>
