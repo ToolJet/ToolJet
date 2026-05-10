@@ -21,6 +21,18 @@ export class Layout {
   @Column({ type: 'double precision' })
   height: number;
 
+  @Column({ type: 'double precision', name: 'width_px', nullable: true })
+  widthPx: number | null;
+
+  @Column({ type: 'boolean', name: 'fill_width', nullable: true })
+  fillWidth: boolean | null;
+
+  @Column({ type: 'double precision', name: 'height_px', nullable: true })
+  heightPx: number | null;
+
+  @Column({ type: 'boolean', name: 'fill_height', nullable: true })
+  fillHeight: boolean | null;
+
   @Column({ type: 'double precision', name: 'flex_order', nullable: true })
   flexOrder: number | null;
 

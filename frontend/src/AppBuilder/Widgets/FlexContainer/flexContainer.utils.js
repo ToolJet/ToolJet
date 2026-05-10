@@ -1,7 +1,43 @@
 import { GRID_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
-const FLEX_LAYOUT_FIELDS = ['flexOrder', 'mainSize', 'fillMain', 'crossAlignSelf'];
+const FLEX_LAYOUT_FIELDS = [
+  'flexOrder',
+  'fillWidth',
+  'fillHeight',
+  'widthPx',
+  'heightPx',
+  'crossAlignSelf',
+  // Legacy single-axis fields stripped during migration / reparenting.
+  'mainSize',
+  'fillMain',
+];
 const GRID_LAYOUT_FIELDS = ['top', 'left', 'width', 'height'];
+
+/**
+ * Resolves per-axis sizing for a FlexContainer child from its layout object.
+ *
+ * Returns `{ fillWidth, fillHeight, widthPx, heightPx }`, falling back to legacy
+ * `fillMain` / `mainSize` when the new fields are absent so apps saved before the
+ * two-axis migration continue to render unchanged.
+ *
+ * Defaults preserve historical visuals: cross axis fills, main axis is fixed.
+ */
+export const resolveFlexChildSizing = (layoutData = {}, direction = 'column', fallbacks = {}) => {
+  const isRow = direction === 'row';
+  const legacyFill = layoutData.fillMain;
+  const legacyMainPx = layoutData.mainSize;
+
+  const fallbackWidthPx = fallbacks.widthPx ?? null;
+  const fallbackHeightPx = fallbacks.heightPx ?? null;
+
+  const fillWidth = layoutData.fillWidth !== undefined ? layoutData.fillWidth : isRow ? legacyFill ?? false : true;
+  const fillHeight = layoutData.fillHeight !== undefined ? layoutData.fillHeight : isRow ? true : legacyFill ?? false;
+
+  const widthPx = layoutData.widthPx ?? (isRow ? legacyMainPx ?? fallbackWidthPx : fallbackWidthPx) ?? null;
+  const heightPx = layoutData.heightPx ?? (isRow ? fallbackHeightPx : legacyMainPx ?? fallbackHeightPx) ?? null;
+
+  return { fillWidth, fillHeight, widthPx, heightPx };
+};
 
 /**
  * Returns the insertion slot index for a given mouse position.

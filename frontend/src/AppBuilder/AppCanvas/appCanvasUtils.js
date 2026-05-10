@@ -109,10 +109,17 @@ export const addNewWidgetToTheEditor = (
       const childOrder = allComponents[childId]?.layouts?.[currentLayout]?.flexOrder ?? 0;
       return Math.max(max, childOrder);
     }, 0);
+
+    const dropHeightPx = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
+    const dropWidthPx = customLayouts ? customLayouts[currentLayout].width * gridWidth : defaultWidth * gridWidth;
+
+    // Both axes default to Fixed; users opt into Fill parent per-axis from the inspector.
     const flexLayout = {
       flexOrder: maxOrder + 1000,
-      mainSize: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
-      fillMain: false,
+      fillWidth: false,
+      fillHeight: false,
+      widthPx: dropWidthPx,
+      heightPx: dropHeightPx,
     };
     activeLayoutData = flexLayout;
     nonActiveLayoutData = { ...flexLayout, flexOrder: maxOrder + 1000 };

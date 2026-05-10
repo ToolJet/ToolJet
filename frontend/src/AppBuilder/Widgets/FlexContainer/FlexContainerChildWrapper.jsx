@@ -7,6 +7,7 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import RenderWidget from '@/AppBuilder/AppCanvas/RenderWidget';
 import { HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+import { resolveFlexChildSizing } from './flexContainer.utils';
 
 // TO_DO: Use WidgetWrapper for the child
 
@@ -58,23 +59,43 @@ const FlexContainerChildWrapper = memo(
       if (exposed !== undefined) return exposed;
       return component?.properties?.visibility ?? component?.styles?.visibility;
     });
-    const width = gridWidth * (layoutData?.width ?? 1);
+    const gridDerivedWidthPx = gridWidth * (layoutData?.width ?? 1);
 
     if (!canShowInCurrentLayout || !layoutData || !componentType) return null;
 
-    const { mainSize, fillMain, crossAlignSelf, flexOrder } = layoutData;
+    const { crossAlignSelf, flexOrder } = layoutData;
     const isRow = flexDirection === 'row';
-    const fallbackMainSize = isRow ? width : layoutData.height;
-    const effectiveMainSize = visibility
-      ? mainSize ?? fallbackMainSize ?? 100
-      : mode === 'edit'
-      ? HIDDEN_COMPONENT_HEIGHT
-      : 0;
-    const widgetHeight = isRow ? layoutData.height : effectiveMainSize;
-    const widgetWidth = isRow ? effectiveMainSize : width;
+
+    // Resolve per-axis sizing with backward-compat fallback to legacy fillMain/mainSize.
+    const { fillWidth, fillHeight, widthPx, heightPx } = resolveFlexChildSizing(layoutData, flexDirection, {
+      widthPx: gridDerivedWidthPx,
+      heightPx: layoutData.height ?? 100,
+    });
+
+    const effectiveWidthPx = widthPx ?? gridDerivedWidthPx ?? 100;
+    // Hidden components in edit mode collapse to a fixed visual height; in view mode they fully hide.
+    const visibleHeightPx = heightPx ?? layoutData.height ?? 100;
+    const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
+
+    const widgetWidth = fillWidth ? containerWidth ?? effectiveWidthPx : effectiveWidthPx;
+    const widgetHeight = fillHeight ? effectiveHeightPx : effectiveHeightPx;
+
+    // Main axis is determined by flex direction:
+    //   column → main = height, cross = width
+    //   row    → main = width,  cross = height
+    const mainFill = isRow ? fillWidth : fillHeight;
+    const mainPx = isRow ? effectiveWidthPx : effectiveHeightPx;
     const styles = {
-      flex: fillMain ? '1 1 0' : `0 0 ${effectiveMainSize}px`,
-      ...(isRow ? { height: `${layoutData.height}px`, minWidth: 0 } : { width: '100%', minHeight: 0 }),
+      flex: mainFill ? '1 1 0' : `0 0 ${mainPx}px`,
+      ...(isRow
+        ? {
+            height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
+            minWidth: 0,
+          }
+        : {
+            width: fillWidth ? '100%' : `${effectiveWidthPx}px`,
+            minHeight: 0,
+          }),
       alignSelf: crossAlignSelf || undefined,
       // CSS `order` mirrors flexOrder so visual position is always correct even if the
       // React render array is momentarily out of sync (e.g. during optimistic updates).

@@ -101,7 +101,15 @@ export function handleFlexContainerDragEnd({
     const newFlexOrder = afterOrder === null ? beforeOrder + 1000 : (beforeOrder + afterOrder) / 2;
     const gapTooSmall = afterOrder !== null && (newFlexOrder - beforeOrder < 1 || afterOrder - newFlexOrder < 1);
 
-    const mainSize = currentWidget.layouts?.[currentLayout]?.mainSize ?? 100;
+    // Carry forward the dragged widget's per-axis sizing so reparenting preserves
+    // its current Fill/Fixed state across both axes.
+    const sourceLayout = currentWidget.layouts?.[currentLayout] ?? {};
+    const carriedSizing = {};
+    if (sourceLayout.fillWidth !== undefined) carriedSizing.fillWidth = sourceLayout.fillWidth;
+    if (sourceLayout.fillHeight !== undefined) carriedSizing.fillHeight = sourceLayout.fillHeight;
+    if (sourceLayout.widthPx !== undefined) carriedSizing.widthPx = sourceLayout.widthPx;
+    if (sourceLayout.heightPx !== undefined) carriedSizing.heightPx = sourceLayout.heightPx;
+    if (sourceLayout.crossAlignSelf !== undefined) carriedSizing.crossAlignSelf = sourceLayout.crossAlignSelf;
 
     if (gapTooSmall) {
       // Rebase all target children + dragged widget onto multiples of 1000 to restore gaps.
@@ -110,14 +118,14 @@ export function handleFlexContainerDragEnd({
       const layoutPatch = {};
       reordered.forEach((id, idx) => {
         if (id === widgetId) {
-          layoutPatch[id] = { flexOrder: (idx + 1) * 1000, mainSize };
+          layoutPatch[id] = { flexOrder: (idx + 1) * 1000, ...carriedSizing };
         } else if (targetComponents[id]?.layouts?.[currentLayout]) {
           layoutPatch[id] = { flexOrder: (idx + 1) * 1000 };
         }
       });
       setComponentLayout(layoutPatch, targetParentId, undefined, { updateParent: true });
     } else {
-      setComponentLayout({ [widgetId]: { flexOrder: newFlexOrder, mainSize } }, targetParentId, undefined, {
+      setComponentLayout({ [widgetId]: { flexOrder: newFlexOrder, ...carriedSizing } }, targetParentId, undefined, {
         updateParent: true,
       });
     }
@@ -146,9 +154,14 @@ export function handleFlexContainerDragEnd({
     newLeft = Math.max(0, NO_OF_GRIDS - newWidth);
   }
 
-  const mainSize = currentWidget.layouts?.[currentLayout]?.mainSize ?? 100;
+  // Synthesize a grid height from the widget's current main-axis size. Prefer the new
+  // heightPx (or widthPx-derived height when not present), with legacy mainSize as fallback.
+  const sourceLayoutOnDragOut = currentWidget.layouts?.[currentLayout] ?? {};
+  const synthesizedHeight =
+    sourceLayoutOnDragOut.heightPx ?? sourceLayoutOnDragOut.mainSize ?? sourceLayoutOnDragOut.height ?? 100;
+
   setComponentLayout(
-    { [widgetId]: { top: newTop, left: newLeft, width: newWidth, height: mainSize } },
+    { [widgetId]: { top: newTop, left: newLeft, width: newWidth, height: synthesizedHeight } },
     targetParentId,
     undefined,
     { updateParent: sourceParentId !== targetParentId }

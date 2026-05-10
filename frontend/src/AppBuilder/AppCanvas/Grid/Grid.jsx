@@ -790,19 +790,14 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             ) {
               const parentDir =
                 getResolvedComponent(currentWidget.component.parent, null, moduleId)?.properties?.direction ?? 'column';
-              const rawMainSize = parentDir === 'row' ? e.lastEvent?.width : e.lastEvent?.height;
-              const mainSize = Math.max(
-                GRID_HEIGHT,
-                Math.round((rawMainSize ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT
-              );
-              const flexPatch = { mainSize };
-
-              // Keep legacy fields in sync for render paths that still read them.
-              if (parentDir === 'row') {
-                flexPatch.width = Math.max(1, Math.round(mainSize / _gridWidth));
-              } else {
-                flexPatch.height = mainSize;
-              }
+              const isRowParent = parentDir === 'row';
+              const rawMainPx = isRowParent ? e.lastEvent?.width : e.lastEvent?.height;
+              const mainPx = Math.max(GRID_HEIGHT, Math.round((rawMainPx ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT);
+              // Resize handle is per-axis (`s` for column, `e` for row); only the main-axis
+              // size changes here, and only that axis is forced into "fixed" mode.
+              const flexPatch = isRowParent
+                ? { widthPx: mainPx, fillWidth: false }
+                : { heightPx: mainPx, fillHeight: false };
 
               setComponentLayout({ [currentWidget.id]: flexPatch });
               setReorderContainerChildren(currentWidget.component.parent);
