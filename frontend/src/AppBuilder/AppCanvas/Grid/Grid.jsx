@@ -667,9 +667,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               e.target.style.height = `${nextH}px`;
               e.target.style.width = `${nextW}px`;
             }
-            if (e.drag?.transform) {
-              e.target.style.transform = e.drag.transform;
-            }
+            // Retool-like opposite-edge resize: never translate the element while resizing.
+            // (Moveable supplies a translate when resizing from left/top; applying it makes the
+            // element "move" instead of shrinking/growing from the opposite edge.)
+            e.target.style.transform = '';
             positionGhostElement(e.target, 'moveable-ghost-widget');
             return;
           }
@@ -683,8 +684,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentWidget.height;
-          const isLeftChanged = e.direction[0] === -1;
-          const isTopChanged = e.direction[1] === -1;
+          const isFlexContainerWidget = currentWidget?.componentType === 'FlexContainer';
+          // Retool-like behavior for FlexContainer widget:
+          // - keep LEFT fixed for any horizontal resize (even when dragging left handle)
+          // - keep TOP fixed for any vertical resize (even when dragging top handle)
+          // This makes resizing act in the "opposite" direction of the handle.
+          const isLeftChanged = !isFlexContainerWidget && e.direction[0] === -1;
+          const isTopChanged = !isFlexContainerWidget && e.direction[1] === -1;
 
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
@@ -794,8 +800,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             const currentWidth = currentWidget.width * _gridWidth;
             const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = height - currentWidget?.height;
-            const isLeftChanged = e.lastEvent?.direction?.[0] === -1;
-            const isTopChanged = e.lastEvent?.direction?.[1] === -1;
+            const isFlexContainerWidget = currentWidget?.componentType === 'FlexContainer';
+            // Match live preview behavior (see onResize): keep left/top fixed for FlexContainer widget.
+            const isLeftChanged = !isFlexContainerWidget && e.lastEvent?.direction?.[0] === -1;
+            const isTopChanged = !isFlexContainerWidget && e.lastEvent?.direction?.[1] === -1;
 
             let transformX = currentWidget.left * _gridWidth;
             let transformY = currentWidget.top;
@@ -849,7 +857,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             //   incrementCanvasUpdater();
             //   return;
             // }
-            console.log('resizeData', resizeData, currentWidget);
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }
