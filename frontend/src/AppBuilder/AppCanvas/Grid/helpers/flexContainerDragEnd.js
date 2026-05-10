@@ -11,6 +11,28 @@ import {
 const GRID_HEIGHT = 10;
 const DEFAULT_GRID_WIDTH_CELLS = 10;
 
+const buildFlexMappingFromSnapshot = (components, parentId, currentLayout) => {
+  if (!components || !parentId) return [];
+  const ids = Object.keys(components).filter((id) => components[id]?.component?.parent === parentId);
+  ids.sort((a, b) => {
+    const oA = components[a]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+    const oB = components[b]?.layouts?.[currentLayout]?.flexOrder ?? 0;
+    if (oA !== oB) return oA - oB;
+    return a.localeCompare(b);
+  });
+  return ids;
+};
+
+const buildFlexMappingFromDom = (parentId) => {
+  if (typeof document === 'undefined') return [];
+  const inner = document.querySelector(`[data-parentId="${parentId}"]`);
+  if (!inner) return [];
+  const children = inner.querySelectorAll(':scope > .flex-child-wrapper');
+  return Array.from(children)
+    .map((el) => el?.id)
+    .filter(Boolean);
+};
+
 /**
  * Handles dragEnd for a widget whose source parent is a FlexContainer.
  * Returns true if handled (caller should skip normal dragEnd logic).
@@ -62,7 +84,13 @@ export function handleFlexContainerDragEnd({
     const lockedIndex = lockedTarget?.flexContainerId === sourceParentId ? lockedTarget.index : null;
     const newIndex = lockedIndex ?? computeFlexInsertIndex(sourceParentId, e.clientX, e.clientY, parentDir, widgetId);
     const snapshot = useStore.getState().getCurrentPageComponents?.(moduleId) ?? {};
-    const mapping = useStore.getState().containerChildrenMapping?.[sourceParentId] ?? [];
+    let mapping = useStore.getState().containerChildrenMapping?.[sourceParentId] ?? [];
+    if (!Array.isArray(mapping) || !mapping.includes(widgetId)) {
+      mapping = buildFlexMappingFromSnapshot(snapshot, sourceParentId, currentLayout);
+      if (!mapping.includes(widgetId)) {
+        mapping = buildFlexMappingFromDom(sourceParentId);
+      }
+    }
     const computed = computeFlexContainerReorder({
       components: snapshot,
       mapping,

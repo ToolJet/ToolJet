@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Container as ContainerCanvas } from '@/AppBuilder/AppCanvas/Container';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { SUBCONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useShouldStackFlexRealCanvas } from './useFlexStackBelow';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const FlexContainer = ({
   id,
@@ -13,6 +16,11 @@ export const FlexContainer = ({
   width,
   setExposedVariables,
   setExposedVariable,
+  adjustComponentPositions,
+  currentLayout,
+  componentCount = 0,
+  currentMode,
+  subContainerIndex,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -29,7 +37,44 @@ export const FlexContainer = ({
   const effectiveDirection = shouldStack ? 'column' : direction;
 
   const isRow = effectiveDirection === 'row';
-  const overflowStyle = shouldStack
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+
+  const childIds = useStore((state) => state.containerChildrenMapping?.[id] ?? [], shallow);
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: false,
+    componentCount,
+    value: useMemo(
+      () =>
+        JSON.stringify({
+          effectiveDirection,
+          flexWrap,
+          gap,
+          padding,
+          justify,
+          align,
+          stackBelow,
+          shouldStack,
+          childCount: childIds.length,
+        }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [effectiveDirection, flexWrap, gap, padding, justify, align, stackBelow, shouldStack, childIds.length]
+    ),
+    visibility: isVisible,
+    subContainerIndex,
+  });
+
+  const overflowStyle = isDynamicHeightEnabled
+    ? {
+        ...(isRow && !flexWrap && !shouldStack ? { overflowX: 'auto' } : {}),
+        overflowY: 'visible',
+      }
+    : shouldStack
     ? { overflowY: 'auto' }
     : flexWrap
     ? {}
@@ -38,7 +83,8 @@ export const FlexContainer = ({
     : { overflowY: 'auto' };
 
   const outerStyles = {
-    height: '100%',
+    height: isDynamicHeightEnabled ? 'auto' : '100%',
+    ...(isDynamicHeightEnabled ? { minHeight: `${height}px` } : {}),
     display: isVisible ? 'flex' : 'none',
     flexDirection: effectiveDirection,
     backgroundColor,
@@ -59,7 +105,7 @@ export const FlexContainer = ({
     justifyContent: justify ?? 'flex-start',
     alignItems: align ?? 'stretch',
     backgroundColor: 'transparent',
-    height: '100%',
+    height: isDynamicHeightEnabled ? 'auto' : '100%',
     ...(isDisabled && { opacity: 0.5, pointerEvents: 'none' }),
     ...overflowStyle,
   };

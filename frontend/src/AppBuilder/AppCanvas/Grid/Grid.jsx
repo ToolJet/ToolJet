@@ -28,6 +28,7 @@ import {
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
   computeFlexContainerInsertIndex,
+  findNewParentIdFromMousePosition,
 } from './gridUtils';
 import {
   dragContextBuilder,
@@ -1243,17 +1244,38 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             if (!flexDragRafRef.current) {
               flexDragRafRef.current = requestAnimationFrame(() => {
                 flexDragRafRef.current = null;
-                const parentId = currentWidget.component.parent;
-                const parentDir = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, parentId, moduleId);
-                // Exclude the dragged element so its own rect doesn't skew the midpoint calculation
+                const hoveredId = findNewParentIdFromMousePosition(e.clientX, e.clientY, currentWidget.id);
+                let hoveredFlexId = null;
+                if (hoveredId && getComponentTypeFromId(hoveredId) === 'FlexContainer') {
+                  hoveredFlexId = hoveredId;
+                } else if (hoveredId) {
+                  const hoveredWidget = boxList.find((b) => b.id === hoveredId);
+                  const hoveredParentId = hoveredWidget?.component?.parent ?? null;
+                  if (hoveredParentId && getComponentTypeFromId(hoveredParentId) === 'FlexContainer') {
+                    hoveredFlexId = hoveredParentId;
+                  }
+                }
+
+                if (!hoveredFlexId) {
+                  setFlexContainerDropTarget(null);
+                  return;
+                }
+
+                const parentDir = getEffectiveFlexDirectionForFlexContainer(
+                  getResolvedComponent,
+                  hoveredFlexId,
+                  moduleId
+                );
+                // Exclude the dragged element so its own rect doesn't skew the midpoint calculation.
+                // Passing excludeId is safe even when dragging across containers (id won't be present).
                 const idx = computeFlexContainerInsertIndex(
-                  parentId,
+                  hoveredFlexId,
                   e.clientX,
                   e.clientY,
                   parentDir,
                   currentWidget.id
                 );
-                setFlexContainerDropTarget({ flexContainerId: parentId, index: idx });
+                setFlexContainerDropTarget({ flexContainerId: hoveredFlexId, index: idx });
               });
             }
             return;
