@@ -19,6 +19,11 @@ export function defineAppAbility(
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
 
+  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
+    return;
+  }
+
   // Check if user is the owner of the app
   const app = request?.tj_app;
   const currentUserId = UserAllPermissions?.user?.id;
