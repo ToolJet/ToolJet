@@ -1,6 +1,7 @@
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not } from 'typeorm';
 import { App } from 'src/entities/app.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 
@@ -17,7 +18,10 @@ export class AppsSubscriber implements EntitySubscriberInterface {
   async afterInsert(event: InsertEvent<any>): Promise<void> {
     const entity = event.entity;
     if (!(entity instanceof App)) return;
-    if (!entity.slug) {
+    // Workflows keep slug on apps.* — auto-fill the placeholder if not provided.
+    // Non-workflows store slug on app_versions; leave apps.slug as NULL. Postgres
+    // allows multiple NULLs on a UNIQUE column so this doesn't violate the constraint.
+    if (entity.type === APP_TYPES.WORKFLOW && !entity.slug) {
       await this.appRepository.update(entity.id, { slug: entity.id });
     }
   }

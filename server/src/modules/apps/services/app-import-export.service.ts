@@ -997,13 +997,15 @@ export class AppImportExportService {
       await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
 
       // NOTE: App slug updation callback doesn't work while wrapped in transaction
-      // hence updating slug explicitly
-      //await importedApp.reload(); -> this will not work as we are using transaction
+      // hence updating slug explicitly. Only workflows carry slug on apps.* —
+      // non-workflows keep apps.slug NULL (the real slug lives on app_versions).
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      newApp.slug = importedApp.slug || importedApp.id;
-      await manager.save(newApp);
+      if (newApp.type === APP_TYPES.WORKFLOW) {
+        newApp.slug = importedApp.slug || importedApp.id;
+        await manager.save(newApp);
+      }
       return { newApp, resourceMapping };
     }, manager);
   }
@@ -1232,8 +1234,8 @@ export class AppImportExportService {
       const isWorkflow = appParams?.type === APP_TYPES.WORKFLOW;
       const appId = uuid();
       // Workflows still carry name/slug/icon/isPublic on apps.*; non-workflow metadata
-      // lives on app_versions. apps.slug stays as the app id placeholder so the legacy
-      // unique constraint is satisfied for non-workflows.
+      // lives on app_versions. apps.slug stays NULL for non-workflows — Postgres allows
+      // multiple NULLs on a UNIQUE column so this doesn't violate uniqueness.
       const importedApp = manager.create(App, {
         id: appId,
         name: isWorkflow ? appParams.name : null,
@@ -1241,7 +1243,7 @@ export class AppImportExportService {
         isMaintenanceOn: appParams.isMaintenanceOn || false,
         organizationId: user?.organizationId,
         userId: user.id, //fetch super admin user id for EE
-        slug: isWorkflow ? null : appId,
+        slug: null,
         icon: isWorkflow ? appParams.icon : null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: isWorkflow ? false : null,
