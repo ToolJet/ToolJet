@@ -22,6 +22,10 @@ function makeService() {
 }
 
 describe('OrganizationEnvRegistryService', () => {
+  beforeEach(() => {
+    delete process.env.WORKSPACE_GIT_CONFIGS;
+  });
+
   afterEach(() => {
     delete process.env.WORKSPACE_GIT_CONFIGS;
     jest.clearAllMocks();
