@@ -106,23 +106,6 @@ export class App extends BaseEntity {
     chatMessages?: any[];
     interrupt?: boolean;
     moduleDescription?: string;
-    phasePlan?: {
-      show_in_ui: boolean;
-      phases: {
-        id: string;
-        title: string;
-        description: string;
-        status: 'pending' | 'active' | 'complete' | 'failed';
-        suppressed?: boolean;
-        feature_areas: string[];
-        sub_phases: {
-          id: string;
-          label: string;
-          status: 'pending' | 'complete';
-          skipped: boolean;
-        }[];
-      }[];
-    } | null;
   };
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
