@@ -301,7 +301,7 @@ const GenerateQueryButton = () => {
   const isQueryMentioned = useStore((state) => hasQueryMention(state.ai?.inputMessage ?? '', queryName));
   const [buttonPressedForQuery, setButtonPressedForQuery] = useState(null);
 
-  if (featureAccess?.aiEnabled === false) return null;
+  if (!featureAccess?.ai) return null;
   if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
 
   const isPressed = buttonPressedForQuery === queryName && isQueryMentioned;

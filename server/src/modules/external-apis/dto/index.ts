@@ -340,3 +340,42 @@ export {
   WorkspacePermissionsDto,
   WorkflowPermissionsDto,
 } from './groups.dto';
+export class WorkspaceModuleDto {
+  id: string;
+  name: string;
+  icon: string;
+  slug: string;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class WorkspaceModulesResponseDto {
+  modules: WorkspaceModuleDto[];
+  total: number;
+}
+
+export class ModuleImportDto {
+  @IsDefined()
+  @IsObject()
+  definition: any;
+}
+
+export class ModuleImportRequestDto {
+  @IsString()
+  tooljet_version: string;
+
+  @IsOptional()
+  app?: ModuleImportDto[];
+
+  @IsOptional()
+  @IsString()
+  appName?: string;
+
+  @IsOptional()
+  @Transform(TjdbSchemaToLatestVersion)
+  @ValidateNested({ each: true })
+  @Type(() => ImportTooljetDatabaseDto)
+  @ValidateTooljetDatabaseImportSchema({ each: true })
+  tooljet_database?: ImportTooljetDatabaseDto[];
+}
