@@ -3,7 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Databricks datasource",
   "description": "A schema defining Databricks datasource",
-  "type": "database",
+  "type": "api",
   "source": {
     "name": "Databricks",
     "kind": "databricks",
@@ -12,46 +12,130 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
-  },
-  "defaults": {},
-  "properties": {
-    "host": {
-      "label": "Host",
-      "key": "host",
-      "type": "text",
-      "description": "host.cloud.databricks.com"
-    },
-    "port": {
-      "label": "Port",
-      "key": "port",
-      "type": "text",
-      "description": "443"
-    },
-    "http_path": {
-      "label": "HTTP path",
-      "key": "http_path",
-      "type": "text",
-      "description": "/sql/2.0/warehouse/id"
-    },
-    "default_catalog": {
-      "label": "Default catalog",
-      "key": "default_catalog",
-      "type": "text",
-      "description": "tooljet_metastore"
-    },
-    "default_schema": {
-      "label": "Default schema",
-      "key": "default_schema",
-      "type": "text",
-      "description": "default"
-    },
-    "personal_access_token": {
-      "label": "Personal access token",
-      "key": "personal_access_token",
-      "type": "password",
-      "description": "default"
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      }
     }
   },
-  "required": ["host", "http_path", "personal_access_token"]
+  "defaults": {
+    "authentication_type": {
+      "value": "personal_access_token"
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication type",
+      "key": "authentication_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing authentication type",
+      "list": [
+        {
+          "value": "personal_access_token",
+          "name": "Personal Access Token"
+        },
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        }
+      ]
+    },
+    "personal_access_token": {
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "host.cloud.databricks.com"
+      },
+      "port": {
+        "label": "Port",
+        "key": "port",
+        "type": "text",
+        "description": "443"
+      },
+      "http_path": {
+        "label": "HTTP path",
+        "key": "http_path",
+        "type": "text",
+        "description": "/sql/2.0/warehouse/id"
+      },
+      "default_catalog": {
+        "label": "Default catalog",
+        "key": "default_catalog",
+        "type": "text",
+        "description": "tooljet_metastore"
+      },
+      "default_schema": {
+        "label": "Default schema",
+        "key": "default_schema",
+        "type": "text",
+        "description": "default"
+      },
+      "personal_access_token": {
+        "label": "Personal access token",
+        "key": "personal_access_token",
+        "type": "password",
+        "description": "Databricks personal access token"
+      }
+    },
+    "oauth2": {
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "host.cloud.databricks.com"
+      },
+      "http_path": {
+        "label": "HTTP path",
+        "key": "http_path",
+        "type": "text",
+        "description": "/sql/2.0/warehouse/id"
+      },
+      "oauth": {
+        "key": "oauth",
+        "type": "react-component-oauth",
+        "description": "A component for Databricks OAuth",
+        "oauth_configs": {
+          "allowed_auth_types": [
+            "oauth2"
+          ],
+          "allowed_grant_types": [
+            "authorization_code"
+          ],
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret"
+            ]
+          },
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": [
+                "custom_app"
+              ],
+              "ee": [
+                "custom_app"
+              ],
+              "cloud": [
+                "custom_app"
+              ]
+            }
+          },
+          "allowed_scope_field": false
+        }
+      }
+    }
+  }
 }
