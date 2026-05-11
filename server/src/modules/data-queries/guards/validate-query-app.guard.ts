@@ -11,6 +11,7 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
 import { AppVersion } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
@@ -53,31 +54,33 @@ export class ValidateQueryAppGuard implements CanActivate {
         throw new NotFoundException('App not found');
       }
 
-      // Workflows keep is_public on apps.*; non-workflows carry it on the branch-specific
-      // app_version. Resolve the version via the most-specific identifier we have and
-      // overlay so downstream ability checks (e.g. RUN_VIEWER on public apps) see the
-      // correct flag. BRANCH-type versions are the canonical metadata carrier; if the
-      // resolved version is VERSION-type, fall back to the default branch's BRANCH-type
-      // version. Non-git-sync workspaces have no default branch — the fallback returns
-      // null and the original VERSION-type row is used (it carries isPublic).
+      // Workflows keep is_public on apps.*; non-workflows carry it on every version row
+      // (default branch uses VERSION-type, sub-branches BRANCH-type, all hold the flag).
+      // Resolve the version via the most-specific identifier; the appId-only fallback
+      // routes by git-sync state so we don't pick a sub-branch row in a git-enabled
+      // workspace.
       if (app.type !== APP_TYPES.WORKFLOW) {
         let version: AppVersion | null = null;
         if (versionId) {
           version = await this.versionRepository.findOne({
             where: { id: versionId },
-            select: ['id', 'versionType', 'isPublic'],
+            select: ['id', 'isPublic'],
           });
         } else if (id) {
           version = await this.versionRepository
             .createQueryBuilder('av')
             .innerJoin('av.dataQueries', 'dq', 'dq.id = :dqId', { dqId: id })
-            .select(['av.id', 'av.versionType', 'av.isPublic'])
+            .select(['av.id', 'av.isPublic'])
             .getOne();
         } else if (appId) {
+          const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+            select: ['id'],
+          });
           version = await this.versionRepository.findOne({
-            where: { appId },
+            where: defaultBranch ? { appId, branchId: defaultBranch.id } : { appId },
             order: { updatedAt: 'DESC' },
-            select: ['id', 'versionType', 'isPublic'],
+            select: ['id', 'isPublic'],
           });
         }
         if (version) {
