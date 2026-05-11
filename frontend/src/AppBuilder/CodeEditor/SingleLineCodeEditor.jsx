@@ -14,7 +14,7 @@ import {
   startCompletion,
 } from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
-import { keymap, tooltips } from '@codemirror/view';
+import { keymap, tooltips, EditorView } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
@@ -566,12 +566,22 @@ const EditorInput = ({
                       tooltips({
                         parent: document.body,
                       }),
+                      // CSS forces visual wrapping for long values (e.g.
+                      // REST URL with `{{...}}` interpolations). Without
+                      // `lineWrapping`, CM6 still treats the doc as one
+                      // unwrapped row and `drawSelection` paints a single
+                      // rect for the logical line -- so selection rects
+                      // miss the right-edge area on intermediate visual
+                      // rows. Enable wrapping so per-row selection rects
+                      // are generated.
+                      EditorView.lineWrapping,
                     ]
                   : [
                       javascript({ jsx: lang === 'jsx' }),
                       tooltips({
                         parent: document.body,
                       }),
+                      EditorView.lineWrapping,
                     ]
               }
               onChange={(val) => {

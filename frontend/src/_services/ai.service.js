@@ -15,6 +15,7 @@ export const aiService = {
   createConversation,
   getConversation,
   autoSort,
+  getTokenUsage,
 };
 
 function handleAITextResponse(response) {
@@ -158,4 +159,9 @@ async function autoSort(body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/ai/autosort`, requestOptions).then(handleAITextResponse);
+}
+
+async function getTokenUsage(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/token-usage`, requestOptions).then(handleResponse);
 }

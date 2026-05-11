@@ -248,6 +248,8 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
 
 const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2'];
 
+const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -2732,7 +2734,7 @@ export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
  * @returns {object} An object containing the modified properties, styles, and general information.
  */
 function migrateProperties(
-  componentType: NewRevampedComponent | PartialRevampedComponent,
+  componentType: NewRevampedComponent | PartialRevampedComponent | 'ModuleViewer',
   component: Component,
   componentTypes: (NewRevampedComponent | PartialRevampedComponent)[],
   tooljetVersion: string | null
@@ -2745,6 +2747,10 @@ function migrateProperties(
 
   if (DYNAMIC_HEIGHT_COMPONENT_TYPES.includes(componentType) && properties.collapseWhenHidden === undefined) {
     properties.collapseWhenHidden = { value: '{{false}}' };
+  }
+
+  if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
+    properties.maxLimit = { value: '' };
   }
 
   if (!tooljetVersion) {
@@ -3185,6 +3191,10 @@ function migrateProperties(
       }
       delete general?.tooltip;
     }
+  }
+
+  if (componentType === 'ModuleViewer' && styles.padding === undefined) {
+    styles.padding = { value: 'default' };
   }
 
   return { properties, styles, general, generalStyles, validation };

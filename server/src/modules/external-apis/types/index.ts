@@ -21,6 +21,9 @@ interface Features {
   [FEATURE_KEY.EXPORT_APP]: FeatureConfig;
   [FEATURE_KEY.GENERATE_PAT]: FeatureConfig;
   [FEATURE_KEY.VALIDATE_PAT_SESSION]: FeatureConfig;
+  [FEATURE_KEY.LIST_MODULES]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_MODULE]: FeatureConfig;
+  [FEATURE_KEY.IMPORT_MODULE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

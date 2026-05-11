@@ -77,5 +77,17 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.LIST_MODULES]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.EXPORT_MODULE]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.IMPORT_MODULE]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
   },
 };
