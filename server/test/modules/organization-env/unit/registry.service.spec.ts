@@ -98,4 +98,68 @@ describe('OrganizationEnvRegistryService', () => {
       expect(result.has('workspace-a')).toBe(false);
     });
   });
+
+  describe('initialize() — source priority and overlay', () => {
+    const ORG_UUID_A = '11111111-1111-1111-1111-111111111111';
+    const ORG_UUID_B = '22222222-2222-2222-2222-222222222222';
+
+    beforeEach(() => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+    });
+
+    it('env var workspace wins entirely over matching file workspace', async () => {
+      process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
+        [ORG_UUID_A]: { GITHUB_URL: 'env-url' },
+      });
+      (fs.promises.readdir as jest.Mock).mockResolvedValue([`.tj_env.${ORG_UUID_A}`]);
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(`GITHUB_URL=file-url\nGITHUB_BRANCH=main`);
+
+      const { service } = makeService();
+      await service.initialize();
+
+      expect(await service.get(ORG_UUID_A, 'GITHUB_URL')).toBe('env-url');
+      // file key not in env var entry is discarded — full replace, no merge
+      expect(await service.get(ORG_UUID_A, 'GITHUB_BRANCH')).toBeUndefined();
+    });
+
+    it('file workspace used as fallback when not present in env var', async () => {
+      process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
+        [ORG_UUID_A]: { GITHUB_URL: 'env-url' },
+      });
+      (fs.promises.readdir as jest.Mock).mockResolvedValue([
+        `.tj_env.${ORG_UUID_A}`,
+        `.tj_env.${ORG_UUID_B}`,
+      ]);
+      (fs.promises.readFile as jest.Mock)
+        .mockResolvedValueOnce(`GITHUB_URL=file-url-a`)
+        .mockResolvedValueOnce(`GITHUB_URL=file-url-b`);
+
+      const { service } = makeService();
+      await service.initialize();
+
+      expect(await service.get(ORG_UUID_B, 'GITHUB_URL')).toBe('file-url-b');
+    });
+
+    it('only env var workspaces present when no files exist', async () => {
+      process.env.WORKSPACE_GIT_CONFIGS = JSON.stringify({
+        [ORG_UUID_A]: { GITHUB_URL: 'env-url' },
+      });
+      (fs.existsSync as jest.Mock).mockReturnValue(false);
+
+      const { service } = makeService();
+      await service.initialize();
+
+      expect(await service.get(ORG_UUID_A, 'GITHUB_URL')).toBe('env-url');
+    });
+
+    it('only file workspaces present when WORKSPACE_GIT_CONFIGS is not set', async () => {
+      (fs.promises.readdir as jest.Mock).mockResolvedValue([`.tj_env.${ORG_UUID_A}`]);
+      (fs.promises.readFile as jest.Mock).mockResolvedValue(`GITHUB_URL=file-url`);
+
+      const { service } = makeService();
+      await service.initialize();
+
+      expect(await service.get(ORG_UUID_A, 'GITHUB_URL')).toBe('file-url');
+    });
+  });
 });
