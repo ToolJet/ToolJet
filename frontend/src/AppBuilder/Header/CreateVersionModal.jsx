@@ -155,14 +155,11 @@ const CreateVersionModal = ({
       return;
     }
 
-    if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
-      if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
-        toast.error(
-          'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
-        );
-        setIsCreatingVersion(false);
-        return;
-      }
+    if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
+      toast.error(
+        'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
+      );
+      return;
     }
 
     setIsCreatingVersion(true);

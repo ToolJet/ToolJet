@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 import { AppVersionStatus } from '@entities/app_version.entity';
@@ -12,6 +12,7 @@ export class AppVersionUpdateDto {
   })
   @IsNotEmpty()
   @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
   name: string;
 
   @IsBoolean()
