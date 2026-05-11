@@ -105,6 +105,10 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
         toast.error('Version name should not be longer than 25 characters');
         return;
       }
+      if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
+        toast.error('Version name cannot contain spaces or special characters (~ ^ : ? * [ \\ @ {).');
+        return;
+      }
     }
 
     setIsCreatingVersion(true);

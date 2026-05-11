@@ -11,7 +11,7 @@ export class AppVersionUpdateDto {
     return newValue.trim();
   })
   @IsNotEmpty()
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
   @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
   name: string;
 
