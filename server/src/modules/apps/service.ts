@@ -95,26 +95,27 @@ export class AppsService implements IAppsService {
       // Metadata (name/slug/icon) is written directly during creation —
       // appsUtilService.create routes to apps.* for workflows and to app_versions for
       // non-workflows. No follow-up update call needed.
-      const app = await this.appsUtilService.create(
-        name,
-        user,
-        type as APP_TYPES,
-        !!prompt,
-        manager,
-        branchId,
-        icon
-      );
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId, icon);
 
-      //APP_CREATE audit. For non-workflows app.name/app.isPublic are not on the
-      // apps row — fall back to the values we already have in scope.
+      // Mirror the metadata onto the in-memory App so the response carries the values
+      // we just wrote to app_versions (non-workflows leave apps.* fields NULL). For
+      // workflows these fields are already populated on apps.*.
+      if (app.type !== APP_TYPES.WORKFLOW) {
+        app.name = name;
+        app.slug = app.id;
+        app.icon = icon ?? null;
+        app.isPublic = false;
+      }
+
+      //APP_CREATE audit.
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
         resourceId: app.id,
-        resourceName: app.name ?? name,
+        resourceName: app.name,
         resourceData: {
           appSlug: app.slug,
-          isPublic: app.isPublic ?? false,
+          isPublic: app.isPublic,
         },
         metadata: {
           icon: icon || null,

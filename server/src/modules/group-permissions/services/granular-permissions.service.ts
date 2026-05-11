@@ -1,8 +1,9 @@
 import { AppBase } from '@entities/app_base.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { CreateGranularPermissionDto, UpdateGranularPermissionDto } from '../dto/granular-permissions';
 import { GroupPermissionsRepository } from '../repository';
 import { GranularPermissionsUtilService } from '../util-services/granular-permissions.util.service';
@@ -128,7 +129,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
       if (isRestrictedPlan || !isFeatureEnabled) {
         return this.granularPermissionUtilService.getBasicPlanGranularPermissions(groupPermission.name as USER_ROLE);
       }
-      return await this.groupPermissionRepository.getAllGranularPermissions(
+      const permissions = await this.groupPermissionRepository.getAllGranularPermissions(
         {
           groupId,
           ...searchParam,
@@ -136,7 +137,90 @@ export class GranularPermissionsService implements IGranularPermissionsService {
         organizationId,
         manager
       );
+
+      await this.overlayGranularPermissionAppMetadata(manager, permissions, organizationId);
+      return permissions;
     });
+  }
+
+  /**
+   * The nested `groupApps.app` rows under each granular permission come back with
+   * NULL `name/slug/icon/isPublic` for non-workflow apps (metadata lives on
+   * app_versions post-migration). Resolve the canonical version per app in a single
+   * batched query and mirror the values onto each App entity in-place.
+   *
+   * Source priority (per app):
+   *   - Git-sync workspaces: BRANCH-type version on the workspace's default branch.
+   *   - Non-git-sync workspaces: any version row (all rows carry identical metadata).
+   */
+  private async overlayGranularPermissionAppMetadata(
+    manager: EntityManager,
+    permissions: GranularPermissions[],
+    organizationId: string
+  ): Promise<void> {
+    const apps: any[] = [];
+    for (const perm of permissions) {
+      const groupApps = perm.appsGroupPermissions?.groupApps ?? [];
+      for (const ga of groupApps) {
+        if (ga.app && ga.app.type !== APP_TYPES.WORKFLOW) apps.push(ga.app);
+      }
+    }
+    if (apps.length === 0) return;
+
+    const appIds = Array.from(new Set(apps.map((a) => a.id)));
+    const defaultBranch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+
+    let metadataRows: Pick<AppVersion, 'appId' | 'appName' | 'slug' | 'icon' | 'isPublic'>[];
+    if (defaultBranch?.id) {
+      // Git-sync: pull metadata from the BRANCH-type version on the default branch.
+      metadataRows = await manager.find(AppVersion, {
+        where: {
+          appId: In(appIds),
+          branchId: defaultBranch.id,
+          versionType: AppVersionType.BRANCH,
+        },
+        select: ['appId', 'appName', 'slug', 'icon', 'isPublic'],
+      });
+    } else {
+      // Non-git-sync: DISTINCT ON picks one arbitrary version per app — every row
+      // carries the same metadata in this mode.
+      const rows: {
+        app_id: string;
+        app_name: string | null;
+        slug: string | null;
+        icon: string | null;
+        is_public: boolean | null;
+      }[] = await manager
+        .createQueryBuilder()
+        .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
+        .addSelect('av.app_name', 'app_name')
+        .addSelect('av.slug', 'slug')
+        .addSelect('av.icon', 'icon')
+        .addSelect('av.is_public', 'is_public')
+        .from('app_versions', 'av')
+        .where('av.app_id IN (:...appIds)', { appIds })
+        .getRawMany();
+      metadataRows = rows.map((r) => ({
+        appId: r.app_id,
+        appName: r.app_name,
+        slug: r.slug,
+        icon: r.icon,
+        isPublic: r.is_public,
+      })) as any;
+    }
+
+    const metaByAppId = new Map(metadataRows.map((r) => [r.appId, r]));
+    for (const app of apps) {
+      const meta = metaByAppId.get(app.id);
+      if (!meta) continue;
+      if (meta.appName != null) app.name = meta.appName;
+      if (meta.slug != null) app.slug = meta.slug;
+      if (meta.icon != null) app.icon = meta.icon;
+      if (meta.isPublic != null) app.isPublic = meta.isPublic;
+    }
   }
 
   async update(id: string, user: User, updateGranularPermissionDto: UpdateGranularPermissionDto<any>) {
