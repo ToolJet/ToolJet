@@ -3233,6 +3233,7 @@ export class AppImportExportService {
       currentEnvironmentId,
       createdAt: new Date(),
       updatedAt: new Date(),
+      co_relation_id: importedApp.co_relation_id,
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
     });
     await manager.save(version);

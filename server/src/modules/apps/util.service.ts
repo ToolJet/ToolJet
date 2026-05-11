@@ -121,6 +121,7 @@ export class AppsUtilService implements IAppsUtilService {
             pageSettings: {},
             createdAt: new Date(),
             updatedAt: new Date(),
+            co_relation_id: app.co_relation_id || app.id,
             ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
           })
         );
@@ -963,11 +964,7 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
-  async checkModulesReleasedInApp(
-    versionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<void> {
+  async checkModulesReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
       // 4-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
       // for the cases. Predicate: the module's apps.current_version_id (released version)

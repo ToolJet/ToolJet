@@ -1,11 +1,11 @@
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DataSource, EntityManager, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
 import { v4 as uuid } from 'uuid';
@@ -27,7 +27,7 @@ export class VersionRepository extends Repository<AppVersion> {
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // moduleReferenceId is module-only; look up parent app type once and gate.
-      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type'] });
+      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type', 'co_relation_id'] });
       const isModule = parentApp?.type === APP_TYPES.MODULE;
       return catchDbException(() => {
         return manager.save(
@@ -40,6 +40,7 @@ export class VersionRepository extends Repository<AppVersion> {
             status: AppVersionStatus.DRAFT,
             createdAt: new Date(),
             updatedAt: new Date(),
+            co_relation_id: parentApp?.co_relation_id || appId,
             ...(isModule && { moduleReferenceId: uuid() }),
             ...(branchId && { branchId }),
           })
@@ -251,7 +252,7 @@ export class VersionRepository extends Repository<AppVersion> {
           where: { name: versionId, appId: appId },
           relations: ['app'],
         });
-      } catch (error) {
+      } catch {
         version = await manager.findOneOrFail(AppVersion, {
           where: { id: versionId },
           relations: ['app'],
