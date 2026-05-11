@@ -26,9 +26,9 @@ In the screenshot below, we are triggering two different queries using two diffe
 <img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 
 :::info
-In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+When triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
 
-For more info, refer **[here](/docs/data-sources/run-js#callback-functions)**
+For more information, refer **[here](/docs/data-sources/run-js#callback-functions)**.
 :::
 
 ## Reset Query

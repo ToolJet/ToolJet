@@ -83,14 +83,15 @@ With this setup, the _multiply_ query can be called from other queries, such as 
 
 ### Callback Functions
 
-In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+In ToolJet, when triggering a query using `queries.<queryName>.run()`, you can pass **callback handlers** to programmatically handle query execution states and perform custom actions when the query succeeds or fails.
 
-### Parameters
 
-| Parameter  | Type   | Description |
-|------------|--------|-------------|
-| Query Parameters | Object | (Optional) Key-value pairs passed as the first argument to the query (e.g., `{ limit: 10 }`). |
-| Callbacks  | Object | (Optional) Second argument containing `onSuccess` and `onFailure` handlers. |
+#### Parameters
+
+| Parameter  | Type   | Required | Description |
+|------------|--------|----------|-------------|
+| Query Parameters | Object | No | Key-value pairs passed as the first argument to the query (e.g., `{ limit: 10 }`). |
+| Callbacks  | Object | No | Second argument containing `onSuccess` and `onFailure` handlers. |
 
  :::note
 - When passing the `Callbacks` object, the `Query Parameters` argument must be provided.  
