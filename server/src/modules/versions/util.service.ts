@@ -187,6 +187,12 @@ export class VersionUtilService implements IVersionUtilService {
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
 
+      // Non-workflow metadata (slug/appName/icon/isPublic) lives on app_versions and
+      // every row carries the same values for a given branch. Carry them over from the
+      // parent version so the new row stays consistent with the rest of the app — the
+      // dashboard / overlay helpers can pick any row and get the right metadata.
+      // Workflows keep these on apps.*; their version rows leave them null.
+      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
       const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
@@ -204,6 +210,12 @@ export class VersionUtilService implements IVersionUtilService {
           co_relation_id: app.co_relation_id,
           ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
+          ...(!isWorkflow && {
+            slug: versionFrom?.slug ?? null,
+            appName: versionFrom?.appName ?? null,
+            icon: versionFrom?.icon ?? null,
+            isPublic: versionFrom?.isPublic ?? false,
+          }),
         })
       );
 

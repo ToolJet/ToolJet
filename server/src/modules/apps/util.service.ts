@@ -522,53 +522,51 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Write version-level fields to app_versions for non-workflows
+      // Write version-level fields to app_versions for non-workflows. Route by git-sync
+      // state (default branch row in workspace_branches), not just by whether branchId is
+      // supplied — the no-branchId case in a git-enabled workspace should still go through
+      // the branch-aware path rather than fanning the write out across NULL branch rows.
       if (Object.keys(versionParams).length > 0 && !isWorkflow) {
-        const { slug: vSlug, appName: vAppName, ...broadParams } = versionParams;
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId, isDefault: true },
+          select: ['id'],
+        });
+        const isGitEnabled = !!defaultBranch;
 
-        // icon and is_public go to ALL versions on the branch
-        if (Object.keys(broadParams).length > 0) {
-          const broadCondition: Record<string, any> = { appId };
-          if (branchId) {
-            broadCondition.branchId = branchId;
-          } else {
-            broadCondition.versionType = Not(AppVersionType.BRANCH);
+        if (isGitEnabled) {
+          // Git-sync workspace. Sub-branch metadata edits go to the single BRANCH-type row
+          // for the branch supplied by the caller. (Default-branch edits are already
+          // blocked upstream in apps/service.ts:update — branchId is always a sub-branch
+          // here.)
+          if (!branchId) {
+            throw new BadRequestException('Branch context is required to update metadata on a git-enabled workspace.');
           }
-          await manager.update(AppVersion, broadCondition, broadParams);
-        }
-
-        // slug and app_name only go to the canonical version (released or BRANCH)
-        const uniqueParams: Record<string, any> = {};
-        if (vSlug !== undefined) uniqueParams.slug = vSlug;
-        if (vAppName !== undefined) uniqueParams.appName = vAppName;
-
-        if (Object.keys(uniqueParams).length > 0) {
-          if (branchId) {
-            // Git-sync workspace: slug/app_name go to the BRANCH-type version only
-            const canonicalCondition: Record<string, any> = {
-              appId,
-              versionType: AppVersionType.BRANCH,
-              branchId,
-            };
-
-            await catchDbException(async () => {
-              await manager.update(AppVersion, canonicalCondition, uniqueParams);
-            }, [
-              {
-                dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
-                message: 'This app name is already taken.',
-              },
-              {
-                dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE,
-                message: 'This slug is already taken.',
-              },
-            ]);
-          } else {
-            // Non-git-sync workspace: update all VERSION-type rows under this app.
-            // No BRANCH-type rows exist here, but the explicit filter keeps the write
-            // narrow and parallel to the broadParams condition above.
-            await manager.update(AppVersion, { appId, versionType: AppVersionType.VERSION }, uniqueParams);
-          }
+          const canonicalCondition: Record<string, any> = {
+            appId,
+            versionType: AppVersionType.BRANCH,
+            branchId,
+          };
+          await catchDbException(async () => {
+            await manager.update(AppVersion, canonicalCondition, versionParams);
+          }, [
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+              message: 'This app name is already taken.',
+            },
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE,
+              message: 'This slug is already taken.',
+            },
+          ]);
+        } else {
+          // Non-git-sync flow: all version rows of this app share the same metadata.
+          // Update every VERSION-type row with branch_id IS NULL so every version stays
+          // in sync (the version picker can read any row and get current values).
+          await manager.update(
+            AppVersion,
+            { appId, versionType: AppVersionType.VERSION, branchId: IsNull() },
+            versionParams
+          );
         }
       }
 
@@ -1218,9 +1216,7 @@ export class AppsUtilService implements IAppsUtilService {
           select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
         });
         if (!source) {
-          throw new BadRequestException(
-            `No version row found for app ${app.id} on branch ${branchId}.`
-          );
+          throw new BadRequestException(`No version row found for app ${app.id} on branch ${branchId}.`);
         }
       } else {
         const defaultBranch = await manager.findOne(WorkspaceBranch, {
