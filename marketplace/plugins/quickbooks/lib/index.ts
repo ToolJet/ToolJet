@@ -178,7 +178,19 @@ export default class QuickBooks implements QueryService {
 
     // Add body for non-GET/DELETE operations
     if (operation && !['get', 'delete'].includes(operation) && bodyParams && Object.keys(bodyParams).length > 0) {
-      requestOptions.json = bodyParams;
+      const bodyKeys = Object.keys(bodyParams);
+      // When the spec defines body as type:string, the UI stores user input under a single "body" key.
+      // Parse that string as JSON so the QB API receives a proper object.
+      if (bodyKeys.length === 1 && bodyKeys[0] === 'body' && typeof bodyParams['body'] === 'string') {
+        try {
+          requestOptions.json = JSON.parse(bodyParams['body']);
+        } catch {
+          requestOptions.body = bodyParams['body'];
+          requestOptions.headers['Content-Type'] = 'application/json';
+        }
+      } else {
+        requestOptions.json = bodyParams;
+      }
     }
 
     try {
