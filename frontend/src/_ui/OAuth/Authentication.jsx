@@ -98,6 +98,7 @@ const Authentication = ({
           }}
           oauth_configs={oauth_configs}
           isFieldAllowed={isFieldAllowed}
+          isDisabled={isDisabled}
         />
       </div>
     );

@@ -11,7 +11,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
@@ -53,9 +53,11 @@ export const Folders = function Folders({
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   // Get folder granular permissions from session
-  const folderGroupPermissions = authenticationService.currentSessionValue?.folder_group_permissions;
+  const currentSession = authenticationService.currentSessionValue;
+  const folderGroupPermissions = currentSession?.folder_group_permissions;
   // Get current user ID for ownership check
-  const currentUserId = authenticationService.currentSessionValue?.current_user?.id;
+  const currentUserId = currentSession?.current_user?.id;
+  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
 
   // Check if user can edit a specific folder (granular permission)
   const canEditSpecificFolder = (folderId) => {
@@ -69,9 +71,10 @@ export const Folders = function Folders({
   };
 
   // Determine if user can update/delete a specific folder
-  // Rename: requires granular canEditFolder OR (folderCreate + ownership)
-  // Delete: requires master Delete OR (folderCreate + ownership)
-  const canUpdateSpecificFolder = (folderId, folder) => canEditSpecificFolder(folderId) || isOwnerOfFolder(folder);
+  // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
+  // Delete: requires master Delete OR ownership
+  const canUpdateSpecificFolder = (folderId, folder) =>
+    canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder);
   const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || isOwnerOfFolder(folder);
 
   useEffect(() => {

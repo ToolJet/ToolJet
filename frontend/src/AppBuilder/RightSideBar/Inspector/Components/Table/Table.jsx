@@ -121,10 +121,14 @@ export const Table = (props) => {
     [updateColumnEvents]
   );
 
-  const handleEventManagerPopoverCallback = useCallback((showing) => {
-    setActionPopOverRootClose(!showing);
-    setShowPopOver(showing);
-  }, []);
+  const handleEventManagerPopoverCallback = useCallback(
+    (showing) => {
+      setActionPopOverRootClose(!showing);
+      setShowPopOver(showing);
+      setColumnPopoverRootCloseBlocker('eventManager', showing);
+    },
+    [setColumnPopoverRootCloseBlocker]
+  );
 
   // Render helpers
   const renderCustomElement = useCallback(

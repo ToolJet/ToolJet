@@ -773,14 +773,15 @@ export default class MysqlQueryService implements QueryService {
   }
   async listTables(
     sourceOptions: SourceOptions,
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string,
     queryOptions?: { search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     let knexInstance;
     try {
       knexInstance = await this.buildConnection(sourceOptions);
 
-      const search = queryOptions?.search || '';
-      const searchPattern = `%${search}%`;
+      const search = typeof queryOptions?.search === 'string' ? queryOptions.search : '';      const searchPattern = `%${search}%`;
 
       if (queryOptions?.limit) {
         const limit = queryOptions.limit;
@@ -789,7 +790,7 @@ export default class MysqlQueryService implements QueryService {
 
         const [dataResult, countResult] = await Promise.all([
           knexInstance.raw(
-            `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
+            `SELECT TABLE_NAME, TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
             [searchPattern, limit, offset]
           ),
           knexInstance.raw(
@@ -798,21 +799,18 @@ export default class MysqlQueryService implements QueryService {
           ),
         ]);
 
-        const rows = (dataResult[0] || []).map((row: any) => ({ label: row.TABLE_NAME, value: row.TABLE_NAME }));
+        const rows = (dataResult[0] || []).map((row: any) => ({ table_name: row.TABLE_NAME, table_schema: row.TABLE_SCHEMA }));
         const totalCount = parseInt(countResult[0]?.[0]?.total ?? '0', 10);
 
         return { status: 'ok', data: { rows, totalCount } };
       }
 
       const result = await knexInstance.raw(
-        `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME`,
+        `SELECT TABLE_NAME, TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME LIKE ? ORDER BY TABLE_NAME`,
         [searchPattern]
       );
 
-      const tables = (result[0] || []).map((row: any) => ({
-        label: row.TABLE_NAME,
-        value: row.TABLE_NAME,
-      }));
+      const tables = (result[0] || []).map((row: any) => ({ table_name: row.TABLE_NAME, table_schema: row.TABLE_SCHEMA }));
 
       return { status: 'ok', data: tables };
     } catch (err) {
@@ -909,21 +907,32 @@ export default class MysqlQueryService implements QueryService {
       if (methodName === 'getTables') {
         // return await this.listTables(sourceOptions);
         const isPaginated = !!args?.limit;
-        const result = await this.listTables(sourceOptions, {
-          search: args?.search,
-          page: args?.page,
-          limit: args?.limit,
-        });
+        const result = await this.listTables(sourceOptions, undefined, undefined, {
+            search: args?.search,
+            page: args?.page,
+            limit: args?.limit,
+          });
 
         const payload = (result as any)?.data ?? [];
 
         if (isPaginated) {
           const rows = (payload as any)?.rows ?? [];
           const totalCount = (payload as any)?.totalCount ?? 0;
-          return { items: rows, totalCount };
+          const formattedTables = rows.map((row: any) => ({
+            label: String(row.table_name || row.label),
+            value: String(row.table_name || row.value),
+          }));
+          return { items: formattedTables, totalCount };
         }
+        
 
-        return { status: 'ok', data: Array.isArray(payload) ? payload : [] };
+        const rows = Array.isArray(payload) ? payload : [];
+        const formattedTables = rows.map((row: any) => ({
+          label: String(row.table_name || row.label),
+          value: String(row.table_name || row.value),
+        }));
+
+        return { status: 'ok', data: formattedTables };
       }
 
       if (methodName === 'listTables') {

@@ -258,7 +258,7 @@ const RenderWidget = ({
     if (!collapseWhenHidden) return;
     const contextIndices = normalizeLayoutContext(resolveIndex);
     const handle = requestAnimationFrame(() => {
-      adjustComponentPositions(id, currentLayout, false, contextIndices);
+      adjustComponentPositions(id, currentLayout, false, contextIndices, moduleId);
     });
     return () => cancelAnimationFrame(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
