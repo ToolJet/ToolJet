@@ -298,23 +298,26 @@ export default class MongodbService implements QueryService {
       // ListCollectionsCursor does not support .skip()/.limit(), fetch all matching then slice
       const allCollections = await db.listCollections(filter).toArray();
 
-      let collections = allCollections;
-      if (limit > 0) {
-        const offset = (page - 1) * limit;
-        collections = allCollections.slice(offset, offset + limit);
-      }
-
-      const totalCount = allCollections.length;
-
-      const result = collections.map((col) => ({
+      const mapped = allCollections.map((col) => ({
         collection_name: col.name,
         type: col.type || 'collection',
       }));
 
+      if (limit > 0) {
+        const offset = (page - 1) * limit;
+        const rows = mapped.slice(offset, offset + limit);
+        const totalCount = mapped.length;
+
+        return {
+          status: 'ok',
+          data: { rows, totalCount },
+        };
+      }
+
       return {
         status: 'ok',
-        data: { rows: result, totalCount: limit > 0 ? totalCount : result.length },
-      } as any;
+        data: mapped,
+      };
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred';
       throw new QueryError('Could not fetch collections', errorMessage, {});
@@ -345,18 +348,22 @@ export default class MongodbService implements QueryService {
       );
 
       const payload = (response?.data ?? {}) as any;
-      const rows = payload?.rows ?? [];
-      const totalCount = payload?.totalCount ?? 0;
-
-      const formatted = rows.map((col: any) => ({
-        label: col.collection_name,
-        value: col.collection_name,
-      }));
 
       if (isPaginated) {
+        const rows = payload?.rows ?? [];
+        const totalCount = payload?.totalCount ?? 0;
+        const formatted = rows.map((col: any) => ({
+          label: col.collection_name,
+          value: col.collection_name,
+        }));
         return { items: formatted, totalCount };
       }
 
+      const collections = Array.isArray(payload) ? payload : [];
+      const formatted = collections.map((col: any) => ({
+        label: col.collection_name,
+        value: col.collection_name,
+      }));
       return { status: 'ok', data: formatted };
     }
 

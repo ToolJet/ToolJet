@@ -11,6 +11,7 @@ import {
   LinkColumn,
   ImageColumn,
   CustomSelectColumn,
+  TagsV2Column,
   TextColumn,
   JsonColumn,
   MarkdownColumn,
@@ -94,13 +95,16 @@ export default function generateColumnsData({
   const getResolvedValue = useStore.getState().getResolvedValue;
   const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
+  const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
   if (!columnProperties) return [];
 
   return columnProperties
     .map((column) => {
       if (!column) return null;
 
-      const columnSize = column.columnSize || columnSizes[column?.id] || columnSizes[column?.name];
+      const columnSize = useDynamicColumn
+        ? column.columnSize || columnSizes[column?.id] || columnSizes[column?.name]
+        : columnSizes[column?.id] ?? columnSizes[column?.name] ?? column.columnSize;
       const columnType = column?.columnType;
 
       // Process column options for select types
@@ -121,6 +125,15 @@ export default function generateColumnsData({
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
+      let pinPosition = column.pinPosition ?? 'unpinned';
+      if (useDynamicColumn && column.freezeColumn !== undefined && column.freezeColumn !== null) {
+        const resolvedFreeze = getResolvedValue(column.freezeColumn);
+        if (resolvedFreeze === 'left' || resolvedFreeze === 'right') {
+          pinPosition = resolvedFreeze;
+        } else {
+          pinPosition = 'unpinned';
+        }
+      }
 
       if (!isVisible) return null;
 
@@ -146,15 +159,18 @@ export default function generateColumnsData({
           validation: column.validation,
           columnVisibility: isVisible,
           ...column,
+          pinPosition,
         },
 
         cell: ({ cell, row }) => {
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedFieldsOnIndex(id, row.index);
-          let cellValue = changeSet
-            ? changeSet[cell.column.columnDef?.accessorKey] ?? cell.getValue()
-            : cell.getValue();
+          const accessorKey = cell.column.columnDef?.accessorKey;
+          let cellValue =
+            changeSet && Object.prototype.hasOwnProperty.call(changeSet, accessorKey)
+              ? changeSet[accessorKey]
+              : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
           const isEditable = getResolvedValue(column.isEditable, { cellValue, rowData });
@@ -285,6 +301,52 @@ export default function generateColumnsData({
                   autoAssignColors={autoAssignColors}
                   isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
+                  className="select-search table-select-search"
+                  column={column}
+                  isNewRow={columnForAddNewRow}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  id={id}
+                />
+              );
+            }
+
+            case 'tagsV2': {
+              let useDynamicOptions = getResolvedValue(column?.useDynamicOptions);
+              if (useDynamicOptions) {
+                const dynamicOptions = getResolvedValue(column?.dynamicOptions || [], { cellValue, rowData });
+                columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+                columnOptions.selectOptions =
+                  options?.map((option) => ({
+                    label: option.label,
+                    value: option.value,
+                    optionColor: option.optionColor,
+                    labelColor: option.labelColor,
+                  })) ?? [];
+              }
+
+              const tagsAutoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
+              const sortTags = getResolvedValue(column.sortTags) ?? 'none';
+              const allowMultipleSelection = getResolvedValue(column.allowMultipleSelection) ?? false;
+
+              return (
+                <TagsV2Column
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
+                  disabled={!isEditable}
+                  darkMode={darkMode}
+                  containerWidth={columnSize}
+                  defaultOptionsList={useDynamicOptions ? [] : column?.defaultOptionsList || []}
+                  optionsLoadingState={
+                    useDynamicOptions && getResolvedValue(column?.optionsLoadingState) ? true : false
+                  }
+                  autoAssignColors={tagsAutoAssignColors}
+                  isEditable={isEditable}
+                  allowMultipleSelection={allowMultipleSelection}
+                  sortTags={sortTags}
                   className="select-search table-select-search"
                   column={column}
                   isNewRow={columnForAddNewRow}

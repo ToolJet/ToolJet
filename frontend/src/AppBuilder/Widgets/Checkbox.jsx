@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 export const Checkbox = ({
@@ -17,11 +18,14 @@ export const Checkbox = ({
   id,
 }) => {
   const isInitialRender = useRef(true);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const isMandatory = validation?.mandatory ?? false;
   const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
   const [checked, setChecked] = useState(defaultValueFromProperties);
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   const { label } = properties;
   const textColor = ['#1B1F24', '#000', '#000000ff'].includes(styles.textColor)
@@ -215,7 +219,7 @@ export const Checkbox = ({
                 onClick={toggleValue}
                 defaultChecked={defaultValue}
                 checked={checked}
-                id={`component-${id}`}
+                id={inputId}
                 aria-disabled={disable}
                 aria-busy={loading}
                 aria-required={isMandatory}
@@ -254,11 +258,9 @@ export const Checkbox = ({
               whiteSpace="normal"
               width={width - 20}
             >
-              <label htmlFor={`component-${id}`}>
+              <label htmlFor={inputId}>
                 {label}
-                {isMandatory && !checked && (
-                  <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
-                )}
+                {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
               </label>
             </OverflowTooltip>
           </>

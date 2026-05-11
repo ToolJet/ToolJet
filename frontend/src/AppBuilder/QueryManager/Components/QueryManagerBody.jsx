@@ -272,7 +272,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const renderTimeout = () => {
     return (
-      <div className="d-flex" data-cy="query-timeout-section">
+      <div className="d-flex" data-cy="query-timeout-section" style={{ marginBottom: '16px' }}>
         <div className="form-label mt-2" data-cy="query-manager-timeout-label">
           {t('editor.queryManager.timeout', 'Timeout ( ms )')}
         </div>
@@ -282,6 +282,51 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             initialValue={selectedQuery?.options?.query_timeout ?? ''}
             onChange={(value) => optionchanged('query_timeout', value)}
             cyLabel="query-timeout-input"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderDisableQuery = () => {
+    return (
+      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disable-section">
+        <div className="form-label mt-2" data-cy="query-manager-disable-label">
+          {t('editor.queryManager.disableQuery', 'Disable query')}
+        </div>
+        <div className="flex-grow-1 tw-max-w-[460px]">
+          <CodeHinter
+            type="basic"
+            initialValue={selectedQuery?.options?.disableQuery ?? ''}
+            onChange={(value) => optionchanged('disableQuery', value)}
+            placeholder="{{components.toggleswitch1.value}}"
+            cyLabel="query-disable-expression"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderDisabledMessage = () => {
+    const hasDisableExpression = !!selectedQuery?.options?.disableQuery?.trim();
+    return (
+      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disabled-message-section">
+        <div className="form-label mt-2" data-cy="query-manager-disabled-message-label">
+          {t('editor.queryManager.disabledMessageLabel', 'Disable message')}
+        </div>
+        <div
+          className={cx(
+            'flex-grow-1 tw-max-w-[460px]',
+            hasDisableExpression ? 'tw-opacity-100' : 'tw-opacity-30 tw-pointer-events-none'
+          )}
+        >
+          <CodeHinter
+            type="basic"
+            initialValue={selectedQuery?.options?.disabledMessage ?? ''}
+            onChange={(value) => optionchanged('disabledMessage', value)}
+            placeholder={t('editor.queryManager.queryDisabledDefault', 'This query is disabled')}
+            cyLabel="query-disabled-message"
+            disabled={!hasDisableExpression}
           />
         </div>
       </div>
@@ -334,8 +379,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             optionchanged={optionchanged}
           />
         </div>
-        {renderEventManager()}
         {renderTimeout()}
+        {renderDisableQuery()}
+        {renderDisabledMessage()}
+        {renderEventManager()}
       </div>
     );
   };

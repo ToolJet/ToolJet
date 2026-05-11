@@ -201,7 +201,19 @@ export const createGridSlice = (set, get) => ({
   //      parent (container / tab / listview row / form / accordion / canvas)
   //      so child growth propagates upward.
   // ───────────────────────────────────────────────────────────────────────────
-  adjustComponentPositions: (componentId, currentLayout = 'desktop', isContainer = false, subContainerIndex = null) => {
+  // moduleId is the slice namespace for the changed widget. Defaults to 'canvas'
+  // (single-app, single-module-editor cases). When a Module is consumed inside
+  // an app via <ModuleViewer>, the embedded module's components live under
+  // modules[widgetId]; useDynamicHeight pulls moduleId from useModuleContext()
+  // and forwards it here so every slice query below resolves in the right
+  // namespace.
+  adjustComponentPositions: (
+    componentId,
+    currentLayout = 'desktop',
+    isContainer = false,
+    subContainerIndex = null,
+    moduleId = 'canvas'
+  ) => {
     const {
       getCurrentPageComponents,
       setTemporaryLayouts,
@@ -218,9 +230,20 @@ export const createGridSlice = (set, get) => ({
       calculateMoveableBoxHeightWithId,
     } = get();
 
+    // Bind moduleId once. Pass these closures to the dynamicHeightReflow
+    // utilities so their signatures stay unchanged while every nested slice
+    // query carries the correct moduleId.
+    const boundGetResolvedComponent = (id, ctx) => getResolvedComponent(id, ctx, moduleId);
+    const boundGetComponentDefinition = (id) => getComponentDefinition(id, moduleId);
+    const boundGetExposedPropertyForAdditionalActions = (id, ctx, prop) =>
+      getExposedPropertyForAdditionalActions(id, ctx, prop, moduleId);
+    const boundCalculateMoveableBoxHeightWithId = (id, layout, stylesDef) =>
+      calculateMoveableBoxHeightWithId(id, layout, stylesDef, moduleId);
+    const boundGetResolvedValue = (value, customVars) => getResolvedValue(value, customVars, moduleId);
+
     try {
-      const currentPageComponents = getCurrentPageComponents();
-      const componentType = getComponentTypeFromId(componentId);
+      const currentPageComponents = getCurrentPageComponents(moduleId);
+      const componentType = getComponentTypeFromId(componentId, moduleId);
       const contextIndices = normalizeLayoutContext(subContainerIndex);
       const changedComponent = currentPageComponents?.[componentId];
 
@@ -234,8 +257,8 @@ export const createGridSlice = (set, get) => ({
         componentId,
         contextIndices,
         currentLayout,
-        getResolvedComponent,
-        getExposedPropertyForAdditionalActions,
+        getResolvedComponent: boundGetResolvedComponent,
+        getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
       });
 
       // Compute the container-derived target height. Only meaningful when the
@@ -248,12 +271,12 @@ export const createGridSlice = (set, get) => ({
         temporaryLayouts,
         contextIndices,
         visibility,
-        getResolvedComponent,
-        getResolvedValue,
-        getComponentDefinition,
+        getResolvedComponent: boundGetResolvedComponent,
+        getResolvedValue: boundGetResolvedValue,
+        getComponentDefinition: boundGetComponentDefinition,
         getContainerChildrenMapping,
-        getExposedPropertyForAdditionalActions,
-        calculateMoveableBoxHeightWithId,
+        getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
+        calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
       });
 
       // Target height for the changed widget. For containers: containerHeight.
@@ -317,7 +340,7 @@ export const createGridSlice = (set, get) => ({
           });
           incrementCanvasUpdater();
           const nextBubbleContext = contextIndices.length > 1 ? contextIndices.slice(0, -1) : null;
-          adjustComponentPositions(componentId, currentLayout, true, nextBubbleContext);
+          adjustComponentPositions(componentId, currentLayout, true, nextBubbleContext, moduleId);
           return null;
         }
         // Widget context (nested inner listview). Fall through to normal
@@ -340,8 +363,8 @@ export const createGridSlice = (set, get) => ({
           componentId: siblingId,
           contextIndices,
           currentLayout,
-          getResolvedComponent,
-          getExposedPropertyForAdditionalActions,
+          getResolvedComponent: boundGetResolvedComponent,
+          getExposedPropertyForAdditionalActions: boundGetExposedPropertyForAdditionalActions,
         });
         return accumulator;
       }, {});
@@ -357,9 +380,19 @@ export const createGridSlice = (set, get) => ({
           accumulator[siblingId] = true;
           return accumulator;
         }
-        const siblingResolved = getResolvedComponent(siblingId, contextIndices);
+        const siblingResolved = boundGetResolvedComponent(siblingId, contextIndices);
         const collapseWhenHidden = siblingResolved?.properties?.collapseWhenHidden ?? false;
         accumulator[siblingId] = !collapseWhenHidden;
+        return accumulator;
+      }, {});
+
+      // Per-sibling collapseWhenHidden flag. Used by buildReflowPatch to gate
+      // the placeholder-height correction in canonicalGap math — only widgets
+      // that opted into collapse-on-hide can have been authored against the
+      // HIDDEN_COMPONENT_HEIGHT placeholder, so the correction is scoped here.
+      const collapseWhenHiddenMap = siblingIds.reduce((accumulator, siblingId) => {
+        const siblingResolved = boundGetResolvedComponent(siblingId, contextIndices);
+        accumulator[siblingId] = siblingResolved?.properties?.collapseWhenHidden === true;
         return accumulator;
       }, {});
 
@@ -374,13 +407,23 @@ export const createGridSlice = (set, get) => ({
       // below.
       const resolvedHeights = siblingIds.reduce((accumulator, siblingId) => {
         const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices)];
-        if (existingTemp?.height != null) {
+        // Treat existingTemp.height === 0 as stale: it almost always
+        // originates from an offsetHeight read while the sibling sat in a
+        // hidden ancestor subtree (e.g., an inactive tab). Trusting it would
+        // self-propagate — the next reflow reads the 0, replays it as the
+        // sibling's height, and the wrapper collapses on screen. Fall
+        // through to canonical/calc to break the chain.
+        if (existingTemp?.height != null && existingTemp.height > 0) {
           accumulator[siblingId] = existingTemp.height;
           return accumulator;
         }
-        const siblingDefinition = getComponentDefinition(siblingId);
+        const siblingDefinition = boundGetComponentDefinition(siblingId);
         const siblingStylesDefinition = siblingDefinition?.component?.definition?.styles;
-        accumulator[siblingId] = calculateMoveableBoxHeightWithId(siblingId, currentLayout, siblingStylesDefinition);
+        accumulator[siblingId] = boundCalculateMoveableBoxHeightWithId(
+          siblingId,
+          currentLayout,
+          siblingStylesDefinition
+        );
         return accumulator;
       }, {});
       resolvedHeights[componentId] = newHeight;
@@ -400,6 +443,7 @@ export const createGridSlice = (set, get) => ({
         contextIndices,
         inFlowMap,
         resolvedHeights,
+        collapseWhenHiddenMap,
       });
 
       if (Object.keys(temporaryLayoutPatch).length === 0) {
@@ -449,7 +493,7 @@ export const createGridSlice = (set, get) => ({
       // container and push its siblings. Children overflow / clip / scroll
       // inside instead.
       const nextBubbleResolved = nextBubbleTargetId
-        ? getResolvedComponent(nextBubbleTargetId, nextBubbleContext)
+        ? boundGetResolvedComponent(nextBubbleTargetId, nextBubbleContext)
         : null;
       const nextBubbleHasDynamicHeight = nextBubbleResolved?.properties?.dynamicHeight !== false;
 
@@ -462,7 +506,7 @@ export const createGridSlice = (set, get) => ({
           nextContextIndices: nextBubbleContext,
         })
       ) {
-        adjustComponentPositions(nextBubbleTargetId, currentLayout, true, nextBubbleContext);
+        adjustComponentPositions(nextBubbleTargetId, currentLayout, true, nextBubbleContext, moduleId);
       }
 
       return temporaryLayoutPatch;

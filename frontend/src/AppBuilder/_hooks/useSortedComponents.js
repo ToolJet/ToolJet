@@ -47,7 +47,7 @@ const useSortedComponents = (components, currentLayout, id, moduleId, isFlexCont
       return prevComponentsOrder.current;
     }
 
-    const currentPageComponents = getCurrentPageComponents();
+    const currentPageComponents = getCurrentPageComponents(moduleId);
 
     const newComponentsOrder = [...components].sort((a, b) => {
       if (isFlexContainer) {

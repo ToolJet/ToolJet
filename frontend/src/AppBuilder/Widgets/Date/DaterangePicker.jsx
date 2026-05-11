@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import cx from 'classnames';
 import { isDateRangeValid, isDateValid } from './utils';
 import './styles.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const DaterangePicker = ({
   height,
@@ -72,6 +73,7 @@ export const DaterangePicker = ({
   const [displayRange, setDisplayRange] = useState(getDisplayRange(startDate, endDate));
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
 
