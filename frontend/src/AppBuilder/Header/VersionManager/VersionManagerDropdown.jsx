@@ -78,13 +78,16 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
-  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes
-  // This ensures the filter is correct after page reloads from environment switches
+  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes.
+  // Also refresh the version list immediately so VersionActionButtons reflect the new
+  // environment state without waiting for the dropdown to open (e.g. after promote).
   useEffect(() => {
-    if (currentEnvironment) {
-      setSelectedEnvironmentFilter(currentEnvironment);
+    if (!currentEnvironment) return;
+    setSelectedEnvironmentFilter(currentEnvironment);
+    if (appId && currentEnvironment.id) {
+      fetchVersionsForEnvironment(appId, currentEnvironment.id);
     }
-  }, [currentEnvironment, setSelectedEnvironmentFilter]);
+  }, [currentEnvironment?.id, appId, setSelectedEnvironmentFilter, fetchVersionsForEnvironment]);
 
   // Fetch development versions on mount to check for draft status
   useEffect(() => {

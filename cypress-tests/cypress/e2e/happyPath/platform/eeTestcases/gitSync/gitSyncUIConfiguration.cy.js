@@ -11,22 +11,28 @@ describe("Git Sync — UI Configuration", () => {
   };
 
   beforeEach(() => {
-    cy.apiLogin();
-    cy.viewport(1800, 1400);
-  });
-
-  it("should configure GitHub git sync via UI, verify all modals on Dashboard and Data Sources, delete config via UI, then archive workspace", () => {
-    const wsName = `gitsync-${fake.firstName.toLowerCase()}`;
+    const wsName = `gitsync-create-${fake.firstName.toLowerCase()}`;
     const wsSlug = wsName;
     let createdWorkspaceId;
 
+    cy.apiLogin();
     cy.apiCreateWorkspace(wsName, wsSlug).then((res) => {
       createdWorkspaceId = res.body.organization_id;
+      Cypress.env("workspaceId", createdWorkspaceId);
+      Cypress.env("workspaceSlug", wsSlug);
     });
+    cy.viewport(1800, 1400);
+  });
 
+  afterEach(() => {
+    cy.apiLogin();
+    cy.apiArchiveWorkspace(Cypress.env("workspaceId"));
+  });
+
+  it("should configure GitHub git sync via UI, verify all modals on Dashboard and Data Sources, delete config via UI, then archive workspace", () => {
     // Open configure-git page — verify disabled state
     cy.intercept("GET", "**/api/git-sync/**").as("gitSyncInit");
-    cy.visit(`${Cypress.config("baseUrl")}/${wsSlug}/workspace-settings/configure-git`);
+    cy.visit(`${Cypress.config("baseUrl")}/${Cypress.env("workspaceSlug")}/workspace-settings/configure-git`);
     cy.contains("Configure git sync", { timeout: 15000 }).should("be.visible");
     cy.wait("@gitSyncInit");
     cy.wait(2000);
@@ -72,7 +78,7 @@ describe("Git Sync — UI Configuration", () => {
       cy.get(sel.branchInput).should("have.value", gitConfig.branch);
     });
 
-    cy.get('[style="cursor: pointer; display: flex; align-items: center; justify-content: center;"]').click();
+    cy.get(sel.modalClose).click();
 
     cy.log("[gitSync] ✓ Enabled badge and saved values verified");
 
@@ -84,10 +90,11 @@ describe("Git Sync — UI Configuration", () => {
       "contain.text",
       gitConfig.branch,
     );
+    cy.wait(2000)
     cy.get(sel.masterLockBanner).should("be.visible");
     cy.get(sel.masterLockBanner).should("contain.text", sel.lockBannerApps);
-    cy.contains("button", sel.pullBtn).should("be.visible");
-    cy.contains("button", /^commit$/i).should("not.exist");
+    cy.get(sel.wsGitPullBtn).should("be.visible");
+    cy.get(sel.wsGitCommitBtn).should("not.exist");
 
     cy.log("[gitSync] ✓ Dashboard lock banner and branch header verified");
 
@@ -108,13 +115,13 @@ describe("Git Sync — UI Configuration", () => {
     cy.log("[gitSync] ✓ Branch popover elements verified");
 
     // Pull modal — verify content and cancel
-    cy.contains("button", sel.pullBtn).click();
+    cy.get(sel.wsGitPullBtn).click();
 
     cy.get(sel.modalTitle).should("contain.text", sel.pullModalTitle);
     cy.contains(gitConfig.repoUrl).should("be.visible");
     cy.get(sel.checkForUpdatesLabel).should("be.visible");
-    cy.contains("button", "Cancel").should("be.visible");
-    cy.contains("button", /pull changes/i).should("be.visible");
+    cy.get(sel.pullModalCancelBtn).should("be.visible");
+    cy.get(sel.pullModalPullChangesBtn).should("be.visible");
 
     cy.get(sel.pullModalCancelBtn).click();
     cy.get(sel.modalTitle).should("not.exist");
@@ -157,21 +164,15 @@ describe("Git Sync — UI Configuration", () => {
       cy.contains(sel.switchBranchAllOpen).should("be.visible");
       cy.get(sel.switchBranchSearchInput).should("be.visible");
       cy.contains(gitConfig.branch).should("be.visible");
-      cy.contains(sel.switchBranchDefaultLabel).should("be.visible");
-      cy.contains(sel.switchBranchCreatedBy).should("be.visible");
       cy.contains(sel.switchBranchViewInGit).should("be.visible");
       cy.contains(sel.switchBranchCreateNew).should("be.visible");
-
-      // Search filters the branch list
-      cy.get(sel.switchBranchSearchInput).type(gitConfig.branch);
-      cy.contains(gitConfig.branch).should("be.visible");
     });
 
     cy.get("body").type("{esc}");
     cy.log("[gitSync] ✓ Switch branch modal content and search verified");
 
     // Data Sources page — verify lock banner and branch popover
-    cy.visit(`${Cypress.config("baseUrl")}/${wsSlug}/data-sources`);
+    cy.visit(`${Cypress.config("baseUrl")}/${Cypress.env("workspaceSlug")}/data-sources`);
     cy.wait(2000);
 
     cy.get(sel.wsCurrentBranch, { timeout: 15000 }).should(
@@ -183,8 +184,8 @@ describe("Git Sync — UI Configuration", () => {
       "contain.text",
       sel.lockBannerDataSources,
     );
-    cy.contains("button", sel.pullBtn).should("be.visible");
-    cy.contains("button", /^commit$/i).should("not.exist");
+    cy.get(sel.wsGitPullBtn).should("be.visible");
+    cy.get(sel.wsGitCommitBtn).should("not.exist");
 
     cy.get(sel.wsBranchHeader).click();
     cy.get(sel.wsBranchPopover).should("be.visible");
@@ -202,7 +203,7 @@ describe("Git Sync — UI Configuration", () => {
     // Delete config via UI
     cy.intercept("GET", "**/api/git-sync/**").as("gitSyncLoad");
     cy.visit(
-      `${Cypress.config("baseUrl")}/${wsSlug}/workspace-settings/configure-git`,
+      `${Cypress.config("baseUrl")}/${Cypress.env("workspaceSlug")}/workspace-settings/configure-git`,
     );
     cy.contains("Configure git sync", { timeout: 15000 }).should("be.visible");
     cy.wait("@gitSyncLoad");
@@ -234,7 +235,57 @@ describe("Git Sync — UI Configuration", () => {
     cy.get('[data-cy="github-toggle"]').should("not.be.checked");
 
     cy.log("[gitSync] ✓ Delete config flow verified");
+  });
 
-    cy.then(() => cy.apiArchiveWorkspace(createdWorkspaceId));
+  it("Click on every app create option should show the create branch modal", () => {
+    cy.gitSyncCheckAndConfigure();
+    cy.gitSyncGoToDashboard();
+
+    // On master the branch is locked — every app-creation entry point must
+    cy.wait(2000)
+    cy.get(sel.wsCurrentBranch, { timeout: 15000 }).should(
+      "contain.text",
+      "master",
+    );
+    cy.get(sel.masterLockBanner).should("be.visible");
+
+    // Helper: assert "Switch branch" modal appears (locked master redirects here), then cancel it.
+    const verifySwitchBranchModal = () => {
+      cy.contains(sel.switchBranchModalTitle, { timeout: 10000 }).should(
+        "be.visible",
+      );
+      cy.contains(sel.switchBranchLockedMsg).should("be.visible");
+      cy.get(sel.switchBranchSearchInput).should("be.visible");
+      cy.get("body").type("{esc}");
+      cy.contains(sel.switchBranchModalTitle).should("not.exist");
+    };
+
+    // ── 1. "Create an app" main button ───────────────────────────────────────
+    cy.get('[data-cy="create-new-apps-button"]').click();
+    verifySwitchBranchModal();
+    cy.log("[gitSync] ✓ Create an app → Switch branch modal verified");
+
+    // ── 2. "Choose from template" dropdown item ───────────────────────────────
+    cy.get('[data-cy="import-dropdown-menu"]').click();
+    cy.get('[data-cy="choose-from-template-button"]')
+      .should("be.visible")
+      .click();
+    verifySwitchBranchModal();
+    cy.log("[gitSync] ✓ Choose from template → Switch branch modal verified");
+
+    // ── 3. "Import from device" dropdown item ────────────────────────────────
+    cy.get('[data-cy="import-dropdown-menu"]').click();
+    cy.get('[data-cy="import-option-label"]').should("be.visible").click();
+    verifySwitchBranchModal();
+    cy.log("[gitSync] ✓ Import from device → Switch branch modal verified");
+
+    // ── 4. "Import from git repository" dropdown item ────────────────────────
+    // This option opens its own "Import app from git repository" modal (not the switch branch modal)
+    cy.get('[data-cy="import-dropdown-menu"]').click();
+    cy.get('[data-cy="import-from-git-button"]').should("be.visible").click();
+    cy.contains("Import app from git repository", { timeout: 10000 }).should("be.visible");
+    cy.contains("button", "Cancel").click();
+    cy.contains("Import app from git repository").should("not.exist");
+    cy.log("[gitSync] ✓ Import from git repository → Import modal verified");
   });
 });

@@ -77,6 +77,10 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.SAVE_APP_VERSION]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.GENERATE_PAT]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
@@ -102,6 +106,18 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.DELETE_GROUP]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.LIST_MODULES]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.EXPORT_MODULE]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
+    [FEATURE_KEY.IMPORT_MODULE]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },

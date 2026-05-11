@@ -131,7 +131,7 @@ const WidgetWrapper = memo(
     }
 
     const width = gridWidth * newLayoutData?.width;
-    const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition);
+    const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition, moduleId);
 
     // Calculate the final height based on visibility and temporary layouts.
     // Hidden widgets in edit mode keep a small placeholder height so designers

@@ -260,9 +260,7 @@ export const Checkbox = ({
             >
               <label htmlFor={inputId}>
                 {label}
-                {isMandatory && !checked && (
-                  <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
-                )}
+                {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
               </label>
             </OverflowTooltip>
           </>
