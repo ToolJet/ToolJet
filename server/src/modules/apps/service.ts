@@ -312,10 +312,23 @@ export class AppsService implements IAppsService {
       if (appUpdateDto.is_public !== undefined) blockedFields.push('is_public');
 
       if (blockedFields.length > 0) {
-        const editingVersion = editingVersionId
-          ? await this.versionRepository.findById(editingVersionId, app.id)
-          : app.editingVersion;
-        const isOnDefaultBranch = editingVersion?.versionType !== 'branch';
+        // Prefer the DTO's branch_id — it reflects the request's branch context. The
+        // subscriber-populated app.editingVersion is resolved without branch awareness
+        // (it always picks the default-branch VERSION-type row when one exists), so
+        // falling back to it would falsely flag a sub-branch request as default.
+        let isOnDefaultBranch: boolean;
+        if (appUpdateDto.branch_id) {
+          const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+            where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
+            select: ['id', 'isDefault'],
+          });
+          isOnDefaultBranch = branch?.isDefault ?? false;
+        } else {
+          const editingVersion = editingVersionId
+            ? await this.versionRepository.findById(editingVersionId, app.id)
+            : app.editingVersion;
+          isOnDefaultBranch = editingVersion?.versionType !== 'branch';
+        }
 
         if (isOnDefaultBranch) {
           throw new BadRequestException(
