@@ -20,8 +20,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
-import { AppVersion, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { ListTablesDto } from './dto';
 
@@ -107,35 +106,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
 
       // Branch-aware: resolve branchId from appVersion when version type is 'branch'
-      const branchId =
-        dataQuery?.appVersion?.versionType === AppVersionType.BRANCH ? dataQuery.appVersion.branchId : undefined;
+      // default branch version type is version
+      const branchId = dataQuery?.appVersion?.branchId || undefined;
 
-      // Workflows carry isPublic/name on apps.*; apps and modules carry them on the version.
-      // BRANCH-type versions are the canonical metadata carrier per branch. When the
-      // dataQuery's version is VERSION-type (git-sync default-branch VERSION rows),
-      // fall back to the default branch's BRANCH-type version. For non-git-sync
-      // workspaces no default branch exists, the fallback returns null, and the original
-      // VERSION-type version is used directly (it carries the metadata).
+      // Workflows carry isPublic/name on apps.*; apps and modules carry them on every
+      // version row (default branch uses VERSION-type, sub-branches BRANCH-type, all
+      // carry the metadata). Use the dataQuery's own version row directly.
       const isWorkflow = appToUse?.type === APP_TYPES.WORKFLOW;
-      let metaSource: { isPublic?: boolean; appName?: string } | undefined = dataQuery?.appVersion;
-      if (!isWorkflow && dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH && appToUse?.id) {
-        const fallback = await dbTransactionWrap(async (manager: EntityManager) => {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId, isDefault: true },
-            select: ['id'],
-          });
-          if (!defaultBranch) return null;
-          return manager.findOne(AppVersion, {
-            where: {
-              appId: appToUse.id,
-              branchId: defaultBranch.id,
-              versionType: AppVersionType.BRANCH,
-            },
-            select: ['id', 'isPublic', 'appName'],
-          });
-        });
-        if (fallback) metaSource = fallback;
-      }
+      const metaSource: { isPublic?: boolean; appName?: string } | undefined = dataQuery?.appVersion;
       effectiveIsPublic = isWorkflow ? appToUse?.isPublic : metaSource?.isPublic;
       effectiveAppName = isWorkflow ? appToUse?.name : metaSource?.appName;
       // Removed: appVersionId path — released (VERSION-type) versions now use is_default DSV.

@@ -132,7 +132,11 @@ export class AppsService implements IAppsService {
     user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ) {
-    const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
+    const { accessType, versionName, environmentName, versionId, envId, branchId } = validateAppAccessDto;
+    // Non-workflow apps carry slug/name/icon/isPublic on app_versions, not apps.* — hydrate
+    // them onto the in-memory App entity using the request's branch context if provided,
+    // otherwise the helper resolves default branch BRANCH (git-sync) / any version (non-git-sync).
+    await this.appsUtilService.overlayAppMetadata(app, branchId);
     const response = {
       id: app.id,
       slug: app.slug,
@@ -313,25 +317,22 @@ export class AppsService implements IAppsService {
       if (appUpdateDto.is_public !== undefined) blockedFields.push('is_public');
 
       if (blockedFields.length > 0) {
-        // Prefer the DTO's branch_id — it reflects the request's branch context. The
-        // subscriber-populated app.editingVersion is resolved without branch awareness
-        // (it always picks the default-branch VERSION-type row when one exists), so
-        // falling back to it would falsely flag a sub-branch request as default.
-        let isOnDefaultBranch: boolean;
-        if (appUpdateDto.branch_id) {
-          const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-            where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
-            select: ['id', 'isDefault'],
-          });
-          isOnDefaultBranch = branch?.isDefault ?? false;
-        } else {
-          const editingVersion = editingVersionId
-            ? await this.versionRepository.findById(editingVersionId, app.id)
-            : app.editingVersion;
-          isOnDefaultBranch = editingVersion?.versionType !== 'branch';
+        // Require an explicit branch_id (from the x-branch-id header). Without it the
+        // server can't tell whether the request is targeting the default branch or a
+        // sub-branch, and util.service.update would otherwise fan the write out across
+        // every VERSION row of the app — leaking sub-branch edits into the default branch.
+        if (!appUpdateDto.branch_id) {
+          throw new BadRequestException(
+            `Editing ${blockedFields.join(', ')} requires a feature branch context (missing x-branch-id header).`
+          );
         }
-
-        if (isOnDefaultBranch) {
+        const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+          where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
+          select: ['id', 'isDefault'],
+        });
+        // Unknown branch → treat as block. Default branch → block (must edit from a
+        // feature branch and let push + merge flow the change to default).
+        if (!branch || branch.isDefault) {
           throw new BadRequestException(
             `Editing ${blockedFields.join(', ')} isn't allowed on the default branch. Switch to a feature branch in app builder to update.`
           );
@@ -497,17 +498,16 @@ export class AppsService implements IAppsService {
           if (branchVersion.isPublic != null) app.isPublic = branchVersion.isPublic;
         }
       } else {
-        // Git-sync OFF: no branch context. Non-workflow apps maintain identical metadata
-        // on every version row, so picking any version per app gives the right values.
+        // No branch context: route by git-sync state.
+        //   - Git enabled: pull per-app metadata from the default branch row.
+        //   - Git off:     any version row works (every row carries identical metadata).
         const nonWorkflowAppIds = apps.filter((a) => a.type !== APP_TYPES.WORKFLOW).map((a) => a.id);
         if (nonWorkflowAppIds.length > 0) {
-          const rows: {
-            app_id: string;
-            app_name: string | null;
-            slug: string | null;
-            icon: string | null;
-            is_public: boolean | null;
-          }[] = await manager
+          const defaultBranch = await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+            select: ['id'],
+          });
+          const qb = manager
             .createQueryBuilder()
             .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
             .addSelect('av.app_name', 'app_name')
@@ -515,8 +515,17 @@ export class AppsService implements IAppsService {
             .addSelect('av.icon', 'icon')
             .addSelect('av.is_public', 'is_public')
             .from('app_versions', 'av')
-            .where('av.app_id IN (:...appIds)', { appIds: nonWorkflowAppIds })
-            .getRawMany();
+            .where('av.app_id IN (:...appIds)', { appIds: nonWorkflowAppIds });
+          if (defaultBranch?.id) {
+            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
+          }
+          const rows: {
+            app_id: string;
+            app_name: string | null;
+            slug: string | null;
+            icon: string | null;
+            is_public: boolean | null;
+          }[] = await qb.getRawMany();
           const metaByAppId = new Map(rows.map((r) => [r.app_id, r]));
           for (const app of apps) {
             if (app.type === APP_TYPES.WORKFLOW) continue;

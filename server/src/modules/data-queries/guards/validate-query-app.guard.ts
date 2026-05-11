@@ -10,8 +10,7 @@ import { User } from '@entities/user.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { AppVersion, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
@@ -80,23 +79,6 @@ export class ValidateQueryAppGuard implements CanActivate {
             order: { updatedAt: 'DESC' },
             select: ['id', 'versionType', 'isPublic'],
           });
-        }
-        if (version && version.versionType !== AppVersionType.BRANCH) {
-          const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
-            where: { organizationId: app.organizationId, isDefault: true },
-            select: ['id'],
-          });
-          if (defaultBranch) {
-            const fallback = await this.versionRepository.findOne({
-              where: {
-                appId: app.id,
-                branchId: defaultBranch.id,
-                versionType: AppVersionType.BRANCH,
-              },
-              select: ['id', 'isPublic'],
-            });
-            if (fallback) version = fallback;
-          }
         }
         if (version) {
           app.isPublic = version.isPublic;

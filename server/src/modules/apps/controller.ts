@@ -72,7 +72,8 @@ export class AppsController implements IAppsController {
     @Query('environment_id') envId: string,
     @Ability() ability: AppAbility,
     @App() app: AppEntity,
-    @User() user: UserEntity
+    @User() user: UserEntity,
+    @Headers('x-branch-id') branchId?: string
   ) {
     return this.appsService.validatePrivateAppAccess(app, ability, user, {
       accessType,
@@ -80,6 +81,7 @@ export class AppsController implements IAppsController {
       environmentName,
       versionId,
       envId,
+      branchId,
     });
   }
 

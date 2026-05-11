@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, IsNull, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -62,6 +62,32 @@ export class AppsUtilService implements IAppsUtilService {
   ): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const isWorkflow = type === APP_TYPES.WORKFLOW;
+
+      // Non-workflows store the user-facing name on app_versions.app_name. apps.name is
+      // NULL for them so the table-level APP_NAME_UNIQUE constraint doesn't fire — enforce
+      // cross-app uniqueness here against any version row already carrying this name.
+      // Scoped to git-disabled workspaces only: git-enabled workspaces enforce uniqueness
+      // via the partial unique index on (app_name, branch_id) WHERE version_type='branch'.
+      if (!isWorkflow && name) {
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+          select: ['id'],
+        });
+        if (!defaultBranch) {
+          const conflictingNameVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'app', 'app.id = av.appId')
+            .where('av.app_name = :appName', { appName: name })
+            .andWhere('av.branch_id IS NULL')
+            .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+            .andWhere('app.organization_id = :organizationId', { organizationId: user.organizationId })
+            .getOne();
+          if (conflictingNameVersion) {
+            throw new BadRequestException('This app name is already taken.');
+          }
+        }
+      }
+
       const app = await catchDbException(() => {
         return manager.save(
           manager.create(App, {
@@ -465,6 +491,34 @@ export class AppsUtilService implements IAppsUtilService {
         });
         if (conflictingApp) {
           await manager.update(App, conflictingApp.id, { slug: conflictingApp.id });
+        }
+      }
+
+      // app_name cross-app uniqueness for non-git-sync workspaces. The partial unique
+      // index on (app_name, branch_id) WHERE version_type='branch' handles git-enabled
+      // sub-branches; non-git-sync rows (branch_id IS NULL, version_type='version') need
+      // an application-level check because a plain unique index can't allow same-app
+      // duplicates while still blocking cross-app collisions. Skip when a branchId is
+      // supplied (git-enabled update) and skip when a default branch exists on the
+      // workspace (git-enabled workspace, even if this update happens to omit branchId).
+      if (versionParams.appName && !isWorkflow && !branchId) {
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId, isDefault: true },
+          select: ['id'],
+        });
+        if (!defaultBranch) {
+          const conflictingNameVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'app', 'app.id = av.appId')
+            .where('av.app_name = :appName', { appName: versionParams.appName })
+            .andWhere('av.branch_id IS NULL')
+            .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+            .andWhere('av.app_id != :appId', { appId })
+            .andWhere('app.organization_id = :organizationId', { organizationId })
+            .getOne();
+          if (conflictingNameVersion) {
+            throw new BadRequestException('This app name is already taken.');
+          }
         }
       }
 
@@ -1145,10 +1199,11 @@ export class AppsUtilService implements IAppsUtilService {
    * in-memory so single-app reads (`getOne`, `getBySlug`, etc.) return the correct
    * user-facing metadata. Workflows are skipped — they keep metadata on apps.* directly.
    *
-   * Source priority for non-workflows:
-   *   1. BRANCH-type version on the supplied branchId (active editor branch)
-   *   2. BRANCH-type version on the workspace's default branch (git-sync, no branch context)
-   *   3. Any version row (non-git-sync workspaces — every version carries the same metadata)
+   * Source resolution:
+   *   - branchId supplied:        any version row on that exact branch (throws if none
+   *                               — the row should exist on the requested branch).
+   *   - no branchId, git enabled: any version row on the workspace's default branch.
+   *   - no branchId, git off:     any version row (every row carries identical metadata).
    */
   async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
     if (!app || app.type === APP_TYPES.WORKFLOW) return;
@@ -1158,32 +1213,35 @@ export class AppsUtilService implements IAppsUtilService {
 
       if (branchId) {
         source = await manager.findOne(AppVersion, {
-          where: { appId: app.id, branchId, versionType: AppVersionType.BRANCH },
+          where: { appId: app.id, branchId },
+          order: { updatedAt: 'DESC' },
           select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
         });
-      }
-
-      if (!source) {
+        if (!source) {
+          throw new BadRequestException(
+            `No version row found for app ${app.id} on branch ${branchId}.`
+          );
+        }
+      } else {
         const defaultBranch = await manager.findOne(WorkspaceBranch, {
           where: { organizationId: app.organizationId, isDefault: true },
           select: ['id'],
         });
         if (defaultBranch) {
+          // Git-enabled: pick the default branch row.
           source = await manager.findOne(AppVersion, {
-            where: { appId: app.id, branchId: defaultBranch.id, versionType: AppVersionType.BRANCH },
+            where: { appId: app.id, branchId: defaultBranch.id },
+            order: { updatedAt: 'DESC' },
+            select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
+          });
+        } else {
+          // Git off: pick any version row — every row carries identical metadata.
+          source = await manager.findOne(AppVersion, {
+            where: { appId: app.id },
+            order: { updatedAt: 'DESC' },
             select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
           });
         }
-      }
-
-      if (!source) {
-        // Non-git-sync workspaces (or apps without any branch row): pick any version.
-        // All versions carry identical metadata in this mode.
-        source = await manager.findOne(AppVersion, {
-          where: { appId: app.id },
-          order: { updatedAt: 'DESC' },
-          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-        });
       }
 
       if (!source) return;

@@ -99,6 +99,10 @@ export class ValidateAppAccessDto {
   @IsString()
   @IsOptional()
   envId: string;
+
+  @IsString()
+  @IsOptional()
+  branchId?: string;
 }
 
 @Exclude()

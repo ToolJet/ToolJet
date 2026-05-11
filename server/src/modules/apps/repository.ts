@@ -1,5 +1,6 @@
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
@@ -141,8 +142,12 @@ export class AppsRepository extends Repository<App> {
       .leftJoin('app_versions', 'version', 'version.app_id = app.id')
       .where('app.organizationId = :organizationId', { organizationId });
 
+    // Source resolution for the per-app metadata join (av_meta):
+    //   - branchId supplied:        most recent row on that exact branch
+    //   - no branchId, git enabled: most recent row on the workspace's default branch
+    //   - no branchId, git off:     most recent slug-bearing row across all versions
+    // Workflows COALESCE through to apps.* since they don't carry metadata on versions.
     if (branchId) {
-      // Show version-level metadata from the BRANCH-type version for this branch
       qb.addSelect('av_meta.app_name AS name')
         .addSelect('av_meta.slug AS slug')
         .addSelect('av_meta.icon AS icon')
@@ -150,27 +155,49 @@ export class AppsRepository extends Repository<App> {
         .innerJoin(
           'app_versions',
           'av_meta',
-          'av_meta.app_id = app.id AND av_meta.branch_id = :branchId AND av_meta.version_type = :branchType',
-          { branchId, branchType: 'branch' }
+          `av_meta.app_id = app.id AND av_meta.branch_id = :branchId AND av_meta.id = (
+            SELECT av_inner.id FROM app_versions av_inner
+            WHERE av_inner.app_id = app.id AND av_inner.branch_id = :branchId
+            ORDER BY av_inner.updated_at DESC
+            LIMIT 1
+          )`,
+          { branchId }
         );
     } else {
-      // No branch context: resolve metadata from BRANCH-type version (git-sync workspaces)
-      // or any VERSION-type version with slug set (non-git-sync workspaces),
-      // falling back to apps table (workflows)
+      const defaultBranch = await this.manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+
       qb.addSelect(`COALESCE(av_meta.app_name, app.name) AS name`)
         .addSelect(`COALESCE(av_meta.slug, app.slug) AS slug`)
         .addSelect(`COALESCE(av_meta.icon, app.icon) AS icon`)
-        .addSelect(`COALESCE(av_meta.is_public, app.is_public) AS "isPublic"`)
-        .leftJoin(
+        .addSelect(`COALESCE(av_meta.is_public, app.is_public) AS "isPublic"`);
+
+      if (defaultBranch?.id) {
+        qb.leftJoin(
+          'app_versions',
+          'av_meta',
+          `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId AND av_meta.id = (
+            SELECT av_inner.id FROM app_versions av_inner
+            WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+            ORDER BY av_inner.updated_at DESC
+            LIMIT 1
+          )`,
+          { defaultBranchId: defaultBranch.id }
+        );
+      } else {
+        qb.leftJoin(
           'app_versions',
           'av_meta',
           `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
             SELECT av_inner.id FROM app_versions av_inner
             WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
-            ORDER BY CASE WHEN av_inner.version_type = 'branch' THEN 0 ELSE 1 END, av_inner.updated_at DESC
+            ORDER BY av_inner.updated_at DESC
             LIMIT 1
           )`
         );
+      }
     }
 
     return await qb.orderBy('app.created_At', 'ASC').addOrderBy('version.created_at', 'ASC').getRawMany();

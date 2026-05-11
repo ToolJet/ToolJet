@@ -596,12 +596,10 @@ export class AppImportExportService {
       // into per-version files. Workflows leave the export unchanged — apps.* already
       // carries the canonical metadata for them.
       if (appToExport?.type !== APP_TYPES.WORKFLOW) {
-        const sourceVersion =
-          appVersions.find(
-            (v) => v.versionType === AppVersionType.BRANCH && (v.appName != null || v.slug != null)
-          ) ||
-          appVersions.find((v) => v.appName != null || v.slug != null) ||
-          appVersions[0];
+        // Pick any version that carries metadata — every branch's metadata row holds
+        // these fields (VERSION-type on default, BRANCH-type on sub-branches). Don't
+        // filter on versionType.
+        const sourceVersion = appVersions.find((v) => v.appName != null || v.slug != null) || appVersions[0];
         if (sourceVersion) {
           if (sourceVersion.appName != null) (appToExport as any).name = sourceVersion.appName;
           if (sourceVersion.slug != null) (appToExport as any).slug = sourceVersion.slug;
@@ -704,7 +702,6 @@ export class AppImportExportService {
                          SELECT 1 FROM app_versions av
                          WHERE av.app_id = app.id
                            AND av.branch_id = :defaultBranchId
-                           AND av.version_type = 'branch'
                            AND av.app_name IN (:...moduleAppNames)
                        )`,
                       { defaultBranchId: defaultBranch.id, moduleAppNames }
@@ -739,9 +736,7 @@ export class AppImportExportService {
         .where('av.app_id IN (:...appIds)', { appIds: existingModules.map((m) => m.id) })
         .andWhere('av.app_name IN (:...moduleAppNames)', { moduleAppNames });
       if (defaultBranch?.id) {
-        nameQb
-          .andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id })
-          .andWhere(`av.version_type = 'branch'`);
+        nameQb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
       }
       const moduleNameRows: { app_id: string; app_name: string }[] = await nameQb.getRawMany();
       const appById = new Map(existingModules.map((m) => [m.id, m]));
@@ -1232,6 +1227,32 @@ export class AppImportExportService {
   ): Promise<App> {
     return await catchDbException(async () => {
       const isWorkflow = appParams?.type === APP_TYPES.WORKFLOW;
+
+      // Non-workflows store the user-facing name on app_versions.app_name and apps.name
+      // stays NULL — so the table-level APP_NAME_UNIQUE constraint doesn't catch cross-app
+      // collisions. Scoped to git-disabled workspaces only: git-enabled workspaces enforce
+      // uniqueness via the partial unique index on (app_name, branch_id) WHERE
+      // version_type='branch'.
+      if (!isWorkflow && appParams?.name) {
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user?.organizationId, isDefault: true },
+          select: ['id'],
+        });
+        if (!defaultBranch) {
+          const conflictingNameVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'app', 'app.id = av.appId')
+            .where('av.app_name = :appName', { appName: appParams.name })
+            .andWhere('av.branch_id IS NULL')
+            .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+            .andWhere('app.organization_id = :organizationId', { organizationId: user?.organizationId })
+            .getOne();
+          if (conflictingNameVersion) {
+            throw new BadRequestException('This app name is already taken.');
+          }
+        }
+      }
+
       const appId = uuid();
       // Workflows still carry name/slug/icon/isPublic on apps.*; non-workflow metadata
       // lives on app_versions. apps.slug stays NULL for non-workflows — Postgres allows

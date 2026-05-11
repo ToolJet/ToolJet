@@ -24,8 +24,8 @@ export class PublicAppEnvironmentGuard extends AuthGuard('jwt') {
     // default branch (git-sync) or any version row (non-git-sync, where branch_id IS NULL).
     const branchId: string | null = (request.headers['x-branch-id'] as string) || null;
 
-    // Resolve app through any version carrying this slug
-    // (BRANCH-type for git-sync workspaces, VERSION-type for non-git-sync)
+    // Resolve app through any version carrying this slug — every branch's metadata row
+    // (VERSION-type on default, BRANCH-type on sub-branches) holds the slug.
     const qb = this._dataSource
       .createQueryBuilder()
       .select(['app.id AS app_id', 'app.organization_id AS app_organization_id', 'av.is_public AS av_is_public'])
