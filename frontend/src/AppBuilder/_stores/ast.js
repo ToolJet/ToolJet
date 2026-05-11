@@ -53,8 +53,11 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     /\b(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(['"]?\])?/g;
 
   let match;
-  if (input.startsWith('{{{') && input.endsWith('}}}')) {
-    const inputContent = input.slice(3, -3);
+  // Tolerate whitespace between an inner object literal's closing `}` and the outer `}}`
+  // template markers — e.g. `{{{ x: y } }}` should be treated the same as `{{{x: y}}}`.
+  const tripleBraceCandidate = input.startsWith('{{{') ? input.replace(/\}\s*\}\}$/, '}}}') : input;
+  if (tripleBraceCandidate.startsWith('{{{') && tripleBraceCandidate.endsWith('}}}')) {
+    const inputContent = tripleBraceCandidate.slice(3, -3);
     input = `{{({${inputContent}})}}`;
     const matches = findExpression(input);
     for (const match of matches) {
