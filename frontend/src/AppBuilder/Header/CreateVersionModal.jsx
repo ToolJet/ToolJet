@@ -106,9 +106,7 @@ const CreateVersionModal = ({
     if (versionId) {
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
-        setSelectedVersionForCreation(versionToPromote);
-        setVersionName(isGitSyncEnabled ? '' : versionToPromote.name);
-        setVersionDescription(isGitSyncEnabled ? '' : versionToPromote.description || '');
+        selectVersionForCreation(versionToPromote);
       }
       return;
     }
@@ -117,9 +115,7 @@ const CreateVersionModal = ({
     if (selectedVersion?.id) {
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
-        setSelectedVersionForCreation(selected);
-        setVersionName(isGitSyncEnabled ? '' : selected.name);
-        setVersionDescription(isGitSyncEnabled ? '' : selected.description || '');
+        selectVersionForCreation(selected);
         return;
       }
     }
@@ -127,12 +123,16 @@ const CreateVersionModal = ({
     // Fallback: if no version is selected or found, use the first development version
     if (developmentVersions.length > 0) {
       const fallback = developmentVersions[0];
-      setSelectedVersionForCreation(fallback);
-      setVersionName(isGitSyncEnabled ? '' : fallback.name);
-      setVersionDescription(isGitSyncEnabled ? '' : fallback.description || '');
+      selectVersionForCreation(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developmentVersions, versionId, showCreateAppVersion]);
+
+  const selectVersionForCreation = (version) => {
+    setSelectedVersionForCreation(version);
+    setVersionName(isGitSyncEnabled ? '' : version.name);
+    setVersionDescription(isGitSyncEnabled ? '' : version.description || '');
+  };
 
   const { t } = useTranslation();
 
@@ -194,7 +194,7 @@ const CreateVersionModal = ({
       // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
-        description: versionDescription || undefined,
+        description: versionDescription,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });

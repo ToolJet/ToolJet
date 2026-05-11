@@ -114,13 +114,14 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
     setIsCreatingVersion(true);
 
     const draftName = isGitSyncEnabled ? defaultBranch : versionName.trim();
+    const draftDescription = isGitSyncEnabled ? 'Latest commit to main will appear here' : '';
 
     //TODO: pass environmentId to the func
     createNewVersionAction(
       appId,
       draftName,
       selectedVersionForCreation.id,
-      'Latest commit to main will appear here',
+      draftDescription,
       (newVersion) => {
         toast.success('Version Created');
         setIsCreatingVersion(false);
