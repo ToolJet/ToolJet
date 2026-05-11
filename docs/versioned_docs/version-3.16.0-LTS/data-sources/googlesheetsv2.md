@@ -9,18 +9,21 @@ ToolJet has the capability to establish a connection with Google Sheets for both
 
 To establish a connection with the Google Sheets data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-### Authorization Scopes
+## Authorization Scopes
 
 When connecting to a Google Sheets data source, you can choose between two permission scopes:
 
-1. **Read Only**: This allows you to only access and retrieve, you cannot edit/write the data from the Google Sheets.
-2. **Read and Write**: This scope grants you both read and write permissions, enabling you to retrieve and modify data within the Google Sheets.
+### Read Only
+This allows you to only access and retrieve, you cannot edit/write the data from the Google Sheets.
 
-### Authentication Types
+### Read and Write
+This scope grants you both read and write permissions, enabling you to retrieve and modify data within the Google Sheets.
+
+## Authentication Types
 
 ToolJet supports two authentication methods for connecting Google Sheets to your application: **OAuth 2.0** and **Service Account**. Each method provides a secure way to authorize access based on your integration requirements.
 
-#### OAuth 2.0
+### OAuth 2.0
 
 Authenticates via a Google user account using OAuth consent, allowing ToolJet to access Google Sheets based on the granted permissions. You can use this when data access should be tied to individual users or requires user-level consent and visibility.
 
@@ -43,7 +46,7 @@ You can toggle on **Authentication required for all users** in the configuration
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/multi-auth-connection.png" alt="GS2.0 service account auth type connection" style={{ marginBottom:'15px' }} />
 
-#### Service Account
+### Service Account
 
 Authenticates using a Google Cloud service account, enabling server-to-server access to Google Sheets without user interaction. You can use this for backend or system-level integrations where a shared, fixed access is required without user interaction.
 
@@ -63,7 +66,7 @@ The **Fetch Spreadsheets** option allows ToolJet to dynamically retrieve all ava
 
 ToolJet also supports **manual spreadsheet selection** for advanced use cases using the **fx** expression editor, enabling dynamic or programmatic selection of a spreadsheet at runtime.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/fetch-button.png" alt="fetch spreadsheet button in query builder" style={{ marginBottom:'15px' }}  />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/fetch-button-v2.png" alt="fetch spreadsheet button in query builder" style={{ marginBottom:'15px' }}  />
 
 ## Querying Google Sheets
 
