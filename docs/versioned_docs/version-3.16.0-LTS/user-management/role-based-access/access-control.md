@@ -94,6 +94,10 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
 ### Folders
 
+:::warning BETA
+Folder permissions is currently in beta and not recommended for production use.
+:::
+
 Folder-level permissions let you control who can access and work on groups of applications at once. For example, if your workspace has hundreds of apps organized by team, you can grant each team the right access to their folder instead of setting permissions for every app individually. All users in the group automatically get the appropriate access to every app inside it.
 
 - **Edit Folder**: Users in the group can rename the folder and add or remove apps from it. This access also grants Edit Apps and View Apps permissions for all apps within the folder by default.
