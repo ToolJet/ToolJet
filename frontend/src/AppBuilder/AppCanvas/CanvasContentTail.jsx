@@ -9,7 +9,6 @@ export const CanvasContentTail = ({ currentMode, appType, isAppDarkMode, childre
     {currentMode === 'view' && appType !== 'module' && <SuspenseLoadingOverlay darkMode={isAppDarkMode} />}
     {children}
     {currentMode === 'edit' && <DragResizeGhostWidget />}
-    <div id="component-portal" />
     {appType !== 'module' && <div id="component-portal" />}
   </>
 );

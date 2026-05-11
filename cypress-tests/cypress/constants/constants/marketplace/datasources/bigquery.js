@@ -4,7 +4,7 @@ export const bigqueryUIConfig = {
             type: "encrypted",
             fieldName: "Private key",
             validations: {
-                isRequired: true,
+                isRequired: false,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,

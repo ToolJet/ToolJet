@@ -44,4 +44,8 @@ export class AiService implements IAiService {
   async getConversationById(conversationId: string, userId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  async getThreadTokenUsage(conversationId: string, user: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
 }

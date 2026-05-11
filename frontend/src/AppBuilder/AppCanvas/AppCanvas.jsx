@@ -34,7 +34,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
 
-  useEnableMainCanvasScroll({ canvasContentRef });
+  useEnableMainCanvasScroll({ canvasContentRef, enabled: !isModuleMode });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -249,7 +249,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
-                  ...(!isMobileLayout && appType === 'module' && isModuleMode ? { height: 'inherit' } : {}),
+                  ...(!isMobileLayout && appType === 'module' && isModuleMode ? { height: 'inherit', overflow: 'hidden' } : {}),
                 }}
               >
                 <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
