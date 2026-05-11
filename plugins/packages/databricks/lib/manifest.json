@@ -45,8 +45,8 @@
           "name": "Personal Access Token"
         },
         {
-          "value": "oauth2",
-          "name": "OAuth 2.0"
+          "value": "oauth_u2m",
+          "name": "OAuth U2M (per-user)"
         }
       ]
     },
@@ -88,23 +88,17 @@
         "description": "Databricks personal access token"
       }
     },
-    "oauth2": {
+    "oauth_u2m": {
       "host": {
         "label": "Host",
         "key": "host",
         "type": "text",
-        "description": "host.cloud.databricks.com"
-      },
-      "http_path": {
-        "label": "HTTP path",
-        "key": "http_path",
-        "type": "text",
-        "description": "/sql/2.0/warehouse/id"
+        "description": "e.g. 1234567890123456.7.gcp.databricks.com"
       },
       "oauth": {
         "key": "oauth",
         "type": "react-component-oauth",
-        "description": "A component for Databricks OAuth",
+        "description": "Databricks OAuth U2M — each user authenticates independently",
         "oauth_configs": {
           "allowed_auth_types": [
             "oauth2"

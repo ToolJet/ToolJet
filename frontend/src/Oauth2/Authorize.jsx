@@ -21,7 +21,8 @@ class AuthorizeComponent extends React.Component {
     const query = props.location.search;
     const params = queryString.parse(query);
     const code = params.code;
-    const details = { code };
+    const state = params.state;
+    const details = { code, state };
 
     const sourceId = localStorage.getItem('sourceWaitingForOAuth');
     const current_organization_id = getCookie('orgIdForOauth');

@@ -264,7 +264,7 @@ export class DataSourcesService implements IDataSourcesService {
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
     user: User
   ) {
-    const { code } = authorizeDataSourceOauthDto;
+    const { code, state } = authorizeDataSourceOauthDto;
 
     const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
       dataSourceId,
@@ -277,7 +277,7 @@ export class DataSourcesService implements IDataSourcesService {
     }
     // TODO: add privilege if user has data source privilege or user should have app read privilege of the apps using the data source
 
-    await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
+    await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId, state);
     return;
   }
 

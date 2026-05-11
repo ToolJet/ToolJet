@@ -19,6 +19,12 @@
       ]
     },
     "sql": {
+      "http_path": {
+        "label": "HTTP path (OAuth U2M)",
+        "key": "http_path",
+        "type": "text",
+        "description": "SQL warehouse path, e.g. /sql/1.0/warehouses/abc123. Required when using OAuth U2M auth."
+      },
       "sql_query": {
         "key": "sql_query",
         "type": "codehinter",

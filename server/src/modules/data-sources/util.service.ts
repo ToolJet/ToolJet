@@ -601,7 +601,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     code: string,
     userId: string,
     environmentId?: string,
-    organizationId?: string
+    organizationId?: string,
+    state?: string
   ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     let tokenOptions: any;
@@ -618,8 +619,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'hubspot',
         'xero',
         'bigquery',
+        'databricks',
       ].includes(dataSource.kind)
     ) {
+      // For Databricks oauth_u2m, inject the PKCE state so the plugin can retrieve
+      // the code_verifier it stored when generating the authorization URL.
+      if (dataSource.kind === 'databricks' && state) {
+        sourceOptions['pkce_state'] = state;
+      }
+
       const newTokenData = await this.fetchAPITokenFromPlugins(
         dataSource,
         code,

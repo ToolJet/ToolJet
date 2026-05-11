@@ -64,6 +64,10 @@ export class AuthorizeDataSourceOauthDto {
   @IsString()
   @IsNotEmpty()
   code: string;
+
+  @IsString()
+  @IsOptional()
+  state?: string;
 }
 
 export class CreateArgumentsDto {
