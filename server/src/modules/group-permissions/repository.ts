@@ -110,8 +110,6 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
     organizationId: string,
     manager: EntityManager
   ): Promise<GranularPermissions[]> {
-    // Two-step fetch — replaces a 4-branch nested `relations:` find that emitted
-    // a gp × apps × data_sources × folders LEFT JOIN cartesian.
     const em = manager || this.manager;
     const { name, type, groupId } = searchParam;
     const where: FindOptionsWhere<GranularPermissions> = { group: { organizationId } };
