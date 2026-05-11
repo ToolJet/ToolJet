@@ -166,6 +166,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );
@@ -332,6 +337,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );

@@ -314,6 +314,11 @@ export const createQueryPanelSlice = (set, get) => ({
           data: [],
           rawData: [],
           id: queryId,
+          metadata: undefined,
+          request: undefined,
+          response: undefined,
+          responseHeaders: undefined,
+          error: undefined,
         },
         moduleId,
         true
@@ -619,6 +624,11 @@ export const createQueryPanelSlice = (set, get) => ({
             data: [],
             rawData: [],
             id: queryId,
+            metadata: undefined,
+            request: undefined,
+            response: undefined,
+            responseHeaders: undefined,
+            error: undefined,
           },
           moduleId
         );
@@ -1540,10 +1550,18 @@ export const createQueryPanelSlice = (set, get) => ({
         formattedParams = { ...parameters };
       }
       const resolvedState = get().getResolvedState(moduleId);
-      const queriesInResolvedState = deepClone(resolvedState.queries);
+      const queriesInResolvedState = {};
       for (const key of Object.keys(resolvedState.queries)) {
-        queriesInResolvedState[key] = {
-          ...queriesInResolvedState[key],
+        // Pre-resolve the query ID once so each getter does a cheap O(1) store
+        // read instead of calling getResolvedState (which iterates all queries
+        // and components on every access).
+        const queryId = get().modules[moduleId]?.queryNameIdMapping?.[key];
+        const getLiveQueryState = () =>
+          queryId
+            ? get().resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId]
+            : get().getResolvedState(moduleId).queries[key];
+
+        const queryEntry = {
           run: (params, callbackFns) => {
             if (typeof params !== 'object' || params === null) {
               params = {};
@@ -1557,21 +1575,24 @@ export const createQueryPanelSlice = (set, get) => ({
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
           },
-          getData: () => {
-            const resolvedState = get().getResolvedState(moduleId);
-            return resolvedState.queries[key].data;
-          },
-
-          getRawData: () => {
-            const resolvedState = get().getResolvedState(moduleId);
-            return resolvedState.queries[key].rawData;
-          },
-
-          getloadingState: () => {
-            const resolvedState = get().getResolvedState(moduleId);
-            return resolvedState.queries[key].isLoading;
-          },
+          getData: () => getLiveQueryState()?.data,
+          getRawData: () => getLiveQueryState()?.rawData,
+          getloadingState: () => getLiveQueryState()?.isLoading,
         };
+        // Live getters for all state properties so that after
+        // `await queries.x.run()` any field (data, error, request, response,
+        // metadata, responseHeaders, …) reflects the completed run.
+        const reservedMethods = new Set(['run', 'reset', 'getData', 'getRawData', 'getloadingState']);
+        const liveDescriptors = {};
+        for (const prop of Object.keys(resolvedState.queries[key])) {
+          if (reservedMethods.has(prop)) continue;
+          liveDescriptors[prop] = {
+            get: () => getLiveQueryState()?.[prop],
+            enumerable: true,
+          };
+        }
+        Object.defineProperties(queryEntry, liveDescriptors);
+        queriesInResolvedState[key] = queryEntry;
       }
 
       try {
