@@ -34,12 +34,14 @@ export class ExternalApiModule extends SubModule {
       ExternalApiUtilService,
       ExternalApisAppsController,
       ExternalApisGroupsController,
+      ExternalApisModulesController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
       'util.service',
       'controllers/apps.controller',
       'controllers/groups.controller',
+      'controllers/modules.controller',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -56,7 +58,7 @@ export class ExternalApiModule extends SubModule {
         await GitSyncModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
-        await OrganizationUsersModule.register(configs)
+        await OrganizationUsersModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -74,7 +76,12 @@ export class ExternalApiModule extends SubModule {
         AppsRepository,
       ],
       controllers: isMainImport
-        ? [ExternalApisController, ExternalApisAppsController, ExternalApisGroupsController]
+        ? [
+            ExternalApisController,
+            ExternalApisAppsController,
+            ExternalApisGroupsController,
+            ExternalApisModulesController,
+          ]
         : [],
       exports: [ExternalApiUtilService],
     });

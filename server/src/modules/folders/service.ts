@@ -12,6 +12,7 @@ import { dbTransactionWrap } from '@helpers/database.helper';
 import { FoldersUtilService } from './util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class FoldersService implements IFoldersService {
@@ -114,6 +115,10 @@ export class FoldersService implements IFoldersService {
       if (folderPerms.editableFoldersId?.includes(folder.id)) {
         return;
       }
+    }
+
+    if (action === 'update' && userPermissions.isBuilder && folder.type === APP_TYPES.MODULE) {
+      return;
     }
 
     throw new ForbiddenException('You do not have access to perform this action');

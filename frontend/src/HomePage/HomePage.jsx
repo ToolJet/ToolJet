@@ -2002,7 +2002,7 @@ class HomePageComponent extends React.Component {
                                 </div>
                                 {this.getSelectedVersionCommitInfo().author &&
                                   this.getSelectedVersionCommitInfo().date && (
-                                    <div className="author-info" data-cy="auther-info">
+                                    <div className="author-info" data-cy="author-info">
                                       {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
                                         new Date(this.getSelectedVersionCommitInfo().date)
                                       ).format('DD MMM YYYY, h:mm a')}`}
@@ -2041,6 +2041,9 @@ class HomePageComponent extends React.Component {
                       .filter((folder) => {
                         const currentSession = authenticationService.currentSessionValue;
                         if (currentSession?.super_admin || currentSession?.admin) return true;
+
+                        // Builders have admin-level access to module folders
+                        if (this.props.appType === 'module' && currentSession?.role?.name === 'builder') return true;
 
                         // Check if user has edit permissions for the folder
                         const folderPermissions = currentSession?.user_permissions?.folder;

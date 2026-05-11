@@ -8,6 +8,7 @@ import { Folder } from '@entities/folder.entity';
 import { App } from '@entities/app.entity';
 import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 import { cloneDeep } from 'lodash';
 import { FEATURE_KEY } from '../constants';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -58,11 +59,11 @@ export class FeatureAbilityGuard extends AbilityGuard {
       const [folder, app] = await Promise.all([
         this.dataSource.manager.findOne(Folder, {
           where: { id: folderId, organizationId: request.user.organizationId },
-          select: ['id', 'createdBy'],
+          select: ['id', 'createdBy', 'type'],
         }),
         this.dataSource.manager.findOne(App, {
           where: { id: request.body.app_id, organizationId: request.user.organizationId },
-          select: ['id', 'userId'],
+          select: ['id', 'userId', 'type'],
         }),
       ]);
 
@@ -70,6 +71,9 @@ export class FeatureAbilityGuard extends AbilityGuard {
         !!folder && !!app && folder.createdBy === request.user.id && app.userId === request.user.id;
 
       request.tj_allow_owner_folder_app_delete = !!folder && !!app && folder.createdBy === request.user.id;
+
+      request.tj_app_is_module = app?.type === APP_TYPES.MODULE;
+      request.tj_folder_app_type_mismatch = !!(folder?.type && app?.type && folder.type !== app.type);
     }
 
     return super.canActivate(context);

@@ -5,6 +5,7 @@ import { UserAllPermissions } from '@modules/app/types';
 import { FEATURE_KEY } from '../constants';
 import { AppGitSync } from '@entities/app_git_sync.entity';
 import { MODULES } from '@modules/app/constants/modules';
+import { APP_TYPES } from '@modules/apps/constants';
 
 type Subjects = InferSubjects<typeof AppGitSync> | 'all';
 export type AppGitAbility = Ability<[FEATURE_KEY, Subjects]>;
@@ -22,6 +23,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     request?: any
   ): void {
     const appId = request?.tj_resource_id;
+    const appType = request?.tj_app?.type;
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
     const userAppGitPermissions = userPermission?.[MODULES.APP];
@@ -35,7 +37,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     can(FEATURE_KEY.CREATE_BRANCH, AppGitSync);
     can(FEATURE_KEY.FETCH_PULL_REQUESTS, AppGitSync);
     // Grant feature-level access based on resource actions
-    if (isAdmin || superAdmin) {
+    if (isAdmin || superAdmin || (appType === APP_TYPES.MODULE && UserAllPermissions.isBuilder)) {
       // Admin or Super Admin gets full access to all features
       can(FEATURE_KEY.GIT_CREATE_APP, AppGitSync);
       can(FEATURE_KEY.GIT_UPDATE_APP, AppGitSync);

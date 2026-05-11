@@ -8,13 +8,23 @@ import { MODULES } from '@modules/app/constants/modules';
 export function defineAppVersionAbility(
   can: AbilityBuilder<FeatureAbility>['can'],
   UserAllPermissions: UserAllPermissions,
-  resourceId?: string,
+  resourceId?: string
 ): void {
-  const { superAdmin, isAdmin, userPermission, resource, isBuilder } = UserAllPermissions;
-  const userAppPermissions = userPermission?.[resource[0].resourceType];
+  const { superAdmin, isAdmin, userPermission, isBuilder } = UserAllPermissions;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+  const permissionKey = resourceType === MODULES.MODULES ? MODULES.APP : resourceType;
+  const userAppPermissions = userPermission?.[permissionKey];
 
-  if (isAdmin || superAdmin) {
+  // For MODULE type apps every authenticated user can read the version --> modules are
+  // fetched as dependencies during app preview and cannot be added to permission groups
+  // (the app_type DB enum has no 'module' value), so the normal viewableAppsId path
+  // can never grant access to them.
+  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_EVENTS], App);
+    return;
+  }
+
+  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
     can(
       [
         FEATURE_KEY.GET,
@@ -129,23 +139,5 @@ export function defineAppVersionAbility(
     userAppPermissions.viewableAppsId.includes(resourceId)
   ) {
     can([FEATURE_KEY.GET_EVENTS, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET], App);
-  }
-
-  if (isBuilder && resourceType === MODULES.MODULES) {
-    //For Modules
-    can(
-      [
-        FEATURE_KEY.UPDATE_COMPONENTS,
-        FEATURE_KEY.CREATE_COMPONENTS,
-        FEATURE_KEY.UPDATE_COMPONENT_LAYOUT,
-        FEATURE_KEY.DELETE_COMPONENTS,
-        FEATURE_KEY.GET_EVENTS,
-        FEATURE_KEY.CREATE_EVENT,
-        FEATURE_KEY.UPDATE_EVENT,
-        FEATURE_KEY.DELETE_EVENT,
-        FEATURE_KEY.GET_ONE,
-      ],
-      App
-    );
   }
 }

@@ -3,6 +3,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
+import { hasBuilderRole } from '@/_helpers/utils';
 
 export const AppMenu = function AppMenu({
   appId,
@@ -43,22 +44,31 @@ export const AppMenu = function AppMenu({
   const canEditAnyFolderViaGroup =
     folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
 
+  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
+  // Builders have implicit admin-level access to module folders.
+  const isModuleBuilder = appType === 'module' && isBuilder;
+
   // canAddAppToFolder: user can modify the app AND has at least one folder available in the dropdown.
   const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
 
   const canAddAppToFolder =
-    canModifyApp &&
-    (currentSession?.admin || currentSession?.super_admin || canEditAnyFolderViaGroup || hasOwnedFolders);
+    (canModifyApp || isModuleBuilder) &&
+    (currentSession?.admin ||
+      currentSession?.super_admin ||
+      canEditAnyFolderViaGroup ||
+      hasOwnedFolders ||
+      isModuleBuilder);
 
   // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
   const canRemoveFromFolder =
     !!currentFolder?.id &&
-    canModifyApp &&
+    (canModifyApp || isModuleBuilder) &&
     (currentSession?.admin ||
       currentSession?.super_admin ||
       folderGroupPermissions?.is_all_editable ||
       folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
-      currentFolder?.created_by === currentUserId);
+      currentFolder?.created_by === currentUserId ||
+      isModuleBuilder);
 
   const Field = ({ text, onClick, customClass }) => {
     const closeMenu = () => {

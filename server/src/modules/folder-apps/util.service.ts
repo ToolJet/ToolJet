@@ -205,6 +205,12 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       });
       const userAppPermissions = userPermission?.[MODULES.APP];
 
+      // Builders have admin-level access to modules — skip app-level permission filtering.
+      const isModuleBuilderAccess = type === APP_TYPES.MODULE && (userPermission?.isBuilder || userPermission?.isAdmin);
+      const effectiveAppPermissions = isModuleBuilderAccess
+        ? { ...userAppPermissions, isAllEditable: true }
+        : userAppPermissions;
+
       const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
       if (folderAppIds.length == 0) {
         return {
@@ -214,7 +220,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       }
 
       const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
-      this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, userAppPermissions);
+      this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
 
       if (branchId) {
         viewableAppsInFolder.andWhere(
