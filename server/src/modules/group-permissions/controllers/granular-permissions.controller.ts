@@ -12,6 +12,7 @@ import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '../constants';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { IGranularPermissionsController } from '../interfaces/IController';
+import { AddableResourceItem } from '../types/granular_permissions';
 
 @Injectable()
 @Controller({
@@ -26,21 +27,21 @@ export class GranularPermissionsController implements IGranularPermissionsContro
   @InitFeature(FEATURE_KEY.GET_ADDABLE_APPS)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Get('granular-permissions/addable-apps')
-  async getAddableApps(@User() user: UserEntity): Promise<{ AddableResourceItem }[]> {
+  async getAddableApps(@User() user: UserEntity): Promise<AddableResourceItem[]> {
     return await this.granularPermissionsService.getAddableApps(user.organizationId);
   }
 
   @InitFeature(FEATURE_KEY.GET_ADDABLE_DS)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Get('granular-permissions/addable-data-sources')
-  async getAddableDs(@User() user: UserEntity): Promise<{ AddableResourceItem }[]> {
+  async getAddableDs(@User() user: UserEntity): Promise<AddableResourceItem[]> {
     return await this.granularPermissionsService.getAddableDataSources(user.organizationId);
   }
 
   @InitFeature(FEATURE_KEY.GET_ADDABLE_FOLDERS)
   @UseGuards(GroupExistenceGuard, FeatureAbilityGuard)
   @Get('granular-permissions/addable-folders')
-  async getAddableFolders(@User() user: UserEntity): Promise<{ AddableResourceItem }[]> {
+  async getAddableFolders(@User() user: UserEntity): Promise<AddableResourceItem[]> {
     return await this.granularPermissionsService.getAddableFolders(user.organizationId);
   }
 
