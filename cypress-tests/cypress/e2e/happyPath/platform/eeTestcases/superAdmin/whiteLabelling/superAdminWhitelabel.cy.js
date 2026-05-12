@@ -222,7 +222,7 @@ describe("Instance settings - White labelling", () => {
       whitelabelTestData.logoIdentifier
     );
     cy.visit(`/my-workspace`);
-    cy.wait(500);
+    cy.wait(1500);
     cy.get(onboardingSelectors.loginEmailInput, { timeout: 50000 }).should(
       "be.visible"
     );
