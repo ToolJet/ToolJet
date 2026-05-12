@@ -90,12 +90,14 @@ export class VersionRepository extends Repository<AppVersion> {
         .where('appVersion.appId = :appId', { appId })
         .andWhere('environment.organizationId = :organizationId', { organizationId })
         .andWhere(`environment.priority >= (${prioritySubquery})`)
+        .andWhere('appVersion.version_type != :branchType')
         .orderBy('appVersion.createdAt', 'DESC')
         .setParameters({
           appId,
           organizationId,
           environmentId: environmentId || undefined,
           environmentName: environmentName || undefined,
+          branchType: AppVersionType.BRANCH,
         });
 
       return await query.getOne();
