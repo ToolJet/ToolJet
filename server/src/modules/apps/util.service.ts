@@ -40,6 +40,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
+import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
 
 // Permission resource that gates access to each app type. Workflows have their own
 // permission resource; everything else (front-end apps, modules) shares the APP resource.
@@ -966,65 +967,54 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // 4-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
-      // for the cases. Predicate: the module's apps.current_version_id (released version)
-      // must equal the resolved mod_ver.id. Null current_version_id means never released.
-      const unreleasedModules = await manager
-        .createQueryBuilder(Component, 'component')
-        .innerJoin('component.page', 'page')
-        .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin(
-          'app_versions',
-          'mod_ver',
-          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
-               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
-             )
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.branch_id = (
-               SELECT id FROM organization_git_sync_branches
-               WHERE is_default = true AND organization_id = :orgId
-             )
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-             AND mod_ver.version_type = 'version'
-           )`,
-          { orgId: organizationId }
-        )
-        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
-        .select('DISTINCT mod_app.name', 'moduleName')
-        .addSelect('mod_ver.name', 'versionName')
-        .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere('appVersion.id = :versionId', { versionId })
-        .andWhere('(mod_app.current_version_id IS NULL OR mod_app.current_version_id != mod_ver.id)')
-        .getRawMany();
+      // Module need not be released for parent release — pin to a saved (non-draft) version
+      // is sufficient. Runtime renders whatever version the pin resolves to. Strict policy
+      // here only catches pin states that would render an unstable target on the released app:
+      //   no-row             — module unusable
+      //   orphan-fallback    — UUID pin matched no row; runtime drifts
+      //   unpinned-fallback  — empty pin; runtime drifts
+      //   pin-hit + DRAFT    — pinned directly at editing draft
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const offenders = resolved.filter(
+        (v) =>
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback' ||
+          (v.resolved && v.resolved.status === AppVersionStatus.DRAFT)
+      );
 
-      if (unreleasedModules.length > 0) {
-        const moduleList = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+      if (offenders.length > 0) {
+        const seen = new Set<string>();
+        const unique: ResolvedModuleViewer[] = [];
+        for (const o of offenders) {
+          // componentId tiebreaker — prevents malformed components collapsing to one bucket.
+          const key = o.moduleName ?? (o.moduleAppCoRel || o.componentId);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push(o);
+        }
+        const formatEntry = (m: ResolvedModuleViewer) => {
+          const name = m.moduleName ?? 'unknown module';
+          if (m.matchKind === 'no-row') {
+            return `Module "${name}" has no saved version yet. Save the module first.`;
+          }
+          if (m.matchKind === 'orphan-fallback') {
+            return `Module "${name}" pin is invalid. Pin a saved version.`;
+          }
+          if (m.matchKind === 'unpinned-fallback') {
+            return `Module "${name}" has active draft pinned. Pin a saved version.`;
+          }
+          // pin-hit + DRAFT remaining.
+          const versionName = m.resolved?.versionName ?? 'draft';
+          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+        };
+        const moduleList = unique.map(formatEntry).join(' ');
         const message =
-          unreleasedModules.length === 1
-            ? `Release blocked - Module "${unreleasedModules[0].moduleName} (${unreleasedModules[0].versionName})" hasn't been released yet.`
-            : `Release blocked - ${unreleasedModules.length} dependent modules haven't been released yet.`;
+          unique.length === 1
+            ? `Release blocked - ${formatEntry(unique[0])}`
+            : `Release blocked - ${unique.length} modules need attention. ${moduleList}`;
         throw new BadRequestException({
-          message: { error: message, details: `Modules not released: ${moduleList}` },
+          message: { error: message, details: moduleList },
         });
       }
     } catch (error) {
