@@ -183,6 +183,17 @@ export const sortByCanonicalPosition = (componentIds, currentLayout, currentPage
       return firstLeft - secondLeft;
     }
 
+    // updatedAt tiebreaker — for widgets sharing the exact same (top, left)
+    // (e.g. multiple collapseWhenHidden widgets dropped on top of each other),
+    // the most recently positioned widget renders at the bottom of the stack.
+    // Server's createComponentWithLayout response exposes layout.updatedAt.
+    const firstUpdatedAt = firstLayout?.updatedAt ? new Date(firstLayout.updatedAt).getTime() : null;
+    const secondUpdatedAt = secondLayout?.updatedAt ? new Date(secondLayout.updatedAt).getTime() : null;
+
+    if (firstUpdatedAt !== null && secondUpdatedAt !== null && firstUpdatedAt !== secondUpdatedAt) {
+      return firstUpdatedAt - secondUpdatedAt;
+    }
+
     return firstId.localeCompare(secondId);
   });
 };
