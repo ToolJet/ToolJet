@@ -31,6 +31,7 @@ export const Folders = function Folders({
   canCreateApp,
   darkMode,
   appType,
+  isGitSyncEnabled,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
@@ -74,8 +75,10 @@ export const Folders = function Folders({
   // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
   // Delete: requires master Delete OR ownership
   const canUpdateSpecificFolder = (folderId, folder) =>
-    canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder);
-  const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || isOwnerOfFolder(folder);
+    !isGitSyncEnabled &&
+    (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
+  const canDeleteSpecificFolder = (folderId, folder) =>
+    !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);

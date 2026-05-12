@@ -13,6 +13,7 @@ import {
 } from '@/_services';
 import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
+import { AppsMultiSelect } from '@/_ui/Modal/AppsMultiSelect';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
@@ -93,6 +94,7 @@ class HomePageComponent extends React.Component {
       showAppDeletionConfirmation: false,
       showRemoveAppFromFolderConfirmation: false,
       showAddToFolderModal: false,
+      addToFolderApps: [],
       apps: [],
       folders: [],
       meta: {
@@ -853,6 +855,12 @@ class HomePageComponent extends React.Component {
     return authenticationService.currentSessionValue?.user_permissions?.folder_create;
   };
 
+  isGitEnabled = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return this.props.appType === 'front-end' || this.props.appType === 'module';
+  };
+
   isWorkspaceBranchLocked = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -1032,23 +1040,29 @@ class HomePageComponent extends React.Component {
 
   addAppToFolder = () => {
     const { appOperations } = this.state;
-    if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
+    const selectedApps = (appOperations?.selectedApps || []).filter((app) => !app?.isAllField);
+    if (!appOperations?.selectedFolder || selectedApps.length === 0) {
       return toast.error('Select a folder');
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
-    folderService
-      .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
+    const workspaceId =
+      authenticationService?.currentUserValue?.organization_id ||
+      authenticationService?.currentSessionValue?.current_organization_id;
+
+    const folderName = this.state.folders.find((f) => f.id === appOperations.selectedFolder)?.name || 'folder';
+
+    Promise.all(selectedApps.map((app) => folderService.addToFolder(app.value, appOperations.selectedFolder)))
       .then(() => {
-        toast.success('Application added to folder successfully!');
+        toast.success(`Apps moved to "${folderName}" folder successfully!`);
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
-        posthogHelper.captureEvent('click_add_to_folder_button', {
-          workspace_id:
-            authenticationService?.currentUserValue?.organization_id ||
-            authenticationService?.currentSessionValue?.current_organization_id,
-          app_id: appOperations?.selectedApp?.id,
-          folder_id: appOperations?.selectedFolder,
+        selectedApps.forEach((app) => {
+          posthogHelper.captureEvent('click_add_to_folder_button', {
+            workspace_id: workspaceId,
+            app_id: app.value,
+            folder_id: appOperations?.selectedFolder,
+          });
         });
       })
       .catch(({ error }) => {
@@ -1084,12 +1098,28 @@ class HomePageComponent extends React.Component {
       });
   };
 
+  fetchAddToFolderApps = () => {
+    appsService
+      .getAll(0, this.state.currentFolder?.id, '', this.props.appType)
+      .then((data) => this.setState({ addToFolderApps: data.apps || data }))
+      .catch(() => this.setState({ addToFolderApps: [] }));
+  };
+
   appActionModal = (app, folder, action) => {
     const { appOperations } = this.state;
 
     switch (action) {
       case 'add-to-folder':
-        this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
+        this.setState({
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedApps: [{ label: app.name, name: app.name, value: app.id }],
+          },
+          showAddToFolderModal: true,
+          addToFolderApps: [],
+        });
+        this.fetchAddToFolderApps();
         break;
       case 'change-icon':
         this.setState({
@@ -2027,12 +2057,19 @@ class HomePageComponent extends React.Component {
             <div className="row">
               <div className="col modal-main">
                 <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
-                  <p>
-                    {this.props.t('homePage.appCard.update', 'Update')}{' '}
-                    <span>{`${appOperations?.selectedApp?.name}'s`}</span>{' '}
-                    {this.props.t('homePage.appCard.folder', 'folder')}
-                  </p>
-
+                  <AppsMultiSelect
+                    options={this.state.addToFolderApps.map((app) => ({
+                      label: app.name,
+                      name: app.name,
+                      value: app.id,
+                    }))}
+                    value={appOperations?.selectedApps || []}
+                    onChange={(selectedApps) => this.setState({ appOperations: { ...appOperations, selectedApps } })}
+                    isDisabled={!!appOperations?.isAdding}
+                    placeholder={this.props.t('homePage.appCard.selectApps', 'Select apps...')}
+                  />
+                </div>
+                <div className="mb-3">
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder" className="select-folder-container">
@@ -2223,8 +2260,9 @@ class HomePageComponent extends React.Component {
                 folderChanged={this.folderChanged}
                 foldersChanged={this.foldersChanged}
                 canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
-                canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
-                canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
+                canDeleteFolder={this.canDeleteFolder()}
+                canUpdateFolder={this.canUpdateFolder()}
+                isGitSyncEnabled={this.isGitEnabled()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
                 appType={this.props.appType}
