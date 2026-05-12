@@ -112,11 +112,8 @@ export const EventManager = ({
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
 
-    const sortedEvents = currentEvents.sort((a, b) => {
-      return a.index - b.index;
-    });
-
-    setEvents(sortedEvents || [], moduleId);
+    const sortedEvents = (currentEvents || []).slice().sort((a, b) => a.index - b.index);
+    setEvents(sortedEvents, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
 
@@ -530,9 +527,10 @@ export const EventManager = ({
               </FieldRow>
               <FieldRow label={t('editor.inspector.eventManager.eventName', 'Event name')} dataCy="event-name-label">
                 <Input
+                  key={eventHandler?.id}
                   type="text"
-                  value={eventHandler?.name ?? ''}
-                  onChange={(e) => handlerChanged(index, 'name', e.target.value)}
+                  defaultValue={eventHandler?.name ?? ''}
+                  onBlur={(e) => handlerChanged(index, 'name', e.target.value)}
                   className="tw-w-full"
                   data-cy="event-name-input"
                 />
