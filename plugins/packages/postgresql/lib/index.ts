@@ -335,7 +335,7 @@ export default class PostgresqlQueryService implements QueryService {
         dataSourceUpdatedAt
       );
 
-      const schema = queryOptions?.schema;
+      const schema = queryOptions?.schema || 'public';
       const search = queryOptions?.search || '';
       const searchPattern = `%${search}%`;
 
