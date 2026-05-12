@@ -269,48 +269,17 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // Empty moduleVersionId.value drifts to latest on branch — unstable target. Block first.
-      const unpinnedModules = await manager
-        .createQueryBuilder(Component, 'component')
-        .innerJoin('component.page', 'page')
-        .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin(
-          'apps',
-          'mod_app',
-          `mod_app.co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-           AND mod_app.type = 'module'
-           AND mod_app.organization_id = :orgId`,
-          { orgId: organizationId }
-        )
-        .select('DISTINCT mod_app.name', 'moduleName')
-        .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere('appVersion.id = :versionId', { versionId })
-        .andWhere(`COALESCE(component.properties::jsonb -> 'moduleVersionId' ->> 'value', '') = ''`)
-        .getRawMany();
-
-      if (unpinnedModules.length > 0) {
-        const formatUnpinned = (m: { moduleName: string }) =>
-          `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`;
-        const unpinnedList = unpinnedModules.map(formatUnpinned).join(' ');
-        const unpinnedMessage =
-          unpinnedModules.length === 1
-            ? `Save blocked - ${formatUnpinned(unpinnedModules[0])}`
-            : `Save blocked - ${unpinnedModules.length} modules need saving. ${unpinnedList}`;
-        throw new BadRequestException({
-          message: { error: unpinnedMessage, details: unpinnedList },
-        });
-      }
-
       // Resolve pins to runtime rows. Strict policy — block:
-      //   no-row           (matchKind branch) — module unusable
-      //   orphan-fallback  (matchKind branch) — stale pin, runtime drifts to active draft
-      //   pin-hit + DRAFT  (status branch)    — pin points directly to editing draft
-      // unpinned-fallback is shadowed by the empty-pin check above.
+      //   no-row             — module unusable (zero candidate rows or module app missing)
+      //   orphan-fallback    — UUID pin matched no row; runtime drifts to active draft
+      //   unpinned-fallback  — pin empty; runtime drifts to active draft
+      //   pin-hit + DRAFT    — pin points directly at the editing draft
       const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
       const offenders = resolved.filter(
         (v) =>
           v.matchKind === 'no-row' ||
           v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback' ||
           (v.resolved && v.resolved.status === AppVersionStatus.DRAFT)
       );
 
@@ -327,10 +296,13 @@ export class VersionUtilService implements IVersionUtilService {
         const formatEntry = (m: ResolvedModuleViewer) => {
           const name = m.moduleName ?? 'unknown module';
           if (m.matchKind === 'no-row') {
-            return `Module "${name}" has no saved version yet. Save a version on main first.`;
+            return `Module "${name}" has no saved version yet. Save the module first.`;
           }
           if (m.matchKind === 'orphan-fallback') {
-            return `Module "${name}" pin is stale and resolves to the active draft.`;
+            return `Module "${name}" pin is invalid. Pin a saved version.`;
+          }
+          if (m.matchKind === 'unpinned-fallback') {
+            return `Module "${name}" has active draft pinned. Pin a saved version.`;
           }
           // pin-hit + DRAFT remaining.
           const versionName = m.resolved?.versionName ?? 'draft';
@@ -386,18 +358,28 @@ export class VersionUtilService implements IVersionUtilService {
           seen.add(key);
           unique.push(o);
         }
-        const describe = (m: ResolvedModuleViewer) => {
+        const formatEntry = (m: ResolvedModuleViewer) => {
           const name = m.moduleName ?? 'unknown module';
+          if (m.matchKind === 'no-row') {
+            return `Module "${name}" has no saved version. Save the module first.`;
+          }
+          if (m.matchKind === 'orphan-fallback') {
+            return `Module "${name}" pin is invalid. Pin a saved version.`;
+          }
+          if (m.matchKind === 'unpinned-fallback') {
+            return `Module "${name}" has active draft pinned. Pin a saved version.`;
+          }
+          // pin-hit + env priority below target.
           const versionName = m.resolved?.versionName ?? 'unresolved';
-          return `${name} (${versionName})`;
+          return `Module "${name}" version "${versionName}" not promoted to ${targetEnvironmentName} yet.`;
         };
-        const moduleList = unique.map(describe).join(', ');
+        const moduleList = unique.map(formatEntry).join(' ');
         const message =
           unique.length === 1
-            ? `Promotion blocked - Module "${describe(unique[0])}" hasn't been promoted to ${targetEnvironmentName} yet.`
-            : `Promotion blocked - ${unique.length} dependent modules haven't been promoted to ${targetEnvironmentName} yet.`;
+            ? `Promote blocked - ${formatEntry(unique[0])}`
+            : `Promote blocked - ${unique.length} dependent modules need attention. ${moduleList}`;
         throw new BadRequestException({
-          message: { error: message, details: `Modules not promoted to ${targetEnvironmentName}: ${moduleList}` },
+          message: { error: message, details: moduleList },
         });
       }
     } catch (error) {
