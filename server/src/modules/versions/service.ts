@@ -208,6 +208,11 @@ export class VersionService implements IVersionService {
 
       delete appCurrentEditingVersion['app'];
 
+      // Non-workflow apps have name/slug/icon/isPublic on app_versions, not apps.* — hydrate
+      // them onto the in-memory App entity from the canonical version (BRANCH-type on the
+      // version's branch for git-sync, any version row for non-git-sync) before serializing.
+      await this.appUtilService.overlayAppMetadata(app, appVersion?.branchId);
+
       const appData = {
         ...app,
       };
