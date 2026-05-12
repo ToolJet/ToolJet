@@ -6,6 +6,7 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotAcceptableException,
@@ -517,7 +518,7 @@ export class AppsUtilService implements IAppsUtilService {
             .andWhere('app.organization_id = :organizationId', { organizationId })
             .getOne();
           if (conflictingNameVersion) {
-            throw new BadRequestException('This app name is already taken.');
+            throw new ConflictException('This app name is already taken.');
           }
         }
       }

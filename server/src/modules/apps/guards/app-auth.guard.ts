@@ -68,10 +68,14 @@ export class AppAuthGuard extends AuthGuard('jwt') {
     let isPublic: boolean;
 
     if (result) {
-      app = await this.appRepository.findOne({ where: { id: result.app_id } });
-      isPublic = result.av_is_public;
+      // findOneById overlays version-level metadata (name/slug/icon/isPublic) from the
+      // canonical row (default branch when git-sync is on; any slug-bearing row otherwise).
+      // Downstream guards (AbilityGuard) read app.isPublic, so it must reflect the
+      // resolved version, not the legacy apps.is_public value.
+      app = await this.appRepository.findOneById(result.app_id);
+      isPublic = app?.isPublic;
     } else {
-      // Fallback for workflows (slug on apps table)
+      // Fallback for workflows (slug on apps table) — metadata stays on apps.*
       app = await this.appRepository.findOne({ where: { slug } });
       isPublic = app?.isPublic;
     }
