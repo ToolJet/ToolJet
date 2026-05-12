@@ -967,21 +967,30 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // Module need not be released for parent release — pin to a saved (non-draft) version
-      // is sufficient. Runtime renders whatever version the pin resolves to. Strict policy
-      // here only catches pin states that would render an unstable target on the released app:
+      // Every ModuleViewer's resolved row must be the module's released version.
+      // Modules not consumed by this version may stay in draft — only the in-use set
+      // is checked here (resolveAllModuleViewersForVersion scopes to versionId's components).
+      // Block on:
       //   no-row             — module unusable
       //   orphan-fallback    — UUID pin matched no row; runtime drifts
       //   unpinned-fallback  — empty pin; runtime drifts
       //   pin-hit + DRAFT    — pinned directly at editing draft
+      //   pin-hit + module never released (moduleCurrentVersionId null)
+      //   pin-hit + pin != module's current_version_id
       const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
-      const offenders = resolved.filter(
-        (v) =>
+      const offenders = resolved.filter((v) => {
+        if (
           v.matchKind === 'no-row' ||
           v.matchKind === 'orphan-fallback' ||
-          v.matchKind === 'unpinned-fallback' ||
-          (v.resolved && v.resolved.status === AppVersionStatus.DRAFT)
-      );
+          v.matchKind === 'unpinned-fallback'
+        ) {
+          return true;
+        }
+        if (!v.resolved) return true;
+        if (v.resolved.status === AppVersionStatus.DRAFT) return true;
+        if (!v.resolved.moduleCurrentVersionId) return true;
+        return v.resolved.moduleCurrentVersionId !== v.resolved.rowId;
+      });
 
       if (offenders.length > 0) {
         const seen = new Set<string>();
@@ -996,17 +1005,21 @@ export class AppsUtilService implements IAppsUtilService {
         const formatEntry = (m: ResolvedModuleViewer) => {
           const name = m.moduleName ?? 'unknown module';
           if (m.matchKind === 'no-row') {
-            return `Module "${name}" has no saved version yet. Save the module first.`;
+            return `Module "${name}" has no saved version yet. Save and release the module first.`;
           }
           if (m.matchKind === 'orphan-fallback') {
-            return `Module "${name}" pin is invalid. Pin a saved version.`;
+            return `Module "${name}" pin is invalid. Pin a released version.`;
           }
           if (m.matchKind === 'unpinned-fallback') {
-            return `Module "${name}" has active draft pinned. Pin a saved version.`;
+            return `Module "${name}" has active draft pinned. Pin a released version.`;
           }
-          // pin-hit + DRAFT remaining.
+          // pin-hit branches.
           const versionName = m.resolved?.versionName ?? 'draft';
-          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+          if (m.resolved?.status === AppVersionStatus.DRAFT) {
+            return `Module "${name}" version "${versionName}" is still in draft. Release the module first.`;
+          }
+          // Module never released OR pinned to non-released version.
+          return `Module "${name}" version "${versionName}" is not released. Release the module first.`;
         };
         const moduleList = unique.map(formatEntry).join(' ');
         const message =
