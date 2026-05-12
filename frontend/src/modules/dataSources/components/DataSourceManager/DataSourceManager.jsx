@@ -1202,8 +1202,8 @@ class DataSourceManagerComponent extends React.Component {
                       )}
 
                       {connectionTestError && (
-                        <div className="row w-100">
-                          <div className="alert alert-danger" role="alert">
+                        <div className="w-100">
+                          <div className="alert alert-danger datasource-error-alert" role="alert">
                             <div className="text-muted" data-cy="connection-alert-text">
                               {connectionTestError.message}
                             </div>
