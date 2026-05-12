@@ -22,6 +22,7 @@ import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
+import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -268,8 +269,7 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // Unpinned ModuleViewers (empty moduleVersionId.value) drift to whatever's latest on the
-      // module's branch — never a stable target — so block before the resolution JOIN runs.
+      // Empty moduleVersionId.value drifts to latest on branch — unstable target. Block first.
       const unpinnedModules = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -301,74 +301,46 @@ export class VersionUtilService implements IVersionUtilService {
         });
       }
 
-      // moduleVersionId.value stores one of:
-      //   1. DB UUID — legacy from pre-rename YAML imports (app-import-export.service.ts:1787).
-      //      TODO: migrate existing rows to version names so this case can be dropped.
-      //   2. version name — pinned; scoped to version_type='version' + module's co_relation_id.
-      //   3. branch name — unpinned; resolved to the module's default-branch version row.
-      //   4. module_reference_id — stable UUID stored by the frontend since commit 4e8c6ada30
-      //      (replaced version name as the pinned identifier for cross-instance portability).
-      // A DRAFT resolved row means the module needs saving before the parent can save/promote.
-      const draftModules = await manager
-        .createQueryBuilder(Component, 'component')
-        .innerJoin('component.page', 'page')
-        .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin(
-          'app_versions',
-          'mod_ver',
-          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
-               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
-             )
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.branch_id = (
-               SELECT id FROM organization_git_sync_branches
-               WHERE is_default = true AND organization_id = :orgId
-             )
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-             AND mod_ver.version_type = 'version'
-           )`,
-          { orgId: organizationId }
-        )
-        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
-        .select('DISTINCT mod_app.name', 'moduleName')
-        .addSelect('mod_ver.name', 'versionName')
-        .addSelect(`component.properties::jsonb -> 'moduleVersionId' ->> 'value'`, 'rawRef')
-        .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere('appVersion.id = :versionId', { versionId })
-        .andWhere('mod_ver.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT })
-        .getRawMany();
+      // Resolve pins to runtime rows. Strict policy — block:
+      //   no-row           (matchKind branch) — module unusable
+      //   orphan-fallback  (matchKind branch) — stale pin, runtime drifts to active draft
+      //   pin-hit + DRAFT  (status branch)    — pin points directly to editing draft
+      // unpinned-fallback is shadowed by the empty-pin check above.
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const offenders = resolved.filter(
+        (v) =>
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          (v.resolved && v.resolved.status === AppVersionStatus.DRAFT)
+      );
 
-      if (draftModules.length > 0) {
-        // Unpinned refs get "save on main" guidance; matching refs are pinned-to-draft.
-        const formatEntry = (m: { moduleName: string; versionName: string; rawRef: string }) =>
-          m.rawRef !== m.versionName
-            ? `Module "${m.moduleName}" has no saved version yet. Save a version on main first.`
-            : `Module "${m.moduleName}" version "${m.versionName}" is still in draft. Save the module first.`;
-        const moduleList = draftModules.map(formatEntry).join(' ');
+      if (offenders.length > 0) {
+        const seen = new Set<string>();
+        const unique: ResolvedModuleViewer[] = [];
+        for (const o of offenders) {
+          // componentId tiebreaker — prevents malformed components collapsing to one bucket.
+          const key = o.moduleName ?? (o.moduleAppCoRel || o.componentId);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push(o);
+        }
+        const formatEntry = (m: ResolvedModuleViewer) => {
+          const name = m.moduleName ?? 'unknown module';
+          if (m.matchKind === 'no-row') {
+            return `Module "${name}" has no saved version yet. Save a version on main first.`;
+          }
+          if (m.matchKind === 'orphan-fallback') {
+            return `Module "${name}" pin is stale and resolves to the active draft.`;
+          }
+          // pin-hit + DRAFT remaining.
+          const versionName = m.resolved?.versionName ?? 'draft';
+          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+        };
+        const moduleList = unique.map(formatEntry).join(' ');
         const message =
-          draftModules.length === 1
-            ? `Save blocked - ${formatEntry(draftModules[0])}`
-            : `Save blocked - ${draftModules.length} modules need saving. ${moduleList}`;
+          unique.length === 1
+            ? `Save blocked - ${formatEntry(unique[0])}`
+            : `Save blocked - ${unique.length} modules need saving. ${moduleList}`;
         throw new BadRequestException({
           message: { error: message, details: moduleList },
         });
@@ -388,64 +360,42 @@ export class VersionUtilService implements IVersionUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // 4-case moduleVersionId resolution — see checkDraftModulesInApp for the cases.
-      // LEFT JOIN on app_environments so a module version with no current_environment_id
-      // (rare, legacy) also blocks promote — null priority is treated as "below target".
-      const unpromotedModules = await manager
-        .createQueryBuilder(Component, 'component')
-        .innerJoin('component.page', 'page')
-        .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin(
-          'app_versions',
-          'mod_ver',
-          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
-               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
-             )
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.branch_id = (
-               SELECT id FROM organization_git_sync_branches
-               WHERE is_default = true AND organization_id = :orgId
-             )
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-             AND mod_ver.version_type = 'version'
-           )`,
-          { orgId: organizationId }
-        )
-        .leftJoin('app_environments', 'mod_env', 'mod_env.id = mod_ver.current_environment_id')
-        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
-        .select('DISTINCT mod_app.name', 'moduleName')
-        .addSelect('mod_ver.name', 'versionName')
-        .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere('appVersion.id = :versionId', { versionId })
-        .andWhere('(mod_env.priority IS NULL OR mod_env.priority < :targetPriority)', { targetPriority })
-        .getRawMany();
+      // Resolve pins; flag row below target env priority. Strict: no-row, orphan-fallback,
+      // unpinned-fallback also block — runtime fallback isn't a stable promote target.
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const offenders = resolved.filter((v) => {
+        if (
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback' ||
+          !v.resolved
+        ) {
+          return true;
+        }
+        const priority = v.resolved.envPriority;
+        return priority === null || priority < targetPriority;
+      });
 
-      if (unpromotedModules.length > 0) {
-        const moduleList = unpromotedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+      if (offenders.length > 0) {
+        const seen = new Set<string>();
+        const unique: ResolvedModuleViewer[] = [];
+        for (const o of offenders) {
+          // componentId tiebreaker — prevents malformed components collapsing to one bucket.
+          const key = o.moduleName ?? (o.moduleAppCoRel || o.componentId);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push(o);
+        }
+        const describe = (m: ResolvedModuleViewer) => {
+          const name = m.moduleName ?? 'unknown module';
+          const versionName = m.resolved?.versionName ?? 'unresolved';
+          return `${name} (${versionName})`;
+        };
+        const moduleList = unique.map(describe).join(', ');
         const message =
-          unpromotedModules.length === 1
-            ? `Promotion blocked - Module "${unpromotedModules[0].moduleName} (${unpromotedModules[0].versionName})" hasn't been promoted to ${targetEnvironmentName} yet.`
-            : `Promotion blocked - ${unpromotedModules.length} dependent modules haven't been promoted to ${targetEnvironmentName} yet.`;
+          unique.length === 1
+            ? `Promotion blocked - Module "${describe(unique[0])}" hasn't been promoted to ${targetEnvironmentName} yet.`
+            : `Promotion blocked - ${unique.length} dependent modules haven't been promoted to ${targetEnvironmentName} yet.`;
         throw new BadRequestException({
           message: { error: message, details: `Modules not promoted to ${targetEnvironmentName}: ${moduleList}` },
         });
