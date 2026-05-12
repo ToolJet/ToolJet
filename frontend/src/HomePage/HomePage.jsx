@@ -1098,11 +1098,36 @@ class HomePageComponent extends React.Component {
       });
   };
 
-  fetchAddToFolderApps = () => {
-    appsService
-      .getAll(0, this.state.currentFolder?.id, '', this.props.appType)
-      .then((data) => this.setState({ addToFolderApps: data.apps || data }))
-      .catch(() => this.setState({ addToFolderApps: [] }));
+  fetchAddToFolderApps = async () => {
+    const folderId = this.state.currentFolder?.id;
+
+    if (!folderId) {
+      // "All apps" view — unpaginated fetch returns all workspace apps
+      appsService
+        .getAll(0, null, '', this.props.appType)
+        .then((data) => this.setState({ addToFolderApps: data.apps || data }))
+        .catch(() => this.setState({ addToFolderApps: [] }));
+      return;
+    }
+
+    // Specific folder — fetch all pages so the full folder list appears in the dropdown
+    try {
+      const firstPage = await appsService.getAll(1, folderId, '', this.props.appType);
+      const allApps = [...(firstPage.apps || [])];
+      const total = this.state.currentFolder?.count || allApps.length;
+      const totalPages = Math.ceil(total / MAX_APPS_PER_PAGE);
+
+      if (totalPages > 1) {
+        const remaining = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, i) => appsService.getAll(i + 2, folderId, '', this.props.appType))
+        );
+        remaining.forEach((r) => allApps.push(...(r.apps || [])));
+      }
+
+      this.setState({ addToFolderApps: allApps });
+    } catch {
+      this.setState({ addToFolderApps: [] });
+    }
   };
 
   appActionModal = (app, folder, action) => {
@@ -2057,6 +2082,9 @@ class HomePageComponent extends React.Component {
             <div className="row">
               <div className="col modal-main">
                 <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
+                  <label className="form-label">
+                    {this.props.t('homePage.appCard.moveSelectedApps', 'Move selected apps')}
+                  </label>
                   <AppsMultiSelect
                     options={this.state.addToFolderApps.map((app) => ({
                       label: app.name,
@@ -2073,6 +2101,7 @@ class HomePageComponent extends React.Component {
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder" className="select-folder-container">
+                  <label className="form-label">{this.props.t('homePage.appCard.folderName', 'Folder name')}</label>
                   <Select
                     options={this.state.folders
                       .filter((folder) => {
@@ -2117,6 +2146,7 @@ class HomePageComponent extends React.Component {
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
                   isLoading={appOperations?.isAdding}
+                  disabled={!appOperations?.selectedFolder}
                 >
                   {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
                 </ButtonSolid>
