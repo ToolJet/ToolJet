@@ -25,6 +25,12 @@ In the screenshot below, we are triggering two different queries using two diffe
 
 <img className="screenshot-full img-full" src="/img/how-to/run-actions-from-runjs/runquery-v3.png" alt="Print data from multiple tabs" />
 
+:::info
+When triggering a query using `queries.<queryName>.run()`, you can optionally pass **callback function handlers** to handle success and failure states programmatically.
+
+For more information, refer **[here](/docs/data-sources/run-js#callback-functions)**.
+:::
+
 ## Reset Query
 
 To reset a query, you can use the below functions:
@@ -72,6 +78,10 @@ await queries.getTodos.run()
 let value = queries.getTodos.getLoadingState();
 //replace getTodos with your query name
 ```
+
+**Execution Behaviours are :**
+- `run()` triggers the query asynchronously.
+- Callback functions are executed after the query completion.
 
 ## Set Variables
 
