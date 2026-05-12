@@ -832,7 +832,28 @@ export const buildReflowPatch = ({
   inFlowMap,
   resolvedHeights,
   collapseWhenHiddenMap,
+  calculateMoveableBoxHeightWithId,
+  getComponentDefinition,
 }) => {
+  // Effective canonical height = `calculateMoveableBoxHeightWithId`, which
+  // bumps top-aligned input widgets by TOP_ALIGNMENT_HEIGHT_INCREMENT (20px)
+  // to make room for the label that stacks above the control. WidgetWrapper
+  // already renders edit mode at this bumped height, so the author placed
+  // downstream siblings relative to it. View mode (dynamic height) starts at
+  // the raw canonical and grows to the bumped height — without this lookup,
+  // reflow would propagate the bump as a +20 delta and push siblings past
+  // their authored positions. Falls back to raw canonical when the calc
+  // helpers aren't passed (defensive — every caller in this codebase passes
+  // them) or for non-input widgets where the calc returns canonical anyway.
+  const getEffectiveCanonicalHeight = (componentId) => {
+    if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      const definition = getComponentDefinition?.(componentId);
+      const stylesDefinition = definition?.component?.definition?.styles;
+      const calc = calculateMoveableBoxHeightWithId(componentId, currentLayout, stylesDefinition);
+      if (typeof calc === 'number') return calc;
+    }
+    return currentPageComponents?.[componentId]?.layouts?.[currentLayout]?.height ?? 0;
+  };
   const sortedComponentIds = sortByCanonicalPosition(componentIds, currentLayout, currentPageComponents);
   const connectedIds = getConnectedLaneComponentIds(
     sortedComponentIds,
@@ -855,7 +876,12 @@ export const buildReflowPatch = ({
   const changedKey = getDynamicLayoutKey(changedComponentId, contextIndices);
   const changedCanonical = getCanonicalLayout(changedComponentId, currentLayout, currentPageComponents);
   const changedNewHeight = resolvedHeights[changedComponentId] ?? changedCanonical?.height ?? 0;
-  const changedOldHeight = temporaryLayouts?.[changedKey]?.height ?? changedCanonical?.height ?? 0;
+  // Old-height baseline is the calc-bumped canonical, NOT the raw canonical.
+  // Author placed siblings relative to the bumped height (visible in editor),
+  // so a view-mode widget rendering at the bumped height represents zero
+  // delta — not a +20 growth.
+  const changedOldHeight =
+    temporaryLayouts?.[changedKey]?.height ?? getEffectiveCanonicalHeight(changedComponentId) ?? 0;
   const delta = changedNewHeight - changedOldHeight;
   const isChangedOutOfFlow = inFlowMap[changedComponentId] === false;
   // Accordion collapse is the one case where a widget shrinks far below
@@ -990,7 +1016,7 @@ export const buildReflowPatch = ({
     // structural-rest contract.
     let effectiveCollapsedCanonical = collapsedCanonical;
     if (shadower) {
-      const shadowerCanonicalBottom = shadowerCanonicalTop + (shadower.canonicalLayout?.height ?? 0);
+      const shadowerCanonicalBottom = shadowerCanonicalTop + getEffectiveCanonicalHeight(shadower.id);
       let belowShadowerSubtraction = 0;
       for (const [uid, slot] of slotSize) {
         const uTop = outOfFlowTopsById.get(uid) ?? 0;
@@ -1006,7 +1032,20 @@ export const buildReflowPatch = ({
     // Baseline for delta propagation: existing temp if present (captures any
     // prior push/pull), otherwise the collapsed canonical (captures hide-
     // collapse on mount).
-    const baseTop = existingTemp?.top ?? effectiveCollapsedCanonical;
+    //
+    // For GROW/SHRINK (changed widget in flow), use the *plain*
+    // `collapsedCanonical` — NOT `effectiveCollapsedCanonical`. The shadower
+    // adjustment baked into the latter uses `shadower.currentBottom`, which
+    // for the changed widget (or any blocker already pushed by it) already
+    // includes the growth that `delta` is about to add via `proposedTop`.
+    // Letting it leak in here double-counts the push and cascades downstream
+    // — a 50→70 textarea grew the next widget's gap by 40 instead of 20, and
+    // the widget below that by 60. The shadower floor still feeds `otherMax`
+    // below, where it's combined via `max()` instead of added, so the narrow-
+    // lane drift case (the original reason for the shadower fallback) stays
+    // covered. HIDE/SHOW (out-of-flow) keeps the shadower-anchored fallback
+    // because that path does no delta addition.
+    const baseTop = existingTemp?.top ?? (isChangedOutOfFlow ? effectiveCollapsedCanonical : collapsedCanonical);
 
     let nextTop;
 
@@ -1059,7 +1098,7 @@ export const buildReflowPatch = ({
         if (vCanonicalTopForShadow < shadowerCanonicalTop) continue;
         hasInFlowBlocker = true;
         const vCanonicalTop = v.canonicalLayout?.top ?? 0;
-        const vCanonicalBottom = vCanonicalTop + (v.canonicalLayout?.height ?? 0);
+        const vCanonicalBottom = vCanonicalTop + getEffectiveCanonicalHeight(v.id);
         // Canonical-overlap correction (scoped to collapse-on-hide blockers
         // only — the dynamic-height grow/shrink path keeps its original
         // canonical math). When V opted into collapseWhenHidden AND target's
@@ -1110,7 +1149,14 @@ export const buildReflowPatch = ({
           const wTop = w.canonicalLayout?.top ?? 0;
           if (wTop < vCanonicalBottom || wTop >= targetTopCanonical) continue;
           const wCurrentHeight = w.currentBottom - w.currentTop;
-          const wCanonicalHeight = w.canonicalLayout?.height ?? 0;
+          // Use the effective canonical (calc-bumped) height for the same
+          // reason as `changedOldHeight`/`vCanonicalBottom` above: for
+          // top-aligned input widgets, the author placed siblings around the
+          // bumped height, so a current rendering at that bumped height is
+          // zero delta, not a +20 inflation. Without this swap, the sandwich
+          // case (V above → W=changed top-label input → T below) would
+          // re-introduce the same push that the other call sites fixed.
+          const wCanonicalHeight = getEffectiveCanonicalHeight(w.id);
           inFlowDelta += wCurrentHeight - wCanonicalHeight;
         }
         const canonicalGap = targetTopCanonical - vCanonicalBottomForGap - subtraction;
