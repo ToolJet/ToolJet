@@ -34,13 +34,13 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
 
 You can toggle on **Authentication required for all users** in the configuration. When enabled, users will be redirected to the OAuth consent screen the first time a query from this data source is triggered in the application. This ensures each user connects their own Google Sheets account securely.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/multi-auth-connection.png" alt="GS2.0 service account auth type connection" style={{ marginBottom:'15px' }} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/multi-auth-connection.png" alt="GS2.0 service account auth type connection" />
 
 ### Service Account
 
 Authenticates using a Google Cloud service account, enabling server-to-server access to Google Sheets without user interaction. You can use this for backend or system-level integrations where a shared, fixed access is required without user interaction.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/service-connection-v2.png" alt="GS2.0 service account auth type connection" style={{ marginBottom:'15px' }} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/service-connection-v2.png" alt="GS2.0 service account auth type connection" />
 
 ## Authorization Scopes
 
@@ -66,7 +66,7 @@ The **Fetch Spreadsheets** option allows ToolJet to dynamically retrieve all ava
 
 ToolJet also supports **manual spreadsheet selection** for advanced use cases using the **fx** expression editor, enabling dynamic or programmatic selection of a spreadsheet at runtime.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/fetch-button-v2.png" alt="fetch spreadsheet button in query builder" style={{ marginBottom:'15px' }}  />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/fetch-button-v2.png" alt="fetch spreadsheet button in query builder" />
 
 ## Querying Google Sheets
 
@@ -96,7 +96,7 @@ Using Google sheets data source you can perform several operations from your app
   12. **[Delete Data From a Spreadsheet By Range](#delete-data-from-a-spreadsheet-by-range)**
   13. **[Update Spreadsheet](#update-spreadsheet)**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listops.png" alt="Google Sheets2.0  Supported Operations" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listops.png" alt="Google Sheets2.0  Supported Operations" />
 
 ### Create A Spreadsheet
 This operation creates a new Google Sheets spreadsheet in the authenticated account.
@@ -104,7 +104,7 @@ This operation creates a new Google Sheets spreadsheet in the authenticated acco
 #### Required Parameter
 - Title : The name assigned to the newly created spreadsheet.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/create-query.png" alt="create a spreadsheet" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/create-query.png" alt="create a spreadsheet" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -123,7 +123,7 @@ This operation retrieves all individual sheets (tabs) within a specified spreads
 #### Required Parameter 
 - Spreadsheet : The unique ID of the spreadsheet whose sheets (tabs) need to be listed.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listall-spreadsheets-query.png" alt="list operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listall-spreadsheets-query.png" alt="list operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -159,7 +159,7 @@ This operation fetches all accessible spreadsheets associated with the authentic
 - Page Token : Token used to retrieve the next set of results.
 - Filter : Filters the list of spreadsheets based on specified criteria.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listall-query.png" alt="list operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/listall-query.png" alt="list operation" />
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
 ```
@@ -189,7 +189,7 @@ This Operation removes rows that match the specified filter conditions.
 #### Optional Parameter
 - Filter : Filters the list of spreadsheets based on specified criteria.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byfilter-query.png" alt="delete operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byfilter-query.png" alt="delete operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -214,7 +214,7 @@ This operation updates multiple rows at once by matching records using a primary
  Data : [{ "ID": 103, "Status": "In Progress", "Remarks": "Under review" }]
  ```
  
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/bulk-update-query1.png" alt="bulk update operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/bulk-update-query1.png" alt="bulk update operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -253,7 +253,7 @@ This operation copies selected data from one spreadsheet to another.
 - Source range : The specific range of cells to copy from the source spreadsheet.
 - Destination range : The target range where the copied data will be placed.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/copy-query.png" alt="copy data operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/copy-query.png" alt="copy data operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -289,7 +289,7 @@ This operation retrieves data from a specified sheet or range within a spreadshe
 - Value Render : Specifies how cell values should be rendered (formatted or raw).
 - Date Time : Controls how date and time values are returned in the response.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/read-query.png" alt="read data operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/read-query.png" alt="read data operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -346,7 +346,7 @@ This operation adds additional rows of data to the end of a sheet without modify
 
  ```
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/append-query.png" alt="append data operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/append-query.png" alt="append data operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -366,7 +366,7 @@ This operation retrieves metadata and structural details of a spreadsheet.
 #### Required Parameter
 - Spreadsheet : The ID of the spreadsheet for which metadata and details are retrieved.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/get-query.png" alt="get spreadsheet operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/get-query.png" alt="get spreadsheet operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -401,7 +401,7 @@ This operation modifies existing data in specified cells or ranges.
 #### Optional Parameter
 - Body : The data payload containing updated values.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/update-to-query.png" alt="update operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/update-to-query.png" alt="update operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -419,7 +419,7 @@ This operation deletes one or more specific rows from a sheet.
 - GID : The unique grid ID of the target sheet.
 - Delete Row Number : The row index to be removed from the sheet.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-row-query.png" alt="delete operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-row-query.png" alt="delete operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -440,7 +440,7 @@ This operation clears data from a defined cell range within a sheet.
 #### Optional Parameter
 - Shift Dimension : Specifies how remaining cells should shift after deletion.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byrange-query.png" alt="delete operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/delete-byrange-query.png" alt="delete operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
@@ -476,7 +476,7 @@ This operation updates spreadsheet properties such as title or configuration set
  ]
  ```
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/update-query.png" alt="update operation" style={{marginBottom:'15px'}} />
+<img className="screenshot-full img-full" src="/img/datasource-reference/googlesheets2.0/update-query.png" alt="update operation" />
 
 <details id="tj-dropdown">
 <summary>**Sample Output**</summary>
