@@ -40,10 +40,13 @@ export function useAppPreviewLink() {
       featureAccess?.licenseStatus?.isLicenseValid === false ||
       featureAccess?.plan === 'starter';
 
+    const isBranch = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
       // Include env param unless license is invalid/expired or starter plan
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
+      ...(!isBranch ? { is_branch: false } : {}),
     });
 
     const link = editingVersion
@@ -61,6 +64,7 @@ export function useAppPreviewLink() {
     featureAccess?.licenseStatus?.isLicenseValid,
     selectedEnvironment?.name,
     selectedVersion?.name,
+    selectedVersion?.versionType,
   ]);
 
   return appPreviewLink;
