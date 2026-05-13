@@ -2,7 +2,7 @@ import React from 'react';
 import { components } from 'react-select';
 import { AppsSelect } from './AppsSelect';
 
-export function AppsMultiSelect({ value, options, ...rest }) {
+export function AppsMultiSelect({ value, options, inFolder, ...rest }) {
   const nonAllSelected = (value || []).filter((v) => !v.isAllField);
   const isAllSelected = (value || []).some((v) => v.isAllField);
   const count = nonAllSelected.length;
@@ -36,7 +36,7 @@ export function AppsMultiSelect({ value, options, ...rest }) {
   };
 
   const allOption = {
-    label: `All in this folder (${options.length})`,
+    label: inFolder ? `All in this folder (${options.length})` : `All apps (${options.length})`,
     value: '*',
     isAllField: true,
   };
