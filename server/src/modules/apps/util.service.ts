@@ -326,10 +326,10 @@ export class AppsUtilService implements IAppsUtilService {
       app = await this.appRepository.findById(slug, organizationId);
       if (!app) {
         /* UUID could also be a slug, try slug lookup as fallback */
-        app = await this.appRepository.findBySlug(slug, organizationId, undefined, branchId);
+        app = await this.appRepository.findBySlug(slug, organizationId);
       }
     } else {
-      app = await this.appRepository.findBySlug(slug, organizationId, undefined, branchId);
+      app = await this.appRepository.findBySlug(slug, organizationId);
     }
 
     if (!app) {
