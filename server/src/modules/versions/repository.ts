@@ -24,7 +24,8 @@ export class VersionRepository extends Repository<AppVersion> {
     firstPriorityEnvId: string,
     definition?: any,
     manager?: EntityManager,
-    branchId?: string
+    branchId?: string,
+    metadata?: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean }
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // moduleReferenceId is module-only; look up parent app type once and gate.
@@ -43,6 +44,15 @@ export class VersionRepository extends Repository<AppVersion> {
             updatedAt: new Date(),
             ...(isModule && { moduleReferenceId: uuid() }),
             ...(branchId && { branchId }),
+            // Non-workflow metadata lives on app_versions. Callers pass the initial
+            // values for the v1 row so the version starts in sync with the app's
+            // user-facing metadata instead of NULL.
+            ...(metadata && {
+              appName: metadata.appName ?? null,
+              slug: metadata.slug ?? null,
+              icon: metadata.icon ?? null,
+              isPublic: metadata.isPublic ?? false,
+            }),
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_VERSION_NAME_UNIQUE, message: 'Version name already exists.' }]);

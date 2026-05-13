@@ -596,10 +596,20 @@ export class AppImportExportService {
       // into per-version files. Workflows leave the export unchanged — apps.* already
       // carries the canonical metadata for them.
       if (appToExport?.type !== APP_TYPES.WORKFLOW) {
-        // Pick any version that carries metadata — every branch's metadata row holds
-        // these fields (VERSION-type on default, BRANCH-type on sub-branches). Don't
-        // filter on versionType.
-        const sourceVersion = appVersions.find((v) => v.appName != null || v.slug != null) || appVersions[0];
+        // Prefer a version in the current export scope that already carries metadata.
+        let sourceVersion: AppVersion | null =
+          appVersions.find((v) => v.appName != null || v.slug != null) || null;
+        // If the narrowed export scope (versionId-filtered push) has only a NULL-metadata
+        // row, look across other versions of the same app — any branch row that holds
+        // metadata is a valid source since the canonical values are app-wide.
+        if (!sourceVersion) {
+          sourceVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .where('av.app_id = :appId', { appId: appToExport.id })
+            .andWhere('(av.app_name IS NOT NULL OR av.slug IS NOT NULL)')
+            .orderBy('av.updated_at', 'DESC')
+            .getOne();
+        }
         if (sourceVersion) {
           if (sourceVersion.appName != null) (appToExport as any).name = sourceVersion.appName;
           if (sourceVersion.slug != null) (appToExport as any).slug = sourceVersion.slug;

@@ -226,7 +226,24 @@ export class AppsUtilService implements IAppsUtilService {
       } else {
         // Default branch or no git sync: standard creation flow.
         // Base version gets 'v1' — user-visible, renameable via version manager.
-        const appVersion = await this.versionRepository.createOne('v1', app.id, firstPriorityEnv.id, null, manager);
+        // For non-workflows, seed the version's metadata so app_versions stays in sync
+        // with the user-facing name/slug/icon/isPublic from the moment the app is created.
+        const appVersion = await this.versionRepository.createOne(
+          'v1',
+          app.id,
+          firstPriorityEnv.id,
+          null,
+          manager,
+          undefined,
+          !isWorkflow
+            ? {
+                appName: name,
+                slug: app.id,
+                icon: icon ?? null,
+                isPublic: false,
+              }
+            : undefined
+        );
 
         const defaultHomePage = await manager.save(
           manager.create(Page, {

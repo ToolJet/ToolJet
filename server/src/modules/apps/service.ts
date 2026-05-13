@@ -484,18 +484,19 @@ export class AppsService implements IAppsService {
       }
 
       // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
-      // version. Overlay its metadata (name/slug/icon/isPublic) onto the app so the
-      // dashboard shows branch-specific values instead of the apps.* fallback.
-      // Workflows keep metadata on apps.* and are skipped.
+      // version. The branch row is the single source of truth for non-workflow metadata
+      // — overlay all four fields unconditionally, including NULLs. Falling back to
+      // apps.* would surface stale or unmigrated values and mask data issues on the
+      // branch. Workflows keep metadata on apps.* and are skipped.
       if (branchId) {
         for (const app of apps) {
           if (app.type === APP_TYPES.WORKFLOW) continue;
           const branchVersion = app?.appVersions?.[0];
           if (!branchVersion) continue;
-          if (branchVersion.appName != null) app.name = branchVersion.appName;
-          if (branchVersion.slug != null) app.slug = branchVersion.slug;
-          if (branchVersion.icon != null) app.icon = branchVersion.icon;
-          if (branchVersion.isPublic != null) app.isPublic = branchVersion.isPublic;
+          app.name = branchVersion.appName;
+          app.slug = branchVersion.slug;
+          app.icon = branchVersion.icon;
+          app.isPublic = branchVersion.isPublic;
         }
       } else {
         // No branch context: route by git-sync state.
