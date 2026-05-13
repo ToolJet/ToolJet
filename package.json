@@ -9,6 +9,15 @@
   "lint-staged": {
     "./frontend/src/**/*.{js,jsx}": [
       "eslint --fix"
+    ],
+    "./server/{src,ee}/**/*.ts": [
+      "eslint --fix"
+    ],
+    "./marketplace/plugins/**/*.ts": [
+      "bash -c 'ESLINT_USE_FLAT_CONFIG=false eslint --fix \"$@\"' _"
+    ],
+    "./plugins/**/*.ts": [
+      "eslint --fix"
     ]
   },
   "devDependencies": {
