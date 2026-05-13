@@ -1,0 +1,2175 @@
+{
+  "metadata": {
+    "name": "Intercom",
+    "kind": "intercom",
+    "description": "Integrate with Intercom API to manage contacts, support tickets, and conversations etc",
+    "operationsMode": "api-endpoint",
+    "specUrl": "@spec/intercom/intercom"
+  },
+  "auth": {
+    "type": "bearer"
+  },
+  "schemaVersion": "v1",
+  "operations": [
+    {
+      "name": "identify_an_admin",
+      "displayName": "Identify an admin",
+      "description": "GET /me (Admins)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "set_an_admin_to_away",
+      "displayName": "Set an admin to away",
+      "description": "PUT /admins/{admin_id}/away (Admins)",
+      "parameters": [
+        {
+          "name": "admin_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: admin_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_activity_logs",
+      "displayName": "List all activity logs",
+      "description": "GET /admins/activity_logs (Admins)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_admins",
+      "displayName": "List all admins",
+      "description": "GET /admins (Admins)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_an_admin",
+      "displayName": "Retrieve an admin",
+      "description": "GET /admins/{admin_id} (Admins)",
+      "parameters": [
+        {
+          "name": "admin_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: admin_id"
+        }
+      ]
+    },
+    {
+      "name": "list_content_import_sources",
+      "displayName": "List content import sources",
+      "description": "GET /ai/content_import_sources (AI Content)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_content_import_source",
+      "displayName": "Create a content import source",
+      "description": "POST /ai/content_import_sources (AI Content)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_content_import_source",
+      "displayName": "Delete a content import source",
+      "description": "DELETE /ai/content_import_sources/{source_id} (AI Content)",
+      "parameters": [
+        {
+          "name": "source_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: source_id"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_content_import_source",
+      "displayName": "Retrieve a content import source",
+      "description": "GET /ai/content_import_sources/{source_id} (AI Content)",
+      "parameters": [
+        {
+          "name": "source_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: source_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_content_import_source",
+      "displayName": "Update a content import source",
+      "description": "PUT /ai/content_import_sources/{source_id} (AI Content)",
+      "parameters": [
+        {
+          "name": "source_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: source_id"
+        }
+      ]
+    },
+    {
+      "name": "list_external_pages",
+      "displayName": "List external pages",
+      "description": "GET /ai/external_pages (AI Content)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_an_external_page_or_update_an_external_page_by_external_id",
+      "displayName": "Create an external page (or update an external page by external ID)",
+      "description": "POST /ai/external_pages (AI Content)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "delete_an_external_page",
+      "displayName": "Delete an external page",
+      "description": "DELETE /ai/external_pages/{page_id} (AI Content)",
+      "parameters": [
+        {
+          "name": "page_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: page_id"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_an_external_page",
+      "displayName": "Retrieve an external page",
+      "description": "GET /ai/external_pages/{page_id} (AI Content)",
+      "parameters": [
+        {
+          "name": "page_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: page_id"
+        }
+      ]
+    },
+    {
+      "name": "update_an_external_page",
+      "displayName": "Update an external page",
+      "description": "PUT /ai/external_pages/{page_id} (AI Content)",
+      "parameters": [
+        {
+          "name": "page_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: page_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_articles",
+      "displayName": "List all articles",
+      "description": "GET /articles (Articles)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_an_article",
+      "displayName": "Create an article",
+      "description": "POST /articles (Articles)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_an_article",
+      "displayName": "Retrieve an article",
+      "description": "GET /articles/{article_id} (Articles)",
+      "parameters": [
+        {
+          "name": "article_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: article_id"
+        }
+      ]
+    },
+    {
+      "name": "update_an_article",
+      "displayName": "Update an article",
+      "description": "PUT /articles/{article_id} (Articles)",
+      "parameters": [
+        {
+          "name": "article_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: article_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_an_article",
+      "displayName": "Delete an article",
+      "description": "DELETE /articles/{article_id} (Articles)",
+      "parameters": [
+        {
+          "name": "article_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: article_id"
+        }
+      ]
+    },
+    {
+      "name": "search_for_articles",
+      "displayName": "Search for articles",
+      "description": "GET /articles/search (Articles)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_away_status_reasons",
+      "displayName": "List all away status reasons",
+      "description": "GET /away_status_reasons (Away Status Reasons)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "enqueue_a_new_reporting_data_export_job",
+      "displayName": "Enqueue a new reporting data export job",
+      "description": "POST /export/reporting_data/enqueue",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "get_export_job_status",
+      "displayName": "Get export job status",
+      "description": "GET /export/reporting_data/{job_identifier}",
+      "parameters": [
+        {
+          "name": "job_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: job_identifier"
+        }
+      ]
+    },
+    {
+      "name": "list_available_datasets_and_attributes",
+      "displayName": "List available datasets and attributes",
+      "description": "GET /export/reporting_data/get_datasets",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "download_completed_export_job_data",
+      "displayName": "Download completed export job data",
+      "description": "GET /download/reporting_data/{job_identifier}",
+      "parameters": [
+        {
+          "name": "job_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: job_identifier"
+        }
+      ]
+    },
+    {
+      "name": "list_all_collections",
+      "displayName": "List all collections",
+      "description": "GET /help_center/collections (Help Center)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_collection",
+      "displayName": "Create a collection",
+      "description": "POST /help_center/collections (Help Center)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_collection",
+      "displayName": "Retrieve a collection",
+      "description": "GET /help_center/collections/{collection_id} (Help Center)",
+      "parameters": [
+        {
+          "name": "collection_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: collection_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_collection",
+      "displayName": "Update a collection",
+      "description": "PUT /help_center/collections/{collection_id} (Help Center)",
+      "parameters": [
+        {
+          "name": "collection_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: collection_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_collection",
+      "displayName": "Delete a collection",
+      "description": "DELETE /help_center/collections/{collection_id} (Help Center)",
+      "parameters": [
+        {
+          "name": "collection_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: collection_id"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_help_center",
+      "displayName": "Retrieve a Help Center",
+      "description": "GET /help_center/help_centers/{help_center_id} (Help Center)",
+      "parameters": [
+        {
+          "name": "help_center_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: help_center_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_help_centers",
+      "displayName": "List all Help Centers",
+      "description": "GET /help_center/help_centers (Help Center)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_articles",
+      "displayName": "List all articles",
+      "description": "GET /internal_articles (Internal Articles)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_an_internal_article",
+      "displayName": "Create an internal article",
+      "description": "POST /internal_articles (Internal Articles)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_an_internal_article",
+      "displayName": "Retrieve an internal article",
+      "description": "GET /internal_articles/{internal_article_id} (Internal Articles)",
+      "parameters": [
+        {
+          "name": "internal_article_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: internal_article_id"
+        }
+      ]
+    },
+    {
+      "name": "update_an_internal_article",
+      "displayName": "Update an internal article",
+      "description": "PUT /internal_articles/{internal_article_id} (Internal Articles)",
+      "parameters": [
+        {
+          "name": "internal_article_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: internal_article_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_an_internal_article",
+      "displayName": "Delete an internal article",
+      "description": "DELETE /internal_articles/{internal_article_id} (Internal Articles)",
+      "parameters": [
+        {
+          "name": "internal_article_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: internal_article_id"
+        }
+      ]
+    },
+    {
+      "name": "search_for_internal_articles",
+      "displayName": "Search for internal articles",
+      "description": "GET /internal_articles/search (Internal Articles)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "get_ip_allowlist_settings",
+      "displayName": "Get IP allowlist settings",
+      "description": "GET /ip_allowlist (IP Allowlist)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "update_ip_allowlist_settings",
+      "displayName": "Update IP allowlist settings",
+      "description": "PUT /ip_allowlist (IP Allowlist)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_or_update_a_company",
+      "displayName": "Create or Update a company",
+      "description": "POST /companies (Companies)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_companies",
+      "displayName": "Retrieve companies",
+      "description": "GET /companies (Companies)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_company_by_id",
+      "displayName": "Retrieve a company by ID",
+      "description": "GET /companies/{company_id} (Companies)",
+      "parameters": [
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_company",
+      "displayName": "Update a company",
+      "description": "PUT /companies/{company_id} (Companies)",
+      "parameters": [
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_company",
+      "displayName": "Delete a company",
+      "description": "DELETE /companies/{company_id} (Companies)",
+      "parameters": [
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "list_attached_contacts",
+      "displayName": "List attached contacts",
+      "description": "GET /companies/{company_id}/contacts (Companies, Contacts)",
+      "parameters": [
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "list_attached_segments_for_companies",
+      "displayName": "List attached segments for companies",
+      "description": "GET /companies/{company_id}/segments (Companies)",
+      "parameters": [
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_company_notes",
+      "displayName": "List all company notes",
+      "description": "GET /companies/{company_id}/notes (Notes, Companies)",
+      "parameters": [
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_companies",
+      "displayName": "List all companies",
+      "description": "POST /companies/list (Companies)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "scroll_over_all_companies",
+      "displayName": "Scroll over all companies",
+      "description": "GET /companies/scroll (Companies)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "attach_a_contact_to_a_company",
+      "displayName": "Attach a Contact to a Company",
+      "description": "POST /contacts/{contact_id}/companies (Companies, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "list_attached_companies_for_contact",
+      "displayName": "List attached companies for contact",
+      "description": "GET /contacts/{contact_id}/companies (Contacts, Companies)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "detach_a_contact_from_a_company",
+      "displayName": "Detach a contact from a company",
+      "description": "DELETE /contacts/{contact_id}/companies/{company_id} (Companies, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        },
+        {
+          "name": "company_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: company_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_notes",
+      "displayName": "List all notes",
+      "description": "GET /contacts/{contact_id}/notes (Notes, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "create_a_note",
+      "displayName": "Create a note",
+      "description": "POST /contacts/{contact_id}/notes (Notes, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "list_attached_segments_for_contact",
+      "displayName": "List attached segments for contact",
+      "description": "GET /contacts/{contact_id}/segments (Contacts, Segments)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "list_subscriptions_for_a_contact",
+      "displayName": "List subscriptions for a contact",
+      "description": "GET /contacts/{contact_id}/subscriptions (Contacts, Subscription Types)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "add_subscription_to_a_contact",
+      "displayName": "Add subscription to a contact",
+      "description": "POST /contacts/{contact_id}/subscriptions (Subscription Types, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "remove_subscription_from_a_contact",
+      "displayName": "Remove subscription from a contact",
+      "description": "DELETE /contacts/{contact_id}/subscriptions/{subscription_id} (Subscription Types, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: subscription_id"
+        }
+      ]
+    },
+    {
+      "name": "list_tags_attached_to_a_contact",
+      "displayName": "List tags attached to a contact",
+      "description": "GET /contacts/{contact_id}/tags (Contacts, Tags)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "add_tag_to_a_contact",
+      "displayName": "Add tag to a contact",
+      "description": "POST /contacts/{contact_id}/tags (Tags, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "remove_tag_from_a_contact",
+      "displayName": "Remove tag from a contact",
+      "description": "DELETE /contacts/{contact_id}/tags/{tag_id} (Tags, Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        },
+        {
+          "name": "tag_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: tag_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_contact",
+      "displayName": "Update a contact",
+      "description": "PUT /contacts/{contact_id} (Contacts, Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "get_a_contact",
+      "displayName": "Get a contact",
+      "description": "GET /contacts/{contact_id} (Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_contact",
+      "displayName": "Delete a contact",
+      "description": "DELETE /contacts/{contact_id} (Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "merge_a_lead_and_a_user",
+      "displayName": "Merge a lead and a user",
+      "description": "POST /contacts/merge (Contacts)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "search_contacts",
+      "displayName": "Search contacts",
+      "description": "POST /contacts/search (Contacts)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_contacts",
+      "displayName": "List all contacts",
+      "description": "GET /contacts (Contacts)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_contact",
+      "displayName": "Create contact",
+      "description": "POST /contacts (Contacts)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "get_a_contact_by_external_id",
+      "displayName": "Get a contact by External ID",
+      "description": "GET /contacts/find_by_external_id/{external_id} (Contacts)",
+      "parameters": [
+        {
+          "name": "external_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: external_id"
+        }
+      ]
+    },
+    {
+      "name": "archive_contact",
+      "displayName": "Archive contact",
+      "description": "POST /contacts/{contact_id}/archive (Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "unarchive_contact",
+      "displayName": "Unarchive contact",
+      "description": "POST /contacts/{contact_id}/unarchive (Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "block_contact",
+      "displayName": "Block contact",
+      "description": "POST /contacts/{contact_id}/block (Contacts)",
+      "parameters": [
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "add_tag_to_a_conversation",
+      "displayName": "Add tag to a conversation",
+      "description": "POST /conversations/{conversation_id}/tags (Tags, Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "remove_tag_from_a_conversation",
+      "displayName": "Remove tag from a conversation",
+      "description": "DELETE /conversations/{conversation_id}/tags/{tag_id} (Tags, Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        },
+        {
+          "name": "tag_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: tag_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_conversations",
+      "displayName": "List all conversations",
+      "description": "GET /conversations (Conversations)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "creates_a_conversation",
+      "displayName": "Creates a conversation",
+      "description": "POST /conversations (Conversations)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_conversation",
+      "displayName": "Retrieve a conversation",
+      "description": "GET /conversations/{conversation_id} (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_conversation",
+      "displayName": "Update a conversation",
+      "description": "PUT /conversations/{conversation_id} (Conversations, Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_conversation",
+      "displayName": "Delete a conversation",
+      "description": "DELETE /conversations/{conversation_id} (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "search_conversations",
+      "displayName": "Search conversations",
+      "description": "POST /conversations/search (Conversations)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "reply_to_a_conversation",
+      "displayName": "Reply to a conversation",
+      "description": "POST /conversations/{conversation_id}/reply (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "manage_a_conversation",
+      "displayName": "Manage a conversation",
+      "description": "POST /conversations/{conversation_id}/parts (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "attach_a_contact_to_a_conversation",
+      "displayName": "Attach a contact to a conversation",
+      "description": "POST /conversations/{conversation_id}/customers (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "detach_a_contact_from_a_group_conversation",
+      "displayName": "Detach a contact from a group conversation",
+      "description": "DELETE /conversations/{conversation_id}/customers/{contact_id} (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        },
+        {
+          "name": "contact_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: contact_id"
+        }
+      ]
+    },
+    {
+      "name": "redact_a_conversation_part",
+      "displayName": "Redact a conversation part",
+      "description": "POST /conversations/redact (Conversations)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "convert_a_conversation_to_a_ticket",
+      "displayName": "Convert a conversation to a ticket",
+      "description": "POST /conversations/{conversation_id}/convert (Conversations)",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "notify_intercom_of_a_new_conversation_created_in_a_custom_channel",
+      "displayName": "Notify Intercom of a new conversation created in a custom channel",
+      "description": "POST /custom_channel_events/notify_new_conversation",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "notify_intercom_of_a_new_message_in_a_custom_channel_conversation",
+      "displayName": "Notify Intercom of a new message in a custom channel conversation",
+      "description": "POST /custom_channel_events/notify_new_message",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "notify_intercom_of_a_quick_reply_response_in_a_custom_channel_conversation",
+      "displayName": "Notify Intercom of a quick reply response in a custom channel conversation",
+      "description": "POST /custom_channel_events/notify_quick_reply_selected",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "notify_intercom_of_an_attribute_collector_response_in_a_custom_channel_conversation",
+      "displayName": "Notify Intercom of an attribute collector response in a custom channel conversation",
+      "description": "POST /custom_channel_events/notify_attribute_collected",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_or_update_a_custom_object_instance",
+      "displayName": "Create or Update a Custom Object Instance",
+      "description": "POST /custom_object_instances/{custom_object_type_identifier} (Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "custom_object_type_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_type_identifier"
+        }
+      ]
+    },
+    {
+      "name": "get_custom_object_instance_by_external_id",
+      "displayName": "Get Custom Object Instance by External ID",
+      "description": "GET /custom_object_instances/{custom_object_type_identifier} (Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "custom_object_type_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_type_identifier"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_custom_object_instance_by_external_id",
+      "displayName": "Delete a Custom Object Instance by External ID",
+      "description": "DELETE /custom_object_instances/{custom_object_type_identifier} (Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "custom_object_type_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_type_identifier"
+        }
+      ]
+    },
+    {
+      "name": "get_custom_object_instance_by_id",
+      "displayName": "Get Custom Object Instance by ID",
+      "description": "GET /custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id} (Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "custom_object_type_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_type_identifier"
+        },
+        {
+          "name": "custom_object_instance_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_instance_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_custom_object_instance_by_id",
+      "displayName": "Delete a Custom Object Instance by ID",
+      "description": "DELETE /custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id} (Custom Object Instances)",
+      "parameters": [
+        {
+          "name": "custom_object_type_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_type_identifier"
+        },
+        {
+          "name": "custom_object_instance_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: custom_object_instance_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_data_attributes",
+      "displayName": "List all data attributes",
+      "description": "GET /data_attributes (Data Attributes)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_data_attribute",
+      "displayName": "Create a data attribute",
+      "description": "POST /data_attributes (Data Attributes)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "update_a_data_attribute",
+      "displayName": "Update a data attribute",
+      "description": "PUT /data_attributes/{data_attribute_id} (Data Attributes)",
+      "parameters": [
+        {
+          "name": "data_attribute_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: data_attribute_id"
+        }
+      ]
+    },
+    {
+      "name": "submit_a_data_event",
+      "displayName": "Submit a data event",
+      "description": "POST /events (Data Events)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_data_events",
+      "displayName": "List all data events",
+      "description": "GET /events (Data Events)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_event_summaries",
+      "displayName": "Create event summaries",
+      "description": "POST /events/summaries (Data Events)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_content_data_export",
+      "displayName": "Create content data export",
+      "description": "POST /export/content/data (Data Export)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "show_content_data_export",
+      "displayName": "Show content data export",
+      "description": "GET /export/content/data/{job_identifier} (Data Export)",
+      "parameters": [
+        {
+          "name": "job_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: job_identifier"
+        }
+      ]
+    },
+    {
+      "name": "cancel_content_data_export",
+      "displayName": "Cancel content data export",
+      "description": "POST /export/cancel/{job_identifier} (Data Export)",
+      "parameters": [
+        {
+          "name": "job_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: job_identifier"
+        }
+      ]
+    },
+    {
+      "name": "download_content_data_export",
+      "displayName": "Download content data export",
+      "description": "GET /download/content/data/{job_identifier} (Data Export)",
+      "parameters": [
+        {
+          "name": "job_identifier",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: job_identifier"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_job_status",
+      "displayName": "Retrieve job status",
+      "description": "GET /jobs/status/{job_id} (Jobs)",
+      "parameters": [
+        {
+          "name": "job_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: job_id"
+        }
+      ]
+    },
+    {
+      "name": "create_a_message",
+      "displayName": "Create a message",
+      "description": "POST /messages (Messages)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_news_items",
+      "displayName": "List all news items",
+      "description": "GET /news/news_items (News)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_news_item",
+      "displayName": "Create a news item",
+      "description": "POST /news/news_items (News)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_news_item",
+      "displayName": "Retrieve a news item",
+      "description": "GET /news/news_items/{news_item_id} (News)",
+      "parameters": [
+        {
+          "name": "news_item_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: news_item_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_news_item",
+      "displayName": "Update a news item",
+      "description": "PUT /news/news_items/{news_item_id} (News)",
+      "parameters": [
+        {
+          "name": "news_item_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: news_item_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_news_item",
+      "displayName": "Delete a news item",
+      "description": "DELETE /news/news_items/{news_item_id} (News)",
+      "parameters": [
+        {
+          "name": "news_item_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: news_item_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_live_newsfeed_items",
+      "displayName": "List all live newsfeed items",
+      "description": "GET /news/newsfeeds/{newsfeed_id}/items (News)",
+      "parameters": [
+        {
+          "name": "newsfeed_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: newsfeed_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_newsfeeds",
+      "displayName": "List all newsfeeds",
+      "description": "GET /news/newsfeeds (News)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_newsfeed",
+      "displayName": "Retrieve a newsfeed",
+      "description": "GET /news/newsfeeds/{newsfeed_id} (News)",
+      "parameters": [
+        {
+          "name": "newsfeed_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: newsfeed_id"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_note",
+      "displayName": "Retrieve a note",
+      "description": "GET /notes/{note_id} (Notes)",
+      "parameters": [
+        {
+          "name": "note_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: note_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_segments",
+      "displayName": "List all segments",
+      "description": "GET /segments (Segments)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_segment",
+      "displayName": "Retrieve a segment",
+      "description": "GET /segments/{segment_id} (Segments)",
+      "parameters": [
+        {
+          "name": "segment_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: segment_id"
+        }
+      ]
+    },
+    {
+      "name": "list_subscription_types",
+      "displayName": "List subscription types",
+      "description": "GET /subscription_types (Subscription Types)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_phone_switch",
+      "displayName": "Create a phone Switch",
+      "description": "POST /phone_call_redirects (Switch)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_calls",
+      "displayName": "List all calls",
+      "description": "GET /calls (Calls)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "get_a_call",
+      "displayName": "Get a call",
+      "description": "GET /calls/{call_id} (Calls)",
+      "parameters": [
+        {
+          "name": "call_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: call_id"
+        }
+      ]
+    },
+    {
+      "name": "get_call_recording_by_call_id",
+      "displayName": "Get call recording by call id",
+      "description": "GET /calls/{call_id}/recording (Calls)",
+      "parameters": [
+        {
+          "name": "call_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: call_id"
+        }
+      ]
+    },
+    {
+      "name": "get_call_transcript_by_call_id",
+      "displayName": "Get call transcript by call id",
+      "description": "GET /calls/{call_id}/transcript (Calls)",
+      "parameters": [
+        {
+          "name": "call_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: call_id"
+        }
+      ]
+    },
+    {
+      "name": "list_calls_with_transcripts",
+      "displayName": "List calls with transcripts",
+      "description": "POST /calls/search (Calls)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_tags",
+      "displayName": "List all tags",
+      "description": "GET /tags (Tags)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_or_update_a_tag_tag_or_untag_companies_tag_contacts",
+      "displayName": "Create or update a tag, Tag or untag companies, Tag contacts",
+      "description": "POST /tags (Tags)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "find_a_specific_tag",
+      "displayName": "Find a specific tag",
+      "description": "GET /tags/{tag_id} (Tags)",
+      "parameters": [
+        {
+          "name": "tag_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: tag_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_tag",
+      "displayName": "Delete tag",
+      "description": "DELETE /tags/{tag_id} (Tags)",
+      "parameters": [
+        {
+          "name": "tag_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: tag_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_teams",
+      "displayName": "List all teams",
+      "description": "GET /teams (Teams)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_team",
+      "displayName": "Retrieve a team",
+      "description": "GET /teams/{team_id} (Teams)",
+      "parameters": [
+        {
+          "name": "team_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: team_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_ticket_states",
+      "displayName": "List all ticket states",
+      "description": "GET /ticket_states (Ticket States)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_new_attribute_for_a_ticket_type",
+      "displayName": "Create a new attribute for a ticket type",
+      "description": "POST /ticket_types/{ticket_type_id}/attributes (Ticket Type Attributes)",
+      "parameters": [
+        {
+          "name": "ticket_type_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_type_id"
+        }
+      ]
+    },
+    {
+      "name": "update_an_existing_attribute_for_a_ticket_type",
+      "displayName": "Update an existing attribute for a ticket type",
+      "description": "PUT /ticket_types/{ticket_type_id}/attributes/{attribute_id} (Ticket Type Attributes)",
+      "parameters": [
+        {
+          "name": "ticket_type_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_type_id"
+        },
+        {
+          "name": "attribute_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: attribute_id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_ticket_types",
+      "displayName": "List all ticket types",
+      "description": "GET /ticket_types (Ticket Types)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "create_a_ticket_type",
+      "displayName": "Create a ticket type",
+      "description": "POST /ticket_types (Ticket Types)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_ticket_type",
+      "displayName": "Retrieve a ticket type",
+      "description": "GET /ticket_types/{ticket_type_id} (Ticket Types)",
+      "parameters": [
+        {
+          "name": "ticket_type_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_type_id"
+        }
+      ]
+    },
+    {
+      "name": "update_a_ticket_type",
+      "displayName": "Update a ticket type",
+      "description": "PUT /ticket_types/{ticket_type_id} (Ticket Types)",
+      "parameters": [
+        {
+          "name": "ticket_type_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_type_id"
+        }
+      ]
+    },
+    {
+      "name": "reply_to_a_ticket",
+      "displayName": "Reply to a ticket",
+      "description": "POST /tickets/{ticket_id}/reply (Tickets)",
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_id"
+        }
+      ]
+    },
+    {
+      "name": "add_tag_to_a_ticket",
+      "displayName": "Add tag to a ticket",
+      "description": "POST /tickets/{ticket_id}/tags (Tags, Tickets)",
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_id"
+        }
+      ]
+    },
+    {
+      "name": "remove_tag_from_a_ticket",
+      "displayName": "Remove tag from a ticket",
+      "description": "DELETE /tickets/{ticket_id}/tags/{tag_id} (Tags, Tickets)",
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_id"
+        },
+        {
+          "name": "tag_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: tag_id"
+        }
+      ]
+    },
+    {
+      "name": "create_a_ticket",
+      "displayName": "Create a ticket",
+      "description": "POST /tickets (Tickets)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "enqueue_create_ticket",
+      "displayName": "Enqueue create ticket",
+      "description": "POST /tickets/enqueue (Tickets)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "update_a_ticket",
+      "displayName": "Update a ticket",
+      "description": "PUT /tickets/{ticket_id} (Tickets)",
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_id"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_ticket",
+      "displayName": "Retrieve a ticket",
+      "description": "GET /tickets/{ticket_id} (Tickets)",
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_id"
+        }
+      ]
+    },
+    {
+      "name": "delete_a_ticket",
+      "displayName": "Delete a ticket",
+      "description": "DELETE /tickets/{ticket_id} (Tickets)",
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: ticket_id"
+        }
+      ]
+    },
+    {
+      "name": "search_tickets",
+      "displayName": "Search tickets",
+      "description": "POST /tickets/search (Tickets)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "update_a_visitor",
+      "displayName": "Update a visitor",
+      "description": "PUT /visitors (Visitors)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_visitor_with_user_id",
+      "displayName": "Retrieve a visitor with User ID",
+      "description": "GET /visitors (Visitors)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "convert_a_visitor",
+      "displayName": "Convert a visitor",
+      "description": "POST /visitors/convert (Visitors)",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "list_all_brands",
+      "displayName": "List all brands",
+      "description": "GET /brands",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_a_brand",
+      "displayName": "Retrieve a brand",
+      "description": "GET /brands/{id}",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: id"
+        }
+      ]
+    },
+    {
+      "name": "list_all_email_settings",
+      "displayName": "List all email settings",
+      "description": "GET /emails",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "retrieve_an_email_setting",
+      "displayName": "Retrieve an email setting",
+      "description": "GET /emails/{id}",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: id"
+        }
+      ]
+    },
+    {
+      "name": "register_a_fin_voice_call",
+      "displayName": "Register a Fin Voice call",
+      "description": "POST /fin_voice/register",
+      "parameters": [
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "No required parameters"
+        }
+      ]
+    },
+    {
+      "name": "collect_fin_voice_call_by_id",
+      "displayName": "Collect Fin Voice call by ID",
+      "description": "GET /fin_voice/collect/{id}",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: id"
+        }
+      ]
+    },
+    {
+      "name": "collect_fin_voice_call_by_external_id",
+      "displayName": "Collect Fin Voice call by external ID",
+      "description": "GET /fin_voice/external_id/{external_id}",
+      "parameters": [
+        {
+          "name": "external_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: external_id"
+        }
+      ]
+    },
+    {
+      "name": "collect_fin_voice_call_by_phone_number",
+      "displayName": "Collect Fin Voice call by phone number",
+      "description": "GET /fin_voice/phone_number/{phone_number}",
+      "parameters": [
+        {
+          "name": "phone_number",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: phone_number"
+        }
+      ]
+    },
+    {
+      "name": "collect_fin_voice_calls_by_conversation_id",
+      "displayName": "Collect Fin Voice calls by conversation ID",
+      "description": "GET /fin_voice/conversation/{conversation_id}",
+      "parameters": [
+        {
+          "name": "conversation_id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: conversation_id"
+        }
+      ]
+    },
+    {
+      "name": "export_a_workflow",
+      "displayName": "Export a workflow",
+      "description": "GET /export/workflows/{id} (Workflows)",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Path parameter: id"
+        }
+      ]
+    }
+  ]
+}
