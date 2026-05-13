@@ -1,0 +1,388 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "OAuthService",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Access_Tokens"
+  }, {
+    "name" : "Refresh_Tokens"
+  }, {
+    "name" : "Tokens"
+  } ],
+  "paths" : {
+    "/oauth/v1/access-tokens/{token}" : {
+      "get" : {
+        "tags" : [ "Access_Tokens" ],
+        "operationId" : "get-/oauth/v1/access-tokens/{token}_getAccessToken",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AccessTokenInfoResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/oauth/v1/refresh-tokens/{token}" : {
+      "get" : {
+        "tags" : [ "Refresh_Tokens" ],
+        "operationId" : "get-/oauth/v1/refresh-tokens/{token}_getRefreshToken",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RefreshTokenInfoResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ ]
+      },
+      "delete" : {
+        "tags" : [ "Refresh_Tokens" ],
+        "operationId" : "delete-/oauth/v1/refresh-tokens/{token}_archiveRefreshToken",
+        "parameters" : [ {
+          "name" : "token",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          },
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/oauth/v1/token" : {
+      "post" : {
+        "tags" : [ "Tokens" ],
+        "operationId" : "post-/oauth/v1/token_createToken",
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "properties" : {
+                  "grant_type" : {
+                    "type" : "string",
+                    "enum" : [ "authorization_code", "refresh_token" ]
+                  },
+                  "code" : {
+                    "type" : "string"
+                  },
+                  "redirect_uri" : {
+                    "type" : "string"
+                  },
+                  "client_id" : {
+                    "type" : "string"
+                  },
+                  "client_secret" : {
+                    "type" : "string"
+                  },
+                  "refresh_token" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponseIF"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "AccessTokenInfoResponse" : {
+        "required" : [ "app_id", "expires_in", "hub_id", "scope_to_scope_group_pks", "scopes", "token", "token_type", "trial_scope_to_scope_group_pks", "trial_scopes", "user_id" ],
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string"
+          },
+          "user" : {
+            "type" : "string"
+          },
+          "hub_domain" : {
+            "type" : "string"
+          },
+          "scopes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "scope_to_scope_group_pks" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "trial_scopes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "trial_scope_to_scope_group_pks" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          "hub_id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "app_id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "expires_in" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "user_id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "token_type" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TokenResponseIF" : {
+        "required" : [ "access_token", "expires_in", "refresh_token", "token_type" ],
+        "type" : "object",
+        "properties" : {
+          "access_token" : {
+            "type" : "string"
+          },
+          "expires_in" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "refresh_token" : {
+            "type" : "string"
+          },
+          "token_type" : {
+            "type" : "string"
+          },
+          "id_token" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RefreshTokenInfoResponse" : {
+        "required" : [ "client_id", "hub_id", "scopes", "token", "token_type", "user_id" ],
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string"
+          },
+          "user" : {
+            "type" : "string"
+          },
+          "hub_domain" : {
+            "type" : "string"
+          },
+          "scopes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "hub_id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "client_id" : {
+            "type" : "string"
+          },
+          "user_id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "token_type" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}
