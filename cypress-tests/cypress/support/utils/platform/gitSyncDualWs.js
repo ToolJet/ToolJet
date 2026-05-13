@@ -8,11 +8,20 @@ import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
 // Each helper reads/writes the same cypress envs (`workspaceId`, `workspaceSlug`)
 // the rest of the suite already uses, so no new globals.
 export const gitSyncDualWs = {
-  // Logs into a workspace and remembers its slug so dashboard/data-source helpers
+  // Logs into a workspace and remembers its identifier so dashboard helpers
   // (e.g. gitSyncGoToDashboard, gitSyncDashboardPush) build the right URLs.
+  //
+  // We deliberately write the workspace **UUID** into `workspaceSlug` — the
+  // SPA's `:workspaceId` route segment accepts both slug and UUID, but the
+  // slug-based path 404s for freshly-created workspaces because the auth
+  // session we just established is scoped by UUID (`/api/authenticate/{uuid}`),
+  // not by slug. Using the UUID keeps the URL and the auth scope aligned.
+  // `workspaceSlug` is the env name the existing helpers read, hence the
+  // (slightly misleading) name kept here for minimal blast radius.
   switchTo: ({ workspaceId, workspaceSlug }) => {
     cy.then(() => cy.apiLogin("dev@tooljet.io", "password", workspaceId));
-    cy.then(() => Cypress.env("workspaceSlug", workspaceSlug));
+    cy.then(() => Cypress.env("workspaceSlug", workspaceId));
+    cy.then(() => Cypress.env("workspaceName", workspaceSlug));
   },
 
   // Creates two fresh workspaces (one acts as Dev, one as Prod) and ensures
@@ -46,6 +55,10 @@ export const gitSyncDualWs = {
 
   // Pull master via the dashboard UI. Mirrors the inline helper from
   // gitSyncModuleMerge.cy.js so we don't drift on the modal sequence.
+  // The trailing reload + wait gives the SPA a clean read of the
+  // newly-synced rows — visiting another page (e.g. /modules) immediately
+  // after the modal closes can race the workspace-branches refresh and
+  // render an empty list.
   pullMaster: () => {
     cy.gitSyncGoToDashboard();
     cy.gitSyncSwitchBranch("master");
@@ -56,6 +69,11 @@ export const gitSyncDualWs = {
       .should("be.enabled")
       .click();
     cy.get(GS.modalTitle, { timeout: 60000 }).should("not.exist");
+    cy.wait(3000);
+    cy.reload();
+    cy.get('[data-cy="dashboard-section-header"]', { timeout: 30000 }).should(
+      "be.visible",
+    );
     cy.wait(2000);
   },
 
