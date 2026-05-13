@@ -1138,12 +1138,10 @@ class DataSourceManagerComponent extends React.Component {
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
                   shouldRenderFooterComponent &&
-                  !OAuthDs.includes(selectedDataSource?.kind) &&
-                  !(
-                    options?.auth_type?.value === 'oauth2' &&
-                    options?.grant_type?.value === 'authorization_code' &&
-                    options?.authentication_type?.value !== 'service_account'
-                  ) && (
+                  (!OAuthDs.includes(selectedDataSource?.kind) ||
+                    !(
+                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
+                    )) && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
                         <div className="row w-100">
