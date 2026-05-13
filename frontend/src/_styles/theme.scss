@@ -14531,6 +14531,11 @@ tbody {
     max-width: 95px;
   }
 
+  .group-chip--overflow {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+
   .all-groups-list {
     position: absolute;
     width: 100%;
@@ -14649,6 +14654,11 @@ tbody {
     border-radius: 6px;
     background-color: var(--slate3);
     color: var(--slate11);
+  }
+
+  .group-chip--overflow {
+    flex: 0 0 auto;
+    max-width: none;
   }
 
   .all-groups-list {

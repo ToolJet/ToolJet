@@ -6,11 +6,16 @@ import { toast } from 'react-hot-toast';
 import { WorkspaceCreateBranchModal } from './CreateBranchModal';
 import { Alert } from '@/_ui/Alert';
 import '@/_styles/switch-branch-modal.scss';
+import { DeleteBranchConfirmModal } from './DeleteBranchConfirmModal';
+import { Tooltip } from 'react-tooltip';
+import { authenticationService } from '@/_services';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [branchToDelete, setBranchToDelete] = useState(null);
 
   const { branches, activeBranchId, orgGitConfig, currentBranch } = useWorkspaceBranchesStore((state) => ({
     branches: state.branches,
@@ -19,6 +24,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
     currentBranch: state.currentBranch,
   }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
+  const organizationId = authenticationService.currentSessionValue?.current_organization_id;
 
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const isOnDefaultBranch =
@@ -47,6 +53,15 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
     }
 
     try {
+      // Verify branch exists on remote before switching
+      const existsOnRemote = await actions.checkBranchExistsOnRemote(branch.name);
+      if (!existsOnRemote) {
+        toast.error(
+          'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+        );
+        return;
+      }
+
       await actions.switchBranch(branch.id);
       toast.success(`Switched to ${branch.name}`);
       if (onBranchSwitch) {
@@ -114,113 +129,155 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   };
 
   return (
-    <AlertDialog
-      show={show}
-      closeModal={onClose}
-      title="Switch branch"
-      checkForBackground={true}
-      customClassName="switch-branch-modal"
-    >
-      <div className="switch-branch-modal-content">
-        {/* Info message - only shown on default branch */}
-        {isOnDefaultBranch && (
-          <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
-            Default branch is locked. Switch branches to make changes.
-          </Alert>
-        )}
+    <>
+      <AlertDialog
+        show={show && !branchToDelete}
+        closeModal={onClose}
+        title="Switch branch"
+        checkForBackground={true}
+        customClassName="switch-branch-modal"
+      >
+        <div className="switch-branch-modal-content">
+          {/* Info message - only shown on default branch */}
+          {isOnDefaultBranch && (
+            <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
+              Default branch is locked. Switch branches to make changes.
+            </Alert>
+          )}
 
-        {/* Search Section */}
-        <div className="search-section">
-          <label className="section-label">ALL OPEN BRANCHES</label>
-          <div className="search-input-wrapper">
-            <SolidIcon name="search" width="16" fill="var(--slate11)" />
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search.."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              data-cy="workspace-branch-search-input"
-            />
+          {/* Search Section */}
+          <div className="search-section">
+            <label className="section-label">ALL OPEN BRANCHES</label>
+            <div className="search-input-wrapper">
+              <SolidIcon name="search" width="16" fill="var(--slate11)" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search.."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                data-cy="workspace-branch-search-input"
+              />
+            </div>
+          </div>
+
+          {/* Branch List */}
+          <div className="branch-list-section">
+            {isLoading ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <span>Loading branches...</span>
+              </div>
+            ) : filteredBranches.length === 0 ? (
+              <div className="empty-state">
+                <p>No branches found</p>
+              </div>
+            ) : (
+              <>
+                {filteredBranches.map((branch) => {
+                  const isCurrentBranch = branch.id === activeBranchId;
+                  const isDefaultBranch = branch.is_default || branch.isDefault;
+                  return (
+                    <div
+                      key={branch.id || branch.name}
+                      className={`branch-list-item ${isCurrentBranch ? 'active' : ''}`}
+                      onClick={() => handleBranchClick(branch)}
+                      data-cy={`workspace-branch-list-item-${branch.name}`}
+                    >
+                      <div className="branch-checkbox">
+                        {isCurrentBranch && <SolidIcon name="check2" width="16" fill="var(--indigo9)" />}
+                      </div>
+                      <div className="branch-list-content">
+                        <div className="branch-list-name">
+                          {branch.name}
+                          {isDefaultBranch && (
+                            <span style={{ fontSize: 10, opacity: 0.6, marginLeft: 4 }}>(default)</span>
+                          )}
+                        </div>
+                        <div className="branch-list-meta">
+                          Created by {branch.author || branch.created_by || 'default'},{' '}
+                          {getRelativeTime(branch.createdAt || branch.created_at)}
+                        </div>
+                      </div>
+                      <div
+                        className="branch-delete-action"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isDefaultBranch) return;
+                          actions.resetDeleteState();
+                          setBranchToDelete(branch);
+                        }}
+                      >
+                        {isDefaultBranch ? (
+                          <span
+                            className="branch-delete-icon branch-delete-locked"
+                            data-tooltip-id="delete-branch-tooltip"
+                            data-tooltip-content="Cannot delete default branch"
+                          >
+                            <TablerIcon iconName="IconTrash" size={18} color="var(--slate8)" stroke={1.5} />
+                          </span>
+                        ) : (
+                          <span className="branch-delete-icon">
+                            <TablerIcon iconName="IconTrash" size={18} color="var(--tomato9)" stroke={1.5} />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                <Tooltip id="delete-branch-tooltip" place="right" />
+              </>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="modal-footer-actions">
+            <button
+              className="footer-btn secondary"
+              onClick={handleViewInGitRepo}
+              data-cy="workspace-view-in-git-repo-btn"
+            >
+              <span>View in git repo</span>
+              <SolidIcon name="newtab" width="14" fill="var(--icon-default)" />
+            </button>
+            <button
+              className="footer-btn accent"
+              onClick={() => {
+                setShowCreateModal(true);
+              }}
+              data-cy="workspace-create-branch-from-modal-btn"
+            >
+              <SolidIcon name="plusicon" width="14" fill="var(--indigo9)" />
+              <span>Create new branch</span>
+            </button>
           </div>
         </div>
 
-        {/* Branch List */}
-        <div className="branch-list-section">
-          {isLoading ? (
-            <div className="loading-state">
-              <div className="spinner"></div>
-              <span>Loading branches...</span>
-            </div>
-          ) : filteredBranches.length === 0 ? (
-            <div className="empty-state">
-              <p>No branches found</p>
-            </div>
-          ) : (
-            filteredBranches.map((branch) => {
-              const isCurrentBranch = branch.id === activeBranchId;
-              return (
-                <div
-                  key={branch.id || branch.name}
-                  className={`branch-list-item ${isCurrentBranch ? 'active' : ''}`}
-                  onClick={() => handleBranchClick(branch)}
-                  data-cy={`workspace-branch-list-item-${branch.name}`}
-                >
-                  <div className="branch-checkbox">
-                    {isCurrentBranch && <SolidIcon name="check2" width="16" fill="var(--indigo9)" />}
-                  </div>
-                  <div className="branch-list-content">
-                    <div className="branch-list-name">
-                      {branch.name}
-                      {(branch.is_default || branch.isDefault) && (
-                        <span style={{ fontSize: 10, opacity: 0.6, marginLeft: 4 }}>(default)</span>
-                      )}
-                    </div>
-                    <div className="branch-list-meta">
-                      Created by {branch.author || branch.created_by || 'default'},{' '}
-                      {getRelativeTime(branch.createdAt || branch.created_at)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="modal-footer-actions">
-          <button
-            className="footer-btn secondary"
-            onClick={handleViewInGitRepo}
-            data-cy="workspace-view-in-git-repo-btn"
-          >
-            <span>View in git repo</span>
-            <SolidIcon name="newtab" width="14" fill="var(--icon-default)" />
-          </button>
-          <button
-            className="footer-btn accent"
-            onClick={() => {
-              setShowCreateModal(true);
+        {/* Create Branch Modal */}
+        {showCreateModal && (
+          <WorkspaceCreateBranchModal
+            onClose={() => setShowCreateModal(false)}
+            onSuccess={() => {
+              setShowCreateModal(false);
+              onClose();
             }}
-            data-cy="workspace-create-branch-from-modal-btn"
-          >
-            <SolidIcon name="plusicon" width="14" fill="var(--indigo9)" />
-            <span>Create new branch</span>
-          </button>
-        </div>
-      </div>
+          />
+        )}
+      </AlertDialog>
 
-      {/* Create Branch Modal */}
-      {showCreateModal && (
-        <WorkspaceCreateBranchModal
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            onClose();
+      {/* Delete Branch Confirmation Dialog — rendered as sibling so switch-branch modal is hidden */}
+      {branchToDelete && (
+        <DeleteBranchConfirmModal
+          branchToDelete={branchToDelete}
+          onCancel={() => {
+            actions.resetDeleteState();
+            setBranchToDelete(null);
           }}
+          onCloseParent={onClose}
+          onDelete={(branchId) => actions.deleteWorkspaceBranch(branchId)}
         />
       )}
-    </AlertDialog>
+    </>
   );
 }
 

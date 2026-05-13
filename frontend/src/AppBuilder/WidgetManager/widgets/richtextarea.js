@@ -46,6 +46,12 @@ export const richtextareaConfig = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
   },
   events: {},
   styles: {
@@ -59,6 +65,7 @@ export const richtextareaConfig = {
         defaultValue: true,
       },
     },
+
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -105,6 +112,7 @@ export const richtextareaConfig = {
       defaultValue: { value: '' },
       loadingState: { value: `{{false}}` },
       dynamicHeight: { value: '{{false}}' },
+      collapseWhenHidden: { value: '{{false}}' },
     },
     events: [],
     styles: {

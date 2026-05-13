@@ -44,6 +44,7 @@ const getColumnTypeDisplayText = (columnType) => {
     boolean: 'Boolean',
     select: 'Select',
     newMultiSelect: 'Multiselect',
+    tagsV2: 'Tags',
     json: 'JSON',
     markdown: 'Markdown',
     html: 'HTML',
@@ -120,10 +121,14 @@ export const Table = (props) => {
     [updateColumnEvents]
   );
 
-  const handleEventManagerPopoverCallback = useCallback((showing) => {
-    setActionPopOverRootClose(!showing);
-    setShowPopOver(showing);
-  }, []);
+  const handleEventManagerPopoverCallback = useCallback(
+    (showing) => {
+      setActionPopOverRootClose(!showing);
+      setShowPopOver(showing);
+      setColumnPopoverRootCloseBlocker('eventManager', showing);
+    },
+    [setColumnPopoverRootCloseBlocker]
+  );
 
   // Render helpers
   const renderCustomElement = useCallback(
@@ -443,6 +448,7 @@ export const Table = (props) => {
     'loadingState',
     'showBulkUpdateActions',
     'visibility',
+    'collapseWhenHidden',
     'disabledState',
     'dynamicHeight',
   ];

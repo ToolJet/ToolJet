@@ -269,11 +269,9 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get(
             dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase()),
         ).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
         cy.get(dataSourceSelector.commonDsLabelAndCount).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
     });
     //Verify the released app
@@ -916,7 +914,7 @@ describe("Custom Group Granular Access", () => {
                     canAccessProduction: false,
                     canAccessReleased: false,
                 });
-                cy.apiUpdateAllowSignUp(true, "organization").then(()=>{
+                cy.apiUpdateAllowSignUp(true, "organization");
                 cy.apiLogout();
 
                 //Scenario G : Signing-up with app preview link and should land on app preview
@@ -924,6 +922,8 @@ describe("Custom Group Granular Access", () => {
                 const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=development&version=v1`;
                 cy.visit(previewUrl);
                 signup(data.firstName, data.email);
+                cy.wait(1500);
+                cy.get(commonSelectors.previewSettings).should('be.visible');
                 cy.get(commonWidgetSelector.draggableWidget("text1")).should(
                     "contain",
                     "development",
@@ -937,8 +937,8 @@ describe("Custom Group Granular Access", () => {
                 cy.apiLogout();
                 cy.visit(previewUrl);
                 signup(user1, email1);
+                cy.wait(1000);
                 cy.url().should("match", /\/error\/restricted(-preview)?/);
-            });
         });
     });
 });

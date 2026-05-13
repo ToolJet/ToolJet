@@ -54,7 +54,8 @@ export class FolderAppsService implements IFolderAppsService {
 
       // When no branchId is provided (e.g. end users without branch switcher),
       // fall back to the default branch so folders reflect only default-branch apps.
-      if (!branchId && type === APP_TYPES.FRONT_END) {
+      // Applies to both front-end apps and modules — both are branch-scoped resources.
+      if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
         const orgGit = await manager.findOne(OrganizationGitSync, {
           where: { organizationId: user.organizationId },
         });
@@ -74,13 +75,20 @@ export class FolderAppsService implements IFolderAppsService {
       const userAppPermissions = userPermissions?.[resourceType] ?? userPermissions?.[MODULES.APP];
       const userFolderPermissions = userPermissions?.[MODULES.FOLDER];
 
+      // Builders have admin-level access to module folders — no app or folder permission checks apply.
+      const isModuleBuilderAccess =
+        type === APP_TYPES.MODULE && (userPermissions?.isBuilder || userPermissions?.isAdmin);
+
       const allFolderList = await this.foldersUtilService.allFolders(user, manager, type);
       if (allFolderList.length === 0) {
         return { folders: [] };
       }
+      const effectiveAppPermissions = isModuleBuilderAccess
+        ? { ...userAppPermissions, isAllEditable: true }
+        : userAppPermissions;
       const folders = await this.folderAppsUtilService.allFoldersWithAppCount(
         user,
-        userAppPermissions,
+        effectiveAppPermissions,
         manager,
         type,
         searchKey,
@@ -101,7 +109,7 @@ export class FolderAppsService implements IFolderAppsService {
       const visibleFolders = this.filterFoldersByPermissions(
         allFolderList,
         user,
-        userPermissions?.isAdmin,
+        isModuleBuilderAccess || userPermissions?.isAdmin,
         userFolderPermissions
       );
 

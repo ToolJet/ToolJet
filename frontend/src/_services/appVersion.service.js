@@ -5,6 +5,7 @@ export const appVersionService = {
   getAll,
   getOne,
   getAppVersionData,
+  getModuleVersionData,
   create,
   del,
   save,
@@ -44,6 +45,17 @@ function getAppVersionData(appId, versionId, mode) {
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
     handleResponse
   );
+}
+
+function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
+  // server resolver returns the latest non-stub on the consumer's branch.
+  const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
+  return fetch(
+    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {

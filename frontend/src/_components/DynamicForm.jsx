@@ -513,8 +513,10 @@ const DynamicForm = ({
           selectedDataSource,
           currentAppEnvironmentId,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled:
-            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          // Permission-only — branch-lock is passed separately so the OAuth save button
+          // can still enable when an encrypted field is edited on the default branch.
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isWorkspaceBranchLocked,
           optionsChanged,
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           scopes: options?.scopes?.value,

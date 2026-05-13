@@ -270,7 +270,11 @@ export class AbilityUtilService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const appsOwnedByUser = await manager.find(AppBase, {
-        where: { userId: user.id, organizationId: user.organizationId, type: APP_TYPES.FRONT_END },
+        where: {
+          userId: user.id,
+          organizationId: user.organizationId,
+          type: APP_TYPES.FRONT_END,
+        },
       });
 
       const appsIdOwnedByUser = appsOwnedByUser.map((app) => app.id);

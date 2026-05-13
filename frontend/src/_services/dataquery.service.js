@@ -145,7 +145,11 @@ function invoke(dataSourceId, methodName, environmentId, args) {
     args: args,
   };
 
-  const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  let url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
+  const branchId = getActiveBranchId();
+  if (branchId) {
+    url += `?branch_id=${branchId}`;
+  }
 
   const requestOptions = {
     method: 'POST',

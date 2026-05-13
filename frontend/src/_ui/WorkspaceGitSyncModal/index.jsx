@@ -94,6 +94,19 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBranch]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key !== 'Enter' || isPushing || isPulling) return;
+      if (activeTab === 'push' && commitMessage.trim()) {
+        handlePush();
+      } else if (activeTab === 'pull' && checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && !actionChoiceMode) {
+        handlePull();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, commitMessage, isPushing, isPulling, checkingForUpdate, actionChoiceMode]);
+
   const checkForUpdates = () => {
     setCheckingForUpdate({
       visible: true,
@@ -298,6 +311,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             <div className="form-group mb-3 w-100">
               <Dropdown
                 label="Select branch to pull from"
+                data-cy="branch-select"
                 options={dropdownBranches.reduce((acc, branch) => {
                   acc[branch.name] = {
                     value: branch.name,
@@ -500,10 +514,17 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                 setSelectedBranch(currentBranchName);
               }}
               disabled={isPulling}
+              data-cy="cancel-button"
             >
               Cancel
             </ButtonSolid>
-            <ButtonSolid variant="primary" onClick={handleContinue} disabled={isPulling} isLoading={isPulling}>
+            <ButtonSolid
+              variant="primary"
+              onClick={handleContinue}
+              disabled={isPulling}
+              isLoading={isPulling}
+              data-cy="continue-button"
+            >
               Continue
             </ButtonSolid>
           </Modal.Footer>
@@ -511,7 +532,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       }
       return (
         <Modal.Footer>
-          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPulling}>
+          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPulling} data-cy="cancel-button">
             Cancel
           </ButtonSolid>
           <ButtonSolid
@@ -519,6 +540,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             onClick={handlePull}
             disabled={checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE || isPulling}
             isLoading={isPulling}
+            data-cy="pull-button"
           >
             Pull changes
           </ButtonSolid>
@@ -528,7 +550,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     // Push tab active
     return (
       <Modal.Footer>
-        <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPushing}>
+        <ButtonSolid variant="tertiary" onClick={onClose} disabled={isPushing} data-cy="cancel-button">
           Cancel
         </ButtonSolid>
         <ButtonSolid
@@ -536,6 +558,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
           onClick={handlePush}
           disabled={isPushing || !commitMessage.trim()}
           isLoading={isPushing}
+          data-cy="commit-button"
           // leftIcon="commit"
           // fill="var(--indigo1)"
           // iconWidth="20"

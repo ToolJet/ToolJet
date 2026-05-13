@@ -166,6 +166,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );
@@ -332,6 +337,11 @@ export const createDataQuerySlice = (set, get) => ({
               data: [],
               rawData: [],
               id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
             },
             moduleId
           );
@@ -628,6 +638,14 @@ export const createDataQuerySlice = (set, get) => ({
           });
 
           state.dataQuery.queries.modules[moduleId] = updatedQueriesValue;
+
+          const currentSelectedQueryId = state.queryPanel.selectedQuery?.id;
+          if (currentSelectedQueryId && queriesToUpdate.has(currentSelectedQueryId)) {
+            const updatedSelectedQuery = updatedQueriesValue.find((q) => q.id === currentSelectedQueryId);
+            if (updatedSelectedQuery) {
+              state.queryPanel.selectedQuery = updatedSelectedQuery;
+            }
+          }
         },
         false,
         'performDeletionUpdationAndCreationOfQuery'
