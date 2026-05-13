@@ -2490,7 +2490,8 @@ export class AppImportExportService {
     // JOIN Section
     if (joinOptions?.joins && joinOptions.joins.length > 0) {
       const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
-        const updatedJoinCondition = { ...joinCondition };
+        const { join_type, ...restJoinCondition } = joinCondition;
+        const updatedJoinCondition = { ...restJoinCondition, joinType: restJoinCondition.joinType ?? join_type };
         // Updating Join tableId
         if (updatedJoinCondition.table)
           updatedJoinCondition.table =
@@ -2539,13 +2540,11 @@ export class AppImportExportService {
 
     // Sort Section
     if (joinOptions?.order_by) {
-      joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
-        if (eachOrderBy.table) {
-          eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
-          return eachOrderBy;
-        }
-        return eachOrderBy;
-      });
+      joinOptions.order_by = joinOptions.order_by.map(({ column_name, columnName, table, ...rest }) => ({
+        ...rest,
+        ...(table && { table: tooljetDatabaseMapping[table]?.id ?? table }),
+        columnName: columnName ?? column_name,
+      }));
     }
 
     return {
@@ -2556,22 +2555,36 @@ export class AppImportExportService {
     };
   }
 
-  updateNewTableIdForFilter(joinConditions, tooljetDatabaseMapping) {
-    const { conditionsList = [] } = { ...joinConditions };
-    const updatedConditionList = conditionsList.map((condition) => {
+  private remapConditionField(field: Record<string, any>, tooljetDatabaseMapping: Record<string, any>) {
+    const rawField = field ?? {};
+    const columnName = rawField.columnName ?? rawField.column_name;
+    return {
+      type: rawField.type,
+      ...(rawField.table && { table: tooljetDatabaseMapping[rawField.table]?.id ?? rawField.table }),
+      ...(columnName !== undefined && { columnName }),
+      ...(rawField.value !== undefined && { value: rawField.value }),
+      ...(rawField.jsonpath !== undefined && { jsonpath: rawField.jsonpath }),
+    };
+  }
+
+  updateNewTableIdForFilter(joinConditions: Record<string, any>, tooljetDatabaseMapping: Record<string, any>) {
+    const rawConditionsList =
+      [joinConditions?.conditions_list, joinConditions?.conditionsList].find((list) => list?.length) ?? [];
+    const updatedConditionList = rawConditionsList.map((condition: Record<string, any>) => {
       if (condition.conditions) {
         return this.updateNewTableIdForFilter(condition.conditions, tooljetDatabaseMapping);
-      } else {
-        const { operator = '=', leftField = {}, rightField = {} } = { ...condition };
-        if (leftField?.table) leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
-        if (rightField?.table) rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
-        return { operator, leftField, rightField };
       }
+      const leftField = this.remapConditionField(condition.leftField ?? condition.left_field, tooljetDatabaseMapping);
+      const rightField = this.remapConditionField(
+        condition.rightField ?? condition.right_field,
+        tooljetDatabaseMapping
+      );
+      return { operator: condition.operator ?? '=', leftField, rightField };
     });
     return {
       conditions: {
-        ...joinConditions,
-        conditionsList: [...updatedConditionList],
+        operator: joinConditions?.operator,
+        conditionsList: updatedConditionList,
       },
     };
   }
