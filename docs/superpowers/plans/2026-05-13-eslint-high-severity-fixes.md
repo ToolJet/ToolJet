@@ -135,34 +135,34 @@ was added during the migration window when the pattern wasn't ignored."
 - Modify: `plugins/packages/nocodb/lib/index.ts` (lines 74 and 89)
 - Modify: `plugins/eslint.config.js` (remove `'no-constant-binary-expression': 'off'`)
 
-**Context:** The plugins flat config disables `no-constant-binary-expression` to preserve legacy parity. Two real bugs hide behind that: `undefined ?? x ?? ''` patterns where `undefined ?? '' ` always evaluates to `''`, making the middle term dead. Author intent reads as "fall back to empty string if `response?.body` is nullish."
+**Context:** The plugins flat config disables `no-constant-binary-expression` to preserve legacy parity. Two real bugs hide behind that: `Number(queryOptions.record_id) ?? 0` patterns. `Number()` never returns null/undefined (returns `NaN` for invalid input), so the left side of `??` is constant non-nullish — the `?? 0` fallback is dead. The fix swaps `??` for `||` to actually catch `NaN`, which is falsy. The two sites are inside the `update_record` and `delete_record` cases of the switch.
 
 - [ ] **Step 1: Inspect the exact current code at the two sites**
 
 Run: `sed -n '70,95p' plugins/packages/nocodb/lib/index.ts`
-Expected: see two assignments matching the `?? undefined ?? ''` pattern (lines 74 and 89).
+Expected: see two assignments matching `const record_id = Number(queryOptions.record_id) ?? 0;` at lines 74 (inside `case 'update_record'`) and 89 (inside `case 'delete_record'`).
 
-If the surrounding context differs from what the spec assumed (e.g., the middle operand isn't literally `undefined`), STOP and report — do not blindly apply the edit.
+If the surrounding context differs, STOP and report — do not blindly apply the edit.
 
 - [ ] **Step 2: Edit line 74**
 
-Locate the line. Replace:
+Locate the line inside the `case 'update_record': {` block. Replace:
 
 ```ts
-const response_value = response?.body ?? undefined ?? '';
+const record_id = Number(queryOptions.record_id) ?? 0;
 ```
 
 with:
 
 ```ts
-const response_value = response?.body ?? '';
+const record_id = Number(queryOptions.record_id) || 0;
 ```
 
-(Use Edit tool with surrounding context so the match is unique; both lines have the same content.)
+(Use Edit tool with surrounding context — the `case 'update_record': {` line above — so the match is unique; both lines 74 and 89 have the same content.)
 
 - [ ] **Step 3: Edit line 89**
 
-Same edit at line 89, using surrounding context to disambiguate from line 74.
+Same `?? 0` → `|| 0` swap at line 89, using the `case 'delete_record': {` block above as disambiguating context.
 
 - [ ] **Step 4: Verify plugins lint still passes (rule still disabled)**
 
@@ -188,12 +188,16 @@ Expected: exits 0. If lint fails with `no-constant-binary-expression` on a file 
 
 ```bash
 git add plugins/packages/nocodb/lib/index.ts plugins/eslint.config.js
-git commit -m "fix(plugins/nocodb): drop dead 'undefined' in nullish chain + re-enable rule
+git commit -m "fix(plugins/nocodb): use || for NaN fallback + re-enable no-constant-binary-expression
 
-response?.body ?? undefined ?? '' always equals response?.body ?? '' — the middle
-operand is constant-nullish and dead. Caught by no-constant-binary-expression,
-which had been disabled in plugins/eslint.config.js to preserve legacy parity
-during the eslint 7→9 migration. Two occurrences in nocodb/lib/index.ts."
+\`Number(x) ?? 0\` is a constant-binary-expression bug — \`Number()\` never returns
+null/undefined, so \`?? 0\` is dead. Switching to \`||\` covers the NaN case the
+fallback was clearly intended for. Two occurrences in nocodb/lib/index.ts
+(update_record and delete_record cases).
+
+The no-constant-binary-expression rule had been disabled in plugins/eslint.config.js
+to preserve legacy parity during the eslint 7→9 migration; re-enabled with the
+bugs fixed."
 ```
 
 ---
