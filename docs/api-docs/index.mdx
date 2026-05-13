@@ -1,0 +1,45 @@
+---
+id: index
+title: ToolJet API Reference
+slug: /
+---
+
+# API Reference
+
+ToolJet exposes a set of REST APIs that let you programmatically manage users, workspaces, applications, modules, and more. All APIs are secured and require an access token passed in the `Authorization` header.
+
+<div className="api-landing-grid">
+  <ApiCategoryCard
+    title="ToolJet API"
+    description="Manage users, workspaces, apps, modules, and groups programmatically."
+    href="/api/tooljet-api"
+    endpointCount={22}
+  />
+  <ApiCategoryCard
+    title="GitSync API"
+    description="Automate git sync operations and CI/CD pipelines for ToolJet applications."
+    href="/api/gitsync-api"
+    endpointCount={5}
+  />
+  <ApiCategoryCard
+    title="SCIM"
+    description="Provision and manage users and groups via the SCIM 2.0 standard."
+    href="/api/scim"
+    endpointCount={12}
+  />
+</div>
+
+## Authentication
+
+All API requests (except SCIM, which uses its own token) require an `Authorization` header with a `Basic` access token configured in your `.env` file.
+
+```bash
+Authorization: Basic <access_token>
+```
+
+To enable the ToolJet API, add these variables to your `.env`:
+
+| Variable | Description |
+|:---------|:------------|
+| `ENABLE_EXTERNAL_API` | `true` or `false` |
+| `EXTERNAL_API_ACCESS_TOKEN` | Your access token |

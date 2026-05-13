@@ -1,0 +1,24 @@
+---
+id: get-group
+title: "Get Group by ID"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="GET" path="/workspace/{workspaceId}/groups/{groupId}" />
+
+Retrieves details of a specific group including its permissions.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"},{"name":"groupId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/groups/{groupId}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+**Response:** `200`

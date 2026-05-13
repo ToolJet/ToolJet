@@ -1,0 +1,38 @@
+---
+id: get-all-groups
+title: "Get All Groups"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="GET" path="/workspaces/{workspaceId}/groups" />
+
+Retrieves all groups in a workspace. Supports search and pagination.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+
+<ParamsTable title="Query Parameters" params={[{"name":"search","type":"string","required":false,"description":"Filter groups by name.","in":"query"},{"name":"page","type":"integer","required":false,"description":"","in":"query"},{"name":"per_page","type":"integer","required":false,"description":"","in":"query"}]} />
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspaces/{workspaceId}/groups?search=<search>&page=<page>&per_page=<per_page>" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "data": [
+    {
+      "id": "grp_12345",
+      "name": "Backend Engineers",
+      "permissions": {},
+      "granularPermissions": []
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total_count": 1
+  }
+}`} />

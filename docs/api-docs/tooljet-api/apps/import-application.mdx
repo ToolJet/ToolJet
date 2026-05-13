@@ -1,0 +1,21 @@
+---
+id: import-application
+title: "Import Application"
+---
+
+<EndpointHeader method="POST" path="/import/workspace/{workspaceId}/apps" />
+
+Imports an application into a ToolJet workspace.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"appName","type":"string","required":false,"description":"Overrides the app name on import. Uses the exported name if omitted.","in":"body"}]} />
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/apps" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{}'`} />
+
+**Response:** `201`

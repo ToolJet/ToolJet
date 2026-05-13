@@ -1,0 +1,25 @@
+---
+id: update-group
+title: "Update Group"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="PATCH" path="/workspace/{workspaceId}/groups/{groupId}" />
+
+Updates group name, workspace-level permissions, or granular permissions.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"},{"name":"groupId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"","in":"body"},{"name":"permissions","type":"object","required":false,"description":"","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"","in":"body"}]} />
+
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/workspace/{workspaceId}/groups/{groupId}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{}'`} />
+
+**Response:** `200`

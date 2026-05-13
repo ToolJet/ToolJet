@@ -1,0 +1,25 @@
+---
+id: create-app-from-git
+title: "Create App from GitHub"
+---
+
+<EndpointHeader method="POST" path="/apps" />
+
+Creates a new ToolJet app from a GitHub repository.
+
+
+
+<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"","in":"query"}]} />
+
+<ParamsTable title="Request Body" params={[{"name":"gitAppId","type":"string","required":true,"description":"Git App ID.","in":"body"},{"name":"gitVersionId","type":"string","required":true,"description":"Git version ID (branch or tag).","in":"body"},{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"}]} />
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps?createMode=<createMode>" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "gitAppId": "app-123456",
+  "gitVersionId": "main",
+  "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8"
+}'`} />
+
+**Response:** `201`

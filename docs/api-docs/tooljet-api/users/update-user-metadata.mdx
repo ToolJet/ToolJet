@@ -1,0 +1,37 @@
+---
+id: update-user-metadata
+title: "Update User Metadata"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="PUT" path="/workspace/{workspaceIdentifier}/user/{userIdentifier}" />
+
+Replaces the entire userDetails (metadata) for a user in a workspace. This is a full replace — keys not included will be removed.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceIdentifier","type":"string","required":true,"description":"Workspace UUID or slug.","in":"path"},{"name":"userIdentifier","type":"string","required":true,"description":"User UUID or email.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"userDetails","type":"array","required":true,"description":"","in":"body"}]} />
+
+<RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "userDetails": [
+    {
+      "key": "department",
+      "value": "Platform"
+    },
+    {
+      "key": "title",
+      "value": "Senior Engineer"
+    }
+  ]
+}'`} />
+
+**Response:** `200`

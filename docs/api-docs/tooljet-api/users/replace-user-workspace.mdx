@@ -1,0 +1,28 @@
+---
+id: replace-user-workspace
+title: "Replace User Workspace"
+---
+
+<EndpointHeader method="PATCH" path="/user/{id}/workspace/{workspaceId}" />
+
+Updates a specific workspace relation for a user.
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"},{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"id","type":"string","required":false,"description":"","in":"body"},{"name":"name","type":"string","required":false,"description":"","in":"body"},{"name":"status","type":"string","required":false,"description":"","in":"body"},{"name":"groups","type":"array","required":false,"description":"","in":"body"}]} />
+
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{id}/workspace/{workspaceId}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "status": "archived",
+  "groups": [
+    {
+      "name": "all_users"
+    }
+  ]
+}'`} />
+
+**Response:** `200`

@@ -1,0 +1,20 @@
+---
+id: get-group
+title: "Get Group by ID"
+---
+
+<EndpointHeader method="GET" path="/Groups/{id}" />
+
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X GET "https://app.tooljet.com/api/scim/v2/Groups/{id}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+**Response:** `200`

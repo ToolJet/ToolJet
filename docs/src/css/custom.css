@@ -558,6 +558,57 @@ img {
   padding: 5px 13px !important;
 }
 
+.navbar-api,
+.navbar-api:hover {
+  color: white !important;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.navbar-api {
+  background-color: #4d72fa;
+  border: 1px solid #4d72fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 13px !important;
+  margin-right: 20px;
+  position: relative;
+}
+
+.navbar-api::after {
+  content: '';
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 22px;
+  width: 1px;
+  background: #E4E7EB;
+}
+
+[data-theme='dark'] .navbar-api::after {
+  background: #444950;
+}
+
+.navbar-api:hover {
+  background-color: #3a5ce5;
+  border-color: #3a5ce5;
+}
+
+[data-theme='dark'] .navbar-api,
+[data-theme='dark'] .navbar-api:hover {
+  color: white !important;
+}
+
+@media screen and (max-width: 996px) {
+  .navbar-api {
+    display: none !important;
+  }
+}
+
 
 
 button[title="Switch between dark and light mode (currently light mode)"],
@@ -639,9 +690,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 }
 
 .navbarSearchContainer_Bca1 {
-  border-right: 1px solid #E4E7EB !important;
-  padding: 4px 16px !important;
-  margin-right: 8px;
+  border-right: none !important;
+  padding: 4px 8px !important;
+  margin-right: 0;
 }
 
 .dropdown-archived-versions {
@@ -810,7 +861,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 }
 
 /* Side bar Styles */
-.category-as-header>.menu__list-item-collapsible:first-child a {
+.category-as-header>.menu__list-item-collapsible:first-child a,
+.category-as-header>.menu__link--sublist:first-child,
+.category-as-header>.menu__link:first-child {
   font-size: 15px;
   font-style: normal;
   font-weight: 600 !important;
@@ -819,7 +872,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   color: #1B1F24;
 }
 
-[data-theme='dark'] .category-as-header>.menu__list-item-collapsible:first-child a {
+[data-theme='dark'] .category-as-header>.menu__list-item-collapsible:first-child a,
+[data-theme='dark'] .category-as-header>.menu__link--sublist:first-child,
+[data-theme='dark'] .category-as-header>.menu__link:first-child {
   color: white;
 }
 
@@ -844,6 +899,12 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   background-repeat: no-repeat;
   margin-right: 5px;
   vertical-align: middle;
+}
+
+.no-icon>.menu__list-item-collapsible:first-child a:first-of-type::before,
+.no-icon>.menu__link--sublist:first-child::before,
+.no-icon>.menu__link:first-child::before {
+  display: none !important;
 }
 
 .getting-started-header .menu__list-item-collapsible:first-child a:first-of-type::before {

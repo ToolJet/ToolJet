@@ -1,0 +1,37 @@
+---
+id: create-user
+title: "Create User"
+---
+
+<EndpointHeader method="POST" path="/users" />
+
+Creates a user with workspace assignments and returns 201 on success.
+
+
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"","in":"body"},{"name":"email","type":"string","required":true,"description":"","in":"body"},{"name":"password","type":"string","required":false,"description":"","in":"body"},{"name":"status","type":"string","required":false,"description":"","in":"body"},{"name":"workspaces","type":"array","required":true,"description":"","in":"body"}]} />
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/users" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "password": "qwy@4xt123",
+  "status": "active",
+  "workspaces": [
+    {
+      "name": "team-spac",
+      "status": "active",
+      "groups": [
+        {
+          "name": "all_users"
+        }
+      ]
+    }
+  ]
+}'`} />
+
+**Response:** `201`

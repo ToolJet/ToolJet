@@ -1,0 +1,32 @@
+---
+id: get-all-app-details
+title: "Get All App Details"
+---
+
+<EndpointHeader method="GET" path="/workspace/{workspaceId}/apps" />
+
+Returns app details for all applications in a workspace.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/apps" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`[
+  {
+    "id": "ae06cc7a-2922-4fe7-9064-462741558813",
+    "name": "Applicant tracking system",
+    "slug": "ae06cc7a-2922-4fe7-9064-462741558813",
+    "versions": [
+      {
+        "id": "37be6442-ca1b-4a5a-a6f4-f929e00a0ac1",
+        "name": "v1"
+      }
+    ]
+  }
+]`} />

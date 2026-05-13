@@ -1,0 +1,32 @@
+---
+id: list-modules
+title: "List Modules"
+---
+
+<EndpointHeader method="GET" path="/workspace/{workspaceId}/modules" />
+
+Retrieves a list of all modules in a workspace.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/modules" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "modules": [
+    {
+      "id": "c0a80100-0000-4000-8000-000000000001",
+      "name": "User Management Module",
+      "slug": "user-management",
+      "isPublic": false,
+      "createdAt": "2025-02-15T09:30:00.000Z",
+      "updatedAt": "2025-05-01T14:12:33.000Z"
+    }
+  ],
+  "total": 1
+}`} />

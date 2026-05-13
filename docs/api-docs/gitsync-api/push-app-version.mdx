@@ -1,0 +1,23 @@
+---
+id: push-app-version
+title: "Push App Version to GitHub"
+---
+
+<EndpointHeader method="POST" path="/apps/{appId}/versions/{versionId}/git-sync/push" />
+
+Push a specific app version to the configured GitHub repository.
+
+<ParamsTable title="Path Parameters" params={[{"name":"appId","type":"string","required":true,"description":"ID of the app.","in":"path"},{"name":"versionId","type":"string","required":true,"description":"ID of the app version to push.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"commitMessage","type":"string","required":true,"description":"Git commit message.","in":"body"}]} />
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appId}/versions/{versionId}/git-sync/push" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "commitMessage": "Updated app configuration and components"
+}'`} />
+
+**Response:** `200`

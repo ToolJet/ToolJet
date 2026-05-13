@@ -1,0 +1,48 @@
+---
+id: create-group
+title: "Create Group"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="POST" path="/workspace/{workspaceId}/groups" />
+
+Creates a new user group in a workspace with optional workspace-level permissions and granular permissions for apps and datasources.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"","in":"body"},{"name":"permissions","type":"object","required":false,"description":"","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"","in":"body"}]} />
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/workspace/{workspaceId}/groups" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "Platform Engineers",
+  "permissions": {
+    "appCreate": true,
+    "appDelete": false
+  },
+  "granularPermissions": [
+    {
+      "type": "app",
+      "applyToAll": false,
+      "resources": [
+        "app-uuid-1"
+      ],
+      "permissions": {
+        "canEdit": true,
+        "hideFromDashboard": false,
+        "environments": [
+          "production"
+        ]
+      }
+    }
+  ]
+}'`} />
+
+**Response:** `201`

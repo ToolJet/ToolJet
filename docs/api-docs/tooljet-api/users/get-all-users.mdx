@@ -1,0 +1,31 @@
+---
+id: get-all-users
+title: "Get All Users"
+---
+
+<EndpointHeader method="GET" path="/users" />
+
+Retrieves a list of all users along with their workspace permissions and group memberships. Optionally filter by group names.
+
+
+
+
+<ParamsTable title="Query Parameters" params={[{"name":"group_names","type":"string","required":false,"description":"Comma-separated list of group names to filter by (e.g. `admin,end-user`).","in":"query"}]} />
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/users?group_names=<group_names>" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`[
+  {
+    "id": "1034fd65-7b40-474c-ab79-42d32780b299",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "status": "active",
+    "workspaces": [],
+    "userGroups": [],
+    "userDetails": []
+  }
+]`} />

@@ -1,0 +1,34 @@
+---
+id: export-module
+title: "Export Module"
+---
+
+<EndpointHeader method="GET" path="/export/workspace/{workspaceId}/modules/{moduleId}" />
+
+Exports a module, including its definition and optionally the ToolJet Database table schemas it uses.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"},{"name":"moduleId","type":"string","required":true,"description":"","in":"path"}]} />
+
+<ParamsTable title="Query Parameters" params={[{"name":"exportTJDB","type":"boolean","required":false,"description":"When true, bundles the TJDB table schemas into the export payload.","in":"query"}]} />
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/export/workspace/{workspaceId}/modules/{moduleId}?exportTJDB=<exportTJDB>" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "tooljet_database": [],
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "name": "User Management Module",
+          "type": "module"
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.16.0"
+}`} />

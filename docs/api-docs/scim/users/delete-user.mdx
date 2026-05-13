@@ -1,0 +1,20 @@
+---
+id: delete-user
+title: "Delete User"
+---
+
+<EndpointHeader method="DELETE" path="/Users/{id}" />
+
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X DELETE "https://app.tooljet.com/api/scim/v2/Users/{id}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+**Response:** `204`

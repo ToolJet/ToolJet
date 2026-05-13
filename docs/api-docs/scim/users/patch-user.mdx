@@ -1,0 +1,21 @@
+---
+id: patch-user
+title: "Patch User"
+---
+
+<EndpointHeader method="PATCH" path="/Users/{id}" />
+
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X PATCH "https://app.tooljet.com/api/scim/v2/Users/{id}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{}'`} />
+
+**Response:** `200`

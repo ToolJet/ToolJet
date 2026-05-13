@@ -1,0 +1,21 @@
+---
+id: replace-group
+title: "Replace Group"
+---
+
+<EndpointHeader method="PUT" path="/Groups/{id}" />
+
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X PUT "https://app.tooljet.com/api/scim/v2/Groups/{id}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{}'`} />
+
+**Response:** `200`

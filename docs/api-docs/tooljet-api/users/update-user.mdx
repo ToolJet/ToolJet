@@ -1,0 +1,25 @@
+---
+id: update-user
+title: "Update User"
+---
+
+<EndpointHeader method="PATCH" path="/user/{identifier}" />
+
+Partially updates fields of a user. Returns 200 on success.
+
+<ParamsTable title="Path Parameters" params={[{"name":"identifier","type":"string","required":true,"description":"UUID or email of the user to update.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"","in":"body"},{"name":"email","type":"string","required":false,"description":"","in":"body"},{"name":"password","type":"string","required":false,"description":"","in":"body"},{"name":"status","type":"string","required":false,"description":"","in":"body"}]} />
+
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{identifier}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "status": "active"
+}'`} />
+
+**Response:** `200`

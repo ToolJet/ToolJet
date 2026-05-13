@@ -1,0 +1,35 @@
+---
+id: get-user-metadata
+title: "Get User Metadata"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="GET" path="/workspace/{workspaceIdentifier}/user/{userIdentifier}" />
+
+Returns metadata for a specific user within a workspace.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceIdentifier","type":"string","required":true,"description":"Workspace UUID or slug.","in":"path"},{"name":"userIdentifier","type":"string","required":true,"description":"User UUID or email.","in":"path"}]} />
+
+
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "id": "a1b2c3d4-...",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "status": "active",
+  "userDetails": [
+    {
+      "key": "department",
+      "value": "Platform"
+    }
+  ]
+}`} />

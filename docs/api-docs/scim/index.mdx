@@ -1,0 +1,44 @@
+---
+id: index
+title: SCIM
+---
+
+<PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
+
+# SCIM
+
+ToolJet supports **SCIM 2.0** (System for Cross-domain Identity Management) for automated user and group provisioning. Connect your Identity Provider (Okta, Azure AD, OneLogin, etc.) to automatically sync users and groups with ToolJet.
+
+## Authentication
+
+SCIM requests use a Bearer token configured in your ToolJet workspace SSO settings.
+
+```bash
+Authorization: Bearer <scim_token>
+```
+
+## Base URL
+
+```
+https://{your-domain}/api/scim/v2
+```
+
+## Supported Resources
+
+| Resource | Operations |
+|:---------|:-----------|
+| [Users](/api/scim/users/list-users) | List, Create, Get, Replace, Patch, Delete |
+| [Groups](/api/scim/groups/list-groups) | List, Create, Get, Replace, Patch, Delete |
+
+## ToolJet SCIM Extension
+
+ToolJet supports a custom SCIM extension schema `urn:ietf:params:scim:schemas:extension:tooljet:User:2.0` that allows setting the user's ToolJet role on provisioning:
+
+```json
+{
+  "urn:ietf:params:scim:schemas:extension:tooljet:User:2.0": {
+    "role": "end-user"
+  }
+}
+```

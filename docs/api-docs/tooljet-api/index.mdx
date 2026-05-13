@@ -1,0 +1,44 @@
+---
+id: index
+title: ToolJet API
+---
+
+<PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
+
+# ToolJet API
+
+The ToolJet API lets you manage users, workspaces, applications, modules, and groups programmatically. Use it to integrate ToolJet into your existing identity management workflows, automate user provisioning, and manage application lifecycle from outside the UI.
+
+## Authentication
+
+All requests require a `Basic` access token in the `Authorization` header.
+
+```bash
+Authorization: Basic <access_token>
+```
+
+## Enabling the API
+
+Add these variables to your `.env` file to enable API access:
+
+| Variable | Description |
+|:---------|:------------|
+| `ENABLE_EXTERNAL_API` | Set to `true` |
+| `EXTERNAL_API_ACCESS_TOKEN` | Your chosen access token |
+
+## Base URL
+
+```
+https://{your-domain}/api/ext
+```
+
+## Endpoints
+
+| Category | Endpoints |
+|:---------|:----------|
+| [Users](/api/tooljet-api/users/get-all-users) | Get, create, update, and manage user workspace relations and metadata |
+| [Workspaces](/api/tooljet-api/workspaces/get-all-workspaces) | List workspaces and app details |
+| [Apps](/api/tooljet-api/apps/export-application) | Export and import applications |
+| [Modules](/api/tooljet-api/modules/list-modules) | List, export, and import modules |
+| [Groups](/api/tooljet-api/groups/create-group) | Create, read, update, and delete workspace groups |

@@ -60,6 +60,13 @@ module.exports = {
           position: 'right',
         },
         {
+          to: '/api',
+          label: 'API Reference',
+          position: 'right',
+          activeBaseRegex: '^/api',
+          className: 'navbar-api',
+        },
+        {
           href: 'https://www.tooljet.com/',
           position: 'right',
           label: 'Website',
@@ -342,22 +349,19 @@ module.exports = {
           : undefined,
       },
     ],
-    [
-    'redocusaurus',
-    {
-      openapi: {
-        path: 'openapi',       // scans all folders inside openapi/, e.g., scim, tj-api
-        routeBasePath: '/api', // pages will be /api/scim, /api/tj-api
-      },
-      theme: {
-        primaryColor: '#1890ff', // customize the color
-      },
-    },
-  ],
   ],
   plugins: [
     devServerPlugin,
     'plugin-image-zoom',
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'api',
+        path: 'api-docs',
+        routeBasePath: 'api',
+        sidebarPath: require.resolve('./sidebars-api.js'),
+      },
+    ],
     [
       '@docusaurus/plugin-client-redirects',
       {
