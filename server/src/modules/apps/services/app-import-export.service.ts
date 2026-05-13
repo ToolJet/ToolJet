@@ -2610,11 +2610,11 @@ export class AppImportExportService {
       const baseName = (dataSource.name || `unresolved_${dataSource.id || ''}`).replace(/_dummy$/, '');
       const dummyName = `${baseName}_dummy`;
       const dummyKind = dataSource.kind || 'restapi';
+      // Lookup plugin by kind (npm pkg id). Per-app git file drops DataSource.pluginId,
+      // so old lookup-by-id always missed → dummy got plugin_id=NULL → frontend crash.
       let pluginId: string | null = null;
-      if (dataSource.pluginId) {
-        const plugin = await manager.findOne(Plugin, { where: { id: dataSource.pluginId } });
-        if (plugin) pluginId = plugin.id;
-      }
+      const installedPlugin = await manager.findOne(Plugin, { where: { pluginId: dummyKind } });
+      if (installedPlugin) pluginId = installedPlugin.id;
       // Reuse an existing dummy with the same co_relation_id if one was
       // already created for another query in this app (or another app in the
       // same org).

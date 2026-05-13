@@ -340,6 +340,7 @@ export {
   WorkspacePermissionsDto,
   WorkflowPermissionsDto,
 } from './groups.dto';
+
 export class WorkspaceModuleDto {
   id: string;
   name: string;

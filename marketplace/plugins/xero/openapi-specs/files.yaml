@@ -1,0 +1,918 @@
+openapi: 3.0.0
+servers:
+  - description: Xero Files API
+    url: https://api.xero.com/files.xro/1.0/
+info:
+  title: Xero Files API
+  version: 12.0.0
+  description: These endpoints are specific to Xero Files API
+  termsOfService: https://developer.xero.com/xero-developer-platform-terms-conditions/
+  contact:
+    name: Xero Platform Team
+    email: api@xero.com
+    url: https://developer.xero.com
+tags:
+  - name: Files
+    description: Operations available to regular developers
+paths:
+  /Files:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      operationId: getFiles
+      summary: Retrieves files
+      parameters:
+        - in: query
+          name: pagesize
+          description: pass an optional page size value
+          schema:
+            type: integer
+            maximum: 100
+            example: 50
+        - in: query
+          name: page
+          description: number of records to skip for pagination
+          schema:
+            type: integer
+            minimum: 1
+            example: 2
+        - in: query
+          name: sort
+          description: values to sort by
+          schema:
+            type: string
+            enum:
+              - Name
+              - Size
+              - CreatedDateUTC
+            example: CreatedDateUTC
+        - in: query
+          name: direction
+          description: sort direction
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            example: ASC
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Files"
+              example: '{ "TotalCount": 100, "Page": 1, "PerPage": 2, "Items": [ { "Name": "helo-heros.jpg", "MimeType": "application/jpg", "Size": 2878711, "CreatedDateUtc": "2021-02-10T16:02:54.9930000", "UpdatedDateUtc": "2021-02-10T16:02:54.9930000", "User": { "Name": "sid.maestre@xero.com", "FirstName": "Sidney", "LastName": "Maestre", "FullName": "Sidney Maestre", "Id": "740add2a-a703-4b8a-a670-1093919c2040" }, "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3", "Id": "3d413bfe-f40f-4807-b953-9a42f834ff15" }, { "Name": "helo-heros.jpg", "MimeType": "application/jpg", "Size": 2878711, "CreatedDateUtc": "2021-02-09T21:16:00.6130000", "UpdatedDateUtc": "2021-02-09T21:16:00.6130000", "User": { "Name": "sid.maestre@xero.com", "FirstName": "Sidney", "LastName": "Maestre", "FullName": "Sidney Maestre", "Id": "740add2a-a703-4b8a-a670-1093919c2040" }, "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3", "Id": "22f87409-cdfd-4813-a868-559481bcb052" } ] }'
+    post:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Uploads a File to the inbox
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      operationId: uploadFile
+      responses:
+        "201":
+          description: A successful request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileObject"
+              example: '{ "Name": "helo-heros.jpg", "MimeType": "application/jpg", "Size": 2878711, "CreatedDateUtc": "2021-02-10T23:17:50.1930000", "UpdatedDateUtc": "2021-02-10T23:17:50.1930000", "User": { "Name": "sid.maestre@xero.com", "FirstName": "Sidney", "LastName": "Maestre", "FullName": "Sidney Maestre", "Id": "740add2a-a703-4b8a-a670-1093919c2040" }, "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3", "Id": "22f87409-cdfd-4813-a868-559481bcb052" }'
+        "400":
+          description: invalid input, object invalid
+          content:
+            application/json:
+              example: '[ { "type":"Validation", "title":"Validation failure", "detail":"Extension: boo is not a valid File extension." } ]'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadObject"
+  /Files/{FileId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves a file by a unique file ID
+      operationId: getFile
+      parameters:
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileObject"
+              example: '{ "Name": "helo-heros.jpg", "MimeType": "application/jpg", "Size": 2878711, "CreatedDateUtc": "2021-02-10T23:17:50.1930000", "UpdatedDateUtc": "2021-02-10T23:17:50.1930000", "User": { "Name": "sid.maestre@xero.com", "FirstName": "Sidney", "LastName": "Maestre", "FullName": "Sidney Maestre", "Id": "740add2a-a703-4b8a-a670-1093919c2040" }, "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3", "Id": "efd77bfc-7018-4da1-b251-7aa2d438382c" }'
+    put:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Update a file
+      operationId: updateFile
+      description: Updates file properties of a single file
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "200":
+          description: A successful request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileObject"
+              example: '{ "Name": "helo-heros.jpg", "MimeType": "application/jpg", "Size": 2878711, "CreatedDateUtc": "2021-02-10T23:17:50.1930000", "UpdatedDateUtc": "2021-02-10T23:58:54.1000000", "User": { "Name": "sid.maestre@xero.com", "FirstName": "Sidney", "LastName": "Maestre", "FullName": "Sidney Maestre", "Id": "740add2a-a703-4b8a-a670-1093919c2040" }, "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3", "Id": "efd77bfc-7018-4da1-b251-7aa2d438382c" }'
+        "400":
+          description: invalid input, object invalid
+          content:
+            application/json:
+              example: '[ { "type":"Rename", "title":"Rename failed", "detail":"Unable to rename efd77bfc-7018-4da1-b251-7aa2d438382c to FooBar" } ]'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileObject"
+            example: '{ "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3" }'
+    delete:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Deletes a specific file
+      operationId: deleteFile
+      description: Delete a specific file
+      parameters:
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "204":
+          description: Successful deletion - return response 204 no content
+          x-isEmpty: true
+  /Files/{FolderId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    post:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Uploads a File to a specific folder
+      operationId: uploadFileToFolder
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - in: path
+          x-snake: folder_id
+          name: FolderId
+          required: true
+          description: pass required folder id to save file to specific folder
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "201":
+          description: A successful request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileObject"
+              example: '{ "Name": "helo-heros.jpg", "MimeType": "application/jpg", "Size": 2878711, "CreatedDateUtc": "2021-02-10T23:17:50.1930000", "UpdatedDateUtc": "2021-02-10T23:17:50.1930000", "User": { "Name": "sid.maestre@xero.com", "FirstName": "Sidney", "LastName": "Maestre", "FullName": "Sidney Maestre", "Id": "740add2a-a703-4b8a-a670-1093919c2040" }, "FolderId": "bf924975-7097-46f2-a143-1ecfbab3c8c3", "Id": "22f87409-cdfd-4813-a868-559481bcb052" }'
+        "400":
+          description: invalid input, object invalid
+          content:
+            application/json:
+              example: '[ { "type":"Validation", "title":"Validation failure", "detail":"Extension: boo is not a valid File extension." } ]'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadObject"
+  /Files/{FileId}/Content:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves the content of a specific file
+      operationId: getFileContent
+      description: By passing in the appropriate options, retrieve data for specific file
+      parameters:
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "200":
+          description: returns the byte array of the specific file based on id
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /Files/{FileId}/Associations:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves a specific file associations
+      operationId: getFileAssociations
+      description: "By passing in the appropriate options, \n"
+      parameters:
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Association"
+              example: '[ { "FileId":"6beccb4a-0d7d-4518-93f3-e0cd1dccb254", "ObjectId":"1270bf7c-5d18-473a-9231-1e36c4bd33ed", "ObjectType":"Business", "ObjectGroup":"Contact" } ]'
+    post:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Creates a new file association
+      operationId: createFileAssociation
+      description: By passing in the appropriate options, you can create a new folder
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "201":
+          description: A successful request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Association"
+              example: '{ "FileId": "6beccb4a-0d7d-4518-93f3-e0cd1dccb254", "ObjectId": "1270bf7c-5d18-473a-9231-1e36c4bd33ed", "ObjectType": "Business", "ObjectGroup": "Contact" }'
+        "400":
+          description: invalid input, object invalid
+          content:
+            application/json:
+              example: '[ { "type":"Validation", "title":"Validation failure", "detail":"Object is not a Account" } ]'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Association"
+            example: '{ "ObjectId": "1270bf7c-5d18-473a-9231-1e36c4bd33ed", "ObjectGroup": "Contact", "ObjectType": "Business" }'
+  /Files/{FileId}/Associations/{ObjectId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    delete:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Deletes an existing file association
+      operationId: deleteFileAssociation
+      description: By passing in the appropriate options, you can create a new folder
+      parameters:
+        - name: FileId
+          x-snake: file_id
+          in: path
+          required: true
+          description: File id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+        - name: ObjectId
+          x-snake: object_id
+          in: path
+          required: true
+          description: Object id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "204":
+          description: Successful deletion - return response 204 no content
+          x-isEmpty: true
+  /Associations/{ObjectId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves an association object using a unique object ID
+      operationId: getAssociationsByObject
+      description: By passing in the appropriate options, you can retrieve an association
+      parameters:
+        - name: ObjectId
+          x-snake: object_id
+          in: path
+          required: true
+          description: Object id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+        - in: query
+          name: pagesize
+          description: pass an optional page size value
+          schema:
+            type: integer
+            maximum: 100
+            example: 50
+        - in: query
+          name: page
+          description: number of records to skip for pagination
+          schema:
+            type: integer
+            minimum: 1
+            example: 2
+        - in: query
+          name: sort
+          description: values to sort by
+          schema:
+            type: string
+            enum:
+              - Name
+              - CreatedDateUTC
+            example: Associations/{ObjectId}?sort=CreatedDateUtc
+        - in: query
+          name: direction
+          description: direction to sort by
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            example: Associations/{ObjectId}?sort=CreatedDateUtc&direction=DESC
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Association"
+              example: '[ { "SendWithObject":false, "Name":"testfile.pdf", "Size":12357, "FileId":"6beccb4a-0d7d-4518-93f3-e0cd1dccb254", "ObjectId":"1270bf7c-5d18-473a-9231-1e36c4bd33ed", "ObjectType":"Business", "ObjectGroup":"Contact" } ]'
+  /Associations/Count:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves a count of associations for a list of objects.
+      operationId: getAssociationsCount
+      description: By passing in the appropriate options, you can retrieve the association count for objects
+      parameters:
+        - name: ObjectIds
+          in: query
+          required: true
+          description: A comma-separated list of object ids
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+              example: 1270bf7c-5d18-473a-9231-1e36c4bd33ed
+      responses:
+        "200":
+          description: A dictionary of the object Ids and associations count
+          content:
+            application/json:
+              schema:
+                type: object
+                example: '{ "19d4fc59-e799-410f-912b-03d4ab294d73": 2, "82195976-5175-45d4-926e-807ff10892e7": 1, "a8547af2-2900-4879-98b8-f1a780c78feb": 0}'
+  /Folders:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves folders
+      operationId: getFolders
+      description: By passing in the appropriate options, you can search for available folders
+      parameters:
+        - in: query
+          name: sort
+          description: values to sort by
+          schema:
+            type: string
+            enum:
+              - Name
+              - Size
+              - CreatedDateUTC
+            example: CreatedDateUTC DESC
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Folder"
+              example: '[ { "Name":"Inbox", "FileCount":14, "Email":"xero.inbox.jpf4.6oo29retajkhtfus@xerofiles.com", "IsInbox":true, "Id":"bf924975-7097-46f2-a143-1ecfbab3c8c3" }, { "Name":"Contracts", "FileCount":7, "IsInbox":false, "Id":"554ff1ad-4b94-4266-9b45-e29bcb75e6bf" } ]'
+    post:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Creates a new folder
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      operationId: createFolder
+      description: By passing in the appropriate properties, you can create a new folder
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+              example: '{ "Name": "My Docs", "FileCount": 0, "IsInbox": false, "Id": "913970ad-8c8e-4666-8294-35b9cac23206" }'
+        "400":
+          description: invalid input, object invalid
+          content:
+            application/json:
+              example: '[ { "type":"Validation", "title":"Validation failure", "detail":"Name contains one or more bad characters" } ]'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Folder"
+            example: '{ "Name": "My Docs" }'
+  /Folders/{FolderId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves specific folder by using a unique folder ID
+      operationId: getFolder
+      description: By passing in the appropriate ID, you can search for specific folder
+      parameters:
+        - name: FolderId
+          x-snake: folder_id
+          in: path
+          required: true
+          description: Folder id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+              example: '{ "Name": "My Docs", "FileCount": 0, "IsInbox": false, "Id": "4c5f3fe4-2516-4863-ac88-3029351773bf" }'
+    put:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Updates an existing folder
+      operationId: updateFolder
+      description: By passing in the appropriate ID and properties, you can update a folder
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - name: FolderId
+          x-snake: folder_id
+          in: path
+          required: true
+          description: Folder id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "200":
+          description: return the updated object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+              example: '{ "Name": "Your Docs", "FileCount": 0, "IsInbox": false, "Id": "4c5f3fe4-2516-4863-ac88-3029351773bf" }'
+        "400":
+          description: invalid input, object invalid
+          content:
+            application/json:
+              example: '[ { "type":"Validation", "title":"Validation failure", "detail":"Name contains one or more bad characters" } ]'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Folder"
+            example: '{ "Name": "Your Docs" }'
+    delete:
+      security:
+        - OAuth2:
+            - files
+      tags:
+        - Files
+      summary: Deletes a folder
+      operationId: deleteFolder
+      description: By passing in the appropriate ID, you can delete a folder
+      parameters:
+        - name: FolderId
+          x-snake: folder_id
+          in: path
+          required: true
+          description: Folder id for single object
+          schema:
+            type: string
+            format: uuid
+            example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+      responses:
+        "204":
+          description: Successful deletion - return response 204 no content
+          x-isEmpty: true
+  /Inbox:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - files
+            - files.read
+      tags:
+        - Files
+      summary: Retrieves inbox folder
+      operationId: getInbox
+      description: Search for the user inbox
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Folder"
+              example: '{ "Name": "Inbox", "FileCount": 14, "Email": "xero.inbox.jpf4.6oo29retajkhtfus@xerofiles.com", "IsInbox": true, "Id": "bf924975-7097-46f2-a143-1ecfbab3c8c3" }'
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: For more information
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.xero.com/identity/connect/authorize
+          tokenUrl: https://identity.xero.com/connect/token
+          scopes:
+            email: Grant read-only access to your email
+            openid: Grant read-only access to your open id
+            profile: your profile information
+            files: Grant read-write access to files and folders
+            files.read: Grant read-only access to files and folders
+  parameters:
+    requiredHeader:
+      in: header
+      name: xero-tenant-id
+      x-snake: xero_tenant_id
+      description: Xero identifier for Tenant
+      example: YOUR_XERO_TENANT_ID
+      schema:
+        type: string
+      required: true
+    idempotencyKey:
+      in: header
+      name: Idempotency-Key
+      x-snake: idempotency_key
+      description: This allows you to safely retry requests without the risk of duplicate processing. 128 character max.
+      example: KEY_VALUE
+      schema:
+        type: string
+  schemas:
+    Files:
+      type: object
+      properties:
+        TotalCount:
+          type: integer
+          example: 2
+        Page:
+          type: integer
+          example: 1
+        PerPage:
+          type: integer
+          example: 50
+        Items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileObject"
+    FileObject:
+      type: object
+      required:
+        - id
+        - name
+        - manufacturer
+        - releaseDate
+      properties:
+        Name:
+          description: File Name
+          type: string
+          example: File2.jpg
+        MimeType:
+          description: MimeType of the file (image/png, image/jpeg, application/pdf, etc..)
+          type: string
+          example: image/jpeg
+        Size:
+          description: Numeric value in bytes
+          type: integer
+          example: 3615
+        CreatedDateUtc:
+          description: Created date in UTC
+          type: string
+          example: 2020-12-03T19:04:58.6970000
+        UpdatedDateUtc:
+          description: Updated date in UTC
+          type: string
+          example: 2020-12-03T19:04:58.6970000
+        User:
+          $ref: "#/components/schemas/User"
+        Id:
+          description: File object's UUID
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        FolderId:
+          description: Folder relation object's UUID
+          type: string
+          format: uuid
+          example: 0f8ccf21-7267-4268-9167-a1e2c40c84c8
+    UploadObject:
+      type: object
+      required:
+        - body
+        - name
+        - filename
+      properties:
+        body:
+          type: string
+          format: byte
+        name:
+          type: string
+          description: exact name of the file you are uploading
+        filename:
+          type: string
+        mimeType:
+          type: string
+    User:
+      required:
+        - Id
+      properties:
+        Id:
+          description: Xero identifier
+          type: string
+          format: uuid
+          example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+        Name:
+          description: Key is Name, but returns Email address of user who created the file
+          type: string
+          example: john.smith@mail.com
+        FirstName:
+          description: First name of user
+          type: string
+          example: John
+        LastName:
+          description: Last name of user
+          type: string
+          example: Smith
+        FullName:
+          description: Last name of user
+          type: string
+          example: Smith
+      type: object
+    Folders:
+      type: object
+      properties:
+        Folders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Folder"
+    Folder:
+      required:
+        - name
+      properties:
+        Name:
+          description: The name of the folder
+          type: string
+          example: assets
+        FileCount:
+          description: The number of files in the folder
+          type: integer
+          example: 5
+        Email:
+          description: The email address used to email files to the inbox. Only the inbox will have this element.
+          type: string
+          example: foo@bar.com
+        IsInbox:
+          description: to indicate if the folder is the Inbox. The Inbox cannot be renamed or deleted.
+          type: boolean
+          example: true
+        Id:
+          description: Xero unique identifier for a folder  Files
+          type: string
+          format: uuid
+          example: 4ff1e5cc-9835-40d5-bb18-09fdb118db9c
+    Association:
+      type: object
+      properties:
+        SendWithObject:
+          description: Boolean flag to determines whether the file is sent with the document it is attached to on client facing communications. Note- The SendWithObject element is only returned when using /Associations/{ObjectId} endpoint.
+          type: boolean
+          example: true
+        Name:
+          description: The name of the associated file. Note- The Name element is only returned when using /Associations/{ObjectId} endpoint.
+          type: string
+          example: Test.pdf
+        Size:
+          description: The size of the associated file in bytes. Note- The Size element is only returned when using /Associations/{ObjectId} endpoint.
+          type: integer
+          example: 12357
+        FileId:
+          description: The unique identifier of the file
+          type: string
+          format: uuid
+        ObjectId:
+          description: The identifier of the object that the file is being associated with (e.g. InvoiceID, BankTransactionID, ContactID)
+          type: string
+          format: uuid
+        ObjectGroup:
+          $ref: "#/components/schemas/ObjectGroup"
+        ObjectType:
+          $ref: "#/components/schemas/ObjectType"
+    ObjectGroup:
+      description: The Object Group that the object is in. These roughly correlate to the endpoints that can be used to retrieve the object via the core accounting API.
+      type: string
+      enum:
+        - Account
+        - BankTransaction
+        - Contact
+        - CreditNote
+        - Invoice
+        - Item
+        - ManualJournal
+        - Overpayment
+        - Payment
+        - Prepayment
+        - Quote
+        - Receipt
+    ObjectType:
+      description: The Object Type
+      type: string
+      enum:
+        - Unknown
+        - Accpay
+        - AccPayCredit
+        - AccPayPayment
+        - AccRec
+        - AccRecCredit
+        - AccRecPayment
+        - Adjustment
+        - ApCreditPayment
+        - ApOverPayment
+        - ApOverPaymentPayment
+        - ApOverPaymentSourcePayment
+        - ApPrepayment
+        - ApPrepaymentPayment
+        - ApPrepaymentSourcePayment
+        - ArCreditPayment
+        - ArOverPayment
+        - ArOverpaymentPayment
+        - ArOverpaymentSourcePayment
+        - ArPrepayment
+        - ArPrepaymentPayment
+        - ArPrepaymentSourcePayment
+        - CashPaid
+        - CashRec
+        - ExpPayment
+        - ManJournal
+        - PurchaseOrder
+        - Receipt
+        - Transfer
+        - Account
+        - Contact
+        - Business
+        - Employee
+        - Person
+        - User
+        - Org
+        - FixedAsset
+        - PayRun
+        - PriceListItem
+        - Bank
+        - Current
+        - Equity
+        - Expense
+        - Fixed
+        - Liability
+        - Prepayment
+        - Revenue
+        - Sales
+        - Overheads
+        - Depreciatn
+        - OtherIncome
+        - DirectCosts
+        - Currliab
+        - Termliab
+        - NonCurrent
+        - SalesQuote

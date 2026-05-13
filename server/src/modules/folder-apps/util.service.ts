@@ -4,58 +4,103 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { FolderApp } from '@entities/folder_app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
 
+export function applyAppPermissionFilter(
+  query: SelectQueryBuilder<FolderApp>,
+  userAppPermissions: UserAppsPermissions
+): void {
+  const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+  if (isAllEditable) return;
+
+  const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+    (id) => !userAppPermissions.editableAppsId.includes(id)
+  );
+  const explicitVisibleApps = Array.from(
+    new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+  );
+  const viewableApps = hideAll
+    ? [null, ...explicitVisibleApps]
+    : [
+        null,
+        ...Array.from(
+          new Set([
+            ...userAppPermissions.editableAppsId,
+            ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+          ])
+        ),
+      ];
+
+  if (!isAllViewable) {
+    query.andWhere('folder_apps.appId IN (:...viewableApps)', { viewableApps });
+    return;
+  }
+  if (!hideAll && hiddenNonEditable.length > 0) {
+    query.andWhere('folder_apps.appId NOT IN (:...hiddenApps)', { hiddenApps: hiddenNonEditable });
+    return;
+  }
+  if (hideAll) {
+    if (explicitVisibleApps.length > 0) {
+      query.andWhere('folder_apps.appId IN (:...viewableApps)', { viewableApps });
+    } else {
+      query.andWhere('1=0');
+    }
+  }
+}
+
 @Injectable()
 export class FolderAppsUtilService implements IFolderAppsUtilService {
   constructor(protected readonly abilityService: AbilityService) {}
 
-  async allFoldersWithAppCount(
-    user: User,
+  async findFolderAppsForFolders(
+    folderIds: string[],
     userAppPermissions: UserAppsPermissions | UserWorkflowPermissions,
     manager: EntityManager,
-    type = APP_TYPES.FRONT_END,
+    _type: APP_TYPES = APP_TYPES.FRONT_END,
     searchKey?: string,
-    branchId?: string
-  ): Promise<Folder[]> {
-    return this.getFolderQuery(
-      user.organizationId,
-      manager,
-      userAppPermissions as UserAppsPermissions,
-      type,
-      searchKey,
-      branchId
-    )
-      .distinct()
-      .getMany();
+    _branchId?: string
+  ): Promise<FolderApp[]> {
+    if (folderIds.length === 0) return [];
+
+    const query = this.buildFolderAppsQuery(manager, folderIds, searchKey, _branchId);
+    applyAppPermissionFilter(query, userAppPermissions as UserAppsPermissions);
+    return query.getMany();
   }
 
-  protected getBaseFolderQuery(
-    organizationId: string,
+  protected buildFolderAppsQuery(
     manager: EntityManager,
-    type: APP_TYPES,
+    folderIds: string[],
     searchKey?: string,
     branchId?: string
-  ): SelectQueryBuilder<Folder> {
-    const query = manager.createQueryBuilder(Folder, 'folders');
-    query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
-    query.leftJoin('folder_apps.app', 'app');
+  ): SelectQueryBuilder<FolderApp> {
+    const query = manager
+      .createQueryBuilder(FolderApp, 'folder_apps')
+      .leftJoin('folder_apps.app', 'app')
+      .where('folder_apps.folderId IN (:...folderIds)', { folderIds });
 
     if (branchId) {
-      query.leftJoin('app_versions', 'av_search', 'av_search.app_id = app.id AND av_search.branch_id = :searchBranchId', { searchBranchId: branchId });
+      query.leftJoin(
+        'app_versions',
+        'av_search',
+        'av_search.app_id = app.id AND av_search.branch_id = :searchBranchId',
+        { searchBranchId: branchId }
+      );
     }
 
     if (searchKey) {
       if (branchId) {
-        query.andWhere('(LOWER(av_search.app_name) LIKE :searchKey OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))', {
-          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-          workflowType: APP_TYPES.WORKFLOW,
-        });
+        query.andWhere(
+          '(LOWER(av_search.app_name) LIKE :searchKey OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))',
+          {
+            searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
+            workflowType: APP_TYPES.WORKFLOW,
+          }
+        );
       } else {
         query.andWhere(
           `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))`,
@@ -66,75 +111,6 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         );
       }
     }
-
-    query
-      .andWhere('folders.organization_id = :organizationId', {
-        organizationId,
-      })
-      .andWhere('folders.type = :type', {
-        type,
-      })
-      .orderBy('folders.name', 'ASC');
-
-    return query;
-  }
-
-  protected getFolderQuery(
-    organizationId: string,
-    manager: EntityManager,
-    userAppPermissions: UserAppsPermissions,
-    type = APP_TYPES.FRONT_END,
-    searchKey?: string,
-    branchId?: string
-  ): SelectQueryBuilder<Folder> {
-    const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-
-    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
-      (id) => !userAppPermissions.editableAppsId.includes(id)
-    );
-
-    const explicitVisibleApps = Array.from(
-      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
-    );
-
-    const viewableApps = userAppPermissions.hideAll
-      ? [null, ...explicitVisibleApps]
-      : [
-          null,
-          ...Array.from(
-            new Set([
-              ...userAppPermissions.editableAppsId,
-              ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-            ])
-          ),
-        ];
-
-    const query = this.getBaseFolderQuery(organizationId, manager, type, searchKey, branchId);
-
-    if (!isAllEditable) {
-      // Not all apps are editable - filter with view privilege
-      if (!isAllViewable) {
-        // Not all apps are viewable
-        query.andWhere('folder_apps.appId IN (:...viewableApps)', {
-          viewableApps,
-        });
-      } else if (!hideAll && hiddenNonEditable?.length) {
-        // Not all apps are hidden
-        query.andWhere('folder_apps.appId NOT IN (:...hiddenApps)', {
-          hiddenApps: hiddenNonEditable,
-        });
-      } else if (hideAll) {
-        if (explicitVisibleApps.length > 0) {
-          query.andWhere('folder_apps.appId IN (:...viewableApps)', {
-            viewableApps,
-          });
-        } else {
-          // No need to return any
-          query.andWhere('1=0');
-        }
-      }
-    }
-
     return query;
   }
 
@@ -194,84 +170,84 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     viewableApps: AppBase[];
     totalCount: number;
   }> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const folderAppsQb = manager
-        .createQueryBuilder(FolderApp, 'folderApp')
-        .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
-          id: folder.id,
-        });
-
-      if (branchId) {
-        // INNER JOIN — folder apps are kept only if they have an app_versions row on
-        // this branch. Apps not present on the branch are dropped here.
-        folderAppsQb.innerJoin(
-          'app_versions',
-          'av_folder',
-          'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId',
-          { folderBranchId: branchId }
-        );
-      }
-
-      // Only apply the name filter when the caller actually typed something.
-      // Empty `searchKey` becomes `LIKE '%%'`, which evaluates to NULL (not true)
-      // against rows where av_folder.app_name IS NULL and drops them.
-      const hasSearch = !!(searchKey && searchKey.trim());
-      if (hasSearch) {
-        folderAppsQb.where(
-          branchId
-            ? // Non-workflows match against the branched app_versions.app_name,
-              // falling back to app.name when the version row's app_name is NULL
-              // (un-backfilled or pull-created rows). Workflows keep name on apps.*.
-              '(LOWER(COALESCE(av_folder.app_name, app.name)) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
-            : // gitsync off: non-workflows match any app_version's name;
-              // workflows match app.name.
-              `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
-          { name: `%${searchKey.toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
-        );
-      }
-
-      const folderApps = await folderAppsQb.getMany();
-
-      const userPermission = await this.abilityService.resourceActionsPermission(user, {
-        resources: [{ resource: MODULES.APP }],
-        organizationId: user.organizationId,
+    // Read-only — no txn needed.
+    const manager = getConnectionInstance().manager;
+    const folderAppsQb = manager
+      .createQueryBuilder(FolderApp, 'folderApp')
+      .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
+        id: folder.id,
       });
-      const userAppPermissions = userPermission?.[MODULES.APP];
 
-      // Builders have admin-level access to modules — skip app-level permission filtering.
-      const isModuleBuilderAccess = type === APP_TYPES.MODULE && (userPermission?.isBuilder || userPermission?.isAdmin);
-      const effectiveAppPermissions = isModuleBuilderAccess
-        ? { ...userAppPermissions, isAllEditable: true }
-        : userAppPermissions;
+    if (branchId) {
+      // INNER JOIN — folder apps are kept only if they have an app_versions row on
+      // this branch. Apps not present on the branch are dropped here.
+      folderAppsQb.innerJoin(
+        'app_versions',
+        'av_folder',
+        'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId',
+        { folderBranchId: branchId }
+      );
+    }
 
-      const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
-      if (folderAppIds.length == 0) {
-        return {
-          viewableApps: [],
-          totalCount: 0,
-        };
-      }
+    // Only apply the name filter when the caller actually typed something.
+    // Empty `searchKey` becomes `LIKE '%%'`, which evaluates to NULL (not true)
+    // against rows where av_folder.app_name IS NULL and drops them.
+    const hasSearch = !!(searchKey && searchKey.trim());
+    if (hasSearch) {
+      folderAppsQb.where(
+        branchId
+          ? // Non-workflows match against the branched app_versions.app_name,
+            // falling back to app.name when the version row's app_name is NULL
+            // (un-backfilled or pull-created rows). Workflows keep name on apps.*.
+            '(LOWER(COALESCE(av_folder.app_name, app.name)) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
+          : // gitsync off: non-workflows match any app_version's name;
+            // workflows match app.name.
+            `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
+        { name: `%${searchKey.toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
+      );
+    }
 
-      const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
-      this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
+    const folderApps = await folderAppsQb.getMany();
 
-      // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
-      // (appVersions.branchId = :branchId). No secondary filter needed.
-
-      const [viewableApps, totalCount] = await Promise.all([
-        viewableAppsInFolder
-          .take(9)
-          .skip(9 * (page - 1))
-          .orderBy('apps.createdAt', 'DESC')
-          .getMany(),
-        viewableAppsInFolder.getCount(),
-      ]);
-
-      return {
-        viewableApps,
-        totalCount,
-      };
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: MODULES.APP }],
+      organizationId: user.organizationId,
     });
+    const userAppPermissions = userPermission?.[MODULES.APP];
+
+    // Builders have admin-level access to modules — skip app-level permission filtering.
+    const isModuleBuilderAccess = type === APP_TYPES.MODULE && (userPermission?.isBuilder || userPermission?.isAdmin);
+    const effectiveAppPermissions = isModuleBuilderAccess
+      ? { ...userAppPermissions, isAllEditable: true }
+      : userAppPermissions;
+
+    const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
+    if (folderAppIds.length == 0) {
+      return {
+        viewableApps: [],
+        totalCount: 0,
+      };
+    }
+
+    const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
+    this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
+
+    // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
+    // (appVersions.branchId = :branchId). No secondary filter needed.
+
+    const [viewableApps, totalCount] = await Promise.all([
+      viewableAppsInFolder
+        .take(9)
+        .skip(9 * (page - 1))
+        .orderBy('apps.createdAt', 'DESC')
+        .getMany(),
+      viewableAppsInFolder.getCount(),
+    ]);
+
+    return {
+      viewableApps,
+      totalCount,
+    };
   }
 
   async create(folderId: string, appId: string, skipGitSyncCheck = false): Promise<FolderApp> {

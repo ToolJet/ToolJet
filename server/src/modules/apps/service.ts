@@ -18,10 +18,11 @@ import {
   ValidateAppAccessResponseDto,
   VersionReleaseDto,
 } from './dto';
-import { APP_TYPES, FEATURE_KEY } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE, FEATURE_KEY } from './constants';
 import { AbilityUtilService } from '@modules/ability/util.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { App } from '@entities/app.entity';
+import { AppBase } from '@entities/app_base.entity';
 import { AppsUtilService } from './util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -29,7 +30,16 @@ import { plainToClass } from 'class-transformer';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { VersionRepository } from '@modules/versions/repository';
 import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
+
+type AppListItem = AppBase & {
+  appVersions?: AppVersion[];
+  moduleContainer?: unknown;
+  folderIds?: string[];
+  editingVersion?: AppVersion;
+  isStub?: boolean;
+};
 import { AppsRepository } from './repository';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from '@modules/folder-apps/util.service';
@@ -446,42 +456,38 @@ export class AppsService implements IAppsService {
   }
 
   async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
-    let apps = [];
-    let totalFolderCount = 0;
-
     const { folderId, page, searchKey, type } = appListDto;
     // When no branchId is provided (e.g. end users) and the workspace has git-sync
     // configured, fall back to the default branch so only default-branch apps surface.
     // Non-git-sync workspaces have no orgGit; branchId stays undefined and the no-branch
     // overlay below picks any version row's metadata per app.
-    let branchId = appListDto.branchId;
-    if (!branchId && type === 'front-end') {
-      const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-      if (orgGit) {
-        const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user.organizationId, isDefault: true },
-          select: ['id'],
-        });
-        branchId = defaultBranch?.id;
-      }
-    }
+    const branchId = await this.resolveDashboardBranchId(user, type, appListDto.branchId);
+    // if (!branchId && type === 'front-end') {
+    //   const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+    //   if (orgGit) {
+    //     const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+    //       where: { organizationId: user.organizationId, isDefault: true },
+    //       select: ['id'],
+    //     });
+    //     branchId = defaultBranch?.id;
+    //   }
+    // }
+    const pageNum = parseInt(page || '1');
+    const manager = this.appRepository.manager;
 
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      if (appListDto.folderId) {
-        const folder = await this.foldersUtilService.findOne(appListDto.folderId, manager);
-        const { viewableApps, totalCount } = await this.folderAppsUtilService.getAppsFor(
-          user,
-          folder,
-          parseInt(page || '1'),
-          searchKey,
-          type as APP_TYPES,
-          branchId
-        );
-        apps = viewableApps;
-        totalFolderCount = totalCount;
-      } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, branchId);
-      }
+    // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App.
+    // hydrateEditingVersionInBulk replaces those with a single IN-list query at the end.
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const { apps, totalCount, folderCount } = await this.fetchDashboardApps(
+        user,
+        pageNum,
+        searchKey,
+        type,
+        isGetAll,
+        branchId,
+        folderId,
+        manager
+      );
 
       // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
       // version. The branch row is the single source of truth for non-workflow metadata
@@ -541,61 +547,129 @@ export class AppsService implements IAppsService {
       }
 
       if (isGetAll) {
-        const response = {
-          apps,
-        };
-        return decamelizeKeys(response);
+        await this.hydrateEditingVersionInBulk(apps, manager);
+        return decamelizeKeys({ apps });
       }
 
-      if (type === 'module') {
-        await Promise.all(
-          apps.map(async (app) => {
-            const appVersionId = app?.appVersions?.[0]?.id;
-            app.moduleContainer = await this.pageService.findModuleContainer(appVersionId, user.organizationId);
-          })
-        );
+      if (type === APP_TYPES.MODULE) {
+        await this.attachModuleContainers(apps, user.organizationId, manager);
       }
+      await this.attachFolderIds(apps, manager);
+      await this.hydrateEditingVersionInBulk(apps, manager);
 
-      // Get folder IDs for all apps to support folder-level permission checks
-      const appIds = apps.map((app) => app.id);
-      if (appIds.length > 0) {
-        const folderApps = await manager
-          .createQueryBuilder(FolderApp, 'folderApp')
-          .where('folderApp.appId IN (:...appIds)', { appIds })
-          .getMany();
-
-        // Create a map of app ID to folder IDs
-        const appFolderMap = new Map<string, string[]>();
-        for (const folderApp of folderApps) {
-          const existing = appFolderMap.get(folderApp.appId) || [];
-          existing.push(folderApp.folderId);
-          appFolderMap.set(folderApp.appId, existing);
-        }
-
-        // Add folder IDs to each app
-        for (const app of apps) {
-          app.folderIds = appFolderMap.get(app.id) || [];
-        }
-      }
-
-      const totalCount = await this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId);
-
-      const totalPageCount = folderId ? totalFolderCount : totalCount;
-
-      const meta = {
-        total_pages: Math.ceil(totalPageCount / 9),
-        total_count: totalCount,
-        folder_count: totalFolderCount,
-        current_page: parseInt(page || '1'),
-      };
-
-      const response = {
-        meta,
+      const pageTotal = folderId ? folderCount : totalCount;
+      return decamelizeKeys({
+        meta: {
+          total_pages: Math.ceil(pageTotal / APPS_PAGE_SIZE),
+          total_count: totalCount,
+          folder_count: folderCount,
+          current_page: pageNum,
+        },
         apps,
-      };
-
-      return decamelizeKeys(response);
+      });
     });
+  }
+
+  // End users with no branchId would otherwise see apps across every branch; default to the org's default branch.
+  private async resolveDashboardBranchId(
+    user: User,
+    type: string,
+    providedBranchId?: string
+  ): Promise<string | undefined> {
+    if (providedBranchId || type !== APP_TYPES.FRONT_END) return providedBranchId;
+    const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+    if (!orgGit) return undefined;
+    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+      where: { organizationId: user.organizationId, isDefault: true },
+      select: ['id'],
+    });
+    return defaultBranch?.id;
+  }
+
+  private async fetchDashboardApps(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    isGetAll: boolean,
+    branchId: string | undefined,
+    folderId: string | undefined,
+    manager: EntityManager
+  ): Promise<{ apps: AppListItem[]; totalCount: number; folderCount: number }> {
+    if (folderId) {
+      const folder = await this.foldersUtilService.findOne(folderId, manager);
+      const [{ viewableApps, totalCount: folderCount }, totalCount] = await Promise.all([
+        this.folderAppsUtilService.getAppsFor(user, folder, page, searchKey, type as APP_TYPES, branchId),
+        this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId),
+      ]);
+      return { apps: viewableApps, totalCount, folderCount };
+    }
+    if (isGetAll) {
+      const apps = await this.appsUtilService.all(user, page, searchKey, type, true, branchId);
+      return { apps, totalCount: 0, folderCount: 0 };
+    }
+    const { apps, totalCount } = await this.appsUtilService.allWithCount(user, page, searchKey, type, branchId);
+    return { apps, totalCount, folderCount: 0 };
+  }
+
+  private async attachModuleContainers(
+    apps: AppListItem[],
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const versionIds = apps.map((app) => app.appVersions?.[0]?.id).filter((id): id is string => Boolean(id));
+    const moduleContainerByVersion = await this.pageService.findModuleContainersForVersions(
+      versionIds,
+      organizationId,
+      manager
+    );
+    for (const app of apps) {
+      const versionId = app.appVersions?.[0]?.id;
+      app.moduleContainer = versionId ? (moduleContainerByVersion.get(versionId) ?? null) : null;
+    }
+  }
+
+  private async attachFolderIds(apps: AppListItem[], manager: EntityManager): Promise<void> {
+    const appIds = apps.map((a) => a.id);
+    if (appIds.length === 0) return;
+    const folderApps = await manager
+      .createQueryBuilder(FolderApp, 'folderApp')
+      .where('folderApp.appId IN (:...appIds)', { appIds })
+      .getMany();
+    const folderIdsByApp = new Map<string, string[]>();
+    for (const fa of folderApps) {
+      const ids = folderIdsByApp.get(fa.appId) ?? [];
+      ids.push(fa.folderId);
+      folderIdsByApp.set(fa.appId, ids);
+    }
+    for (const app of apps) {
+      app.folderIds = folderIdsByApp.get(app.id) ?? [];
+    }
+  }
+
+  // Caller must wrap in `skipAppEditingVersionHydration.run(true, ...)` so the per-entity
+  // afterLoad does not fire while apps are being loaded; this re-attaches the same fields in one query.
+  private async hydrateEditingVersionInBulk(apps: AppListItem[], manager: EntityManager): Promise<void> {
+    if (apps.length === 0) return;
+    const appIds = apps.map((a) => a.id).filter(Boolean);
+    if (appIds.length === 0) return;
+
+    const editingVersions = await manager
+      .createQueryBuilder(AppVersion, 'av')
+      .distinctOn(['av.appId'])
+      .where('av.appId IN (:...appIds)', { appIds })
+      .andWhere('av.versionType != :branch', { branch: AppVersionType.BRANCH })
+      .andWhere('av.isStub = :isStub', { isStub: false })
+      .orderBy('av.appId', 'ASC')
+      .addOrderBy('av.updatedAt', 'DESC')
+      .getMany();
+
+    const editingByAppId = new Map(editingVersions.map((v) => [v.appId, v]));
+    for (const app of apps) {
+      const v = editingByAppId.get(app.id);
+      app.editingVersion = v;
+      app.isStub = !v;
+    }
   }
 
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {

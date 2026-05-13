@@ -221,23 +221,32 @@ class HomePageComponent extends React.Component {
       return;
     }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    this.fetchApps(1, this.state.currentFolder.id);
+    // ?folder= deep-link: fetchFolders will chain to fetchApps after slug resolves.
+    const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
+    if (!urlFolderSlug) {
+      this.fetchApps(1, this.state.currentFolder.id);
+    }
     this.fetchFolders();
     this.fetchFeatureAccesss();
     this.fetchAppsLimit();
     this.fetchWorkflowsInstanceLimit();
     this.fetchWorkflowsWorkspaceLimit();
-    this.fetchOrgGit();
+    // Layout already fetched orgGitConfig — mirror it instead of duplicating.
+    const initialOrgGit = useWorkspaceBranchesStore.getState().orgGitConfig;
+    if (initialOrgGit) this.setState({ orgGit: initialOrgGit });
     this.setQueryParameter();
 
     // Check module access permission
     this.props.checkModuleAccess();
 
-    // Re-fetch apps when workspace branch changes (client-side branch switching)
+    // Refetch on real branch switch only (skip the initial null→<id> hydration).
     this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
-      if (state.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+      if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
         this.fetchApps(1, this.state.currentFolder.id);
         this.fetchFolders();
+      }
+      if (state.orgGitConfig !== prevState.orgGitConfig) {
+        this.setState({ orgGit: state.orgGitConfig });
       }
     });
 
@@ -326,12 +335,18 @@ class HomePageComponent extends React.Component {
       const folder = data?.folders?.find((folder) => folder.name === folder_slug);
       const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
       const currentFolder = data?.folders?.find((folder) => currentFolderId && folder.id === currentFolderId);
+      const slugIsStale = !!folder_slug && !folder;
       this.setState({
         folders: data.folders,
         foldersLoading: false,
         currentFolder: currentFolder || {},
       });
-      currentFolder && this.fetchApps(1, currentFolder.id);
+      if (currentFolder) {
+        this.fetchApps(1, currentFolder.id);
+      } else if (slugIsStale) {
+        // Stale ?folder= (renamed/deleted) — load All apps so dashboard isn't blank.
+        this.fetchApps(1, undefined);
+      }
     });
   };
 
