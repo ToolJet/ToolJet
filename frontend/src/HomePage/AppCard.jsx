@@ -46,7 +46,7 @@ export default function AppCard({
     wsActions: state.actions,
   }));
   const cardRef = useRef();
-  const [popoverVisible, setPopoverVisible] = useState(true);
+  const [popoverVisible, setPopoverVisible] = useState(false);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const tooltipRef = useRef(null);
 

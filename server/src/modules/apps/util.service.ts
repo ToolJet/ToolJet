@@ -33,13 +33,23 @@ import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/t
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
-import { APP_TYPES } from './constants';
+import { APP_TYPES, APPS_PAGE_SIZE } from './constants';
 import { Component } from 'src/entities/component.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
+import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
+
+// Permission resource that gates access to each app type. Workflows have their own
+// permission resource; everything else (front-end apps, modules) shares the APP resource.
+const PERMISSION_RESOURCE_BY_APP_TYPE: Record<string, MODULES> = {
+  [APP_TYPES.WORKFLOW]: MODULES.WORKFLOWS,
+  [APP_TYPES.FRONT_END]: MODULES.APP,
+  [APP_TYPES.MODULE]: MODULES.APP,
+};
+const DEFAULT_PERMISSION_RESOURCE = MODULES.APP;
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -498,72 +508,73 @@ export class AppsUtilService implements IAppsUtilService {
     isGetAll: boolean,
     branchId?: string
   ): Promise<AppBase[]> {
-    //Migrate it to app utility files
-    let resourceType: MODULES;
+    const qb = await this.buildViewableAppsQuery(user, type, searchKey, isGetAll, branchId, this.appRepository.manager);
+    if (isGetAll) return qb.getMany();
+    return qb.take(APPS_PAGE_SIZE).skip(APPS_PAGE_SIZE * (page - 1)).getMany();
+  }
 
-    switch (type) {
-      case APP_TYPES.WORKFLOW:
-        resourceType = MODULES.WORKFLOWS;
-        break;
-      case APP_TYPES.FRONT_END:
-        resourceType = MODULES.APP;
-        break;
-      case APP_TYPES.MODULE:
-        resourceType = MODULES.APP;
-        break;
-      default:
-        resourceType = MODULES.APP;
-    }
+  async allWithCount(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    branchId?: string
+  ): Promise<{ apps: AppBase[]; totalCount: number }> {
+    const qb = await this.buildViewableAppsQuery(user, type, searchKey, false, branchId, this.appRepository.manager);
+    const [apps, totalCount] = await qb
+      .take(APPS_PAGE_SIZE)
+      .skip(APPS_PAGE_SIZE * (page - 1))
+      .getManyAndCount();
+    return { apps, totalCount };
+  }
+
+  private async buildViewableAppsQuery(
+    user: User,
+    type: string,
+    searchKey: string,
+    isGetAll: boolean,
+    branchId: string | undefined,
+    manager: EntityManager
+  ) {
+    const resourceType = PERMISSION_RESOURCE_BY_APP_TYPE[type] ?? DEFAULT_PERMISSION_RESOURCE;
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const viewableAppsQb = this.viewableAppsQueryUsingPermissions(
-        user,
-        userPermission[resourceType],
-        manager,
-        searchKey,
-        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type,
-        branchId
-      );
+    const qb = this.viewableAppsQueryUsingPermissions(
+      user,
+      userPermission[resourceType],
+      manager,
+      searchKey,
+      isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+      type,
+      branchId
+    );
+    this.applyAppVersionsJoin(qb, type, branchId, isGetAll);
+    return qb;
+  }
 
-      // Eagerly load appVersions for modules, branch-filtered like apps.
-      // We intentionally DO NOT filter out stub versions at this outer join —
-      // after a branch-create or workspace pull a net-new module has only a
-      // stub version on the branch, and filtering it out would hide the module
-      // from the dashboard entirely (apps work the same way without the filter).
-      // The UUID-name-leak concern is handled by the inner `versions`-aliased
-      // join in viewableAppsQueryUsingPermissions, which is what ModuleManager
-      // reads when a user drags a ModuleViewer onto a canvas. Stubs clicked from
-      // the dashboard hydrate lazily via AppsService.getOne → hydrateStubApp.
-      if (type === APP_TYPES.MODULE && !isGetAll) {
-        if (branchId) {
-          viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-            branchId,
-          });
-        } else {
-          viewableAppsQb.leftJoinAndSelect('apps.appVersions', 'appVersions');
-        }
-      } else if (branchId && type === APP_TYPES.FRONT_END) {
-        // If branchId is provided -> Gitsync -> need to load app versions of the branch.
-        // Inner joining -> show on dashboard only if there is a version on the branch, which means the app is gitsynced to the branch.
-        // Workflows remain common across all branches - no branch filter applied.
-        viewableAppsQb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', {
-          branchId,
-        });
+  // Eagerly load appVersions for modules, branch-filtered like apps.
+  // We intentionally DO NOT filter out stub versions at this outer join —
+  // after a branch-create or workspace pull a net-new module has only a stub
+  // version on the branch; filtering it out would hide the module entirely.
+  // The UUID-name-leak concern is handled by the inner `versions`-aliased join
+  // in viewableAppsQueryUsingPermissions (read by ModuleManager).
+  private applyAppVersionsJoin(
+    qb: SelectQueryBuilder<AppBase>,
+    type: string,
+    branchId: string | undefined,
+    isGetAll: boolean
+  ): void {
+    if (type === APP_TYPES.MODULE && !isGetAll) {
+      if (branchId) {
+        qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+      } else {
+        qb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
-
-      if (isGetAll) {
-        return await viewableAppsQb.getMany();
-      }
-
-      return await viewableAppsQb
-        .take(9)
-        .skip(9 * (page - 1))
-        .getMany();
-    });
+    } else if (branchId && type === APP_TYPES.FRONT_END) {
+      qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+    }
   }
 
   protected viewableAppsQueryUsingPermissions(
@@ -678,33 +689,20 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async count(user: User, searchKey, type: APP_TYPES, branchId?: string): Promise<number> {
-    let resourceType: MODULES;
-
-    switch (type) {
-      case APP_TYPES.WORKFLOW:
-        resourceType = MODULES.WORKFLOWS;
-        break;
-      case APP_TYPES.FRONT_END:
-        resourceType = MODULES.APP;
-        break;
-      default:
-        resourceType = MODULES.APP;
-    }
+    const resourceType = PERMISSION_RESOURCE_BY_APP_TYPE[type] ?? DEFAULT_PERMISSION_RESOURCE;
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: resourceType }],
       organizationId: user.organizationId,
     });
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await this.viewableAppsQueryUsingPermissions(
-        user,
-        userPermission[resourceType],
-        manager,
-        searchKey,
-        undefined,
-        type,
-        branchId
-      ).getCount();
-    });
+    return this.viewableAppsQueryUsingPermissions(
+      user,
+      userPermission[resourceType],
+      this.appRepository.manager,
+      searchKey,
+      undefined,
+      type,
+      branchId
+    ).getCount();
   }
 
   mergeDefaultComponentData(pages) {
@@ -969,65 +967,67 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager
   ): Promise<void> {
     try {
-      // 4-case moduleVersionId resolution — see VersionUtilService.checkDraftModulesInApp
-      // for the cases. Predicate: the module's apps.current_version_id (released version)
-      // must equal the resolved mod_ver.id. Null current_version_id means never released.
-      const unreleasedModules = await manager
-        .createQueryBuilder(Component, 'component')
-        .innerJoin('component.page', 'page')
-        .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin(
-          'app_versions',
-          'mod_ver',
-          `mod_ver.id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = mod_ver.name
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             (component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
-               SELECT branch_name FROM organization_git_sync_branches WHERE organization_id = :orgId
-             )
-             AND mod_ver.version_type = 'version'
-             AND mod_ver.branch_id = (
-               SELECT id FROM organization_git_sync_branches
-               WHERE is_default = true AND organization_id = :orgId
-             )
-             AND mod_ver.app_id IN (
-               SELECT id FROM apps
-               WHERE co_relation_id::text = (component.properties::jsonb -> 'moduleAppId' ->> 'value')
-                 AND type = 'module'
-                 AND organization_id = :orgId
-             )
-           )
-           OR (
-             mod_ver.module_reference_id::text = (component.properties::jsonb -> 'moduleVersionId' ->> 'value')
-             AND mod_ver.version_type = 'version'
-           )`,
-          { orgId: organizationId }
-        )
-        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
-        .select('DISTINCT mod_app.name', 'moduleName')
-        .addSelect('mod_ver.name', 'versionName')
-        .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere('appVersion.id = :versionId', { versionId })
-        .andWhere('(mod_app.current_version_id IS NULL OR mod_app.current_version_id != mod_ver.id)')
-        .getRawMany();
+      // Every ModuleViewer's resolved row must be the module's released version.
+      // Modules not consumed by this version may stay in draft — only the in-use set
+      // is checked here (resolveAllModuleViewersForVersion scopes to versionId's components).
+      // Block on:
+      //   no-row             — module unusable
+      //   orphan-fallback    — UUID pin matched no row; runtime drifts
+      //   unpinned-fallback  — empty pin; runtime drifts
+      //   pin-hit + DRAFT    — pinned directly at editing draft
+      //   pin-hit + module never released (moduleCurrentVersionId null)
+      //   pin-hit + pin != module's current_version_id
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const offenders = resolved.filter((v) => {
+        if (
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback'
+        ) {
+          return true;
+        }
+        if (!v.resolved) return true;
+        if (v.resolved.status === AppVersionStatus.DRAFT) return true;
+        if (!v.resolved.moduleCurrentVersionId) return true;
+        return v.resolved.moduleCurrentVersionId !== v.resolved.rowId;
+      });
 
-      if (unreleasedModules.length > 0) {
-        const moduleList = unreleasedModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+      if (offenders.length > 0) {
+        const seen = new Set<string>();
+        const unique: ResolvedModuleViewer[] = [];
+        for (const o of offenders) {
+          // componentId tiebreaker — prevents malformed components collapsing to one bucket.
+          const key = o.moduleName ?? (o.moduleAppCoRel || o.componentId);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push(o);
+        }
+        const formatEntry = (m: ResolvedModuleViewer) => {
+          const name = m.moduleName ?? 'unknown module';
+          if (m.matchKind === 'no-row') {
+            return `Module "${name}" has no saved version yet. Save and release the module first.`;
+          }
+          if (m.matchKind === 'orphan-fallback') {
+            return `Module "${name}" pin is invalid. Pin a released version.`;
+          }
+          if (m.matchKind === 'unpinned-fallback') {
+            return `Module "${name}" has active draft pinned. Pin a released version.`;
+          }
+          // pin-hit branches.
+          const versionName = m.resolved?.versionName ?? 'draft';
+          if (m.resolved?.status === AppVersionStatus.DRAFT) {
+            return `Module "${name}" version "${versionName}" is still in draft. Release the module first.`;
+          }
+          // Module never released OR pinned to non-released version.
+          return `Module "${name}" version "${versionName}" is not released. Release the module first.`;
+        };
+        const moduleList = unique.map(formatEntry).join(' ');
         const message =
-          unreleasedModules.length === 1
-            ? `Release blocked - Module "${unreleasedModules[0].moduleName} (${unreleasedModules[0].versionName})" hasn't been released yet.`
-            : `Release blocked - ${unreleasedModules.length} dependent modules haven't been released yet.`;
+          unique.length === 1
+            ? `Release blocked - ${formatEntry(unique[0])}`
+            : `Release blocked - ${unique.length} modules need attention. ${moduleList}`;
         throw new BadRequestException({
-          message: { error: message, details: `Modules not released: ${moduleList}` },
+          message: { error: message, details: moduleList },
         });
       }
     } catch (error) {
