@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { decode } from 'js-base64';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
-import { User } from '@modules/app/decorators/user.decorator';
+import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeatureAbilityGuard } from './ability/guard';
@@ -54,13 +54,13 @@ export class PluginsController implements IPluginsController {
 
   @Patch(':id')
   @InitFeature(FEATURE_KEY.UPDATE)
-  async update(@User() user, @Param('id') id: string, @Body() updatePluginDto: UpdatePluginDto) {
+  async update(@User() user: UserEntity, @Param('id') id: string, @Body() updatePluginDto: UpdatePluginDto) {
     return this.pluginsService.update(id, updatePluginDto);
   }
 
   @Delete(':id')
   @InitFeature(FEATURE_KEY.DELETE)
-  async remove(@User() user, @Param('id') id: string) {
+  async remove(@User() user: UserEntity, @Param('id') id: string) {
     return this.pluginsService.remove(id);
   }
 
@@ -72,22 +72,22 @@ export class PluginsController implements IPluginsController {
 
   @Post('findDependentPlugins')
   @InitFeature(FEATURE_KEY.DEPENDENT_PLUGINS)
-  async findDependentPluginsToBeInstalledFromDataSources(@Body() dataSources) {
+  async findDependentPluginsToBeInstalledFromDataSources(@Body() dataSources: any) {
     return this.pluginsService.checkIfPluginsToBeInstalled(dataSources);
   }
 
   @Post('installDependentPlugins')
   @InitFeature(FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS)
   async installDependentPlugins(
-    @Body('dependentPlugins') dependentPlugins,
-    @Body('shouldAutoImportPlugin') shouldAutoImportPlugin
+    @Body('dependentPlugins') dependentPlugins: Array<string>,
+    @Body('shouldAutoImportPlugin') shouldAutoImportPlugin: boolean
   ) {
     return this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
   }
 
   @Post('uninstallPlugins')
   @InitFeature(FEATURE_KEY.UNINSTALL_PLUGINS)
-  async uninstallPlugins(@Body('pluginsId') pluginsId) {
+  async uninstallPlugins(@Body('pluginsId') pluginsId: Array<string>) {
     return this.pluginsService.uninstallPlugins(pluginsId);
   }
 }

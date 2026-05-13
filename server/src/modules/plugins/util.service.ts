@@ -3,7 +3,7 @@ import { CreatePluginDto, UpdatePluginDto } from './dto';
 import { EntityManager } from 'typeorm';
 import { FilesRepository } from '@modules/files/repository';
 import { ConfigService } from '@nestjs/config';
-import { InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Plugin } from '@entities/plugin.entity';
 import { encode } from 'js-base64';
 import { File } from 'src/entities/file.entity';
@@ -12,11 +12,18 @@ import * as fs from 'fs';
 import { CreateFileDto, UpdateFileDto } from '@modules/files/dto';
 import { IPluginsUtilService } from './interfaces/IUtilService';
 import { Injectable } from '@nestjs/common';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
+import * as path from 'path';
 
 const jszipInstance = new jszip();
 @Injectable()
 export class PluginsUtilService implements IPluginsUtilService {
-  constructor(protected readonly filesRepository: FilesRepository, protected readonly configService: ConfigService) {}
+  constructor(
+    protected readonly filesRepository: FilesRepository,
+    protected readonly dataSourcesRepository: DataSourcesRepository,
+    protected readonly configService: ConfigService
+  ) {}
   async create(
     createPluginDto: CreatePluginDto,
     version: string,
@@ -186,7 +193,7 @@ export class PluginsUtilService implements IPluginsUtilService {
       await queryRunner.startTransaction();
 
       try {
-        const currentPlugin = await manager.findOne(Plugin, {
+        const currentPlugin = await manager.findOneOrFail(Plugin, {
           where: { id },
         });
 
@@ -220,5 +227,110 @@ export class PluginsUtilService implements IPluginsUtilService {
         await queryRunner.release();
       }
     });
+  }
+
+  private getPluginsJsonDirectory() {
+    const isProduction = process.env.NODE_ENV == 'production';
+    const buildExists = __dirname.includes('dist');
+    const baseDir = isProduction && buildExists ? path.join(__dirname) : __dirname.replace('/dist/', '/');
+    return path.join(baseDir, '../../assets/marketplace/plugins.json');
+  }
+
+  listMarketplacePlugins() {
+    const jsonpath = this.getPluginsJsonDirectory();
+
+    if (fs.existsSync(jsonpath)) {
+      const pluginsList = JSON.parse(fs.readFileSync(jsonpath, 'utf-8'));
+      const pluginsListIdToDetailsMap = Object.fromEntries(pluginsList.map((plugin: any) => [plugin.id, plugin]));
+      return { pluginsList, pluginsListIdToDetailsMap };
+    } else {
+      throw new NotFoundException('Plugins list not found');
+    }
+  }
+
+  async install(body: CreatePluginDto) {
+    const { id, repo, name } = body;
+
+    const existingPlugin = await dbTransactionWrap((manager: EntityManager) => {
+      return manager.findOne(Plugin, { where: { pluginId: id } });
+    });
+    if (existingPlugin) throw new BadRequestException(`Plugin '${name}' is already installed.`);
+
+    const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
+    let shouldCreate = false;
+
+    try {
+      // validate manifest and operations as JSON files
+      const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
+      const validOperations = JSON.parse(operations.toString()) ? operations : null;
+
+      if (validManifest && validOperations) {
+        shouldCreate = true;
+      }
+    } catch {
+      throw new InternalServerErrorException('Invalid plugin files');
+    }
+
+    return shouldCreate && (await this.create(body, version, { index, operations, icon, manifest }));
+  }
+
+  async uninstallPlugins(pluginsId: Array<string>) {
+    try {
+      if (!pluginsId.length) return;
+      for (const pluginId of pluginsId) {
+        await this.remove(pluginId);
+      }
+      return;
+    } catch (error) {
+      throw new InternalServerErrorException(error, 'Error while uninstalling marketplace plugins');
+    }
+  }
+
+  async remove(id: string) {
+    const dataSourcesByMarketplacePlugin = await this.dataSourcesRepository.getDatasourceByPluginId(id);
+    if (dataSourcesByMarketplacePlugin.length) {
+      const queries = [];
+      dataSourcesByMarketplacePlugin?.forEach((datasource: DataSourceEntity) => {
+        if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
+      });
+      if (queries.length) {
+        throw new InternalServerErrorException(`Plugin can't be removed, queries of plugin are in use`);
+      }
+    }
+
+    return dbTransactionWrap((manager: EntityManager) => {
+      return manager.delete(Plugin, id);
+    });
+  }
+
+  async autoInstallPluginsForTemplates(pluginsToBeInstalled: Array<string>, shouldAutoInstall: boolean) {
+    const installedPluginsList = [];
+    const installedPluginsInfo = [];
+    try {
+      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+      if (shouldAutoInstall && pluginsToBeInstalled.length) {
+        for (const pluginId of pluginsToBeInstalled) {
+          const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          const installedPluginInfo = await this.install(pluginDetails);
+          installedPluginsList.push(installedPluginInfo.name);
+          installedPluginsInfo.push(installedPluginInfo);
+        }
+        return { installedPluginsList, installedPluginsInfo };
+      }
+
+      if (!shouldAutoInstall && pluginsToBeInstalled.length) {
+        throw new NotFoundException(
+          `Plugins ( ${pluginsToBeInstalled
+            .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
+            .join(', ')} ) is not installed yet!`
+        );
+      }
+    } catch (error) {
+      if (installedPluginsInfo.length) {
+        const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
+        await this.uninstallPlugins(pluginsId);
+      }
+      throw new InternalServerErrorException(error, 'Error while installing marketplace plugins');
+    }
   }
 }
