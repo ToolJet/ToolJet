@@ -327,6 +327,54 @@ export class AppsRepository extends Repository<App> {
     return await qb.orderBy('app.created_At', 'ASC').addOrderBy('version.created_at', 'ASC').getRawMany();
   }
 
+  // Lists every module in a workspace with branch-aware metadata overlay.
+  //   - git enabled (workspace has a default branch) → metadata from the default branch row
+  //   - git off                                      → metadata from any slug-bearing row
+  // No branchId parameter: modules are workspace-wide listings, not branch-scoped lookups.
+  async findAllOrganizationModules(
+    organizationId: string
+  ): Promise<
+    { id: string; name: string; icon: string; slug: string; isPublic: boolean; createdAt: Date; updatedAt: Date }[]
+  > {
+    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
+
+    const qb = this.createQueryBuilder('app')
+      .select(['app.id AS id', 'app.created_at AS "createdAt"', 'app.updated_at AS "updatedAt"'])
+      .addSelect('COALESCE(av_meta.app_name, app.name) AS name')
+      .addSelect('COALESCE(av_meta.slug, app.slug) AS slug')
+      .addSelect('COALESCE(av_meta.icon, app.icon) AS icon')
+      .addSelect('COALESCE(av_meta.is_public, app.is_public) AS "isPublic"')
+      .where('app.organizationId = :organizationId', { organizationId })
+      .andWhere('app.type = :type', { type: APP_TYPES.MODULE });
+
+    if (defaultBranchId) {
+      qb.leftJoin(
+        'app_versions',
+        'av_meta',
+        `av_meta.app_id = app.id AND av_meta.branch_id = :defaultBranchId AND av_meta.id = (
+          SELECT av_inner.id FROM app_versions av_inner
+          WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
+          ORDER BY av_inner.updated_at DESC
+          LIMIT 1
+        )`,
+        { defaultBranchId }
+      );
+    } else {
+      qb.leftJoin(
+        'app_versions',
+        'av_meta',
+        `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
+          SELECT av_inner.id FROM app_versions av_inner
+          WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
+          ORDER BY av_inner.updated_at DESC
+          LIMIT 1
+        )`
+      );
+    }
+
+    return await qb.orderBy('app.updated_at', 'DESC').getRawMany();
+  }
+
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
     return dbTransactionWrap(async (mgr: EntityManager) => {
       const app = await mgr.findOne(App, {
