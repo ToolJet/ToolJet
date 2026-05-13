@@ -12,7 +12,7 @@ const compat = new FlatCompat({
 });
 
 module.exports = [
-  { ignores: ['**/dist/**', '**/node_modules/**'] },
+  { ignores: ['**/dist/**', '**/node_modules/**', 'server.ts', 'client.ts'] },
   ...compat
     .extends(
       'eslint:recommended',
@@ -61,6 +61,7 @@ module.exports = [
           args: 'none',
           caughtErrors: 'none',
           varsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
         },
       ],
       '@typescript-eslint/no-var-requires': 'off',
