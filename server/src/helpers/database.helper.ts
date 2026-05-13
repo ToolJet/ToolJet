@@ -3,7 +3,7 @@ import { updateTimestampForAppVersion } from './utils.helper';
 import { createLogger } from './bootstrap.helper';
 
 let CONNECTION_INSTANCE: DataSource;
-const getConnectionInstance = (): DataSource => {
+export const getConnectionInstance = (): DataSource => {
   if (!CONNECTION_INSTANCE) {
     throw new Error('Database connection not initialized');
   }
