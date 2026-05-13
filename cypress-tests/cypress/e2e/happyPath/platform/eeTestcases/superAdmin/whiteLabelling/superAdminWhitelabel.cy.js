@@ -33,6 +33,7 @@ describe("Instance settings - White labelling", () => {
     cy.apiDeleteAllApps();
     cy.apiConfigureSmtp(smtpConfig);
     enableInstanceSignup();
+    cy.mhDeleteAll();
   });
 
   after(() => {

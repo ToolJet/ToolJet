@@ -60,8 +60,86 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         AND a.type IN ('front_end', 'module')
     `);
 
-    // Step 4: Unique indexes — safe because only one version per app per branch
-    // has non-NULL slug/app_name
+    // Step 4a: Dedupe (slug, branch_id) among branch-type rows.
+    // The Step-3 backfill copies apps.slug onto every version row, which can collide
+    // for branches that hold multiple version rows for the same app. Keep the oldest
+    // row's slug as-is and rename later duplicates by appending the smallest unused
+    // _N suffix within the same branch scope.
+    await queryRunner.query(`
+      DO $$
+      DECLARE
+        rec RECORD;
+        new_value VARCHAR;
+        suffix INT;
+      BEGIN
+        FOR rec IN
+          SELECT id, slug, branch_id
+          FROM (
+            SELECT id, slug, branch_id,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY slug, branch_id
+                     ORDER BY created_at ASC, id ASC
+                   ) AS rn
+            FROM app_versions
+            WHERE version_type = 'branch' AND slug IS NOT NULL
+          ) ranked
+          WHERE rn > 1
+        LOOP
+          suffix := 1;
+          LOOP
+            new_value := rec.slug || '_' || suffix;
+            EXIT WHEN NOT EXISTS (
+              SELECT 1 FROM app_versions
+              WHERE version_type = 'branch'
+                AND slug = new_value
+                AND branch_id IS NOT DISTINCT FROM rec.branch_id
+            );
+            suffix := suffix + 1;
+          END LOOP;
+          UPDATE app_versions SET slug = new_value WHERE id = rec.id;
+        END LOOP;
+      END $$;
+    `);
+
+    // Step 4b: Dedupe (app_name, branch_id) among branch-type rows. Same algorithm
+    // as Step 4a; the two fields can collide independently.
+    await queryRunner.query(`
+      DO $$
+      DECLARE
+        rec RECORD;
+        new_value VARCHAR;
+        suffix INT;
+      BEGIN
+        FOR rec IN
+          SELECT id, app_name, branch_id
+          FROM (
+            SELECT id, app_name, branch_id,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY app_name, branch_id
+                     ORDER BY created_at ASC, id ASC
+                   ) AS rn
+            FROM app_versions
+            WHERE version_type = 'branch' AND app_name IS NOT NULL
+          ) ranked
+          WHERE rn > 1
+        LOOP
+          suffix := 1;
+          LOOP
+            new_value := rec.app_name || '_' || suffix;
+            EXIT WHEN NOT EXISTS (
+              SELECT 1 FROM app_versions
+              WHERE version_type = 'branch'
+                AND app_name = new_value
+                AND branch_id IS NOT DISTINCT FROM rec.branch_id
+            );
+            suffix := suffix + 1;
+          END LOOP;
+          UPDATE app_versions SET app_name = new_value WHERE id = rec.id;
+        END LOOP;
+      END $$;
+    `);
+
+    // Step 4c: Unique indexes — duplicates resolved above.
     await queryRunner.query(`
       CREATE UNIQUE INDEX "app_versions_slug_branch_id_unique"
       ON app_versions (slug, branch_id)
