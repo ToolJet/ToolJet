@@ -44,8 +44,8 @@ export function useAppPreviewLink() {
       featureAccess?.plan === 'starter';
 
     const isBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
-    const isOnSubBranch = currentBranch && !(currentBranch.is_default || currentBranch.isDefault);
-    const suppressBranchId = isOnSubBranch && !isBranchVersion;
+    const isDraft = selectedVersion?.status === 'DRAFT' || selectedVersion?.isDraft || selectedVersion?.is_draft;
+    const suppressBranchId = currentBranch && !isBranchVersion && !isDraft;
 
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
