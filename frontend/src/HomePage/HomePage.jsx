@@ -1067,23 +1067,22 @@ class HomePageComponent extends React.Component {
 
     const folderName = this.state.folders.find((f) => f.id === appOperations.selectedFolder)?.name || 'folder';
 
-    Promise.all(selectedApps.map((app) => folderService.addToFolder(app.value, appOperations.selectedFolder)))
-      .then(() => {
-        toast.success(`Apps moved to "${folderName}" folder successfully!`);
-        this.foldersChanged();
-        this.setState({ appOperations: {}, showAddToFolderModal: false });
-        selectedApps.forEach((app) => {
+    Promise.allSettled(
+      selectedApps.map((app) => folderService.addToFolder(app.value, appOperations.selectedFolder))
+    ).then((results) => {
+      toast.success(`Apps moved to "${folderName}" folder successfully!`);
+      this.foldersChanged();
+      this.setState({ appOperations: {}, showAddToFolderModal: false });
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
           posthogHelper.captureEvent('click_add_to_folder_button', {
             workspace_id: workspaceId,
-            app_id: app.value,
+            app_id: selectedApps[i].value,
             folder_id: appOperations?.selectedFolder,
           });
-        });
-      })
-      .catch(({ error }) => {
-        this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        toast.error(error);
+        }
       });
+    });
   };
 
   removeAppFromFolder = () => {
