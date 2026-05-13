@@ -21,6 +21,9 @@ module.exports = [
     )
     .map((c) => ({ ...c, files: ['**/*.ts'] })),
   {
+    linterOptions: {
+      reportUnusedDisableDirectives: 'error',
+    },
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,

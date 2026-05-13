@@ -21,6 +21,9 @@ const compat = new FlatCompat({
 });
 
 module.exports = defineConfig([{
+  linterOptions: {
+    reportUnusedDisableDirectives: "error",
+  },
   files: ["**/*.ts"],
   languageOptions: {
     globals: {
