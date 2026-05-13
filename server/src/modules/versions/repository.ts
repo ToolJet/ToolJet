@@ -1,5 +1,5 @@
 import { AppEnvironment } from '@entities/app_environments.entity';
-import { AppVersion, AppVersionStatus } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';

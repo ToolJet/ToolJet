@@ -311,7 +311,9 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     // Keep only apps in this folder
     const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
 
-    query.where('apps.id IN (:...viewableAppIds)', {
+    // andWhere — `.where()` would reset the WHERE buffer and drop the search predicate
+    // added by getBaseAppsQuery. Stacking lets folder visibility filter on top of search.
+    query.andWhere('apps.id IN (:...viewableAppIds)', {
       viewableAppIds,
     });
 
