@@ -1,0 +1,541 @@
+openapi: 3.0.0
+info:
+  version: 12.0.0
+  title: Xero AppStore API
+  description: These endpoints are for Xero Partners to interact with the App Store Billing platform
+  termsOfService: https://developer.xero.com/xero-developer-platform-terms-conditions/
+  contact:
+    name: Xero Platform Team
+    email: api@xero.com
+    url: https://developer.xero.com
+  license:
+    name: MIT
+    url: https://github.com/XeroAPI/Xero-OpenAPI/blob/master/LICENSE
+servers:
+  - description: Xero App Store API
+    url: https://api.xero.com/appstore/2.0
+paths:
+  /subscriptions/{subscriptionId}:
+    get:
+      tags:
+        - AppStore
+      operationId: getSubscription
+      summary: Retrieves a subscription for a given subscriptionId
+      parameters:
+        - $ref: "#/components/parameters/subscriptionId"
+      responses:
+        "200":
+          description: Success - return response of unique Subscription object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscription"
+              example:
+                currentPeriodEnd: 2021-07-20T03:13:48
+                endDate: 2021-07-20T03:13:48
+                id: 01b5a6f4-8936-4bfa-b703-830702312b87
+                testMode: true
+                organisationId: fdc5be44-9b3e-4ebb-a0e9-11b9737f9a28
+                plans:
+                  - id: f617dd59-462f-46a1-9519-1765fd38b160
+                    name: Small
+                    status: ACTIVE
+                    subscriptionItems:
+                      - endDate: 2021-07-20T03:13:48
+                        id: c7336bf6-8a47-4f13-9fc0-82420e6922c8
+                        testMode: true
+                        price:
+                          amount: 50
+                          currency: AUD
+                          id: 31acefbe-bdb7-4329-84d6-51e9afd95327
+                        product:
+                          id: 56d66073-ff78-497b-a726-ca9d56fdafa3
+                          name: Small
+                          type: FIXED
+                        quantity: 1
+                        startDate: 2021-07-20T03:13:48
+                      - endDate: 2021-07-20T03:13:48
+                        id: 1a25bc96-141a-4e42-a0fa-55ed51844da4
+                        testMode: true
+                        price:
+                          amount: 0.20
+                          currency: AUD
+                          id: 15c65048-1b48-4d9f-81c0-4e1cd3a4f49c
+                        product:
+                          id: e8d8ac02-01b3-47f7-8a22-99cfe9035cf7
+                          name: Texts
+                          type: METERED
+                          usageUnit: txt
+                startDate: 2021-07-20T03:13:48
+                status: ACTIVE
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: When a failure occurs in the endpoint
+      security:
+        - OAuth2:
+            - marketplace.billing
+  /subscriptions/{subscriptionId}/items/{subscriptionItemId}/usage-records:
+    post:
+      tags:
+        - AppStore
+      operationId: postUsageRecords
+      summary: Send metered usage belonging to this subscription and subscription item
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - $ref: "#/components/parameters/subscriptionId"
+        - $ref: "#/components/parameters/subscriptionItemId"
+      responses:
+        "200":
+          description: Success - return response of the record submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageRecord"
+              example:
+                usageRecordId: 2a90f7d9-4c10-4a23-9c34-b47225167a48
+                subscriptionId: 391be708-878a-4741-acfb-c0bc9a165bdb
+                subscriptionItemId: b22b150f-a0db-447d-9117-d922110add64
+                productId: d2b133d9-95d8-4446-807a-ae7ebc7353f6
+                pricePerUnit: 0.10
+                quantity: 22
+                testMode: true
+                recordedAt: 2022-09-13T02:11:22
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: When a failure occurs in the endpoint
+      security:
+        - OAuth2:
+            - marketplace.billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUsageRecord"
+            example:
+              timestamp: 2022-01-21T13:01:00
+              quantity: 10
+        description: Contains the quantity for the usage record to create
+        required: true
+  /subscriptions/{subscriptionId}/items/{subscriptionItemId}/usage-records/{usageRecordId}:
+    put:
+      tags:
+        - AppStore
+      operationId: putUsageRecords
+      summary: Update and existing metered usage belonging to this subscription and subscription item
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+        - $ref: "#/components/parameters/subscriptionId"
+        - $ref: "#/components/parameters/subscriptionItemId"
+        - $ref: "#/components/parameters/usageRecordId"
+      responses:
+        "200":
+          description: Success - return response of the modified record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageRecord"
+              example:
+                usageRecordId: 2a90f7d9-4c10-4a23-9c34-b47225167a48
+                subscriptionId: 391be708-878a-4741-acfb-c0bc9a165bdb
+                subscriptionItemId: b22b150f-a0db-447d-9117-d922110add64
+                productId: d2b133d9-95d8-4446-807a-ae7ebc7353f6
+                pricePerUnit: 0.10
+                quantity: 22
+                testMode: true
+                recordedAt: 2022-09-13T02:11:22
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: When a failure occurs in the endpoint
+      security:
+        - OAuth2:
+            - marketplace.billing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUsageRecord"
+            example:
+              quantity: 10
+        description: Contains the quantity for the usage record to update
+        required: true
+  /subscriptions/{subscriptionId}/usage-records:
+    get:
+      tags:
+        - AppStore
+      operationId: getUsageRecords
+      summary: Gets all usage records related to the subscription
+      parameters:
+        - $ref: "#/components/parameters/subscriptionId"
+      responses:
+        "200":
+          description: Success - return a list of all usage record submitted against this subscription for this subscription period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageRecordsList"
+              example:
+                usageRecords:
+                  - usageRecordId: 206100d3-e18b-4c59-9372-e98e4367a73f
+                    subscriptionId: 7c7684cf-bbfa-4fa8-8f44-eba8d1acdc5d
+                    subscriptionItemId: 264f6fa2-65e6-48f4-8a92-57cde5499742
+                    productId: b040838b-f85e-4e7c-8dba-5a8501e5d312
+                    pricePerUnit: 2.0
+                    quantity: 12
+                    testMode: false
+                    recordedAt: 2022-01-01T00:00:00
+                  - usageRecordId: 47d61dc9-3c99-4587-8d55-0985f47df4a6
+                    subscriptionId: 7c7684cf-bbfa-4fa8-8f44-eba8d1acdc5d
+                    subscriptionItemId: 264f6fa2-65e6-48f4-8a92-57cde5499742
+                    productId: ec8033e8-5e3c-4795-bfb4-bfb85fa4557e
+                    pricePerUnit: 5.0
+                    quantity: 2
+                    testMode: false
+                    recordedAt: 2022-01-01T00:00:00
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+          description: When a failure occurs in the endpoint
+      security:
+        - OAuth2:
+            - marketplace.billing
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: For more information
+      flows:
+        clientCredentials:
+          tokenUrl: https://identity.xero.com/connect/token
+          scopes:
+            marketplace.billing: Grant read-only access to fixed assets
+  parameters:
+    subscriptionId:
+      required: true
+      in: path
+      name: subscriptionId
+      x-snake: subscription_id
+      description: Unique identifier for Subscription object
+      example: 00000000-0000-0000-0000-000000000000
+      x-example-java: UUID.fromString("00000000-0000-0000-0000-000000000000")
+      x-example-php: "&quot;00000000-0000-0000-0000-000000000000&quot;"
+      x-example-csharp: Guid.Parse("00000000-0000-0000-0000-000000000000");
+      schema:
+        type: string
+        format: uuid
+    subscriptionItemId:
+      required: true
+      in: path
+      name: subscriptionItemId
+      x-snake: subscription_item_id
+      description: The unique identifier of the subscriptionItem
+      example: 00000000-0000-0000-0000-000000000000
+      x-example-java: UUID.fromString("00000000-0000-0000-0000-000000000000")
+      x-example-php: "&quot;00000000-0000-0000-0000-000000000000&quot;"
+      x-example-csharp: Guid.Parse("00000000-0000-0000-0000-000000000000");
+      schema:
+        type: string
+        format: uuid
+    usageRecordId:
+      required: true
+      in: path
+      name: usageRecordId
+      x-snake: usage_record_id
+      description: The unique identifier of the usage record
+      example: 00000000-0000-0000-0000-000000000000
+      x-example-java: UUID.fromString("00000000-0000-0000-0000-000000000000")
+      x-example-php: "&quot;00000000-0000-0000-0000-000000000000&quot;"
+      x-example-csharp: Guid.Parse("00000000-0000-0000-0000-000000000000");
+      schema:
+        type: string
+        format: uuid
+    idempotencyKey:
+      in: header
+      name: Idempotency-Key
+      x-snake: idempotency_key
+      description: This allows you to safely retry requests without the risk of duplicate processing. 128 character max.
+      example: KEY_VALUE
+      schema:
+        type: string
+  schemas:
+    Subscription:
+      type: object
+      properties:
+        currentPeriodEnd:
+          description: |
+            End of the current period that the subscription has been invoiced for.
+          format: date-time
+          type: string
+          x-is-datetime: true
+        endDate:
+          description: If the subscription has been canceled, this is the date when the subscription ends. If null, the subscription is active and has not been cancelled
+          format: date-time
+          type: string
+          x-is-datetime: true
+        id:
+          description: The unique identifier of the subscription
+          format: uuid
+          type: string
+        organisationId:
+          description: The Xero generated unique identifier for the organisation
+          format: uuid
+          type: string
+        plans:
+          description: List of plans for the subscription.
+          type: array
+          items:
+            $ref: "#/components/schemas/Plan"
+        startDate:
+          description: Date when the subscription was first created.
+          format: date-time
+          type: string
+          x-is-datetime: true
+        status:
+          description: Status of the subscription. Available statuses are ACTIVE, CANCELED, and PAST_DUE.
+          type: string
+          enum:
+            - ACTIVE
+            - CANCELED
+            - PAST_DUE
+        testMode:
+          description: Boolean used to indicate if the subscription is in test mode
+          type: boolean
+      required:
+        - id
+        - organisationId
+        - status
+        - startDate
+        - currentPeriodEnd
+        - plans
+    Plan:
+      type: object
+      properties:
+        id:
+          description: The unique identifier of the plan
+          format: uuid
+          type: string
+        name:
+          description: |
+            The name of the plan. It is used in the invoice line item
+            description.
+          type: string
+        status:
+          description: |
+            Status of the plan. Available statuses are ACTIVE, CANCELED, and
+            PENDING_ACTIVATION.
+          type: string
+          enum:
+            - ACTIVE
+            - CANCELED
+            - PENDING_ACTIVATION
+        subscriptionItems:
+          description: |
+            List of the subscription items belonging to the plan. It does not
+            include cancelled subscription items.
+          items:
+            $ref: "#/components/schemas/SubscriptionItem"
+          type: array
+      required:
+        - id
+        - name
+        - status
+        - subscriptionItems
+    Price:
+      type: object
+      properties:
+        amount:
+          description: The net (before tax) amount.
+          type: number
+          format: double
+          x-is-money: true
+        currency:
+          description: The currency of the price.
+          type: string
+        id:
+          description: The unique identifier of the price.
+          format: uuid
+          type: string
+      required:
+        - id
+        - amount
+        - currency
+    ProblemDetails:
+      type: object
+      properties:
+        detail:
+          type: string
+        extensions:
+          type: object
+        instance:
+          type: string
+        status:
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+    SubscriptionItem:
+      type: object
+      properties:
+        endDate:
+          description: Date when the subscription to this product will end
+          format: date-time
+          type: string
+          x-is-datetime: true
+        id:
+          description: The unique identifier of the subscription item.
+          format: uuid
+          type: string
+        price:
+          description: The price of the product subscribed to.
+          $ref: "#/components/schemas/Price"
+        product:
+          description: The product subscribed to.
+          $ref: "#/components/schemas/Product"
+        quantity:
+          description: The quantity of the item. For a fixed product, it is 1. For a per-seat product, it is a positive integer. For metered products, it is always null.
+          type: integer
+        startDate:
+          description: |
+            Date the subscription started, or will start. Note: this could be in
+            the future for downgrades or reduced number of seats that haven't taken effect yet.
+          format: date-time
+          type: string
+          x-is-datetime: true
+        status:
+          description: |
+            Status of the subscription item. Available statuses are ACTIVE, CANCELED, and
+            PENDING_ACTIVATION.
+          type: string
+          enum:
+            - ACTIVE
+            - CANCELED
+            - PENDING_ACTIVATION
+        testMode:
+          description: If the subscription is a test subscription
+          type: boolean
+      required:
+        - id
+        - startDate
+        - product
+        - price
+        - status
+    Product:
+      properties:
+        id:
+          description: The unique identifier for the product
+          type: string
+          format: uuid
+        name:
+          description: The name of the product
+          type: string
+        seatUnit:
+          description: The unit of the per seat product. e.g. "user", "organisation", "SMS", etc
+          type: string
+        type:
+          description: |
+            The pricing model of the product:
+            * FIXED: Customers are charged a fixed amount for each billing period
+            * PER_SEAT: Customers are charged based on the number of units they purchase
+            * METERED: Customers are charged per use of this product
+            * SIMPLE: Customers are charged on a fixed amount for each billing period with an optional add-on feature
+          type: string
+          enum:
+            - FIXED
+            - PER_SEAT
+            - METERED
+            - SIMPLE
+        usageUnit:
+          description: The unit of the usage product. e.g. "user", "minutes", "SMS", etc
+          type: string
+    UsageRecord:
+      properties:
+        quantity:
+          description: The quantity recorded
+          format: int32
+          type: integer
+        subscriptionId:
+          description: The unique identifier of the Subscription.
+          format: guid
+          type: string
+        subscriptionItemId:
+          description: The unique identifier of the SubscriptionItem.
+          format: guid
+          type: string
+        testMode:
+          description: If the subscription is a test subscription
+          type: boolean
+        recordedAt:
+          description: The time when this usage was recorded in UTC
+          format: date-time
+          type: string
+          x-is-datetime: true
+        usageRecordId:
+          description: The unique identifier of the usageRecord.
+          format: guid
+          type: string
+        pricePerUnit:
+          description: The price per unit
+          format: decimal
+          type: number
+        productId:
+          description: The unique identifier of the linked Product
+          format: guid
+          type: string
+      required:
+        - usageRecordId
+        - subscriptionId
+        - subscriptionItemId
+        - productId
+        - pricePerUnit
+        - quantity
+        - testMode
+        - recordedAt
+      type: object
+    UsageRecordsList:
+      description: Response to get usage record
+      properties:
+        usageRecords:
+          description: A collection of usage records
+          items:
+            $ref: "#/components/schemas/UsageRecord"
+          type: array
+      required:
+        - usageRecords
+      type: object
+    CreateUsageRecord:
+      description: Data transfer object for public create usage end point
+      properties:
+        quantity:
+          description: The initial quantity for the usage record. Must be a whole number that is greater than or equal to 0
+          format: int32
+          type: integer
+        timestamp:
+          description: DateTime in UTC of when the the product was consumed/used
+          format: date-time
+          type: string
+          x-is-datetime: true
+      required:
+        - quantity
+        - timestamp
+      type: object
+    UpdateUsageRecord:
+      description: Data transfer object for public update usage end point
+      properties:
+        quantity:
+          description: The new quantity for the usage record. Must be a whole number that is greater than or equal to 0
+          format: int32
+          type: integer
+      required:
+        - quantity
+      type: object
