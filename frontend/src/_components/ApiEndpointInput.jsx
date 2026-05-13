@@ -153,11 +153,27 @@ const ApiEndpointInput = (props) => {
       request: {},
     };
 
+    // Merge path-level parameters into the operation per OpenAPI 3.0 spec.
+    // The react-component-api-endpoint widget reads parameters from selectedOperation only,
+    // so path-level params (specJson.paths[path].parameters) must be merged here.
+    // Operation-level params with the same name+in override path-level ones.
+    const operationObj = specJson.paths[path][operation];
+    const pathLevelParams = specJson.paths[path].parameters;
+    let mergedOperation = operationObj;
+    if (Array.isArray(pathLevelParams) && pathLevelParams.length > 0) {
+      const opParams = operationObj.parameters || [];
+      const opParamKeys = new Set(opParams.map((p) => `${p.name}:${p.in}`));
+      const inherited = pathLevelParams.filter((p) => !opParamKeys.has(`${p.name}:${p.in}`));
+      if (inherited.length > 0) {
+        mergedOperation = { ...operationObj, parameters: [...opParams, ...inherited] };
+      }
+    }
+
     const newOptions = {
       ...options,
       path,
       operation,
-      selectedOperation: specJson.paths[path][operation],
+      selectedOperation: mergedOperation,
       params: savedParams,
       ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
