@@ -442,6 +442,8 @@ export const createGridSlice = (set, get) => ({
         inFlowMap,
         resolvedHeights,
         collapseWhenHiddenMap,
+        calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+        getComponentDefinition: boundGetComponentDefinition,
       });
 
       if (Object.keys(temporaryLayoutPatch).length === 0) {
