@@ -313,6 +313,10 @@ export class ModuleImportDto {
   @IsDefined()
   @IsObject()
   definition: any;
+
+  @IsOptional()
+  @IsString()
+  appName?: string;
 }
 
 export class ModuleImportRequestDto {
