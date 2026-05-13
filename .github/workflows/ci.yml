@@ -148,7 +148,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'marketplace/package-lock.json'
       - run: npm ci --prefix marketplace
-      - run: ESLINT_USE_FLAT_CONFIG=false npm run --prefix marketplace lint
+      - run: npm run --prefix marketplace lint
       - run: npm run --prefix marketplace build
 
   # ---------------------------------------------------------------------------
