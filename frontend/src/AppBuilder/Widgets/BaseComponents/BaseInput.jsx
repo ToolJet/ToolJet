@@ -13,7 +13,7 @@ import './baseInput.scss';
 const RenderInput = forwardRef((props, ref) => {
   const { inputType, ...restProps } = props;
 
-  return inputType !== 'textarea' ? <input {...restProps} ref={ref} /> : <textarea {...restProps} ref={ref} />;
+  return inputType !== 'textarea' ? <input {...restProps} ref={ref} /> : <textarea rows={1} {...restProps} ref={ref} />;
 });
 
 export const BaseInput = ({

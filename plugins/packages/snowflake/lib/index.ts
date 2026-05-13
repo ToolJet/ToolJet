@@ -120,6 +120,48 @@ export default class Snowflake implements QueryService {
     throw new QueryError('Method not found', `Method '${methodName}' is not supported by the Snowflake plugin`, {});
   }
 
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    queryOptions?: { search?: string; page?: number; limit?: number }
+  ): Promise<QueryResult> {
+    try {
+      const connection: any = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+      const search = queryOptions?.search || '';
+      const searchPattern = `%${search.toUpperCase()}%`;
+      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+
+      if (queryOptions?.limit) {
+        const page = queryOptions.page || 1;
+        const limit = queryOptions.limit;
+        const offset = (page - 1) * limit;
+        const countSqlText = `SELECT COUNT(*) AS TOTAL FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+
+        const [tableResult, countResult]: any[] = await Promise.all([
+          this.connExecuteAsync(connection, {
+            sqlText: `${baseSqlText} ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
+            binds: [searchPattern, limit, offset],
+          }),
+          this.connExecuteAsync(connection, { sqlText: countSqlText, binds: [searchPattern] }),
+        ]);
+
+        const totalCount = parseInt(countResult.rows[0]?.TOTAL ?? '0', 10);
+        const rows = tableResult.rows.map((row: any) => ({ table_name: row.TABLE_NAME }));
+        return { status: 'ok', data: { rows, totalCount } };
+      }
+
+      const result: any = await this.connExecuteAsync(connection, {
+        sqlText: `${baseSqlText} ORDER BY TABLE_NAME`,
+        binds: [searchPattern],
+      });
+      const rows = result.rows.map((row: any) => ({ table_name: row.TABLE_NAME }));
+      return { status: 'ok', data: { rows, totalCount: rows.length } };
+    } catch (err) {
+      throw new QueryError('Could not fetch tables', err.message || 'An unknown error occurred', {});
+    }
+  }
+
   private async _fetchTables(
     sourceOptions: SourceOptions,
     context: unknown,
