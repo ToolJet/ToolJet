@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { toast } from 'react-hot-toast';
 import useTableStore from '../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -7,7 +6,7 @@ import { shallow } from 'zustand/shallow';
 
 const EMPTY_ARRAY = [];
 
-export const useTableRefresh = (id) => {
+export const useTableRefresh = (id, fireEvent = () => {}) => {
   const { moduleId } = useModuleContext();
 
   const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
@@ -39,7 +38,9 @@ export const useTableRefresh = (id) => {
     }
 
     if (queriesToRun.length === 0) {
-      toast('No queries to refresh');
+      setIsRefreshing(id, true);
+      fireEvent('onRefresh');
+      setIsRefreshing(id, false);
       return;
     }
 
@@ -49,9 +50,10 @@ export const useTableRefresh = (id) => {
     );
 
     Promise.allSettled(runPromises).finally(() => {
+      fireEvent('onRefresh');
       setIsRefreshing(id, false);
     });
-  }, [id, moduleId, isRefreshing, getDependents, dataQueries, currentMode, runQuery, setIsRefreshing]);
+  }, [id, moduleId, isRefreshing, getDependents, dataQueries, currentMode, runQuery, setIsRefreshing, fireEvent]);
 
   return { handleRefresh, isRefreshing };
 };
