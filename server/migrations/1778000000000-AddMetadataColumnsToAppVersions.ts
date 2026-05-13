@@ -45,19 +45,37 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       UPDATE app_versions av
       SET
         icon = a.icon,
-        is_public = a.is_public
+        is_public = a.is_public,
+        slug = a.slug, app_name = a.name
       FROM apps a
       WHERE av.app_id = a.id
         AND a.type IN ('front_end', 'module')
     `);
 
-    // Step 3: Backfill slug and app_name for all version
+    // Step 2a: Defensive fallback before the branch-row CHECK constraint below — any
+    // non-workflow version row with a branch_id but a NULL app_name/slug (e.g. legacy
+    // rows whose source apps.name/slug were NULL) gets a placeholder so the CHECK doesn't
+    // fail validation. Uses the app's id as a deterministic placeholder.
     await queryRunner.query(`
       UPDATE app_versions av
-      SET slug = a.slug, app_name = a.name
+      SET
+        app_name = COALESCE(av.app_name, av.app_id::text),
+        slug = COALESCE(av.slug, av.app_id::text)
       FROM apps a
       WHERE av.app_id = a.id
         AND a.type IN ('front_end', 'module')
+        AND av.branch_id IS NOT NULL
+        AND (av.app_name IS NULL OR av.slug IS NULL)
+    `);
+
+    // Step 2b: Enforce that branched version rows always carry metadata. branch_id IS NULL
+    // rows (non-git-sync versions, workflows) are exempt — only branch-scoped rows must
+    // have app_name and slug set. The constraint covers BRANCH-type sub-branch rows and
+    // VERSION-type default-branch rows alike (both have branch_id IS NOT NULL when git is on).
+    await queryRunner.query(`
+      ALTER TABLE app_versions
+        ADD CONSTRAINT chk_app_versions_branch_metadata
+        CHECK (branch_id IS NULL OR (app_name IS NOT NULL AND slug IS NOT NULL));
     `);
 
     // Step 4a: Dedupe (slug, branch_id) among branch-type rows.

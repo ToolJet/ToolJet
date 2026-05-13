@@ -23,7 +23,13 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class AddCoRelationIdNotNullConstraints1777200000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Safety backfill: 1777100000000 already filled rows that existed when it ran,
+    // but rows inserted between that migration and this one (or in environments where
+    // the prior backfill missed cases) can still be NULL. For every NULL co_relation_id
+    // copy the row's own id so the constraint can be added without violation.
+
     // ── apps ─────────────────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE apps SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE apps
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -31,6 +37,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── pages ────────────────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE pages SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE pages
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -38,6 +45,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── components ───────────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE components SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE components
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -45,6 +53,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── layouts ──────────────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE layouts SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE layouts
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -52,6 +61,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── data_sources ─────────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE data_sources SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE data_sources
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -59,6 +69,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── data_queries ─────────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE data_queries SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE data_queries
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -66,6 +77,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── event_handlers ───────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE event_handlers SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE event_handlers
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -73,6 +85,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── data_query_folders ───────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE data_query_folders SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE data_query_folders
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -80,6 +93,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── data_query_folder_mappings ───────────────────────────────────────────────
+    await queryRunner.query(`UPDATE data_query_folder_mappings SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE data_query_folder_mappings
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -87,6 +101,7 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     `);
 
     // ── internal_tables ──────────────────────────────────────────────────────────
+    await queryRunner.query(`UPDATE internal_tables SET co_relation_id = id WHERE co_relation_id IS NULL;`);
     await queryRunner.query(`
       ALTER TABLE internal_tables
         ALTER COLUMN co_relation_id SET NOT NULL,
@@ -96,7 +111,14 @@ export class AddCoRelationIdNotNullConstraints1777200000000 implements Migration
     // ── app_versions (CHECK constraint, not NOT NULL) ────────────────────────────
     // Allows NULL only when is_stub = true. Any non-stub row must carry a co_relation_id.
     // is_stub defaults to false so NULL is_stub (pre-column legacy rows) is treated as
-    // non-stub and also requires co_relation_id — those rows were backfilled in 1777100000000.
+    // non-stub and also requires co_relation_id. Backfill any non-stub rows that still
+    // have a NULL value before adding the CHECK so it doesn't fail validation.
+    await queryRunner.query(`
+      UPDATE app_versions
+      SET co_relation_id = id
+      WHERE co_relation_id IS NULL
+        AND is_stub IS DISTINCT FROM true;
+    `);
     await queryRunner.query(`
       ALTER TABLE app_versions
         ADD CONSTRAINT chk_app_versions_co_relation_id_when_not_stub
