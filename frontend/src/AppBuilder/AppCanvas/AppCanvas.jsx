@@ -154,7 +154,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       return {
         borderLeft: 'none',
         height: '100%',
-        background: canvasBgColor,
+        background: 'transparent',
       };
     }
 
