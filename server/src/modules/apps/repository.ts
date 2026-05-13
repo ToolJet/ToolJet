@@ -16,6 +16,21 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findBySlug(slug: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {
+    const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
+    const workflow = await this.findOne({
+      ...(versionId ? { relations: ['appVersions'] } : {}),
+      where: {
+        ...versionCondition,
+        type: APP_TYPES.WORKFLOW,
+        slug,
+        organizationId,
+      },
+    });
+
+    if (workflow) {
+      return workflow;
+    }
+
     if (branchId) {
       // Explicit branch context: slug must resolve on that branch.
       const version = await this.dataSource.getRepository(AppVersion).findOne({
@@ -30,42 +45,91 @@ export class AppsRepository extends Repository<App> {
       return app;
     }
 
-    // No branchId: find a candidate via the slug, then route by git-sync state.
-    const candidate = await this.dataSource.getRepository(AppVersion).findOne({
-      where: { slug },
-      relations: ['app'],
-    });
+    const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
+    let resolvedVersion: AppVersion | null = null;
 
-    if (candidate?.app && candidate.app.organizationId === organizationId) {
-      const defaultBranchId = await this.getDefaultBranchId(this.manager, organizationId);
-      let resolved: AppVersion | null = candidate;
-
-      if (defaultBranchId && candidate.branchId !== defaultBranchId) {
-        // Git enabled — only the default-branch row is canonical for slug lookup.
-        resolved = await this.dataSource.getRepository(AppVersion).findOne({
-          where: { slug, branchId: defaultBranchId },
-          relations: ['app'],
-        });
-        if (!resolved?.app) resolved = null;
-      }
-
-      if (resolved?.app) {
-        const app = resolved.app;
-        this.overlayMetadata(app, resolved);
-        return app;
-      }
+    if (defaultBranchId) {
+      // Git sync enabled and no brach id - pick from default branch only
+      resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
+        where: { slug, branchId: defaultBranchId },
+        relations: ['app'],
+      });
+    } else {
+      // Git sync disabled — find any slug match across all versions in the workspace (metadata can be on any version row).
+      resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
+        where: { slug },
+        relations: ['app'],
+      });
     }
 
-    // Fallback to apps table slug (workflows — metadata stays on apps.*).
-    const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
-    return this.findOne({
-      ...(versionId ? { relations: ['appVersions'] } : {}),
+    if (!resolvedVersion?.app || resolvedVersion.app.organizationId !== organizationId) {
+      throw new NotFoundException(`App not found for slug "${slug}" on default branch`);
+    }
+    const app = resolvedVersion.app;
+    this.overlayMetadata(app, resolvedVersion);
+    return app;
+  }
+
+  async findAppBySlug(slug: string, branchId?: string): Promise<App> {
+    const workflow = await this.findOne({
       where: {
-        ...versionCondition,
+        type: APP_TYPES.WORKFLOW,
         slug,
-        organizationId,
       },
     });
+
+    if (workflow) {
+      return workflow;
+    }
+
+    if (branchId) {
+      // Explicit branch context: slug must resolve on that branch.
+      const version = await this.dataSource.getRepository(AppVersion).findOne({
+        where: { slug, branchId },
+        relations: ['app'],
+      });
+      if (!version?.app) {
+        throw new NotFoundException(`App not found for slug "${slug}" on branch ${branchId}`);
+      }
+      const app = version.app;
+      this.overlayMetadata(app, version);
+      return app;
+    }
+
+    let resolvedVersion: AppVersion = null;
+    // No branch context: pick either a non-git row (branch_id IS NULL) or the
+    if (await this.checkIfGitEnabled(this.manager)) {
+      // workspace default-branch row for git-enabled workspaces.
+      resolvedVersion = await this.dataSource
+        .getRepository(AppVersion)
+        .createQueryBuilder('av')
+        .innerJoinAndSelect('av.app', 'app')
+        .leftJoin(
+          WorkspaceBranch,
+          'wb',
+          'wb.id = av.branch_id AND wb.organization_id = app.organization_id AND wb.is_default = true'
+        )
+        .where('av.slug = :slug', { slug })
+        .orderBy('av.updated_at', 'DESC')
+        .getOne();
+    } else {
+      // Git sync disabled — find any slug match across all versions in the workspace (metadata can be on any version row).
+      resolvedVersion = await this.dataSource
+        .getRepository(AppVersion)
+        .createQueryBuilder('av')
+        .innerJoinAndSelect('av.app', 'app')
+        .where('av.slug = :slug AND av.branch_id IS NULL', { slug })
+        .orderBy('av.updated_at', 'DESC')
+        .getOne();
+    }
+
+    if (!resolvedVersion?.app) {
+      throw new NotFoundException(`App not found for slug "${slug}"`);
+    }
+
+    const app = resolvedVersion.app;
+    this.overlayMetadata(app, resolvedVersion);
+    return app;
   }
 
   async retrieveAppDataUsingSlug(slug: string): Promise<SessionAppData> {
@@ -150,10 +214,10 @@ export class AppsRepository extends Repository<App> {
     });
   }
 
-  async findOneById(id: string): Promise<App> {
+  async findOneById(id: string, branchId?: string): Promise<App> {
     const app = await this.findOne({ where: { id } });
     if (app && app.type !== APP_TYPES.WORKFLOW) {
-      const version = await this.resolveMetadataVersion(this.manager, app);
+      const version = await this.resolveMetadataVersion(this.manager, app, { branchId });
       this.overlayMetadata(app, version);
     }
     return app;
@@ -336,6 +400,15 @@ export class AppsRepository extends Repository<App> {
       select: ['id'],
     });
     return branch?.id ?? null;
+  }
+
+  // TODO: Check configs instead of searching default branch
+  private async checkIfGitEnabled(manager: EntityManager): Promise<boolean> {
+    const branch = await manager.findOne(WorkspaceBranch, {
+      where: { isDefault: true },
+      select: ['id'],
+    });
+    return !!branch?.id;
   }
 
   // Picks the app_version row whose metadata should be overlaid onto `app`.
