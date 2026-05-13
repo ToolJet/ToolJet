@@ -150,16 +150,24 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       .addSelect(['user.firstName', 'user.lastName']);
 
     if (branchId) {
+      // App must exist in app_versions on this branch — INNER JOIN enforces that.
       query.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
     }
 
     if (searchKey) {
       if (branchId) {
-        query.andWhere('(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))', {
-          searchKey: `%${searchKey.toLowerCase()}%`,
-          workflowType: APP_TYPES.WORKFLOW,
-        });
+        // Non-workflow apps match against the branched app_versions.app_name;
+        // workflows keep name on apps.* and are matched against apps.name.
+        query.andWhere(
+          '(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
+          {
+            searchKey: `%${searchKey.toLowerCase()}%`,
+            workflowType: APP_TYPES.WORKFLOW,
+          }
+        );
       } else {
+        // gitsync off: non-workflows match against any app_version's app_name;
+        // workflows match against apps.name.
         query.andWhere(
           `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
           {
@@ -185,19 +193,41 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     totalCount: number;
   }> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const folderApps = await manager
+      const folderAppsQb = manager
         .createQueryBuilder(FolderApp, 'folderApp')
         .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
           id: folder.id,
-        })
-        .leftJoin('app_versions', 'av_folder', 'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId', { folderBranchId: branchId || null })
-        .where(
+        });
+
+      if (branchId) {
+        // INNER JOIN — folder apps are kept only if they have an app_versions row on
+        // this branch. Apps not present on the branch are dropped here.
+        folderAppsQb.innerJoin(
+          'app_versions',
+          'av_folder',
+          'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId',
+          { folderBranchId: branchId }
+        );
+      }
+
+      // Only apply the name filter when the caller actually typed something.
+      // Empty `searchKey` becomes `LIKE '%%'`, which evaluates to NULL (not true)
+      // against rows where av_folder.app_name IS NULL and drops them.
+      const hasSearch = !!(searchKey && searchKey.trim());
+      if (hasSearch) {
+        folderAppsQb.where(
           branchId
-            ? '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
-            : `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
-          { name: `%${(searchKey ?? '').toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
-        )
-        .getMany();
+            ? // Non-workflows match against the branched app_versions.app_name;
+              // workflows keep name on apps.* and are matched against app.name.
+              '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
+            : // gitsync off: non-workflows match any app_version's name;
+              // workflows match app.name.
+              `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
+          { name: `%${searchKey.toLowerCase()}%`, workflowType: APP_TYPES.WORKFLOW }
+        );
+      }
+
+      const folderApps = await folderAppsQb.getMany();
 
       const userPermission = await this.abilityService.resourceActionsPermission(user, {
         resources: [{ resource: MODULES.APP }],
@@ -222,23 +252,8 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
       this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
 
-      if (branchId) {
-        viewableAppsInFolder.andWhere(
-          `(
-            NOT EXISTS (
-              SELECT 1 FROM app_versions av
-              WHERE av.app_id = apps.id
-              AND av.branch_id IS NOT NULL
-            )
-            OR EXISTS (
-              SELECT 1 FROM app_versions av
-              WHERE av.app_id = apps.id
-              AND av.branch_id = :folderAppsBranchId
-            )
-          )`,
-          { folderAppsBranchId: branchId }
-        );
-      }
+      // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
+      // (appVersions.branchId = :branchId). No secondary filter needed.
 
       const [viewableApps, totalCount] = await Promise.all([
         viewableAppsInFolder
