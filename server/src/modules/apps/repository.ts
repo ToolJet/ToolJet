@@ -223,7 +223,7 @@ export class AppsRepository extends Repository<App> {
     return app;
   }
 
-  async findById(id: string, organizationId: string, versionId?: string): Promise<App> {
+  async findById(id: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
     const baseWhere = { id, ...versionCondition };
     const where = organizationId ? { ...baseWhere, organizationId } : baseWhere;
@@ -234,7 +234,7 @@ export class AppsRepository extends Repository<App> {
     });
 
     if (app && app.type !== APP_TYPES.WORKFLOW) {
-      const version = await this.resolveMetadataVersion(this.manager, app, { versionId });
+      const version = await this.resolveMetadataVersion(this.manager, app, { versionId, branchId });
       this.overlayMetadata(app, version);
     }
     return app;
