@@ -56,6 +56,11 @@ const extractSchemaProperties = (schema) => {
     return {};
   }
 
+  // Primitive body (e.g. type: string) — expose a single "body" field for raw JSON input
+  if (schema.type && schema.type !== 'object' && schema.type !== 'array') {
+    return { body: { type: schema.type, description: 'Request body (JSON)' } };
+  }
+
   return {};
 };
 
