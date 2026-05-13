@@ -1,6 +1,6 @@
 import { EntityManager } from 'typeorm';
 import { App } from '@entities/app.entity';
-import { AppVersion, AppVersionType } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
@@ -230,4 +230,258 @@ export async function reconcileModuleViewerPinsFromDefault(
       [def.moduleVersionId, feat.id]
     );
   }
+}
+
+/**
+ * Pin resolution outcome from resolveAllModuleViewersForVersion.
+ *
+ *   pin-hit            — pin matched a row by id, module_reference_id, version name,
+ *                        or branch-name shorthand. Reflects user's choice.
+ *   orphan-fallback    — pin non-empty, no row matched; fell back to latest non-stub
+ *                        on consumer branch then default (mirrors resolveModuleRef).
+ *   unpinned-fallback  — pin empty/missing; same fallback path.
+ *   no-row             — no module app OR no usable rows. Module unrenderable.
+ */
+export type ModuleResolutionMatch =
+  | 'pin-hit'
+  | 'orphan-fallback'
+  | 'unpinned-fallback'
+  | 'no-row';
+
+export interface ResolvedModuleViewer {
+  componentId: string;
+  moduleAppCoRel: string;
+  moduleAppId: string | null;
+  moduleName: string | null;
+  pinnedValue: string;
+  matchKind: ModuleResolutionMatch;
+  resolved: {
+    rowId: string;
+    versionName: string;
+    status: AppVersionStatus | null;
+    versionType: AppVersionType;
+    branchId: string | null;
+    moduleReferenceId: string | null;
+    currentEnvironmentId: string | null;
+    envPriority: number | null;
+    moduleCurrentVersionId: string | null;
+  } | null;
+}
+
+/**
+ * Resolve every ModuleViewer under parentVersionId to the row runtime renders.
+ * Priority (mirrors resolveModuleRef):
+ *   1. UUID pin → row.module_reference_id on consumer branch
+ *   2. UUID pin → row.module_reference_id on default branch
+ *   3. legacy version name → version_type='version' row
+ *   4. branch_name shorthand → default-branch version_type='version' row
+ *   5. orphan (non-empty, no match) → latest non-stub on consumer then default
+ *   6. unpinned (empty) → same fallback as orphan
+ *
+ * Save/promote/release guards filter resolved rows for DRAFT / under target env /
+ * not module's current_version_id, instead of replicating JOIN logic per guard.
+ */
+export async function resolveAllModuleViewersForVersion(
+  manager: EntityManager,
+  parentVersionId: string,
+  organizationId: string
+): Promise<ResolvedModuleViewer[]> {
+  const parent = await manager.findOne(AppVersion, {
+    where: { id: parentVersionId },
+    select: ['id', 'branchId'],
+  });
+  if (!parent) return [];
+
+  const defaultBranch = await findDefaultBranch(manager, organizationId);
+
+  type ViewerRaw = { componentId: string; moduleAppCoRel: string | null; pinnedValue: string };
+  const viewers: ViewerRaw[] = await manager.query(
+    `SELECT c.id AS "componentId",
+            c.properties::jsonb -> 'moduleAppId' ->> 'value' AS "moduleAppCoRel",
+            COALESCE(c.properties::jsonb -> 'moduleVersionId' ->> 'value', '') AS "pinnedValue"
+     FROM components c
+     JOIN pages p ON p.id = c.page_id
+     WHERE p.app_version_id = $1 AND c.type = 'ModuleViewer'`,
+    [parentVersionId]
+  );
+  if (viewers.length === 0) return [];
+
+  const coRels = Array.from(new Set(viewers.map((v) => v.moduleAppCoRel).filter((x): x is string => !!x)));
+
+  // Oldest app per co_relation_id wins — mirrors guard's findOne ASC. Hydrate may dup.
+  type ModuleAppRow = { id: string; coRel: string; name: string; currentVersionId: string | null };
+  const moduleApps: ModuleAppRow[] = coRels.length
+    ? await manager.query(
+        `SELECT DISTINCT ON (co_relation_id)
+                id, co_relation_id AS "coRel", name, current_version_id AS "currentVersionId"
+         FROM apps
+         WHERE co_relation_id::text = ANY($1)
+           AND type = $2
+           AND organization_id = $3
+         ORDER BY co_relation_id, created_at ASC`,
+        [coRels, APP_TYPES.MODULE, organizationId]
+      )
+    : [];
+  const moduleAppByCoRel = new Map(moduleApps.map((m) => [m.coRel, m]));
+
+  // Scope: non-stub rows on consumer branch, default branch, or branch-null
+  // (non-git-sync). Anything else unreachable at runtime — widening inflates payload.
+  type ModVerRow = {
+    id: string;
+    name: string;
+    appId: string;
+    versionType: AppVersionType;
+    status: AppVersionStatus | null;
+    branchId: string | null;
+    moduleReferenceId: string | null;
+    currentEnvironmentId: string | null;
+    envPriority: number | null;
+    createdAt: Date;
+    isStub: boolean;
+  };
+  const moduleAppIds = moduleApps.map((m) => m.id);
+  const relevantBranchIds = [parent.branchId, defaultBranch?.id].filter((x): x is string => !!x);
+  const candidateRows: ModVerRow[] = moduleAppIds.length
+    ? await manager.query(
+        `SELECT v.id, v.name, v.app_id AS "appId",
+                v.version_type AS "versionType", v.status,
+                v.branch_id AS "branchId",
+                v.module_reference_id AS "moduleReferenceId",
+                v.current_environment_id AS "currentEnvironmentId",
+                e.priority AS "envPriority",
+                v.created_at AS "createdAt",
+                v.is_stub AS "isStub"
+         FROM app_versions v
+         LEFT JOIN app_environments e ON e.id = v.current_environment_id
+         WHERE v.app_id = ANY($1)
+           AND v.is_stub = false
+           AND (v.branch_id = ANY($2) OR v.branch_id IS NULL)`,
+        [moduleAppIds, relevantBranchIds]
+      )
+    : [];
+
+  // Index by app for O(1) per-viewer lookup. Sort createdAt DESC for orphan fallback.
+  const rowsByApp = new Map<string, ModVerRow[]>();
+  for (const r of candidateRows) {
+    const list = rowsByApp.get(r.appId) ?? [];
+    list.push(r);
+    rowsByApp.set(r.appId, list);
+  }
+  for (const list of rowsByApp.values()) {
+    list.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  }
+
+  // Legacy clause #3: pin = branch_name → look up to confirm it's a real branch.
+  const branchNames = viewers.map((v) => v.pinnedValue).filter((p) => p && !UUID_RE.test(p));
+  type BranchRow = { id: string; branchName: string; isDefault: boolean };
+  const branchRows: BranchRow[] = branchNames.length
+    ? await manager.query(
+        `SELECT id, branch_name AS "branchName", is_default AS "isDefault"
+         FROM organization_git_sync_branches
+         WHERE organization_id = $1
+           AND branch_name = ANY($2)`,
+        [organizationId, branchNames]
+      )
+    : [];
+  const branchNameSet = new Set(branchRows.map((b) => b.branchName));
+
+  const toResolved = (r: ModVerRow) => ({
+    rowId: r.id,
+    versionName: r.name,
+    status: r.status,
+    versionType: r.versionType,
+    branchId: r.branchId,
+    moduleReferenceId: r.moduleReferenceId,
+    currentEnvironmentId: r.currentEnvironmentId,
+    envPriority: r.envPriority,
+    moduleCurrentVersionId: null as string | null, // filled in below
+  });
+
+  return viewers.map<ResolvedModuleViewer>((v) => {
+    const moduleApp = v.moduleAppCoRel ? moduleAppByCoRel.get(v.moduleAppCoRel) : undefined;
+    if (!moduleApp) {
+      return {
+        componentId: v.componentId,
+        moduleAppCoRel: v.moduleAppCoRel ?? '',
+        moduleAppId: null,
+        moduleName: null,
+        pinnedValue: v.pinnedValue,
+        matchKind: 'no-row',
+        resolved: null,
+      };
+    }
+    const candidates = rowsByApp.get(moduleApp.id) ?? [];
+    const pin = v.pinnedValue;
+    const moduleCurrentVersionId = moduleApp.currentVersionId;
+
+    const pickKind = (row: ModVerRow, kind: ModuleResolutionMatch): ResolvedModuleViewer => {
+      const r = toResolved(row);
+      r.moduleCurrentVersionId = moduleCurrentVersionId;
+      return {
+        componentId: v.componentId,
+        moduleAppCoRel: v.moduleAppCoRel ?? '',
+        moduleAppId: moduleApp.id,
+        moduleName: moduleApp.name,
+        pinnedValue: pin,
+        matchKind: kind,
+        resolved: r,
+      };
+    };
+
+    if (pin && UUID_RE.test(pin)) {
+      // Clause 1: id match
+      const byId = candidates.find((r) => r.id === pin);
+      if (byId) return pickKind(byId, 'pin-hit');
+      // Clause 4: module_reference_id on consumer's branch then default
+      const onConsumer = parent.branchId
+        ? candidates.find(
+            (r) =>
+              r.moduleReferenceId === pin &&
+              r.branchId === parent.branchId &&
+              r.isStub === false
+          )
+        : undefined;
+      if (onConsumer) return pickKind(onConsumer, 'pin-hit');
+      if (defaultBranch) {
+        const onDefault = candidates.find(
+          (r) =>
+            r.moduleReferenceId === pin &&
+            r.branchId === defaultBranch.id &&
+            r.isStub === false
+        );
+        if (onDefault) return pickKind(onDefault, 'pin-hit');
+      }
+    } else if (pin) {
+      // Clause 2: version name on a version_type='version' row in this module's app
+      const byName = candidates.find((r) => r.name === pin && r.versionType === AppVersionType.VERSION);
+      if (byName) return pickKind(byName, 'pin-hit');
+      // Clause 3: pin is a branch_name → default-branch version_type='version' row
+      if (branchNameSet.has(pin) && defaultBranch) {
+        const onDefault = candidates.find(
+          (r) =>
+            r.branchId === defaultBranch.id && r.versionType === AppVersionType.VERSION && r.isStub === false
+        );
+        if (onDefault) return pickKind(onDefault, 'pin-hit');
+      }
+    }
+
+    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default.
+    const fallback =
+      (parent.branchId && candidates.find((r) => r.branchId === parent.branchId && r.isStub === false)) ||
+      (defaultBranch && candidates.find((r) => r.branchId === defaultBranch.id && r.isStub === false)) ||
+      undefined;
+    if (fallback) {
+      return pickKind(fallback, pin ? 'orphan-fallback' : 'unpinned-fallback');
+    }
+
+    return {
+      componentId: v.componentId,
+      moduleAppCoRel: v.moduleAppCoRel ?? '',
+      moduleAppId: moduleApp.id,
+      moduleName: moduleApp.name,
+      pinnedValue: pin,
+      matchKind: 'no-row',
+      resolved: null,
+    };
+  });
 }

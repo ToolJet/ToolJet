@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import {
   DEFAULT_USER_DATA_SOURCE_PERMISSIONS,
@@ -19,6 +19,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import { AbilityUtilService } from './util.service';
 import { AbilityService as IAbilityService } from './interfaces/IService';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class AbilityService extends IAbilityService {
@@ -43,8 +44,11 @@ export class AbilityService extends IAbilityService {
     resourcePermissionsObject: ResourcePermissionQueryObject,
     manager?: EntityManager
   ): Promise<UserPermissions> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const permissions = await this.getResourcePermission(user, resourcePermissionsObject, manager);
+    // skipAppEditingVersionHydration: permissions load all org apps; afterLoad
+    // would fire AppVersion N+1 per row (557+ pre-fix). Read-only — no txn needed.
+    const m = manager || getConnectionInstance().manager;
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const permissions = await this.getResourcePermission(user, resourcePermissionsObject, m);
 
       const adminGroup = permissions.some((group) => group.name === USER_ROLE.ADMIN);
       const allGranularPermissions = permissions.flatMap((item) => item.groupGranularPermissions);
@@ -93,7 +97,7 @@ export class AbilityService extends IAbilityService {
             appsGranularPermissions,
             foldersGranularPermissions,
             user,
-            manager
+            m
           );
         }
         if (resources.some((item) => item.resource === MODULES.GLOBAL_DATA_SOURCE)) {
@@ -113,7 +117,7 @@ export class AbilityService extends IAbilityService {
       }
 
       return userPermissions;
-    }, manager);
+    });
   }
 
   createUserFolderPermissions(folderGranularPermissions: GranularPermissions[]): UserFolderPermissions {
