@@ -99,6 +99,11 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
+      // Generate co_relation_id upfront so the App and its first AppVersion share the
+      // same value. Required by chk_app_versions_co_relation_id_when_not_stub on
+      // app_versions and by ModuleViewer cross-env resolution for modules.
+      const coRelationId = uuidv4();
+
       const app = await catchDbException(() => {
         return manager.save(
           manager.create(App, {
@@ -111,6 +116,7 @@ export class AppsUtilService implements IAppsUtilService {
             updatedAt: new Date(),
             organizationId: user.organizationId,
             userId: user.id,
+            co_relation_id: coRelationId,
             isMaintenanceOn: type === APP_TYPES.WORKFLOW ? true : false,
             ...(isInitialisedFromPrompt && {
               aiGenerationMetadata: {},
@@ -158,6 +164,9 @@ export class AppsUtilService implements IAppsUtilService {
             // editor recognises them as editable branch copies.
             versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
             branchId: branchId,
+            // Required by chk_app_versions_co_relation_id_when_not_stub — non-stub
+            // version rows must carry the owning app's co_relation_id.
+            co_relation_id: coRelationId,
             showViewerNavigation: type === 'module' ? false : true,
             globalSettings: defaultSettings,
             pageSettings: {},
@@ -252,7 +261,8 @@ export class AppsUtilService implements IAppsUtilService {
                 icon: icon ?? null,
                 isPublic: false,
               }
-            : undefined
+            : undefined,
+          coRelationId
         );
 
         const defaultHomePage = await manager.save(
@@ -333,14 +343,10 @@ export class AppsUtilService implements IAppsUtilService {
         await manager.save(appVersion);
       }
 
-      // Set co_relation_id for git sync workspaces — always a fresh UUID, never app.id.
-      // Modules always get co_relation_id regardless of workspace type:
-      // ModuleViewer components reference modules by co_relation_id for stable cross-env resolution.
-      if (branchId || type === APP_TYPES.MODULE) {
-        const coRelationId = uuidv4();
-        await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
-        app.co_relation_id = coRelationId;
-      }
+      // co_relation_id is now generated upfront (see top of create()) and stamped on
+      // both the App and its first AppVersion at insert time, so the previous post-save
+      // overwrite is redundant. Keeping the values aligned matters for ModuleViewer
+      // cross-env resolution and for chk_app_versions_co_relation_id_when_not_stub.
 
       return app;
     }, manager);
