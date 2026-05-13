@@ -20,6 +20,9 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
+- [List Modules](#list-modules)
+- [Export Module](#export-module)
+- [Import Module](#import-module)
 - [BETA] [Update User Metadata](#update-user-metadata)
 - [BETA] [Get User Metadata](#get-user-metadata)
 - [BETA] [Create Group](#create-group)
@@ -1561,6 +1564,175 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
 </details>
 
     - **Response:** `201 Created`
+
+### List Modules
+
+- **Description:** Retrieves a list of all modules in a workspace.
+- **URL:** `/api/ext/workspace/{workspaceId}/modules`
+- **Method:** GET
+- **Authorization:** `Basic <access_token>`
+- **Content-Type:** `application/json`
+- **Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+| `workspaceId` | string | Yes | Workspace UUID |
+
+```bash title="cURL Request"
+curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/modules" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"
+```
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+
+```json
+{
+  "modules": [
+    {
+      "id": "c0a80100-0000-4000-8000-000000000001",
+      "name": "User Management Module",
+      "icon": "https://cdn.example.com/icons/user.svg",
+      "slug": "user-management",
+      "isPublic": false,
+      "createdAt": "2025-02-15T09:30:00.000Z",
+      "updatedAt": "2025-05-01T14:12:33.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+</details>
+
+- **Response:** `200 OK`
+
+### Export Module
+
+- **Description:** Exports a module from a workspace, including its definition and optionally the ToolJet Database table schemas it uses.
+- **URL:** `/api/ext/export/workspace/{workspaceId}/modules/{moduleId}`
+- **Method:** GET
+- **Authorization:** `Basic <access_token>`
+- **Content-Type:** `application/json`
+- **Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+| `workspaceId` | string | Yes | Workspace UUID |
+| `moduleId` | string | Yes | UUID of the module to export |
+
+- **Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|:----------|:-----|:--------|:------------|
+| `exportTJDB` | boolean | `true` | When `true`, bundles the ToolJet Database table schemas the module uses into the export payload |
+
+```bash title="cURL Request"
+curl -X GET "https://{your-domain}/api/ext/export/workspace/{workspaceId}/modules/{moduleId}?exportTJDB=true" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"
+```
+
+<details id="tj-dropdown">
+<summary>**Response Example**</summary>
+
+```json
+{
+  "tooljet_database": [
+    {
+      "id": "11111111-2222-3333-4444-555555555555",
+      "table_name": "users",
+      "schema": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "uuid",
+            "primary": true
+          },
+          {
+            "name": "email",
+            "type": "string"
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp"
+          }
+        ]
+      }
+    }
+  ],
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "name": "User Management Module",
+          "type": "module",
+          "appVersions": [
+            {
+              "id": "v1-1111-2222",
+              "name": "v1",
+              "createdAt": "2025-02-15T09:30:00.000Z",
+              "definition": {
+                "pages": [],
+                "actions": [],
+                "components": []
+              }
+            }
+          ],
+          "editingVersion": "v1"
+        },
+        "meta": {
+          "description": "Exports module definition and versions"
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.16.0"
+}
+```
+
+</details>
+
+- **Response:** `200 OK`
+
+### Import Module
+
+- **Description:** Imports a module into a workspace from a previously exported module payload.
+- **URL:** `/api/ext/import/workspace/{workspaceId}/modules`
+- **Method:** POST
+- **Authorization:** `Basic <access_token>`
+- **Content-Type:** `application/json`
+- **Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|:----------|:-----|:---------|:------------|
+| `workspaceId` | string | Yes | Workspace UUID |
+
+- **Body:**
+
+| Field | Type | Required | Description |
+|:------|:-----|:---------|:------------|
+| `tooljet_version` | string | Yes | The ToolJet version the module was exported from. Used for compatibility checks. |
+| `app` | object | No | The module definition data (the blueprint from the Export step) |
+| `appName` | string | No | If provided, overrides the name of the module on import |
+
+```bash title="cURL Request"
+curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/modules" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tooljet_version": "3.16.0",
+    "appName": "<module_name>",
+    <module_definition>
+  }'
+```
+
+- **Response:** `200 OK`
+
+```json
+{ "message": "Module imported successfully." }
+```
 
 ### Update User Metadata
 :::warning BETA
