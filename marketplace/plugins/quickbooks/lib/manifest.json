@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "QuickBooks Datasource",
+  "description": "Integrate with QuickBooks Online Accounting API",
+  "type": "api",
+  "source": {
+    "name": "QuickBooks",
+    "kind": "quickbooks",
+    "exposedVariables": { "isLoading": false, "data": {}, "rawData": {} },
+    "options": {
+      "client_id": { "type": "string" },
+      "client_secret": { "type": "string", "encrypted": true }
+    },
+    "customTesting": false
+  },
+  "defaults": {
+    "access_token_custom_headers": { "value": [["Content-Type", "application/x-www-form-urlencoded"]] },
+    "redirect_url": { "value": "http://localhost:8082/oauth2/authorize" },
+    "auth_url": { "value": "https://appcenter.intuit.com/connect/oauth2" },
+    "allowed_auth_types": { "value": "oauth2" },
+    "auth_type": { "value": "oauth2" },
+    "grant_type": { "value": "authorization_code" },
+    "scopes": { "value": "com.intuit.quickbooks.accounting" },
+    "oauth_type": { "value": "custom_app" },
+    "access_token_url": { "value": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer" }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "OAuth 2.0 authentication for QuickBooks Online",
+      "oauth_configs": {
+        "allowed_field_groups": { "authorization_code": ["client_id", "client_secret"] },
+        "allowed_auth_types": ["oauth2"],
+        "allowed_grant_types": ["authorization_code"],
+        "allowed_scope_field": true
+      }
+    }
+  },
+  "required": ["client_id", "client_secret", "scopes"]
+}

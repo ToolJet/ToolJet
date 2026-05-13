@@ -249,7 +249,9 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
-                  ...(!isMobileLayout && appType === 'module' && isModuleMode ? { height: 'inherit' } : {}),
+                  ...(!isMobileLayout && appType === 'module' && isModuleMode
+                    ? { height: 'inherit', overflow: 'hidden' }
+                    : {}),
                 }}
               >
                 <DeleteWidgetConfirmation darkMode={isAppDarkMode} />

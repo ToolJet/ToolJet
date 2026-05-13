@@ -43,6 +43,9 @@ export class Plugin {
   @Column({ name: 'manifest_file_id' })
   manifestFileId: string;
 
+  @Column({ name: 'spec_files_map', type: 'jsonb', nullable: true })
+  specFilesMap: Record<string, string>;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
