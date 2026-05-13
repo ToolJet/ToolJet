@@ -54,7 +54,7 @@ export class ExternalApiModule extends SubModule {
         await GitSyncModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
-        await OrganizationUsersModule.register(configs)
+        await OrganizationUsersModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -72,7 +72,12 @@ export class ExternalApiModule extends SubModule {
         AppsRepository,
       ],
       controllers: isMainImport
-        ? [ExternalApisController, ExternalApisAppsController, ExternalApisGroupsController, ExternalApisModulesController]
+        ? [
+            ExternalApisController,
+            ExternalApisAppsController,
+            ExternalApisGroupsController,
+            ExternalApisModulesController,
+          ]
         : [],
       exports: [ExternalApiUtilService],
     };

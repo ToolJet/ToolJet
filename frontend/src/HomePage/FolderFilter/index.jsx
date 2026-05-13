@@ -28,7 +28,6 @@ export default function FolderFilter({ disabled, options, onChange, value }) {
       setCurrentFolder(defaultFolder);
     } else {
       setCurrentFolder({ ...value, value: value?.id });
-      handleFolderChange(value);
     }
   }, [value]);
 

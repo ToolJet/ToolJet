@@ -321,6 +321,13 @@ export class AutoDeployBodyDto {
   versionName?: string;
 }
 
+export class SaveVersionBodyDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  name?: string;
+}
+
 // Export groups DTOs
 export {
   CreateGroupExternalDto,

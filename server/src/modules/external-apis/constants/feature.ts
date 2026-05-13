@@ -77,6 +77,10 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.SAVE_APP_VERSION]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
     [FEATURE_KEY.GENERATE_PAT]: {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
