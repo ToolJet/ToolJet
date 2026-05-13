@@ -671,6 +671,7 @@ export const resolveWidgetMeasuredHeight = ({
   isContainer,
   visibility,
   containerHeight,
+  calculateMoveableBoxHeightWithId,
 }) => {
   if (isContainer && (componentType !== 'Listview' || normalizeLayoutContext(contextIndices))) {
     return containerHeight;
@@ -685,8 +686,30 @@ export const resolveWidgetMeasuredHeight = ({
     contextIndices
   )?.height;
 
+  // Fallback when the DOM can't be measured (invisible widget, hidden ancestor
+  // subtree, or missing element). Prefer the calc-bumped canonical so top-
+  // aligned input widgets don't get pinned at their raw authored height (40)
+  // — WidgetWrapper renders them at the bumped height (60) once visible, and
+  // a temp.height written here becomes the finalHeight on visibility flip.
+  const fallbackHeight = () => {
+    if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      const definition = currentPageComponents?.[componentId];
+      const stylesDefinition = definition?.component?.definition?.styles;
+      const calc = calculateMoveableBoxHeightWithId(componentId, currentLayout, stylesDefinition);
+      if (typeof calc === 'number') return calc;
+    }
+    return getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+  };
+
+  // Invisible widget: we can't measure it, so return what WidgetWrapper would
+  // render it at when visible — calc-bumped canonical. Floor any prior temp at
+  // this value too: a stale temp written before the bump (or under a previous
+  // alignment) must not pin the widget below its rendered visible height,
+  // because temp.height becomes finalHeight on the next visibility flip.
   if (!visibility) {
-    return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+    const bumped = fallbackHeight();
+    if (existingHeight != null) return Math.max(existingHeight, bumped);
+    return bumped;
   }
 
   // Hidden ancestor subtree (inactive tab pane, collapsed accordion, closed
@@ -695,18 +718,13 @@ export const resolveWidgetMeasuredHeight = ({
   // poison every subsequent reflow: gridSlice's resolvedHeights treats 0 as
   // a valid existing value (0 != null) and replays it for siblings, which
   // collapse to height:0 in WidgetWrapper. Fall through to the last known /
-  // canonical height so the widget keeps its slot until it's actually
-  // measurable.
+  // calc-bumped canonical height so the widget keeps its slot until it's
+  // actually measurable.
   if (element && element.offsetParent === null) {
-    return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+    return existingHeight ?? fallbackHeight();
   }
 
-  return (
-    element?.offsetHeight ??
-    existingHeight ??
-    getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ??
-    0
-  );
+  return element?.offsetHeight ?? existingHeight ?? fallbackHeight();
 };
 
 // Blocker enumeration — returns every widget canonically above `targetId`

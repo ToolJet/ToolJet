@@ -289,6 +289,7 @@ export const createGridSlice = (set, get) => ({
         isContainer,
         visibility,
         containerHeight,
+        calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
       });
 
       // ModalV2 bodies aren't siblings in the grid — stash height on a synthetic
