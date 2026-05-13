@@ -28,6 +28,9 @@ interface Features {
   [FEATURE_KEY.LIST_GROUPS]: FeatureConfig;
   [FEATURE_KEY.GET_GROUP]: FeatureConfig;
   [FEATURE_KEY.DELETE_GROUP]: FeatureConfig;
+  [FEATURE_KEY.LIST_MODULES]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_MODULE]: FeatureConfig;
+  [FEATURE_KEY.IMPORT_MODULE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

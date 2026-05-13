@@ -1226,10 +1226,8 @@ class DataSourceManagerComponent extends React.Component {
                 {selectedDataSource &&
                   !dataSourceMeta.customTesting &&
                   shouldRenderFooterComponent &&
-                  (!OAuthDs.includes(selectedDataSource?.kind) ||
-                    !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
-                    )) && (
+                  !OAuthDs.includes(selectedDataSource?.kind) &&
+                  !(options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code') && (
                     <Modal.Footer style={sampleDBmodalFooterStyle} className="modal-footer-class">
                       {selectedDataSource && !isSampleDb && (
                         <div className="row w-100">
@@ -1357,10 +1355,8 @@ class DataSourceManagerComponent extends React.Component {
                 {!dataSourceMeta?.hideSave &&
                   selectedDataSource &&
                   dataSourceMeta.customTesting &&
-                  (!OAuthDs.includes(selectedDataSource?.kind) ||
-                    !(
-                      options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code'
-                    )) && (
+                  !OAuthDs.includes(selectedDataSource?.kind) &&
+                  !(options?.auth_type?.value === 'oauth2' && options?.grant_type?.value === 'authorization_code') && (
                     <Modal.Footer>
                       <div className="col">
                         <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />

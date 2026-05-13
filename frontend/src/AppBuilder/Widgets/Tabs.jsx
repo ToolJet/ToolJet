@@ -90,12 +90,10 @@ export const Tabs = function Tabs({
     parsedTabs = resolveWidgetFieldValue(parsedTabs);
   }
 
-  parsedTabs = parsedTabs
-    ?.filter((tab) => tab.visible !== false)
-    ?.map((parsedTab, index) => ({
-      ...parsedTab,
-      id: parsedTab.id ? parsedTab.id : index,
-    }));
+  parsedTabs = parsedTabs?.map((parsedTab, index) => ({
+    ...parsedTab,
+    id: parsedTab.id ? parsedTab.id : index,
+  }));
   const highlightColor = styles?.highlightColor ?? '#f44336';
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor);
@@ -117,9 +115,10 @@ export const Tabs = function Tabs({
   // Default tab
   let parsedDefaultTab = defaultTab;
 
-  const defaultTabExists = parsedTabs?.some((tab) => tab.id === parsedDefaultTab);
-  if (!defaultTabExists && parsedTabs.length > 0) {
-    parsedDefaultTab = parsedTabs[0].id;
+  const visibleParsedTabs = parsedTabs?.filter((tab) => tab.visible !== false) ?? [];
+  const defaultTabExists = visibleParsedTabs.some((tab) => tab.id === parsedDefaultTab);
+  if (!defaultTabExists && visibleParsedTabs.length > 0) {
+    parsedDefaultTab = visibleParsedTabs[0].id;
   }
 
   const parsedDisabledState =
@@ -336,8 +335,8 @@ export const Tabs = function Tabs({
     ) : null;
   }
 
-  const equalSplitWidth = 100 / tabItems?.length || 1;
   const someTabsVisible = tabItems?.filter((tab) => tab?.visible !== false);
+  const equalSplitWidth = 100 / someTabsVisible?.length || 1;
 
   // React Spring transitions for tab switching
   const transitions = useTransition(currentTab, {

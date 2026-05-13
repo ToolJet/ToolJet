@@ -30,12 +30,14 @@ export class ExternalApiModule extends SubModule {
       ExternalApiUtilService,
       ExternalApisAppsController,
       ExternalApisGroupsController,
+      ExternalApisModulesController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
       'util.service',
       'controllers/apps.controller',
       'controllers/groups.controller',
+      'controllers/modules.controller',
     ]);
 
     return {
@@ -70,7 +72,7 @@ export class ExternalApiModule extends SubModule {
         AppsRepository,
       ],
       controllers: isMainImport
-        ? [ExternalApisController, ExternalApisAppsController, ExternalApisGroupsController]
+        ? [ExternalApisController, ExternalApisAppsController, ExternalApisGroupsController, ExternalApisModulesController]
         : [],
       exports: [ExternalApiUtilService],
     };

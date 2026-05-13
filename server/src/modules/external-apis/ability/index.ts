@@ -32,6 +32,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         FEATURE_KEY.GENERATE_PAT,
         FEATURE_KEY.VALIDATE_PAT_SESSION,
         FEATURE_KEY.CREATE_GROUP,
+        FEATURE_KEY.LIST_MODULES,
+        FEATURE_KEY.EXPORT_MODULE,
+        FEATURE_KEY.IMPORT_MODULE,
       ],
       User
     );

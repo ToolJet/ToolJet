@@ -112,7 +112,7 @@ export function ValidateTooljetDatabaseSchema(validationOptions?: ValidationOpti
 }
 
 export function ValidateTooljetDatabaseImportSchema(validationOptions?: ValidationOptions) {
-  return function (object: AppImportRequestDto, propertyName: string) {
+  return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

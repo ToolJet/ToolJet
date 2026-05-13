@@ -431,6 +431,33 @@ export const createQueryPanelSlice = (set, get) => ({
         components: get().getComponentNameIdMapping(moduleId),
         queries: get().getQueryNameIdMapping(moduleId),
       });
+      const disableQueryExpr = dataQuery.options?.disableQuery;
+      if (disableQueryExpr) {
+        const resolvedDisable = get().getResolvedValue(disableQueryExpr, queryState, moduleId);
+        if (resolvedDisable) {
+          const messageExpr = dataQuery.options?.disabledMessage;
+          const resolvedMessage = messageExpr ? get().getResolvedValue(messageExpr, queryState, moduleId) : '';
+          const trimmedMsg = typeof resolvedMessage === 'string' ? resolvedMessage.trim() : '';
+          if (trimmedMsg) {
+            toast(trimmedMsg, {
+              icon: '⚠️',
+            });
+          }
+          if (shouldSetPreviewData) {
+            setPreviewLoading(false);
+          }
+          setResolvedQuery(queryId, { isLoading: false }, moduleId);
+          get().debugger.log({
+            logLevel: 'info',
+            type: 'query',
+            kind: query.kind,
+            key: query.name,
+            message: `Query skipped${trimmedMsg ? `: ${trimmedMsg}` : ''}`,
+            errorTarget: 'Queries',
+          });
+          return;
+        }
+      }
       if (dataQuery.options?.requestConfirmation) {
         const queryConfirmation = {
           queryId,
@@ -512,7 +539,7 @@ export const createQueryPanelSlice = (set, get) => ({
         );
         const successData = { status: 'ok', data: finalData };
         onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
-        if (callbackFns?.onSuccess) return callbackFns.onSuccess(successData);
+        if (callbackFns?.onSuccess) callbackFns.onSuccess(successData);
         return successData;
       };
 
@@ -574,7 +601,7 @@ export const createQueryPanelSlice = (set, get) => ({
         );
 
         onEvent('onDataQueryFailure', queryEvents);
-        if (callbackFns?.onFailure) return callbackFns.onFailure(errorData);
+        if (callbackFns?.onFailure) callbackFns.onFailure(errorData);
         return errorData;
       };
 
@@ -992,10 +1019,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 onEvent('onDataQueryFailure', queryEvents);
                 if (callbackFns?.onFailure) {
                   const failureData = { status: data.status, data: finalData };
-                  setPreviewLoading(false);
-                  setIsPreviewQueryLoading(false);
-                  resolve(callbackFns.onFailure(failureData));
-                  return;
+                  callbackFns.onFailure(failureData);
                 }
                 if (!calledFromQuery) setPreviewData(errorData);
                 break;
@@ -1034,11 +1058,8 @@ export const createQueryPanelSlice = (set, get) => ({
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
                     const failureData = { status: data.status, data: finalData };
-                    if (callbackFns?.onFailure) {
-                      resolve(callbackFns.onFailure(failureData));
-                    } else {
-                      resolve(failureData);
-                    }
+                    if (callbackFns?.onFailure) callbackFns.onFailure(failureData);
+                    resolve(failureData);
                     if (!calledFromQuery) setPreviewData(finalData);
                     return;
                   }
@@ -1049,10 +1070,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
                 if (callbackFns?.onSuccess) {
                   const successData = { status: data.status, data: finalData };
-                  setPreviewLoading(false);
-                  setIsPreviewQueryLoading(false);
-                  resolve(callbackFns.onSuccess(successData));
-                  return;
+                  callbackFns.onSuccess(successData);
                 }
                 break;
               }
