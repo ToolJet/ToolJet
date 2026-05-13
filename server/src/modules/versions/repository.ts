@@ -4,10 +4,11 @@ import { DataQuery } from '@entities/data_query.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException } from '@helpers/utils.helper';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager, IsNull, Not, Repository } from 'typeorm';
 import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 
@@ -213,8 +214,72 @@ export class VersionRepository extends Repository<AppVersion> {
         where: { id, app: { organizationId } },
         relations: ['app'],
       });
-      return appVersion.app;
+      const app = appVersion.app;
+      // Workflows keep metadata on apps.*; non-workflows must overlay from the
+      // canonical version row resolved by git-sync state.
+      if (app && app.type !== APP_TYPES.WORKFLOW) {
+        const metadataVersion = await this.resolveMetadataVersion(manager, app, { versionId: id });
+        this.overlayMetadata(app, metadataVersion);
+      }
+      return app;
     }, manager || this.manager);
+  }
+
+  // Returns the workspace's default branch id, or null when git-sync is off.
+  private async getDefaultBranchId(manager: EntityManager, organizationId: string): Promise<string | null> {
+    if (!organizationId) return null;
+    const branch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    return branch?.id ?? null;
+  }
+
+  // Picks the app_version row whose metadata should be overlaid onto `app`.
+  // Rules mirror AppsRepository.resolveMetadataVersion:
+  //   - explicit branchId             → that branch; throws if no row matches
+  //   - no branchId, git enabled      → default branch row
+  //   - no branchId, git disabled     → any slug-bearing row (most recent)
+  // `versionId` (when provided) further narrows the selection.
+  async resolveMetadataVersion(
+    manager: EntityManager,
+    app: App,
+    options: { branchId?: string; versionId?: string } = {}
+  ): Promise<AppVersion | null> {
+    const { branchId, versionId } = options;
+
+    const qb = manager
+      .getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .where('av.app_id = :appId', { appId: app.id });
+
+    if (versionId) qb.andWhere('av.id = :versionId', { versionId });
+
+    if (branchId) {
+      qb.andWhere('av.branch_id = :branchId', { branchId });
+    } else {
+      const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
+      if (defaultBranchId) {
+        qb.andWhere('av.branch_id = :branchId', { branchId: defaultBranchId });
+      } else {
+        qb.andWhere('av.slug IS NOT NULL');
+      }
+    }
+
+    const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
+
+    if (!version && branchId) {
+      throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
+    }
+    return version;
+  }
+
+  overlayMetadata(app: App, version: AppVersion | null): void {
+    if (!version) return;
+    app.name = version.appName ?? app.name;
+    app.slug = version.slug ?? app.slug;
+    app.icon = version.icon ?? app.icon;
+    app.isPublic = version.isPublic ?? app.isPublic;
   }
 
   async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {

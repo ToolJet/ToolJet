@@ -7,6 +7,7 @@ import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { isUUID } from 'class-validator';
+import { APP_TYPES } from './constants';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -151,7 +152,7 @@ export class AppsRepository extends Repository<App> {
 
   async findOneById(id: string): Promise<App> {
     const app = await this.findOne({ where: { id } });
-    if (app) {
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
       const version = await this.resolveMetadataVersion(this.manager, app);
       this.overlayMetadata(app, version);
     }
@@ -168,7 +169,7 @@ export class AppsRepository extends Repository<App> {
       where,
     });
 
-    if (app) {
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
       const version = await this.resolveMetadataVersion(this.manager, app, { versionId });
       this.overlayMetadata(app, version);
     }
@@ -184,7 +185,7 @@ export class AppsRepository extends Repository<App> {
       },
     });
 
-    if (app) {
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
       const version = await this.resolveMetadataVersion(this.manager, app, { versionId });
       this.overlayMetadata(app, version);
     }
@@ -268,7 +269,7 @@ export class AppsRepository extends Repository<App> {
         where: { id: appId },
         relations: ['appVersions'],
       });
-      if (app) {
+      if (app && app.type !== APP_TYPES.WORKFLOW) {
         const version = await this.resolveMetadataVersion(mgr, app);
         this.overlayMetadata(app, version);
       }
@@ -284,6 +285,7 @@ export class AppsRepository extends Repository<App> {
           relations: ['appVersions'],
         });
         if (app) {
+          if (app.type === APP_TYPES.WORKFLOW) return app;
           const version = await this.resolveMetadataVersion(manager, app);
           this.overlayMetadata(app, version);
           return app;
