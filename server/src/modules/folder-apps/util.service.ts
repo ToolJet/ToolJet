@@ -156,10 +156,12 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
     if (searchKey) {
       if (branchId) {
-        // Non-workflow apps match against the branched app_versions.app_name;
-        // workflows keep name on apps.* and are matched against apps.name.
+        // Non-workflow apps match against the branched app_versions.app_name,
+        // falling back to apps.name when the version row's app_name is NULL
+        // (un-backfilled stubs, pull-created rows, etc.). Workflows keep their
+        // name on apps.* and match against apps.name explicitly.
         query.andWhere(
-          '(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
+          '(LOWER(COALESCE(appVersions.app_name, apps.name)) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
           {
             searchKey: `%${searchKey.toLowerCase()}%`,
             workflowType: APP_TYPES.WORKFLOW,
@@ -217,9 +219,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       if (hasSearch) {
         folderAppsQb.where(
           branchId
-            ? // Non-workflows match against the branched app_versions.app_name;
-              // workflows keep name on apps.* and are matched against app.name.
-              '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
+            ? // Non-workflows match against the branched app_versions.app_name,
+              // falling back to app.name when the version row's app_name is NULL
+              // (un-backfilled or pull-created rows). Workflows keep name on apps.*.
+              '(LOWER(COALESCE(av_folder.app_name, app.name)) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
             : // gitsync off: non-workflows match any app_version's name;
               // workflows match app.name.
               `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
