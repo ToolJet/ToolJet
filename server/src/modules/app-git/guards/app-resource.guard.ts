@@ -15,13 +15,17 @@ export class AppResourceGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { appId, versionId } = request.params;
     const user: User = request.user;
+    // Forward x-branch-id so metadata overlay reflects the caller's active branch.
+    const branchId = (request.headers['x-branch-id'] as string) || undefined;
     if (!appId && !versionId) {
       throw new BadRequestException('App ID or version ID must be provided');
     }
 
     let app: App;
     if (appId) {
-      app = request.tj_app || (appId && (await this.appRepository.findById(appId, user.organizationId)));
+      app =
+        request.tj_app ||
+        (appId && (await this.appRepository.findById(appId, user.organizationId, undefined, branchId)));
     } else if (versionId) {
       const version = await this.versionRepository.getAppVersionById(versionId);
       app = version?.app;
