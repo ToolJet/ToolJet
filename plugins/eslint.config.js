@@ -66,7 +66,6 @@ module.exports = [
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
       'no-unused-expressions': 'off',
-      'no-constant-binary-expression': 'off',
     },
   },
 ];
