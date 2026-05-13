@@ -48,7 +48,15 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
-  const ElementToRender = selectedDataSource?.plugin_id ? source : allSources[sourcecomponentName];
+  // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
+  // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
+  // is_dummy warning below already tells user to pull.
+  const isDummyDataSource = selectedDataSource?.is_dummy === true;
+  const ElementToRender = isDummyDataSource
+    ? null
+    : selectedDataSource?.plugin_id
+    ? source
+    : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
@@ -227,21 +235,23 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
               </>
             )}
         </div>
-        <ElementToRender
-          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-          key={selectedQuery?.id}
-          pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
-          selectedDataSource={selectedDataSource}
-          options={selectedQuery?.options}
-          optionsChanged={optionsChanged}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-          isEditMode={true} // Made TRUE always to avoid setting default options again
-          queryName={queryName}
-          currentEnvironment={currentEnvironment}
-          currentAppEnvironmentId={currentEnvironment?.id}
-          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-        />
+        {ElementToRender && (
+          <ElementToRender
+            renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+            key={selectedQuery?.id}
+            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            selectedDataSource={selectedDataSource}
+            options={selectedQuery?.options}
+            optionsChanged={optionsChanged}
+            optionchanged={optionchanged}
+            darkMode={darkMode}
+            isEditMode={true} // Made TRUE always to avoid setting default options again
+            queryName={queryName}
+            currentEnvironment={currentEnvironment}
+            currentAppEnvironmentId={currentEnvironment?.id}
+            onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+          />
+        )}
       </div>
     );
   };
