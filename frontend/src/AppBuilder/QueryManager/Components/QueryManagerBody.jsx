@@ -370,7 +370,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                         [config.fxKey]: false,
                       });
                     } else {
-                      optionchanged(config.fxKey, true);
+                      const currentBool = !!selectedQuery?.options?.[config.action];
+                      optionsChanged({
+                        ...options,
+                        [config.action]: currentBool ? '{{true}}' : '{{false}}',
+                        [config.fxKey]: true,
+                      });
                     }
                   }
                 : undefined;
