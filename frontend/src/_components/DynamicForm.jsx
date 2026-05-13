@@ -148,6 +148,8 @@ const DynamicForm = ({
             encryptedFieldsProps[propertyKey] = {
               disabled: !!selectedDataSource?.id,
             };
+          } else if (computedProps[propertyKey] !== undefined && computedProps[propertyKey].disabled === false) {
+            encryptedFieldsProps[propertyKey] = { disabled: false };
           } else if (!isDataSourceEditing) {
             if (type === 'password' || encrypted) {
               encryptedFieldsProps[propertyKey] = {
