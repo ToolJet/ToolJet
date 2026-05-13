@@ -470,7 +470,7 @@ const useAppData = (
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
-        if (initialLoadRef.current) {
+        if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 

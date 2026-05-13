@@ -39,11 +39,9 @@ export class PublicAppEnvironmentGuard extends AuthGuard('jwt') {
       // No branch context: match either non-git-sync rows (branch_id IS NULL) or the
       // default-branch row in git-sync workspaces. Entity-class join ensures TypeORM
       // resolves the workspace_branches table from metadata, not via raw schema lookup.
-      qb.leftJoin(
-        WorkspaceBranch,
-        'wb',
-        'wb.id = av.branch_id AND wb.organization_id = app.organization_id'
-      ).andWhere('(av.branch_id IS NULL OR wb.is_default = true)');
+      qb.leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.organization_id = app.organization_id').andWhere(
+        '(av.branch_id IS NULL OR wb.is_default = true)'
+      );
     }
 
     const result = await qb.getRawOne();
@@ -54,6 +52,9 @@ export class PublicAppEnvironmentGuard extends AuthGuard('jwt') {
     if (result) {
       app = await this._dataSource.manager.findOne(App, { where: { id: result.app_id } });
       isPublic = result.av_is_public;
+      if (app) {
+        app.isPublic = isPublic;
+      }
     } else {
       // Fallback for workflows (slug on apps table)
       app = await this._dataSource.manager.findOne(App, { where: { slug } });
