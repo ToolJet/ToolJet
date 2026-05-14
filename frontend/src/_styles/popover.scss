@@ -57,12 +57,6 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
   z-index: 2 !important;
 }
 
-@-moz-document url-prefix() {
-  div[data-radix-popper-content-wrapper] {
-    // z-index: 100 !important;
-    // left: 1px !important;
-  }
-}
 
 // Ensure form field popovers have proper overflow handling for dropdowns
 .form-field-popover-body {
