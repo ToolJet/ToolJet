@@ -274,6 +274,8 @@ jobs:
       WORKFLOW_TIMEOUT_SECONDS: '60'
       PGRST_JWT_SECRET: 'r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj'
       ENABLE_TOOLJET_DB: 'true'
+      ENABLE_EXTERNAL_API: 'true'
+      EXTERNAL_API_ACCESS_TOKEN: test-external-api-token
     steps:
       - uses: actions/checkout@v4
       - name: Checkout EE submodules
