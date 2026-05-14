@@ -4,7 +4,7 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { createUser, initTestApp, closeTestApp } from 'test-helper';
+import { createUser, initTestApp, closeTestApp, createGroupPermission } from 'test-helper';
 
 jest.setTimeout(120_000);
 
@@ -44,6 +44,26 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       expect(res.body.workspaces[0].inviteUrl).toBeTruthy();
     });
 
+    it('should create the user in every requested workspace', async () => {
+      const { user: adminUserOne } = await createUser(app, { email: 'admin4@tooljet.io' });
+      const { user: adminUserTwo } = await createUser(app, { email: 'admin5@tooljet.io' });
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Vendor Multi',
+          email: 'vendor-multi@example.com',
+          workspaces: [{ id: adminUserOne.defaultOrganizationId }, { id: adminUserTwo.defaultOrganizationId }],
+        })
+        .expect(201);
+
+      expect(res.body.workspaces).toHaveLength(2);
+      expect(res.body.workspaces.map((workspace: { id: string }) => workspace.id)).toEqual(
+        expect.arrayContaining([adminUserOne.defaultOrganizationId, adminUserTwo.defaultOrganizationId])
+      );
+    });
+
     it('inviteUrl should contain the correct oid query param matching the workspace id', async () => {
       const { user: adminUser } = await createUser(app, { email: 'admin2@tooljet.io' });
       const orgId = adminUser.defaultOrganizationId;
@@ -60,6 +80,161 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
 
       const inviteUrl: string = res.body.workspaces[0].inviteUrl;
       expect(inviteUrl).toContain(`oid=${orgId}`);
+    });
+
+    it('should assign the specified role to the user in the workspace', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin6@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Builder User',
+          email: 'builder1@example.com',
+          workspaces: [{ id: orgId, role: 'builder' }],
+        })
+        .expect(201);
+
+      const groupNames = res.body.userGroups.map((g: { name: string }) => g.name);
+      expect(groupNames).toContain('builder');
+    });
+
+    it('should assign different roles across multiple workspaces', async () => {
+      const { user: orgOneAdmin } = await createUser(app, { email: 'admin7@tooljet.io' });
+      const { user: orgTwoAdmin } = await createUser(app, { email: 'admin8@tooljet.io' });
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Multi Role User',
+          email: 'multi-role@example.com',
+          workspaces: [
+            { id: orgOneAdmin.defaultOrganizationId, role: 'builder' },
+            { id: orgTwoAdmin.defaultOrganizationId, role: 'end-user' },
+          ],
+        })
+        .expect(201);
+
+      expect(res.body.workspaces).toHaveLength(2);
+      const groupNames = res.body.userGroups.map((g: { name: string }) => g.name);
+      expect(groupNames).toContain('builder');
+      expect(groupNames).toContain('end-user');
+    });
+
+    it('should add user to multiple custom groups in a workspace', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin9@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const groupA = await createGroupPermission(app, { name: 'Viewer Group A', organizationId: orgId });
+      const groupB = await createGroupPermission(app, { name: 'Viewer Group B', organizationId: orgId });
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Multi Group User',
+          email: 'multi-group@example.com',
+          workspaces: [{ id: orgId, groups: [{ name: groupA.name }, { name: groupB.name }] }],
+        })
+        .expect(201);
+
+      const groupNames = res.body.userGroups.map((g: { name: string }) => g.name);
+      expect(groupNames).toContain('Viewer Group A');
+      expect(groupNames).toContain('Viewer Group B');
+    });
+  });
+
+  describe('POST /api/ext/users — failing conditions', () => {
+    it('should return 400 when the email already exists', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin10@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Duplicate Vendor', email: 'duplicate@example.com', workspaces: [{ id: orgId }] })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Duplicate Vendor', email: 'duplicate@example.com', workspaces: [{ id: orgId }] })
+        .expect(400);
+
+      expect(res.body.message).toContain('already exists');
+    });
+
+    it('should return 400 when a workspace id does not exist', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Ghost Vendor',
+          email: 'ghost@example.com',
+          workspaces: [{ id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d' }],
+        })
+        .expect(400);
+
+      expect(res.body.message).toContain('do not exist');
+    });
+
+    it('should return 400 when a default group name is passed in the groups field', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin11@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Invalid Group Vendor',
+          email: 'invalid-group@example.com',
+          workspaces: [{ id: orgId, groups: [{ name: 'builder' }] }],
+        })
+        .expect(400);
+
+      expect(res.body.message).toContain('role field');
+    });
+
+    it('should return 400 when a custom group does not exist in the workspace', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin12@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Bad Group Vendor',
+          email: 'bad-group@example.com',
+          workspaces: [{ id: orgId, groups: [{ name: 'non-existent-custom-group' }] }],
+        })
+        .expect(400);
+
+      expect(res.body.message).toContain('Group permission id or name not found');
+    });
+
+    it('should return 400 when an end-user is added to a builder-level custom group', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin13@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const elevatedGroup = await createGroupPermission(app, {
+        name: 'Elevated Builders',
+        organizationId: orgId,
+        appCreate: true,
+      });
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Conflict Vendor',
+          email: 'conflict@example.com',
+          workspaces: [{ id: orgId, role: 'end-user', groups: [{ name: elevatedGroup.name }] }],
+        })
+        .expect(400);
+
+      expect(res.body.message.title).toBe('Conflicting permissions');
     });
   });
 
