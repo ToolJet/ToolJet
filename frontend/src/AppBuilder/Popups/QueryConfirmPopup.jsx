@@ -29,7 +29,7 @@ export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode
           type="button"
           onClick={onCancel}
           data-cy="modal-cancel-button"
-          className="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-px-3 tw-py-2 tw-rounded-[6px] tw-border tw-border-solid tw-border-[var(--cc-default-border)] tw-bg-[var(--cc-surface1-surface)] tw-text-lg tw-font-medium tw-text-[var(--cc-primary-text)] tw-cursor-pointer tw-whitespace-nowrap tw-transition-colors hover:tw-bg-[var(--cc-surface2-surface)]"
+          className="tw-inline-flex tw-min-w-[80px] tw-items-center tw-justify-center tw-gap-1.5 tw-px-3 tw-py-2 tw-rounded-[6px] tw-border tw-border-solid tw-border-[var(--cc-default-border)] tw-bg-[var(--cc-surface1-surface)] tw-text-lg tw-font-medium tw-text-[var(--cc-primary-text)] tw-cursor-pointer tw-whitespace-nowrap tw-transition-colors hover:tw-bg-[var(--cc-surface2-surface)]"
         >
           Cancel
         </button>
@@ -37,7 +37,7 @@ export const QueryConfirmPopup = ({ show, message, onConfirm, onCancel, darkMode
           type="button"
           onClick={onConfirm}
           data-cy="modal-confirm-button"
-          className="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-px-3 tw-py-2 tw-rounded-[6px] tw-border-0 tw-bg-[var(--cc-primary-brand)] tw-text-lg tw-font-medium tw-text-white tw-cursor-pointer tw-whitespace-nowrap tw-transition-opacity hover:tw-opacity-90"
+          className="tw-inline-flex tw-min-w-[80px] tw-items-center tw-justify-center tw-gap-1.5 tw-px-3 tw-py-2 tw-rounded-[6px] tw-border tw-border-solid tw-border-transparent tw-bg-[var(--cc-primary-brand)] tw-text-lg tw-font-medium tw-text-white tw-cursor-pointer tw-whitespace-nowrap tw-transition-opacity hover:tw-opacity-90"
         >
           Yes
         </button>
