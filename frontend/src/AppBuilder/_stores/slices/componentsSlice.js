@@ -65,6 +65,45 @@ function clearAllQueryRerunTimers() {
   queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
   queryRerunTimers.clear();
 }
+
+// Build the per-row components overlay used when resolving expressions inside
+// a ListView. Without this overlay, `components.<sibling>` is the per-row array
+// and `.value` access fails. Spreading `{ ...state, components: scopeCtx.scoped }`
+// only spreads ~10 top-level keys (components, variables, queries, globals, page,
+// etc.) — trivially cheap. When listviewId is null/no descendants, returns the
+// raw state with scopeCtx=null and the caller skips updateRowScope.
+function buildRowScopedState({ get, listviewId, moduleId }) {
+  const state = get().getAllExposedValues(moduleId);
+  const scopeCtx = listviewId ? get().prepareRowScope(state.components, listviewId, moduleId) : null;
+  const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+  return { state, scopeCtx, scopedState };
+}
+
+// Build a value resolver that applies a per-row components overlay when the
+// caller is inside a ListView. Without this, expressions like
+// `{{components.textinput1.value}}` evaluated during validation see the per-row
+// array stored under `components.textinput1` instead of the current row's object.
+// Mirrors the prepareRowScope/updateRowScope pattern used by setAllValueToComponent.
+function buildRowScopedResolver({ get, nearestListviewId, rowIndex, moduleId, customResolveObjects }) {
+  if (nearestListviewId && rowIndex !== undefined && rowIndex !== null) {
+    const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: nearestListviewId, moduleId });
+    if (scopeCtx) {
+      get().updateRowScope(scopeCtx, rowIndex);
+      return (value) => {
+        if (typeof value !== 'string' || !value.includes('{{') || !value.includes('}}')) {
+          return value;
+        }
+        const re = extractAndReplaceReferencesFromString(
+          value,
+          get().modules[moduleId].componentNameIdMapping,
+          get().modules[moduleId].queryNameIdMapping
+        );
+        return resolveDynamicValues(re.valueWithBrackets, scopedState, customResolveObjects, false, []);
+      };
+    }
+  }
+  return (value) => get().getResolvedValue(value, customResolveObjects, moduleId);
+}
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
   modules: {
@@ -436,7 +475,6 @@ export const createComponentsSlice = (set, get) => ({
       getComponentTypeFromId,
       getComponentDefinition,
       findNearestSubcontainerAncestor,
-      prepareRowScope,
       updateRowScope,
     } = get();
     const { componentId, paramType, property } = componentDetails;
@@ -512,12 +550,7 @@ export const createComponentsSlice = (set, get) => ({
       //   4. scopedState holds a reference to the overlay object, so mutating the overlay
       //      in updateRowScope is automatically visible to the resolver — no need to recreate
       //      scopedState each iteration
-      const state = getAllExposedValues(moduleId);
-      const scopeCtx = nearestListviewId ? prepareRowScope(state.components, nearestListviewId, moduleId) : null;
-      // { ...state, components: scopeCtx.scoped } only spreads ~10 top-level keys
-      // (components, variables, queries, globals, page, etc.) — trivially cheap.
-      // When scopeCtx is null (not in ListView), we pass state as-is (no copy).
-      const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+      const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: nearestListviewId, moduleId });
 
       for (let i = 0; i < length; i++) {
         // Mutate the overlay in place: swap descendant entries to row i's values
@@ -548,7 +581,6 @@ export const createComponentsSlice = (set, get) => ({
       findNearestSubcontainerAncestor,
       getComponentDefinition,
       getBaseParentId,
-      prepareRowScope,
       updateRowScope,
     } = get();
 
@@ -627,9 +659,7 @@ export const createComponentsSlice = (set, get) => ({
           ? getLazyRowIndices(innermostListview, moduleId, true)
           : Array.from({ length: resolvables.length }, (_, i) => i);
 
-        const state = getAllExposedValues(moduleId);
-        const scopeCtx = innermostListview ? prepareRowScope(state.components, innermostListview, moduleId) : null;
-        const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+        const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: innermostListview, moduleId });
 
         for (const i of indicesToResolve) {
           if (i >= resolvables.length) continue;
@@ -660,10 +690,29 @@ export const createComponentsSlice = (set, get) => ({
     iterateNestedIndices(baseCustomResolvables, [], 0);
   },
 
-  validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
-    const { getResolvedValue } = get();
+  validateWidget: ({
+    validationObject,
+    widgetValue,
+    customResolveObjects,
+    componentType,
+    nearestListviewId,
+    rowIndex,
+    moduleId = 'canvas',
+  }) => {
     let isValid = true;
     let validationError = null;
+
+    // For widgets inside a ListView, `components.<sibling>.value` resolves through
+    // a flat exposedValues map where `components.<sibling>` is the per-row array.
+    // Mirror setAllValueToComponent's row-scope overlay so validation expressions
+    // see the current row's values instead of the array.
+    const resolveValue = buildRowScopedResolver({
+      get,
+      nearestListviewId,
+      rowIndex,
+      moduleId,
+      customResolveObjects,
+    });
 
     const regex = validationObject?.regex?.value ?? validationObject?.regex;
     const minLength = validationObject?.minLength?.value ?? validationObject?.minLength;
@@ -672,7 +721,7 @@ export const createComponentsSlice = (set, get) => ({
     const maxValue = validationObject?.maxValue?.value ?? validationObject?.maxValue;
     const customRule = validationObject?.customRule?.value ?? validationObject?.customRule;
     const mandatory = validationObject?.mandatory?.value ?? validationObject?.mandatory;
-    let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
+    let validationRegex = resolveValue(regex) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
 
     if (componentType === 'EmailInput' && widgetValue) {
@@ -696,7 +745,7 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    const resolvedMinLength = getResolvedValue(minLength, customResolveObjects) || 0;
+    const resolvedMinLength = resolveValue(minLength) || 0;
     if ((widgetValue || '').length < parseInt(resolvedMinLength)) {
       return {
         isValid: false,
@@ -704,7 +753,7 @@ export const createComponentsSlice = (set, get) => ({
       };
     }
 
-    const resolvedMaxLength = getResolvedValue(maxLength, customResolveObjects) || undefined;
+    const resolvedMaxLength = resolveValue(maxLength) || undefined;
     if (resolvedMaxLength !== undefined) {
       if ((widgetValue || '').length > parseInt(resolvedMaxLength)) {
         return {
@@ -714,7 +763,7 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    const resolvedMinValue = getResolvedValue(minValue, customResolveObjects) || undefined;
+    const resolvedMinValue = resolveValue(minValue) || undefined;
     if (resolvedMinValue !== undefined) {
       if (widgetValue === undefined || widgetValue < parseFloat(resolvedMinValue)) {
         return {
@@ -724,7 +773,7 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    const resolvedMaxValue = getResolvedValue(maxValue, customResolveObjects) || undefined;
+    const resolvedMaxValue = resolveValue(maxValue) || undefined;
     if (resolvedMaxValue !== undefined) {
       if (widgetValue === undefined || widgetValue > parseFloat(resolvedMaxValue)) {
         return {
@@ -734,12 +783,12 @@ export const createComponentsSlice = (set, get) => ({
       }
     }
 
-    const resolvedCustomRule = getResolvedValue(customRule, customResolveObjects) || false;
+    const resolvedCustomRule = resolveValue(customRule) || false;
     if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
       return { isValid: false, validationError: resolvedCustomRule };
     }
 
-    const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
+    const resolvedMandatory = resolveValue(mandatory) || false;
     // only option-based widgets (DropdownV2, MultiselectV2) can have false as a legitimate user-defined option value. For everything else, false correctly means "empty/unfulfilled."
     const optionValueWidgets = ['DropdownV2', 'MultiselectV2'];
     const isEmpty = Array.isArray(widgetValue)
@@ -758,7 +807,7 @@ export const createComponentsSlice = (set, get) => ({
       const minSelection = validationObject?.minSelection?.value ?? validationObject?.minSelection;
       const maxSelection = validationObject?.maxSelection?.value ?? validationObject?.maxSelection;
 
-      const resolvedMinSelection = parseInt(getResolvedValue(minSelection, customResolveObjects)) || 0;
+      const resolvedMinSelection = parseInt(resolveValue(minSelection)) || 0;
       if (resolvedMinSelection > 0 && widgetValue.length < resolvedMinSelection) {
         return {
           isValid: false,
@@ -766,7 +815,7 @@ export const createComponentsSlice = (set, get) => ({
         };
       }
 
-      const resolvedMaxSelection = parseInt(getResolvedValue(maxSelection, customResolveObjects)) || 0;
+      const resolvedMaxSelection = parseInt(resolveValue(maxSelection)) || 0;
       if (resolvedMaxSelection > 0 && widgetValue.length > resolvedMaxSelection) {
         return {
           isValid: false,
@@ -781,10 +830,23 @@ export const createComponentsSlice = (set, get) => ({
     };
   },
 
-  validateDates: ({ validationObject, widgetValue, customResolveObjects }) => {
-    const { getResolvedValue } = get();
+  validateDates: ({
+    validationObject,
+    widgetValue,
+    customResolveObjects,
+    nearestListviewId,
+    rowIndex,
+    moduleId = 'canvas',
+  }) => {
     let isValid = true;
     let validationError = null;
+    const resolveValue = buildRowScopedResolver({
+      get,
+      nearestListviewId,
+      rowIndex,
+      moduleId,
+      customResolveObjects,
+    });
     const validationDateFormat = validationObject?.dateFormat?.value || 'MM/DD/YYYY';
     const validationTimeFormat = validationObject?.timeFormat?.value || 'HH:mm';
     const customRule = validationObject?.customRule?.value;
@@ -797,10 +859,10 @@ export const createComponentsSlice = (set, get) => ({
       getDateTimeFormat(parsedDateFormat, true, isTwentyFourHrFormatEnabled, isDateSelectionEnabled)
     ).format(validationTimeFormat);
 
-    const resolvedMinDate = getResolvedValue(validationObject?.minDate?.value, customResolveObjects) || undefined;
-    const resolvedMaxDate = getResolvedValue(validationObject?.maxDate?.value, customResolveObjects) || undefined;
-    const resolvedMinTime = getResolvedValue(validationObject?.minTime?.value, customResolveObjects) || undefined;
-    const resolvedMaxTime = getResolvedValue(validationObject?.maxTime?.value, customResolveObjects) || undefined;
+    const resolvedMinDate = resolveValue(validationObject?.minDate?.value) || undefined;
+    const resolvedMaxDate = resolveValue(validationObject?.maxDate?.value) || undefined;
+    const resolvedMinTime = resolveValue(validationObject?.minTime?.value) || undefined;
+    const resolvedMaxTime = resolveValue(validationObject?.maxTime?.value) || undefined;
 
     // Minimum date validation
     if (resolvedMinDate !== undefined && moment(resolvedMinDate).isValid()) {
@@ -843,7 +905,7 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     //Custom rule validation
-    const resolvedCustomRule = getResolvedValue(customRule, customResolveObjects) || false;
+    const resolvedCustomRule = resolveValue(customRule) || false;
     if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
       return { isValid: false, validationError: resolvedCustomRule };
     }
@@ -2446,10 +2508,8 @@ export const createComponentsSlice = (set, get) => ({
     const {
       getCustomResolvables,
       getNodeData,
-      getAllExposedValues,
       getParentIdFromDependency,
       findNearestSubcontainerAncestor,
-      prepareRowScope,
       updateRowScope,
     } = get();
     const [entityType, entityId, type, key] = dependency.split('.');
@@ -2470,9 +2530,7 @@ export const createComponentsSlice = (set, get) => ({
     // Note: currently re-resolves all rows even if only one row changed. The store update
     // below is batched, and React skips re-renders for rows where the resolved value didn't
     // change, so the DOM cost is minimal.
-    const state = getAllExposedValues(moduleId);
-    const scopeCtx = resolvableParentId ? prepareRowScope(state.components, resolvableParentId, moduleId) : null;
-    const scopedState = scopeCtx ? { ...state, components: scopeCtx.scoped } : state;
+    const { scopeCtx, scopedState } = buildRowScopedState({ get, listviewId: resolvableParentId, moduleId });
 
     // For lazy parents (eg. Table expandable rows),
     // only resolve required rows instead of all 0..length-1.

@@ -8,6 +8,8 @@ import { Tooltip } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 
+const coerceColorString = (v) => (typeof v === 'string' ? v : '');
+
 const BaseColorSwatches = ({
   value,
   onChange,
@@ -26,11 +28,13 @@ const BaseColorSwatches = ({
   onReset,
 }) => {
   const computeColorForPopoverMenu = useStore((state) => state.computeColorForPopoverMenu);
+  value = coerceColorString(value);
   if (component == 'PopoverMenu') {
     value = computeColorForPopoverMenu(value, meta, componentId);
   } else if (component == 'Button' || component == 'FileButton') {
     value = computeColor(styleDefinition, value, meta, component);
   }
+  value = coerceColorString(value);
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
