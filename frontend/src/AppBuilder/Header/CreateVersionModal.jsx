@@ -21,6 +21,7 @@ const CreateVersionModal = ({
   handleCommitOnVersionCreation = () => {},
   versionId,
   onVersionCreated,
+  isBranchingEnabled,
 }) => {
   const { moduleId } = useModuleContext();
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
@@ -28,6 +29,11 @@ const CreateVersionModal = ({
   const [versionName, setVersionName] = useState('');
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+  const { current_organization_id } = authenticationService.currentSessionValue;
+  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
+  // fall back to the store value set by fetchAppGit.
+  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
+
   const {
     changeEditorVersionAction,
     environmentChangedAction,
@@ -39,6 +45,8 @@ const CreateVersionModal = ({
     currentEnvironment,
     environments,
     setIsEditorFreezed,
+    appGit,
+    branchingEnabled,
   } = useStore(
     (state) => ({
       changeEditorVersionAction: state.changeEditorVersionAction,
@@ -55,6 +63,8 @@ const CreateVersionModal = ({
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
       setIsEditorFreezed: state.setIsEditorFreezed,
+      appGit: state.appGit,
+      branchingEnabled: state.branchingEnabled,
     }),
     shallow
   );
@@ -146,12 +156,81 @@ const CreateVersionModal = ({
     setIsCreatingVersion(true);
 
     try {
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
+        if (!appGit?.git_app_name || !appGit?.id) {
+          toast.error(
+            "Empty apps can't be versioned. Build your app first and then save your work through version control."
+          );
+          setIsCreatingVersion(false);
+          return;
+        }
+
+        try {
+          const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
+          if (tagCheck.exists) {
+            toast.error(
+              `Cannot save: Tag '${tagCheck.tagName}' already exists. ` +
+                `Please rename your version to a unique name before saving.`
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
+        } catch (error) {
+          // If check fails, log warning but allow save to proceed
+          // (tag creation will fail separately if there's an issue)
+          console.warn('Tag existence check failed, proceeding with save', error);
+        }
+      }
+
+      // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
-        description: versionDescription,
+        description: versionDescription || undefined,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
+      // if (isGitSyncEnabled) {
+      //   // The backend's version-rename-commit event is suppressed when the status is
+      //   // also changing to PUBLISHED (save-version flow), so there's no competing push.
+      //   // We always handle the commit here with the correct "Version Created" message.
+      //   const updatedVersionData = {
+      //     ...selectedVersionForCreation,
+      //     name: versionName,
+      //     description: versionDescription,
+      //   };
+      //   handleCommitOnVersionCreation(updatedVersionData, selectedVersion)
+      //     .then((commitDone) => {
+      //       if (!commitDone) return;
+      //       if (isBranchingEnabled) {
+      //         return gitSyncService.createGitTag(
+      //           appId,
+      //           selectedVersionForCreation.id,
+      //           versionDescription || `Version ${versionName.trim()} created`
+      //         );
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       console.error('Commit or tag failed:', error);
+      //       toast.error(error?.data?.message || 'Commit or tag failed');
+      //     });
+      // }
+
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
+        gitSyncService
+          .createGitTag(
+            appId,
+            selectedVersionForCreation.id,
+            versionDescription || `Version ${versionName.trim()} created`
+          )
+          .catch((error) => {
+            const message = error?.data?.message || error?.message || '';
+            // Suppress "already exists" — version was saved successfully and was
+            // already tagged in a previous save. No user action needed.
+            if (message.toLowerCase().includes('already exist')) return;
+            toast.error(message || 'Tag creation failed');
+          });
+      }
+
       toast.success('Version Created successfully');
       setVersionName('');
       setVersionDescription('');
@@ -194,10 +273,7 @@ const CreateVersionModal = ({
                 changeEditorVersionAction(
                   appId,
                   newVersionData.editing_version.id,
-                  () => {
-                    console.log('Successfully switched environment and version');
-                    handleCommitOnVersionCreation(newVersionData, selectedVersion);
-                  },
+                  () => {},
                   (error) => {
                     console.error('Error switching to newly created version:', error);
                     toast.error('Version created but failed to switch to it');
@@ -210,9 +286,7 @@ const CreateVersionModal = ({
             await changeEditorVersionAction(
               appId,
               newVersionData.editing_version.id,
-              () => {
-                handleCommitOnVersionCreation(newVersionData, selectedVersion);
-              },
+              () => {},
               (error) => {
                 console.error('Error switching to newly created version:', error);
                 toast.error('Version created but failed to switch to it');
@@ -227,10 +301,22 @@ const CreateVersionModal = ({
     } catch (error) {
       if (error?.data?.code === '23505') {
         toast.error('Version name already exists.');
-      } else if (error?.error) {
-        toast.error(error?.error);
       } else {
-        toast.error('Error while creating version. Please try again.');
+        const rawError = error?.error || error?.message;
+        const errorMessage =
+          typeof rawError === 'object' ? rawError.error : rawError || 'Error while creating version. Please try again.';
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        useStore.getState().debugger.log({
+          logLevel: 'error',
+          type: 'component',
+          key: 'Save Failed',
+          message: errorMessage,
+          description: errorDetails,
+          error: { message: errorMessage, description: errorDetails },
+          errorTarget: 'Version',
+          timestamp: new Date().toISOString(),
+        });
       }
     } finally {
       setIsCreatingVersion(false);
@@ -324,7 +410,8 @@ const CreateVersionModal = ({
             </div>
           </div> */}
 
-            {isGitSyncEnabled && (
+            {/* Disabling autoCommit */}
+            {/* {isGitSyncEnabled && (
               <div className="commit-changes mt-3">
                 <div>
                   <input
@@ -332,6 +419,7 @@ const CreateVersionModal = ({
                     checked={canCommit}
                     type="checkbox"
                     onChange={handleCommitEnableChange}
+                    disabled={isBranchingEnabled}
                     data-cy="git-commit-input"
                   />
                 </div>
@@ -344,7 +432,8 @@ const CreateVersionModal = ({
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
+
             <div className="mt-3">
               <Alert placeSvgTop={true} svg="warning-icon" className="create-version-alert">
                 <div

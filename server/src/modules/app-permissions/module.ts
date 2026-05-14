@@ -36,7 +36,7 @@ export class AppPermissionsModule extends SubModule {
         FeatureAbilityFactory,
         GroupPermissionsRepository,
       ],
-      exports: [AppPermissionsUtilService, AppPermissionsService],
+      exports: [AppPermissionsUtilService],
     };
   }
 }

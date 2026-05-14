@@ -18,6 +18,7 @@ import { GroupPermissionLicenseUtilService } from './util-services/license.util.
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { User } from '@entities/user.entity';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class GroupPermissionsService implements IGroupPermissionsService {
@@ -53,7 +54,7 @@ export class GroupPermissionsService implements IGroupPermissionsService {
     return this.groupPermissionsUtilService.getGroupWithBuilderLevel(id, organizationId);
   }
 
-  getAllGroup(organizationId: string): Promise<GetUsersResponse> {
+  getAllGroup(organizationId: string, _user?: User): Promise<GetUsersResponse> {
     return this.groupPermissionsUtilService.getAllGroupByOrganization(organizationId);
   }
 
@@ -164,7 +165,10 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async getAllGroupUsers(group: GroupPermissions, organizationId: string, searchInput?: string): Promise<GroupUsers[]> {
-    return await this.groupPermissionsRepository.getUsersInGroup(group.id, organizationId, searchInput);
+    // Muzzle AppsSubscriber in case the user/permission joins fan out to App rows.
+    return skipAppEditingVersionHydration.run(true, () =>
+      this.groupPermissionsRepository.getUsersInGroup(group.id, organizationId, searchInput)
+    );
   }
 
   async deleteGroupUser(id: string, user: User, manager?: EntityManager): Promise<void> {
@@ -172,6 +176,8 @@ export class GroupPermissionsService implements IGroupPermissionsService {
   }
 
   async getAddableUser(groupId: string, organizationId: string, searchInput?: string) {
-    return await this.groupPermissionsRepository.addableUsersToGroup(groupId, organizationId, searchInput);
+    return skipAppEditingVersionHydration.run(true, () =>
+      this.groupPermissionsRepository.addableUsersToGroup(groupId, organizationId, searchInput)
+    );
   }
 }

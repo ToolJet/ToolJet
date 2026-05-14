@@ -13,25 +13,27 @@ import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 
 export interface IDataSourcesController {
-  fetchGlobalDataSources(user: User, userPermissions: UserPermissions): Promise<{ data_sources: object[] }>;
+  fetchGlobalDataSources(user: User, userPermissions: UserPermissions, branchId?: string): Promise<{ data_sources: object[] }>;
 
   fetchGlobalDataSourcesForVersion(
     user: User,
     appVersionId: string,
     environmentId: string,
-    userPermissions: UserPermissions
+    userPermissions: UserPermissions,
+    branchId?: string
   ): Promise<{ data_sources: object[] }>;
 
-  createGlobalDataSources(user: User, createDataSourceDto: CreateDataSourceDto): Promise<any>;
+  createGlobalDataSources(user: User, createDataSourceDto: CreateDataSourceDto, branchId?: string): Promise<any>;
 
   update(
     user: User,
     dataSourceId: string,
     environmentId: string,
-    updateDataSourceDto: UpdateDataSourceDto
+    updateDataSourceDto: UpdateDataSourceDto,
+    branchId?: string
   ): Promise<void>;
 
-  delete(user: User, dataSourceId: string): Promise<void>;
+  delete(user: User, dataSourceId: string, branchId?: string): Promise<void>;
 
   changeScope(user: User, dataSourceId: string): Promise<void>;
 
@@ -55,6 +57,7 @@ export interface IDataSourcesController {
   invokeDataSourceMethod(
     user: User,
     invokeDto: InvokeDataSourceMethodDto,
-    dataSource: DataSourceEntity
+    dataSource: DataSourceEntity,
+    branchId?: string
   ): Promise<QueryResult>;
 }

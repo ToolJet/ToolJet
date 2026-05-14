@@ -2,23 +2,71 @@ FROM node:22.15.1 AS builder
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN mkdir -p /app
+# Build nsjail for Python sandboxing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    bison \
+    flex \
+    gcc \
+    g++ \
+    libprotobuf-dev \
+    libnl-route-3-dev \
+    libtool \
+    make \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /build-nsjail
+RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
+    cd nsjail && \
+    make && \
+    strip nsjail
+
+# Build Python runtime with pre-installed packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/python-runtime
+
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==1.26.4 \
+    pandas==2.2.1 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.6.4 \
+    typing-extensions==4.10.0
+
+RUN mkdir -p /app
 WORKDIR /app
 
-# Set GitHub token and branch as build arguments
+# Set GitHub token, branch and repository URL as build arguments
 ARG CUSTOM_GITHUB_TOKEN
 ARG BRANCH_NAME
+ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 
 RUN git config --global http.version HTTP/1.1
 RUN git config --global http.postBuffer 524288000
-RUN git clone https://github.com/ToolJet/ToolJet.git .
+RUN git clone ${REPO_URL} .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout ${BRANCH_NAME}
+RUN if git show-ref --verify --quiet refs/heads/${BRANCH_NAME} || \
+       git ls-remote --exit-code --heads origin ${BRANCH_NAME}; then \
+      git checkout ${BRANCH_NAME}; \
+    else \
+      echo "Branch ${BRANCH_NAME} not found, falling back to main"; \
+      git checkout main; \
+    fi
 
 # Handle submodules - try normal submodule update first, if it fails clone directly from base repo
 RUN if git submodule update --init --recursive; then \
@@ -107,7 +155,10 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 ENV NODE_ENV=production
 ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
+# Install Redis 7.x from official Redis repository for BullMQ compatibility
+RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb bullseye main" | tee /etc/apt/sources.list.d/redis.list \
+    && apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor redis-server libprotobuf23 libnl-route-3-200 python3 python3-pip
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -120,6 +171,15 @@ RUN wget https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketpla
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
 # Set the Instant Client library paths
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+
+# Copy nsjail and Python runtime from builder
+COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
+RUN chmod 755 /usr/local/bin/nsjail
+
+COPY --from=builder /opt/python-runtime /opt/python-runtime
+
+# Create nsjail config directory and Python execution temp directory
+RUN mkdir -p /etc/nsjail /tmp/python-exec && chmod 1777 /tmp/python-exec
 
 WORKDIR /
 
@@ -141,6 +201,8 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+# Copy nsjail configuration for Python sandboxing
+COPY --from=builder /app/server/ee/workflows/nsjail/python-execution.cfg /etc/nsjail/python-execution.cfg
 
 WORKDIR /app
 
@@ -166,7 +228,18 @@ RUN rm -rf /var/lib/postgresql/13/main && \
 # Initialize PostgreSQL
 RUN su - postgres -c "/usr/lib/postgresql/13/bin/initdb -D /var/lib/postgresql/13/main"
 
-# Configure Supervisor to manage PostgREST, ToolJet, and Redis
+# Configure Redis for BullMQ
+RUN mkdir -p /etc/redis /var/lib/redis /var/log/redis && \
+    chown -R redis:redis /var/lib/redis /var/log/redis && \
+    chmod 755 /var/lib/redis /var/log/redis
+
+# Copy Redis configuration
+COPY ./docker/LTS/ee/redis.conf /etc/redis/redis.conf
+RUN chown redis:redis /etc/redis/redis.conf && \
+    chmod 644 /etc/redis/redis.conf
+
+# Configure Supervisor to manage PostgREST and ToolJet
+# Note: PostgreSQL and Redis are started directly in preview.sh
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
     "user=root \n" \
@@ -175,6 +248,10 @@ RUN echo "[supervisord] \n" \
     "command=/bin/postgrest \n" \
     "autostart=true \n" \
     "autorestart=true \n" \
+    "stderr_logfile=/dev/stdout \n" \
+    "stderr_logfile_maxbytes=0 \n" \
+    "stdout_logfile=/dev/stdout \n" \
+    "stdout_logfile_maxbytes=0 \n" \
     "\n" \
     "[program:tooljet] \n" \
     "user=root \n" \
@@ -205,6 +282,10 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_DB_URI=postgres://postgres:postgres@localhost/tooljet_db \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+    REDIS_HOST=localhost \
+    REDIS_PORT=6379 \
+    REDIS_DB=0 \
+    REDIS_TLS_ENABLED=false \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
     HOME=/home/appuser \

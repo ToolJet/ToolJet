@@ -295,9 +295,18 @@
   margin-right: 2px;
   height: 20px;
   padding: 0 0;
-  background: none !important;
-  background-color: none !important;
-  box-shadow: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:disabled {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .manage-granular-permission-header {
@@ -530,5 +539,34 @@
         }
       }
     }
+  }
+}
+
+.permission-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permission-item {
+  width: 100%;
+
+  .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .form-check-input {
+    margin-top: 4px;
+  }
+
+  .tj-text-xsm {
+    display: block;
+  }
+}
+.permission-manager-modal {
+  .resources-container {
+    padding-bottom: 12px;
   }
 }

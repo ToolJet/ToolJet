@@ -8,12 +8,13 @@ export const libraryAppService = {
   findDependentPluginsInTemplate,
 };
 
-function deploy(identifier, appName, dependentPlugins = [], shouldAutoImportPlugin = false) {
+function deploy(identifier, appName, dependentPlugins = [], shouldAutoImportPlugin = false, branchId = null) {
   const body = {
     identifier,
     appName,
     dependentPlugins,
     shouldAutoImportPlugin,
+    ...(branchId && { branchId }),
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };

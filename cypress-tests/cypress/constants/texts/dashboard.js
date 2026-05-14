@@ -36,14 +36,14 @@ export const dashboardText = {
     dragHandleIcon: "drag-handle",
   },
   seeAllAppsTemplateButton: "See all templates",
-  addToFolderTitle: "Add to folder",
+  updateFolderTitle: "Update folder",
   appClonedToast: "App cloned successfully!",
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
   dashboardAppsHeaderLabel: "All apps",
 
   moveAppText: (appName) => {
-    return `Move "${appName}" to`;
+    return `Update ${appName}'s folderto`;
   },
   addToFolderButton: "Add to folder",
   folderName: (folderName) => {

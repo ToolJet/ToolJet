@@ -22,9 +22,11 @@ import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
+  const { isModuleEditor } = useModuleContext();
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
@@ -46,10 +48,18 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
-  const ElementToRender = selectedDataSource?.plugin_id ? source : allSources[sourcecomponentName];
+  // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
+  // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
+  // is_dummy warning below already tells user to pull.
+  const isDummyDataSource = selectedDataSource?.is_dummy === true;
+  const ElementToRender = isDummyDataSource
+    ? null
+    : selectedDataSource?.plugin_id
+    ? source
+    : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
-  const isFreezed = useStore((state) => state.getShouldFreeze());
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setDataSourceMeta(
@@ -225,21 +235,23 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
               </>
             )}
         </div>
-        <ElementToRender
-          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-          key={selectedQuery?.id}
-          pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
-          selectedDataSource={selectedDataSource}
-          options={selectedQuery?.options}
-          optionsChanged={optionsChanged}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-          isEditMode={true} // Made TRUE always to avoid setting default options again
-          queryName={queryName}
-          currentEnvironment={currentEnvironment}
-          currentAppEnvironmentId={currentEnvironment?.id}
-          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-        />
+        {ElementToRender && (
+          <ElementToRender
+            renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+            key={selectedQuery?.id}
+            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            selectedDataSource={selectedDataSource}
+            options={selectedQuery?.options}
+            optionsChanged={optionsChanged}
+            optionchanged={optionchanged}
+            darkMode={darkMode}
+            isEditMode={true} // Made TRUE always to avoid setting default options again
+            queryName={queryName}
+            currentEnvironment={currentEnvironment}
+            currentAppEnvironmentId={currentEnvironment?.id}
+            onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+          />
+        )}
       </div>
     );
   };
@@ -390,7 +402,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
-      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC);
+      .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC)
+      // Hide dummy DSes from the picker — they aren't valid switch targets.
+      // Keep the currently bound dummy in the list so the dropdown can render its label.
+      .filter((ds) => !ds.is_dummy || ds.id === selectedDataSource?.id);
     if (isEmpty(selectableDataSources)) {
       return '';
     }
@@ -433,6 +448,18 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
                 changeDataQuery(newDataSource);
               }}
             />
+            {selectedDataSource?.is_dummy && (
+              <div
+                className="tw-text-text-danger tw-mt-1 tw-font-body-small tw-pointer-events-auto tw-select-text tw-cursor-text"
+                data-cy="query-manager-source-missing-warning"
+              >
+                {t(
+                  'editor.queryManager.datasourceMissingPullFromGit',
+                  'Data source #{{id}} is missing, pull from git to resolve this',
+                  { id: selectedDataSource?.co_relation_id }
+                )}
+              </div>
+            )}
             <div style={{ marginBottom: '2px' }} data-cy="query-manager-source-doc-link">
               {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;

@@ -38,6 +38,8 @@ export const ERROR_TYPES = {
   USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
+  APP_NOT_ON_BRANCH: 'app-not-on-branch',
+  APP_NOT_READY: 'app-not-ready',
 };
 
 export const ERROR_MESSAGES = {
@@ -87,6 +89,21 @@ export const ERROR_MESSAGES = {
     title: 'Incorrect email address',
     message: 'The user details of the active session does not match that of the invite. Please log out and try again.',
     cta: 'Back to home page',
+    queryParams: [],
+  },
+  'app-not-on-branch': {
+    title: 'App not available',
+    message:
+      'This app is not available on the current branch. Switch to the correct branch or go back to the dashboard.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'app-not-ready': {
+    title: "App isn't available yet",
+    message: "This app doesn't have a released version yet. Contact your admin to know more",
+    cta: 'Back to home page',
+    retry: false,
     queryParams: [],
   },
   'no-active-workspace': {

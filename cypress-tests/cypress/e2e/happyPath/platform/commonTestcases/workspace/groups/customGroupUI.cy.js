@@ -45,6 +45,7 @@ describe("Custom groups UI and Functionality verification", () => {
   const appPermissionName = "Apps";
   const workflowPermissionName = "Workflows";
   const datasourcePermissionName = "  Data sources";
+  const folderPermissionName = "Folders";
   const permissionName2 = "Permission2";
   const data = {
     firstName: fake.firstName,
@@ -103,6 +104,12 @@ describe("Custom groups UI and Functionality verification", () => {
       addGranularPermissionViaUI(datasourcePermissionName, {
         resourceType: "datasource",
         permission: "configure",
+        scope: "all",
+      });
+
+      addGranularPermissionViaUI(folderPermissionName, {
+        resourceType: "folder",
+        permission: "editFolder",
         scope: "all",
       });
     });
@@ -196,10 +203,49 @@ describe("Custom groups UI and Functionality verification", () => {
     cy.get(groupsSelector.cancelButton).click();
   };
 
+  const verifyFolderGranularModalFlow = () => {
+    cy.get('[data-cy="folder-granular-access"]').realHover();
+    cy.get('[data-cy="edit-folder-granular-access"]').click();
+
+    verifyGranularPermissionModalStates("folder", "custom");
+
+    cy.get(groupsSelector.editAppRadio).check();
+    switchBetweenAllAndCustom("custom");
+
+    verifyGranularPermissionModalStates("folder", "custom", {
+      editFolderRadio: { checked: false, enabled: true },
+      editAppRadio: { checked: true, enabled: true },
+      viewAppRadio: { checked: false, enabled: true },
+      allAppsRadio: { checked: false, enabled: true },
+      customRadio: { checked: true, enabled: true },
+    });
+
+    switchBetweenAllAndCustom("all");
+    verifyGranularPermissionModalStates("folder", "custom", {
+      editFolderRadio: { checked: false, enabled: true },
+      editAppRadio: { checked: true, enabled: true },
+      viewAppRadio: { checked: false, enabled: true },
+      allAppsRadio: { checked: true, enabled: true },
+      customRadio: { checked: false, enabled: true },
+    });
+
+    cy.get(groupsSelector.viewAppRadio).check();
+    verifyGranularPermissionModalStates("folder", "custom", {
+      editFolderRadio: { checked: false, enabled: true },
+      editAppRadio: { checked: false, enabled: true },
+      viewAppRadio: { checked: true, enabled: true },
+      allAppsRadio: { checked: true, enabled: true },
+      customRadio: { checked: false, enabled: true },
+    });
+
+    cy.get(groupsSelector.cancelButton).click();
+  };
+
   const verifyEnterpriseGranularModalFlows = () => {
     cy.ifEnv("Enterprise", () => {
       verifyWorkflowGranularModalFlow();
       verifyDatasourceGranularModalFlow();
+      verifyFolderGranularModalFlow();
     });
   };
 
@@ -267,6 +313,7 @@ describe("Custom groups UI and Functionality verification", () => {
 
     openGroupAndValidateEmptyStates(groupName2);
     configureInitialGranularPermissions();
+
     cy.wait(1000) // need to add alias to avoid flakiness
     verifyAppGranularModalFlow(groupName2);
     verifyEnterpriseGranularModalFlows();
@@ -292,6 +339,7 @@ describe("Custom groups UI and Functionality verification", () => {
         []
       );
 
+
       cy.ifEnv("Enterprise", () => {
         cy.apiCreateGranularPermission(
           groupName3,
@@ -305,6 +353,13 @@ describe("Custom groups UI and Functionality verification", () => {
           "Data sources",
           "datasource",
           { canUse: false, canConfigure: true },
+          []
+        );
+        cy.apiCreateGranularPermission(
+          groupName3,
+          "Folders",
+          "folder",
+          { canEditFolder: true, canEditApps: false, canViewApps: false },
           []
         );
       });
