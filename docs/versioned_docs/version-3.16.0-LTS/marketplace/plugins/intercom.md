@@ -18,13 +18,15 @@ To make a connection, you first need to create an application in Intercom and ob
 - Open the **Authentication** tab.
 - Copy the generated **Access Token** and use it to configure the connection in ToolJet.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/intercom/connection.png" alt="Marketplace: Intercom Connection" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/intercom/connection.png" alt="Marketplace: Intercom Connection" />
 
 :::info
 For more information, refer **[here](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication#how-to-get-your-access-token)** on how to generate access token.
 :::
 
 ## Supported Operations
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/supported-ops.png" alt="Marketplace: Intercom operations" />
 
 | Method | API Endpoint            | Description                                                  |
 | ------ | ----------------------- | ------------------------------------------------------------ |
@@ -64,18 +66,18 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET    | `/brands`               | List all brands                                              |
 | GET    | `/emails`               | List all email settings                                      |
 
-**ADMIN_ID**
+#### ADMIN_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | PUT | `/admins/{admin_id}/away` | Set an admin to away |
 | GET | `/admins/{admin_id}` | Retrieve an admin |
 
-**ACTIVITY_LOGS**
+#### ACTIVITY_LOGS
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/admins/activity_logs` | List all activity logs |
 
-**CONTENT_IMPORT_SOURCES**
+#### CONTENT_IMPORT_SOURCES
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/ai/content_import_sources` | List content import sources |
@@ -84,7 +86,7 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/ai/content_import_sources/{source_id}` | Retrieve a content import source |
 | PUT | `/ai/content_import_sources/{source_id}` | Update a content import source |
 
-**EXTERNAL_PAGES**
+#### EXTERNAL_PAGES
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/ai/external_pages` | List external pages |
@@ -93,14 +95,14 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/ai/external_pages/{page_id}` | Retrieve an external page |
 | PUT | `/ai/external_pages/{page_id}` | Update an external page |
 
-**ARTICLE_ID**
+#### ARTICLE_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/articles/{article_id}` | Retrieve an article |
 | PUT | `/articles/{article_id}` | Update an article |
 | DELETE | `/articles/{article_id}` | Delete an article |
 
-**SEARCH**
+#### SEARCH
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/articles/search` | Search for articles |
@@ -110,7 +112,7 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | POST | `/calls/search` | List calls with transcripts |
 | POST | `/tickets/search` | Search tickets |
 
-**REPORTING_DATA**
+#### REPORTING_DATA
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/export/reporting_data/enqueue` | Enqueue a new reporting data export job |
@@ -118,7 +120,7 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/export/reporting_data/get_datasets` | List available datasets and attributes |
 | GET | `/download/reporting_data/{job_identifier}` | Download completed export job data |
 
-**COLLECTIONS**
+#### COLLECTIONS
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/help_center/collections` | List all collections |
@@ -127,20 +129,20 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | PUT | `/help_center/collections/{collection_id}` | Update a collection |
 | DELETE | `/help_center/collections/{collection_id}` | Delete a collection |
 
-**HELP_CENTERS**
+#### HELP_CENTERS
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/help_center/help_centers/{help_center_id}` | Retrieve a Help Center |
 | GET | `/help_center/help_centers` | List all Help Centers |
 
-**INTERNAL_ARTICLE_ID**
+#### INTERNAL_ARTICLE_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/internal_articles/{internal_article_id}` | Retrieve an internal article |
 | PUT | `/internal_articles/{internal_article_id}` | Update an internal article |
 | DELETE | `/internal_articles/{internal_article_id}` | Delete an internal article |
 
-**COMPANY_ID**
+#### COMPANY_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/companies/{company_id}` | Retrieve a company by ID |
@@ -150,17 +152,17 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/companies/{company_id}/segments` | List attached segments for companies |
 | GET | `/companies/{company_id}/notes` | List all company notes |
 
-**LIST**
+#### LIST
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/companies/list` | List all companies |
 
-**SCROLL**
+#### SCROLL
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/companies/scroll` | Scroll over all companies |
 
-**CONTACT_ID**
+#### CONTACT_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/contacts/{contact_id}/companies` | Attach a contact to a company |
@@ -182,17 +184,17 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | POST | `/contacts/{contact_id}/unarchive` | Unarchive contact |
 | POST | `/contacts/{contact_id}/block` | Block contact |
 
-**MERGE**
+#### MERGE
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/contacts/merge` | Merge a lead and a user |
 
-**FIND_BY_EXTERNAL_ID**
+#### FIND_BY_EXTERNAL_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/contacts/merge` | Merge a lead and a user |
 
-**CONVERSATION_ID**
+#### CONVERSATION_ID
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/contacts/find_by_external_id/{external_id}` | Get a contact by External ID |
@@ -207,32 +209,35 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | DELETE | `/conversations/{conversation_id}/customers/{contact_id}` | Detach contact from a conversation |
 | POST | `/conversations/{conversation_id}/convert` | Convert a conversation to a ticket |
 
-**REDACT**
+#### REDACT
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/conversations/redact` | Redact a conversation part |
 
-**NOTIFY_NEW_CONVERSATION**
+#### NOTIFY_NEW_CONVERSATION
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/custom_channel_events/notify_new_conversation` | Notify Intercom of a new conversation created in a custom channel |
 
-**NOTIFY_NEW_MESSAGE**
+#### NOTIFY_NEW_MESSAGE
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/custom_channel_events/notify_new_message` | Notify Intercom of a new message in a custom channel conversation |
 
-**NOTIFY_QUICK_REPLY_SELECTED**
+#### NOTIFY_QUICK_REPLY_SELECTED
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/custom_channel_events/notify_quick_reply_selected` | Notify Intercom of a quick reply response in a custom channel conversation |
 
-**NOTIFY_ATTRIBUTE_COLLECTED**
+#### NOTIFY_ATTRIBUTE_COLLECTED
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/custom_channel_events/notify_attribute_collected` | Notify Intercom of an attribute collector response in a custom channel conversation |
 
-**CUSTOM_OBJECT_TYPE_IDENTIFIER**
+#### CUSTOM_OBJECT_TYPE_IDENTIFIER
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/custom_object_instances/{custom_object_type_identifier}` | Create or update a custom object instance |
@@ -241,35 +246,40 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id}` | Get custom object instance by ID |
 | DELETE | `/custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id}` | Delete custom object instance by ID |
 
-**DATA_ATTRIBUTE_ID**
+#### DATA_ATTRIBUTE_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | PUT | `/data_attributes/{data_attribute_id}` | Update a data attribute |
 
-**SUMMARIES**
+#### SUMMARIES
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/events/summaries` | Create event summaries |
 
-**CONTENT**
+#### CONTENT
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/export/content/data` | Create content data export |
 | GET | `/export/content/data/{job_identifier}` | Show content data export |
 | GET | `/download/content/data/{job_identifier}` | Download content data export |
 
-**CANCEL**
+#### CANCEL
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/export/cancel/{job_identifier}` | Cancel content data export |
 
-**STATUS**
+#### STATUS
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/jobs/status/{job_id}` | Retrieve job status |
 
+#### NEWS_ITEMS
 
-**NEWS_ITEMS**
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/news/news_items` | List all news items |
@@ -278,42 +288,49 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | PUT | `/news/news_items/{news_item_id}` | Update a news item |
 | DELETE | `/news/news_items/{news_item_id}` | Delete a news item |
 
-**NEWSFEEDS**
+#### NEWSFEEDS
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/news/newsfeeds/{newsfeed_id}/items` | List all live newsfeed items |
 | GET | `/news/newsfeeds` | List all newsfeeds |
 | GET | `/news/newsfeeds/{newsfeed_id}` | Retrieve a newsfeed |
 
-**NOTE_ID**
+#### NOTE_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/notes/{note_id}` | Retrieve a note |
 
-**SEGMENT_ID**
+#### SEGMENT_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/segments/{segment_id}` | Retrieve a segment |
 
-**CALL_ID**
+#### CALL_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/calls/{call_id}` | Get a call |
 | GET | `/calls/{call_id}/recording` | Get call recording by call ID |
 | GET | `/calls/{call_id}/transcript` | Get call transcript by call ID |
 
-**TAG_ID**
+#### TAG_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/tags/{tag_id}` | Find a specific tag |
 | DELETE | `/tags/{tag_id}` | Delete tag |
 
-**TEAM_ID**
+#### TEAM_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/teams/{team_id}` | Retrieve a team |
 
-**TICKET_TYPE_ID**
+#### TICKET_TYPE_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/ticket_types/{ticket_type_id}/attributes` | Create an attribute for a ticket type |
@@ -321,7 +338,8 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/ticket_types/{ticket_type_id}` | Retrieve a ticket type |
 | PUT | `/ticket_types/{ticket_type_id}` | Update a ticket type |
 
-**TICKET_ID**
+#### TICKET_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/tickets/{ticket_id}/reply` | Reply to a ticket |
@@ -331,48 +349,71 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | GET | `/tickets/{ticket_id}` | Retrieve a ticket |
 | DELETE | `/tickets/{ticket_id}` | Delete a ticket |
 
-**ENQUEUE**
+#### ENQUEUE
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/tickets/enqueue` | Enqueue create ticket |
 
-**CONVERT**
+#### CONVERT
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/visitors/convert` | Convert a visitor |
 
-**ID**
+#### ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/brands/{id}` | Retrieve a brand |
 | GET | `/emails/{id}` | Retrieve an email setting |
 
-**REGISTER**
+#### REGISTER
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | POST | `/fin_voice/register` | Register a Fin Voice call |
 
-**COLLECT**
+#### COLLECT
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/fin_voice/collect/{id}` | Collect Fin Voice call by ID |
 
-**EXTERNAL_ID**
+#### EXTERNAL_ID
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/fin_voice/external_id/{external_id}` | Collect Fin Voice call by external ID |
 
-**PHONE_NUMBER**
+#### PHONE_NUMBER
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/fin_voice/phone_number/{phone_number}` | Collect Fin Voice call by phone number |
 
-**CONVERSATION**
+#### CONVERSATION
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/fin_voice/conversation/{conversation_id}` | Collect Fin Voice calls by conversation ID |
 
-**WORKFLOWS**
+#### WORKFLOWS
+
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | GET | `/export/workflows/{id}` | Export a workflow |
+
+## Example Queries
+
+Operation : GET/`me` 
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/get-me.png" alt="Marketplace: Intercom example queries" />
+
+Operation : GET/`articles`
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/get-articles.png" alt="Marketplace: Intercom example queries" />
+
+Operation : GET/`away_status_reasons` 
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/get-away-status.png" alt="Marketplace: Intercom example queries" />
