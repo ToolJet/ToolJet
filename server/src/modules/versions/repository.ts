@@ -25,20 +25,12 @@ export class VersionRepository extends Repository<AppVersion> {
     definition?: any,
     manager?: EntityManager,
     branchId?: string,
-    metadata?: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean },
-    coRelationId?: string
+    metadata?: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean }
   ): Promise<AppVersion> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // moduleReferenceId is module-only; look up parent app type once and gate.
-      // Also fetch co_relation_id so the version can inherit the app's value when the
-      // caller didn't supply one explicitly — required by
-      // chk_app_versions_co_relation_id_when_not_stub on non-stub rows.
-      const parentApp = await manager.findOne(App, {
-        where: { id: appId },
-        select: ['id', 'type', 'co_relation_id'],
-      });
+      const parentApp = await manager.findOne(App, { where: { id: appId }, select: ['id', 'type'] });
       const isModule = parentApp?.type === APP_TYPES.MODULE;
-      const effectiveCoRelationId = coRelationId ?? parentApp?.co_relation_id;
       return catchDbException(() => {
         return manager.save(
           AppVersion,
@@ -52,7 +44,6 @@ export class VersionRepository extends Repository<AppVersion> {
             updatedAt: new Date(),
             ...(isModule && { moduleReferenceId: uuid() }),
             ...(branchId && { branchId }),
-            ...(effectiveCoRelationId && { co_relation_id: effectiveCoRelationId }),
             // Non-workflow metadata lives on app_versions. Callers pass the initial
             // values for the v1 row so the version starts in sync with the app's
             // user-facing metadata instead of NULL.
