@@ -16,7 +16,7 @@ The following permissions can be configured for the given resources:
 | | Release | Allows users of the group to release the applications from the production environment. |
 | **Data sources** | Create | Allows users of the group to add new data sources in the workspace. |
 | | Delete | Allows users of the group to remove data sources from the workspace. |
-| **Folder** | Create/Update/Delete | Allows users of the group to create, update, or delete folders to organize resources. |
+| **Folder** | Create/Delete | Allows users of the group to create or delete folders to organize resources. |
 | **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
 | **Workflows** | Create | Allows users of the group to create new workflows within the workspace. |
 | | Delete | Allows users of the group to delete workflows from the workspace. |

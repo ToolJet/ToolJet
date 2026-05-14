@@ -25,7 +25,7 @@ Admin user has access to all the permission at workspace level, while an end use
 |                                   | Release                    |              ✅              |         Configurable        |                    ❌                   |
 |                                   | Environments (default)     |   All environments (Edit)    |   All environments (Edit)   |   Production only (View released app)   |
 | **Data sources**                  | Create/Update/Delete       |              ✅              |         Configurable        |                    ❌                   |
-| **Folder**                        | Create/Update/Delete       |              ✅              |         Configurable        |                    ❌                   |
+| **Folder**                        | Create/Delete       |              ✅              |         Configurable        |                    ❌                   |
 | **Workspace constants/variables** | Create/Update/Delete       |              ✅              |         Configurable        |                    ❌                   |
 | **Workflow**                      | Create/Delete              |              ✅              |         Configurable        |                    ❌                   |
 
