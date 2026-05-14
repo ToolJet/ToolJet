@@ -235,11 +235,20 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
     // (appVersions.branchId = :branchId). No secondary filter needed.
 
+    // Last-edited first, branch-aware. Mirrors AppsUtilService:
+    //   - branchId → orderBy appVersions.updatedAt (the `appVersions` join is already
+    //     added by getBaseAppsQuery when branchId is set).
+    //   - no branchId → fall back to apps.updatedAt (bumped by AppVersion afterUpdate).
+    if (branchId) {
+      viewableAppsInFolder.orderBy('appVersions.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
+    } else {
+      viewableAppsInFolder.orderBy('apps.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
+    }
+
     const [viewableApps, totalCount] = await Promise.all([
       viewableAppsInFolder
         .take(9)
         .skip(9 * (page - 1))
-        .orderBy('apps.createdAt', 'DESC')
         .getMany(),
       viewableAppsInFolder.getCount(),
     ]);

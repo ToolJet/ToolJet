@@ -1,4 +1,4 @@
-import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not } from 'typeorm';
+import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, Not, UpdateEvent } from 'typeorm';
 import { AsyncLocalStorage } from 'async_hooks';
 import { App } from 'src/entities/app.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
@@ -27,6 +27,19 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     // allows multiple NULLs on a UNIQUE column so this doesn't violate the constraint.
     if (entity.type === APP_TYPES.WORKFLOW && !entity.slug) {
       await this.appRepository.update(entity.id, { slug: entity.id });
+    }
+  }
+
+  async afterUpdate(event: UpdateEvent<any>): Promise<void> {
+    // Bump apps.updated_at when an AppVersion is saved (status flip, content write,
+    // metadata change, hydrate write-back). Inserts intentionally do NOT bump — a new
+    // version row landing on branch A shouldn't bubble to the top of branch B's listing.
+    // The branch-aware listing query orders by appVersions.updatedAt directly for the
+    // branchId case; apps.updated_at remains useful as a coarse fallback for non-branch
+    // listings.
+    const entity = event.entity;
+    if (entity && (entity as any).constructor?.name === 'AppVersion' && (entity as any).appId) {
+      await event.manager.update(App, { id: (entity as any).appId }, { updatedAt: new Date() });
     }
   }
 
