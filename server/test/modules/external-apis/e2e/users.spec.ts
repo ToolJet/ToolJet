@@ -234,6 +234,8 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
         })
         .expect(400);
 
+      // This error is thrown as BadRequestException({ message: { error, title } }),
+      // so message is an object here — unlike the other failure tests where it's a string.
       expect(res.body.message.title).toBe('Conflicting permissions');
     });
   });
