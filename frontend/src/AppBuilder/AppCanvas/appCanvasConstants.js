@@ -2,7 +2,7 @@ export const NO_OF_GRIDS = 43;
 
 export const GRID_HEIGHT = 10;
 
-export const HIDDEN_COMPONENT_HEIGHT = 10;
+export const HIDDEN_COMPONENT_HEIGHT = 0;
 
 export const CANVAS_WIDTHS = Object.freeze({
   deviceWindowWidth: 450,

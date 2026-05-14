@@ -282,20 +282,26 @@ export class ComponentsService implements IComponentsService {
         heightPx?: number;
         fillHeight?: boolean;
         flexOrder?: number;
+        updatedAt: Date | null;
       }
     > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, widthPx, fillWidth, heightPx, fillHeight, flexOrder } = layout as any;
+        const { type, top, left, width, height, widthPx, fillWidth, heightPx, fillHeight, flexOrder, updatedAt } =
+          layout as any;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
+        // `updatedAt` is exposed so the frontend can use it as a stack-order
+        // tiebreaker for widgets sharing the same (top, left) — most recently
+        // positioned widget renders at the bottom of the stack.
         layouts[type] = {
           top: top ?? 0,
           left: left ?? 0, // Use the already adjusted 'left' value
           width: width ?? 0,
           height: height ?? 0,
+          updatedAt: updatedAt ?? null,
           ...(widthPx != null ? { widthPx } : {}),
           ...(fillWidth != null ? { fillWidth } : {}),
           ...(heightPx != null ? { heightPx } : {}),

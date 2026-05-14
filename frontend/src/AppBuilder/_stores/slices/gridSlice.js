@@ -291,6 +291,7 @@ export const createGridSlice = (set, get) => ({
         isContainer,
         visibility,
         containerHeight,
+        calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
       });
 
       // ModalV2 bodies aren't siblings in the grid — stash height on a synthetic
@@ -374,7 +375,8 @@ export const createGridSlice = (set, get) => ({
       // in which case hidden widgets drop out of flow and downstream siblings
       // collapse up. When `collapseWhenHidden` is false (default), a hidden
       // widget still holds its authored slot for reflow anchor math, so
-      // siblings stay where they are.
+      // siblings stay where they are (visible gap remains where the widget
+      // used to be — intentional design).
       const inFlowMap = siblingIds.reduce((accumulator, siblingId) => {
         if (visibleMap[siblingId]) {
           accumulator[siblingId] = true;
