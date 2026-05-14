@@ -304,27 +304,29 @@ const VersionDropdownItem = ({
                 )}
 
                 {/* More menu */}
-                <OverlayTrigger
-                  trigger="click"
-                  placement="bottom-end"
-                  overlay={renderMenu}
-                  rootClose
-                  show={openMenuVersionId === version.id}
-                  onToggle={(show) => {
-                    setIsMoreMenuOpen(show);
-                    setOpenMenuVersionId?.(show ? version.id : null);
-                  }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="small"
-                    iconOnly
-                    leadingIcon="morevertical01"
-                    className={cx({ 'dark-theme theme-dark': darkMode })}
-                    onClick={(e) => e.stopPropagation()}
-                    data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}
-                  />
-                </OverlayTrigger>
+                {!(isGitSyncEnabled && isReleased) && (
+                  <OverlayTrigger
+                    trigger="click"
+                    placement="bottom-end"
+                    overlay={renderMenu}
+                    rootClose
+                    show={openMenuVersionId === version.id}
+                    onToggle={(show) => {
+                      setIsMoreMenuOpen(show);
+                      setOpenMenuVersionId?.(show ? version.id : null);
+                    }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="small"
+                      iconOnly
+                      leadingIcon="morevertical01"
+                      className={cx({ 'dark-theme theme-dark': darkMode })}
+                      onClick={(e) => e.stopPropagation()}
+                      data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-version-more-menu-button`}
+                    />
+                  </OverlayTrigger>
+                )}
               </div>
             )}
           </div>

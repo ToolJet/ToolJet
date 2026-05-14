@@ -184,9 +184,14 @@ const CreateVersionModal = ({
             setIsCreatingVersion(false);
             return;
           }
+          if (tagCheck.invalidFormat) {
+            toast.error(
+              'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
         } catch (error) {
-          // If check fails, log warning but allow save to proceed
-          // (tag creation will fail separately if there's an issue)
           console.warn('Tag existence check failed, proceeding with save', error);
         }
       }
@@ -396,7 +401,10 @@ const CreateVersionModal = ({
                 maxLength="25"
               />
               <small className="version-name-helper-text" data-cy="version-name-helper-text">
-                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+                {t(
+                  'editor.appVersionManager.versionNameHelper',
+                  'Version name cannot contain spaces, special characters or exceed 25 characters'
+                )}
               </small>
             </div>
             <div className="col mt-2">
@@ -413,7 +421,7 @@ const CreateVersionModal = ({
                 placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
                 disabled={isCreatingVersion}
                 value={versionDescription}
-                autoFocus={true}
+                autoFocus={!isGitSyncEnabled}
                 minLength="0"
                 maxLength="500"
                 rows={1}
