@@ -14,7 +14,7 @@ import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
 
-export const EditorHeader = ({ darkMode }) => {
+export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const { isSaving, saveError, isVersionReleased } = useStore(
     (state) => ({
@@ -48,7 +48,7 @@ export const EditorHeader = ({ darkMode }) => {
                 >
                   <div className="global-settings-app-wrapper p-0 m-0 ">
                     <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
-                      <LogoNavDropdown darkMode={darkMode} />
+                      <LogoNavDropdown darkMode={darkMode} type={appType} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
                       {isModuleEditor && <ModuleEditorBanner />}
