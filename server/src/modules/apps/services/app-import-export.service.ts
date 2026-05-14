@@ -597,8 +597,7 @@ export class AppImportExportService {
       // carries the canonical metadata for them.
       if (appToExport?.type !== APP_TYPES.WORKFLOW) {
         // Prefer a version in the current export scope that already carries metadata.
-        let sourceVersion: AppVersion | null =
-          appVersions.find((v) => v.appName != null || v.slug != null) || null;
+        let sourceVersion: AppVersion | null = appVersions.find((v) => v.appName != null || v.slug != null) || null;
         // If the narrowed export scope (versionId-filtered push) has only a NULL-metadata
         // row, look across other versions of the same app — any branch row that holds
         // metadata is a valid source since the canonical values are app-wide.
@@ -3136,6 +3135,19 @@ export class AppImportExportService {
         // values from the staged importMetadata, falling back to per-version values
         // in the import payload.
         const importMeta = !isWorkflow ? (importedApp as any).__importMetadata : null;
+
+        // chk_app_versions_branch_metadata requires app_name AND slug to be non-null
+        // whenever branch_id IS NOT NULL. Imports may carry NULL metadata (e.g. hydrate
+        // temp apps, partial exports) — fall back to deterministic placeholders so the
+        // INSERT doesn't violate the CHECK. Skipped for workflows (they store metadata
+        // on apps.* and the constraint is exempt for branch_id=NULL rows).
+        const resolvedSlug = !isWorkflow
+          ? (appVersion.slug ?? importMeta?.slug ?? importedApp.id ?? uuid())
+          : undefined;
+        const resolvedAppName = !isWorkflow
+          ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
+          : undefined;
+
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
           definition: appVersion.definition,
@@ -3154,11 +3166,11 @@ export class AppImportExportService {
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
-          ...(importMeta && {
-            slug: appVersion.slug ?? importMeta.slug,
-            appName: appVersion.appName ?? importMeta.appName,
-            icon: appVersion.icon ?? importMeta.icon,
-            isPublic: appVersion.isPublic ?? importMeta.isPublic,
+          ...(!isWorkflow && {
+            slug: resolvedSlug,
+            appName: resolvedAppName,
+            icon: appVersion.icon ?? importMeta?.icon ?? null,
+            isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
           }),
         });
       }
