@@ -24,7 +24,12 @@ export class TooljetDbImportExportService {
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, id: tjDbDto.table_id },
     });
-
+    
+    // Backward compatibility:
+    // Older apps may contain stale ToolJet DB table references because
+    // table deletion was historically allowed even when queries still referenced them.
+    // We intentionally skip missing tables here to avoid hard failures during export/clone.
+    // New stale references are prevented by delete guards added in this PR.
     if (!internalTable) {
       return null;
     }
