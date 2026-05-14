@@ -75,7 +75,7 @@ let value = queries.getCustomerData.getRawData();
 await queries.getTodos.run()
 //replace getTodos with your query name
 
-let value = queries.getTodos.getLoadingState();
+let value = queries.getTodos.getloadingState();
 //replace getTodos with your query name
 ```
 
