@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ExportTooljetDatabaseDto } from '@dto/export-resources.dto';
 import { ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { EntityManager } from 'typeorm';
@@ -25,7 +25,9 @@ export class TooljetDbImportExportService {
       where: { organizationId, id: tjDbDto.table_id },
     });
 
-    if (!internalTable) throw new NotFoundException('Tooljet database table not found');
+    if (!internalTable) {
+      return null;
+    }
 
     const { configurations = {} } = internalTable;
     const { columns, foreign_keys } = await this.tableOperationsService.perform(organizationId, 'view_table', {
