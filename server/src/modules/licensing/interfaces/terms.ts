@@ -37,8 +37,8 @@ export interface Terms {
     github?: boolean;
     observability?: boolean;
     queryFolders?: boolean;
-    licensingTelemetry?: boolean;
   };
+  licensingTelemetry?: boolean;
   type?: LICENSE_TYPE;
   plan?: {
     name?: string;

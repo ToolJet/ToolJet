@@ -150,7 +150,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isLicensingTelemetry = this.getFeatureValue('licensingTelemetry');
+    this._isLicensingTelemetry = licenseData?.licensingTelemetry === true;
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -518,10 +518,7 @@ export default class LicenseBase {
   }
 
   public get licensingTelemetry(): boolean {
-    if (this.IsBasicPlan) {
-      return !!this.BASIC_PLAN_TERMS.features?.licensingTelemetry;
-    }
-    return this._isLicensingTelemetry;
+    return this._isLicensingTelemetry === true;
   }
 
   public get multiPlayerEdit(): boolean {
