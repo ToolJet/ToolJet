@@ -6,6 +6,7 @@ export const folderService = {
   deleteFolder,
   getAll,
   addToFolder,
+  bulkAddToFolder,
   removeAppFromFolder,
   updateFolder,
 };
@@ -51,6 +52,17 @@ function deleteFolder(id) {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse);
+}
+
+function bulkAddToFolder(appIds, folderId) {
+  const body = { app_ids: appIds, folder_id: folderId };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/folder-apps`, requestOptions).then(handleResponse);
 }
 
 function addToFolder(appId, folderId) {

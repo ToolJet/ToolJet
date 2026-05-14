@@ -27,6 +27,10 @@ export class FolderAppsService implements IFolderAppsService {
     return this.folderAppsUtilService.create(folderId, appId);
   }
 
+  async bulkCreate(folderId: string, appIds: string[]): Promise<FolderApp[]> {
+    return this.folderAppsUtilService.bulkCreate(folderId, appIds);
+  }
+
   async remove(folderId: string, appId: string): Promise<void> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // TODO: folder under user.organizationId

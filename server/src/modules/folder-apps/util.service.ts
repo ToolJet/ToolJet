@@ -1,7 +1,7 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, In, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
@@ -177,11 +177,10 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       }
 
       const [viewableApps, totalCount] = await Promise.all([
-        viewableAppsInFolder
-          .take(9)
-          .skip(9 * (page - 1))
-          .orderBy('apps.createdAt', 'DESC')
-          .getMany(),
+        (page === 0
+          ? viewableAppsInFolder.orderBy('apps.createdAt', 'DESC')
+          : viewableAppsInFolder.take(9).skip(9 * (page - 1)).orderBy('apps.createdAt', 'DESC')
+        ).getMany(),
         viewableAppsInFolder.getCount(),
       ]);
 
@@ -189,6 +188,26 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       viewableApps,
       totalCount,
     };
+  }
+
+  async bulkCreate(folderId: string, appIds: string[]): Promise<FolderApp[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const existing = await manager.find(FolderApp, { where: { appId: In(appIds) } });
+      const alreadyInFolder = existing.filter((fa) => fa.folderId === folderId).map((fa) => fa.appId);
+      const toRemove = existing.filter((fa) => fa.folderId !== folderId);
+
+      if (toRemove.length > 0) {
+        await manager.delete(FolderApp, { id: In(toRemove.map((fa) => fa.id)) });
+      }
+
+      const toCreate = appIds.filter((id) => !alreadyInFolder.includes(id));
+      if (toCreate.length === 0) return [];
+
+      const newFolderApps = toCreate.map((appId) =>
+        manager.create(FolderApp, { folderId, appId, createdAt: new Date(), updatedAt: new Date() })
+      );
+      return manager.save(FolderApp, newFolderApps);
+    });
   }
 
   async create(folderId: string, appId: string, skipGitSyncCheck = false): Promise<FolderApp> {

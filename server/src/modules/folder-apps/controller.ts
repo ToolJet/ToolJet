@@ -31,9 +31,12 @@ export class FolderAppsController {
 
   @InitFeature(FEATURE_KEY.CREATE_FOLDER_APP)
   @Post()
-  async create(@Body() createBody: { folder_id: string; app_id: string }) {
-    const { folder_id: folderId, app_id: appId } = createBody;
+  async create(@Body() createBody: { folder_id: string; app_id?: string; app_ids?: string[] }) {
+    const { folder_id: folderId, app_id: appId, app_ids: appIds } = createBody;
 
+    if (appIds?.length) {
+      return this.folderAppsService.bulkCreate(folderId, appIds);
+    }
     const folder = await this.folderAppsService.create(folderId, appId);
     return decamelizeKeys(folder);
   }
