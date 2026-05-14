@@ -53,6 +53,7 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _isLicensingTelemetry: boolean;
   private _aiPlan: 'byok' | 'selfhostai' | 'credits';
   private _appComponents: Record<string, boolean> = {};
 
@@ -149,6 +150,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isLicensingTelemetry = this.getFeatureValue('licensingTelemetry');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -513,6 +515,13 @@ export default class LicenseBase {
       return !!this.BASIC_PLAN_TERMS.features?.customDomains;
     }
     return this._isCustomDomains;
+  }
+
+  public get licensingTelemetry(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.licensingTelemetry;
+    }
+    return this._isLicensingTelemetry;
   }
 
   public get multiPlayerEdit(): boolean {
