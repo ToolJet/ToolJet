@@ -74,11 +74,21 @@ export class AppsUtilService implements IAppsUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const isWorkflow = type === APP_TYPES.WORKFLOW;
 
-      // Non-workflows store the user-facing name on app_versions.app_name. apps.name is
-      // NULL for them so the table-level APP_NAME_UNIQUE constraint doesn't fire — enforce
-      // cross-app uniqueness here against any version row already carrying this name.
-      // Scoped to git-disabled workspaces only: git-enabled workspaces enforce uniqueness
-      // via the partial unique index on (app_name, branch_id) WHERE version_type='branch'.
+      // Non-workflows store the user-facing name on app_versions.app_name. apps.name
+      // is NULL for them so the table-level APP_NAME_UNIQUE constraint doesn't fire.
+      //
+      // Git-sync ON  → cross-app uniqueness is enforced by the partial unique index
+      //                app_versions_app_name_branch_id_unique on
+      //                (app_name, branch_id, type) WHERE version_type='branch'.
+      //                No app-side check needed; the DB will reject duplicates.
+      //
+      // Git-sync OFF → no default branch exists, so all new non-workflow rows have
+      //                branch_id IS NULL → outside the partial index's WHERE. The
+      //                DB has nothing to fall back on, so we run the check here
+      //                against the same (name, type, organization) tuple the
+      //                git-on index would enforce. Type-scoped so a front-end app
+      //                "Foo" doesn't collide with a module "Foo" — apps and modules
+      //                share the table but live in separate dashboards.
       if (!isWorkflow && name) {
         const defaultBranch = await manager.findOne(WorkspaceBranch, {
           where: { organizationId: user.organizationId, isDefault: true },
@@ -92,6 +102,7 @@ export class AppsUtilService implements IAppsUtilService {
             .andWhere('av.branch_id IS NULL')
             .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
             .andWhere('app.organization_id = :organizationId', { organizationId: user.organizationId })
+            .andWhere('app.type = :type', { type })
             .getOne();
           if (conflictingNameVersion) {
             throw new BadRequestException('This app name is already taken.');
@@ -144,35 +155,54 @@ export class AppsUtilService implements IAppsUtilService {
           backgroundFxQuery: '',
           appMode: 'light',
         };
-        const branchVersion = await manager.save(
-          AppVersion,
-          manager.create(AppVersion, {
-            // name: uuidv4(),
-            name: type === APP_TYPES.WORKFLOW ? 'v1' : workspaceBranch!.name,
-            appId: app.id,
-            definition: {},
-            currentEnvironmentId: firstPriorityEnv.id,
-            status: AppVersionStatus.DRAFT,
-            // Workflows don't participate in branching — keep them as VERSION.
-            // Apps and modules on a feature branch must be BRANCH-type so the
-            // editor recognises them as editable branch copies.
-            versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
-            branchId: branchId,
-            showViewerNavigation: type === 'module' ? false : true,
-            globalSettings: defaultSettings,
-            pageSettings: {},
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
-            // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-            // slug defaults to app.id placeholder; user can rename later.
-            ...(!isWorkflow && {
-              appName: name,
-              slug: app.id,
-              icon: icon ?? null,
-              isPublic: false,
-            }),
-          })
+        // Wrap so the partial unique indexes on app_versions surface friendly errors:
+        //   - app_versions_app_name_branch_id_unique (app_name, branch_id, type)
+        //     WHERE version_type='branch' — sub-branch name clash within same type.
+        //   - app_versions_slug_branch_id_unique (slug, branch_id, type) WHERE same —
+        //     sub-branch slug clash. Created with app.id as placeholder so it's
+        //     unlikely but guard anyway in case a colliding row exists.
+        const branchVersion = await catchDbException(
+          async () =>
+            await manager.save(
+              AppVersion,
+              manager.create(AppVersion, {
+                // name: uuidv4(),
+                name: type === APP_TYPES.WORKFLOW ? 'v1' : workspaceBranch!.name,
+                appId: app.id,
+                definition: {},
+                currentEnvironmentId: firstPriorityEnv.id,
+                status: AppVersionStatus.DRAFT,
+                // Workflows don't participate in branching — keep them as VERSION.
+                // Apps and modules on a feature branch must be BRANCH-type so the
+                // editor recognises them as editable branch copies.
+                versionType: type === APP_TYPES.WORKFLOW ? AppVersionType.VERSION : AppVersionType.BRANCH,
+                branchId: branchId,
+                showViewerNavigation: type === 'module' ? false : true,
+                globalSettings: defaultSettings,
+                pageSettings: {},
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
+                // Non-workflows carry slug/appName/icon/isPublic on app_versions.
+                // slug defaults to app.id placeholder; user can rename later.
+                ...(!isWorkflow && {
+                  appName: name,
+                  slug: app.id,
+                  icon: icon ?? null,
+                  isPublic: false,
+                }),
+              })
+            ),
+          [
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+              message: 'This app name is already taken.',
+            },
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE,
+              message: 'This slug is already taken.',
+            },
+          ]
         );
 
         const branchHomePage = await manager.save(
@@ -238,21 +268,35 @@ export class AppsUtilService implements IAppsUtilService {
         // Base version gets 'v1' — user-visible, renameable via version manager.
         // For non-workflows, seed the version's metadata so app_versions stays in sync
         // with the user-facing name/slug/icon/isPublic from the moment the app is created.
-        const appVersion = await this.versionRepository.createOne(
-          'v1',
-          app.id,
-          firstPriorityEnv.id,
-          null,
-          manager,
-          undefined,
-          !isWorkflow
-            ? {
-                appName: name,
-                slug: app.id,
-                icon: icon ?? null,
-                isPublic: false,
-              }
-            : undefined
+        //
+        // Wrap so the partial unique index app_versions_slug_default_branch_unique
+        // (slug, type WHERE status='DRAFT' AND branch_id IS NOT NULL AND
+        // version_type='version') surfaces a friendly error if the slug placeholder
+        // collides — that index governs default-branch DRAFT rows instance-wide.
+        const appVersion = await catchDbException(
+          async () =>
+            await this.versionRepository.createOne(
+              'v1',
+              app.id,
+              firstPriorityEnv.id,
+              null,
+              manager,
+              undefined,
+              !isWorkflow
+                ? {
+                    appName: name,
+                    slug: app.id,
+                    icon: icon ?? null,
+                    isPublic: false,
+                  }
+                : undefined
+            ),
+          [
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
+              message: 'This slug is already taken.',
+            },
+          ]
         );
 
         const defaultHomePage = await manager.save(
@@ -522,13 +566,14 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // app_name cross-app uniqueness for non-git-sync workspaces. The partial unique
-      // index on (app_name, branch_id) WHERE version_type='branch' handles git-enabled
-      // sub-branches; non-git-sync rows (branch_id IS NULL, version_type='version') need
-      // an application-level check because a plain unique index can't allow same-app
-      // duplicates while still blocking cross-app collisions. Skip when a branchId is
-      // supplied (git-enabled update) and skip when a default branch exists on the
-      // workspace (git-enabled workspace, even if this update happens to omit branchId).
+      // Cross-app app_name uniqueness on rename.
+      //
+      // Git-sync ON  → the partial unique index app_versions_app_name_branch_id_unique
+      //                on (app_name, branch_id, type) WHERE version_type='branch'
+      //                rejects collisions at the DB. No app-side check needed.
+      // Git-sync OFF → branch_id IS NULL rows fall outside the partial index, so we
+      //                check here. Filter by app.type so apps and modules can share
+      //                names (separate dashboards, separate slug namespaces).
       if (versionParams.appName && !isWorkflow && !branchId) {
         const defaultBranch = await manager.findOne(WorkspaceBranch, {
           where: { organizationId, isDefault: true },
@@ -543,6 +588,7 @@ export class AppsUtilService implements IAppsUtilService {
             .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
             .andWhere('av.app_id != :appId', { appId })
             .andWhere('app.organization_id = :organizationId', { organizationId })
+            .andWhere('app.type = :type', { type: app.type })
             .getOne();
           if (conflictingNameVersion) {
             throw new ConflictException('This app name is already taken.');
@@ -583,6 +629,12 @@ export class AppsUtilService implements IAppsUtilService {
             },
             {
               dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_BRANCH_UNIQUE,
+              message: 'This slug is already taken.',
+            },
+            // Reaches here when an update touches a default-branch DRAFT VERSION-type
+            // row (e.g. promote/release pathways) and the slug clashes instance-wide.
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
               message: 'This slug is already taken.',
             },
           ]);
@@ -683,7 +735,10 @@ export class AppsUtilService implements IAppsUtilService {
   ): Promise<AppBase[]> {
     const qb = await this.buildViewableAppsQuery(user, type, searchKey, isGetAll, branchId, this.appRepository.manager);
     if (isGetAll) return qb.getMany();
-    return qb.take(APPS_PAGE_SIZE).skip(APPS_PAGE_SIZE * (page - 1)).getMany();
+    return qb
+      .take(APPS_PAGE_SIZE)
+      .skip(APPS_PAGE_SIZE * (page - 1))
+      .getMany();
   }
 
   async allWithCount(
@@ -1008,22 +1063,32 @@ export class AppsUtilService implements IAppsUtilService {
               .getMany()
           : [];
 
-      // Branch-scope each module's editingVersion to match the parent app's branch.
-      // The App subscriber sets editingVersion to the VERSION-type (default-branch) version
-      // because it has no branch context. When the parent app is being viewed on a feature
-      // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
-      // stale default-branch content leaks through unless we override here.
-      const parentBranchId = app.editingVersion?.branchId;
-      if (parentBranchId && modules.length > 0) {
+      // For each module: (a) branch-scope its editingVersion to the parent app's
+      // branch so downstream callers render the right pages/queries/events, and
+      // (b) project the branch-specific name/slug/icon/isPublic onto the App entity.
+      //
+      // (a) — The App subscriber sets editingVersion to the VERSION-type (default-
+      //       branch) version because it has no branch context. When the parent is
+      //       being viewed on a feature branch, that's wrong for the module too.
+      // (b) — apps.name / slug / icon / is_public are NULL for modules post-migration
+      //       (metadata moved to app_versions). Without the overlay, AppBuilder gets
+      //       NULL/placeholder values for module labels, icons, and visibility flags.
+      //       overlayAppMetadata routes by branchId (sub-branch row), then default
+      //       branch (git enabled), then any version row (git off).
+      if (modules.length > 0) {
+        const parentBranchId = app.editingVersion?.branchId;
         await Promise.all(
           modules.map(async (moduleApp: any) => {
-            const branchVersion = await manager.findOne(AppVersion, {
-              where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
-              order: { updatedAt: 'DESC' },
-            });
-            if (branchVersion) {
-              moduleApp.editingVersion = branchVersion;
+            if (parentBranchId) {
+              const branchVersion = await manager.findOne(AppVersion, {
+                where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
+                order: { updatedAt: 'DESC' },
+              });
+              if (branchVersion) {
+                moduleApp.editingVersion = branchVersion;
+              }
             }
+            await this.overlayAppMetadata(moduleApp, parentBranchId);
           })
         );
       }
@@ -1170,11 +1235,7 @@ export class AppsUtilService implements IAppsUtilService {
       //   pin-hit + pin != module's current_version_id
       const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
       const offenders = resolved.filter((v) => {
-        if (
-          v.matchKind === 'no-row' ||
-          v.matchKind === 'orphan-fallback' ||
-          v.matchKind === 'unpinned-fallback'
-        ) {
+        if (v.matchKind === 'no-row' || v.matchKind === 'orphan-fallback' || v.matchKind === 'unpinned-fallback') {
           return true;
         }
         if (!v.resolved) return true;

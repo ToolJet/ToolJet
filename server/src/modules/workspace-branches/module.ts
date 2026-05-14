@@ -7,6 +7,7 @@ import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { AppsModule } from '@modules/apps/module';
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -20,15 +21,15 @@ export class WorkspaceBranchesModule extends SubModule {
       ['controller', 'service']
     );
 
-    const { PlatformGitPullService, PlatformGitPushService } = await this.getProviders(
-      configs,
-      'platform-git-sync',
-      ['pull.service', 'push.service']
-    );
+    const { PlatformGitPullService, PlatformGitPushService } = await this.getProviders(configs, 'platform-git-sync', [
+      'pull.service',
+      'push.service',
+    ]);
 
     return this.cacheModule(cacheKey, {
       module: WorkspaceBranchesModule,
       imports: [
+        await AppsModule.register(configs),
         await GitSyncModule.register(configs),
         await AppGitModule.register(configs),
         await FolderAppsModule.register(configs),

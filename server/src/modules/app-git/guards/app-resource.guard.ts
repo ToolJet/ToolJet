@@ -27,7 +27,9 @@ export class AppResourceGuard implements CanActivate {
         request.tj_app ||
         (appId && (await this.appRepository.findById(appId, user.organizationId, undefined, branchId)));
     } else if (versionId) {
-      const version = await this.versionRepository.getAppVersionById(versionId);
+      // Forward x-branch-id so getAppVersionById overlays the right branch's metadata
+      // onto `version.app` (otherwise it'd default to default-branch / any version).
+      const version = await this.versionRepository.getAppVersionById(versionId, branchId);
       app = version?.app;
     }
     if (!app) {

@@ -144,6 +144,15 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
+  /**
+   * Returns AppVersion with `app`, `dataQueries`, and plugin manifests loaded.
+   * NOTE: the nested `appVersion.app` carries the raw `apps.*` row — for non-workflow
+   * apps post-migration that means `name / slug / icon / is_public` are NULL. Callers
+   * that need the canonical metadata must call `AppsUtilService.overlayAppMetadata` on
+   * `appVersion.app` themselves (or read metadata directly off `appVersion`). This
+   * method is intentionally left without an internal overlay because its consumers
+   * (definition/queries/plugins) don't surface `app.name` etc.
+   */
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await manager.findOneOrFail(AppVersion, {
@@ -169,6 +178,12 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
+  /**
+   * Variant of findVersion that also loads per-query permission grants.
+   * NOTE: same metadata caveat as findVersion — `appVersion.app.name / slug / icon /
+   * is_public` are raw `apps.*` (NULL for non-workflows post-migration). Overlay at
+   * the call site if you need branch-aware metadata.
+   */
   async findVersionWithQueryPermissions(id: string, manager?: EntityManager): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const appVersion = await manager
@@ -294,6 +309,15 @@ export class VersionRepository extends Repository<AppVersion> {
     app.isPublic = version.isPublic ?? app.isPublic;
   }
 
+  /**
+   * Returns every AppVersion for an app, with `app` and `dataQueries` (+ plugins) loaded.
+   * NOTE: same metadata caveat as findVersion — every returned `appVersion.app` carries
+   * raw `apps.*` (NULL for non-workflows post-migration). Callers iterating this list
+   * for display must overlay metadata via `AppsUtilService.overlayAppMetadata` or read
+   * directly off each `appVersion.appName / slug / icon / isPublic`. The branch
+   * context isn't known here (we only have the parent app), so an inline overlay
+   * would default-branch fallback and could mask sub-branch values.
+   */
   async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       const appVersions = await manager.find(AppVersion, {
@@ -309,17 +333,43 @@ export class VersionRepository extends Repository<AppVersion> {
       return appVersions;
     }, manager || this.manager);
   }
-  async getAppVersionById(versionId: string) {
+
+  /**
+   * Fetches a single AppVersion by id and overlays branch-aware metadata onto its `app`
+   * relation. Mirrors `AppsRepository.findById` overlay semantics so callers that pin
+   * `version.app` onto `request.tj_app` (e.g. app-git/guards/app-resource.guard.ts)
+   * surface the correct branch's `name / slug / icon / is_public` instead of the
+   * stale `apps.*` columns.
+   *
+   * Resolution order (workflows are skipped — they keep metadata on apps.*):
+   *   - branchId supplied (header / param) → that branch's app_versions row.
+   *   - branchId absent, git enabled       → default branch's app_versions row.
+   *   - branchId absent, git off           → any slug-bearing row (most recent).
+   */
+  async getAppVersionById(versionId: string, branchId?: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const version = await manager.findOneOrFail(AppVersion, {
         where: { id: versionId },
         relations: ['app'],
       });
       if (!version) throw new BadRequestException('Wrong version Id');
+
+      const app = version.app;
+      if (app && app.type !== APP_TYPES.WORKFLOW) {
+        const metadataVersion = await this.resolveMetadataVersion(manager, app, { branchId, versionId });
+        this.overlayMetadata(app, metadataVersion);
+      }
+
       return version;
     });
   }
 
+  /**
+   * Variant that accepts either a version id or a version name.
+   * NOTE: same metadata caveat as findVersion — `version.app` is raw `apps.*` and is
+   * NOT overlaid here. Callers that need branch-accurate metadata should re-fetch
+   * via `getAppVersionById` (with branchId) or overlay manually.
+   */
   async getAppVersionByIdOrName(versionId: string, appId?: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let version;
@@ -328,7 +378,7 @@ export class VersionRepository extends Repository<AppVersion> {
           where: { name: versionId, appId: appId },
           relations: ['app'],
         });
-      } catch (error) {
+      } catch {
         version = await manager.findOneOrFail(AppVersion, {
           where: { id: versionId },
           relations: ['app'],

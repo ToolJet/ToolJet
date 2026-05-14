@@ -2,30 +2,36 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
  * Adds an instance-wide partial unique index on app_versions.slug for
- * default-branch DRAFT rows:
+ * default-branch DRAFT rows, scoped by app type:
  *
- *   UNIQUE (slug) WHERE status = 'DRAFT' AND branch_id IS NOT NULL
- *                       AND version_type = 'version'
+ *   UNIQUE (slug, type) WHERE status = 'DRAFT' AND branch_id IS NOT NULL
+ *                             AND version_type = 'version'
  *
  * Rationale: slug-only lookups (no branch context) fall back to the workspace's
  * default branch via AppsRepository.findAppBySlug / findBySlug. Default-branch
  * editor rows are version_type='version' + branch_id IS NOT NULL + status=DRAFT.
  * Making the slug globally unique among those rows guarantees the fallback
- * resolves to exactly one row, regardless of which workspace owns it.
+ * resolves to exactly one row.
+ *
+ * `type` is included so apps and modules can share slugs (they're different
+ * product surfaces with separate dashboards). The `type` column is denormalized
+ * from apps.type by AddMetadataColumnsToAppVersions1778000000000 and kept in
+ * sync by the trigger added in that migration.
  *
  * Sub-branch DRAFT rows (version_type='branch') keep their per-branch uniqueness
- * via the existing app_versions_slug_branch_id_unique index. Tags / releases
- * (status PUBLISHED/RELEASED) are intentionally excluded — historical snapshots
- * can carry duplicated slugs.
+ * via the existing app_versions_slug_branch_id_unique index (also type-scoped).
+ * Tags / releases (status PUBLISHED/RELEASED) are intentionally excluded —
+ * historical snapshots can carry duplicated slugs.
  *
  * Before creating the index, dedupe any pre-existing rows that would violate it
  * (same algorithm as Step 4a in AddMetadataColumnsToAppVersions1778000000000,
- * but partitioning by slug alone instead of (slug, branch_id)).
+ * but partitioning by (slug, type) for the default-branch scope).
  */
 export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Step 1: Dedupe slug globally among default-branch DRAFT rows.
-    // Keep the oldest row's slug; rename later duplicates with _N suffixes.
+    // Step 1: Dedupe (slug, type) globally among default-branch DRAFT rows.
+    // Keep the oldest row's slug; rename later duplicates with _N suffixes within
+    // the same type bucket so app and module slug spaces are independent.
     await queryRunner.query(`
       DO $$
       DECLARE
@@ -34,11 +40,11 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
         suffix INT;
       BEGIN
         FOR rec IN
-          SELECT id, slug
+          SELECT id, slug, type
           FROM (
-            SELECT id, slug,
+            SELECT id, slug, type,
                    ROW_NUMBER() OVER (
-                     PARTITION BY slug
+                     PARTITION BY slug, type
                      ORDER BY created_at ASC, id ASC
                    ) AS rn
             FROM app_versions
@@ -58,6 +64,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
                 AND branch_id IS NOT NULL
                 AND version_type = 'version'
                 AND slug = new_value
+                AND type IS NOT DISTINCT FROM rec.type
             );
             suffix := suffix + 1;
           END LOOP;
@@ -69,7 +76,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
     // Step 2: Create the instance-wide partial unique index — duplicates resolved above.
     await queryRunner.query(`
       CREATE UNIQUE INDEX "app_versions_slug_default_branch_unique"
-      ON app_versions (slug)
+      ON app_versions (slug, type)
       WHERE status = 'DRAFT'
         AND branch_id IS NOT NULL
         AND version_type = 'version'
