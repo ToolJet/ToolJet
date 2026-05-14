@@ -245,3 +245,134 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 | Method | API Endpoint | Description |
 |--------|--------------|--------------|
 | PUT | `/data_attributes/{data_attribute_id}` | Update a data attribute |
+
+**SUMMARIES**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/events/summaries` | Create event summaries |
+
+**CONTENT**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/export/content/data` | Create content data export |
+| GET | `/export/content/data/{job_identifier}` | Show content data export |
+| GET | `/download/content/data/{job_identifier}` | Download content data export |
+
+**CANCEL**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/export/cancel/{job_identifier}` | Cancel content data export |
+
+**STATUS**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/jobs/status/{job_id}` | Retrieve job status |
+
+
+**NEWS_ITEMS**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/news/news_items` | List all news items |
+| POST | `/news/news_items` | Create a news item |
+| GET | `/news/news_items/{news_item_id}` | Retrieve news item |
+| PUT | `/news/news_items/{news_item_id}` | Update a news item |
+| DELETE | `/news/news_items/{news_item_id}` | Delete a news item |
+
+**NEWSFEEDS**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/news/newsfeeds/{newsfeed_id}/items` | List all live newsfeed items |
+| GET | `/news/newsfeeds` | List all newsfeeds |
+| GET | `/news/newsfeeds/{newsfeed_id}` | Retrieve a newsfeed |
+
+**NOTE_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/notes/{note_id}` | Retrieve a note |
+
+**SEGMENT_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/segments/{segment_id}` | Retrieve a segment |
+
+**CALL_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/calls/{call_id}` | Get a call |
+| GET | `/calls/{call_id}/recording` | Get call recording by call ID |
+| GET | `/calls/{call_id}/transcript` | Get call transcript by call ID |
+
+**TAG_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/tags/{tag_id}` | Find a specific tag |
+| DELETE | `/tags/{tag_id}` | Delete tag |
+
+**TEAM_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/teams/{team_id}` | Retrieve a team |
+
+**TICKET_TYPE_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/ticket_types/{ticket_type_id}/attributes` | Create an attribute for a ticket type |
+| PUT | `/ticket_types/{ticket_type_id}/attributes/{attribute_id}` | Update an existing attribute for a ticket type |
+| GET | `/ticket_types/{ticket_type_id}` | Retrieve a ticket type |
+| PUT | `/ticket_types/{ticket_type_id}` | Update a ticket type |
+
+**TICKET_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/tickets/{ticket_id}/reply` | Reply to a ticket |
+| POST | `/tickets/{ticket_id}/tags` | Add tag to a ticket |
+| DELETE | `/tickets/{ticket_id}/tags/{tag_id}` | Remove tag from a ticket |
+| PUT | `/tickets/{ticket_id}` | Update a ticket |
+| GET | `/tickets/{ticket_id}` | Retrieve a ticket |
+| DELETE | `/tickets/{ticket_id}` | Delete a ticket |
+
+**ENQUEUE**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/tickets/enqueue` | Enqueue create ticket |
+
+**CONVERT**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/visitors/convert` | Convert a visitor |
+
+**ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/brands/{id}` | Retrieve a brand |
+| GET | `/emails/{id}` | Retrieve an email setting |
+
+**REGISTER**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| POST | `/fin_voice/register` | Register a Fin Voice call |
+
+**COLLECT**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/fin_voice/collect/{id}` | Collect Fin Voice call by ID |
+
+**EXTERNAL_ID**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/fin_voice/external_id/{external_id}` | Collect Fin Voice call by external ID |
+
+**PHONE_NUMBER**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/fin_voice/phone_number/{phone_number}` | Collect Fin Voice call by phone number |
+
+**CONVERSATION**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/fin_voice/conversation/{conversation_id}` | Collect Fin Voice calls by conversation ID |
+
+**WORKFLOWS**
+| Method | API Endpoint | Description |
+|--------|--------------|--------------|
+| GET | `/export/workflows/{id}` | Export a workflow |
