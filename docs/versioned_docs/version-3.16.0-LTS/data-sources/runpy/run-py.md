@@ -86,7 +86,7 @@ value
 await queries.getTodos.run()
 #replace getTodos with your query name
 
-value = queries.getTodos.getLoadingState()
+value = queries.getTodos.getloadingState()
 #replace getTodos with your query name
 
 value
