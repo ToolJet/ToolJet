@@ -59,7 +59,7 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
 
 @-moz-document url-prefix() {
   div[data-radix-popper-content-wrapper] {
-    z-index: 100 !important;
+    // z-index: 100 !important;
     // left: 1px !important;
   }
 }
