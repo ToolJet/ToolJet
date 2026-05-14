@@ -295,10 +295,60 @@ export default class OracledbQueryService implements QueryService {
       return await this._fetchColumns(sourceOptions, table);
     }
 
+    if (methodName === 'getTables') {
+      const isPaginated = !!args?.limit;
+      const result = await this.listTables(sourceOptions, args?.dataSourceId || '', args?.dataSourceUpdatedAt || '', {
+        search: args?.search,
+        page: args?.page,
+        limit: args?.limit,
+      });
+
+      const payload = (result as any)?.data ?? [];
+
+      if (isPaginated) {
+        const rows       = (payload as any)?.rows ?? [];
+        const totalCount = (payload as any)?.totalCount ?? 0;
+        return {
+          items:      rows.map((r: any) => ({ label: String(r.value), value: String(r.value) })),
+          totalCount,
+        };
+      }
+
+      const rows = Array.isArray(payload) ? payload : [];
+      return { status: 'ok', data: rows };
+    }
+
     throw new Error(`Method '${methodName}' is not supported by the OracleDB plugin`);
   }
 
   // ─── Meta queries ─────────────────────────────────────────────────────────────
+
+  // ─── Public method (mirrors PostgreSQL's listTables) ─────────────────────────
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    queryOptions?: { search?: string; page?: number; limit?: number }
+  ): Promise<QueryResult> {
+    const result = await this._fetchTables(
+      sourceOptions,
+      queryOptions?.search || '',
+      queryOptions?.page,
+      queryOptions?.limit,
+    );
+
+    if (queryOptions?.limit) {
+      // paginated — result is { items, totalCount }
+      const { items, totalCount } = result as { items: any[]; totalCount: number };
+      return {
+        status: 'ok',
+        data: { rows: items, totalCount },
+      };
+    }
+
+    return { status: 'ok', data: result };
+  }
 
   private async _fetchTables(
     sourceOptions: SourceOptions,
