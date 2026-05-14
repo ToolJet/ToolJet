@@ -347,5 +347,21 @@
     "id": "couchbase",
     "author": "Tooljet",
     "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT"
+  },
+  {
+    "name": "QuickBooks",
+    "description": "Integrate with QuickBooks Online Accounting API",
+    "version": "1.0.0",
+    "id": "quickbooks",
+    "author": "Tooljet",
+    "timestamp": "Wed, 09 Apr 2026 09:30:00 GMT"
+  },
+  {
+    "name": "Intercom",
+    "description": "Connect to Intercom API to manage contacts, conversations, tickets, companies, articles, and more",
+    "version": "1.0.0",
+    "id": "intercom",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Apr 2026 10:00:00 GMT"
   }
 ]

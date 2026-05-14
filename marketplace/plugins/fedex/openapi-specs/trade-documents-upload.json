@@ -1,0 +1,2669 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Trade Documents Upload API",
+		"version": "1.0.2"
+	},
+	"servers": [
+		{
+			"url": "",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/documents/v1/etds/upload": {
+			"post": {
+				"summary": "Upload Document",
+				"description": "Use this endpoint to upload the trade documents electronically before (pre-shipment) and after (post-shipment) the shipment is created.<br><i>Note&#58; FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Upload ETD files",
+				"parameters": [
+					{
+						"name": "Content-Type",
+						"in": "header",
+						"description": "Indicates the type of content <br> Example: \"multipart/form-data\"",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"default": "multipart/form-data"
+						}
+					},
+					{
+						"name": "Authorization",
+						"in": "header",
+						"description": "Indicates the JWE token to be used for authorizing the client request. <br> Example: \"Bearer ****\"",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"default": "Bearer ****"
+						}
+					},
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "This is the customer transaction identifier.<br>Example: 771407-1",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "771407-1"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"$ref": "#/components/schemas/etds_upload_body"
+							},
+							"examples": {
+								"Full-Schema": {
+									"value": "document: {\"workflowName\":\"ETDPreshipment\",\"carrierCode\":\"FDXE\",\"name\":\"file.txt\",\"contentType\":\"text/plain\",\"meta\":{\"shipDocumentType\":\"COMMERCIAL_INVOICE\",\"formCode\":\"USMCA\",\"trackingNumber\":\"794791292805\",\"shipmentDate\":\"2021-02-17T00:00:00\",\"originLocationCode\":\"GVTKK\",\"originCountryCode\":\"US\",\"destinationLocationCode\":\"DEL\",\"destinationCountryCode\":\"IN\"}}\nattachment: file.txt"
+								},
+								"MinimumSamplePayload--PreShipment": {
+									"value": "document: {\"workflowName\":\"ETDPreshipment\",\"name\":\"file.txt\",\"contentType\":\"text/plain\",\"meta\":{\"shipDocumentType\":\"COMMERCIAL_INVOICE\",\"originCountryCode\":\"US\",\"destinationCountryCode\":\"IN\"}}\nattachment: file.txt"
+								},
+								"MinimumSamplePayload--PostShipment": {
+									"value": "document: {\"workflowName\":\"ETDPostshipment\",\"carrierCode\":\"FDXE\",\"name\":\"file.txt\",\"contentType\":\"text/plain\",\"meta\":{\"shipDocumentType\":\"COMMERCIAL_INVOICE\",\"formCode\":\"USMCA\",\"trackingNumber\":\"794791292805\",\"shipmentDate\":\"2021-02-17T00:00:00\",\"originCountryCode\":\"US\",\"destinationCountryCode\":\"IN\"}}\nattachment: file.txt"
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DocumentResponseOutputVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "1001",
+											"message": "Invalid request: invalid input : Invalid document details"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "AUTHENTICATION.TOKEN.INVALID",
+											"message": "Invalid token passed in the request"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"servers": [
+					{
+						"url": "https://documentapitest.prod.fedex.com/sandbox",
+						"description": "EDU Sandbox Server"
+					},
+					{
+						"url": "https://documentapi.prod.fedex.com",
+						"description": "EDU Production Server"
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-base.test.cloud.fedex.com/oauth/token\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\nrequest.AddHeader(\"Content-Type\", \"multipart/form-data\");\nrequest.AddHeader(\"Authorization\", \"Bearer XXXXXX\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"undefined\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n    .post(body)\n    .addHeader(\"x-customer-transaction-id\", \"12XXXXXX\")\n    .addHeader(\"Content-Type\", \"multipart/form-data\")\n    .addHeader(\"Authorization\", \"Bearer XXXXXX\")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-base.test.cloud.fedex.com/oauth/token\");\n  xhr.setRequestHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\n  xhr.setRequestHeader(\"Content-Type\", \"multipart/form-data\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer XXXXXX\");\n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-base.test.cloud.fedex.com/oauth/token');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'x-customer-transaction-id' => '12XXXXXX'\n  'Content-Type' => 'multipart/form-data',\n  'Authorization' => 'Bearer XXXXXX'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-base.test.cloud.fedex.com/oauth/token\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'x-customer-transaction-id': \"12XXXXXX\"\n    'Content-Type': \"multipart/form-data\",\n    'Authorization': \"Bearer XXXXXX\"\n    }\n\nresponse = requests.request(\"POST\", url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"x-customer-transaction-id\", \"12XXXXXX\");\n    headers.insert(\"Content-Type\", \"multipart/form-data\");\n    headers.insert(\"Authorization\", \"Bearer XXXXXX\");\n   \n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"x-customer-transaction-id\": \"12XXXXXX\"\n  \"Content-Type\": \"multipart/form-data\",\n  \"Authorization\": \"Bearer XXXXXX\"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-base.test.cloud.fedex.com/oauth/token\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()\n  "
+					}
+				]
+			}
+		},
+		"/documents/v1/lhsimages/upload": {
+			"post": {
+				"summary": "Upload Images",
+				"description": "Use this endpoint to upload customized Company Letterhead/Logo and Digital signature images which can be used in the FedEx generated paperwork or reports.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.<i>",
+				"operationId": "Image Upload Service Info",
+				"parameters": [
+					{
+						"name": "Authorization",
+						"in": "header",
+						"description": "Specifies the authorization token.<br> Example: Bearer XXX",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					},
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "Identifies the transaction ID of the request.<br> Example: \"771407-1\"",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "771407-1"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"$ref": "#/components/schemas/FullSchema-ImageUploadServiceInputVO"
+							},
+							"examples": {
+								"Full-Schema": {
+									"value": "document: {\"document\": {\"referenceId\": \"1234\", \"name\": \"LH2.PNG\",    \"contentType\": \"image/png\",    \"meta\": { \"imageType\": \"SIGNATURE\",\"imageIndex\": \"IMAGE_1\"}},\"rules\": {\"workflowName\": \"LetterheadSignature\" }}\nattachment: file.PNG"
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ImageUploadServiceOutputVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "1002",
+											"message": "Invalid request: no file information."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403_1"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"error": "NOT.FOUND.ERROR",
+									"error_detail": "The resource you requested is no longer available. Please modify your request and try again."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE",
+											"message": null
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"servers": [
+					{
+						"url": "https://documentapitest.prod.fedex.com/sandbox",
+						"description": "EDU Sandbox Server"
+					},
+					{
+						"url": "https://documentapi.prod.fedex.com",
+						"description": "EDU Production Server"
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-base.test.cloud.fedex.com/oauth/token\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\nrequest.AddHeader(\"Authorization\", \"Bearer XXXXX\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"undefined\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n    .post(body)\n    .addHeader(\"x-customer-transaction-id\", \"12XXXXXX\")\n    .addHeader(\"Authorization\", \"Bearer XXXXX\");\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-base.test.cloud.fedex.com/oauth/token\");\n  xhr.setRequestHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer XXXXX\");\n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-base.test.cloud.fedex.com/oauth/token');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n   'x-customer-transaction-id' => '12XXXXXX',\n   'Authorization' => 'Bearer XXXXX'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-base.test.cloud.fedex.com/oauth/token\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'x-customer-transaction-id': \"12XXXXXX\",\n    'Authorization': \"Bearer XXXXX\"\n    }\n\nresponse = requests.request(\"POST\", url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"x-customer-transaction-id\", \"12XXXXXX\");\n    headers.insert(\"Authorization\", \"Bearer XXXXX\");\n   \n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n   \"x-customer-transaction-id\": \"12XXXXXX\",\n   \"Authorization\": \"Bearer XXXXX\"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-base.test.cloud.fedex.com/oauth/token\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/documents/v1/etds/multiupload": {
+			"post": {
+				"summary": "Upload Multiple Documents",
+				"description": "Use this endpoint to upload multiple trade documents electronically before (pre-shipment) and after (post-shipment) the shipment is created",
+				"operationId": "UploadMultiETDfiles",
+				"parameters": [
+					{
+						"name": "Content-Type",
+						"in": "header",
+						"description": "Type of content",
+						"required": true,
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "multipart/form-data",
+							"default": "multipart/form-data"
+						}
+					},
+					{
+						"name": "Authorization",
+						"in": "header",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXXXXX",
+							"default": "Bearer XXXXXX"
+						}
+					},
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply",
+						"required": false,
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					}
+				],
+				"servers": [
+					{
+						"url": "https://documentapitest.prod.fedex.com/sandbox",
+						"description": "EDU Sandbox Server"
+					},
+					{
+						"url": "https://documentapi.prod.fedex.com",
+						"description": "EDU Production Server"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"$ref": "#/components/schemas/etds_multiupload_body"
+							},
+							"examples": {
+								"FullSchema-MultiDocumentRequest": {
+									"value": "documentInformation: {\"workflowName\": \"ETDPreshipment\",\"carrierCode\": \"FDXE\",\"originCountryCode\": \"US\",\"destinationCountryCode\": \"CA\",\"shipmentDate\": \"2021-10-21T00:00:00\",\"trackingNumber\": \"782514212510\",\"metaData\": [{\"fileName\":\"file1.png\",\"fileReferenceId\":\"inv_file1_ctx_02132021_5\",\"contentType\": \"image/png\",\"formCode\": \"USMCA\",\"shipDocumentType\":\"COMMERCIAL_INVOICE\"},{\"fileName\":\"file2.txt\", \"fileReferenceId\":\"PI_2\", \"contentType\":\"text/plain\", \"formCode\": \"USMCA\", \"shipDocumentType\":\"PRO_FORMA_INVOICE\"},{\"fileName\":\"file3.txt\", \"fileReferenceId\":\"PI_2\", \"contentType\":\"text/plain\", \"formCode\": \"USMCA\", \"shipDocumentType\":\"PRO_FORMA_INVOICE\"},{\"fileName\":\"file4.txt\", \"fileReferenceId\":\"PI_2\", \"contentType\":\"text/plain\", \"formCode\": \"USMCA\", \"shipDocumentType\":\"PRO_FORMA_INVOICE\"},{\"file5.txt\", \"fileReferenceId\":\"PI_2\", \"contentType\":\"text/plain\", \"formCode\": \"USMCA\", \"shipDocumentType\":\"PRO_FORMA_INVOICE\"}]\nfileAttachments: 'file1.png'\nfileAttachments: 'file2.txt'\nfileAttachments: 'file3.txt'\nfileAttachments: 'file4.txt'\nfileAttachments: 'file5.txt'"
+								},
+								"MinimumSamplePayload-MultiPreShipment": {
+									"value": "documentInformation: {\"workflowName\": \"ETDPreshipment\",\"carrierCode\": \"FDXE\",\"originCountryCode\": \"US\",\"destinationCountryCode\": \"CA\",\"shipmentDate\": \"2023-05-21T00:00:00\",\"trackingNumber\": \"782514212510\",\"metaData\": [{\"fileName\":\"file1.png\",\"fileReferenceId\":\"inv_file1_ctx_02132021_5\",\"contentType\": \"image/png\",\"formCode\": \"USMCA\",\"shipDocumentType\":\"COMMERCIAL_INVOICE\"}]\nfileAttachments: 'file.png'"
+								},
+								"MinimumSamplePayload-MultiPostShipment": {
+									"value": "documentInformation: {\"workflowName\": \"ETDPostshipment\",\"carrierCode\": \"FDXE\",\"originCountryCode\": \"US\",\"destinationCountryCode\": \"CA\",\"shipmentDate\": \"2023-10-21T00:00:00\",\"trackingNumber\": \"782514212510\",\"metaData\": [{\"fileName\":\"file1.png\",\"fileReferenceId\":\"inv_file1_ctx_02132021_5\",\"contentType\": \"image/png\",\"formCode\": \"USMCA\",\"shipDocumentType\":\"COMMERCIAL_INVOICE\"}]\nfileAttachments: 'file.png'"
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MultiBasePreResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_1"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"output": {
+										"documentResponses": {
+											"alerts": [
+												{
+													"code": "1024",
+													"message": "ETD shipment validation failure : Invalid destination country code"
+												}
+											]
+										}
+									},
+									"errors": [
+										{
+											"code": "1001",
+											"message": "Invalid request: invalid input : Could not upload files. Check the alerts or errors in documentResponses"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401_1"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "AUTHENTICATION.TOKEN.INVALID",
+											"message": "Invalid token passed in the request"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403_2"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404_1"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "INTERNAL.SERVER.ERROR",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500_1"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503_1"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-base.test.cloud.fedex.com/oauth/token\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\nrequest.AddHeader(\"Content-Type\", \"multipart/form-data\");\nrequest.AddHeader(\"Authorization\", \"Bearer XXXXXX\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"undefined\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n    .post(body)\n    .addHeader(\"x-customer-transaction-id\", \"12XXXXXX\")\n    .addHeader(\"Content-Type\", \"multipart/form-data\")\n    .addHeader(\"Authorization\", \"Bearer XXXXXX\")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-base.test.cloud.fedex.com/oauth/token\");\n  xhr.setRequestHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\n  xhr.setRequestHeader(\"Content-Type\", \"multipart/form-data\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer XXXXXX\");\n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-base.test.cloud.fedex.com/oauth/token');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'x-customer-transaction-id' => '12XXXXXX'\n  'Content-Type' => 'multipart/form-data',\n  'Authorization' => 'Bearer XXXXXX'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-base.test.cloud.fedex.com/oauth/token\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'x-customer-transaction-id': \"12XXXXXX\"\n    'Content-Type': \"multipart/form-data\",\n    'Authorization': \"Bearer XXXXXX\"\n    }\n\nresponse = requests.request(\"POST\", url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"x-customer-transaction-id\", \"12XXXXXX\");\n    headers.insert(\"Content-Type\", \"multipart/form-data\");\n    headers.insert(\"Authorization\", \"Bearer XXXXXX\");\n   \n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"x-customer-transaction-id\": \"12XXXXXX\"\n  \"Content-Type\": \"multipart/form-data\",\n  \"Authorization\": \"Bearer XXXXXX\"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-base.test.cloud.fedex.com/oauth/token\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		},
+		"/documents/v1/etds/encodedmultiupload": {
+			"post": {
+				"summary": "Upload Multiple Encoded Documents",
+				"description": "Use this endpoint to upload multiple trade documents as base64 electronically before (pre-shipment) and after (post-shipment) the shipment is created",
+				"operationId": "UploadMultiEncodedETDfiles",
+				"parameters": [
+					{
+						"name": "Content-Type",
+						"in": "header",
+						"description": "Type of content",
+						"required": true,
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "application/json",
+							"default": "application/json"
+						}
+					},
+					{
+						"name": "Authorization",
+						"in": "header",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXXXXX",
+							"default": "Bearer XXXXXX"
+						}
+					},
+					{
+						"name": "x-customer-transaction-id",
+						"in": "header",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply",
+						"required": false,
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					}
+				],
+				"servers": [
+					{
+						"url": "https://documentapitest.prod.fedex.com/sandbox",
+						"description": "EDU Sandbox Server"
+					},
+					{
+						"url": "https://documentapi.prod.fedex.com",
+						"description": "EDU Production Server"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/etds_base64multiupload_body"
+							},
+							"examples": {
+								"FullSchema-Base64MultiDocumentRequest": {
+									"value": {
+										"workflowName": "ETDPreshipment",
+										"carrierCode": "FDXE",
+										"originCountryCode": "US",
+										"destinationCountryCode": "CA",
+										"shipmentDate": "2024-01-06T00:00:00",
+										"trackingNumber": "782514212510",
+										"metaData": [
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_1",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_2",
+												"contentType": "text/plain",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0aWZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_3",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_4",
+												"contentType": "text/plain",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0aWZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_5",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											}
+										]
+									}
+								},
+								"MinimumSamplePayload-Base64MultiPreShipment": {
+									"value": {
+										"workflowName": "ETDPreshipment",
+										"carrierCode": "FDXE",
+										"originCountryCode": "US",
+										"destinationCountryCode": "CA",
+										"shipmentDate": "2024-01-06T00:00:00",
+										"trackingNumber": "782514212510",
+										"metaData": [
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_1",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_2",
+												"contentType": "text/plain",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0aWZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_3",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_4",
+												"contentType": "text/plain",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0aWZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_5",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											}
+										]
+									}
+								},
+								"MinimumSamplePayload-Base64MultiPostShipment": {
+									"value": {
+										"workflowName": "ETDPostshipment",
+										"carrierCode": "FDXE",
+										"originCountryCode": "US",
+										"destinationCountryCode": "CA",
+										"shipmentDate": "2024-01-06T00:00:00",
+										"trackingNumber": "782514212510",
+										"metaData": [
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_1",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_2",
+												"contentType": "text/plain",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0aWZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_3",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_4",
+												"contentType": "text/plain",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0aWZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+											},
+											{
+												"fileReferenceId": "inv_file1_ctx_02132021_5",
+												"contentType": "image/png",
+												"shipDocumentType": "ETD_LABEL",
+												"formCode": "USMCA",
+												"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP8kJAAkJFUkJKokJP8kSQAkSVUkSaokSf8kbQAkbVUkbaokbf8kkgAkklUkkqokkv8ktgAktlUktqoktv8k2wAk21Uk26ok2/8k/wAk/1Uk/6ok//9JAABJAFVJAKpJAP9JJABJJFVJJKpJJP9JSQBJSVVJSapJSf9JbQBJbVVJbapJbf9JkgBJklVJkqpJkv9JtgBJtlVJtqpJtv9J2wBJ21VJ26pJ2/9J/wBJ/1VJ/6pJ//9tAABtAFVtAKptAP9tJABtJFVtJKptJP9tSQBtSVVtSaptSf9tbQBtbVVtbaptbf9tkgBtklVtkqptkv9ttgBttlVttqpttv9t2wBt21Vt26pt2/9t/wBt/1Vt/6pt//+SAACSAFWSAKqSAP+SJACSJFWSJKqSJP+SSQCSSVWSSaqSSf+SbQCSbVWSbaqSbf+SkgCSklWSkqqSkv+StgCStlWStqqStv+S2wCS21WS26qS2/+S/wCS/1WS/6qS//+2AAC2AFW2AKq2AP+2JAC2JFW2JKq2JP+2SQC2SVW2Saq2Sf+2bQC2bVW2baq2bf+2kgC2klW2kqq2kv+2tgC2tlW2tqq2tv+22wC221W226q22/+2/wC2/1W2/6q2///bAADbAFXbAKrbAP/bJADbJFXbJKrbJP/bSQDbSVXbSarbSf/bbQDbbVXbbarbbf/bkgDbklXbkqrbkv/btgDbtlXbtqrbtv/b2wDb21Xb26rb2//b/wDb/1Xb/6rb////AAD/AFX/AKr/AP//JAD/JFX/JKr/JP//SQD/SVX/Sar/Sf//bQD/bVX/bar/bf//kgD/klX/kqr/kv//tgD/tlX/tqr/tv//2wD/21X/26r/2////wD//1X//6r////qm24uAAAA1ElEQVR42h1PMW4CQQwc73mlFJGCQChFIp0Rh0RBGV5AFUXKC/KPfCFdqryEgoJ8IX0KEF64q0PPnow3jT2WxzNj+gAgAGfvvDdCQIHoSnGYcGDE2nH92DoRqTYJ2bTcsKgqhIi47VdgAWNmwFSFA1UAAT2sSFcnq8a3x/zkkJrhaHT3N+hD3aH7ZuabGHX7bsSMhxwTJLr3evf1e0nBVcwmqcTZuatKoJaB7dSHjTZdM0G1HBTWefly//q2EB7/BEvk5vmzeQaJ7/xKPImpzv8/s4grhAxHl0DsqGUAAAAASUVORK5CYII="
+											}
+										]
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MultiBasePreResponse_1"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO_2"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"output": {
+										"documentResponses": {
+											"alerts": [
+												{
+													"code": "1024",
+													"message": "ETD shipment validation failure : Invalid destination country code"
+												}
+											]
+										}
+									},
+									"errors": [
+										{
+											"code": "1001",
+											"message": "Invalid request: invalid input : Could not upload files. Check the alerts or errors in documentResponses"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401_2"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "AUTHENTICATION.TOKEN.INVALID",
+											"message": "Invalid token passed in the request"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403_3"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404_2"
+								},
+								"example": {
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "INTERNAL.SERVER.ERROR",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500_2"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503_2"
+								},
+								"example": {
+									"customerTransactionId": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+									"transactionId": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-base.test.cloud.fedex.com/oauth/token\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\nrequest.AddHeader(\"Content-Type\", \"multipart/form-data\");\nrequest.AddHeader(\"Authorization\", \"Bearer XXXXXX\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"undefined\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n    .post(body)\n    .addHeader(\"x-customer-transaction-id\", \"12XXXXXX\")\n    .addHeader(\"Content-Type\", \"multipart/form-data\")\n    .addHeader(\"Authorization\", \"Bearer XXXXXX\")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-base.test.cloud.fedex.com/oauth/token\");\n  xhr.setRequestHeader(\"x-customer-transaction-id\", \"12XXXXXX\");\n  xhr.setRequestHeader(\"Content-Type\", \"multipart/form-data\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer XXXXXX\");\n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-base.test.cloud.fedex.com/oauth/token');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'x-customer-transaction-id' => '12XXXXXX'\n  'Content-Type' => 'multipart/form-data',\n  'Authorization' => 'Bearer XXXXXX'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-base.test.cloud.fedex.com/oauth/token\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'x-customer-transaction-id': \"12XXXXXX\"\n    'Content-Type': \"multipart/form-data\",\n    'Authorization': \"Bearer XXXXXX\"\n    }\n\nresponse = requests.request(\"POST\", url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"x-customer-transaction-id\", \"12XXXXXX\");\n    headers.insert(\"Content-Type\", \"multipart/form-data\");\n    headers.insert(\"Authorization\", \"Bearer XXXXXX\");\n   \n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-base.test.cloud.fedex.com/oauth/token\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"x-customer-transaction-id\": \"12XXXXXX\"\n  \"Content-Type\": \"multipart/form-data\",\n  \"Authorization\": \"Bearer XXXXXX\"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-base.test.cloud.fedex.com/oauth/token\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"DocumentResponseOutputVO": {
+				"type": "object",
+				"properties": {
+					"output": {
+						"$ref": "#/components/schemas/DocumentUploadServiceOutputVO"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element has a unique identifier added in your request, helps you match the request to the reply. <br> Example:XXXX_XXX123XXXXX",
+						"example": "XXXX_XXX123XXXXX"
+					}
+				}
+			},
+			"DocumentUploadServiceOutputVO": {
+				"type": "object",
+				"properties": {
+					"meta": {
+						"$ref": "#/components/schemas/DocumentMetaOutput"
+					}
+				},
+				"description": "This is the output received for a document upload request."
+			},
+			"DocumentMetaOutput": {
+				"type": "object",
+				"properties": {
+					"documentType": {
+						"type": "string",
+						"description": "Indicates the type of document uploaded. <br><br> Example:CO<br>Following are the values returned depending on the document type<ul><li>CERTIFICATE_OF_ORIGIN – CO</li><li>COMMERCIAL_INVOICE –  CI</li><li>ETD_LABEL –  AWB</li><li>USMCA_CERTIFICATE_OF_ORIGIN –  CO</li><li>USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN –  CI</li><li>OTHER –  OTHER</li><li>PRO_FORMA_INVOICE –  PRO</li></ul>",
+						"example": "CO"
+					},
+					"docId": {
+						"type": "string",
+						"description": "This is the document id or the upload reference. Use this docId in your shipment, if you have uploaded the document prior to shipment request.<br>For MPS, this docId must be used for all the packages in the shipment.<br>Example: 090493e181586308<br><i>Note:</i><ul><li><i>For MPS post the shipment request, use the master shipment tracking number when uploading the documents. </i></li></ul>",
+						"example": "090493e181586308"
+					},
+					"folderId": {
+						"type": "array",
+						"description": "This is the reference server folder id, where the document is uploaded. ",
+						"example": [
+							"0b0493e1812f8921"
+						],
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"description": "This is the response indicating upload reference details."
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"description": "This is an error object detailing errors received in the reply.",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: 1001"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Invalid request: no file information.",
+						"example": "Invalid request: no file information."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "This is a parameter value. Example: PRIORITY_OVERNIGHT"
+					},
+					"key": {
+						"type": "string",
+						"description": "This is a parameter key."
+					}
+				},
+				"description": "These alert parameter details such as paramter with a key."
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: AUTHENTICATION.TOKEN.INVALID"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the message parameter list.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Invalid token passed in the request"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the message parameter list.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the message parameter list.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the message parameter list.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the message parameter list.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"FullSchema-DocumentUploadInputVO": {
+				"required": [
+					"attachment",
+					"document"
+				],
+				"type": "object",
+				"properties": {
+					"attachment": {
+						"type": "string",
+						"description": "Input the actual document/file to be uploaded.",
+						"format": "file"
+					},
+					"document": {
+						"$ref": "#/components/schemas/ETDUploadRequest"
+					}
+				},
+				"description": "The request elements to upload documents."
+			},
+			"ETDUploadRequest": {
+				"required": [
+					"contentType",
+					"meta",
+					"name",
+					"workflowName"
+				],
+				"type": "object",
+				"properties": {
+					"workflowName": {
+						"type": "string",
+						"description": "Indicate if this document is being uploaded for Pre-Shipment or Post-shipment.",
+						"example": "ETDPostShipment",
+						"enum": [
+							"ETDPreshipment",
+							"ETDPostshipment"
+						]
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements.<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li><li>FXSP - FedEx SmartPost</li><li>FXCC - FedEx Custom Critical.</li></ul>",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						]
+					},
+					"name": {
+						"type": "string",
+						"description": "Specify the file name of the document to be uploaded.<br><br>Example: COO.PDF",
+						"example": "file.txt"
+					},
+					"contentType": {
+						"type": "string",
+						"description": "Specify the file type or content type of the document to be uploaded.<br><a onclick='loadDocReference(\"contenttypes\")'> Click here for available Content Types</a>",
+						"example": "text/plain",
+						"enum": [
+							"application/pdf",
+							"application/x-soffice",
+							"application/doc",
+							"text/richtext",
+							"text/rtf",
+							"application/x-rtf",
+							"application/rtf",
+							"application/msword",
+							"text/plain",
+							"image/bmp",
+							"image/png",
+							"image/gif",
+							"image/jpeg",
+							"image/tiff",
+							"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+							"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+							"application/vnd.ms-excel"
+						]
+					},
+					"meta": {
+						"type": "object",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MetaObject"
+							}
+						]
+					}
+				},
+				"description": "Provide all the document details and shipment meta data."
+			},
+			"MetaObject": {
+				"required": [
+					"destinationCountryCode",
+					"originCountryCode",
+					"shipDocumentType"
+				],
+				"type": "object",
+				"properties": {
+					"shipDocumentType": {
+						"type": "string",
+						"description": "Provide the type of document to be uploaded. <br><br>For more information on the individual documents, visit Overview section of <b>Upload Documents</b> on this page.",
+						"example": "COMMERCIAL_INVOICE",
+						"enum": [
+							"CERTIFICATE_OF_ORIGIN",
+							"COMMERCIAL_INVOICE",
+							"ETD_LABEL",
+							"USMCA_CERTIFICATION_OF_ORIGIN",
+							"USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN",
+							"OTHER",
+							"PRO_FORMA_INVOICE"
+						]
+					},
+					"formCode": {
+						"type": "string",
+						"description": "Specify the form code. This value is required if US/CA/MX trade documents are to be uploaded.<br> Example: USMCA<br><br>Note: if <i>shipDocumentType</i> value provided is either USMCA_CERTIFICATION_OF_ORIGIN or USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN, then it is  REQUIRED to pass value as <i>USMCA</i>.",
+						"example": "USMCA"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "Specify the shipment tracking number. This is only required for Post Shipment document upload. <br><br> Example: 79XXX12XX805",
+						"example": "794791292805"
+					},
+					"shipmentDate": {
+						"type": "string",
+						"description": "Specify the Shipment date. This is only required for Post Shipment document upload. <br><br> Example: 2021-02-17T00:00:00",
+						"example": "2021-02-17T00:00:00"
+					},
+					"originLocationCode": {
+						"type": "string",
+						"description": "Provide origin FedEx location code for the shipment. <br><br> Example: GVTKK",
+						"example": "GVTKK"
+					},
+					"originCountryCode": {
+						"type": "string",
+						"description": "Provide origin country code for the shipment. <br><br> Example: US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"destinationLocationCode": {
+						"type": "string",
+						"description": "Provide destination FedEx location code for the shipment. <br><br> Example: JNUA",
+						"example": "JNUA"
+					},
+					"destinationCountryCode": {
+						"type": "string",
+						"description": "Provide destination country code for the shipment. <br><br> Example: CA <br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "CA"
+					}
+				},
+				"description": "Indicate the shipment metadata associated with the document to be uploaded."
+			},
+			"ImageUploadServiceOutputVO": {
+				"type": "object",
+				"properties": {
+					"output": {
+						"$ref": "#/components/schemas/ImageMetaOutputVO"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element has a unique identifier added in your request, helps you match the request to the reply. <br> Example:XXXX_XXX123XXXXX",
+						"example": "XXXX_XXX123XXXXX"
+					}
+				},
+				"description": "The response elements received when a image file is uploaded through EDU gateway of single pass."
+			},
+			"ImageMetaOutputVO": {
+				"type": "object",
+				"properties": {
+					"meta": {
+						"$ref": "#/components/schemas/ImageMetaOutputVO_meta"
+					},
+					"status": {
+						"type": "string",
+						"description": "Returns the high-level results for the document upload.<br>Valid values:<ul><li> SUCCESS</li><li>FAILURE</li><li>ERROR</li></ul>",
+						"example": "SUCCESS"
+					},
+					"documentReferenceId": {
+						"type": "string",
+						"description": "Returns the document reference ID associated with the request.",
+						"example": "1234"
+					}
+				}
+			},
+			"ErrorResponseVO403_1": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403_1"
+						}
+					}
+				}
+			},
+			"CXSError403_1": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_1"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter_1": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied. <br>Example: value",
+						"example": "value"
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key.<br> Example: key",
+						"example": "key"
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"FullSchema-ImageUploadServiceInputVO": {
+				"required": [
+					"attachment",
+					"document"
+				],
+				"type": "object",
+				"properties": {
+					"attachment": {
+						"type": "string",
+						"description": "Input the actual image file to be uploaded.",
+						"format": "file"
+					},
+					"document": {
+						"$ref": "#/components/schemas/Document"
+					}
+				},
+				"description": "The request elements to upload image files."
+			},
+			"Document": {
+				"required": [
+					"contentType",
+					"meta",
+					"name",
+					"referenceId",
+					"rules"
+				],
+				"type": "object",
+				"properties": {
+					"referenceId": {
+						"type": "string",
+						"description": "Specify reference ID for the image to be uploaded.<br><br> Example: SIGNA202103",
+						"example": "1234"
+					},
+					"name": {
+						"type": "string",
+						"description": "Specify file name to be uploaded.<br><br>Example: Signature.PNG",
+						"example": "FedExImages.PNG"
+					},
+					"contentType": {
+						"type": "string",
+						"description": "Specify the file type or image type of the to be uploaded.<br><br>Valid Values are: <ul><li>image/png</li><li>image/gif</li></ul>",
+						"example": "image/png"
+					},
+					"rules": {
+						"$ref": "#/components/schemas/Document_rules"
+					},
+					"meta": {
+						"$ref": "#/components/schemas/Document_meta"
+					}
+				},
+				"description": "Indicate the image reference metadata details."
+			},
+			"MultiBasePreResponse": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply Example:5678b975-ev0e-420b-8d7b-aa6ce65ec48n",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br> Example:624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"output": {
+						"$ref": "#/components/schemas/MultiBasePreResponse_output"
+					}
+				}
+			},
+			"MultiDocumentPreResponse": {
+				"type": "object",
+				"properties": {
+					"fileReferenceId": {
+						"type": "string",
+						"description": "Unique reference to the file",
+						"example": "CI_1"
+					},
+					"metaData": {
+						"type": "object",
+						"description": "Response to indicate status of upload completion. Data includes document related identifiers",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MultiMetaDataPreResponse"
+							}
+						]
+					}
+				},
+				"description": "This is the response indicating upload reference details."
+			},
+			"MultiMetaDataPreResponse": {
+				"type": "object",
+				"properties": {
+					"formCode": {
+						"type": "string",
+						"description": "Specify the form code. This value is required for the shipments travelling between the 3 countries US, CA & MX and when the shipment is USMCA eligible.",
+						"example": "USMCA"
+					},
+					"documentType": {
+						"type": "string",
+						"description": "Indicates the type of document uploaded. <br><br> Example:CO<br>Following are the values returned depending on the document type<ul><li>CERTIFICATE_OF_ORIGIN – CO</li><li>COMMERCIAL_INVOICE –  CI</li><li>ETD_LABEL –  AWB</li><li>USMCA_CERTIFICATE_OF_ORIGIN –  CO</li><li>USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN –  CI</li><li>OTHER –  OTHER</li><li>PRO_FORMA_INVOICE –  PRO</li></ul>",
+						"example": "CI"
+					},
+					"docId": {
+						"type": "string",
+						"description": "This is the document id or the upload reference. Note this and use this in your shipment if you have uploaded the document prior to shipment request.<br> Example: 090493e181586308",
+						"example": "D0l5gsn6inat9IiB"
+					},
+					"folderId": {
+						"type": "array",
+						"description": "This is the reference server folder id, where the document is uploaded. Note that, this data is returned only for Post-Shipment Upload scenario",
+						"items": {
+							"type": "string",
+							"example": "0b0493e1812f8921"
+						}
+					}
+				}
+			},
+			"ErrorResponseVO_1": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"description": "This is an error object detailing errors received in the reply.",
+						"items": {
+							"$ref": "#/components/schemas/errors"
+						}
+					}
+				}
+			},
+			"errors": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br  >Example: 1001",
+						"example": "1001"
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: Invalid request: invalid input : destinationCountryCode is Required",
+						"example": "Invalid request: invalid input :  destinationCountryCode is Required"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "These are parameter details such as paramter with a key.",
+						"items": {
+							"$ref": "#/components/schemas/errors_parameterList"
+						}
+					}
+				},
+				"description": "Indicates error when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"errors_parameterList": {
+				"type": "object",
+				"properties": {
+					"key": {
+						"type": "string",
+						"description": "This is a parameter key.",
+						"example": "FDXE"
+					},
+					"value": {
+						"type": "string",
+						"description": "This is a parameter value. Example: carrierCode",
+						"example": "carrierCode"
+					}
+				}
+			},
+			"ErrorResponseVO401_1": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401_1"
+						}
+					}
+				}
+			},
+			"CXSError401_1": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter_2": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied.",
+						"example": "1"
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key.",
+						"example": "DOC_INDEX"
+					}
+				}
+			},
+			"ErrorResponseVO403_2": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403_2"
+						}
+					}
+				}
+			},
+			"CXSError403_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404_1": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404_1"
+						}
+					}
+				}
+			},
+			"CXSError404_1": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500_1": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500_1"
+						}
+					}
+				}
+			},
+			"CXSError500_1": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503_1": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"etds_multiupload_body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema-MultiDocumentRequest"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-MultiPreShipment"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-MultiPostShipment"
+					}
+				]
+			},
+			"FullSchema-MultiDocumentRequest": {
+				"type": "object",
+				"properties": {
+					"documentInformation": {
+						"$ref": "#/components/schemas/MultiETDUploadRequest"
+					},
+					"fileAttachments": {
+						"maxItems": 5,
+						"type": "array",
+						"description": "Input the actual document/file to be uploaded.",
+						"items": {
+							"type": "string",
+							"format": "binary"
+						}
+					}
+				}
+			},
+			"MultiETDUploadRequest": {
+				"required": [
+					"carrierCode",
+					"destinationCountryCode",
+					"metaData",
+					"orginCountryCode",
+					"workflowName"
+				],
+				"type": "object",
+				"properties": {
+					"workflowName": {
+						"type": "string",
+						"description": "Indicate if this document is being uploaded for Pre-Shipment or Post-shipment process",
+						"example": "ETDPreshipment",
+						"enum": [
+							"ETDPreshipment",
+							"ETDPostshipment"
+						]
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li></ul>",
+						"example": "FDXE",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						]
+					},
+					"orginCountryCode": {
+						"type": "string",
+						"description": "Provide origin country code for the shipment",
+						"example": "US"
+					},
+					"destinationCountryCode": {
+						"type": "string",
+						"description": "Provide destination country code for the shipment",
+						"example": "CA"
+					},
+					"shipmentDate": {
+						"type": "string",
+						"description": "Specify the Shipment date. This is only required for Post Shipment document upload. This value is present in Create Shipment response & this should match the shipment date timestamp",
+						"example": "2023-06-17T00:00:00"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "Specify the shipment tracking number. This is only required for Post Shipment document upload",
+						"example": "782514212510"
+					},
+					"metaData": {
+						"maxItems": 5,
+						"type": "array",
+						"description": "Indicate the shipment metadata associated with the document to be uploaded",
+						"items": {
+							"$ref": "#/components/schemas/MultiMetaDataRequest"
+						}
+					}
+				},
+				"description": "Provide all the documents' details and shipment meta data"
+			},
+			"MultiMetaDataRequest": {
+				"required": [
+					"contentType",
+					"fileName",
+					"shipDocumentType"
+				],
+				"type": "object",
+				"properties": {
+					"fileName": {
+						"type": "string",
+						"description": "Specify the file name being uploaded.<br> Example: invoice_file1.txt",
+						"example": "invoice_file1.txt"
+					},
+					"fileReferenceId": {
+						"type": "string",
+						"description": "Specify the unique reference to the file. <br> Example : inv_file1_ctx_02132021_5",
+						"example": "CI_1"
+					},
+					"contentType": {
+						"type": "string",
+						"description": "Specify the file type or content type of the document to be uploaded",
+						"enum": [
+							"application/pdf",
+							"application/x-soffice",
+							"application/doc",
+							"text/richtext",
+							"text/rtf",
+							"application/x-rtf",
+							"application/rtf",
+							"application/msword",
+							"text/plain",
+							"image/bmp",
+							"image/png",
+							"image/gif",
+							"image/jpeg",
+							"image/tiff",
+							"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+							"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+							"application/vnd.ms-excel"
+						]
+					},
+					"formCode": {
+						"type": "string",
+						"description": "Specify the form code. This value is required for the shipments travelling between the 3 countries US, CA & MX and when the shipment is USMCA eligible. <br> Note: if shipDocumentType value provided is either USMCA_CERTIFICATION_OF_ORIGIN or USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN, then it is REQUIRED to pass value as USMCA",
+						"example": "USMCA"
+					},
+					"originLocationCode": {
+						"type": "string",
+						"description": "Provide origin FedEx location code for the shipment. This is only required for Post Shipment document upload. This value is present in Create Shipment response.",
+						"example": "BSLA"
+					},
+					"destinationLocationCode": {
+						"type": "string",
+						"description": "Provide destination FedEx location code for the shipment. This is only required for Post Shipment document upload. This value is present in Create Shipment response.",
+						"example": "SFOA"
+					},
+					"shipDocumentType": {
+						"type": "string",
+						"description": "Provide the type of document to be uploaded. <br><br>For more information on the individual documents, visit Overview section <b>Upload Documents</b> on this page.",
+						"example": "USMCA_CERTIFICATION_OF_ORIGIN",
+						"enum": [
+							"CERTIFICATE_OF_ORIGIN",
+							"COMMERCIAL_INVOICE",
+							"ETD_LABEL",
+							"OTHER",
+							"PRO_FORMA_INVOICE",
+							"USMCA_CERTIFICATION_OF_ORIGIN",
+							"USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN"
+						]
+					}
+				},
+				"description": "Elements used in document storage"
+			},
+			"MinimumSamplePayload-MultiPreShipment": {
+				"example": {
+					"workflowName": "ETDPreshipment",
+					"carrierCode": "FDXE",
+					"originCountryCode": "US",
+					"destinationCountryCode": "CA",
+					"metaData": [
+						{
+							"shipDocumentType": "ETD_LABEL"
+						}
+					]
+				}
+			},
+			"MinimumSamplePayload-MultiPostShipment": {
+				"example": {
+					"workflowName": "ETDPostshipment",
+					"carrierCode": "FDXE",
+					"originCountryCode": "US",
+					"destinationCountryCode": "CA",
+					"shipmentDate": "2021-11-20T00:00:00",
+					"trackingNumber": "794817895080",
+					"metaData": [
+						{
+							"shipDocumentType": "ETD_LABEL"
+						}
+					]
+				}
+			},
+			"MultiBasePreResponse_1": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"output": {
+						"$ref": "#/components/schemas/MultiBasePreResponse_1_output"
+					}
+				}
+			},
+			"ErrorResponseVO_2": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a"
+					},
+					"errors": {
+						"type": "array",
+						"description": "This is an error object detailing errors received in the reply.",
+						"items": {
+							"$ref": "#/components/schemas/errors"
+						}
+					}
+				}
+			},
+			"ErrorResponseVO401_2": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401_2"
+						}
+					}
+				}
+			},
+			"CXSError401_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403_3": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403_3"
+						}
+					}
+				}
+			},
+			"CXSError403_3": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404_2": {
+				"type": "object",
+				"properties": {
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404_2"
+						}
+					}
+				}
+			},
+			"CXSError404_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500_2": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500_2"
+						}
+					}
+				}
+			},
+			"CXSError500_2": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter_2"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503_2": {
+				"type": "object",
+				"properties": {
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"example": "5678b975-ev0e-420b-8d7b-aa6ce65ec48n"
+					},
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.",
+						"example": "407eb778-eb0e-420b-8d7b-aa6ce65ec38a"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"etds_base64multiupload_body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema-Base64MultiDocumentRequest"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-Base64MultiPreShipment"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-Base64MultiPostShipment"
+					}
+				]
+			},
+			"FullSchema-Base64MultiDocumentRequest": {
+				"required": [
+					"carrierCode",
+					"destinationCountryCode",
+					"metaData",
+					"orginCountryCode",
+					"workflowName"
+				],
+				"type": "object",
+				"properties": {
+					"workflowName": {
+						"type": "string",
+						"description": "Indicate if the documents are being uploaded before or after shipment creation process",
+						"example": "ETDPreshipment",
+						"enum": [
+							"ETDPreshipment",
+							"ETDPostshipment"
+						]
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li></ul>",
+						"example": "FDXEs",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						]
+					},
+					"orginCountryCode": {
+						"type": "string",
+						"description": "Origin country code for the shipment. <br><br> Example: US<br><a href=\"/developer-portal/en-us/reference-guide.html#countrycodes\" target=\"_blank\">Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"destinationCountryCode": {
+						"type": "string",
+						"description": "Destination country code for the shipment. <br><br> Example: CA",
+						"example": "CA"
+					},
+					"shipmentDate": {
+						"type": "string",
+						"description": "Specify the Shipment date. This is only required for Post Shipment document upload. This value is present in Create Shipment response & this should match the shipment date timestamp",
+						"example": "2023-06-17T00:00:00"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "Specifies the tracking number of the shipment. This is only required for Post Shipment documentation upload. <br> Example: 782514212510",
+						"example": "782514212510"
+					},
+					"metaData": {
+						"maxItems": 5,
+						"type": "array",
+						"description": "Indicate the shipment metadata associated with the document to be uploaded",
+						"items": {
+							"$ref": "#/components/schemas/MultiMetaDataRequest_1"
+						}
+					}
+				},
+				"description": "Provide all the documents' details and shipment meta data"
+			},
+			"MinimumSamplePayload-Base64MultiPreShipment": {
+				"example": {
+					"workflowName": "ETDPreshipment",
+					"carrierCode": "FDXE",
+					"originCountryCode": "US",
+					"destinationCountryCode": "CA",
+					"metaData": [
+						{
+							"shipDocumentType": "ETD_LABEL"
+						},
+						{
+							"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP"
+						},
+						{
+							"contentType": "image/png"
+						}
+					]
+				}
+			},
+			"MinimumSamplePayload-Base64MultiPostShipment": {
+				"example": {
+					"workflowName": "ETDPostshipment",
+					"carrierCode": "FDXE",
+					"originCountryCode": "US",
+					"destinationCountryCode": "CA",
+					"shipmentDate": "2021-11-20T00:00:00",
+					"trackingNumber": "794817895080",
+					"metaData": [
+						{
+							"shipDocumentType": "ETD_LABEL"
+						},
+						{
+							"fileContentBase64": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAOCAMAAAD+MweGAAADAFBMVEUAAAAAAFUAAKoAAP8AJAAAJFUAJKoAJP8ASQAASVUASaoASf8AbQAAbVUAbaoAbf8AkgAAklUAkqoAkv8AtgAAtlUAtqoAtv8A2wAA21UA26oA2/8A/wAA/1UA/6oA//8kAAAkAFUkAKokAP"
+						},
+						{
+							"contentType": "image/png"
+						}
+					]
+				}
+			},
+			"Base64MultiETDUploadRequest": {
+				"required": [
+					"carrierCode",
+					"destinationCountryCode",
+					"metaData",
+					"orginCountryCode",
+					"workflowName"
+				],
+				"type": "object",
+				"properties": {
+					"workflowName": {
+						"type": "string",
+						"description": "Indicate if the documents are being uploaded before or after shipment creation process",
+						"example": "ETDPreshipment",
+						"enum": [
+							"ETDPreshipment",
+							"ETDPostshipment"
+						]
+					},
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li></ul>",
+						"example": "FDXEs",
+						"enum": [
+							"FDXE",
+							"FDXG"
+						]
+					},
+					"orginCountryCode": {
+						"type": "string",
+						"description": "Origin country code for the shipment. <br><br> Example: US<br><a href=\"/developer-portal/en-us/reference-guide.html#countrycodes\" target=\"_blank\">Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"destinationCountryCode": {
+						"type": "string",
+						"description": "Destination country code for the shipment. <br><br> Example: CA",
+						"example": "CA"
+					},
+					"shipmentDate": {
+						"type": "string",
+						"description": "Specify the Shipment date. This is only required for Post Shipment document upload. This value is present in Create Shipment response & this should match the shipment date timestamp",
+						"example": "2023-06-17T00:00:00"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "Specifies the tracking number of the shipment. This is only required for Post Shipment documentation upload. <br> Example: 782514212510",
+						"example": "782514212510"
+					},
+					"metaData": {
+						"maxItems": 5,
+						"type": "array",
+						"description": "Indicate the shipment metadata associated with the document to be uploaded",
+						"items": {
+							"$ref": "#/components/schemas/MultiMetaDataRequest_1"
+						}
+					}
+				},
+				"description": "Provide all the documents' details and shipment meta data"
+			},
+			"MultiMetaDataRequest_1": {
+				"required": [
+					"contentType",
+					"fileContentBase64",
+					"shipDocumentType"
+				],
+				"type": "object",
+				"properties": {
+					"fileReferenceId": {
+						"type": "string",
+						"description": "Specify the unique reference bytecode to the file. <br> Example : inv_file1_ctx_02132021_5",
+						"example": "CI_1"
+					},
+					"contentType": {
+						"type": "string",
+						"description": "Specify media type(MIME) of file. <br> Example : text/plain <br><a onclick='loadDocReference(\"contenttypes\")'> Click here for available Content Types</a>",
+						"example": "text/plain"
+					},
+					"formCode": {
+						"type": "string",
+						"description": "Specify the form code. This value is required for the shipments travelling between the 3 countries US, CA & MX and when the shipment is USMCA eligible. <br> Note: if shipDocumentType value provided is either USMCA_CERTIFICATION_OF_ORIGIN or USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN, then it is REQUIRED to pass value as USMCA",
+						"example": "USMCA"
+					},
+					"originLocationCode": {
+						"type": "string",
+						"description": "Provide origin FedEx location code for the shipment. This is only required for Post Shipment document upload. This value is present in Create Shipment response.",
+						"example": "BSLA"
+					},
+					"destinationLocationCode": {
+						"type": "string",
+						"description": "Provide destination FedEx location code for the shipment. This is only required for Post Shipment document upload. This value is present in Create Shipment response.",
+						"example": "SFOA"
+					},
+					"shipDocumentType": {
+						"type": "string",
+						"description": "Provide the type of document to be uploaded. <br><br>For more information on the individual documents, visit Overview section <b>Upload Documents</b> on this page.",
+						"example": "USMCA_CERTIFICATION_OF_ORIGIN",
+						"enum": [
+							"CERTIFICATE_OF_ORIGIN",
+							"COMMERCIAL_INVOICE",
+							"ETD_LABEL",
+							"OTHER",
+							"PRO_FORMA_INVOICE",
+							"USMCA_CERTIFICATION_OF_ORIGIN",
+							"USMCA_COMMERCIAL_INVOICE_CERTIFICATION_OF_ORIGIN"
+						]
+					},
+					"fileContentBase64": {
+						"type": "string",
+						"description": "Provide the bycode content for base64 file upload",
+						"example": "dGVzdGluZyBmb3IgbXVsdGlmaWxlIHVwbG9hZCB0ZXN0LWExDQp0ZXN0aW5nIGZvciBtdWx0a        WZpbGUgdXBsb2FkIHRlc3QtYTENCkphbmFyZGhhbiBTaGluZ2FkZQ"
+					}
+				}
+			},
+			"etds_upload_body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema-DocumentUploadInputVO"
+					}
+				]
+			},
+			"ImageMetaOutputVO_meta": {
+				"type": "object",
+				"properties": {
+					"imageType": {
+						"type": "string",
+						"description": "Returns the path which is specified in the request. <br>Example: SIGNATURE",
+						"example": "SIGNATURE"
+					},
+					"imageIndex": {
+						"type": "string",
+						"description": "Returns the image index that is specified in the request.<br>            Example: IMAGE_1",
+						"example": "IMAGE_1"
+					}
+				},
+				"description": "This object specifies the meta data such as image type, path and index for the uploaded image file."
+			},
+			"Document_rules": {
+				"required": [
+					"workflowName"
+				],
+				"type": "object",
+				"properties": {
+					"workflowName": {
+						"type": "string",
+						"description": "Specify workflow name. To upload custom signature and letterhead images/company logo use value <i>LetterheadSignature</i>",
+						"example": "LetterheadSignature"
+					}
+				},
+				"description": "Specify the rules."
+			},
+			"Document_meta": {
+				"required": [
+					"imageIndex",
+					"imageType"
+				],
+				"type": "object",
+				"properties": {
+					"imageType": {
+						"type": "string",
+						"description": "Specify the type of image to be uploaded.<br><br>Valid Values are: <ul><li>SIGNATURE</li><li>LETTERHEAD</li></ul>",
+						"example": "SIGNATURE"
+					},
+					"imageIndex": {
+						"type": "string",
+						"description": "Specify the index for the uploaded image.<br><br>Valid Values are:<ul><li>IMAGE_1</li><li>IMAGE_2</li><li>IMAGE_3</li><li>IMAGE_4</li><li>IMAGE_5</li></ul>",
+						"example": "IMAGE_1"
+					}
+				},
+				"description": "Use this object to specify image meta data such as image type, path and index for the file to be uploaded."
+			},
+			"MultiBasePreResponse_output": {
+				"type": "object",
+				"properties": {
+					"documentResponses": {
+						"type": "array",
+						"example": [
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "PRO",
+									"docId": "kgr9lgjU3juqxyhf"
+								},
+								"fileReferenceId": "PI_2"
+							},
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "CI",
+									"docId": "CPK8nMAkD5Ngw0vK"
+								},
+								"fileReferenceId": "CI_1"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/MultiDocumentPreResponse"
+						}
+					}
+				}
+			},
+			"MultiBasePreResponse_1_output": {
+				"type": "object",
+				"properties": {
+					"documentResponses": {
+						"type": "array",
+						"example": [
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "AWB",
+									"docId": "bZjLPP5HlvIxachz"
+								},
+								"fileReferenceId": "inv_file1_ctx_02132021_1"
+							},
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "AWB",
+									"docId": "yMImwFHuxtVpkkCg"
+								},
+								"fileReferenceId": "inv_file1_ctx_02132021_2"
+							},
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "AWB",
+									"docId": "JviFICNTz1bv7ivr"
+								},
+								"fileReferenceId": "inv_file1_ctx_02132021_3"
+							},
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "AWB",
+									"docId": "rIVoRd4J9PqogpPq"
+								},
+								"fileReferenceId": "inv_file1_ctx_02132021_4"
+							},
+							{
+								"metaData": {
+									"formCode": "USMCA",
+									"documentType": "AWB",
+									"docId": "07LbbwUzi2z0XCwL"
+								},
+								"fileReferenceId": "inv_file1_ctx_02132021_5"
+							}
+						],
+						"items": {
+							"$ref": "#/components/schemas/MultiDocumentPreResponse"
+						}
+					}
+				}
+			}
+		}
+	}
+}
