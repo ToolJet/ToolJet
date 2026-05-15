@@ -168,7 +168,7 @@ export const createAppSlice = (set, get) => ({
     const isPagesSidebarHidden = getPagesSidebarVisibility(moduleId);
     const pageMenuHeight = position === 'top' && (!headerHidden || !logoHidden || !isPagesSidebarHidden) ? 60 : 0;
 
-    const bottomPadding = currentMode === 'view' ? 100 : 300;
+    const bottomPadding = currentMode === 'view' ? 40 : 300;
     const frameHeight =
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
     const canvasHeight = `max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`;
