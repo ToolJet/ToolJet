@@ -484,6 +484,7 @@ export class VersionsCreateService implements IVersionsCreateService {
           type: page.type,
           openIn: page.openIn,
           appId: page.appId,
+          targetCorelationId: page.targetCorelationId,
           url: page.url,
           pageGroupId: page.pageGroupId,
           pageGroupIndex: page.pageGroupIndex,
