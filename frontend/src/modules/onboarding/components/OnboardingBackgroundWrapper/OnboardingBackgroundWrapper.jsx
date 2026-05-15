@@ -1,7 +1,7 @@
 import React from 'react';
 import './resources/styles/background.styles.scss';
 import { defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
-import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
+import { useWhiteLabellingStore, useWhiteLabelBanner } from '@/_stores/whiteLabellingStore';
 import WhiteLabellingBackgroundWrapper from '@/modules/onboarding/components/WhiteLabellingBackgroundWrapper';
 const OnboardingBackgroundWrapper = ({
   LeftSideComponent,
@@ -11,10 +11,13 @@ const OnboardingBackgroundWrapper = ({
   leftSize = 5,
 }) => {
   const whiteLabelFavIcon = useWhiteLabellingStore((state) => state.whiteLabelFavicon);
+  const isDefaultWhiteLabel = useWhiteLabellingStore((state) => state.isDefaultWhiteLabel);
+  const whiteLabelBanner = useWhiteLabelBanner();
   const isWhiteLabelLogoApplied = whiteLabelFavIcon !== defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
+  const hasBanner = !isDefaultWhiteLabel && !!whiteLabelBanner;
   const pathSegments = window.location.pathname.split('/').filter(Boolean);
   const currentRoute = pathSegments[pathSegments.length - 1];
-  if (currentRoute !== 'setup' && isWhiteLabelLogoApplied) {
+  if (currentRoute !== 'setup' && isWhiteLabelLogoApplied && !hasBanner) {
     const ContentComponent = MiddleComponent ? MiddleComponent : LeftSideComponent;
     return <WhiteLabellingBackgroundWrapper MiddleComponent={() => <ContentComponent />} />;
   }
