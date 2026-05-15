@@ -844,22 +844,28 @@ export class AppsUtilService implements IAppsUtilService {
       viewableAppsQb.select(select.map((col) => `apps.${col}`));
     }
 
-    // Last-edited first, branch-aware.
+    // Listing order:
+    //   1. Non-stub rows first (is_stub ASC — false < true in Postgres). Stubs are
+    //      pull-tier placeholders awaiting hydrate; they shouldn't outrank
+    //      fully-loaded apps in the dashboard.
+    //   2. Last-edited first, branch-aware:
+    //      - branchId + non-workflow → appVersions.updatedAt (per-branch edit
+    //        timestamp). The alias comes from applyAppVersionsJoin.
+    //      - branchId absent / workflows → apps.updatedAt (bumped by the AppVersion
+    //        afterUpdate subscriber + the child-write triggers). Stubs only exist
+    //        in git-enabled workspaces, where the dashboard always supplies a
+    //        branchId (header or default-branch fallback), so this case has no
+    //        stubs to worry about.
+    //   3. apps.createdAt — deterministic tiebreaker.
     //
-    //   - branchId provided + non-workflow → order by the branch row's app_versions
-    //     .updatedAt. applyAppVersionsJoin (called by all() / fetchDashboardApps)
-    //     innerJoinAndSelects `appVersions` filtered by branchId, so the alias exists
-    //     when this orderBy resolves. Per-branch ordering ensures an edit on branch A
-    //     doesn't surface the same app at the top of branch B's listing.
-    //   - branchId absent / workflows → fall back to apps.updatedAt (touched by the
-    //     AppVersion afterUpdate subscriber, so it still tracks edits as a coarse
-    //     last-touched timestamp).
-    //
-    // apps.createdAt remains a deterministic tiebreaker. TypeORM is fine with this
-    // because `appVersions` is a real entity join (has metadata) — derived tables /
-    // subquery aliases break the pagination wrapper.
+    // TypeORM accepts `appVersions.<col>` only because `appVersions` is a real
+    // entity-mapped join. Derived tables / subquery aliases break the pagination
+    // wrapper, so we keep this in plain entity terms.
     if (branchId && type !== APP_TYPES.WORKFLOW) {
-      viewableAppsQb.orderBy('appVersions.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
+      viewableAppsQb
+        .orderBy('appVersions.isStub', 'ASC')
+        .addOrderBy('appVersions.updatedAt', 'DESC')
+        .addOrderBy('apps.createdAt', 'DESC');
     } else {
       viewableAppsQb.orderBy('apps.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
     }

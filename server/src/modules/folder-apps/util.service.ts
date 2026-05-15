@@ -235,12 +235,17 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
     // (appVersions.branchId = :branchId). No secondary filter needed.
 
-    // Last-edited first, branch-aware. Mirrors AppsUtilService:
-    //   - branchId → orderBy appVersions.updatedAt (the `appVersions` join is already
-    //     added by getBaseAppsQuery when branchId is set).
-    //   - no branchId → fall back to apps.updatedAt (bumped by AppVersion afterUpdate).
+    // Listing order — mirrors AppsUtilService. Stubs sink to the bottom; among
+    // non-stubs, last-edited first.
+    //   - branchId → appVersions.isStub ASC, then appVersions.updatedAt DESC.
+    //     The `appVersions` join is added by getBaseAppsQuery when branchId is set.
+    //   - no branchId → fall back to apps.updatedAt (stubs are a pull-flow artifact
+    //     and don't exist in non-git workspaces).
     if (branchId) {
-      viewableAppsInFolder.orderBy('appVersions.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
+      viewableAppsInFolder
+        .orderBy('appVersions.isStub', 'ASC')
+        .addOrderBy('appVersions.updatedAt', 'DESC')
+        .addOrderBy('apps.createdAt', 'DESC');
     } else {
       viewableAppsInFolder.orderBy('apps.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
     }
