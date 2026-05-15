@@ -65,7 +65,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
   const togglePageHeader = useStore((state) => state.togglePageHeader);
   const togglePageFooter = useStore((state) => state.togglePageFooter);
-  const updatePageAppId = useStore((state) => state.updatePageAppId);
+  const updatePageTargetApp = useStore((state) => state.updatePageTargetApp);
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
@@ -162,8 +162,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
 
   //Nav item with app hooks
   useEffect(() => {
-    const fetchApps = async (page) => {
-      const { apps } = await appService.getAll(page);
+    const fetchApps = async () => {
+      const { apps } = await appService.getAllAddableApps();
       return apps;
     };
 
@@ -175,8 +175,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
         .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
         .forEach((item) => {
           appsOptionsList.push({
-            name: item.name,
-            value: item.slug,
+            label: item.name,
+            value: item.co_relation_id,
+            slug: item.slug,
           });
         });
       return appsOptionsList;
@@ -406,9 +407,10 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <Select
                 options={appOptions}
                 search={true}
-                value={page?.appId}
+                value={page?.targetCorelationId}
                 onChange={(value) => {
-                  updatePageAppId(page?.id, value);
+                  const selected = appOptions.find((opt) => opt.value === value);
+                  updatePageTargetApp(page?.id, value, selected?.slug ?? null);
                 }}
                 isLoading={appOptionsLoading}
                 placeholder={'Select...'}

@@ -80,7 +80,7 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageIcon = createPageUpdateCommand(['icon']);
   const updatePageURL = createPageUpdateCommand(['url']);
   const updatePageTarget = createPageUpdateCommand(['openIn']);
-  const updatePageAppId = createPageUpdateCommand(['appId']);
+  const updatePageTargetApp = createPageUpdateCommand(['targetCorelationId']);
 
   const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
 
@@ -213,7 +213,17 @@ export const createPageMenuSlice = (set, get) => {
       };
       _togglePageFooterCmd(pageId, [updated])(set, get);
     },
-    updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
+    updatePageTargetApp: (pageId, coRelationId, slug = null) => {
+      // Factory handles state mutation + autosave for targetCorelationId
+      updatePageTargetApp(pageId, [coRelationId])(set, get);
+
+      // Keep targetAppSlug in sync so switchPageWrapper builds the right URL without requiring a reload.
+      // Next app load overwrites it from the server.
+      set((state) => {
+        const page = state.modules.canvas.pages.find((p) => p.id === pageId);
+        if (page) page.targetAppSlug = slug;
+      });
+    },
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
       const pages = get().modules.canvas.pages;
@@ -599,16 +609,24 @@ export const createPageMenuSlice = (set, get) => {
       }
 
       if (page?.type === 'app') {
-        if (page?.appId) {
-          const appUrl = `${getHostURL()}/applications/${page.appId}`;
-          if (page.openIn === 'new_tab') {
-            window.open(appUrl, '_blank');
-          } else {
-            window.location.href = appUrl;
-          }
-        } else {
+        if (!page?.targetCorelationId && !page?.appId) {
           toast.error('No app selected');
           return false;
+        }
+
+        // Prefer freshly-resolved slug for targetCorelationId;
+        // fall back to legacy page.appId for any pages that haven't been migrated yet.
+        const targetSlug = page?.targetAppSlug || page?.appId;
+        if (!targetSlug) {
+          toast.error('Target app not found or no longer available');
+          return false;
+        }
+
+        const appUrl = `${getHostURL()}/applications/${targetSlug}`;
+        if (page.openIn === 'new_tab') {
+          window.open(appUrl, '_blank');
+        } else {
+          window.location.href = appUrl;
         }
         return true;
       }

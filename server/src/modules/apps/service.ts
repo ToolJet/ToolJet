@@ -701,7 +701,7 @@ export class AppsService implements IAppsService {
 
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
-    response['pages'] = this.appsUtilService.mergeDefaultComponentData(pagesForVersion);
+    response['pages'] = await this.appsUtilService.mergeAdditionalPageData(pagesForVersion, app.organizationId);
     response['events'] = eventsForVersion;
 
     //! if editing version exists, camelize the definition
@@ -807,7 +807,7 @@ export class AppsService implements IAppsService {
         name: app.name,
         slug: app.slug,
         events: eventsForVersion,
-        pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
+        pages: await this.appsUtilService.mergeAdditionalPageData(pagesForVersion, app.organizationId),
         homePageId: versionToLoad.homePageId,
         globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
         showViewerNavigation: versionToLoad.showViewerNavigation,
