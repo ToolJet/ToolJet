@@ -173,12 +173,13 @@ export class VersionUtilService implements IVersionUtilService {
     });
     if (!defaultBranch || defaultBranch.id !== appVersion.branchId) return;
 
-    // Source metadata from the latest version row by updated_at — the just-
-    // published row has the freshest updated_at after the UPDATE that
-    // triggered this hook, so this picks it. Robust against the in-memory
-    // `appVersion` being stale.
+    // Source from the latest version row by updated_at — the just-published
+    // row has the freshest updated_at after the UPDATE that triggered this
+    // hook, so this picks it. Relations are eager-loaded because
+    // setupNewVersion below walks `dataSources` + `dataSources.dataQueries`.
     const sourceVersion = await manager.findOne(AppVersion, {
       where: { appId: appVersion.appId },
+      relations: ['dataSources', 'dataSources.dataQueries'],
       order: { updatedAt: 'DESC' },
     });
 
@@ -196,7 +197,7 @@ export class VersionUtilService implements IVersionUtilService {
       suffix += 1;
     }
 
-    await manager.save(
+    const newDraft = await manager.save(
       AppVersion,
       manager.create(AppVersion, {
         name: candidateName,
@@ -215,6 +216,21 @@ export class VersionUtilService implements IVersionUtilService {
         updatedAt: new Date(),
       })
     );
+
+    // Step 1b: deep-clone content from the source. Mirrors `createVersion` —
+    // copies globalSettings/pageSettings/showViewerNavigation onto the new
+    // DRAFT and clones pages/components/layouts/queries/event handlers (and
+    // workflow bundles for workflow apps) with id remapping. Every cloned
+    // child carries its own `co_relation_id` forward (see
+    // VersionsCreateService — Page line 492, Component line 521, Layout
+    // line 593, DataSource line 130, DataQuery line 144, EventHandler
+    // lines 160/194/512/611). The new row's own co_relation_id was already
+    // inherited from the source above. Without this clone the new DRAFT has
+    // NULL globalSettings/pageSettings, which crashes the editor on
+    // `editingVersion.globalSettings.theme = ...`.
+    if (sourceVersion) {
+      await this.createVersionService.setupNewVersion(newDraft, sourceVersion, parentApp.organizationId, manager);
+    }
 
     // Step 2: detach branch_id from the just-published row. Delegated via the
     // repository to keep the DB write centralised.
