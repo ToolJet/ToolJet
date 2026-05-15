@@ -774,7 +774,7 @@ export class AppsUtilService implements IAppsUtilService {
       userPermission[resourceType],
       manager,
       searchKey,
-      isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+      isGetAll ? ['id', 'slug', 'name', 'currentVersionId', 'co_relation_id'] : undefined,
       type,
       branchId
     );
@@ -960,6 +960,73 @@ export class AppsUtilService implements IAppsUtilService {
       ...page,
       components: this.buildComponentMetaDefinition(page.components),
     }));
+  }
+
+  /**
+   * Resolve current slugs for a set of apps identified by their `co_relation_id`.
+   * Returns Map<co_relation_id, slug>
+   *
+   * @param released
+   *    When true (default), only the released-version slug is returned
+   *    When false, falls back to any non-null slug on the app so unreleased apps still resolve.
+   */
+  async findAppSlugsByCorelationIds(
+    coRelationIds: string[],
+    organizationId: string,
+    released = true,
+    manager?: EntityManager
+  ): Promise<Map<string, string>> {
+    const ids = Array.from(new Set((coRelationIds || []).filter(Boolean)));
+    if (ids.length === 0) return new Map();
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const qb = manager
+        .createQueryBuilder(App, 'app')
+        .where('app.co_relation_id IN (:...ids)', { ids })
+        .andWhere('app.organizationId = :organizationId', { organizationId })
+        .select('app.co_relation_id', 'coRelationId');
+
+      if (released) {
+        qb.leftJoin(AppVersion, 'released', 'released.id = app.currentVersionId').addSelect('released.slug', 'slug');
+      } else {
+        qb.leftJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
+          .addSelect('MAX(av.slug)', 'slug')
+          .groupBy('app.co_relation_id');
+      }
+
+      const rows = await qb.getRawMany<{ coRelationId: string; slug: string | null }>();
+      const result = new Map<string, string>();
+      for (const row of rows) {
+        if (row.slug) result.set(row.coRelationId, row.slug);
+      }
+      return result;
+    }, manager);
+  }
+
+  /**
+   * Single chokepoint for serializing pages to the client.
+   * - Runs `mergeDefaultComponentData` (component meta merge).
+   * - For pages of type 'app' with a `targetCorelationId`, attaches the current
+   *   `targetAppSlug` so the frontend can build `/applications/{slug}` URLs.
+   *
+   * All app-load paths should call this instead of `mergeDefaultComponentData` directly.
+   */
+  async mergeAdditionalPageData(pages: any[], organizationId: string, manager?: EntityManager): Promise<any[]> {
+    const merged = this.mergeDefaultComponentData(pages || []);
+
+    const coRelationIds = merged
+      .filter((p) => p?.type === 'app' && p?.targetCorelationId)
+      .map((p) => p.targetCorelationId);
+
+    if (coRelationIds.length === 0) return merged;
+
+    const slugMap = await this.findAppSlugsByCorelationIds(coRelationIds, organizationId, true, manager);
+
+    return merged.map((page) =>
+      page?.type === 'app' && page?.targetCorelationId
+        ? { ...page, targetAppSlug: slugMap.get(page.targetCorelationId) ?? null }
+        : page
+    );
   }
 
   public buildComponentMetaDefinition(components = {}) {
