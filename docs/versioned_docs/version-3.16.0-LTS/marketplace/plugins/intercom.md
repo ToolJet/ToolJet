@@ -28,7 +28,7 @@ For more information, refer **[here](https://developers.intercom.com/docs/build-
 
 ToolJet supports multiple Intercom operations through REST API calls, enabling you to manage conversations, contacts, companies, tickets, articles, and other Intercom resources directly within your application.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/supported-ops.png" alt="Marketplace: Intercom operations" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/supported-ops.png" alt="Marketplace: Intercom operations"/>
 
 | Method | API Endpoint            | Description                                                  |
 | ------ | ----------------------- | ------------------------------------------------------------ |
