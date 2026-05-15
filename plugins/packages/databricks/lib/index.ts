@@ -7,6 +7,7 @@ import {
   User,
   ConnectionTestResult,
   getCurrentToken,
+  createQueryBuilder,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { DBSQLClient } from '@databricks/sql';
@@ -50,6 +51,8 @@ function retrieveAndDeletePkceVerifier(state: string): string | null {
 }
 
 export default class Databricks implements QueryService {
+  private static readonly PARAM_THRESHOLD = 16384;
+
   private getSourceOptionValue(source_options: any, key: string): string {
     const option = Array.isArray(source_options)
       ? source_options.find((item: any) => item.key === key)
@@ -268,7 +271,7 @@ export default class Databricks implements QueryService {
   //  refreshToken
   // ──────────────────────────────────────────────────────────────────────────
 
-  async refreshToken(sourceOptions: any, dataSourceId: string, userId: string, isAppPublic: boolean) {
+  async refreshToken(sourceOptions: any, _dataSourceId: string, userId: string, isAppPublic: boolean) {
     const authType = sourceOptions['authentication_type'] || 'personal_access_token';
 
     if (authType === 'oauth_u2m') {
@@ -482,7 +485,7 @@ export default class Databricks implements QueryService {
       }
     }
 
-    let result;
+    let result: any[];
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
@@ -562,20 +565,24 @@ export default class Databricks implements QueryService {
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
-    dataSourceId: string,
-    dataSourceUpdatedAt?: string,
+    _dataSourceId: string,
+    _dataSourceUpdatedAt?: string,
     context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     const authType = sourceOptions['authentication_type'] || 'personal_access_token';
     const userId = context?.user?.id;
     const isAppPublic = context?.app?.isPublic;
 
+    if (queryOptions.mode === 'gui') {
+      return this.handleGuiQuery(sourceOptions, queryOptions, userId, isAppPublic);
+    }
+
     if (authType === 'oauth_u2m') {
       return this.runWithOauthU2M(sourceOptions, queryOptions, userId, isAppPublic);
     }
 
     // PAT and legacy oauth2 — use DBSQLClient
-    let result;
+    let result: any[];
     const client = await this.getConnection(sourceOptions, userId, isAppPublic);
     const session: IDBSQLSession = await client.openSession();
     try {
@@ -632,10 +639,13 @@ export default class Databricks implements QueryService {
       );
     }
 
-    // http_path is at query level for oauth_u2m
-    const httpPath: string = (queryOptions as any).http_path || '';
+    const httpPath: string = sourceOptions.http_path || '';
     if (!httpPath) {
-      throw new QueryError('Missing http_path', 'HTTP path (warehouse path) is required for OAuth U2M queries', {});
+      throw new QueryError(
+        'Missing http_path',
+        'HTTP path (warehouse path) is required for OAuth U2M queries. Please set it in the datasource configuration.',
+        {}
+      );
     }
 
     const warehouseId = this.extractWarehouseId(httpPath);
@@ -659,11 +669,7 @@ export default class Databricks implements QueryService {
       const state = result.status?.state;
 
       if (state === 'FAILED') {
-        throw new QueryError(
-          'Query execution failed',
-          result.status?.error?.message || 'Unknown Databricks error',
-          {}
-        );
+        throw new QueryError('Query execution failed', result.status?.error?.message || 'Unknown Databricks error', {});
       }
 
       if (state === 'RUNNING' || state === 'PENDING') {
@@ -698,11 +704,7 @@ export default class Databricks implements QueryService {
         return { status: 'ok', data: this.formatStatementResult(result) };
       }
       if (state === 'FAILED') {
-        throw new QueryError(
-          'Query execution failed',
-          result.status?.error?.message || 'Unknown Databricks error',
-          {}
-        );
+        throw new QueryError('Query execution failed', result.status?.error?.message || 'Unknown Databricks error', {});
       }
     }
 
@@ -732,5 +734,481 @@ export default class Databricks implements QueryService {
       );
     }
     return match[1];
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  invokeMethod — called by dynamic-selector widgets (listTables, listColumns)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  async invokeMethod(
+    methodName: string,
+    _context: { user?: User; app?: App },
+    sourceOptions: SourceOptions,
+    args?: any
+  ): Promise<any> {
+    const authType = sourceOptions['authentication_type'] || 'personal_access_token';
+
+    if (methodName === 'listTables') {
+      // oauth_u2m has no source-level http_path; return empty list gracefully
+      if (authType === 'oauth_u2m') {
+        return args?.limit ? { items: [], totalCount: 0 } : [];
+      }
+      try {
+        return await this._fetchTables(sourceOptions, args?.search, args?.page, args?.limit);
+      } catch (err) {
+        throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
+      }
+    }
+
+    if (methodName === 'listColumns') {
+      if (authType === 'oauth_u2m') {
+        return [];
+      }
+      const table = args?.values?.table || '';
+      if (!table) return [];
+      try {
+        return await this._fetchColumns(sourceOptions, table);
+      } catch (err) {
+        throw new QueryError('Could not fetch columns', err.message || 'Unknown error', {});
+      }
+    }
+
+    throw new QueryError('Method not found', `Method '${methodName}' is not supported by the Databricks plugin`, {});
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  _fetchTables — list tables via information_schema (PAT / oauth2 only)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private async _fetchTables(
+    sourceOptions: SourceOptions,
+    search = '',
+    page?: number,
+    limit?: number
+  ): Promise<
+    { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
+  > {
+    const client = await this.getConnection(sourceOptions);
+    const session: IDBSQLSession = await client.openSession();
+    try {
+      const safeSearch = search.replace(/'/g, "''");
+      const catalogFilter = sourceOptions.default_catalog
+        ? `AND table_catalog = '${sourceOptions.default_catalog.replace(/'/g, "''")}' `
+        : '';
+      const schemaFilter = sourceOptions.default_schema
+        ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
+        : '';
+      const searchFilter = safeSearch ? `AND table_name LIKE '%${safeSearch}%' ` : '';
+      const baseWhere = `table_type IN ('TABLE', 'MANAGED', 'EXTERNAL') ${catalogFilter}${schemaFilter}${searchFilter}`;
+
+      if (limit) {
+        const offset = ((page || 1) - 1) * limit;
+
+        const countOp: IOperation = await session.executeStatement(
+          `SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE ${baseWhere}`,
+          { runAsync: true, queryTimeout: new Int64(10000) }
+        );
+        const countRows = await countOp.fetchAll();
+        const totalCount = Number((countRows as any[])?.[0]?.cnt ?? (countRows as any[])?.[0]?.CNT ?? 0);
+
+        const dataOp: IOperation = await session.executeStatement(
+          `SELECT table_name FROM information_schema.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
+          { runAsync: true, queryTimeout: new Int64(10000) }
+        );
+        const dataRows = (await dataOp.fetchAll()) as any[];
+        const items = dataRows.map((row) => ({
+          value: row.table_name || row.TABLE_NAME,
+          label: row.table_name || row.TABLE_NAME,
+        }));
+        return { items, totalCount };
+      }
+
+      const op: IOperation = await session.executeStatement(
+        `SELECT table_name FROM information_schema.tables WHERE ${baseWhere} ORDER BY table_name`,
+        { runAsync: true, queryTimeout: new Int64(10000) }
+      );
+      const rows = (await op.fetchAll()) as any[];
+      return rows.map((row) => ({
+        value: row.table_name || row.TABLE_NAME,
+        label: row.table_name || row.TABLE_NAME,
+      }));
+    } finally {
+      await session.close();
+      await client.close();
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  _fetchColumns — list columns via information_schema (PAT / oauth2 only)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private async _fetchColumns(
+    sourceOptions: SourceOptions,
+    table: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    const client = await this.getConnection(sourceOptions);
+    const session: IDBSQLSession = await client.openSession();
+    try {
+      const safeTable = table.replace(/'/g, "''");
+      const catalogFilter = sourceOptions.default_catalog
+        ? `AND table_catalog = '${sourceOptions.default_catalog.replace(/'/g, "''")}' `
+        : '';
+      const schemaFilter = sourceOptions.default_schema
+        ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
+        : '';
+
+      const op: IOperation = await session.executeStatement(
+        `SELECT column_name FROM information_schema.columns WHERE table_name = '${safeTable}' ${catalogFilter}${schemaFilter} ORDER BY ordinal_position`,
+        { runAsync: true, queryTimeout: new Int64(10000) }
+      );
+      const rows = (await op.fetchAll()) as any[];
+      return rows.map((row) => ({
+        value: row.column_name || row.COLUMN_NAME,
+        label: row.column_name || row.COLUMN_NAME,
+      }));
+    } finally {
+      await session.close();
+      await client.close();
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  GUI mode — helpers
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // Safely substitute ? placeholders with their values to produce a final SQL string.
+  // Databricks does not support client-side positional binding via a standard driver interface,
+  // so we inline params with proper escaping here.
+  private _substituteParams(query: string, params: unknown[]): string {
+    let i = 0;
+    return query.replace(/\?/g, () => {
+      if (i >= params.length) return 'NULL';
+      const val = params[i++];
+      if (val === null || val === undefined) return 'NULL';
+      if (typeof val === 'number' && isFinite(val as number)) return String(val);
+      if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
+      return `'${String(val).replace(/'/g, "''")}'`;
+    });
+  }
+
+  private _normalizeBool(value: unknown): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value === 'true';
+    return false;
+  }
+
+  // Extract rows-affected count from Databricks DML result rows.
+  // INSERT/UPDATE/DELETE/MERGE all return a result set with num_affected_rows.
+  private _getRowsAffected(rows: any[]): number {
+    if (!rows || rows.length === 0) return 0;
+    const row = rows[0];
+    const numAffected = row['num_affected_rows'] ?? row['NUM_AFFECTED_ROWS'];
+    if (numAffected !== undefined && numAffected !== null) return Number(numAffected);
+    // MERGE may return per-operation counts instead
+    const numInserted = Number(row['num_inserted_rows'] ?? row['NUM_INSERTED_ROWS'] ?? 0);
+    const numUpdated = Number(row['num_updated_rows'] ?? row['NUM_UPDATED_ROWS'] ?? 0);
+    const numDeleted = Number(row['num_deleted_rows'] ?? row['NUM_DELETED_ROWS'] ?? 0);
+    if (numInserted + numUpdated + numDeleted > 0) return numInserted + numUpdated + numDeleted;
+    return rows.length;
+  }
+
+  private _computeBatchSize(records: Record<string, unknown>[]): number {
+    if (!records || records.length === 0) return 1000;
+    const sample = records.slice(0, Math.min(records.length, 100));
+    const totalParams = sample.reduce((acc, row) => acc + Object.keys(row).length, 0);
+    const avgParams = totalParams / sample.length;
+    if (avgParams === 0) return 1000;
+    return Math.max(1, Math.floor(Databricks.PARAM_THRESHOLD / avgParams));
+  }
+
+  private _splitIntoBatches<T>(records: T[], batchSize: number): T[][] {
+    const batches: T[][] = [];
+    for (let i = 0; i < records.length; i += batchSize) {
+      batches.push(records.slice(i, i + batchSize));
+    }
+    return batches;
+  }
+
+  // Execute a built SQL string (with params substituted) using the appropriate auth path.
+  private async _executeGuiSql(
+    sourceOptions: SourceOptions,
+    sql: string,
+    params: unknown[],
+    userId?: string,
+    isAppPublic?: boolean
+  ): Promise<any[]> {
+    const finalSql = this._substituteParams(sql, params);
+    const authType = sourceOptions['authentication_type'] || 'personal_access_token';
+
+    if (authType === 'oauth_u2m') {
+      const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+      let accessToken: string;
+      if (isMultiAuthEnabled) {
+        const currentUserToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
+        if (!currentUserToken) {
+          throw new OAuthUnauthorizedClientError('Authentication required', 'Access token not found.', {});
+        }
+        accessToken = currentUserToken['access_token'];
+      } else {
+        accessToken = sourceOptions['access_token'] as string;
+      }
+      if (!accessToken) {
+        throw new OAuthUnauthorizedClientError('Authentication required', 'Databricks access token not found.', {});
+      }
+
+      const httpPath: string = sourceOptions.http_path || '';
+      if (!httpPath) {
+        throw new QueryError(
+          'Missing http_path',
+          'HTTP path (warehouse path) is required for OAuth U2M queries. Please set it in the datasource configuration.',
+          {}
+        );
+      }
+
+      const warehouseId = this.extractWarehouseId(httpPath);
+      const host = sourceOptions.host;
+
+      const response = await got(`https://${host}/api/2.0/sql/statements`, {
+        method: 'POST',
+        json: { warehouse_id: warehouseId, statement: finalSql, wait_timeout: '50s' },
+        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      });
+
+      const result = JSON.parse(response.body);
+      const state = result.status?.state;
+
+      if (state === 'FAILED') {
+        throw new QueryError('Query execution failed', result.status?.error?.message || 'Unknown error', {});
+      }
+      if (state === 'RUNNING' || state === 'PENDING') {
+        const polled = await this.pollStatementResult(host, result.statement_id, accessToken);
+        return Array.isArray(polled.data) ? (polled.data as any[]) : [];
+      }
+      return this.formatStatementResult(result);
+    }
+
+    // PAT / oauth2 — use DBSQLClient
+    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
+    const session: IDBSQLSession = await client.openSession();
+    try {
+      const op: IOperation = await session.executeStatement(finalSql, {
+        runAsync: true,
+        queryTimeout: new Int64(10000),
+      });
+      const rows = await op.fetchAll();
+      return Array.isArray(rows) ? (rows as any[]) : [];
+    } finally {
+      await session.close();
+      await client.close();
+    }
+  }
+
+  // Execute a DML query and validate affected row count against user-configured guards.
+  private async _executeGuiWriteQuery(
+    sourceOptions: SourceOptions,
+    sql: string,
+    params: unknown[],
+    options: { allow_multiple_updates: boolean; zero_records_as_success: boolean; operationLabel: string },
+    userId?: string,
+    isAppPublic?: boolean
+  ): Promise<QueryResult> {
+    const rows = await this._executeGuiSql(sourceOptions, sql, params, userId, isAppPublic);
+    const rowsAffected = this._getRowsAffected(rows);
+    const { allow_multiple_updates, zero_records_as_success, operationLabel } = options;
+
+    if (!allow_multiple_updates && rowsAffected > 1) {
+      throw new QueryError(
+        'Multiple rows affected',
+        `Query ${operationLabel} more than one row. Enable "Allow this Query to modify multiple rows" to permit this.`,
+        {}
+      );
+    }
+    if (!zero_records_as_success && rowsAffected === 0) {
+      throw new QueryError('No rows affected', `No rows were ${operationLabel}.`, {});
+    }
+
+    return { status: 'ok', data: { rowsAffected } };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  handleGuiQuery — dispatches GUI mode operations
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private async handleGuiQuery(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    userId?: string,
+    isAppPublic?: boolean
+  ): Promise<QueryResult> {
+    const { operation, table } = queryOptions;
+    if (!table) {
+      throw new QueryError('Table is required', 'A table name must be specified for GUI mode queries', {});
+    }
+
+    // Databricks supports ANSI SQL with MERGE INTO — same dialect as Snowflake
+    const qb = createQueryBuilder('snowflake');
+
+    switch (operation) {
+      case 'list_rows': {
+        const { list_rows, limit, offset } = queryOptions;
+        const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
+        const { query, params } = qb.listRows(table, {
+          where_filters,
+          order_filters,
+          aggregates,
+          group_by,
+          limit,
+          offset,
+        }) as { query: string; params: unknown[] };
+        const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+        return { status: 'ok', data: rows };
+      }
+
+      case 'create_row': {
+        const { columns } = queryOptions.create_row || {};
+        const { query, params } = qb.createRow(table, undefined, columns) as { query: string; params: unknown[] };
+        const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+        return { status: 'ok', data: { rowsCreated: this._getRowsAffected(rows) } };
+      }
+
+      case 'update_rows': {
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+        const { columns, where_filters } = queryOptions.update_rows || {};
+        const hasFilters = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
+        if (!hasFilters) {
+          throw new QueryError('Filter required', 'Update rows requires at least one filter condition', {});
+        }
+        const { query, params } = qb.updateRows(table, { columns, where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        return this._executeGuiWriteQuery(
+          sourceOptions,
+          query,
+          params,
+          {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'updated',
+          },
+          userId,
+          isAppPublic
+        );
+      }
+
+      case 'upsert_rows': {
+        const { primary_key_columns, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+        const { columns } = queryOptions.upsert_rows || {};
+        const { query, params } = qb.upsertRows(table, { primary_key_columns, columns }) as {
+          query: string;
+          params: unknown[];
+        };
+        return this._executeGuiWriteQuery(
+          sourceOptions,
+          query,
+          params,
+          {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'upserted',
+          },
+          userId,
+          isAppPublic
+        );
+      }
+
+      case 'delete_rows': {
+        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+        const { where_filters } = queryOptions.delete_rows || {};
+        const hasFilters = Object.values(where_filters || {}).some((f: any) => f?.column?.trim());
+        if (!hasFilters) {
+          throw new QueryError(
+            'Filter required',
+            'Delete rows requires at least one filter condition to prevent accidental mass deletions',
+            {}
+          );
+        }
+        const { query, params } = qb.deleteRows(table, { where_filters }) as {
+          query: string;
+          params: unknown[];
+        };
+        return this._executeGuiWriteQuery(
+          sourceOptions,
+          query,
+          params,
+          {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'deleted',
+          },
+          userId,
+          isAppPublic
+        );
+      }
+
+      case 'bulk_insert': {
+        const { records } = queryOptions;
+        if (!records || records.length === 0) {
+          throw new QueryError('Records required', 'No records provided for bulk insert', {});
+        }
+        const batchSize = this._computeBatchSize(records);
+        const batches = this._splitIntoBatches(records, batchSize);
+        let totalRows = 0;
+        for (const batch of batches) {
+          const { query, params } = qb.bulkInsert(table, { rows_insert: batch }) as {
+            query: string;
+            params: unknown[];
+          };
+          const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+          totalRows += this._getRowsAffected(rows);
+        }
+        return { status: 'ok', data: { rowsAffected: totalRows } };
+      }
+
+      case 'bulk_update_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        if (!records || records.length === 0) {
+          throw new QueryError('Records required', 'No records provided for bulk update', {});
+        }
+        const batchSize = this._computeBatchSize(records);
+        const batches = this._splitIntoBatches(records, batchSize);
+        let totalRows = 0;
+        for (const batch of batches) {
+          const { queries } = qb.bulkUpdateWithPrimaryKey(table, {
+            primary_key: primary_key_columns,
+            rows_update: batch,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          for (const { query, params } of queries) {
+            const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+            totalRows += this._getRowsAffected(rows);
+          }
+        }
+        return { status: 'ok', data: { rowsAffected: totalRows } };
+      }
+
+      case 'bulk_upsert_pkey': {
+        const { primary_key_columns, records } = queryOptions;
+        if (!records || records.length === 0) {
+          throw new QueryError('Records required', 'No records provided for bulk upsert', {});
+        }
+        const batchSize = this._computeBatchSize(records);
+        const batches = this._splitIntoBatches(records, batchSize);
+        let totalRows = 0;
+        for (const batch of batches) {
+          const { queries } = qb.bulkUpsertWithPrimaryKey(table, {
+            primary_key: primary_key_columns,
+            row_upsert: batch,
+          }) as { queries: { query: string; params: unknown[] }[] };
+          for (const { query, params } of queries) {
+            const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+            totalRows += this._getRowsAffected(rows);
+          }
+        }
+        return { status: 'ok', data: { rowsAffected: totalRows } };
+      }
+
+      default:
+        throw new QueryError('Unsupported operation', `GUI operation "${operation}" is not supported`, {});
+    }
   }
 }

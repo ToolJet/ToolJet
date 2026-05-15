@@ -20,6 +20,31 @@ export type QueryOptions = {
   operation: string;
   sql_query: string;
   mode: string;
-  // http_path is at query level for oauth_u2m (warehouse path e.g. /sql/1.0/warehouses/abc123)
-  http_path?: string;
+  // GUI mode fields
+  table?: string;
+  limit?: string | number;
+  offset?: string | number;
+  primary_key_columns?: string | string[];
+  allow_multiple_updates?: boolean | string;
+  zero_records_as_success?: boolean | string;
+  records?: Record<string, unknown>[];
+  list_rows?: {
+    where_filters?: Record<string, any>;
+    order_filters?: Record<string, any>;
+    aggregates?: Record<string, any>;
+    group_by?: Record<string, any>;
+  };
+  create_row?: {
+    columns?: Record<string, any>;
+  };
+  update_rows?: {
+    columns?: Record<string, any>;
+    where_filters?: Record<string, any>;
+  };
+  delete_rows?: {
+    where_filters?: Record<string, any>;
+  };
+  upsert_rows?: {
+    columns?: Record<string, any>;
+  };
 };
