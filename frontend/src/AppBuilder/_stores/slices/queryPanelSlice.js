@@ -9,6 +9,7 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { nextQueryRunId, isLatestQueryRun } from '@/AppBuilder/_utils/queryRunSequence';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -306,6 +307,9 @@ export const createQueryPanelSlice = (set, get) => ({
     },
     resetQuery: (queryId, moduleId = 'canvas') => {
       const { setResolvedQuery } = get();
+      // Bump the run sequence so any in-flight runQuery for this (moduleId, queryId)
+      // becomes superseded and its async response cannot overwrite this reset.
+      nextQueryRunId(moduleId, queryId);
       setResolvedQuery(
         queryId,
         {
@@ -450,8 +454,26 @@ export const createQueryPanelSlice = (set, get) => ({
         }
       }
 
+      // Tag this invocation so stale async responses can be discarded when the
+      // same query is triggered rapidly multiple times. As soon as a newer
+      // runQuery for this (moduleId, queryId) is issued, every state write
+      // derived from this invocation becomes a no-op — preventing an older
+      // response from overwriting newer widget data in the resolved store.
+      const runId = nextQueryRunId(moduleId, queryId);
+      const setResolvedQueryIfLatest = (qId, details, mId, replaceObject) => {
+        if (!isLatestQueryRun(moduleId, queryId, runId)) return;
+        return setResolvedQuery(qId, details, mId, replaceObject);
+      };
+
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
+        // Drop the response if a newer run has already superseded this one.
+        // We skip the expensive transformation, the debugger log, the state
+        // write and the onDataQuerySuccess event — all the work would be
+        // shadowed by the newer run anyway.
+        if (!isLatestQueryRun(moduleId, queryId, runId)) {
+          return { status: 'superseded' };
+        }
         let finalData = data?.data;
         rawData = rawData || data;
 
@@ -494,7 +516,10 @@ export const createQueryPanelSlice = (set, get) => ({
           errorTarget: 'Queries',
         });
 
-        setResolvedQuery(
+        // Use the latest-run-gated wrapper: between the top-of-function guard
+        // and this write we awaited runTransformation, during which a newer run
+        // could have superseded us. The wrapper drops the write if so.
+        setResolvedQueryIfLatest(
           queryId,
           {
             isLoading: false,
@@ -509,12 +534,22 @@ export const createQueryPanelSlice = (set, get) => ({
           moduleId
         );
 
+        // Skip the success event if a newer run superseded us mid-transformation.
+        if (!isLatestQueryRun(moduleId, queryId, runId)) {
+          return { status: 'superseded' };
+        }
         onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
         return { status: 'ok', data: finalData };
       };
 
       // Handler for query failures
       const handleFailure = (errorData) => {
+        // Drop the failure if a newer run has already superseded this one.
+        // Otherwise the stale error would clobber the newer run's resolved
+        // state and fire spurious onDataQueryFailure events.
+        if (!isLatestQueryRun(moduleId, queryId, runId)) {
+          return { status: 'superseded' };
+        }
         if (shouldSetPreviewData) {
           setPreviewLoading(false);
           setPreviewData(errorData);
@@ -631,6 +666,14 @@ export const createQueryPanelSlice = (set, get) => ({
 
         queryExecutionPromise
           .then(async (data) => {
+            // If a newer run has superseded us before the request resolved, do
+            // not write to state, do not start an SSE handler, and do not fire
+            // success/failure events. Resolve so awaited chains don't hang.
+            if (!isLatestQueryRun(moduleId, queryId, runId)) {
+              resolve({ status: 'superseded' });
+              return;
+            }
+
             if (data.status === 'needs_oauth') {
               localStorage.setItem('currentAppEnvironmentIdForOauth', selectedEnvironment?.id);
               const url = data.data.auth_url; // Backend generates and return sthe auth url
@@ -642,6 +685,11 @@ export const createQueryPanelSlice = (set, get) => ({
             // Change this conditional to async query type check for other
             // async queries in the future
             if (query.kind === 'workflows' && data?.data?.type !== 'tj-401') {
+              // Pass setResolvedQueryIfLatest so the synchronous jobId write inside
+              // setupAsyncWorkflowHandler AND the SSE onProgress writes inside
+              // createWorkflowAsyncHandler are both gated on this runId. Without
+              // this, a slow superseded workflow's progress ticks would overwrite
+              // the latest run's resolved state.
               const { error, completionPromise } = get().queryPanel.setupAsyncWorkflowHandler({
                 data,
                 queryId,
@@ -649,7 +697,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 handleFailure,
                 shouldSetPreviewData,
                 setPreviewData,
-                setResolvedQuery,
+                setResolvedQuery: setResolvedQueryIfLatest,
               });
 
               if (error) {
@@ -716,6 +764,13 @@ export const createQueryPanelSlice = (set, get) => ({
             }
           })
           .catch((e) => {
+            // If superseded, skip the toast (the user is no longer interested
+            // in this run's error — they fired a newer one) but always resolve
+            // so awaited chains don't hang.
+            if (!isLatestQueryRun(moduleId, queryId, runId)) {
+              resolve({ status: 'superseded' });
+              return;
+            }
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
