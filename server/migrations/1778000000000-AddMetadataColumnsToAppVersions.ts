@@ -60,6 +60,12 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
     // Step 2: Backfill icon, is_public, slug, app_name on non-workflow versions, and
     // backfill the new `type` column on ALL versions (including workflows) so the
     // type-scoped partial unique indexes below have a value to filter on.
+    //
+    // Type comparison: the apps.type enum stores 'front-end' (with a hyphen) and
+    // 'module'. Earlier revisions of this migration used the underscore form
+    // ('front_end') which silently skipped every front-end app and left their
+    // app_versions metadata NULL — that masked the bug until the CHECK below
+    // started rejecting branched rows. Always use the canonical enum spelling.
     await queryRunner.query(`
       UPDATE app_versions av
       SET
@@ -68,7 +74,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         slug = a.slug, app_name = a.name
       FROM apps a
       WHERE av.app_id = a.id
-        AND a.type IN ('front_end', 'module')
+        AND a.type IN ('front-end', 'module')
     `);
     await queryRunner.query(`
       UPDATE app_versions av
@@ -79,8 +85,8 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
 
     // Step 2a: Defensive fallback before the branch-row CHECK constraint below — any
     // non-workflow version row with a branch_id but a NULL app_name/slug (e.g. legacy
-    // rows whose source apps.name/slug were NULL) gets a placeholder so the CHECK doesn't
-    // fail validation. Uses the app's id as a deterministic placeholder.
+    // rows whose source apps.name/slug were NULL) gets a placeholder so the CHECK
+    // doesn't fail validation. Uses the app's id as a deterministic placeholder.
     await queryRunner.query(`
       UPDATE app_versions av
       SET
@@ -88,7 +94,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         slug = COALESCE(av.slug, av.app_id::text)
       FROM apps a
       WHERE av.app_id = a.id
-        AND a.type IN ('front_end', 'module')
+        AND a.type IN ('front-end', 'module')
         AND av.branch_id IS NOT NULL
         AND (av.app_name IS NULL OR av.slug IS NULL)
     `);
@@ -222,11 +228,12 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
     `);
     
 
-    // Step 5: Clean apps table for non-workflows (slug = id placeholder for existing constraint)
+    // Step 5: Clean apps table for non-workflows (slug = id placeholder for existing
+    // constraint). Same enum spelling as Step 2 — 'front-end' with a hyphen.
     await queryRunner.query(`
       UPDATE apps
       SET slug = id, name = NULL, icon = NULL, is_public = false
-      WHERE type IN ('front_end', 'module')
+      WHERE type IN ('front-end', 'module')
     `);
   }
 
