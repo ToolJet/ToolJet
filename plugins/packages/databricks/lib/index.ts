@@ -100,10 +100,10 @@ export default class Databricks implements QueryService {
       `?response_type=code` +
       `&client_id=${encodeURIComponent(clientId)}` +
       `&redirect_uri=${encodeURIComponent(`${fullUrl}oauth2/authorize`)}` +
-      `&scope=${encodeURIComponent('sql offline_access')}` +
-      `&state=${state}` +
-      `&code_challenge=${codeChallenge}` +
-      `&code_challenge_method=S256`
+      `&scope=${encodeURIComponent('sql offline_access')}`
+      // `&state=${state}` +
+      // `&code_challenge=${codeChallenge}` +
+      // `&code_challenge_method=S256`
     );
   }
 
@@ -152,16 +152,16 @@ export default class Databricks implements QueryService {
     const clientId = this.getSourceOptionValue(source_options, 'client_id');
     const clientSecret = this.getSourceOptionValue(source_options, 'client_secret');
     // pkce_state is injected by the server before calling accessDetailsFrom
-    const state: string = source_options['pkce_state'] || '';
+    // const state: string = source_options['pkce_state'] || '';
 
     if (!clientId || !clientSecret) {
       throw new Error(`Missing OAuth credentials. ClientId: ${!!clientId}, ClientSecret: ${!!clientSecret}`);
     }
 
-    const codeVerifier = retrieveAndDeletePkceVerifier(state);
-    if (!codeVerifier) {
-      throw new Error('PKCE code verifier not found or expired. Please re-authenticate.');
-    }
+    // const codeVerifier = retrieveAndDeletePkceVerifier(state);
+    // if (!codeVerifier) {
+    //   throw new Error('PKCE code verifier not found or expired. Please re-authenticate.');
+    // }
 
     const tooljetHost = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
@@ -175,7 +175,7 @@ export default class Databricks implements QueryService {
       grant_type: 'authorization_code',
       code: authCode,
       redirect_uri: redirectUri,
-      code_verifier: codeVerifier,
+      // code_verifier: codeVerifier,
       scope: 'sql offline_access',
     };
 
