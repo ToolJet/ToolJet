@@ -280,6 +280,37 @@ export class AppImportExportService {
     protected entityManager: EntityManager
   ) {}
 
+  /**
+   * Reverse lookup: given app slugs (as stored on `app_versions.slug`), return their owning apps' `co_relation_id`s.
+   * Used by the import path to back-fill `pages.target_corelation_id` for dumps that only carry the legacy slug-in-`appId`.
+   */
+  protected async resolveCorelationIdsBySlugs(
+    manager: EntityManager,
+    slugs: string[],
+    organizationId: string
+  ): Promise<Map<string, string>> {
+    const distinct = Array.from(new Set((slugs || []).filter(Boolean)));
+    if (distinct.length === 0) return new Map();
+
+    const rows = await manager
+      .createQueryBuilder(App, 'app')
+      .innerJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
+      .where('av.slug IN (:...slugs)', { slugs: distinct })
+      .andWhere('app.organizationId = :organizationId', { organizationId })
+      .andWhere('app.co_relation_id IS NOT NULL')
+      .select('av.slug', 'slug')
+      .addSelect('app.co_relation_id', 'coRelationId')
+      .getRawMany<{ slug: string; coRelationId: string }>();
+
+    const result = new Map<string, string>();
+    for (const row of rows) {
+      if (row.slug && row.coRelationId && !result.has(row.slug)) {
+        result.set(row.slug, row.coRelationId);
+      }
+    }
+    return result;
+  }
+
   private getEventHandlerName(event: any): string {
     if (typeof event?.name === 'string' && event.name.trim()) {
       return event.name.trim();
@@ -1499,6 +1530,15 @@ export class AppImportExportService {
         let updateHomepageId = null;
 
         if (updatedDefinition?.pages) {
+          const legacyPageValues = Object.values(updatedDefinition.pages) as any[];
+          const legacySlugsForVersion = legacyPageValues
+            .filter((p) => p?.type === 'app' && !p?.targetCorelationId && p?.appId)
+            .map((p) => p.appId as string);
+          const slugToCoRelationId =
+            legacySlugsForVersion.length > 0
+              ? await this.resolveCorelationIdsBySlugs(manager, legacySlugsForVersion, user.organizationId)
+              : new Map<string, string>();
+
           for (const pageId of Object.keys(updatedDefinition?.pages)) {
             const page = updatedDefinition.pages[pageId];
 
@@ -1549,6 +1589,9 @@ export class AppImportExportService {
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
               icon: page.icon || null,
+              targetCorelationId:
+                page.targetCorelationId ??
+                (page.type === 'app' && page.appId ? (slugToCoRelationId.get(page.appId) ?? null) : null),
             });
             const pageCreated = await manager.save(newPage);
 
@@ -1983,7 +2026,21 @@ export class AppImportExportService {
       const oldNewIdMap = {};
       const pageGroupIdArr = [];
 
+      // Back-fill `targetCorelationId` for app-type pages that only carry the legacy
+      // slug-in-`appId`. Single batched lookup per app version to avoid N+1.
+      const legacySlugsToResolve = pagesOfAppVersion
+        .filter((p) => p.type === 'app' && !p.targetCorelationId && p.appId)
+        .map((p) => p.appId as string);
+      const slugToCoRelationId =
+        legacySlugsToResolve.length > 0
+          ? await this.resolveCorelationIdsBySlugs(manager, legacySlugsToResolve, user.organizationId)
+          : new Map<string, string>();
+
       for (const page of pagesOfAppVersion) {
+        const resolvedTargetCorelationId =
+          page.targetCorelationId ??
+          (page.type === 'app' && page.appId ? (slugToCoRelationId.get(page.appId) ?? null) : null);
+
         const newPage = manager.create(Page, {
           name: page.name,
           handle: page.handle,
@@ -2001,6 +2058,7 @@ export class AppImportExportService {
           openIn: page.openIn || PageOpenIn.SAME_TAB,
           url: page.url || null,
           appId: page.appId || '',
+          targetCorelationId: resolvedTargetCorelationId,
         });
 
         const pageCreated = await manager.save(newPage);
