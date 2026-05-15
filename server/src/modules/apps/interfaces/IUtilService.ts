@@ -26,4 +26,5 @@ export interface IAppsUtilService {
     manager?: EntityManager
   ): Promise<Map<string, string>>;
   mergeAdditionalPageData(pages: any[], organizationId: string, manager?: EntityManager): Promise<any[]>;
+  mergeAdditionalEventData(events: any[], organizationId: string, manager?: EntityManager): Promise<any[]>;
 }

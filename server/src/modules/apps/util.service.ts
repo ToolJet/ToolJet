@@ -1029,6 +1029,29 @@ export class AppsUtilService implements IAppsUtilService {
     );
   }
 
+  /**
+   * Chokepoint for serializing event handlers to the client.
+   * For go-to-app events carrying a stable `correlationId` (post-migration),
+   * attaches the current `targetAppSlug` so the runtime can build `/applications/{slug}` URLs.
+   */
+  async mergeAdditionalEventData(events: any[], organizationId: string, manager?: EntityManager): Promise<any[]> {
+    const list = events || [];
+
+    const coRelationIds = list
+      .filter((e) => e?.event?.actionId === 'go-to-app' && e?.event?.correlationId)
+      .map((e) => e.event.correlationId);
+
+    if (coRelationIds.length === 0) return list;
+
+    const slugMap = await this.findAppSlugsByCorelationIds(coRelationIds, organizationId, true, manager);
+
+    return list.map((e) =>
+      e?.event?.actionId === 'go-to-app' && e?.event?.correlationId
+        ? { ...e, event: { ...e.event, targetAppSlug: slugMap.get(e.event.correlationId) ?? null } }
+        : e
+    );
+  }
+
   public buildComponentMetaDefinition(components = {}) {
     for (const componentId in components) {
       const currentComponentData = components[componentId];

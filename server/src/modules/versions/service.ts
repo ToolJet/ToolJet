@@ -243,7 +243,7 @@ export class VersionService implements IVersionService {
         ...appData,
         editing_version: editingVersion,
         pages: await this.appUtilService.mergeAdditionalPageData(pagesForVersion, app.organizationId),
-        events: eventsForVersion,
+        events: await this.appUtilService.mergeAdditionalEventData(eventsForVersion, app.organizationId),
         should_freeze_editor: shouldFreezeEditor,
       };
     };
