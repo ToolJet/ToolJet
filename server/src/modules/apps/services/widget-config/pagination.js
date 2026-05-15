@@ -62,7 +62,26 @@ export const paginationConfig = {
   exposedVariables: {
     totalPages: null,
     currentPageIndex: null,
+    isVisible: true,
+    isDisabled: false,
   },
+  actions: [
+    {
+      handle: 'setPage',
+      displayName: 'Set page',
+      params: [{ handle: 'page', displayName: 'Page', defaultValue: '{{1}}' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     validation: {},
     others: {
