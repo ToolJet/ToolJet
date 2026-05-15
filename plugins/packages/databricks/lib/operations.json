@@ -46,7 +46,7 @@
           { "name": "Bulk insert", "value": "bulk_insert" },
           { "name": "Bulk update using primary key", "value": "bulk_update_pkey" },
           { "name": "Bulk upsert using primary key", "value": "bulk_upsert_pkey" }
-        ],
+        ]
       },
       "list_rows": {
         "table": {
