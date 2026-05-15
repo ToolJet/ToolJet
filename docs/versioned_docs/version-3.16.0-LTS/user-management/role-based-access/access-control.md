@@ -16,7 +16,7 @@ The following permissions can be configured for the given resources:
 | | Release | Allows users of the group to release the applications from the production environment. |
 | **Data sources** | Create | Allows users of the group to add new data sources in the workspace. |
 | | Delete | Allows users of the group to remove data sources from the workspace. |
-| **Folder** | Create/Update/Delete | Allows users of the group to create, update, or delete folders to organize resources. |
+| **Folder** | Create/Delete | Allows users of the group to create or delete folders to organize resources. |
 | **Workspace constants/variables** | Create/Update/Delete | Allows users of the group to define, modify, or remove constants and variables used across the workspace. |
 | **Workflows** | Create | Allows users of the group to create new workflows within the workspace. |
 | | Delete | Allows users of the group to delete workflows from the workspace. |
@@ -91,6 +91,30 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 - **Custom**: Provide the selected access (Build or Execute) only to the specified workflows.
 
 <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/workflow.png" alt="Create Custom Group" />
+
+### Folders
+
+:::warning BETA
+Folder permissions is currently in beta and not recommended for production use.
+:::
+
+Folder-level permissions let you control who can access and work on groups of applications at once. For example, if your workspace has hundreds of apps organized by team, you can grant each team the right access to their folder instead of setting permissions for every app individually. All users in the group automatically get the appropriate access to every app inside it.
+
+- **Edit Folder**: Users in the group can rename the folder and add or remove apps from it. This access also grants Edit Apps and View Apps permissions for all apps within the folder by default.
+
+- **Edit Apps**: Users in the group can edit apps within the folder. This access also grants View Apps permission for all apps within the folder by default.
+
+- **View Apps**: Users in the group can view and launch apps within the folder. They cannot edit apps or make changes to the folder.
+
+- **All folders**: Provides the selected access to all folders in the workspace, including any newly created folders.
+
+- **Custom**: Provides the selected access only to the specified folders.
+
+    :::info
+    Folder permissions apply across all environments.
+    :::
+
+    <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/folder-permissions.png" alt="Folder Permissions" />
 
 ### Configuring Granular Access Permission
 
