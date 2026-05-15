@@ -47,7 +47,7 @@ await actions.resetQuery('getSalesData')
 
 ## Get Query Data
 
-In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getLoadingState()` functions:
+In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getloadingState()` functions:
 
 ### Trigger a query and retrieve its data:
 
@@ -75,7 +75,7 @@ let value = queries.getCustomerData.getRawData();
 await queries.getTodos.run()
 //replace getTodos with your query name
 
-let value = queries.getTodos.getLoadingState();
+let value = queries.getTodos.getloadingState();
 //replace getTodos with your query name
 ```
 
