@@ -376,11 +376,12 @@ export class AppImportExportService {
         // Backfill `kind` and `dataSourceType` on each query from its DS. The query above
         // does NOT join data_query.dataSource so @AfterLoad leaves these undefined.
         // `kind` lets a git-pulled app recover the right plugin/kind for dummies when the
-        // root data-sources file is missing. `dataSourceType` is the static-vs-default
-        // disambiguator: an app-only push (no workspace push) leaves no stub file at
-        // data-sources/<coRelId>.json, so import-time can't otherwise tell whether a
-        // missing file is a source-static reference (route to workspace static) or a
-        // custom DS that wasn't pushed (create dummy).
+        // root data-sources file is missing. `dataSourceType` is the type disambiguator
+        // — `static`, `sample`, or `default` — used by import to route queries to the
+        // target workspace's existing row. STATIC + SAMPLE are filtered out of
+        // workspace git push (see workspace-git-sync-adapter.serializeDataSources), so
+        // an app-only push leaves no stub file at data-sources/<coRelId>.json for them;
+        // import relies on this stamp to identify the reference.
         const dsKindById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.kind] as [string, string]));
         const dsTypeById = new Map(dataSources.map((ds: DataSource) => [ds.id, ds.type] as [string, string]));
         for (const dq of dataQueries) {
@@ -2521,6 +2522,7 @@ export class AppImportExportService {
     branchId?: string
   ): Promise<DataSource> {
     const isDefaultDatasource = DefaultDataSourceNames.includes(dataSource.name as DefaultDataSourceName);
+    const isSampleDatasource = (dataSource as any).type === DataSourceTypes.SAMPLE;
     const isPlugin = !!dataSource.pluginId;
 
     if (isDefaultDatasource) {
@@ -2534,6 +2536,21 @@ export class AppImportExportService {
       });
 
       return createdDefaultDatasource;
+    }
+
+    // Sample DS — one-per-org, type=SAMPLE, scope=GLOBAL. Route to the target
+    // workspace's existing row by (organizationId, type=SAMPLE) — exactly the
+    // same pattern as static but on the SAMPLE type. The connection options are
+    // env-driven (SAMPLE_PG_DB_*), so no per-import config copy is needed.
+    if (isSampleDatasource) {
+      const sampleDatasource = await manager.findOne(DataSource, {
+        where: {
+          organizationId: user.organizationId,
+          type: DataSourceTypes.SAMPLE,
+          scope: DataSourceScopes.GLOBAL,
+        },
+      });
+      return sampleDatasource;
     }
 
     const globalDataSourceWithSameIdExists = async (dataSource: DataSource) => {
@@ -2565,11 +2582,15 @@ export class AppImportExportService {
       });
     };
     const globalDataSourceWithSameNameExists = async (dataSource: DataSource) => {
+      // DEFAULT (user-created) global DSes only — match by name is the right
+      // fallback for those. SAMPLE is handled explicitly via the `isSampleDatasource`
+      // early-return above (lookup by `type=SAMPLE` only, never by name) to avoid
+      // colliding with a custom DS that happens to share the sample DS's name.
       return await manager.findOne(DataSource, {
         where: {
           name: dataSource.name,
           kind: dataSource.kind,
-          type: In([DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE]),
+          type: DataSourceTypes.DEFAULT,
           scope: DataSourceScopes.GLOBAL,
           organizationId: user.organizationId,
         },
