@@ -311,6 +311,22 @@ export class AppImportExportService {
     return result;
   }
 
+  /**
+   * Rewrite a single go-to-app event blob:
+   *    replace legacy `slug` with `correlationId` if the slug resolves in the target org.
+   * Mirrors the migration's transformation so dumps that predate `1777900000000-BackfillGoToAppEventSlugWithCorrelationId` get normalized on import.
+   */
+  private rewriteGoToAppBlob(blob: any, slugToCo: Map<string, string>): any {
+    if (blob?.actionId !== 'go-to-app' || blob.correlationId || !blob.slug) return blob;
+
+    const co = slugToCo.get(blob.slug);
+    if (!co) return blob;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { slug, ...rest } = blob;
+    return { ...rest, correlationId: co };
+  }
+
   private getEventHandlerName(event: any): string {
     if (typeof event?.name === 'string' && event.name.trim()) {
       return event.name.trim();
@@ -1645,6 +1661,20 @@ export class AppImportExportService {
 
             //Event handlers
 
+            // Normalize go-to-app blobs (legacy `slug` → `correlationId`) for this page's events.
+            const legacyGoToAppSlugsForPage = [
+              ...pageEvents.filter((e) => e?.actionId === 'go-to-app' && !e.correlationId && e.slug).map((e) => e.slug),
+              ...componentEvents.flatMap((eo) =>
+                (eo.event || [])
+                  .filter((e) => e?.actionId === 'go-to-app' && !e.correlationId && e.slug)
+                  .map((e) => e.slug)
+              ),
+            ];
+            const slugToCoForPage =
+              legacyGoToAppSlugsForPage.length > 0
+                ? await this.resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugsForPage, user.organizationId)
+                : new Map<string, string>();
+
             if (pageEvents.length > 0) {
               await Promise.all(
                 pageEvents.map(async (event, index) => {
@@ -1652,7 +1682,7 @@ export class AppImportExportService {
                     name: this.getEventHandlerName(event),
                     sourceId: pageCreated.id,
                     target: Target.page,
-                    event: event,
+                    event: this.rewriteGoToAppBlob(event, slugToCoForPage),
                     index: pageEvents.index || index,
                     appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                   };
@@ -1672,7 +1702,7 @@ export class AppImportExportService {
                       name: this.getEventHandlerName(event),
                       sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                       target: Target.component,
-                      event: event,
+                      event: this.rewriteGoToAppBlob(event, slugToCoForPage),
                       index: eventObj.index || index,
                       appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                     });
@@ -1699,7 +1729,7 @@ export class AppImportExportService {
                         name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableAction,
-                        event: { ...event, ref: action.name },
+                        event: { ...this.rewriteGoToAppBlob(event, slugToCoForPage), ref: action.name },
                         index: event.index ?? index,
                         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                       });
@@ -1715,7 +1745,7 @@ export class AppImportExportService {
                         name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableColumn,
-                        event: { ...event, ref: column.name },
+                        event: { ...this.rewriteGoToAppBlob(event, slugToCoForPage), ref: column.name },
                         index: event.index ?? index,
                         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                       });
@@ -1781,6 +1811,19 @@ export class AppImportExportService {
     isGitApp = false
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
+
+    // Normalize go-to-app event blobs:
+    // legacy dumps store `event.slug`; current schema stores `event.correlationId`.
+    // Resolve & rewrite in place once so every downstream EventHandler create picks up the migrated blob automatically.
+    const legacyGoToAppSlugs = (importingEvents || [])
+      .filter((e) => e?.event?.actionId === 'go-to-app' && !e.event.correlationId && e.event.slug)
+      .map((e) => e.event.slug as string);
+    if (legacyGoToAppSlugs.length > 0) {
+      const slugToCo = await this.resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugs, user.organizationId);
+      for (const handler of importingEvents) {
+        handler.event = this.rewriteGoToAppBlob(handler.event, slugToCo);
+      }
+    }
 
     // Dedupe key for folder mappings across ALL version iterations.
     // The DB enforces UNIQUE(child_id, child_type). In git exports, queries are cloned
