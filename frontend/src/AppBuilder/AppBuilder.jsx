@@ -61,7 +61,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       <ErrorBoundary>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>
-            <EditorHeader darkMode={darkMode} />
+            <EditorHeader darkMode={darkMode} appType={appType} />
 
             <LeftSidebar switchDarkMode={changeToDarkMode} darkMode={darkMode} />
           </Suspense>
