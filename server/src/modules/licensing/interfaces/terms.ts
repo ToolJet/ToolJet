@@ -38,7 +38,9 @@ export interface Terms {
     observability?: boolean;
     queryFolders?: boolean;
   };
-  licensingTelemetry?: boolean;
+  telemetry?: {
+    licensing?: boolean;
+  };
   type?: LICENSE_TYPE;
   plan?: {
     name?: string;

@@ -150,7 +150,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
-    this._isLicensingTelemetry = licenseData?.licensingTelemetry === true;
+    this._isLicensingTelemetry = licenseData?.telemetry?.licensing === true;
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
