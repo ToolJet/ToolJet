@@ -16,8 +16,9 @@ const LoginPageRightPanel = () => {
   return (
     <img
       src={whiteLabelBanner}
+      className={'general-feature-image'}
       alt=""
-      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      style={{ objectFit: 'cover', display: 'block' }}
       onError={(e) => {
         e.currentTarget.style.display = 'none';
       }}
