@@ -219,6 +219,8 @@ export const createBranchSlice = (set, get) => ({
       );
 
       // Switch to branch version (and Development environment if needed)
+      // Set flag before any state changes to suppress intermediate useEffect triggers
+      get().beginVersionEnvSwitch();
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first
         if (!alreadyInDevelopment) {
@@ -228,12 +230,12 @@ export const createBranchSlice = (set, get) => ({
               appId,
               branchVersion.id,
               (data) => {
-                state.setCurrentVersionId(branchVersion.id);
-                state.setSelectedVersion(branchVersion);
+                get().completeVersionEnvSwitch(branchVersion.id, branchVersion);
                 resolve({ success: true, data });
               },
               (error) => {
                 console.error('switchBranch - error after environment change:', error);
+                get().cancelVersionEnvSwitch();
                 set(
                   () => ({ branchError: error.message || 'Failed to switch to branch' }),
                   false,
@@ -249,12 +251,12 @@ export const createBranchSlice = (set, get) => ({
             appId,
             branchVersion.id,
             (data) => {
-              state.setCurrentVersionId(branchVersion.id);
-              state.setSelectedVersion(branchVersion);
+              get().completeVersionEnvSwitch(branchVersion.id, branchVersion);
               resolve({ success: true, data });
             },
             (error) => {
               console.error('switchBranch - error switching version:', error);
+              get().cancelVersionEnvSwitch();
               set(() => ({ branchError: error.message || 'Failed to switch to branch' }), false, 'switchBranch:error');
               reject({ success: false, error: error.message });
             }
@@ -406,6 +408,8 @@ export const createBranchSlice = (set, get) => ({
       );
 
       // EXACTLY MATCH handleVersionSelect behavior (line 144 in VersionManagerDropdown.jsx)
+      // Set flag before any state changes to suppress intermediate useEffect triggers
+      get().beginVersionEnvSwitch();
       return new Promise((resolve, reject) => {
         // If not in Development environment, switch to it first (like handleVersionSelect does)
         if (!alreadyInDevelopment) {
@@ -415,11 +419,12 @@ export const createBranchSlice = (set, get) => ({
               appId,
               targetVersion.id,
               (data) => {
-                state.setCurrentVersionId(targetVersion.id);
+                get().completeVersionEnvSwitch(targetVersion.id, targetVersion);
                 resolve({ success: true, data, version: targetVersion });
               },
               (error) => {
                 console.error('switchToDefaultBranch - error after environment change:', error);
+                get().cancelVersionEnvSwitch();
                 set(
                   () => ({ branchError: error.message || 'Failed to switch version' }),
                   false,
@@ -435,12 +440,12 @@ export const createBranchSlice = (set, get) => ({
             appId,
             targetVersion.id,
             (data) => {
-              state.setCurrentVersionId(targetVersion.id);
-              state.setSelectedVersion(targetVersion);
+              get().completeVersionEnvSwitch(targetVersion.id, targetVersion);
               resolve({ success: true, data, version: targetVersion });
             },
             (error) => {
               console.error('switchToDefaultBranch - error switching version:', error);
+              get().cancelVersionEnvSwitch();
               set(
                 () => ({ branchError: error.message || 'Failed to switch version' }),
                 false,

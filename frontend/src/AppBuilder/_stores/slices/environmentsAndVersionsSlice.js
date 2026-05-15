@@ -10,6 +10,7 @@ import {
 const initialState = {
   selectedVersion: null,
   selectedEnvironment: null,
+  isSwitchingContext: false,
   appVersionEnvironment: null,
   versionsPromotedToEnvironment: [],
   environments: [],
@@ -390,6 +391,17 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       onFailure(error);
     }
   },
+
+  beginVersionEnvSwitch: () => set(() => ({ isSwitchingContext: true }), false, 'versionEnvSwitch:begin'),
+
+  completeVersionEnvSwitch: (versionId, version) =>
+    set(
+      () => ({ isSwitchingContext: false, currentVersionId: versionId, selectedVersion: version }),
+      false,
+      'versionEnvSwitch:complete'
+    ),
+
+  cancelVersionEnvSwitch: () => set(() => ({ isSwitchingContext: false }), false, 'versionEnvSwitch:cancel'),
 
   environmentChangedAction: async (environment, _onSuccess, _onFailure) => {
     try {
