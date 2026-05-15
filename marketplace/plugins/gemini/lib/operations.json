@@ -50,7 +50,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -87,7 +87,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -124,7 +124,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -161,7 +161,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "prompt": {
-          "label": "Prompt",
+          "label": "User message",
           "key": "prompt",
           "type": "codehinter",
           "description": "Enter your prompt",
@@ -198,7 +198,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -235,7 +235,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -272,7 +272,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -309,7 +309,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "User message",
       "key": "prompt",
       "type": "codehinter",
       "description": "Enter your prompt",
@@ -346,7 +346,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "User message",
       "key": "prompt",
       "type": "codehinter",
       "description": "Enter your prompt",
@@ -383,7 +383,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "prompt": {
-      "label": "Prompt",
+      "label": "User message",
       "key": "prompt",
       "type": "codehinter",
       "description": "Enter your prompt",
@@ -420,7 +420,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "prompt": {
-        "label": "Prompt",
+        "label": "User message",
         "key": "prompt",
         "type": "codehinter",
         "description": "Enter your prompt",
@@ -478,7 +478,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -487,7 +487,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -525,7 +525,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -534,7 +534,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -572,7 +572,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -581,7 +581,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -619,7 +619,7 @@
           "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
         },
         "history": {
-          "label": "History",
+          "label": "Message History",
           "key": "history",
           "type": "codehinter",
           "description": "Record of the conversation between the user and the model",
@@ -628,7 +628,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },
         "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -666,7 +666,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -675,7 +675,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -713,7 +713,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -722,7 +722,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-          "label": "User prompt",
+          "label": "User message",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -760,7 +760,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -769,7 +769,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-        "label": "User prompt",
+        "label": "User message",
         "key": "user_prompt",
         "type": "codehinter",
         "description": "User response/reply to previous chat",
@@ -807,7 +807,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "history": {
-      "label": "History",
+      "label": "Message History",
       "key": "history",
       "type": "codehinter",
       "description": "Record of the conversation between the user and the model",
@@ -816,7 +816,7 @@
       "tooltip": "Record of the conversation between the user and the model"
     },
     "user_prompt": {
-      "label": "User prompt",
+      "label": "User message",
       "key": "user_prompt",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
@@ -854,7 +854,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "history": {
-      "label": "History",
+      "label": "Message History",
       "key": "history",
       "type": "codehinter",
       "description": "Record of the conversation between the user and the model",
@@ -863,7 +863,7 @@
       "tooltip": "Record of the conversation between the user and the model"
     },
     "user_prompt": {
-      "label": "User prompt",
+      "label": "User message",
       "key": "user_prompt",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
@@ -901,7 +901,7 @@
       "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
     },
     "history": {
-      "label": "History",
+      "label": "Message History",
       "key": "history",
       "type": "codehinter",
       "description": "Record of the conversation between the user and the model",
@@ -910,7 +910,7 @@
       "tooltip": "Record of the conversation between the user and the model"
     },
     "user_prompt": {
-      "label": "User prompt",
+      "label": "User message",
       "key": "user_prompt",
       "type": "codehinter",
       "description": "User response/reply to previous chat",
@@ -948,7 +948,7 @@
         "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
       },
       "history": {
-        "label": "History",
+        "label": "Message History",
         "key": "history",
         "type": "codehinter",
         "description": "Record of the conversation between the user and the model",
@@ -957,7 +957,7 @@
         "tooltip": "Record of the conversation between the user and the model"
       },
       "user_prompt": {
-        "label": "User prompt",
+        "label": "User message",
         "key": "user_prompt",
         "type": "codehinter",
         "description": "User response/reply to previous chat",
