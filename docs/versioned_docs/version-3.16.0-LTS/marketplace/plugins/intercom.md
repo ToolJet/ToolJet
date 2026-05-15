@@ -408,14 +408,14 @@ ToolJet supports multiple Intercom operations through REST API calls, enabling y
 
 ## Example Queries
 
-Operation : GET/ `me` 
+Operation : GET /`me` 
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/get-me.png" alt="Marketplace: Intercom example queries" />
 
-Operation : GET/ `articles`
+Operation : GET /`articles`
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/get-articles.png" alt="Marketplace: Intercom example queries" />
 
-Operation : GET/ `away_status_reasons` 
+Operation : GET /`away_status_reasons` 
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/intercom/get-away-status.png" alt="Marketplace: Intercom example queries" />
