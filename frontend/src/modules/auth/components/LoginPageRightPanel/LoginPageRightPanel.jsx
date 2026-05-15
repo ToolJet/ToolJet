@@ -3,15 +3,12 @@ import { useWhiteLabellingStore, useWhiteLabelBanner } from '@/_stores/whiteLabe
 import { GeneralFeatureImage } from '@/modules/common/components';
 
 const LoginPageRightPanel = () => {
-  const isDefaultWhiteLabel = useWhiteLabellingStore((state) => state.isDefaultWhiteLabel);
   const isWhiteLabelDetailsFetched = useWhiteLabellingStore((state) => state.isWhiteLabelDetailsFetched);
   const whiteLabelBanner = useWhiteLabelBanner();
 
   if (!isWhiteLabelDetailsFetched) return null;
 
-  if (isDefaultWhiteLabel) return <GeneralFeatureImage />;
-
-  if (!whiteLabelBanner) return null;
+  if (!whiteLabelBanner) return <GeneralFeatureImage />;
 
   return (
     <img
