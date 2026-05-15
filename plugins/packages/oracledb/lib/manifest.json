@@ -236,73 +236,8 @@
         "description": "Name of the database",
         "widget": "text-v3"
       },
-      "ssl_enabled": {
-        "order": 50,
-        "$ref": "#/properties/ssl_enabled",
-        "key": "ssl_enabled",
-        "label": "SSL",
-        "description": "Connect using SSL",
-        "widget": "toggle-flip",
-        "true": {
-          "ssl_certificate": {
-            "order": 51,
-            "$ref": "#/properties/ssl_certificate",
-            "key": "ssl_certificate",
-            "label": "SSL certificate",
-            "widget": "dropdown-component-flip",
-            "list": [
-              { "value": "none", "name": "None" },
-              { "value": "ca_certificate", "name": "CA certificate" },
-              { "value": "client_certificate", "name": "Client certificate" }
-            ]
-          },
-          "ca_certificate": {
-            "ca_cert": {
-              "order": 52,
-              "$ref": "#/properties/ca_cert",
-              "key": "ca_cert",
-              "label": "CA cert",
-              "widget": "password-v3-textarea"
-            }
-          },
-          "client_certificate": {
-            "client_key": {
-              "order": 52,
-              "$ref": "#/properties/client_key",
-              "key": "client_key",
-              "label": "Client key",
-              "widget": "password-v3-textarea"
-            },
-            "client_cert": {
-              "order": 53,
-              "$ref": "#/properties/client_cert",
-              "key": "client_cert",
-              "label": "Client cert",
-              "widget": "password-v3-textarea"
-            },
-            "ca_cert": {
-              "order": 54,
-              "$ref": "#/properties/ca_cert",
-              "key": "ca_cert",
-              "label": "CA cert",
-              "widget": "password-v3-textarea"
-            }
-          },
-          "none": {}
-        },
-        "false": {}
-      },
-      "allow_dynamic_connection_parameters": {
-        "order": 60,
-        "$ref": "#/properties/allow_dynamic_connection_parameters",
-        "key": "allow_dynamic_connection_parameters",
-        "label": "Allow dynamic connection parameters",
-        "description": "Turning this on will allow dynamically setting host name and database from application",
-        "widget": "toggle-v2",
-        "help_text": "Enable this to override the default host and database at query runtime"
-      },
       "client_path_type": {
-        "order": 70,
+        "order": 50,
         "$ref": "#/properties/client_path_type",
         "key": "client_path_type",
         "label": "Client library location",
@@ -315,7 +250,7 @@
       },
       "default": {
         "instant_client_version": {
-          "order": 80,
+          "order": 60,
           "$ref": "#/properties/instant_client_version",
           "key": "instant_client_version",
           "label": "Instant client version",
@@ -329,13 +264,31 @@
       },
       "custom": {
         "path": {
-          "order": 80,
+          "order": 70,
           "$ref": "#/properties/path",
           "key": "path",
           "label": "Path",
           "description": "Enter path",
           "widget": "text-v3"
         }
+      },
+      "ssl_enabled": {
+        "order": 80,
+        "$ref": "#/properties/ssl_enabled",
+        "key": "ssl_enabled",
+        "label": "SSL",
+        "description": "Connect using SSL",
+        "widget": "toggle-v2",
+        "help_text": "Enable encrypted connections to Oracle server"
+      },
+      "allow_dynamic_connection_parameters": {
+        "order": 90,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting host name and database from application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default host and database at query runtime"
       }
     },
     "thick": {
