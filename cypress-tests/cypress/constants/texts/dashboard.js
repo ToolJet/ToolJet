@@ -46,6 +46,13 @@ export const dashboardText = {
     return `Update ${appName}'s folderto`;
   },
   addToFolderButton: "Add to folder",
+  bulkMoveSuccessToast: (folderName) =>
+    `Apps moved to "${folderName}" folder successfully!`,
+  nAppsSelected: (count) => `${count} apps selected`,
+  allAppsOption: (count) => `All apps (${count})`,
+  allInFolderOption: (count) => `All in this folder (${count})`,
+  allAppsLabel: "All apps",
+  selectFolderError: "Select a folder",
   folderName: (folderName) => {
     return folderName;
   },
