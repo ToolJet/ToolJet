@@ -269,13 +269,14 @@ export const EventManager = ({
     return defaultParams;
   }
 
-  const fetchApps = async (page) => {
+  const fetchApps = async () => {
     const { apps } = await appService.getAllAddableApps();
     updateState({
       apps: apps.map((app) => ({
         id: app.id,
         name: app.name,
         slug: app.slug,
+        co_relation_id: app.co_relation_id,
         current_version_id: app.current_version_id,
       })),
     });
@@ -284,14 +285,15 @@ export const EventManager = ({
   };
 
   async function getAllApps() {
-    const apps = await fetchApps(0);
+    const apps = await fetchApps();
     let appsOptionsList = [];
     apps
       .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
-          value: item.slug,
+          value: item.co_relation_id,
+          slug: item.slug,
         });
       });
     return appsOptionsList;
@@ -344,6 +346,16 @@ export const EventManager = ({
 
     if (param === 'name') {
       updatedEvent.name = value;
+    } else if (typeof param === 'object' && param !== null) {
+      // Object diff form: merge each key into the event blob, deleting undefined keys
+      // so callers can drop legacy fields (e.g. `slug: undefined` when re-picking a target app).
+      for (const [k, v] of Object.entries(param)) {
+        if (v === undefined) {
+          delete updatedEvent.event[k];
+        } else {
+          updatedEvent.event[k] = v;
+        }
+      }
     } else {
       updatedEvent.event[param] = value;
     }

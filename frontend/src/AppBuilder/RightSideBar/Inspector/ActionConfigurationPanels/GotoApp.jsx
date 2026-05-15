@@ -33,8 +33,16 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
       <FieldRow label="App" dataCy="go-to-app-label">
         <OptionCombobox
           options={appOptions}
-          value={event.slug}
-          onChange={(value) => handlerChanged(eventIndex, 'slug', value)}
+          value={event.correlationId}
+          onChange={(value) => {
+            const selected = appOptions.find((opt) => opt.value === value);
+            // Write the stable target + freshly-known slug atomically;
+            handlerChanged(eventIndex, {
+              correlationId: value,
+              targetAppSlug: selected?.slug ?? null,
+              slug: undefined, // drop legacy `slug` key so the persisted row is clean.
+            });
+          }}
           placeholder={isLoading ? 'Loading…' : undefined}
         />
       </FieldRow>

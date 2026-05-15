@@ -655,10 +655,15 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'go-to-app': {
             try {
-              if (!event.slug) {
-                throw new Error('No application slug provided');
+              // Prefer the server-resolved fresh slug (`targetAppSlug`), fall back to the legacy `slug` key for pre-migration events.
+              const targetSlug = event.targetAppSlug || event.slug;
+              if (!event.correlationId && !event.slug) {
+                throw new Error('No application selected');
               }
-              const resolvedValue = getResolvedValue(event.slug, customVariables, moduleId);
+              if (!targetSlug) {
+                throw new Error('Target app not found or no longer available');
+              }
+              const resolvedValue = getResolvedValue(targetSlug, customVariables, moduleId);
               const slug = resolvedValue;
               const queryParams = event.queryParams?.reduce(
                 (result, queryParam) => ({
