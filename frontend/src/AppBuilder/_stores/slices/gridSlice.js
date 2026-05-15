@@ -289,6 +289,7 @@ export const createGridSlice = (set, get) => ({
         isContainer,
         visibility,
         containerHeight,
+        calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
       });
 
       // ModalV2 bodies aren't siblings in the grid — stash height on a synthetic
@@ -372,7 +373,8 @@ export const createGridSlice = (set, get) => ({
       // in which case hidden widgets drop out of flow and downstream siblings
       // collapse up. When `collapseWhenHidden` is false (default), a hidden
       // widget still holds its authored slot for reflow anchor math, so
-      // siblings stay where they are.
+      // siblings stay where they are (visible gap remains where the widget
+      // used to be — intentional design).
       const inFlowMap = siblingIds.reduce((accumulator, siblingId) => {
         if (visibleMap[siblingId]) {
           accumulator[siblingId] = true;
@@ -405,7 +407,13 @@ export const createGridSlice = (set, get) => ({
       // below.
       const resolvedHeights = siblingIds.reduce((accumulator, siblingId) => {
         const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices)];
-        if (existingTemp?.height != null) {
+        // Treat existingTemp.height === 0 as stale: it almost always
+        // originates from an offsetHeight read while the sibling sat in a
+        // hidden ancestor subtree (e.g., an inactive tab). Trusting it would
+        // self-propagate — the next reflow reads the 0, replays it as the
+        // sibling's height, and the wrapper collapses on screen. Fall
+        // through to canonical/calc to break the chain.
+        if (existingTemp?.height != null && existingTemp.height > 0) {
           accumulator[siblingId] = existingTemp.height;
           return accumulator;
         }
@@ -436,6 +444,8 @@ export const createGridSlice = (set, get) => ({
         inFlowMap,
         resolvedHeights,
         collapseWhenHiddenMap,
+        calculateMoveableBoxHeightWithId: boundCalculateMoveableBoxHeightWithId,
+        getComponentDefinition: boundGetComponentDefinition,
       });
 
       if (Object.keys(temporaryLayoutPatch).length === 0) {

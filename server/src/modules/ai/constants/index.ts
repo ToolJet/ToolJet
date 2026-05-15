@@ -14,4 +14,5 @@ export enum FEATURE_KEY {
   UPDATE_KEY = 'updateKey',
   GET_KEY_SETTINGS = 'getKeySettings',
   AUTO_SORT_QUERIES = 'autoSortQueries',
+  GET_THREAD_TOKEN_USAGE = 'getThreadTokenUsage',
 }

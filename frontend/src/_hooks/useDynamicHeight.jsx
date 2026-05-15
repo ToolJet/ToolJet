@@ -73,21 +73,36 @@ export const useDynamicHeight = ({
     // heights get recomputed — we just can't touch the element's inline
     // style because there isn't one to touch.
 
-    // Bail when the widget lives inside a display:none ancestor subtree
-    // (inactive tab pane, collapsed accordion content). In that state the
-    // element's offsetHeight reads 0; running the reflow would write
-    // temp[this]={height:0} and, on re-show, the delta-based reflow
-    // (+fullHeight against a 0 baseline) pushes siblings below far past
-    // their authored position. Widgets with internal ResizeObservers
-    // (TextArea/CodeEditor/etc.) trigger this hook on the hide transition,
-    // so the guard sits here — the re-show transition will re-fire the
-    // hook with a valid measurement once offsetParent is back.
+    // Defer reflow when the widget lives inside a display:none ancestor
+    // subtree (inactive tab pane, collapsed accordion, closed modal,
+    // hidden container). offsetHeight reads 0 in that state; running the
+    // reflow now would write temp[this]={height:0} and, on re-show, the
+    // delta-based reflow (+fullHeight against a 0 baseline) pushes
+    // siblings far below their authored position.
     //
-    // Must exclude the "widget's own visibility turned off" case — that
-    // also produces offsetParent === null, but we need the reflow to run
-    // so siblings with `collapseWhenHidden` can collapse up.
+    // ResizeObserver fires when the element gains a content box (display
+    // transitions from none to block / ancestor un-hides). At that point
+    // offsetParent !== null and we can run a one-shot reflow with a real
+    // measurement. Self-recovers for Tabs/Accordion/Modal/visibility
+    // toggles uniformly without a per-widget custom path.
+    //
+    // Excludes the "widget's own visibility turned off" case — that also
+    // produces offsetParent === null, but the reflow must run so siblings
+    // with `collapseWhenHidden` can collapse up.
     if (isDynamicHeightEnabled && visibility !== false && element && element.offsetParent === null) {
-      return;
+      const observer = new ResizeObserver(() => {
+        if (element.offsetParent === null) return;
+        requestAnimationFrame(() => {
+          // Re-check inside RAF: if the element hid again between RO fire
+          // and this frame (rapid toggle), skip the reflow and leave the
+          // observer connected so the next show still triggers it.
+          if (element.offsetParent === null) return;
+          observer.disconnect();
+          adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
+        });
+      });
+      observer.observe(element);
+      return () => observer.disconnect();
     }
 
     if (skipAdjustment && isDynamicHeightEnabled) {
