@@ -16,6 +16,9 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findBySlug(slug: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {
+    // Callers (e.g. createGitApp, findAppWithIdOrSlug, valid-app.guard) expect this
+    // to return null/undefined on miss and throw only their own NotFoundException
+    // upstream if appropriate. Don't throw from here.
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
     const workflow = await this.findOne({
       ...(versionId ? { relations: ['appVersions'] } : {}),
@@ -38,7 +41,7 @@ export class AppsRepository extends Repository<App> {
         relations: ['app'],
       });
       if (!version?.app || version.app.organizationId !== organizationId) {
-        throw new NotFoundException(`App not found for slug "${slug}" on branch ${branchId}`);
+        return null;
       }
       const app = version.app;
       this.overlayMetadata(app, version);
@@ -49,13 +52,13 @@ export class AppsRepository extends Repository<App> {
     let resolvedVersion: AppVersion | null = null;
 
     if (defaultBranchId) {
-      // Git sync enabled and no brach id - pick from default branch only
+      // Git sync enabled and no branch id — pick from default branch only.
       resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
         where: { slug, branchId: defaultBranchId },
         relations: ['app'],
       });
     } else {
-      // Git sync disabled — find any slug match across all versions in the workspace (metadata can be on any version row).
+      // Git sync disabled — find any slug match across all versions in the workspace.
       resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
         where: { slug },
         relations: ['app'],
@@ -63,7 +66,7 @@ export class AppsRepository extends Repository<App> {
     }
 
     if (!resolvedVersion?.app || resolvedVersion.app.organizationId !== organizationId) {
-      throw new NotFoundException(`App not found for slug "${slug}" on default branch`);
+      return null;
     }
     const app = resolvedVersion.app;
     this.overlayMetadata(app, resolvedVersion);
@@ -71,6 +74,8 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findAppBySlug(slug: string, branchId?: string): Promise<App> {
+    // Caller (apps/guards/app-auth.guard.ts) checks `if (!app)` and throws its
+    // own NotFoundException — return null on miss instead of throwing here.
     const workflow = await this.findOne({
       where: {
         type: APP_TYPES.WORKFLOW,
@@ -89,7 +94,7 @@ export class AppsRepository extends Repository<App> {
         relations: ['app'],
       });
       if (!version?.app) {
-        throw new NotFoundException(`App not found for slug "${slug}" on branch ${branchId}`);
+        return null;
       }
       const app = version.app;
       this.overlayMetadata(app, version);
@@ -98,8 +103,8 @@ export class AppsRepository extends Repository<App> {
 
     let resolvedVersion: AppVersion = null;
     // No branch context: pick either a non-git row (branch_id IS NULL) or the
+    // workspace default-branch row for git-enabled workspaces.
     if (await this.checkIfGitEnabled(this.manager)) {
-      // workspace default-branch row for git-enabled workspaces.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
@@ -113,7 +118,7 @@ export class AppsRepository extends Repository<App> {
         .orderBy('av.updated_at', 'DESC')
         .getOne();
     } else {
-      // Git sync disabled — find any slug match across all versions in the workspace (metadata can be on any version row).
+      // Git sync disabled — find any slug match across non-branch rows.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
@@ -124,7 +129,7 @@ export class AppsRepository extends Repository<App> {
     }
 
     if (!resolvedVersion?.app) {
-      throw new NotFoundException(`App not found for slug "${slug}"`);
+      return null;
     }
 
     const app = resolvedVersion.app;
