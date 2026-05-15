@@ -15,13 +15,33 @@ export async function getChatCompletion(
   anthropicClient: Anthropic,
   options: QueryOptions
 ): Promise<string | { error: string; statusCode: number }> {
-  const { model, system_prompt, message, temperature, max_size } = options;
-  //try {
-  const messages = JSON.parse(message);
+  const { operation, model, system_prompt, message, history, prompt, temperature, max_size } = options;
+
+  let messagesPayload: any[] = [];
+
+  if (operation === 'chat') {
+    messagesPayload = message ? JSON.parse(message) : [];
+  } else if (operation === 'chat-v2') {
+    let parsedHistory = [];
+    if (history) {
+      try {
+        parsedHistory = JSON.parse(history);
+      } catch (e) {
+        parsedHistory = [];
+      }
+    }
+
+    if (!prompt) {
+      throw new Error('Prompt is required for chat operation');
+    }
+
+    messagesPayload = [...parsedHistory, { role: 'user', content: prompt }];
+  }
+
   const response: any = await anthropicClient.messages.create({
     model: model || 'claude-3-5-sonnet-20241022',
     system: system_prompt || '',
-    messages: messages,
+    messages: messagesPayload,
     max_tokens: getMaxSize(max_size),
     temperature: getTemperature(temperature),
   });

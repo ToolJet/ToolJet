@@ -161,21 +161,30 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
 
   const createDataSource = (dataSource) => {
     const { id } = dataSource;
-    const selectedDataSource = dataSource.manifestFile?.data?.source ?? dataSource;
-    const name = dataSource.manifestFile?.data?.source?.kind ?? dataSource.kind;
+    const selectedDataSource =
+      dataSource.manifestFile?.data?.['tj:source'] ?? dataSource.manifestFile?.data?.source ?? dataSource;
+    const name =
+      dataSource.manifestFile?.data?.['tj:source']?.kind ??
+      dataSource.manifestFile?.data?.source?.kind ??
+      dataSource.kind;
     const options =
-      (dataSource?.defaults ?? dataSource.options) ||
-      (dataSource.manifestFile.data.defaults ?? dataSource.manifestFile.data.options);
+      dataSource?.defaults ??
+      dataSource?.options ??
+      dataSource?.manifestFile?.data?.defaults ??
+      dataSource?.manifestFile?.data?.source?.options ??
+      {};
     const pluginId = id;
     const kind = selectedDataSource?.kind;
     const scope = 'global';
 
-    const parsedOptions = Object?.keys(options)?.map((key) => {
-      const keyMeta = selectedDataSource.options[key];
+    const encryptedSet = new Set(dataSource?.manifestFile?.data?.['tj:encrypted'] ?? []);
+    const parsedOptions = Object.keys(options).map((key) => {
+      const keyMeta = selectedDataSource?.options?.[key];
+      const isEncrypted = keyMeta ? keyMeta.encrypted : encryptedSet.has(key);
       return {
-        key: key,
-        value: options[key].value,
-        encrypted: keyMeta ? keyMeta.encrypted : false,
+        key,
+        value: options[key]?.value,
+        encrypted: isEncrypted,
         ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
       };
     });
