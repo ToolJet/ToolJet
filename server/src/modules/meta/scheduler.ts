@@ -11,6 +11,8 @@ export class LicensingScheduler {
     private readonly metadataUtilService: MetadataUtilService
   ) {}
 
+  // Runs per replica: an N-replica cluster emits N pings/day. Accepted — the
+  // hub dedupes by metadata_id/customer_id at query time.
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async handleCron() {
     if (
