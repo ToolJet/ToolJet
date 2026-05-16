@@ -183,6 +183,13 @@ export class VersionUtilService implements IVersionUtilService {
       order: { updatedAt: 'DESC' },
     });
 
+    // First-priority environment for the new DRAFT's currentEnvironmentId.
+    // Mirrors `createVersion` (line 311) — every new DRAFT starts on the
+    // org's lowest-priority (development) environment regardless of which
+    // env the source was on. Falls back to the source's env if the lookup
+    // fails so the column is never NULL on the inserted row.
+    const firstPriorityEnv = await this.appEnvironmentUtilService.get(parentApp.organizationId, null, true, manager);
+
     // Step 1: name with `_draft` suffix, plus `_N` on (name, app_id) collision.
     const baseName = `${sourceVersion?.name ?? appVersion.name}_draft`;
     let candidateName = baseName;
@@ -207,6 +214,7 @@ export class VersionUtilService implements IVersionUtilService {
         branchId: defaultBranch.id,
         co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
         parentVersionId: sourceVersion?.id ?? appVersion.id,
+        currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,
         isStub: false,
         appName: (sourceVersion as any)?.appName ?? (appVersion as any)?.appName ?? null,
         slug: (sourceVersion as any)?.slug ?? (appVersion as any)?.slug ?? null,
