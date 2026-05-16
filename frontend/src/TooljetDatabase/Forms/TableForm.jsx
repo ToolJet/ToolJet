@@ -149,15 +149,15 @@ const TableForm = ({
       return false;
     }
 
-    if (tableName.length > 255) {
-      toast.error('Table name cannot be more than 255 characters');
+    if (tableName.length > 32) {
+      toast.error('Table name cannot be more than 32 characters');
       return false;
     }
 
     const tableNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     if (!tableNameRegex.test(tableName)) {
       toast.error(
-        'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores.'
+        'Unexpected character found in table name. Table name can only contain alphabets, numbers and underscores and must start with a letter or underscore.'
       );
       return false;
     }
@@ -166,8 +166,10 @@ const TableForm = ({
   };
 
   const getTableNameHelperText = () => {
+    const defaultText =
+      'Table name can contain letters, numbers and underscores and must be within 32 characters';
     if (!tableName || tableName.length === 0) {
-      return 'Table name can contain letters, numbers and underscores and must be within 32 characters';
+      return defaultText;
     }
     if (tableName.length > 32) {
       return 'Table name must be maximum 32 characters';
@@ -179,13 +181,14 @@ const TableForm = ({
     if (!tableNameRegex.test(tableName)) {
       return 'Table name can only contain letters, numbers and underscores';
     }
-    return 'Table name can contain letters, numbers and underscores and must be within 32 characters';
+    return defaultText;
   };
 
   const helperText = getTableNameHelperText();
   const isErrorText =
-    helperText !== 'Table name can contain letters, numbers and underscores and must be within 32 characters';
-
+    tableName?.length > 0 &&
+    helperText !==
+      'Table name can contain letters, numbers and underscores and must be within 32 characters';
   const handleCreate = async () => {
     if (!validateTableName()) return;
     const columnNames = Object.values(columns).map((column) => column.column_name);

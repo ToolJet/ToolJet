@@ -1656,15 +1656,15 @@ $border-radius: 4px;
 
 .custom-toggle-switch.theme-dark {
   input[type=checkbox]+.slider {
-    background-color: #47505D !important;
+    background-color: #6D757D !important;
   }
 
   input[type=checkbox]:hover+.slider {
-    background-color: #D9E2FC;
+    background-color: #858C94;
   }
 
   input[type=checkbox]:active+.slider {
-    background: #E6EDFE;
+    background: #A1A7AE;
     box-shadow: 0px 0px 0px 4px #C6D4F9;
     border-radius: 12px;
   }

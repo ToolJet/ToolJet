@@ -33,18 +33,19 @@ export const BulkUpsertPrimaryKey = () => {
       <div className="field-container d-flex tooljetdb-worflow-operations">
         <label className="form-label flex-shrink-0">Primary key</label>
         <div
-          className="field flex-grow-1 minw-400-w-400 px-1"
-          style={{ height: '28px', background: 'var(--controls-switch-tag)', borderRadius: '6px' }}
+          className="field flex-grow-1 px-1"
+          style={{ minHeight: '32px', height: 'auto', background: 'var(--controls-switch-tag)', borderRadius: '6px', display: 'flex', alignItems: 'center' }}
         >
           <input
             type="text"
             value={bulkUpsertPrimaryKey?.primary_key?.join(', ') || ''}
             style={{
               width: '100%',
-              height: '100%',
               border: '0',
               color: 'var(--text-placeholder)',
               background: 'transparent',
+              padding: '4px 8px',
+              fontSize: '12px'
             }}
             disabled
             placeholder={''}
