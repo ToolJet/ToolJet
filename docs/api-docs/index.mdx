@@ -2,11 +2,47 @@
 id: index
 title: ToolJet API Reference
 slug: /
+hide_title: true
 ---
 
-# API Reference
+<ApiHero />
 
-ToolJet exposes a set of REST APIs that let you programmatically manage users, workspaces, applications, modules, and more. All APIs are secured and require an access token passed in the `Authorization` header.
+## Enabling ToolJet API
+
+Before making API calls, you need to enable the external API and set an access token on your ToolJet instance. Add these two variables to your `.env` file and restart the server:
+
+| Variable | Description |
+|:---------|:------------|
+| `ENABLE_EXTERNAL_API` | Set to `true` to enable the external API |
+| `EXTERNAL_API_ACCESS_TOKEN` | A secure random string used as the API access token |
+
+## Generating an Access Token
+
+You can generate a secure access token using `openssl`. The following command produces a cryptographically random 64-character base64 string:
+
+```bash
+openssl rand -base64 48
+```
+
+Copy the output and use it as the value for `EXTERNAL_API_ACCESS_TOKEN` in your `.env` file.
+
+:::warning
+Keep this token secret — it grants full API access to your ToolJet instance. Rotate it if it is ever exposed.
+:::
+
+## Authentication
+
+All API requests require a `Basic` access token in the `Authorization` header. Use the token you configured in `EXTERNAL_API_ACCESS_TOKEN`:
+
+```bash
+Authorization: Basic <access_token>
+```
+
+:::note
+SCIM endpoints use a separate token configured in **Workspace Settings → SSO → SCIM**.
+:::
+
+## Explore the APIs
 
 <div className="api-landing-grid">
   <ApiCategoryCard
@@ -28,18 +64,3 @@ ToolJet exposes a set of REST APIs that let you programmatically manage users, w
     endpointCount={12}
   />
 </div>
-
-## Authentication
-
-All API requests (except SCIM, which uses its own token) require an `Authorization` header with a `Basic` access token configured in your `.env` file.
-
-```bash
-Authorization: Basic <access_token>
-```
-
-To enable the ToolJet API, add these variables to your `.env`:
-
-| Variable | Description |
-|:---------|:------------|
-| `ENABLE_EXTERNAL_API` | `true` or `false` |
-| `EXTERNAL_API_ACCESS_TOKEN` | Your access token |

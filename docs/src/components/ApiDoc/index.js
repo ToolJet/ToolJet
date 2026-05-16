@@ -4,3 +4,5 @@ export { default as ParamsTable } from './ParamsTable';
 export { default as RequestExample } from './RequestExample';
 export { default as ResponseExample } from './ResponseExample';
 export { default as ApiCategoryCard } from './ApiCategoryCard';
+export { default as ApiHero } from './ApiHero';
+export { default as ApiSetupSteps } from './ApiSetupSteps';

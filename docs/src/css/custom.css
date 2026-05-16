@@ -1069,6 +1069,29 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   overflow: visible !important;
 }
 
+/* ─── Sidebar beta badge ─────────────────────────────────────────── */
+.sidebar-badge-beta .menu__link::after {
+  content: 'beta';
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #BF4F03;
+  background: #FAEFE7;
+  border: 1px solid #f0c4a8;
+  border-radius: 3px;
+  padding: 0px 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  line-height: 1.6;
+  text-transform: lowercase;
+}
+
+[data-theme='dark'] .sidebar-badge-beta .menu__link::after {
+  color: #f97316;
+  background: #2a1500;
+  border-color: #7c2d12;
+}
+
 .dropdown__link[href*="2.50.0-LTS"] {
   position: relative;
 }
