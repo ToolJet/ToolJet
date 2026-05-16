@@ -19,6 +19,11 @@ export const useDropVirtualMoveableGhost = () => {
 
   const createGhostMoveElement = (componentSize) => {
     if (ghostElementRef.current) return ghostElementRef.current;
+    const existingGhost = document.getElementById('moveable-virtual-ghost-element');
+    if (existingGhost) {
+      ghostElementRef.current = existingGhost;
+      return existingGhost;
+    }
     toggleMoveableGhostClass(true);
     const ghost = document.createElement('div');
     ghost.id = 'moveable-virtual-ghost-element';
@@ -37,6 +42,7 @@ export const useDropVirtualMoveableGhost = () => {
       border: 1px solid #4af;
     `;
     const container = document.getElementById('real-canvas');
+
     if (!container) {
       toggleMoveableGhostClass(false);
       return null;
@@ -58,7 +64,6 @@ export const useDropVirtualMoveableGhost = () => {
 
   const activateMoveableGhost = (componentSize, mousePosition, canvasRef) => {
     if (isActiveRef.current) return;
-
     const ghost = createGhostMoveElement(componentSize);
     if (!ghost) return;
 
