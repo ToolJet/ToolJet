@@ -149,6 +149,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'ColorPicker',
   'FileButton',
   'ButtonGroupV2',
+  'FlexContainer',
 ];
 
 export const Inspector = ({

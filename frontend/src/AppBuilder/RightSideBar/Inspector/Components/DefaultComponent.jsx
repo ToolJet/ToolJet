@@ -10,7 +10,6 @@ import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { FlexChildLayoutPanel } from './FlexChildLayoutPanel';
-import { FlexContainerLayoutPanel } from './FlexContainerLayoutPanel';
 
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
@@ -90,6 +89,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   JSONEditor: 'Data',
   ColorPicker: 'Data',
   FileButton: 'Data',
+  FlexContainer: 'Layout',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -219,18 +219,6 @@ export const baseComponentProperties = (
     if (!resolveReferences(component.component.definition.properties?.enablePagination?.value)) {
       properties = properties.filter((property) => property !== 'rowsPerPage');
     }
-  }
-  if (component.component.component === 'FlexContainer') {
-    const layoutKeys = new Set([
-      'direction',
-      'flexWrap',
-      'gap',
-      'padding',
-      'justifyContent',
-      'alignItems',
-      'stackBelow',
-    ]);
-    properties = properties.filter((property) => !layoutKeys.has(property));
   }
   let items = [];
   if (properties.length > 0) {
@@ -378,14 +366,6 @@ export const baseComponentProperties = (
       </>
     ),
   });
-
-  if (component?.component?.component === 'FlexContainer') {
-    items.unshift({
-      title: `${i18next.t('widget.flexContainer.layout', 'Layout')}`,
-      isOpen: true,
-      children: <FlexContainerLayoutPanel component={component} paramUpdated={paramUpdated} />,
-    });
-  }
 
   return items.filter(
     (item) => !(item.title in accordionFilters && accordionFilters[item.title].includes(componentMeta.component))

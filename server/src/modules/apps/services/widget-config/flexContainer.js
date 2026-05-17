@@ -13,50 +13,28 @@ export const flexContainerConfig = {
   },
   properties: {
     direction: {
-      type: 'select',
+      type: 'switch',
       displayName: 'Direction',
+      isIcon: true,
+      isFxNotRequired: true,
       options: [
-        { name: 'Column', value: 'column' },
-        { name: 'Row', value: 'row' },
+        { displayName: 'row', value: 'row', lucideIconName: 'rows-2' },
+        { displayName: 'column', value: 'column', lucideIconName: 'columns-2' },
       ],
       validation: {
         schema: { type: 'string' },
         defaultValue: 'column',
       },
     },
-    flexWrap: {
-      type: 'toggle',
-      displayName: 'Wrap',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    gap: {
-      type: 'numberInput',
-      displayName: 'Gap',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 8,
-      },
-    },
-    padding: {
-      type: 'numberInput',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
-        defaultValue: 12,
-      },
-    },
     justifyContent: {
-      type: 'select',
-      displayName: 'Justify content',
+      type: 'switch',
+      displayName: 'Distribute',
+      isIcon: true,
+      isFxNotRequired: true,
       options: [
-        { name: 'flex-start', value: 'flex-start' },
-        { name: 'center', value: 'center' },
-        { name: 'flex-end', value: 'flex-end' },
-        { name: 'space-between', value: 'space-between' },
-        { name: 'space-around', value: 'space-around' },
+        { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-horizontal-justify-start' },
+        { displayName: 'center', value: 'center', lucideIconName: 'align-horizontal-justify-center' },
+        { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-horizontal-justify-end' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -64,17 +42,42 @@ export const flexContainerConfig = {
       },
     },
     alignItems: {
-      type: 'select',
-      displayName: 'Align items',
+      type: 'switch',
+      displayName: 'Align',
+      isIcon: true,
+      isFxNotRequired: true,
       options: [
-        { name: 'flex-start', value: 'flex-start' },
-        { name: 'center', value: 'center' },
-        { name: 'flex-end', value: 'flex-end' },
-        { name: 'stretch', value: 'stretch' },
+        { displayName: 'flex-start', value: 'flex-start', lucideIconName: 'align-vertical-justify-start' },
+        { displayName: 'center', value: 'center', lucideIconName: 'align-vertical-justify-center' },
+        { displayName: 'flex-end', value: 'flex-end', lucideIconName: 'align-vertical-justify-end' },
       ],
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'stretch',
+        defaultValue: 'flex-start',
+      },
+    },
+    gap: {
+      type: 'numberInput',
+      displayName: 'Gap (px)',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 8,
+      },
+    },
+    padding: {
+      type: 'numberInput',
+      displayName: 'Padding (px)',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 12,
+      },
+    },
+    flexWrap: {
+      type: 'toggle',
+      displayName: 'Allow wrapping',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
       },
     },
     stackBelow: {
@@ -135,15 +138,16 @@ export const flexContainerConfig = {
       placeholder: 'Enter tooltip text',
     },
   },
-  events: {},
+  events: { onClick: { displayName: 'On click' } },
   styles: {
     backgroundColor: {
       type: 'colorSwatches',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-surface1-surface)',
       },
+      accordian: 'Container',
     },
     borderColor: {
       type: 'colorSwatches',
@@ -152,6 +156,7 @@ export const flexContainerConfig = {
         schema: { type: 'string' },
         defaultValue: 'var(--cc-weak-border)',
       },
+      accordian: 'Container',
     },
     borderRadius: {
       type: 'numberInput',
@@ -163,11 +168,13 @@ export const flexContainerConfig = {
         },
         defaultValue: 6,
       },
+      accordian: 'Container',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Container',
     },
   },
   exposedVariables: {
@@ -198,7 +205,7 @@ export const flexContainerConfig = {
       padding: { value: '12' },
       justifyContent: { value: 'flex-start' },
       alignItems: { value: 'flex-start' },
-      stackBelow: { value: 'mobile' },
+      stackBelow: { value: 'none' },
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
