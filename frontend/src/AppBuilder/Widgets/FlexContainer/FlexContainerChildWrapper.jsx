@@ -68,7 +68,7 @@ const FlexContainerChildWrapper = memo(
     const isRow = flexDirection === 'row';
     const stackedWidthBehavior = layoutData.stackedWidthBehavior ?? 'fill-parent';
 
-    // Resolve per-axis sizing with backward-compat fallback to legacy fillMain/mainSize.
+    // Resolve per-axis sizing with backward-compat fallback to legacy fillMain
     const { fillWidth, fillHeight, widthPx, heightPx } = resolveFlexChildSizing(layoutData, flexDirection, {
       widthPx: gridDerivedWidthPx,
       heightPx: layoutData.height ?? 100,

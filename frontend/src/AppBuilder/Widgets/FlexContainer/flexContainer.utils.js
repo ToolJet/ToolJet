@@ -48,9 +48,6 @@ const FLEX_LAYOUT_FIELDS = [
   'heightPx',
   'crossAlignSelf',
   'stackedWidthBehavior',
-  // Legacy single-axis fields stripped during migration / reparenting.
-  'mainSize',
-  'fillMain',
 ];
 const GRID_LAYOUT_FIELDS = ['top', 'left', 'width', 'height'];
 
@@ -134,7 +131,7 @@ export const resolveFlexChildSizing = (layoutData = {}, direction = 'column', fa
   const fallbackWidthPx = fallbacks.widthPx ?? null;
   const fallbackHeightPx = fallbacks.heightPx ?? null;
 
-  const fillWidth = layoutData.fillWidth !== undefined ? layoutData.fillWidth : isRow ? legacyFill ?? false : true;
+  const fillWidth = layoutData.fillWidth !== undefined ? layoutData.fillWidth : true;
   const fillHeight = layoutData.fillHeight !== undefined ? layoutData.fillHeight : isRow ? true : legacyFill ?? false;
 
   const widthPx = layoutData.widthPx ?? (isRow ? legacyMainPx ?? fallbackWidthPx : fallbackWidthPx) ?? null;
@@ -142,6 +139,14 @@ export const resolveFlexChildSizing = (layoutData = {}, direction = 'column', fa
 
   return { fillWidth, fillHeight, widthPx, heightPx };
 };
+
+/** Default flex-child layout when a widget is first dropped into a FlexContainer. */
+export const createDefaultFlexChildLayout = ({ widthPx, heightPx }) => ({
+  fillWidth: true,
+  fillHeight: false,
+  widthPx,
+  heightPx,
+});
 
 /**
  * Returns the insertion slot index for a given mouse position.

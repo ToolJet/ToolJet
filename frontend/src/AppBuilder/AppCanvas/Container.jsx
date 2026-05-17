@@ -86,6 +86,9 @@ const Container = React.memo(
     // Initialize ghost moveable hook
     const { activateMoveableGhost, deactivateMoveableGhost } = useDropVirtualMoveableGhost();
 
+    // rAF ref to throttle FlexContainer drop-target updates
+    const flexRafRef = useRef(null);
+
     // // Monitor drag layer to update ghost position continuously
     const { isDragging } = useDragLayer((monitor) => ({
       isDragging: monitor.isDragging(),
@@ -93,6 +96,10 @@ const Container = React.memo(
     // // // Cleanup ghost when drag ends
     useEffect(() => {
       if (!isDragging) {
+        if (flexRafRef.current) {
+          cancelAnimationFrame(flexRafRef.current);
+          flexRafRef.current = null;
+        }
         deactivateMoveableGhost();
         if (isFlexContainer) {
           setFlexContainerDropTarget(null);
@@ -103,9 +110,6 @@ const Container = React.memo(
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
     }, [index, componentType, currentMode]);
-
-    // rAF ref to throttle FlexContainer drop-target updates
-    const flexRafRef = useRef(null);
 
     const [, drop] = useDrop({
       accept: 'box',

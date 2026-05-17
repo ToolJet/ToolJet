@@ -17,6 +17,7 @@ import {
   LISTVIEW_CANVAS_PADDING,
   HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -106,13 +107,10 @@ export const addNewWidgetToTheEditor = (
     const dropHeightPx = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
     const dropWidthPx = customLayouts ? customLayouts[currentLayout].width * gridWidth : defaultWidth * gridWidth;
 
-    // Both axes default to Fixed; users opt into Fill parent per-axis from the inspector.
-    const flexLayout = {
-      fillWidth: false,
-      fillHeight: false,
+    const flexLayout = createDefaultFlexChildLayout({
       widthPx: dropWidthPx,
       heightPx: dropHeightPx,
-    };
+    });
     activeLayoutData = flexLayout;
     nonActiveLayoutData = { ...flexLayout };
   } else {

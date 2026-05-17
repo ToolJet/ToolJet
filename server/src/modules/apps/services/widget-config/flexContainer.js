@@ -201,7 +201,7 @@ export const flexContainerConfig = {
     properties: {
       direction: { value: 'row' },
       flexWrap: { value: '{{true}}' },
-      gap: { value: '8' },
+      gap: { value: '12' },
       padding: { value: '12' },
       justifyContent: { value: 'flex-start' },
       alignItems: { value: 'flex-start' },
