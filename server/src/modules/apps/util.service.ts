@@ -1004,52 +1004,33 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   /**
-   * Single chokepoint for serializing pages to the client.
-   * - Runs `mergeDefaultComponentData` (component meta merge).
-   * - For pages of type 'app' with a `targetCorelationId`, attaches the current
-   *   `targetAppSlug` so the frontend can build `/applications/{slug}` URLs.
-   *
-   * All app-load paths should call this instead of `mergeDefaultComponentData` directly.
+   * Side-table builder for app-load responses.
+   * Scans pages and event handlers, collects every referenced target-app `co_relation_id`,
+   * returns a flat map keyed by correlationId with the current slug for each.
+   * Frontend uses this to build `/applications/{slug}` URLs at click time without entities carrying synthetic fields.
    */
-  async mergeAdditionalPageData(pages: any[], organizationId: string, manager?: EntityManager): Promise<any[]> {
-    const merged = this.mergeDefaultComponentData(pages || []);
+  async collectLinkedAppsForResponse(
+    pages: any[],
+    events: any[],
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<Record<string, { slug: string | null }>> {
+    const ids = new Set<string>();
+    for (const p of pages || []) {
+      if (p?.type === 'app' && p?.targetCorelationId) ids.add(p.targetCorelationId);
+    }
+    for (const e of events || []) {
+      if (e?.event?.actionId === 'go-to-app' && e?.event?.correlationId) ids.add(e.event.correlationId);
+    }
+    if (ids.size === 0) return {};
 
-    const coRelationIds = merged
-      .filter((p) => p?.type === 'app' && p?.targetCorelationId)
-      .map((p) => p.targetCorelationId);
+    const slugMap = await this.findAppSlugsByCorelationIds(Array.from(ids), organizationId, true, manager);
 
-    if (coRelationIds.length === 0) return merged;
-
-    const slugMap = await this.findAppSlugsByCorelationIds(coRelationIds, organizationId, true, manager);
-
-    return merged.map((page) =>
-      page?.type === 'app' && page?.targetCorelationId
-        ? { ...page, targetAppSlug: slugMap.get(page.targetCorelationId) ?? null }
-        : page
-    );
-  }
-
-  /**
-   * Chokepoint for serializing event handlers to the client.
-   * For go-to-app events carrying a stable `correlationId` (post-migration),
-   * attaches the current `targetAppSlug` so the runtime can build `/applications/{slug}` URLs.
-   */
-  async mergeAdditionalEventData(events: any[], organizationId: string, manager?: EntityManager): Promise<any[]> {
-    const list = events || [];
-
-    const coRelationIds = list
-      .filter((e) => e?.event?.actionId === 'go-to-app' && e?.event?.correlationId)
-      .map((e) => e.event.correlationId);
-
-    if (coRelationIds.length === 0) return list;
-
-    const slugMap = await this.findAppSlugsByCorelationIds(coRelationIds, organizationId, true, manager);
-
-    return list.map((e) =>
-      e?.event?.actionId === 'go-to-app' && e?.event?.correlationId
-        ? { ...e, event: { ...e.event, targetAppSlug: slugMap.get(e.event.correlationId) ?? null } }
-        : e
-    );
+    const result: Record<string, { slug: string | null }> = {};
+    for (const id of ids) {
+      result[id] = { slug: slugMap.get(id) ?? null };
+    }
+    return result;
   }
 
   public buildComponentMetaDefinition(components = {}) {

@@ -701,8 +701,13 @@ export class AppsService implements IAppsService {
 
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
-    response['pages'] = await this.appsUtilService.mergeAdditionalPageData(pagesForVersion, app.organizationId);
-    response['events'] = await this.appsUtilService.mergeAdditionalEventData(eventsForVersion, app.organizationId);
+    response['pages'] = this.appsUtilService.mergeDefaultComponentData(pagesForVersion);
+    response['events'] = eventsForVersion;
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      pagesForVersion,
+      eventsForVersion,
+      app.organizationId
+    );
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion) {
@@ -806,8 +811,8 @@ export class AppsService implements IAppsService {
         is_maintenance_on: app.isMaintenanceOn,
         name: app.name,
         slug: app.slug,
-        events: await this.appsUtilService.mergeAdditionalEventData(eventsForVersion, app.organizationId),
-        pages: await this.appsUtilService.mergeAdditionalPageData(pagesForVersion, app.organizationId),
+        events: eventsForVersion,
+        pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
         homePageId: versionToLoad.homePageId,
         globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
         showViewerNavigation: versionToLoad.showViewerNavigation,
@@ -825,6 +830,16 @@ export class AppsService implements IAppsService {
     const modules = await this.appsUtilService.fetchModules(app, false, undefined);
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module)));
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId
+    );
 
     return response;
   }

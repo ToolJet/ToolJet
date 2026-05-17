@@ -242,8 +242,8 @@ export class VersionService implements IVersionService {
       return {
         ...appData,
         editing_version: editingVersion,
-        pages: await this.appUtilService.mergeAdditionalPageData(pagesForVersion, app.organizationId),
-        events: await this.appUtilService.mergeAdditionalEventData(eventsForVersion, app.organizationId),
+        pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
+        events: eventsForVersion,
         should_freeze_editor: shouldFreezeEditor,
       };
     };
@@ -252,6 +252,16 @@ export class VersionService implements IVersionService {
     const modules = await this.appUtilService.fetchModules(app, false, undefined);
 
     response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
+
+    // Top-level linkedApps map: covers main app + every module
+    // Helps frontend to resolve go-to-app link for any correlationId referenced
+    const allPages = [...response['pages'], ...response['modules'].flatMap((m) => m.pages ?? [])];
+    const allEvents = [...response['events'], ...response['modules'].flatMap((m) => m.events ?? [])];
+    response['linkedApps'] = await this.appUtilService.collectLinkedAppsForResponse(
+      allPages,
+      allEvents,
+      app.organizationId
+    );
 
     return response;
   }

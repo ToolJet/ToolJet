@@ -25,6 +25,10 @@ export interface IAppsUtilService {
     released?: boolean,
     manager?: EntityManager
   ): Promise<Map<string, string>>;
-  mergeAdditionalPageData(pages: any[], organizationId: string, manager?: EntityManager): Promise<any[]>;
-  mergeAdditionalEventData(events: any[], organizationId: string, manager?: EntityManager): Promise<any[]>;
+  collectLinkedAppsForResponse(
+    pages: any[],
+    events: any[],
+    organizationId: string,
+    manager?: EntityManager
+  ): Promise<Record<string, { slug: string | null }>>;
 }
