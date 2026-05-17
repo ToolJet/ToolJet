@@ -12,6 +12,14 @@ export const flexContainerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    // childOrder: {
+    //   type: 'array',
+    //   internal: true,
+    //   validation: {
+    //     schema: { type: 'array', element: { type: 'string' } },
+    //     defaultValue: [],
+    //   },
+    // },
     direction: {
       type: 'select',
       displayName: 'Direction',

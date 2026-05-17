@@ -64,7 +64,7 @@ const FlexContainerChildWrapper = memo(
 
     if (!canShowInCurrentLayout || !layoutData || !componentType) return null;
 
-    const { crossAlignSelf, flexOrder } = layoutData;
+    const { crossAlignSelf } = layoutData;
     const isRow = flexDirection === 'row';
     const stackedWidthBehavior = layoutData.stackedWidthBehavior ?? 'fill-parent';
 
@@ -122,9 +122,6 @@ const FlexContainerChildWrapper = memo(
                 }),
           }),
       alignSelf: crossAlignSelf || undefined,
-      // CSS `order` mirrors flexOrder so visual position is always correct even if the
-      // React render array is momentarily out of sync (e.g. during optimistic updates).
-      order: flexOrder ?? 0,
       position: 'relative',
       display: !visibility && mode === 'view' ? 'none' : 'block',
       boxSizing: 'content-box',

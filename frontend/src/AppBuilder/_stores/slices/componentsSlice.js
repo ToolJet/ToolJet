@@ -30,6 +30,12 @@ import {
   NESTING_LEVEL_LIMITS,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
+import {
+  insertId,
+  moveId,
+  normalizeChildOrder,
+  removeId,
+} from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 // Debounce timers for query re-runs triggered by dependency changes
 const queryRerunTimers = new Map();
@@ -65,6 +71,29 @@ function clearAllQueryRerunTimers() {
   queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
   queryRerunTimers.clear();
 }
+
+const getDefinitionWithoutRuntimeFields = (component = {}) => {
+  const { events, exposedVariables, ...filteredDefinition } = component.definition || {};
+  return filteredDefinition;
+};
+
+const getChildOrderValue = (component) => {
+  const value = component?.definition?.properties?.childOrder?.value;
+  return Array.isArray(value) ? value : [];
+};
+
+const buildChildOrderComponentDiff = (component, childOrder) => ({
+  component: {
+    ...component,
+    definition: {
+      ...getDefinitionWithoutRuntimeFields(component),
+      properties: {
+        ...(component.definition?.properties ?? {}),
+        childOrder: { value: childOrder },
+      },
+    },
+  },
+});
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -1270,6 +1299,7 @@ export const createComponentsSlice = (set, get) => ({
       checkIfParentIsFormAndAddField,
       buildComponentDefinition,
       getCurrentPageId,
+      getComponentDefinition,
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
@@ -1295,8 +1325,9 @@ export const createComponentsSlice = (set, get) => ({
         };
         return acc;
       }, {});
+      const flexChildOrderUpdates = {};
 
-      newComponents.forEach((newComponent, index) => {
+      newComponents.forEach((newComponent) => {
         // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
         const oldName = getComponentNameFromId(newComponent.id, moduleId);
         if (oldName) {
@@ -1343,6 +1374,17 @@ export const createComponentsSlice = (set, get) => ({
             }
             const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
             page.components[newComponent.id] = newComponent;
+            const parentComponent = page.components[parentId]?.component;
+            if (parentComponent?.component === 'FlexContainer' && newComponent.component.parent === parentId) {
+              const actualChildIds = state.containerChildrenMapping[parentId];
+              const baseOrder = normalizeChildOrder(getChildOrderValue(parentComponent), actualChildIds);
+              const lockedTarget = state.flexContainerDropTarget;
+              const targetIndex = lockedTarget?.flexContainerId === parentId ? lockedTarget.index : baseOrder.length;
+              const nextOrder = insertId(baseOrder, newComponent.id, targetIndex);
+              if (!parentComponent.definition.properties) parentComponent.definition.properties = {};
+              parentComponent.definition.properties.childOrder = { value: nextOrder };
+              flexChildOrderUpdates[parentId] = nextOrder;
+            }
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
@@ -1355,7 +1397,31 @@ export const createComponentsSlice = (set, get) => ({
       }
 
       if (saveAfterAction) {
-        saveComponentChanges(diff, 'components', 'create', moduleId)
+        const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
+          const component = getComponentDefinition(componentId, moduleId)?.component;
+          if (component) acc[componentId] = buildChildOrderComponentDiff(component, childOrder);
+          return acc;
+        }, {});
+
+        const savePromise =
+          Object.keys(flexParentUpdateDiff).length > 0
+            ? saveComponentChanges(
+                {
+                  create: {
+                    diff,
+                    pageId: currentPageId,
+                  },
+                  update: {
+                    diff: flexParentUpdateDiff,
+                  },
+                },
+                'components/batch',
+                'update',
+                moduleId
+              )
+            : saveComponentChanges(diff, 'components', 'create', moduleId);
+
+        savePromise
           .then(() => {
             resolve(); // Resolve the promise after all operations are complete
           })
@@ -1401,6 +1467,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
+    const flexChildOrderUpdates = {};
     const allComponents = getCurrentPageComponents(moduleId);
     const affectedFormIds = new Set(); // Track which Forms need their fields updated
 
@@ -1445,6 +1512,16 @@ export const createComponentsSlice = (set, get) => ({
                 return componentId !== id;
               }
             );
+          });
+
+          Object.entries(page.components).forEach(([componentId, pageComponent]) => {
+            if (toDeleteComponents.includes(componentId)) return;
+            if (pageComponent?.component?.component !== 'FlexContainer') return;
+            const childOrder = getChildOrderValue(pageComponent.component);
+            if (!childOrder.includes(id)) return;
+            const nextOrder = removeId(flexChildOrderUpdates[componentId] ?? childOrder, id);
+            flexChildOrderUpdates[componentId] = nextOrder;
+            pageComponent.component.definition.properties.childOrder = { value: nextOrder };
           });
 
           if (checkIfComponentIsModule(id, moduleId)) {
@@ -1497,11 +1574,17 @@ export const createComponentsSlice = (set, get) => ({
         }
       };
 
+      const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
+        const component = getComponentDefinition(componentId, moduleId)?.component;
+        if (component) acc[componentId] = buildChildOrderComponentDiff(component, childOrder);
+        return acc;
+      }, {});
+
       // If Forms were affected, use batch operation to combine delete + form update
-      if (affectedFormIds.size > 0) {
+      if (affectedFormIds.size > 0 || Object.keys(flexParentUpdateDiff).length > 0) {
         // Build the form update diff
         const currentPageIndex = getCurrentPageIndex(moduleId);
-        const formUpdateDiff = {};
+        let formUpdateDiff = { ...flexParentUpdateDiff };
         affectedFormIds.forEach((formId) => {
           const formComponent = get().modules[moduleId].pages[currentPageIndex].components[formId]?.component;
           if (formComponent) {
@@ -1620,11 +1703,149 @@ export const createComponentsSlice = (set, get) => ({
     return [snappedX, snappedY];
   },
 
+  moveFlexContainerChild: ({
+    childId,
+    sourceContainerId,
+    targetContainerId,
+    targetIndex,
+    moduleId = 'canvas',
+    layoutPatch = {},
+    updateParent = true,
+    saveAfterAction = true,
+    skipUndoRedo = false,
+  }) => {
+    if (!childId || !sourceContainerId || !targetContainerId) return;
+    const {
+      getCurrentPageIndex,
+      getCurrentMode,
+      saveComponentChanges,
+      withUndoRedo,
+      getComponentDefinition,
+      setResolvedComponent,
+      getResolvedComponent,
+    } = get();
+    const currentPageIndex = getCurrentPageIndex(moduleId);
+    const currentMode = getCurrentMode(moduleId);
+    const updatedChildOrders = {};
+    let parentChanged = false;
+
+    set(
+      withUndoRedo((state) => {
+        const page = state.modules[moduleId].pages[currentPageIndex];
+        const source = page?.components?.[sourceContainerId]?.component;
+        const target = page?.components?.[targetContainerId]?.component;
+        const child = page?.components?.[childId];
+        if (!page || !source || !target || !child) return;
+
+        const sourceChildren = state.containerChildrenMapping[sourceContainerId] ?? [];
+        const targetChildren = state.containerChildrenMapping[targetContainerId] ?? [];
+
+        if (sourceContainerId === targetContainerId) {
+          const normalized = normalizeChildOrder(getChildOrderValue(source), sourceChildren);
+          updatedChildOrders[sourceContainerId] = moveId(normalized, childId, targetIndex);
+        } else {
+          const sourceOrder = normalizeChildOrder(getChildOrderValue(source), sourceChildren);
+          const targetOrder = normalizeChildOrder(
+            getChildOrderValue(target),
+            targetChildren.filter((id) => id !== childId)
+          );
+          updatedChildOrders[sourceContainerId] = removeId(sourceOrder, childId);
+          updatedChildOrders[targetContainerId] = insertId(targetOrder, childId, targetIndex);
+
+          if (updateParent && child.component.parent !== targetContainerId) {
+            parentChanged = true;
+            if (child.component.parent && state.containerChildrenMapping[child.component.parent]) {
+              state.containerChildrenMapping[child.component.parent] = state.containerChildrenMapping[
+                child.component.parent
+              ].filter((id) => id !== childId);
+            }
+            if (!state.containerChildrenMapping[targetContainerId]) {
+              state.containerChildrenMapping[targetContainerId] = [];
+            }
+            if (!state.containerChildrenMapping[targetContainerId].includes(childId)) {
+              state.containerChildrenMapping[targetContainerId].push(childId);
+            }
+            child.component.parent = targetContainerId;
+          }
+        }
+
+        Object.entries(updatedChildOrders).forEach(([containerId, childOrder]) => {
+          const container = page.components[containerId]?.component;
+          if (!container.definition.properties) container.definition.properties = {};
+          container.definition.properties.childOrder = { value: childOrder };
+          state.containerChildrenMapping[containerId] = normalizeChildOrder(
+            childOrder,
+            state.containerChildrenMapping[containerId] ?? []
+          );
+        });
+
+        if (Object.keys(layoutPatch).length > 0) {
+          child.layouts[state.currentLayout] = {
+            ...child.layouts[state.currentLayout],
+            ...layoutPatch,
+          };
+          delete child.layouts[state.currentLayout].top;
+          delete child.layouts[state.currentLayout].left;
+          delete child.layouts[state.currentLayout].width;
+          delete child.layouts[state.currentLayout].height;
+          delete child.layouts[state.currentLayout].flexOrder;
+          delete child.layouts[state.currentLayout].mainSize;
+          delete child.layouts[state.currentLayout].fillMain;
+        }
+      }, skipUndoRedo),
+      false,
+      'moveFlexContainerChild'
+    );
+
+    Object.entries(updatedChildOrders).forEach(([containerId, childOrder]) => {
+      const resolvedComponent = deepClone(getResolvedComponent(containerId, null, moduleId) ?? {});
+      resolvedComponent.properties = {
+        ...(resolvedComponent.properties ?? {}),
+        childOrder,
+      };
+      setResolvedComponent(containerId, resolvedComponent, moduleId);
+    });
+
+    if (currentMode !== 'view' && saveAfterAction && Object.keys(updatedChildOrders).length > 0) {
+      const componentUpdates = Object.entries(updatedChildOrders).reduce((acc, [containerId, childOrder]) => {
+        const component = getComponentDefinition(containerId, moduleId)?.component;
+        if (component) acc[containerId] = buildChildOrderComponentDiff(component, childOrder);
+        return acc;
+      }, {});
+
+      const layoutDiff = {
+        [childId]: {
+          ...(parentChanged ? { component: { parent: targetContainerId } } : {}),
+          ...(Object.keys(layoutPatch).length > 0
+            ? {
+                layouts: {
+                  [get().currentLayout]: {
+                    ...layoutPatch,
+                  },
+                },
+              }
+            : {}),
+        },
+      };
+
+      saveComponentChanges(
+        {
+          update: { diff: componentUpdates },
+          ...(parentChanged || Object.keys(layoutPatch).length > 0 ? { layout: { diff: layoutDiff } } : {}),
+        },
+        'components/batch',
+        'update',
+        moduleId
+      );
+      get().multiplayer.broadcastUpdates({ childId, sourceContainerId, targetContainerId }, 'components', 'update');
+    }
+  },
+
   setComponentLayout: (
     componentLayouts,
     newParentId,
     moduleId = 'canvas',
-    { skipUndoRedo = false, updateParent = false, saveAfterAction = true, reorderFlexContainerMapping = null } = {}
+    { skipUndoRedo = false, updateParent = false, saveAfterAction = true } = {}
   ) => {
     const {
       saveComponentChanges,
@@ -1644,6 +1865,7 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
+    const flexChildOrderUpdates = {};
     // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
     // so we can batch the form field changes with the layout changes into a single API call
     const formFieldsDiff = updateParent
@@ -1664,14 +1886,14 @@ export const createComponentsSlice = (set, get) => ({
             if (component) {
               if (newParentComponentType === 'FlexContainer' && updateParent) {
                 // FlexContainer children: write only flex-specific fields, strip grid fields
-                const { flexOrder, fillWidth, fillHeight, widthPx, heightPx, crossAlignSelf } = layout;
+                const { fillWidth, fillHeight, widthPx, heightPx, crossAlignSelf, stackedWidthBehavior } = layout;
                 const flexLayout = {};
-                if (flexOrder !== undefined) flexLayout.flexOrder = flexOrder;
                 if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
                 if (fillHeight !== undefined) flexLayout.fillHeight = fillHeight;
                 if (widthPx !== undefined) flexLayout.widthPx = widthPx;
                 if (heightPx !== undefined) flexLayout.heightPx = heightPx;
                 if (crossAlignSelf !== undefined) flexLayout.crossAlignSelf = crossAlignSelf;
+                if (stackedWidthBehavior !== undefined) flexLayout.stackedWidthBehavior = stackedWidthBehavior;
                 component.layouts[currentLayout] = {
                   ...component.layouts[currentLayout],
                   ...flexLayout,
@@ -1682,6 +1904,7 @@ export const createComponentsSlice = (set, get) => ({
                 delete component.layouts[currentLayout].width;
                 delete component.layouts[currentLayout].height;
                 // Strip retired single-axis fields if any apps still carry them
+                delete component.layouts[currentLayout].flexOrder;
                 delete component.layouts[currentLayout].mainSize;
                 delete component.layouts[currentLayout].fillMain;
               } else if (
@@ -1704,6 +1927,7 @@ export const createComponentsSlice = (set, get) => ({
                 delete component.layouts[currentLayout].widthPx;
                 delete component.layouts[currentLayout].heightPx;
                 delete component.layouts[currentLayout].crossAlignSelf;
+                delete component.layouts[currentLayout].stackedWidthBehavior;
                 // Retired legacy fields
                 delete component.layouts[currentLayout].mainSize;
                 delete component.layouts[currentLayout].fillMain;
@@ -1720,6 +1944,16 @@ export const createComponentsSlice = (set, get) => ({
             oldParentId = component.component.parent;
             hasParentChanged = oldParentId !== newParentId;
             if (hasParentChanged && updateParent) {
+              if (oldParentComponentType === 'FlexContainer' && oldParentId) {
+                const oldParent = page.components[oldParentId]?.component;
+                if (oldParent) {
+                  const nextOrder = removeId(getChildOrderValue(oldParent), componentId);
+                  if (!oldParent.definition.properties) oldParent.definition.properties = {};
+                  oldParent.definition.properties.childOrder = { value: nextOrder };
+                  flexChildOrderUpdates[oldParentId] = nextOrder;
+                }
+              }
+
               // Update the component's parent
               component.component.parent = newParentId;
               // Remove the component from the old parent's children list
@@ -1741,14 +1975,6 @@ export const createComponentsSlice = (set, get) => ({
                 if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
                   state.containerChildrenMapping[newParentId].push(componentId);
                 }
-                // Keep FlexContainer children sorted by order
-                if (newParentComponentType === 'FlexContainer') {
-                  state.containerChildrenMapping[newParentId].sort((a, b) => {
-                    const oA = page.components[a]?.layouts?.[currentLayout]?.flexOrder ?? 0;
-                    const oB = page.components[b]?.layouts?.[currentLayout]?.flexOrder ?? 0;
-                    return oA - oB;
-                  });
-                }
               } else {
                 if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
                   state.containerChildrenMapping[moduleId].push(componentId);
@@ -1758,11 +1984,6 @@ export const createComponentsSlice = (set, get) => ({
 
             // ============ Parent update logic ends ============
           });
-
-          if (reorderFlexContainerMapping?.containerId && Array.isArray(reorderFlexContainerMapping.childIds)) {
-            state.containerChildrenMapping[reorderFlexContainerMapping.containerId] =
-              reorderFlexContainerMapping.childIds;
-          }
         }
       }, skipUndoRedo),
       false,
@@ -1858,6 +2079,13 @@ export const createComponentsSlice = (set, get) => ({
       if (updateParent) {
         // Collect all component updates that need to be batched
         let updatedDiff = formFieldsDiff || {};
+
+        Object.entries(flexChildOrderUpdates).forEach(([componentId, childOrder]) => {
+          const component = getComponentDefinition(componentId, moduleId)?.component;
+          if (component) {
+            updatedDiff[componentId] = buildChildOrderComponentDiff(component, childOrder);
+          }
+        });
 
         // Update container auto-height for both old and new parents
         // Get the diffs to include in the batch operation

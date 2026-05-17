@@ -3,25 +3,13 @@ import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '../../appCanvasConstants';
 import { getDroppableSlotIdOnScreen, getParentFromSlotId } from './dragEnd';
 import {
-  computeFlexContainerReorder,
   computeFlexInsertIndex,
   getEffectiveFlexDirectionForFlexContainer,
+  getOrderedFlexChildrenFromSnapshot,
 } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 const GRID_HEIGHT = 10;
 const DEFAULT_GRID_WIDTH_CELLS = 10;
-
-const buildFlexMappingFromSnapshot = (components, parentId, currentLayout) => {
-  if (!components || !parentId) return [];
-  const ids = Object.keys(components).filter((id) => components[id]?.component?.parent === parentId);
-  ids.sort((a, b) => {
-    const oA = components[a]?.layouts?.[currentLayout]?.flexOrder ?? 0;
-    const oB = components[b]?.layouts?.[currentLayout]?.flexOrder ?? 0;
-    if (oA !== oB) return oA - oB;
-    return a.localeCompare(b);
-  });
-  return ids;
-};
 
 const buildFlexMappingFromDom = (parentId) => {
   if (typeof document === 'undefined') return [];
@@ -39,8 +27,8 @@ const buildFlexMappingFromDom = (parentId) => {
  * Returns false if source is not a FlexContainer child.
  *
  * Three cases:
- *   1. Dropped into the SAME FlexContainer → reorder-only via computeFlexContainerReorder + setComponentLayout.
- *   2. Dropped into a DIFFERENT FlexContainer → reparent with a new order value.
+ *   1. Dropped into the SAME FlexContainer → reorder parent childOrder.
+ *   2. Dropped into a DIFFERENT FlexContainer → reparent and update both childOrder arrays.
  *   3. Dropped onto a grid canvas → synthesize absolute {top, left, width, height}.
  *
  * Grid coordinates are NEVER written for cases 1 or 2.
@@ -86,26 +74,20 @@ export function handleFlexContainerDragEnd({
     const snapshot = useStore.getState().getCurrentPageComponents?.(moduleId) ?? {};
     let mapping = useStore.getState().containerChildrenMapping?.[sourceParentId] ?? [];
     if (!Array.isArray(mapping) || !mapping.includes(widgetId)) {
-      mapping = buildFlexMappingFromSnapshot(snapshot, sourceParentId, currentLayout);
+      mapping = getOrderedFlexChildrenFromSnapshot(snapshot, sourceParentId);
       if (!mapping.includes(widgetId)) {
         mapping = buildFlexMappingFromDom(sourceParentId);
       }
     }
-    const computed = computeFlexContainerReorder({
-      components: snapshot,
-      mapping,
-      currentLayout,
-      componentId: widgetId,
-      newIndex,
-    });
 
     e.target.style.transform = '';
-    if (computed) {
-      setComponentLayout(computed.layoutPatch, undefined, moduleId, {
-        reorderFlexContainerMapping: {
-          containerId: sourceParentId,
-          childIds: computed.reorderedChildIds,
-        },
+    if (mapping.includes(widgetId)) {
+      useStore.getState().moveFlexContainerChild({
+        childId: widgetId,
+        sourceContainerId: sourceParentId,
+        targetContainerId: sourceParentId,
+        targetIndex: newIndex,
+        moduleId,
       });
       setReorderContainerChildren(sourceParentId);
     }
@@ -115,20 +97,16 @@ export function handleFlexContainerDragEnd({
 
   // ── Case 2: different FlexContainer → reparent at the locked slot ──────────
   if (targetParentType === 'FlexContainer') {
-    const targetMapping = useStore.getState().containerChildrenMapping?.[targetParentId] ?? [];
     const targetComponents = useStore.getState().getCurrentPageComponents?.(moduleId) ?? {};
+    const targetMapping = getOrderedFlexChildrenFromSnapshot(
+      targetComponents,
+      targetParentId,
+      useStore.getState().containerChildrenMapping?.[targetParentId] ?? []
+    );
 
     // Honor the slot the indicator displayed; append at end if no live target.
     const lockedTarget = useStore.getState().flexContainerDropTarget;
     const targetIndex = lockedTarget?.flexContainerId === targetParentId ? lockedTarget.index : targetMapping.length;
-
-    const beforeId = targetMapping[targetIndex - 1];
-    const afterId = targetMapping[targetIndex];
-    const beforeOrder = beforeId ? targetComponents[beforeId]?.layouts?.[currentLayout]?.flexOrder ?? 0 : 0;
-    const afterOrder = afterId ? targetComponents[afterId]?.layouts?.[currentLayout]?.flexOrder ?? null : null;
-
-    const newFlexOrder = afterOrder === null ? beforeOrder + 1000 : (beforeOrder + afterOrder) / 2;
-    const gapTooSmall = afterOrder !== null && (newFlexOrder - beforeOrder < 1 || afterOrder - newFlexOrder < 1);
 
     // Carry forward the dragged widget's per-axis sizing so reparenting preserves
     // its current Fill/Fixed state across both axes.
@@ -142,24 +120,14 @@ export function handleFlexContainerDragEnd({
     if (sourceLayout.stackedWidthBehavior !== undefined)
       carriedSizing.stackedWidthBehavior = sourceLayout.stackedWidthBehavior;
 
-    if (gapTooSmall) {
-      // Rebase all target children + dragged widget onto multiples of 1000 to restore gaps.
-      const reordered = [...targetMapping];
-      reordered.splice(targetIndex, 0, widgetId);
-      const layoutPatch = {};
-      reordered.forEach((id, idx) => {
-        if (id === widgetId) {
-          layoutPatch[id] = { flexOrder: (idx + 1) * 1000, ...carriedSizing };
-        } else if (targetComponents[id]?.layouts?.[currentLayout]) {
-          layoutPatch[id] = { flexOrder: (idx + 1) * 1000 };
-        }
-      });
-      setComponentLayout(layoutPatch, targetParentId, undefined, { updateParent: true });
-    } else {
-      setComponentLayout({ [widgetId]: { flexOrder: newFlexOrder, ...carriedSizing } }, targetParentId, undefined, {
-        updateParent: true,
-      });
-    }
+    useStore.getState().moveFlexContainerChild({
+      childId: widgetId,
+      sourceContainerId: sourceParentId,
+      targetContainerId: targetParentId,
+      targetIndex,
+      moduleId,
+      layoutPatch: carriedSizing,
+    });
 
     e.target.style.transform = '';
     incrementCanvasUpdater();

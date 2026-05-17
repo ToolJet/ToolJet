@@ -54,6 +54,69 @@ const FLEX_LAYOUT_FIELDS = [
 ];
 const GRID_LAYOUT_FIELDS = ['top', 'left', 'width', 'height'];
 
+const clampIndex = (index, length) => {
+  const numericIndex = Number.isFinite(index) ? index : length;
+  return Math.max(0, Math.min(numericIndex, length));
+};
+
+export const normalizeChildOrder = (childOrder = [], actualChildIds = []) => {
+  const actualIds = Array.isArray(actualChildIds) ? actualChildIds : [];
+  const actualIdSet = new Set(actualIds);
+  const seen = new Set();
+  const normalized = [];
+
+  if (Array.isArray(childOrder)) {
+    childOrder.forEach((id) => {
+      if (actualIdSet.has(id) && !seen.has(id)) {
+        seen.add(id);
+        normalized.push(id);
+      }
+    });
+  }
+
+  actualIds.forEach((id) => {
+    if (!seen.has(id)) {
+      seen.add(id);
+      normalized.push(id);
+    }
+  });
+
+  return normalized;
+};
+
+export const removeId = (order = [], id) => {
+  if (!Array.isArray(order)) return [];
+  return order.filter((childId) => childId !== id);
+};
+
+export const insertId = (order = [], id, index) => {
+  const withoutId = removeId(order, id);
+  const nextOrder = [...withoutId];
+  nextOrder.splice(clampIndex(index, withoutId.length), 0, id);
+  return nextOrder;
+};
+
+export const moveId = (order = [], id, index) => insertId(order, id, index);
+
+export const getFlexContainerChildOrder = (components, flexContainerId) => {
+  const value = components?.[flexContainerId]?.component?.definition?.properties?.childOrder?.value;
+  return Array.isArray(value) ? value : [];
+};
+
+export const getOrderedFlexChildrenFromSnapshot = (components, flexContainerId, mapping = null) => {
+  const actualChildIds = Array.isArray(mapping)
+    ? mapping.filter((id) => components?.[id]?.component?.parent === flexContainerId)
+    : Object.keys(components ?? {}).filter((id) => components?.[id]?.component?.parent === flexContainerId);
+
+  return normalizeChildOrder(getFlexContainerChildOrder(components, flexContainerId), actualChildIds);
+};
+
+export const getOrderedFlexChildren = (flexContainerId, moduleId, storeState) => {
+  const components = storeState?.getCurrentPageComponents?.(moduleId) ?? {};
+  const mapping = storeState?.containerChildrenMapping?.[flexContainerId] ?? [];
+  return getOrderedFlexChildrenFromSnapshot(components, flexContainerId, mapping);
+};
+
 /**
  * Resolves per-axis sizing for a FlexContainer child from its layout object.
  *
@@ -187,58 +250,12 @@ export const getFlexChildRects = (flexContainerId) => {
 };
 
 /**
- * Pure flex reorder: computes new flexOrder patches and ordered child ids from a
- * page.components snapshot. `newIndex` is the insertion index after removing `componentId`
- * from `mapping` (same convention as computeFlexInsertIndex).
- */
-export const computeFlexContainerReorder = ({ components, mapping, currentLayout, componentId, newIndex }) => {
-  if (!mapping?.length || !components) {
-    return null;
-  }
-
-  const oldIndex = mapping.indexOf(componentId);
-  if (oldIndex === -1) {
-    return null;
-  }
-
-  const reorderedChildIds = [...mapping];
-  reorderedChildIds.splice(oldIndex, 1);
-  reorderedChildIds.splice(newIndex, 0, componentId);
-
-  const beforeId = reorderedChildIds[newIndex - 1];
-  const afterId = reorderedChildIds[newIndex + 1];
-  const beforeOrder = beforeId ? components[beforeId]?.layouts?.[currentLayout]?.flexOrder ?? 0 : 0;
-  const afterOrder = afterId ? components[afterId]?.layouts?.[currentLayout]?.flexOrder ?? null : null;
-
-  const newFlexOrder = afterOrder === null ? beforeOrder + 1000 : (beforeOrder + afterOrder) / 2;
-
-  const gapTooSmall = afterOrder !== null && (newFlexOrder - beforeOrder < 1 || afterOrder - newFlexOrder < 1);
-
-  const layoutPatch = {};
-  if (gapTooSmall) {
-    reorderedChildIds.forEach((id, idx) => {
-      if (components[id]?.layouts?.[currentLayout]) {
-        layoutPatch[id] = { flexOrder: (idx + 1) * 1000 };
-      }
-    });
-  } else if (components[componentId]?.layouts?.[currentLayout]) {
-    layoutPatch[componentId] = { flexOrder: newFlexOrder };
-  }
-
-  if (Object.keys(layoutPatch).length === 0) {
-    return null;
-  }
-
-  return { layoutPatch, reorderedChildIds };
-};
-
-/**
  * Canonical insertion-index helper used by first-drop hover (Container.jsx),
  * moveable onDrag indicator (Grid.jsx), and drag-end finalization (flexContainerDragEnd.js).
  *
  * Optionally excludes one child element by id — pass the dragged widget's id during
  * moveable drag so its own rect does not skew the midpoint calculation. The returned
- * index is correct to pass to computeFlexContainerReorder (slot in the shortened array).
+ * index is the slot in the shortened array after excluding the dragged widget.
  */
 export const computeFlexInsertIndex = (flexContainerId, clientX, clientY, direction = 'column', excludeId = null) => {
   const inner = document.querySelector(`[data-parentId="${flexContainerId}"]`);

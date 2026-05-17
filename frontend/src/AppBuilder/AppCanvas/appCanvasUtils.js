@@ -103,26 +103,18 @@ export const addNewWidgetToTheEditor = (
   let nonActiveLayoutData;
 
   if (isFlexContainerParent) {
-    const existingChildren = useStore.getState().getContainerChildrenMapping(parentId) || [];
-    const allComponents = useStore.getState().getCurrentPageComponents();
-    const maxOrder = existingChildren.reduce((max, childId) => {
-      const childOrder = allComponents[childId]?.layouts?.[currentLayout]?.flexOrder ?? 0;
-      return Math.max(max, childOrder);
-    }, 0);
-
     const dropHeightPx = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
     const dropWidthPx = customLayouts ? customLayouts[currentLayout].width * gridWidth : defaultWidth * gridWidth;
 
     // Both axes default to Fixed; users opt into Fill parent per-axis from the inspector.
     const flexLayout = {
-      flexOrder: maxOrder + 1000,
       fillWidth: false,
       fillHeight: false,
       widthPx: dropWidthPx,
       heightPx: dropHeightPx,
     };
     activeLayoutData = flexLayout;
-    nonActiveLayoutData = { ...flexLayout, flexOrder: maxOrder + 1000 };
+    nonActiveLayoutData = { ...flexLayout };
   } else {
     activeLayoutData = {
       top: top,
