@@ -35,6 +35,7 @@ const NEW_WIDGETS = [
   'KeyValuePair',
   'ColorPicker',
   'FileButton',
+  'FlexContainer',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {

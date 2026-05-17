@@ -288,7 +288,7 @@ export const baseComponentProperties = (
   const flexParentType = flexParentId ? allComponents?.[flexParentId]?.component?.component : null;
   if (flexParentType === 'FlexContainer') {
     items.push({
-      title: `${i18next.t('widget.flexChild.widthAndHeight', 'Width & height')}`,
+      title: `${i18next.t('widget.flexChild.widthAndHeight', 'Width')}`,
       children: (
         <FlexChildLayoutPanel
           selectedComponentId={selectedComponentId}

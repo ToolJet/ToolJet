@@ -129,7 +129,7 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <label style={labelStyle}>Height</label>
         <div style={{ width: '168px' }}>
           <Dropdown
@@ -147,9 +147,9 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
           <label style={labelStyle}>Height (px)</label>
           <input type="number" min={1} value={heightValue} onChange={handleHeightPxChange} style={inputStyle} />
         </div>
-      )}
+      )} */}
 
-      {showStackedWidth && (
+      {/* {showStackedWidth && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <label style={labelStyle}>When stacked, width</label>
           <div style={{ width: '168px' }}>
@@ -162,7 +162,7 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
             />
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
