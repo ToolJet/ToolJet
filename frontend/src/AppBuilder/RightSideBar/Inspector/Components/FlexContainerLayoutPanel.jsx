@@ -173,8 +173,8 @@ export const FlexContainerLayoutPanel = ({ component, paramUpdated }) => {
   };
 
   const direction = resolveReferences(defProps.direction?.value) || 'column';
-  const justifyToggleValue = justifyForToggle(resolveReferences(defProps.justify?.value) || 'flex-start');
-  const alignRaw = resolveReferences(defProps.align?.value) ?? 'stretch';
+  const justifyToggleValue = justifyForToggle(resolveReferences(defProps.justifyContent?.value) || 'flex-start');
+  const alignRaw = resolveReferences(defProps.alignItems?.value) ?? 'stretch';
   const alignToggleValue = alignForToggle(alignRaw);
   const flexWrapRaw = resolveReferences(defProps.flexWrap?.value);
   const flexWrapOn = flexWrapRaw === true || flexWrapRaw === 'true';
@@ -202,14 +202,18 @@ export const FlexContainerLayoutPanel = ({ component, paramUpdated }) => {
         <label style={LABEL_STYLE}>Distribute</label>
         <IconToggle
           value={justifyToggleValue}
-          onChange={(v) => updateValue('justify', v)}
+          onChange={(v) => updateValue('justifyContent', v)}
           options={JUSTIFY_ICON_OPTIONS}
         />
       </div>
 
       <div style={ROW_STYLE}>
         <label style={LABEL_STYLE}>Align</label>
-        <IconToggle value={alignToggleValue} onChange={(v) => updateValue('align', v)} options={ALIGN_ICON_OPTIONS} />
+        <IconToggle
+          value={alignToggleValue}
+          onChange={(v) => updateValue('alignItems', v)}
+          options={ALIGN_ICON_OPTIONS}
+        />
       </div>
 
       <div style={ROW_STYLE}>

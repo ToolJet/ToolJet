@@ -30,7 +30,15 @@ export const FlexContainer = ({
     setExposedVariable
   );
 
-  const { gap, padding, justify, align, direction = 'column', flexWrap = false, stackBelow = 'none' } = properties;
+  const {
+    gap,
+    padding,
+    justifyContent,
+    alignItems,
+    direction = 'column',
+    flexWrap = false,
+    stackBelow = 'none',
+  } = properties;
   const { backgroundColor, borderColor, borderRadius, boxShadow } = styles;
 
   const shouldStack = useShouldStackFlexRealCanvas(stackBelow);
@@ -56,14 +64,14 @@ export const FlexContainer = ({
           flexWrap,
           gap,
           padding,
-          justify,
-          align,
+          justifyContent,
+          alignItems,
           stackBelow,
           shouldStack,
           childCount: childIds.length,
         }),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [effectiveDirection, flexWrap, gap, padding, justify, align, stackBelow, shouldStack, childIds.length]
+      [effectiveDirection, flexWrap, gap, padding, justifyContent, alignItems, stackBelow, shouldStack, childIds.length]
     ),
     visibility: isVisible,
     subContainerIndex,
@@ -102,8 +110,8 @@ export const FlexContainer = ({
     flexWrap: shouldStack ? 'nowrap' : flexWrap ? 'wrap' : 'nowrap',
     gap: `${gap ?? 8}px`,
     padding: `${padding ?? 12}px`,
-    justifyContent: justify ?? 'flex-start',
-    alignItems: align ?? 'stretch',
+    justifyContent: justifyContent ?? 'flex-start',
+    alignItems: alignItems ?? 'flex-start',
     backgroundColor: 'transparent',
     height: isDynamicHeightEnabled ? 'auto' : '100%',
     ...(isDisabled && { opacity: 0.5, pointerEvents: 'none' }),

@@ -211,6 +211,7 @@ export const baseComponentProperties = (
       'ColorPicker',
       'FileButton',
       'Listview',
+      'FlexContainer',
     ],
     Layout: [],
   };
@@ -220,7 +221,15 @@ export const baseComponentProperties = (
     }
   }
   if (component.component.component === 'FlexContainer') {
-    const layoutKeys = new Set(['direction', 'flexWrap', 'gap', 'padding', 'justify', 'align', 'stackBelow']);
+    const layoutKeys = new Set([
+      'direction',
+      'flexWrap',
+      'gap',
+      'padding',
+      'justifyContent',
+      'alignItems',
+      'stackBelow',
+    ]);
     properties = properties.filter((property) => !layoutKeys.has(property));
   }
   let items = [];

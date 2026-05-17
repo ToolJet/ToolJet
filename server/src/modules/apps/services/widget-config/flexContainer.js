@@ -29,7 +29,7 @@ export const flexContainerConfig = {
       displayName: 'Wrap',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: false,
+        defaultValue: true,
       },
     },
     gap: {
@@ -48,7 +48,7 @@ export const flexContainerConfig = {
         defaultValue: 12,
       },
     },
-    justify: {
+    justifyContent: {
       type: 'select',
       displayName: 'Justify content',
       options: [
@@ -63,7 +63,7 @@ export const flexContainerConfig = {
         defaultValue: 'flex-start',
       },
     },
-    align: {
+    alignItems: {
       type: 'select',
       displayName: 'Align items',
       options: [
@@ -127,6 +127,13 @@ export const flexContainerConfig = {
         defaultValue: false,
       },
     },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
   },
   events: {},
   styles: {
@@ -186,11 +193,11 @@ export const flexContainerConfig = {
     },
     properties: {
       direction: { value: 'row' },
-      flexWrap: { value: '{{false}}' },
+      flexWrap: { value: '{{true}}' },
       gap: { value: '8' },
       padding: { value: '12' },
-      justify: { value: 'flex-start' },
-      align: { value: 'flex-start' },
+      justifyContent: { value: 'flex-start' },
+      alignItems: { value: 'flex-start' },
       stackBelow: { value: 'mobile' },
       loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
