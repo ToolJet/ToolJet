@@ -3,8 +3,12 @@ import { Plus, Trash2 } from 'lucide-react';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button } from '@/components/ui/Rocket';
 import { FieldRow, OptionCombobox } from './shared';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, component }) {
+  const { moduleId } = useModuleContext();
+  const upsertLinkedApp = useStore((state) => state.upsertLinkedApp);
   const [isLoading, setIsLoading] = useState(true);
   const [appOptions, setAppOptions] = useState([]);
   const queryParams = event.queryParams ?? [];
@@ -36,12 +40,12 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
           value={event.correlationId}
           onChange={(value) => {
             const selected = appOptions.find((opt) => opt.value === value);
-            // Write the stable target + freshly-known slug atomically;
-            handlerChanged(eventIndex, {
-              correlationId: value,
-              targetAppSlug: selected?.slug ?? null,
-              slug: undefined, // drop legacy `slug` key so the persisted row is clean.
-            });
+
+            // Persist only the stable id; drop the legacy `slug` key.
+            handlerChanged(eventIndex, { correlationId: value, slug: undefined });
+
+            //The slug itself is mirrored into the linkedApps store map so click-time URL building works without a reload.
+            upsertLinkedApp(value, { slug: selected?.slug ?? null }, moduleId);
           }}
           placeholder={isLoading ? 'Loading…' : undefined}
         />

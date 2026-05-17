@@ -410,7 +410,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
                 value={page?.targetCorelationId}
                 onChange={(value) => {
                   const selected = appOptions.find((opt) => opt.value === value);
-                  updatePageTargetApp(page?.id, value, selected?.slug ?? null);
+                  updatePageTargetApp(page?.id, value, selected?.slug ?? null, moduleId);
                 }}
                 isLoading={appOptionsLoading}
                 placeholder={'Select...'}

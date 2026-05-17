@@ -213,16 +213,14 @@ export const createPageMenuSlice = (set, get) => {
       };
       _togglePageFooterCmd(pageId, [updated])(set, get);
     },
-    updatePageTargetApp: (pageId, coRelationId, slug = null) => {
+    updatePageTargetApp: (pageId, coRelationId, slug = null, moduleId = 'canvas') => {
+      const { upsertLinkedApp } = get();
+
       // Factory handles state mutation + autosave for targetCorelationId
       updatePageTargetApp(pageId, [coRelationId])(set, get);
 
-      // Keep targetAppSlug in sync so switchPageWrapper builds the right URL without requiring a reload.
-      // Next app load overwrites it from the server.
-      set((state) => {
-        const page = state.modules.canvas.pages.find((p) => p.id === pageId);
-        if (page) page.targetAppSlug = slug;
-      });
+      // Mirror the selection into the linkedApps store map so switchPageWrapper resolves the slug without a reload.
+      upsertLinkedApp(coRelationId, { slug: slug }, moduleId);
     },
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
@@ -614,9 +612,11 @@ export const createPageMenuSlice = (set, get) => {
           return false;
         }
 
-        // Prefer freshly-resolved slug for targetCorelationId;
-        // fall back to legacy page.appId for any pages that haven't been migrated yet.
-        const targetSlug = page?.targetAppSlug || page?.appId;
+        // Look up the freshly server-resolved slug from the linkedApps store map
+        // (populated on every app load). Fall back to the legacy `appId` value
+        // (which held the slug pre-migration) only when the new field is missing.
+        const linked = get().appStore.modules[moduleId]?.linkedApps?.[page?.targetCorelationId];
+        const targetSlug = linked?.slug || page?.appId;
         if (!targetSlug) {
           toast.error('Target app not found or no longer available');
           return false;
