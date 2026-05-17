@@ -100,7 +100,7 @@ const FlexContainerChildWrapper = memo(
     const styles = {
       ...(flexShouldStack && !isRow
         ? {
-            flex: mainFill ? '1 1 0' : `0 0 ${mainPx}px`,
+            flex: mainFill ? '1 0 auto' : `0 0 ${mainPx}px`,
             height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
             minHeight: 0,
             ...(fillWidth
@@ -110,7 +110,7 @@ const FlexContainerChildWrapper = memo(
               : { width: '100%', minWidth: 0 }),
           }
         : {
-            flex: mainFill ? '1 1 0' : `0 0 ${mainPx}px`,
+            flex: mainFill ? '1 0 auto' : `0 0 ${mainPx}px`,
             ...(isRow
               ? {
                   height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
