@@ -42,7 +42,10 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import { getEffectiveFlexDirectionForFlexContainer } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import {
+  createDefaultFlexChildLayout,
+  getEffectiveFlexDirectionForFlexContainer,
+} from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
@@ -461,12 +464,19 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         }
         newParent = parent ? parent : null;
         oldParent = currentWidget.component?.parent;
-        layouts[id] = {
-          width: _width,
-          height: _height,
-          top: y,
-          left: _left,
-        };
+        if (parent && getComponentTypeFromId(parent) === 'FlexContainer') {
+          layouts[id] = createDefaultFlexChildLayout({
+            widthPx: _width * containerWidth,
+            heightPx: _height,
+          });
+        } else {
+          layouts[id] = {
+            width: _width,
+            height: _height,
+            top: y,
+            left: _left,
+          };
+        }
 
         return layouts;
       }, {});
@@ -1315,6 +1325,25 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             // Never update parentId for Modal
             newParentId = parentComponent?.id;
             e.target.style.width = `${e.target.clientWidth}px`;
+          }
+
+          let hoveredFlexId = null;
+          if (newParentId && getComponentTypeFromId(newParentId) === 'FlexContainer') {
+            hoveredFlexId = newParentId;
+          } else if (newParentId) {
+            const hoveredWidget = boxList.find((b) => b.id === newParentId);
+            const hoveredParentId = hoveredWidget?.component?.parent ?? null;
+            if (hoveredParentId && getComponentTypeFromId(hoveredParentId) === 'FlexContainer') {
+              hoveredFlexId = hoveredParentId;
+            }
+          }
+
+          if (hoveredFlexId) {
+            const parentDir = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, hoveredFlexId, moduleId);
+            const idx = computeFlexContainerInsertIndex(hoveredFlexId, e.clientX, e.clientY, parentDir);
+            setFlexContainerDropTarget({ flexContainerId: hoveredFlexId, index: idx });
+          } else {
+            setFlexContainerDropTarget(null);
           }
 
           if (newParentId !== prevDragParentId.current) {

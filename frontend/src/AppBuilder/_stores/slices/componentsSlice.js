@@ -31,6 +31,7 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import {
+  createDefaultFlexChildLayout,
   insertId,
   moveId,
   normalizeChildOrder,
@@ -1886,7 +1887,14 @@ export const createComponentsSlice = (set, get) => ({
             if (component) {
               if (newParentComponentType === 'FlexContainer' && updateParent) {
                 // FlexContainer children: write only flex-specific fields, strip grid fields
-                const { fillWidth, fillHeight, widthPx, heightPx, crossAlignSelf, stackedWidthBehavior } = layout;
+                const defaultFlexLayout = createDefaultFlexChildLayout({
+                  widthPx: layout.widthPx,
+                  heightPx: layout.heightPx,
+                });
+                const { fillWidth, fillHeight, widthPx, heightPx, crossAlignSelf, stackedWidthBehavior } = {
+                  ...defaultFlexLayout,
+                  ...layout,
+                };
                 const flexLayout = {};
                 if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
                 if (fillHeight !== undefined) flexLayout.fillHeight = fillHeight;
@@ -1974,6 +1982,19 @@ export const createComponentsSlice = (set, get) => ({
                 }
                 if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
                   state.containerChildrenMapping[newParentId].push(componentId);
+                }
+                if (newParentComponentType === 'FlexContainer') {
+                  const newParent = page.components[newParentId]?.component;
+                  const actualChildIds = state.containerChildrenMapping[newParentId] ?? [];
+                  const baseOrder = normalizeChildOrder(getChildOrderValue(newParent), actualChildIds);
+                  const lockedTarget = state.flexContainerDropTarget;
+                  const targetIndex =
+                    lockedTarget?.flexContainerId === newParentId ? lockedTarget.index : baseOrder.length;
+                  const nextOrder = insertId(baseOrder, componentId, targetIndex);
+                  if (!newParent.definition.properties) newParent.definition.properties = {};
+                  newParent.definition.properties.childOrder = { value: nextOrder };
+                  state.containerChildrenMapping[newParentId] = normalizeChildOrder(nextOrder, actualChildIds);
+                  flexChildOrderUpdates[newParentId] = nextOrder;
                 }
               } else {
                 if (!state.containerChildrenMapping[moduleId].includes(componentId)) {

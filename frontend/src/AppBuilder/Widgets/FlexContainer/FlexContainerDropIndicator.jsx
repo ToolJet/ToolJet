@@ -30,12 +30,23 @@ const FlexContainerDropIndicator = ({ flexContainerId, direction = 'column' }) =
     return <div style={{ ...baseStyle, left: 8, top: 8, width: isRow ? BAR : 24, height: isRow ? 24 : BAR }} />;
   }
 
-  const idx = Math.min(target.index, children.length - 1);
+  const isAfterLast = target.index >= children.length;
+  const idx = isAfterLast ? children.length - 1 : Math.max(target.index, 0);
   const child = children[idx];
 
   const style = isRow
-    ? { left: child.offsetLeft - BAR / 2, top: child.offsetTop, bottom: 0, width: BAR }
-    : { top: child.offsetTop - BAR / 2, left: child.offsetLeft, right: 0, height: BAR };
+    ? {
+        left: child.offsetLeft + (isAfterLast ? child.offsetWidth : 0) - BAR / 2,
+        top: child.offsetTop,
+        bottom: 0,
+        width: BAR,
+      }
+    : {
+        top: child.offsetTop + (isAfterLast ? child.offsetHeight : 0) - BAR / 2,
+        left: child.offsetLeft,
+        right: 0,
+        height: BAR,
+      };
 
   return <div style={{ ...baseStyle, ...style }} />;
 };
