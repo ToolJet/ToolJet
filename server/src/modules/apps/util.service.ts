@@ -844,22 +844,28 @@ export class AppsUtilService implements IAppsUtilService {
       viewableAppsQb.select(select.map((col) => `apps.${col}`));
     }
 
-    // Last-edited first, branch-aware.
+    // Listing order:
+    //   1. Non-stub rows first (is_stub ASC — false < true in Postgres). Stubs are
+    //      pull-tier placeholders awaiting hydrate; they shouldn't outrank
+    //      fully-loaded apps in the dashboard.
+    //   2. Last-edited first, branch-aware:
+    //      - branchId + non-workflow → appVersions.updatedAt (per-branch edit
+    //        timestamp). The alias comes from applyAppVersionsJoin.
+    //      - branchId absent / workflows → apps.updatedAt (bumped by the AppVersion
+    //        afterUpdate subscriber + the child-write triggers). Stubs only exist
+    //        in git-enabled workspaces, where the dashboard always supplies a
+    //        branchId (header or default-branch fallback), so this case has no
+    //        stubs to worry about.
+    //   3. apps.createdAt — deterministic tiebreaker.
     //
-    //   - branchId provided + non-workflow → order by the branch row's app_versions
-    //     .updatedAt. applyAppVersionsJoin (called by all() / fetchDashboardApps)
-    //     innerJoinAndSelects `appVersions` filtered by branchId, so the alias exists
-    //     when this orderBy resolves. Per-branch ordering ensures an edit on branch A
-    //     doesn't surface the same app at the top of branch B's listing.
-    //   - branchId absent / workflows → fall back to apps.updatedAt (touched by the
-    //     AppVersion afterUpdate subscriber, so it still tracks edits as a coarse
-    //     last-touched timestamp).
-    //
-    // apps.createdAt remains a deterministic tiebreaker. TypeORM is fine with this
-    // because `appVersions` is a real entity join (has metadata) — derived tables /
-    // subquery aliases break the pagination wrapper.
+    // TypeORM accepts `appVersions.<col>` only because `appVersions` is a real
+    // entity-mapped join. Derived tables / subquery aliases break the pagination
+    // wrapper, so we keep this in plain entity terms.
     if (branchId && type !== APP_TYPES.WORKFLOW) {
-      viewableAppsQb.orderBy('appVersions.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
+      viewableAppsQb
+        .orderBy('appVersions.isStub', 'ASC')
+        .addOrderBy('appVersions.updatedAt', 'DESC')
+        .addOrderBy('apps.createdAt', 'DESC');
     } else {
       viewableAppsQb.orderBy('apps.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
     }
@@ -1383,47 +1389,45 @@ export class AppsUtilService implements IAppsUtilService {
    * in-memory so single-app reads (`getOne`, `getBySlug`, etc.) return the correct
    * user-facing metadata. Workflows are skipped — they keep metadata on apps.* directly.
    *
-   * Source resolution:
-   *   - branchId supplied:        any version row on that exact branch (throws if none
-   *                               — the row should exist on the requested branch).
-   *   - no branchId, git enabled: any version row on the workspace's default branch.
-   *   - no branchId, git off:     any version row (every row carries identical metadata).
+   * Source resolution (mirrors AppsRepository.resolveMetadataVersion):
+   *   1. Detect git-sync state via the default-branch lookup.
+   *   2. Git enabled + branchId supplied → DRAFT row on that branch (throws if none).
+   *   3. Git enabled + no branchId       → DRAFT row on the default branch.
+   *   4. Git off                         → any version row (every row carries
+   *                                        identical metadata).
+   *
+   * DRAFT scoping in the git-enabled cases matches the metadata-write path
+   * (AppsUtilService.update writes the DRAFT branch row) so published/released
+   * snapshots can't shadow the current metadata.
    */
   async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
     if (!app || app.type === APP_TYPES.WORKFLOW) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      let source: AppVersion | null = null;
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId: app.organizationId, isDefault: true },
+        select: ['id'],
+      });
+      const gitEnabled = !!defaultBranch;
 
-      if (branchId) {
+      let source: AppVersion | null = null;
+      if (gitEnabled) {
+        const targetBranchId = branchId ?? defaultBranch.id;
         source = await manager.findOne(AppVersion, {
-          where: { appId: app.id, branchId },
+          where: { appId: app.id, branchId: targetBranchId, status: AppVersionStatus.DRAFT },
           order: { updatedAt: 'DESC' },
           select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
         });
-        if (!source) {
-          throw new BadRequestException(`No version row found for app ${app.id} on branch ${branchId}.`);
+        if (!source && branchId) {
+          throw new BadRequestException(`No DRAFT version found for app ${app.id} on branch ${branchId}.`);
         }
       } else {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: app.organizationId, isDefault: true },
-          select: ['id'],
+        // Git off: pick any version row — every row carries identical metadata.
+        source = await manager.findOne(AppVersion, {
+          where: { appId: app.id },
+          order: { updatedAt: 'DESC' },
+          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
         });
-        if (defaultBranch) {
-          // Git-enabled: pick the default branch row.
-          source = await manager.findOne(AppVersion, {
-            where: { appId: app.id, branchId: defaultBranch.id },
-            order: { updatedAt: 'DESC' },
-            select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-          });
-        } else {
-          // Git off: pick any version row — every row carries identical metadata.
-          source = await manager.findOne(AppVersion, {
-            where: { appId: app.id },
-            order: { updatedAt: 'DESC' },
-            select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-          });
-        }
       }
 
       if (!source) return;

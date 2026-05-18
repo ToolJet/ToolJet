@@ -243,9 +243,12 @@ export class VersionRepository extends Repository<AppVersion> {
       });
       const app = appVersion.app;
       // Workflows keep metadata on apps.*; non-workflows must overlay from the
-      // canonical version row resolved by git-sync state.
+      // canonical version row resolved by git-sync state. Forward the loaded
+      // version's branchId so the overlay picks that branch's row directly.
       if (app && app.type !== APP_TYPES.WORKFLOW) {
-        const metadataVersion = await this.resolveMetadataVersion(manager, app, { versionId: id });
+        const metadataVersion = await this.resolveMetadataVersion(manager, app, {
+          branchId: appVersion.branchId ?? undefined,
+        });
         this.overlayMetadata(app, metadataVersion);
       }
       return app;
@@ -263,39 +266,45 @@ export class VersionRepository extends Repository<AppVersion> {
   }
 
   // Picks the app_version row whose metadata should be overlaid onto `app`.
-  // Rules mirror AppsRepository.resolveMetadataVersion:
-  //   - explicit branchId             → that branch; throws if no row matches
-  //   - no branchId, git enabled      → default branch row
-  //   - no branchId, git disabled     → any slug-bearing row (most recent)
-  // `versionId` (when provided) further narrows the selection.
+  // Mirrors AppsRepository.resolveMetadataVersion — same rules.
+  //
+  // Resolution order:
+  //   1. Detect git-sync state via getDefaultBranchId (presence of a default
+  //      workspace_branches row).
+  //   2. Git enabled + explicit branchId → DRAFT row on that branch.
+  //   3. Git enabled + no branchId       → DRAFT row on the default branch.
+  //   4. Git disabled                    → any version row (most recent,
+  //                                        slug-bearing).
+  //
+  // DRAFT scoping matches the metadata-write paths (AppsUtilService.update
+  // writes the DRAFT row) so published/released snapshots don't shadow current
+  // metadata.
   async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
-    options: { branchId?: string; versionId?: string } = {}
+    options: { branchId?: string } = {}
   ): Promise<AppVersion | null> {
-    const { branchId, versionId } = options;
+    const { branchId } = options;
+    const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
+    const gitEnabled = !!defaultBranchId;
 
     const qb = manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .where('av.app_id = :appId', { appId: app.id });
 
-    if (versionId) qb.andWhere('av.id = :versionId', { versionId });
-
-    if (branchId) {
-      qb.andWhere('av.branch_id = :branchId', { branchId });
+    if (gitEnabled) {
+      const targetBranchId = branchId ?? defaultBranchId;
+      qb.andWhere('av.branch_id = :branchId', { branchId: targetBranchId }).andWhere('av.status = :status', {
+        status: AppVersionStatus.DRAFT,
+      });
     } else {
-      const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
-      if (defaultBranchId) {
-        qb.andWhere('av.branch_id = :branchId', { branchId: defaultBranchId });
-      } else {
-        qb.andWhere('av.slug IS NOT NULL');
-      }
+      qb.andWhere('av.slug IS NOT NULL');
     }
 
     const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
 
-    if (!version && branchId) {
+    if (!version && gitEnabled && branchId) {
       throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
     }
     return version;
@@ -356,7 +365,12 @@ export class VersionRepository extends Repository<AppVersion> {
 
       const app = version.app;
       if (app && app.type !== APP_TYPES.WORKFLOW) {
-        const metadataVersion = await this.resolveMetadataVersion(manager, app, { branchId, versionId });
+        // Prefer the caller's explicit branchId; fall back to the loaded version's
+        // own branchId so overlay still picks the right branch when no header was
+        // supplied. versionId is no longer accepted by resolveMetadataVersion.
+        const metadataVersion = await this.resolveMetadataVersion(manager, app, {
+          branchId: branchId ?? version.branchId ?? undefined,
+        });
         this.overlayMetadata(app, metadataVersion);
       }
 
@@ -389,9 +403,13 @@ export class VersionRepository extends Repository<AppVersion> {
     });
   }
 
+  // Thin DB-level update. Business hooks (e.g. the DRAFT → PUBLISHED transition
+  // for default-branch rows) live in `VersionsUtilService.updateVersion` — keep
+  // this method pure so it can be reused for plain field updates without
+  // dragging in branch / publish lifecycle.
   async updateVersion(versionId: string, editableParams: Partial<AppVersion>, manager?: EntityManager): Promise<void> {
-    await dbTransactionWrap((manager: EntityManager) => {
-      return manager.update(
+    await dbTransactionWrap((mgr: EntityManager) => {
+      return mgr.update(
         AppVersion,
         { id: versionId },
         {

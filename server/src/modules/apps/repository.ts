@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { AppVersion, AppVersionType } from '@entities/app_version.entity';
+import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -16,6 +16,9 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findBySlug(slug: string, organizationId: string, versionId?: string, branchId?: string): Promise<App> {
+    // Callers (e.g. createGitApp, findAppWithIdOrSlug, valid-app.guard) expect this
+    // to return null/undefined on miss and throw only their own NotFoundException
+    // upstream if appropriate. Don't throw from here.
     const versionCondition = versionId ? { appVersions: { id: versionId } } : {};
     const workflow = await this.findOne({
       ...(versionId ? { relations: ['appVersions'] } : {}),
@@ -38,7 +41,7 @@ export class AppsRepository extends Repository<App> {
         relations: ['app'],
       });
       if (!version?.app || version.app.organizationId !== organizationId) {
-        throw new NotFoundException(`App not found for slug "${slug}" on branch ${branchId}`);
+        return null;
       }
       const app = version.app;
       this.overlayMetadata(app, version);
@@ -49,13 +52,13 @@ export class AppsRepository extends Repository<App> {
     let resolvedVersion: AppVersion | null = null;
 
     if (defaultBranchId) {
-      // Git sync enabled and no brach id - pick from default branch only
+      // Git sync enabled and no branch id — pick from default branch only.
       resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
         where: { slug, branchId: defaultBranchId },
         relations: ['app'],
       });
     } else {
-      // Git sync disabled — find any slug match across all versions in the workspace (metadata can be on any version row).
+      // Git sync disabled — find any slug match across all versions in the workspace.
       resolvedVersion = await this.dataSource.getRepository(AppVersion).findOne({
         where: { slug },
         relations: ['app'],
@@ -63,7 +66,7 @@ export class AppsRepository extends Repository<App> {
     }
 
     if (!resolvedVersion?.app || resolvedVersion.app.organizationId !== organizationId) {
-      throw new NotFoundException(`App not found for slug "${slug}" on default branch`);
+      return null;
     }
     const app = resolvedVersion.app;
     this.overlayMetadata(app, resolvedVersion);
@@ -71,6 +74,8 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findAppBySlug(slug: string, branchId?: string): Promise<App> {
+    // Caller (apps/guards/app-auth.guard.ts) checks `if (!app)` and throws its
+    // own NotFoundException — return null on miss instead of throwing here.
     const workflow = await this.findOne({
       where: {
         type: APP_TYPES.WORKFLOW,
@@ -89,7 +94,7 @@ export class AppsRepository extends Repository<App> {
         relations: ['app'],
       });
       if (!version?.app) {
-        throw new NotFoundException(`App not found for slug "${slug}" on branch ${branchId}`);
+        return null;
       }
       const app = version.app;
       this.overlayMetadata(app, version);
@@ -98,8 +103,8 @@ export class AppsRepository extends Repository<App> {
 
     let resolvedVersion: AppVersion = null;
     // No branch context: pick either a non-git row (branch_id IS NULL) or the
+    // workspace default-branch row for git-enabled workspaces.
     if (await this.checkIfGitEnabled(this.manager)) {
-      // workspace default-branch row for git-enabled workspaces.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
@@ -113,7 +118,7 @@ export class AppsRepository extends Repository<App> {
         .orderBy('av.updated_at', 'DESC')
         .getOne();
     } else {
-      // Git sync disabled — find any slug match across all versions in the workspace (metadata can be on any version row).
+      // Git sync disabled — find any slug match across non-branch rows.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
@@ -124,7 +129,7 @@ export class AppsRepository extends Repository<App> {
     }
 
     if (!resolvedVersion?.app) {
-      throw new NotFoundException(`App not found for slug "${slug}"`);
+      return null;
     }
 
     const app = resolvedVersion.app;
@@ -234,7 +239,7 @@ export class AppsRepository extends Repository<App> {
     });
 
     if (app && app.type !== APP_TYPES.WORKFLOW) {
-      const version = await this.resolveMetadataVersion(this.manager, app, { versionId, branchId });
+      const version = await this.resolveMetadataVersion(this.manager, app, { branchId });
       this.overlayMetadata(app, version);
     }
     return app;
@@ -250,7 +255,9 @@ export class AppsRepository extends Repository<App> {
     });
 
     if (app && app.type !== APP_TYPES.WORKFLOW) {
-      const version = await this.resolveMetadataVersion(this.manager, app, { versionId });
+      // resolveMetadataVersion no longer takes versionId — routes by git-sync state
+      // (default branch DRAFT row, or any-row when git is off).
+      const version = await this.resolveMetadataVersion(this.manager, app);
       this.overlayMetadata(app, version);
     }
     return app;
@@ -460,39 +467,45 @@ export class AppsRepository extends Repository<App> {
   }
 
   // Picks the app_version row whose metadata should be overlaid onto `app`.
-  // Rules:
-  //   - explicit branchId             → that branch; throws if no row matches
-  //   - no branchId, git enabled      → default branch row
-  //   - no branchId, git disabled     → any slug-bearing row (most recent)
-  // `versionId` (when provided) further narrows the selection.
+  //
+  // Resolution order:
+  //   1. Detect branching state via getDefaultBranchId (= workspace_branches row
+  //      with is_default=true). Presence of the row = "git sync enabled".
+  //   2. Git enabled + explicit branchId → DRAFT row on that branch.
+  //   3. Git enabled + no branchId       → DRAFT row on the default branch.
+  //   4. Git disabled                    → any version row (most recently
+  //                                        updated, slug-bearing).
+  //
+  // DRAFT scoping in the git-enabled cases mirrors the metadata-write paths
+  // (AppsUtilService.update writes the DRAFT BRANCH-type row on sub-branches)
+  // and matches the canonical "editor working state" row, so released/published
+  // historical snapshots don't shadow the current metadata.
   private async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
-    options: { branchId?: string; versionId?: string } = {}
+    options: { branchId?: string } = {}
   ): Promise<AppVersion | null> {
-    const { branchId, versionId } = options;
+    const { branchId } = options;
+    const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
+    const gitEnabled = !!defaultBranchId;
 
     const qb = manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .where('av.app_id = :appId', { appId: app.id });
 
-    if (versionId) qb.andWhere('av.id = :versionId', { versionId });
-
-    if (branchId) {
-      qb.andWhere('av.branch_id = :branchId', { branchId });
+    if (gitEnabled) {
+      const targetBranchId = branchId ?? defaultBranchId;
+      qb.andWhere('av.branch_id = :branchId', { branchId: targetBranchId }).andWhere('av.status = :status', {
+        status: AppVersionStatus.DRAFT,
+      });
     } else {
-      const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
-      if (defaultBranchId) {
-        qb.andWhere('av.branch_id = :branchId', { branchId: defaultBranchId });
-      } else {
-        qb.andWhere('av.slug IS NOT NULL');
-      }
+      qb.andWhere('av.slug IS NOT NULL');
     }
 
     const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
 
-    if (!version && branchId) {
+    if (!version && gitEnabled && branchId) {
       throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
     }
     return version;
