@@ -25,6 +25,27 @@ const FormData = require('form-data');
 const JSON5 = require('json5');
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
+
+// got v11 lowercases all header keys via lowercaseKeys() in normalizeArguments.
+// This extended instance restores original casing in a handler, which runs after
+// normalization but before the actual http.request call via next(options).
+const gotWithHeaderCase = got.extend({
+  handlers: [
+    (options, next) => {
+      const caseMap = (options.context as any)?._headerCaseMap as Record<string, string> | undefined;
+      if (caseMap) {
+        const h = options.headers as Record<string, string | string[]>;
+        for (const [lcKey, origKey] of Object.entries(caseMap)) {
+          if (Object.prototype.hasOwnProperty.call(h, lcKey)) {
+            h[origKey] = h[lcKey];
+            delete h[lcKey];
+          }
+        }
+      }
+      return next(options);
+    },
+  ],
+});
 import { SignatureV4 } from '@smithy/signature-v4';
 import { Sha256 } from '@aws-crypto/sha256-js';
 function isFileObject(value: unknown): value is Record<string, string> {
@@ -73,8 +94,17 @@ export default class RestapiQueryService implements QueryService {
     // Pass requestOptions to properly merge hooks and other options
     const finalOptions = getSSRFProtectionOptions(undefined, requestOptions);
 
+    // Build case map from headers before got normalises (lowercases) them.
+    // The gotWithHeaderCase handler reads this from context to restore casing.
+    const finalHeaders = (finalOptions.headers || {}) as Record<string, string | string[]>;
+    const headerCaseMap: Record<string, string> = {};
+    for (const key of Object.keys(finalHeaders)) {
+      if (key !== key.toLowerCase()) headerCaseMap[key.toLowerCase()] = key;
+    }
+    finalOptions.context = { ...(finalOptions.context || {}), _headerCaseMap: headerCaseMap };
+
     try {
-      const response = await got(url, finalOptions);
+      const response = await gotWithHeaderCase(url, finalOptions);
       const { result, requestObject, responseObject } = this.handleResponse(response);
 
       return {
