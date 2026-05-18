@@ -398,8 +398,11 @@ export const createComponentsSlice = (set, get) => ({
       // Walk up the ancestor chain starting from the nearest row-scoped ancestor's parent
       const nearestDef = getComponentDefinition(nearestRowScopedAncestorId, moduleId);
       let ancestorId = nearestDef?.component?.parent;
+      const ancestorVisited = new Set();
       while (ancestorId) {
         const baseAncestorId = getBaseParentId(ancestorId) || ancestorId;
+        if (ancestorVisited.has(baseAncestorId)) break;
+        ancestorVisited.add(baseAncestorId);
         const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
         const ancestorType = ancestorDef?.component?.component;
         if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorType)) {
@@ -608,8 +611,11 @@ export const createComponentsSlice = (set, get) => ({
     // Build the parent hierarchy to find all ListView ancestors
     const listviewAncestors = [];
     let currentParentId = parentId;
+    const listviewAncestorVisited = new Set();
     while (currentParentId) {
       const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+      if (listviewAncestorVisited.has(baseId)) break;
+      listviewAncestorVisited.add(baseId);
       const parentDef = getComponentDefinition(baseId, moduleId);
       const parentType = parentDef?.component?.component;
       if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
@@ -1237,8 +1243,11 @@ export const createComponentsSlice = (set, get) => ({
     if (nestingLimit) {
       let currentParentId = parentId;
       let count = 0;
+      const visited = new Set();
       while (currentParentId) {
         const baseId = getBaseParentId?.(currentParentId) || currentParentId;
+        if (visited.has(baseId)) break;
+        visited.add(baseId);
         const parentDef = getComponentDefinition(baseId, moduleId);
         if (parentDef?.component?.component === currentWidget) {
           count++;
@@ -1315,8 +1324,11 @@ export const createComponentsSlice = (set, get) => ({
             const componentParentId = newComponent.component.parent;
             if (componentParentId) {
               let ancestorId = componentParentId;
+              const ancestorVisited = new Set();
               while (ancestorId) {
                 const baseAncestorId = getBaseParentId(ancestorId);
+                if (ancestorVisited.has(baseAncestorId)) break;
+                ancestorVisited.add(baseAncestorId);
                 const ancestorDef = getComponentDefinition(baseAncestorId, moduleId);
                 if (ROW_SCOPED_WIDGET_TYPES.includes(ancestorDef?.component?.component)) {
                   parentIndices.unshift(0);
@@ -2650,9 +2662,12 @@ export const createComponentsSlice = (set, get) => ({
   // Returns the base UUID of that ancestor, or null if none found.
   findNearestSubcontainerAncestor: (startParentId, moduleId) => {
     const { getBaseParentId, getComponentDefinition } = get();
+    const visited = new Set();
     let currentId = startParentId;
     while (currentId) {
       const baseId = getBaseParentId(currentId) || currentId;
+      if (visited.has(baseId)) return null;
+      visited.add(baseId);
       const def = getComponentDefinition(baseId, moduleId);
       if (!def) return null;
       if (ROW_SCOPED_WIDGET_TYPES.includes(def.component?.component)) return baseId;

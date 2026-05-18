@@ -395,9 +395,14 @@ export const createCodeHinterSlice = (set, get) => ({
     // For each one found, extract listItem/cardData from customResolvables.
     let currentParentId = componentDef.component?.parent;
     let nearestListViewOrKanbanId = null;
+    // Cyclic parent chains lock up the autocomplete code path whenever the user
+    // focuses a field inside a cyclic subtree. Break instead of looping forever.
+    const visited = new Set();
 
     while (currentParentId) {
       const baseParentId = getBaseParentId(currentParentId);
+      if (visited.has(baseParentId)) break;
+      visited.add(baseParentId);
       const parentType = getParentComponentType(currentParentId, moduleId);
 
       if (ROW_SCOPED_WIDGET_TYPES.includes(parentType)) {
