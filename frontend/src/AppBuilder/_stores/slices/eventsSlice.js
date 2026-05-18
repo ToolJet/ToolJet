@@ -1,6 +1,6 @@
 import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
-import { debounce, replaceEntityReferencesWithIds } from '../utils';
+import { debounce, replaceEntityReferencesWithIds, isLinkedAppValid } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
 import { getHostURL, getSubpath } from '@/_helpers/routes';
 import urlJoin from 'url-join';
@@ -655,18 +655,24 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'go-to-app': {
             try {
-              if (!event.correlationId && !event.slug) {
+              if (!event.correlationId) {
                 throw new Error('No application selected');
               }
-              // Look up the freshly server-resolved slug from the linkedApps store map.
-              // Fall back to the legacy `event.slug` only when the new field is missing
-              // (e.g. backfill stragglers the migration couldn't resolve).
-              const linkedApp = get().appStore.modules[moduleId]?.linkedApps?.[event.correlationId];
-              const targetSlug = linkedApp?.slug || event.slug;
-              if (!targetSlug) {
-                throw new Error('Target app not found or no longer available');
+
+              const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
+              const appSlug = linkedApps[event.correlationId]?.slug;
+
+              // Editor: throw → routed to debugger via logError below.
+              // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
+              if (mode !== 'view') {
+                const isValid = isLinkedAppValid(event.correlationId, linkedApps);
+                if (!isValid) {
+                  const errMessage = `App ${event.correlationId} undefined. Check if the linked app exists and has a released version.`;
+                  throw new Error(errMessage);
+                }
               }
-              const resolvedValue = getResolvedValue(targetSlug, customVariables, moduleId);
+
+              const resolvedValue = getResolvedValue(appSlug, customVariables, moduleId);
               const slug = resolvedValue;
               const queryParams = event.queryParams?.reduce(
                 (result, queryParam) => ({

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 
-import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
+import { ToolTip } from '@/_components';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { ActionTypes } from './ActionTypes';
 import {
   Popover,
@@ -84,6 +86,7 @@ export const EventManager = ({
   const { createAppVersionEventHandlers, deleteAppVersionEventHandler, updateAppVersionEventHandlers } =
     useEventActions();
   const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
 
   const eventsUpdatedLoader = useStore((state) => state.eventsSlice.getEventsUpdatedLoader(), shallow);
   const eventsCreatedLoader = useStore((state) => state.eventsSlice.getEventsCreatedLoader(), shallow);
@@ -294,6 +297,7 @@ export const EventManager = ({
           name: item.name,
           value: item.co_relation_id,
           slug: item.slug,
+          currentVersionId: item.current_version_id,
         });
       });
     return appsOptionsList;
@@ -1128,6 +1132,8 @@ export const EventManager = ({
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
+                  const isGoToAppBroken =
+                    event.event.actionId === 'go-to-app' && !isLinkedAppValid(event.event.correlationId, linkedAppsMap);
                   // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                   return (
                     <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
@@ -1179,6 +1185,23 @@ export const EventManager = ({
                                         {event?.name}
                                       </TooltipContent>
                                     </Tooltip>
+                                    {isGoToAppBroken && (
+                                      <ToolTip
+                                        message={
+                                          <>
+                                            {`App ${event.event.correlationId} undefined.`}
+                                            <br />
+                                            {'Check if the linked app exists and has a released version.'}
+                                          </>
+                                        }
+                                      >
+                                        <AlertTriangle
+                                          className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
+                                          onClick={(e) => e.stopPropagation()}
+                                          data-cy="event-row-broken-link-warning"
+                                        />
+                                      </ToolTip>
+                                    )}
                                     {(index === focusedEventIndex && (actionsUpdatedLoader || eventsUpdatedLoader)) ||
                                     index === eventToDeleteLoaderIndex ? (
                                       <Spinner size="default" className="tw-text-icon-brand" />
@@ -1200,7 +1223,7 @@ export const EventManager = ({
                                           {eventMetaDefinition?.events[event.event.eventId]?.displayName}
                                         </span>
                                         <ArrowRight className="tw-h-3 tw-w-3 tw-shrink-0 tw-text-text-placeholder" />
-                                        <span className="tw-min-w-0 tw-text-left tw-flex-1 tw-truncate tw-font-body-default tw-text-text-placeholder">
+                                        <span className="tw-min-w-0 tw-text-left tw-truncate tw-font-body-default tw-text-text-placeholder">
                                           {actionMeta.name}
                                         </span>
                                       </div>

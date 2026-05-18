@@ -830,3 +830,12 @@ export const formatSecondsToHHMMSS = (totalSeconds) => {
   const ss = String(seconds % 60).padStart(2, '0');
   return `${hh}:${mm}:${ss}`;
 };
+
+export function isLinkedAppValid(correlationId, linkedAppsMap) {
+  if (!correlationId) return false;
+
+  const entry = linkedAppsMap?.[correlationId];
+  if (!entry || !entry.currentVersionId || !entry.slug) return false;
+
+  return true;
+}

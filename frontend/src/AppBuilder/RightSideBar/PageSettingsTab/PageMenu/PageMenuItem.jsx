@@ -1,6 +1,8 @@
-import React, { memo, useRef, useState, useCallback } from 'react';
+import React, { memo, useRef, useState, useCallback, useMemo } from 'react';
 import cx from 'classnames';
 import * as Icons from '@tabler/icons-react';
+import { AlertTriangle } from 'lucide-react';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import Home from '@/_ui/Icon/solidIcons/Home';
@@ -33,6 +35,8 @@ export const PageMenuItem = withRouter(
     const isSelected = page.id === currentPageId;
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
+    const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
+    const isValid = page?.type !== 'app' || isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
@@ -204,6 +208,24 @@ export const PageMenuItem = withRouter(
               {page.name}
             </OverflowTooltip>
             <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
+              {!isValid && (
+                <ToolTip
+                  message={
+                    <>
+                      {`App ${page?.targetCorelationId} undefined.`}
+                      <br />
+                      {'Check if the linked app exists and has a released version.'}
+                    </>
+                  }
+                >
+                  <div className="d-flex align-items-center justify-content-center">
+                    <AlertTriangle
+                      className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
+                      data-cy="page-row-broken-link-warning"
+                    />
+                  </div>
+                </ToolTip>
+              )}
               {PAGE_TYPES[page?.type] && ( // If 'page' object has a 'type' property like 'URL'
                 <span className="page-type-text">{PAGE_TYPES[page?.type]}</span>
               )}

@@ -1,5 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
+import { AlertTriangle } from 'lucide-react';
+import { isLinkedAppValid } from '@/AppBuilder/_stores/utils';
 import { Popover } from 'react-bootstrap';
 import useStore from '@/AppBuilder/_stores/store';
 import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
@@ -107,6 +109,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const [appOptions, setAppOptions] = useState([]);
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
 
+  const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
+  const isValid = type !== 'app' || isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
+
   useEffect(() => {
     setError(null);
   }, [show]);
@@ -178,6 +183,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             label: item.name,
             value: item.co_relation_id,
             slug: item.slug,
+            currentVersionId: item.current_version_id,
           });
         });
       return appsOptionsList;
@@ -407,20 +413,34 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <Select
                 options={appOptions}
                 search={true}
-                value={page?.targetCorelationId}
+                value={isValid ? page?.targetCorelationId : { label: 'Undefined app', value: page?.targetCorelationId }}
                 onChange={(value) => {
                   const selected = appOptions.find((opt) => opt.value === value);
-                  updatePageTargetApp(page?.id, value, selected?.slug ?? null, moduleId);
+                  updatePageTargetApp(
+                    page?.id,
+                    value,
+                    selected?.slug ?? null,
+                    selected?.currentVersionId ?? null,
+                    moduleId
+                  );
                 }}
                 isLoading={appOptionsLoading}
                 placeholder={'Select...'}
                 useMenuPortal={false}
                 width={'168px'}
                 borderRadius="6px"
-                styles={{ border: '1px solid var(--border-default) !important' }}
+                styles={{
+                  border: `1px solid ${!isValid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
+                }}
                 className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
+            {!isValid && (
+              <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
+                <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
+                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">{`App ${page?.targetCorelationId} undefined. Check if the linked app exists and has a released version.`}</span>
+              </div>
+            )}
           </div>
         )}
         {['url', 'app'].includes(type) && (
