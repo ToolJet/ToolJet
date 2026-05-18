@@ -136,12 +136,12 @@ async function listConversations(appId, conversationType = 'generate') {
   ).then(handleResponse);
 }
 
-async function createConversation(appId, conversationType = 'generate') {
+async function createConversation(payload) {
   const requestOptions = {
     method: 'POST',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ appId, conversationType }),
+    body: JSON.stringify({ ...payload, ...(!payload?.conversationType && { conversationType: 'generate' }) }),
   };
   return fetch(`${config.apiUrl}/ai/conversation`, requestOptions).then(handleResponse);
 }
