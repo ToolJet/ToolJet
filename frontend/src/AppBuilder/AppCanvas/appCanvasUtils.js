@@ -241,6 +241,26 @@ export function computeComponentName(componentType, currentComponents) {
   return _componentName;
 }
 
+// Walks the ancestor chain of `newParentId`; returns true if `componentId`
+// appears anywhere along it (assigning it as the new parent would close a
+// cycle), or if the chain is already cyclic (defensive — protects against
+// corrupt trees from past multiplayer races / git-sync merges).
+export const wouldCreateParentCycle = (componentId, newParentId, allComponents, getBaseParentId) => {
+  if (!componentId || !newParentId) return false;
+  const toBase = (id) => (getBaseParentId ? getBaseParentId(id) || id : id);
+  const visited = new Set();
+  let currentId = toBase(newParentId);
+  while (currentId) {
+    if (currentId === componentId) return true;
+    if (visited.has(currentId)) return true;
+    visited.add(currentId);
+    const parentRef = allComponents[currentId]?.component?.parent;
+    if (!parentRef) return false;
+    currentId = toBase(parentRef);
+  }
+  return false;
+};
+
 // Internal worker that threads `visited` across recursion. A cyclic parent
 // chain (multiplayer race / git-sync merge / legacy corrupt data) would
 // otherwise infinite-loop and freeze the editor.

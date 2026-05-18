@@ -13,6 +13,7 @@ import {
   computeComponentName,
   getAllChildComponents,
   getParentWidgetFromId,
+  wouldCreateParentCycle,
 } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
@@ -1655,6 +1656,24 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
+
+    // Reject the whole batch if any re-parent in it would form a cycle.
+    // Skipping just the parent write while keeping the layout write would
+    // leave widgets at coordinates measured against a parent they never
+    // moved into.
+    if (updateParent && newParentId) {
+      const { getBaseParentId } = get();
+      const pageComponents = get().modules[moduleId].pages[currentPageIndex].components;
+      const cyclicId = Object.keys(componentLayouts).find((componentId) =>
+        wouldCreateParentCycle(componentId, newParentId, pageComponents, getBaseParentId)
+      );
+      if (cyclicId) {
+        const draggedName = pageComponents[cyclicId]?.component?.name || cyclicId;
+        toast.error(`Cannot move "${draggedName}" here — it would create a parent-child loop.`);
+        return;
+      }
+    }
+
     // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
     // so we can batch the form field changes with the layout changes into a single API call
     const formFieldsDiff = updateParent
@@ -2011,7 +2030,21 @@ export const createComponentsSlice = (set, get) => ({
       getComponentTypeFromId,
       setResolvedComponent,
       withUndoRedo,
+      getBaseParentId,
     } = get();
+
+    // Reject self-parenting or descendant-as-new-parent. Covers multiplayer
+    // remote parent events and undo/redo replays that bypass the drag UX's
+    // ghost guard.
+    if (newParentId) {
+      const pageComponents = get().modules[moduleId].pages[currentPageIndex].components;
+      if (wouldCreateParentCycle(componentId, newParentId, pageComponents, getBaseParentId)) {
+        const draggedName = pageComponents[componentId]?.component?.name || componentId;
+        toast.error(`Cannot move "${draggedName}" here — it would create a parent-child loop.`);
+        return;
+      }
+    }
+
     let oldParentId;
     set(
       withUndoRedo((state) => {
