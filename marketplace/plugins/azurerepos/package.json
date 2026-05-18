@@ -18,7 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-marketplace/common": "^1.0.0",
-    "azure-devops-node-api": "^14.1.0"
+    "azure-devops-node-api": "^15.1.2"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",
