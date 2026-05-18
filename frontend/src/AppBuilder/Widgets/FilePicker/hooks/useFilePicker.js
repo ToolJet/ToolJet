@@ -103,6 +103,17 @@ export const useFilePicker = ({
     });
   }, []);
 
+  const isSameFile = useCallback((firstFile, secondFile) => {
+    if (!firstFile || !secondFile) return false;
+
+    return (
+      firstFile.name === secondFile.name &&
+      firstFile.size === secondFile.size &&
+      firstFile.lastModified === secondFile.lastModified &&
+      firstFile.type === secondFile.type
+    );
+  }, []);
+
   const fileReader = useCallback(
     async (file) => {
       try {
@@ -222,7 +233,7 @@ export const useFilePicker = ({
   const validateFile = useCallback(
     (file) => {
       // Check 1: Duplicate file
-      if (selectedFiles.some((existingFile) => existingFile.name === file.name && existingFile.size === file.size)) {
+      if (selectedFiles.some((existingFile) => isSameFile(existingFile, file))) {
         return {
           code: 'duplicate-file',
           message: `The file "${file.name}" has already been selected.`,
@@ -247,7 +258,7 @@ export const useFilePicker = ({
 
       return null; // File passes custom validation
     },
-    [selectedFiles, enableMultiple, maxFileCount]
+    [selectedFiles, enableMultiple, maxFileCount, isSameFile]
   );
 
   const onDrop = useCallback(
@@ -256,8 +267,9 @@ export const useFilePicker = ({
       fireEvent?.('onFileSelected');
       setIsTouched(true); // Set touched state
 
-      const currentFileNames = selectedFiles.map((f) => f.name);
-      const newFilesToAdd = acceptedDropFiles.filter((f) => !currentFileNames.includes(f.name));
+      const newFilesToAdd = acceptedDropFiles.filter(
+        (file) => !selectedFiles.some((existingFile) => isSameFile(existingFile, file))
+      );
 
       if (parseContent) {
         setIsParsing(true);
@@ -329,6 +341,7 @@ export const useFilePicker = ({
       maxFileCount,
       fileErrors,
       uploadingStatus,
+      isSameFile,
     ]
   );
 
