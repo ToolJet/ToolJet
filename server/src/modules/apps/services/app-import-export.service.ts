@@ -292,6 +292,10 @@ export class AppImportExportService {
     const distinct = Array.from(new Set((slugs || []).filter(Boolean)));
     if (distinct.length === 0) return new Map();
 
+    // Slugs live on `app_versions` and can collide across branches in git-enabled
+    // workspaces (the unique constraint is `(slug, branch_id, type)`). Order so the
+    // default-branch row wins, then by oldest version — deterministic and matches the
+    // resolution rule the rest of the loader uses for cross-branch slug lookup.
     const rows = await manager
       .createQueryBuilder(App, 'app')
       .innerJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
@@ -300,6 +304,8 @@ export class AppImportExportService {
       .andWhere('app.co_relation_id IS NOT NULL')
       .select('av.slug', 'slug')
       .addSelect('app.co_relation_id', 'coRelationId')
+      .orderBy('CASE WHEN av.branch_id IS NULL THEN 0 ELSE 1 END', 'ASC')
+      .addOrderBy('av.createdAt', 'ASC')
       .getRawMany<{ slug: string; coRelationId: string }>();
 
     const result = new Map<string, string>();
@@ -1662,15 +1668,32 @@ export class AppImportExportService {
 
             //Event handlers
 
-            // Normalize go-to-app blobs (legacy `slug` → `correlationId`) for this page's events.
+            // Normalize go-to-app blobs (legacy `slug` → `correlationId`) for every event
+            // on this page — including those nested inside Table widgets (per-action and
+            // per-toggle-column). If we omitted them, table-scoped go-to-app handlers would
+            // keep the deprecated `slug` key on import.
+            const collectLegacySlug = (e) =>
+              e?.actionId === 'go-to-app' && !e.correlationId && e.slug ? [e.slug] : [];
+
+            const tableEventBlobs = (savedComponents || []).flatMap((comp) => {
+              if (comp?.type !== 'Table') return [];
+              const blobs = [];
+              for (const action of comp.properties?.actions?.value || []) {
+                for (const ev of action.events || []) blobs.push(ev);
+              }
+              for (const column of comp.properties?.columns?.value || []) {
+                if (column?.columnType !== 'toggle') continue;
+                for (const ev of column.events || []) blobs.push(ev);
+              }
+              return blobs;
+            });
+
             const legacyGoToAppSlugsForPage = [
-              ...pageEvents.filter((e) => e?.actionId === 'go-to-app' && !e.correlationId && e.slug).map((e) => e.slug),
-              ...componentEvents.flatMap((eo) =>
-                (eo.event || [])
-                  .filter((e) => e?.actionId === 'go-to-app' && !e.correlationId && e.slug)
-                  .map((e) => e.slug)
-              ),
+              ...pageEvents.flatMap(collectLegacySlug),
+              ...componentEvents.flatMap((eo) => (eo.event || []).flatMap(collectLegacySlug)),
+              ...tableEventBlobs.flatMap(collectLegacySlug),
             ];
+
             const slugToCoForPage =
               legacyGoToAppSlugsForPage.length > 0
                 ? await this.resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugsForPage, user.organizationId)
