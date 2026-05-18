@@ -963,19 +963,25 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   /**
-   * Resolve current slugs for a set of apps identified by their `co_relation_id`.
-   * Returns Map<co_relation_id, slug>
+   * Resolve current-release info for a set of apps identified by their `co_relation_id`.
+   * Returns Map<co_relation_id, { slug, currentVersionId }>.
+   *
+   * IMPORTANT: an entry is set for every app row the query returns, even when slug or currentVersionId is null.
+   * Callers distinguish "row missing" (app deleted in this workspace) from "row present, no released version"
    *
    * @param released
-   *    When true (default), only the released-version slug is returned
-   *    When false, falls back to any non-null slug on the app so unreleased apps still resolve.
+   *    When true (default), the slug is read from `app_versions` where
+   *    id = apps.current_version_id. Apps without a released version yield
+   *    `{ slug: null, currentVersionId: null }`.
+   *    When false, falls back to any non-null slug on the app so unreleased apps still
+   *    resolve a slug; `currentVersionId` still mirrors `apps.current_version_id`.
    */
-  async findAppSlugsByCorelationIds(
+  async findAppDataByCorelationIds(
     coRelationIds: string[],
     organizationId: string,
     released = true,
     manager?: EntityManager
-  ): Promise<Map<string, string>> {
+  ): Promise<Map<string, { slug: string | null; currentVersionId: string | null }>> {
     const ids = Array.from(new Set((coRelationIds || []).filter(Boolean)));
     if (ids.length === 0) return new Map();
 
@@ -984,20 +990,29 @@ export class AppsUtilService implements IAppsUtilService {
         .createQueryBuilder(App, 'app')
         .where('app.co_relation_id IN (:...ids)', { ids })
         .andWhere('app.organizationId = :organizationId', { organizationId })
-        .select('app.co_relation_id', 'coRelationId');
+        .select('app.co_relation_id', 'coRelationId')
+        .addSelect('app.currentVersionId', 'currentVersionId');
 
       if (released) {
         qb.leftJoin(AppVersion, 'released', 'released.id = app.currentVersionId').addSelect('released.slug', 'slug');
       } else {
         qb.leftJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
           .addSelect('MAX(av.slug)', 'slug')
-          .groupBy('app.co_relation_id');
+          .groupBy('app.co_relation_id')
+          .addGroupBy('app.currentVersionId');
       }
 
-      const rows = await qb.getRawMany<{ coRelationId: string; slug: string | null }>();
-      const result = new Map<string, string>();
+      const rows = await qb.getRawMany<{
+        coRelationId: string;
+        slug: string | null;
+        currentVersionId: string | null;
+      }>();
+      const result = new Map<string, { slug: string | null; currentVersionId: string | null }>();
       for (const row of rows) {
-        if (row.slug) result.set(row.coRelationId, row.slug);
+        result.set(row.coRelationId, {
+          slug: row.slug ?? null,
+          currentVersionId: row.currentVersionId ?? null,
+        });
       }
       return result;
     }, manager);
@@ -1006,15 +1021,18 @@ export class AppsUtilService implements IAppsUtilService {
   /**
    * Side-table builder for app-load responses.
    * Scans pages and event handlers, collects every referenced target-app `co_relation_id`,
-   * returns a flat map keyed by correlationId with the current slug for each.
-   * Frontend uses this to build `/applications/{slug}` URLs at click time without entities carrying synthetic fields.
+   * returns a flat map keyed by correlationId with `{ slug, currentVersionId }` for each.
+   *
+   * Entries are only present for ids whose app row exists in this organization. The
+   * frontend uses an absent entry as the "target deleted" signal, and a present entry
+   * with null `currentVersionId` as the "target has no released version" signal.
    */
   async collectLinkedAppsForResponse(
     pages: any[],
     events: any[],
     organizationId: string,
     manager?: EntityManager
-  ): Promise<Record<string, { slug: string | null }>> {
+  ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>> {
     const ids = new Set<string>();
     for (const p of pages || []) {
       if (p?.type === 'app' && p?.targetCorelationId) ids.add(p.targetCorelationId);
@@ -1024,11 +1042,11 @@ export class AppsUtilService implements IAppsUtilService {
     }
     if (ids.size === 0) return {};
 
-    const slugMap = await this.findAppSlugsByCorelationIds(Array.from(ids), organizationId, true, manager);
+    const meta = await this.findAppDataByCorelationIds(Array.from(ids), organizationId, true, manager);
 
-    const result: Record<string, { slug: string | null }> = {};
-    for (const id of ids) {
-      result[id] = { slug: slugMap.get(id) ?? null };
+    const result: Record<string, { slug: string | null; currentVersionId: string | null }> = {};
+    for (const [id, info] of meta) {
+      result[id] = { slug: info.slug, currentVersionId: info.currentVersionId };
     }
     return result;
   }

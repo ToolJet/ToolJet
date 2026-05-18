@@ -19,16 +19,16 @@ export interface IAppsUtilService {
   all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean, branchId?: string): Promise<AppBase[]>;
   count(user: User, searchKey: string, type: string, branchId?: string): Promise<number>;
   mergeDefaultComponentData(pages: any[]): any[];
-  findAppSlugsByCorelationIds(
+  findAppDataByCorelationIds(
     coRelationIds: string[],
     organizationId: string,
     released?: boolean,
     manager?: EntityManager
-  ): Promise<Map<string, string>>;
+  ): Promise<Map<string, { slug: string | null; currentVersionId: string | null }>>;
   collectLinkedAppsForResponse(
     pages: any[],
     events: any[],
     organizationId: string,
     manager?: EntityManager
-  ): Promise<Record<string, { slug: string | null }>>;
+  ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>>;
 }
