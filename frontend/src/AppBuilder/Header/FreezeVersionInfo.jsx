@@ -15,7 +15,7 @@ const FreezeVersionInfo = ({
   if (!isViewOnly || hide || isAiOperationInProgress) return null;
 
   return (
-    <div className="released-version-popup-container">
+    <div className="released-version-popup-container" data-cy="freeze-version-info">
       {/* <div className={cx('released-version-popup-cover', isUserEditingTheVersion && 'error-shake')}> */}
       <div className={cx('released-version-popup-cover')}>
         <div
