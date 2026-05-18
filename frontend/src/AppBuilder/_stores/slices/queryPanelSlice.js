@@ -458,12 +458,16 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
       }
-      if (dataQuery.options?.requestConfirmation) {
+      const shouldConfirm = !!get().getResolvedValue(dataQuery.options?.requestConfirmation, {}, moduleId);
+      if (shouldConfirm) {
+        const rawMessage = dataQuery.options?.confirmationMessage;
+        const confirmationMessage = rawMessage ? get().getResolvedValue(rawMessage, {}, moduleId) : undefined;
         const queryConfirmation = {
           queryId,
           queryName,
           shouldSetPreviewData,
           parameters,
+          confirmationMessage,
         };
 
         if (!queryConfirmationList.some((query) => queryId === query.queryId) && confirmed === undefined) {
