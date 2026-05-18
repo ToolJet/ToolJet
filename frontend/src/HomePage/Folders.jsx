@@ -11,11 +11,13 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages, getWorkspaceId, hasBuilderRole } from '@/_helpers/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 import { Button } from '@/components/ui/Button/Button';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
+
+import { appTypeToDisplayNameMapping } from './helper';
 
 export const Folders = function Folders({
   folders,
@@ -49,6 +51,32 @@ export const Folders = function Folders({
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  // Get folder granular permissions from session
+  const currentSession = authenticationService.currentSessionValue;
+  const folderGroupPermissions = currentSession?.folder_group_permissions;
+  // Get current user ID for ownership check
+  const currentUserId = currentSession?.current_user?.id;
+  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
+
+  // Check if user can edit a specific folder (granular permission)
+  const canEditSpecificFolder = (folderId) => {
+    if (!folderGroupPermissions) return false;
+    return folderGroupPermissions.is_all_editable || folderGroupPermissions.editable_folders_id?.includes(folderId);
+  };
+
+  // Check if user is the owner of a specific folder
+  const isOwnerOfFolder = (folder) => {
+    return folder?.created_by === currentUserId;
+  };
+
+  // Determine if user can update/delete a specific folder
+  // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
+  // Delete: requires master Delete OR ownership
+  const canUpdateSpecificFolder = (folderId, folder) =>
+    canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder);
+  const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || isOwnerOfFolder(folder);
+
   useEffect(() => {
     setLoadingStatus(foldersLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,7 +145,7 @@ export const Folders = function Folders({
       setActiveFolder(folder);
     }
     folderChanged(folder);
-    updateSidebarNAV(updateSidebarNAV(folder?.name ?? getDefaultLabel()));
+    updateSidebarNAV(folder?.name ?? getDefaultLabel());
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);
   }
@@ -225,6 +253,10 @@ export const Folders = function Folders({
     setFilteredData(folders);
   }
 
+  const deleteFolderWarningMessage = `Are you sure you want to delete the folder ${deletingFolder?.name ?? ''}? ${
+    appTypeToDisplayNameMapping[appType] ?? 'App'
+  }s within the folder will not be deleted.`;
+
   return (
     <div
       className={`w-100 folder-list ${!canCreateApp && 'folder-list-user'}`}
@@ -232,13 +264,7 @@ export const Folders = function Folders({
     >
       <ConfirmDialog
         show={showDeleteConfirmation}
-        message={t(
-          'homePage.foldersSection.wishToDeleteFolder',
-          `Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted.`,
-          {
-            folderName: deletingFolder?.name,
-          }
-        )}
+        message={deleteFolderWarningMessage}
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
         onCancel={() => cancelDeleteDialog()}
@@ -357,15 +383,15 @@ export const Folders = function Folders({
                 {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
               </div>
             </ToolTip>
-            {(canDeleteFolder || canUpdateFolder) && (
+            {(canDeleteSpecificFolder(folder.id, folder) || canUpdateSpecificFolder(folder.id, folder)) && (
               <div
                 onClick={(e) => {
                   e.stopPropagation(); // Stop the click event from bubbling up to the <a> tag
                 }}
               >
                 <FolderMenu
-                  canDeleteFolder={canDeleteFolder}
-                  canUpdateFolder={canUpdateFolder}
+                  canDeleteFolder={canDeleteSpecificFolder(folder.id, folder)}
+                  canUpdateFolder={canUpdateSpecificFolder(folder.id, folder)}
                   deleteFolder={() => deleteFolder(folder)}
                   editFolder={() => updateFolder(folder)}
                   darkMode={darkMode}

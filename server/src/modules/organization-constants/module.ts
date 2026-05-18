@@ -24,7 +24,10 @@ export class OrganizationConstantModule extends SubModule {
 
     return {
       module: OrganizationConstantModule,
-      imports: [await AppEnvironmentsModule.register(configs), await EncryptionModule.register(configs)],
+      imports: [
+        await AppEnvironmentsModule.register(configs),
+        await EncryptionModule.register(configs),
+      ],
       controllers: isMainImport ? [OrganizationConstantController] : [],
       providers: [
         EnvironmentConstantsService,

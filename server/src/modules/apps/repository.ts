@@ -4,6 +4,7 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -99,5 +100,15 @@ export class AppsRepository extends Repository<App> {
         relations: ['appVersions'],
       });
     }, manager || this.manager);
+  }
+
+  async findByIdOrSlug(idOrSlug: string): Promise<App | null> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      if (isUUID(idOrSlug)) {
+        const byId = await manager.findOne(App, { where: { id: idOrSlug }, relations: ['appVersions'] });
+        if (byId) return byId;
+      }
+      return manager.findOne(App, { where: { slug: idOrSlug }, relations: ['appVersions'] });
+    }, this.manager);
   }
 }

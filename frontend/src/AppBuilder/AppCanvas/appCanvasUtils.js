@@ -63,9 +63,12 @@ export const addNewWidgetToTheEditor = (
   let customLayouts = undefined;
 
   if (moduleInfo) {
+    // Pin the dragged ModuleViewer to the module's current version's module_reference_id
+    // (a stable cross-instance id from the modules list). Falls back to '' (unpinned) if
+    // the module has no version yet. Users can opt into follow-latest semantics via the
+    // inspector ("Current branch" option writes '' back to value).
     componentData.definition.properties.moduleAppId = { value: moduleInfo.moduleId };
-    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId };
-    componentData.definition.properties.moduleEnvironmentId = { value: moduleInfo.environmentId };
+    componentData.definition.properties.moduleVersionId = { value: moduleInfo.versionId ?? '' };
     componentData.definition.properties.visibility = { value: true };
     customLayouts = moduleInfo?.moduleContainer?.layouts;
 
@@ -149,8 +152,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       const height = layout.height ? layout.height : componentMeta.defaultSize.height;
       const top = layout.top ? layout.top : 0;
       const left = layout.left ? layout.left : 0;
-      const newComponentDefinition = {
+      const newComponentProperties = {
         ...componentData.definition.properties,
+      };
+      const newComponentStyles = {
+        ...componentData.definition.styles,
       };
 
       if (_.isArray(properties) && properties.length > 0) {
@@ -159,11 +165,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentProperties, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.properties', newComponentDefinition);
+        _.set(componentData, 'definition.properties', newComponentProperties);
       }
 
       if (_.isArray(styles) && styles.length > 0) {
@@ -172,11 +178,11 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
             ? `{{${customResolverVariable}.${accessorKey}}}`
             : defaultValue[prop] || '';
 
-          _.set(newComponentDefinition, prop, {
+          _.set(newComponentStyles, prop, {
             value: accessor,
           });
         });
-        _.set(componentData, 'definition.styles', newComponentDefinition);
+        _.set(componentData, 'definition.styles', newComponentStyles);
       }
 
       if (currentLayout === 'mobile') {

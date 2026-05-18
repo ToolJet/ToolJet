@@ -28,7 +28,14 @@ export class BaseGitUtilService {
     throw new Error('Method not implemented.');
   }
 
-  async WriteAppFile(user: User, repoPath: string, appGit: AppGitSync, version: AppVersion, app: App): Promise<string> {
+  async WriteAppFile(
+    user: User,
+    appGit: AppGitSync,
+    version: AppVersion,
+    app: App,
+    appPath: string,
+    parentDir: string
+  ): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

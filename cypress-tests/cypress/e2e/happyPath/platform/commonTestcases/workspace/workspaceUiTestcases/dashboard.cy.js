@@ -224,7 +224,7 @@ describe("dashboard", () => {
       commonSelectors.appCardOptions(commonText.addToFolderOption)
     ).click();
     verifyModal(
-      dashboardText.addToFolderTitle,
+      dashboardText.updateFolderTitle,
       dashboardText.addToFolderButton,
       dashboardSelector.selectFolder
     );

@@ -11,6 +11,7 @@ interface Features {
   [FEATURE_KEY.UPDATE_PROVIDER_CONFIGS]: FeatureConfig;
   [FEATURE_KEY.UPDATE_ORGANIZATION_GIT_STATUS]: FeatureConfig;
   [FEATURE_KEY.DELETE_ORGANIZATION_GIT_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.SAVE_ENV_PROVIDER_CONFIGS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

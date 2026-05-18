@@ -236,6 +236,11 @@ export const createResolvedSlice = (set, get) => ({
         data: [],
         rawData: [],
         id: queryId,
+        metadata: undefined,
+        request: undefined,
+        response: undefined,
+        responseHeaders: undefined,
+        error: undefined,
       };
     });
     set((state) => {

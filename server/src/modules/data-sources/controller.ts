@@ -40,8 +40,12 @@ export class DataSourcesController implements IDataSourcesController {
   @InitFeature(FEATURE_KEY.GET)
   @Get(':organizationId')
   @UseGuards(OrganizationValidateGuard, FeatureAbilityGuard)
-  async fetchGlobalDataSources(@User() user: UserEntity, @UserPermissionsDecorator() userPermissions: UserPermissions) {
-    return this.dataSourcesService.getAll({}, user, userPermissions);
+  async fetchGlobalDataSources(
+    @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.getAll({ branchId }, user, userPermissions);
   }
 
   // TODO: Add guard to validate environmentId & version id
@@ -52,11 +56,14 @@ export class DataSourcesController implements IDataSourcesController {
     @User() user: UserEntity,
     @Param('versionId') appVersionId,
     @Param('environmentId') environmentId,
-    @UserPermissionsDecorator() userPermissions: UserPermissions
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Query('branch_id') branchId?: string
   ) {
     const shouldIncludeWorkflows = getTooljetEdition() === TOOLJET_EDITIONS.EE;
+    // appVersionId kept in route URL for backwards compatibility; no longer forwarded to service
+    // (released versions now use is_default DSV instead of version-specific DSV).
     return this.dataSourcesService.getForApp(
-      { appVersionId, environmentId, shouldIncludeWorkflows },
+      { environmentId, shouldIncludeWorkflows, branchId },
       user,
       userPermissions
     );
@@ -65,8 +72,12 @@ export class DataSourcesController implements IDataSourcesController {
   @InitFeature(FEATURE_KEY.CREATE)
   @UseGuards(FeatureAbilityGuard)
   @Post()
-  async createGlobalDataSources(@User() user: UserEntity, @Body() createDataSourceDto: CreateDataSourceDto) {
-    return this.dataSourcesService.create(createDataSourceDto, user);
+  async createGlobalDataSources(
+    @User() user: UserEntity,
+    @Body() createDataSourceDto: CreateDataSourceDto,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.create(createDataSourceDto, user, branchId);
   }
 
   @InitFeature(FEATURE_KEY.UPDATE)
@@ -76,17 +87,18 @@ export class DataSourcesController implements IDataSourcesController {
     @User() user,
     @Param('id') dataSourceId,
     @Query('environment_id') environmentId,
-    @Body() updateDataSourceDto: UpdateDataSourceDto
+    @Body() updateDataSourceDto: UpdateDataSourceDto,
+    @Query('branch_id') branchId?: string
   ) {
-    await this.dataSourcesService.update(updateDataSourceDto, user, { dataSourceId, environmentId });
+    await this.dataSourcesService.update(updateDataSourceDto, user, { dataSourceId, environmentId }, branchId);
     return;
   }
 
   @InitFeature(FEATURE_KEY.DELETE)
   @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
   @Delete(':id')
-  async delete(@User() user: UserEntity, @Param('id') dataSourceId) {
-    await this.dataSourcesService.delete(dataSourceId, user);
+  async delete(@User() user: UserEntity, @Param('id') dataSourceId, @Query('branch_id') branchId?: string) {
+    await this.dataSourcesService.delete(dataSourceId, user, branchId);
     return;
   }
 
@@ -104,9 +116,10 @@ export class DataSourcesController implements IDataSourcesController {
   getDataSourceByEnvironment(
     @User() user: UserEntity,
     @Param('id') dataSourceId,
-    @Param('environment_id') environmentId
+    @Param('environment_id') environmentId,
+    @Query('branch_id') branchId?: string
   ) {
-    return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId);
+    return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId, branchId);
   }
 
   @InitFeature(FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB)
@@ -153,8 +166,12 @@ export class DataSourcesController implements IDataSourcesController {
   @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
   @UseGuards(FeatureAbilityGuard)
   @Get('dependent-queries/:datasource_id')
-  async findQueriesLinkedToDatasource(@User() user: UserEntity, @Param('datasource_id') datasourceId: string) {
-    return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId);
+  async findQueriesLinkedToDatasource(
+    @User() user: UserEntity,
+    @Param('datasource_id') datasourceId: string,
+    @Query('branch_id') branchId?: string
+  ) {
+    return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId, user.organizationId, branchId);
   }
 
   @InitFeature(FEATURE_KEY.AUTHORIZE)
@@ -170,14 +187,16 @@ export class DataSourcesController implements IDataSourcesController {
   async invokeDataSourceMethod(
     @User() user: UserEntity,
     @Body() invokeDto: InvokeDataSourceMethodDto,
-    @DataSource() dataSource: DataSourceEntity
+    @DataSource() dataSource: DataSourceEntity,
+    @Query('branch_id') branchId?: string
   ): Promise<QueryResult> {
     const result = await this.dataSourcesService.invokeMethod(
       dataSource,
       invokeDto.method,
       user,
       invokeDto.environmentId,
-      invokeDto.args
+      invokeDto.args,
+      branchId
     );
 
     return result;

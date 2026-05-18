@@ -3,10 +3,11 @@ import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditi
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { shallow } from 'zustand/shallow';
 
 const AppCanvasBanner = ({ appId = '' }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const { fetchDevelopmentVersions, currentMode, environments } = useStore(
     (state) => ({
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
@@ -18,11 +19,13 @@ const AppCanvasBanner = ({ appId = '' }) => {
   useEffect(() => {
     fetchDevelopmentVersions(appId);
   }, [appId, environments]);
+
   const renderBanner = () => {
-    if (currentMode === 'edit') {
-      return <FreezeVersionInfo hide={false} />;
+    if (currentMode !== 'edit') return null;
+    if (isModuleEditor) {
+      return <WorkspaceLockedBanner pageContext="modules" />;
     }
-    return null;
+    return <FreezeVersionInfo hide={false} />;
   };
   return <div>{renderBanner()}</div>;
 };

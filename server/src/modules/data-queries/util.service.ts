@@ -20,6 +20,7 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { ListTablesDto } from './dto';
 
 @Injectable()
@@ -90,7 +91,28 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : appToUse.organizationId;
 
-      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(dataSource.id, organizationId, envId);
+      // Lazy-load appVersion to determine branchId (for BRANCH-type versions only)
+      if (!dataQuery.appVersion && dataQuery.appVersionId) {
+        dataQuery.appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
+          return manager.findOne(AppVersion, {
+            where: { id: dataQuery.appVersionId },
+            select: ['id', 'versionType', 'branchId'],
+          });
+        });
+      }
+
+      // Branch-aware: resolve branchId from appVersion when version type is 'branch'
+      const branchId =
+        dataQuery?.appVersion?.versionType === AppVersionType.BRANCH ? dataQuery.appVersion.branchId : undefined;
+      // Removed: appVersionId path — released (VERSION-type) versions now use is_default DSV.
+      // const appVersionId = dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH ? dataQuery?.appVersion?.id : undefined;
+
+      const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
+        dataSource.id,
+        organizationId,
+        envId,
+        branchId
+      );
       const environmentId = dataSourceOptions.environmentId;
 
       dataSource.options = dataSourceOptions.options;
@@ -247,7 +269,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
               dataSource.id,
               user.organizationId,
-              environmentId
+              environmentId,
+              branchId
             );
             dataSource.options = dataSourceOptions.options;
 
@@ -287,7 +310,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'||
+            dataSource.kind === 'zendesk' ||
             dataSource.kind === 'googlesheetsv2'
           ) {
             queryStatus.setSuccess('needs_oauth');
@@ -362,7 +385,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto): Promise<object> {
+  async listTables(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    branchId?: string,
+    listTablesOptions?: ListTablesDto
+  ): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
@@ -371,7 +400,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     const dataSourceOptions = await this.appEnvironmentUtilService.getOptions(
       dataSource.id,
       organizationId,
-      environmentId
+      environmentId,
+      branchId
     );
 
     dataSource.options = dataSourceOptions.options;
@@ -389,12 +419,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       sourceOptions,
       `${dataSource.id}-${dataSourceOptions.environmentId}`,
       dataSourceOptions.updatedAt,
-      { 
-        schema: listTablesOptions?.schema, 
+      {
+        schema: listTablesOptions?.schema,
         datasetId: listTablesOptions?.datasetId,
-        search: listTablesOptions?.search, 
-        page: listTablesOptions?.page, 
-        limit: listTablesOptions?.limit 
+        search: listTablesOptions?.search,
+        page: listTablesOptions?.page,
+        limit: listTablesOptions?.limit,
       }
     );
   }

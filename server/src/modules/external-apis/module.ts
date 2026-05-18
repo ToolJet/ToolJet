@@ -20,6 +20,7 @@ import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { AppsRepository } from '@modules/apps/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
+import { OrganizationUsersModule } from '@modules/organization-users/module';
 
 export class ExternalApiModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -28,12 +29,14 @@ export class ExternalApiModule extends SubModule {
       ExternalApisService,
       ExternalApiUtilService,
       ExternalApisAppsController,
+      ExternalApisGroupsController,
       ExternalApisModulesController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
       'util.service',
       'controllers/apps.controller',
+      'controllers/groups.controller',
       'controllers/modules.controller',
     ]);
 
@@ -51,6 +54,7 @@ export class ExternalApiModule extends SubModule {
         await GitSyncModule.register(configs),
         await AppEnvironmentsModule.register(configs),
         await SessionModule.register(configs),
+        await OrganizationUsersModule.register(configs),
       ],
       providers: [
         ExternalApiUtilService,
@@ -67,7 +71,14 @@ export class ExternalApiModule extends SubModule {
         UserRepository,
         AppsRepository,
       ],
-      controllers: isMainImport ? [ExternalApisController, ExternalApisAppsController, ExternalApisModulesController] : [],
+      controllers: isMainImport
+        ? [
+            ExternalApisController,
+            ExternalApisAppsController,
+            ExternalApisGroupsController,
+            ExternalApisModulesController,
+          ]
+        : [],
       exports: [ExternalApiUtilService],
     };
   }

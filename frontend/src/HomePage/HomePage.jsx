@@ -58,6 +58,11 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+
+import { appTypeToDisplayNameMapping } from './helper';
 
 const MAX_APPS_PER_PAGE = 9;
 class HomePageComponent extends React.Component {
@@ -109,8 +114,17 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: null,
       importingApp: false,
       importingGitAppOperations: {},
+      latestCommitData: null,
+      selectedImportBranch: null,
+      remoteBranches: [],
+      fetchingRemoteBranches: false,
+      tags: [],
+      fetchingLatestCommitData: false,
+      selectedVersionOption: null,
       featuresLoaded: false,
       showCreateAppModal: false,
+      showSwitchBranchForCreate: false,
+      showSwitchBranchForDelete: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -188,6 +202,11 @@ class HomePageComponent extends React.Component {
   };
 
   componentDidMount() {
+    const gitSyncToast = sessionStorage.getItem('git_sync_toast');
+    if (gitSyncToast) {
+      sessionStorage.removeItem('git_sync_toast');
+      setTimeout(() => toast.error(gitSyncToast), 500);
+    }
     this.handleAiOnboarding();
     if (this.props.appType === 'workflow') {
       if (!this.canViewWorkflow()) {
@@ -202,23 +221,46 @@ class HomePageComponent extends React.Component {
       return;
     }
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
-    this.fetchApps(1, this.state.currentFolder.id);
+    // ?folder= deep-link: fetchFolders will chain to fetchApps after slug resolves.
+    const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
+    if (!urlFolderSlug) {
+      this.fetchApps(1, this.state.currentFolder.id);
+    }
     this.fetchFolders();
     this.fetchFeatureAccesss();
     this.fetchAppsLimit();
     this.fetchWorkflowsInstanceLimit();
     this.fetchWorkflowsWorkspaceLimit();
-    this.fetchOrgGit();
+    // Layout already fetched orgGitConfig — mirror it instead of duplicating.
+    const initialOrgGit = useWorkspaceBranchesStore.getState().orgGitConfig;
+    if (initialOrgGit) this.setState({ orgGit: initialOrgGit });
     this.setQueryParameter();
 
     // Check module access permission
     this.props.checkModuleAccess();
+
+    // Refetch on real branch switch only (skip the initial null→<id> hydration).
+    this._branchStoreUnsubscribe = useWorkspaceBranchesStore.subscribe((state, prevState) => {
+      if (state.activeBranchId && prevState.activeBranchId && state.activeBranchId !== prevState.activeBranchId) {
+        this.fetchApps(1, this.state.currentFolder.id);
+        this.fetchFolders();
+      }
+      if (state.orgGitConfig !== prevState.orgGitConfig) {
+        this.setState({ orgGit: state.orgGitConfig });
+      }
+    });
 
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
 
     //Only show the banner once
     if (hasClosedBanner) {
       this.setState({ showGroupMigrationBanner: false });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this._branchStoreUnsubscribe) {
+      this._branchStoreUnsubscribe();
     }
   }
 
@@ -293,12 +335,18 @@ class HomePageComponent extends React.Component {
       const folder = data?.folders?.find((folder) => folder.name === folder_slug);
       const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
       const currentFolder = data?.folders?.find((folder) => currentFolderId && folder.id === currentFolderId);
+      const slugIsStale = !!folder_slug && !folder;
       this.setState({
         folders: data.folders,
         foldersLoading: false,
         currentFolder: currentFolder || {},
       });
-      currentFolder && this.fetchApps(1, currentFolder.id);
+      if (currentFolder) {
+        this.fetchApps(1, currentFolder.id);
+      } else if (slugIsStale) {
+        // Stale ?folder= (renamed/deleted) — load All apps so dashboard isn't blank.
+        this.fetchApps(1, undefined);
+      }
     });
   };
 
@@ -324,6 +372,21 @@ class HomePageComponent extends React.Component {
   };
 
   createApp = async (appName, type, prompt) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     appName = appName?.trim().replace(/\s+/g, ' ');
     let _self = this;
     _self.setState({ creatingApp: true });
@@ -369,7 +432,13 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ renamingApp: true });
     try {
-      await appsService.saveApp(appId, { name: newAppName }, this.props.appType);
+      // Fetch current editing version for the app
+      const versionsResp = await appsService.getVersions(appId);
+      const versions = versionsResp?.versions || [];
+      const currentEditingVersion = versions.find((version) => version?.isCurrentEditingVersion);
+      const editingVersionId = currentEditingVersion?.id;
+      const savePayload = editingVersionId ? { name: newAppName, editingVersionId } : { name: newAppName };
+      await appsService.saveApp(appId, savePayload, this.props.appType);
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
       toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
@@ -385,6 +454,10 @@ class HomePageComponent extends React.Component {
   };
 
   deleteApp = (app) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ appToBeDeleted: app, showSwitchBranchForDelete: true });
+      return;
+    }
     this.setState({ showAppDeletionConfirmation: true, appToBeDeleted: app });
   };
 
@@ -543,6 +616,21 @@ class HomePageComponent extends React.Component {
   };
 
   importFile = async (importJSON, appName, skipPermissionsGroupCheck = false) => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     appName = appName?.trim().replace(/\s+/g, ' ');
     this.setState({ isImportingApp: true });
     // For backward compatibility with legacy app import
@@ -610,6 +698,21 @@ class HomePageComponent extends React.Component {
 
   deployApp = async (event, appName, selectedApp) => {
     event.preventDefault();
+    const { currentBranch, actions, activeBranchId } = useWorkspaceBranchesStore.getState();
+    if (currentBranch && this.props.appType !== 'workflow') {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     const id = selectedApp.id;
     this.setState({ deploying: true });
     try {
@@ -617,7 +720,8 @@ class HomePageComponent extends React.Component {
         id,
         appName,
         this.state.dependentPlugins,
-        this.state.shouldAutoImportPlugin
+        this.state.shouldAutoImportPlugin,
+        activeBranchId
       );
       this.setState({ deploying: false, showAIOnboardingLoadingScreen: false });
       toast.success(`${this.getAppType()} created successfully!`, { position: 'top-center' });
@@ -702,6 +806,8 @@ class HomePageComponent extends React.Component {
           return false;
       }
     } else if (this.props.appType === 'front-end') {
+      // Backend resolves all folder-derived permissions (owned folders + granular folder permissions)
+      // into editable_apps_id / viewable_apps_id at session time, so no frontend folder checks needed here.
       const canUpdateApp =
         app_group_permissions &&
         (app_group_permissions.is_all_editable || app_group_permissions.editable_apps_id.includes(app?.id));
@@ -749,15 +855,31 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
   };
 
   canDeleteFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    return authenticationService.currentSessionValue?.user_permissions?.folder_delete;
   };
 
   canUpdateFolder = () => {
-    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
+    // Update folder (rename) requires either folderCreate permission or granular canEditFolder permission
+    // For now, we use folderCreate as the master permission for folder update
+    return authenticationService.currentSessionValue?.user_permissions?.folder_create;
+  };
+
+  isWorkspaceBranchLocked = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+
+    // Branching affects folder mutations for front-end apps and modules.
+    // Workflows are not branch-scoped, so folder operations there remain unrestricted.
+    const isBranchingEnabled =
+      this.props.appType === 'front-end' || this.props.appType === 'module'
+        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
+        : false;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && isDefault);
   };
 
   cancelDeleteAppDialog = () => {
@@ -790,8 +912,8 @@ class HomePageComponent extends React.Component {
           this.fetchAppsLimit();
         }
       })
-      .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+      .catch((error) => {
+        toast.error(error?.error || error?.message || 'Could not delete the app.');
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -826,10 +948,17 @@ class HomePageComponent extends React.Component {
       });
   };
 
-  fetchRepoApps = () => {
-    this.setState({ fetchingAppsFromRepos: true, selectedAppRepo: null, importingGitAppOperations: {} });
+  fetchRepoApps = (branch) => {
+    this.setState({
+      fetchingAppsFromRepos: true,
+      selectedAppRepo: null,
+      importingGitAppOperations: {},
+      latestCommitData: null,
+      selectedVersionOption: null,
+    });
+    const currentBranchId = useWorkspaceBranchesStore.getState().activeBranchId;
     gitSyncService
-      .gitPull()
+      .gitPull(branch, currentBranchId)
       .then((data) => {
         this.setState({ appsFromRepos: data?.meta_data });
       })
@@ -842,24 +971,66 @@ class HomePageComponent extends React.Component {
   };
 
   importGitApp = () => {
-    const { appsFromRepos, selectedAppRepo, orgGit, importedAppName } = this.state;
+    const {
+      appsFromRepos,
+      selectedAppRepo,
+      orgGit,
+      importedAppName,
+      selectedVersionOption,
+      tags,
+      selectedImportBranch,
+    } = this.state;
     const appToImport = appsFromRepos[selectedAppRepo];
-    const { git_app_name, git_version_id, git_version_name, last_commit_message, last_commit_user, lastpush_date } =
-      appToImport;
+    const {
+      git_app_name,
+      git_version_id,
+      git_version_name,
+      last_commit_message,
+      last_commit_user,
+      lastpush_date,
+      app_co_relation_id,
+    } = appToImport;
+
+    let commitHash = null;
+    let commitMessage = last_commit_message;
+    let commitUser = last_commit_user;
+    let commitDate = lastpush_date;
+    let gitVersionNameToUse = git_version_name;
+
+    // If a tag is selected (not latest), use tag's commit info
+    if (selectedVersionOption && selectedVersionOption !== 'latest') {
+      const selectedTag = tags.find((t) => t.name === selectedVersionOption);
+      if (selectedTag) {
+        commitHash = selectedTag.commit?.sha;
+        commitMessage = selectedTag.message;
+        commitUser = selectedTag.tagger?.name;
+        commitDate = selectedTag.tagger?.date;
+        gitVersionNameToUse = selectedTag.name.split('/').pop();
+      } else {
+        commitMessage = last_commit_message;
+        commitUser = last_commit_user;
+        commitDate = lastpush_date;
+      }
+    }
 
     this.setState({ importingApp: true });
+    const currentWorkspaceBranchId = useWorkspaceBranchesStore.getState().activeBranchId;
     const body = {
       gitAppId: selectedAppRepo,
       gitAppName: git_app_name,
-      gitVersionName: git_version_name,
+      gitVersionName: gitVersionNameToUse,
       gitVersionId: git_version_id,
-      lastCommitMessage: last_commit_message,
-      lastCommitUser: last_commit_user,
-      lastPushDate: new Date(lastpush_date),
       organizationGitId: orgGit?.id,
       appName: importedAppName?.trim().replace(/\s+/g, ' '),
       allowEditing: this.state.isAppImportEditable,
+      ...(selectedImportBranch && { gitBranchName: selectedImportBranch }),
+      ...(currentWorkspaceBranchId && { workspaceBranchId: currentWorkspaceBranchId }),
+      ...(commitHash && { commitHash, appCoRelationId: app_co_relation_id }),
+      ...(commitMessage && { lastCommitMessage: commitMessage }),
+      ...(commitUser && { lastCommitUser: commitUser }),
+      ...(commitDate && { lastPushDate: new Date(commitDate) }),
     };
+
     gitSyncService
       .importGitApp(body)
       .then((data) => {
@@ -884,7 +1055,7 @@ class HomePageComponent extends React.Component {
     folderService
       .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
-        toast.success('Added to folder.');
+        toast.success('Application added to folder successfully!');
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
         posthogHelper.captureEvent('click_add_to_folder_button', {
@@ -911,7 +1082,7 @@ class HomePageComponent extends React.Component {
     folderService
       .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
       .then(() => {
-        toast.success('Removed from folder.');
+        toast.success('Application removed from folder successfully!');
 
         this.fetchApps(1, appOperations.selectedFolder.id);
         this.fetchFolders();
@@ -953,12 +1124,17 @@ class HomePageComponent extends React.Component {
           showCloneAppModal: true,
         });
         break;
-      case 'rename-app':
+      case 'rename-app': {
+        if (this.isWorkspaceBranchLocked()) {
+          toast.error("Renaming isn't allowed on master. Switch branch to update name.");
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app },
           showRenameAppModal: true,
         });
         break;
+      }
     }
   };
 
@@ -1009,7 +1185,13 @@ class HomePageComponent extends React.Component {
 
   generateOptionsForRepository = () => {
     const { appsFromRepos } = this.state;
-    return Object.keys(appsFromRepos).map((gitAppId) => ({
+
+    // Filter out non-app keys like 'has_latest_changes' and 'tags'
+    const appIds = Object.keys(appsFromRepos).filter(
+      (key) => key !== 'has_latest_changes' && key !== 'tags' && appsFromRepos[key]?.git_app_name
+    );
+
+    return appIds.map((gitAppId) => ({
       name: appsFromRepos[gitAppId].git_app_name,
       value: gitAppId,
     }));
@@ -1039,12 +1221,52 @@ class HomePageComponent extends React.Component {
   handleCommitEnableChange = (e) => {
     this.setState({ commitEnabled: e.target.checked });
   };
-  toggleGitRepositoryImportModal = (e) => {
-    if (!this.state.showGitRepositoryImportModal) this.fetchRepoApps();
-    this.setState({ showGitRepositoryImportModal: !this.state.showGitRepositoryImportModal });
+  toggleGitRepositoryImportModal = async () => {
+    if (!this.state.showGitRepositoryImportModal) {
+      const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+      if (currentBranch) {
+        try {
+          const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+          if (!exists) {
+            toast.error(
+              'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+            );
+            return;
+          }
+        } catch (_err) {
+          /* allow on network error */
+        }
+      }
+
+      // Show modal immediately, then fetch branches in the background
+      this.setState({
+        showGitRepositoryImportModal: true,
+        fetchingRemoteBranches: true,
+        selectedImportBranch: null,
+        appsFromRepos: {},
+        selectedAppRepo: null,
+        importingGitAppOperations: {},
+        latestCommitData: null,
+        selectedVersionOption: null,
+      });
+      useWorkspaceBranchesStore
+        .getState()
+        .actions.fetchRemoteBranches()
+        .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
+        .catch(() => {
+          toast.error('Failed to fetch remote branches');
+          this.setState({ fetchingRemoteBranches: false });
+        });
+    } else {
+      this.setState({ showGitRepositoryImportModal: false });
+    }
   };
 
   openCreateAppFromTemplateModal = async (template) => {
+    if (this.isWorkspaceBranchLocked()) {
+      this.setState({ showSwitchBranchForCreate: true });
+      return;
+    }
     try {
       const { plugins_to_be_installed = [], plugins_detail_by_id = {} } =
         (await libraryAppService.findDependentPluginsInTemplate?.(template.id)) || {};
@@ -1136,6 +1358,11 @@ class HomePageComponent extends React.Component {
       appType !== 'workflow'
     );
   };
+  handleImportBranchChange = (newVal) => {
+    this.setState({ selectedImportBranch: newVal });
+    this.fetchRepoApps(newVal);
+  };
+
   handleAppNameChange = (e) => {
     const newAppName = e.target.value;
     const { appsFromRepos } = this.state;
@@ -1161,6 +1388,42 @@ class HomePageComponent extends React.Component {
       importedAppName: newAppName,
       importingGitAppOperations: validationMessage,
     });
+  };
+
+  handleAppRepoChange = async (newVal) => {
+    const { appsFromRepos, selectedImportBranch } = this.state;
+    const selectedApp = appsFromRepos[newVal];
+    this.setState({
+      selectedAppRepo: newVal,
+      importedAppName: selectedApp?.git_app_name,
+    });
+    if (selectedApp?.app_name_exist === 'EXIST') {
+      this.setState({
+        importingGitAppOperations: { message: 'App name already exists' },
+        fetchingLatestCommitData: true,
+        latestCommitData: null,
+      });
+    } else {
+      this.setState({
+        importingGitAppOperations: {},
+        fetchingLatestCommitData: true,
+        latestCommitData: null,
+        selectedVersionOption: null,
+      });
+    }
+
+    try {
+      const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedImportBranch);
+      this.setState({
+        latestCommitData: data?.metaData,
+        tags: data?.metaData.tags,
+        fetchingLatestCommitData: false,
+        selectedVersionOption: 'latest',
+      });
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+      this.setState({ fetchingLatestCommitData: false });
+    }
   };
 
   // Helper functions for workflow limit checks
@@ -1214,6 +1477,70 @@ class HomePageComponent extends React.Component {
     this.eraseAIOnboardingRelatedCookies();
   };
 
+  generateVersionOptions = () => {
+    const { latestCommitData, tags } = this.state;
+    const options = [];
+
+    if (latestCommitData?.latestCommit?.[0]) {
+      options.push({
+        label: 'Latest commit',
+        value: 'latest',
+        isLatest: true,
+        isDraft: true,
+        sha: latestCommitData?.latestCommit?.[0]?.commitId,
+      });
+    }
+
+    // Add tags - filter out tags that have the same SHA as the latest commit
+    if (tags && tags.length > 0) {
+      tags.forEach((tag) => {
+        const [, version] = tag.name.split('/');
+        options.push({
+          label: version,
+          value: tag.name,
+          isLatest: false,
+          isDraft: false,
+        });
+      });
+    }
+
+    return options;
+  };
+
+  getSelectedVersionCommitInfo = () => {
+    const { selectedVersionOption, latestCommitData, tags } = this.state;
+    const isLatest = !selectedVersionOption || selectedVersionOption === 'latest';
+
+    if (isLatest) {
+      return {
+        message: latestCommitData?.latestCommit[0]?.message,
+        author: latestCommitData?.latestCommit[0]?.author,
+        date: latestCommitData?.latestCommit[0]?.date,
+        versionName: latestCommitData?.gitVersionName,
+      };
+    }
+
+    const selectedTag = tags?.find((t) => t.name === selectedVersionOption);
+    return {
+      message: selectedTag?.message,
+      author: selectedTag?.tagger?.name,
+      date: selectedTag?.tagger?.date,
+      versionName: selectedVersionOption?.split('/')?.pop(),
+    };
+  };
+
+  renderVersionOption = (option) => {
+    return (
+      <div className="version-option-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span className="version-option-name">{option.label}</span>
+      </div>
+    );
+  };
+
+  handleVersionOptionChange = (newVal) => {
+    this.setState({ selectedVersionOption: newVal });
+  };
+
   render() {
     const {
       apps,
@@ -1243,8 +1570,14 @@ class HomePageComponent extends React.Component {
       fetchingAppsFromRepos,
       selectedAppRepo,
       appsFromRepos,
+      latestCommitData,
+      fetchingLatestCommitData,
       importingApp,
+      selectedVersionOption,
       importingGitAppOperations,
+      selectedImportBranch,
+      remoteBranches,
+      fetchingRemoteBranches,
       featuresLoaded,
       showCreateAppModal,
       showImportAppModal,
@@ -1352,10 +1685,10 @@ class HomePageComponent extends React.Component {
     const threshold = 3;
     const isLong = missingGroups.length > threshold;
     const displayedGroups = missingGroupsExpanded ? missingGroups : missingGroups.slice(0, threshold);
-
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
+          {/* <WorkspaceLockedBanner /> */}
           {/* this needs more revamp and conditions---> currently added this for testing*/}
           {showInsufficentPermissionModal && (
             <PermissionDeniedModal
@@ -1364,6 +1697,22 @@ class HomePageComponent extends React.Component {
               darkMode={this.props.darkMode}
             />
           )}
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForCreate}
+            onClose={() => this.setState({ showSwitchBranchForCreate: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForCreate: false, showCreateAppModal: true });
+            }}
+          />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForDelete}
+            onClose={() => this.setState({ showSwitchBranchForDelete: false, appToBeDeleted: null })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForDelete: false, showAppDeletionConfirmation: true });
+            }}
+          />
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1495,10 +1844,9 @@ class HomePageComponent extends React.Component {
 
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}
-            message={this.props.t(
-              'homePage.removeAppFromFolder',
-              'The app will be removed from this folder, do you want to continue?'
-            )}
+            message={`The ${
+              appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'
+            } will be removed from this folder, do you want to continue?`}
             confirmButtonLoading={isDeletingAppFromFolder}
             onConfirm={() => this.removeAppFromFolder()}
             onCancel={() =>
@@ -1511,7 +1859,7 @@ class HomePageComponent extends React.Component {
             darkMode={this.props.darkMode}
           />
           <ModalBase
-            title={selectedAppRepo ? 'Import app' : 'Import app from git repository'}
+            title={'Import app from git repository'}
             show={showGitRepositoryImportModal}
             handleClose={this.toggleGitRepositoryImportModal}
             handleConfirm={this.importGitApp}
@@ -1523,104 +1871,165 @@ class HomePageComponent extends React.Component {
             }}
             darkMode={this.props.darkMode}
           >
-            {fetchingAppsFromRepos ? (
+            {fetchingRemoteBranches ? (
               <div className="loader-container">
                 <div className="primary-spin-loader"></div>
               </div>
             ) : (
               <>
+                {/* BRANCH SELECT */}
                 <div className="form-group">
-                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
-                    Create app from
+                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="select-branch-label">
+                    Select branch
                   </label>
-                  <div className="tj-app-input" data-cy="app-select">
+                  <div className="tj-app-input" data-cy="branch-select">
                     <Select
-                      options={this.generateOptionsForRepository()}
+                      options={(remoteBranches || []).map((b) => ({
+                        name: b.name || b,
+                        value: b.name || b,
+                      }))}
                       disabled={importingApp}
-                      onChange={(newVal) => {
-                        this.setState(
-                          { selectedAppRepo: newVal, importedAppName: appsFromRepos[newVal]?.git_app_name },
-                          () => {
-                            if (appsFromRepos[newVal]?.app_name_exist === 'EXIST') {
-                              this.setState({ importingGitAppOperations: { message: 'App name already exists' } });
-                            } else {
-                              this.setState({ importingGitAppOperations: {} });
-                            }
-                          }
-                        );
-                      }}
+                      onChange={this.handleImportBranchChange}
                       width={'100%'}
-                      value={selectedAppRepo}
-                      placeholder={'Select app from git repository...'}
+                      value={selectedImportBranch}
+                      placeholder={'Select branch...'}
                       closeMenuOnSelect={true}
                       customWrap={true}
                     />
                   </div>
                 </div>
-                {selectedAppRepo && (
-                  <div className="commit-info">
-                    <div className="form-group mb-3">
-                      <label className="mb-1 info-label mt-3 tj-text-xsm font-weight-500" data-cy="app-name-label">
-                        App name
-                      </label>
-                      <div className="tj-app-input">
-                        <input
-                          type="text"
-                          value={this.state.importedAppName}
-                          className={cx('form-control font-weight-400', {
-                            'tj-input-error-state': importingGitAppOperations?.message,
-                          })}
-                          onChange={this.handleAppNameChange}
-                        />
-                      </div>
-                      <div>
-                        <div
-                          className={cx(
-                            { 'tj-input-error': importingGitAppOperations?.message },
-                            'tj-text-xxsm info-text'
-                          )}
-                          data-cy="app-name-helper-text"
-                        >
-                          {importingGitAppOperations?.message}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="application-editable-checkbox-container">
-                      <input
-                        className="form-check-input"
-                        checked={this.state.isAppImportEditable}
-                        type="checkbox"
-                        onChange={() =>
-                          this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
-                        }
-                      />
-                      Make application editable
-                      <div className="helper-text">
-                        <div className="tj-text tj-text-xsm"></div>
-                        <div className="tj-text-xxsm">
-                          Enabling this allows editing and git sync push/pull access in development.
-                        </div>
-                      </div>
-                    </div>
+
+                {/* APP SELECT - shown after branch is selected */}
+                {selectedImportBranch && (
+                  <>
                     <div className="form-group">
-                      <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
-                        Last commit
+                      <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
+                        Create app from
                       </label>
-                      <div className="last-commit-info form-control">
-                        <div className="message-info">
-                          <div data-cy="las-commit-message">
-                            {appsFromRepos[selectedAppRepo]?.last_commit_message ?? 'No commits yet'}
+                      <div className="tj-app-input" data-cy="app-select">
+                        {fetchingAppsFromRepos ? (
+                          <div style={{ padding: '8px 0' }}>
+                            <div className="primary-spin-loader" style={{ width: '20px', height: '20px' }}></div>
                           </div>
-                          <div data-cy="last-commit-version">{appsFromRepos[selectedAppRepo]?.git_version_name}</div>
-                        </div>
-                        <div className="author-info" data-cy="auther-info">
-                          {`Done by ${appsFromRepos[selectedAppRepo]?.last_commit_user} at ${moment(
-                            new Date(appsFromRepos[selectedAppRepo]?.lastpush_date)
-                          ).format('DD MMM YYYY, h:mm a')}`}
-                        </div>
+                        ) : (
+                          <Select
+                            options={this.generateOptionsForRepository()}
+                            disabled={importingApp}
+                            onChange={this.handleAppRepoChange}
+                            width={'100%'}
+                            value={selectedAppRepo}
+                            placeholder={'Select app...'}
+                            closeMenuOnSelect={true}
+                            customWrap={true}
+                          />
+                        )}
                       </div>
                     </div>
-                  </div>
+
+                    {selectedAppRepo && (
+                      <div className="commit-info">
+                        {/* APP NAME */}
+                        <div className="form-group">
+                          <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="app-name-label">
+                            App name
+                          </label>
+                          <div className="tj-app-input">
+                            <input
+                              type="text"
+                              value={this.state.importedAppName}
+                              className={cx('form-control font-weight-400', {
+                                'tj-input-error-state': importingGitAppOperations?.message,
+                              })}
+                              onChange={this.handleAppNameChange}
+                            />
+                          </div>
+                          <div>
+                            <div
+                              className={cx(
+                                { 'tj-input-error': importingGitAppOperations?.message },
+                                'tj-text-xxsm info-text'
+                              )}
+                              data-cy="app-name-helper-text"
+                            >
+                              {importingGitAppOperations?.message}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* EDITABLE CHECKBOX */}
+                        <div className="application-editable-checkbox-container">
+                          <input
+                            className="form-check-input"
+                            checked={this.state.isAppImportEditable}
+                            type="checkbox"
+                            onChange={() =>
+                              this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                            }
+                          />
+                          Make application editable
+                          <div className="helper-text">
+                            <div className="tj-text tj-text-xsm"></div>
+                            <div className="tj-text-xxsm">
+                              Enabling this allows editing and git sync push/pull access in development.
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* VERSION/TAG SELECT */}
+                        <div className="form-group">
+                          <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
+                            Select version to pull from
+                          </label>
+                          <div className="tj-app-input" data-cy="version-select">
+                            <Select
+                              options={this.generateVersionOptions()}
+                              disabled={importingApp || fetchingLatestCommitData}
+                              onChange={this.handleVersionOptionChange}
+                              width={'100%'}
+                              value={this.state.selectedVersionOption}
+                              placeholder={
+                                fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'
+                              }
+                              closeMenuOnSelect={true}
+                              customWrap={true}
+                              customOption={this.renderVersionOption}
+                            />
+                          </div>
+                        </div>
+
+                        {/* LAST COMMIT */}
+                        <div className="form-group">
+                          <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
+                            Last commit
+                          </label>
+                          <div className="last-commit-info form-control">
+                            {fetchingLatestCommitData ? (
+                              <div className="message-info">Loading...</div>
+                            ) : (
+                              <>
+                                <div className="message-info">
+                                  <div data-cy="last-commit-message">
+                                    {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
+                                  </div>
+                                  <div data-cy="last-commit-version">
+                                    {this.getSelectedVersionCommitInfo().gitVersionName}
+                                  </div>
+                                </div>
+                                {this.getSelectedVersionCommitInfo().author &&
+                                  this.getSelectedVersionCommitInfo().date && (
+                                    <div className="author-info" data-cy="author-info">
+                                      {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
+                                        new Date(this.getSelectedVersionCommitInfo().date)
+                                      ).format('DD MMM YYYY, h:mm a')}`}
+                                    </div>
+                                  )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1628,23 +2037,39 @@ class HomePageComponent extends React.Component {
           <Modal
             show={showAddToFolderModal && !!appOperations.selectedApp}
             closeModal={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
-            title={this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
+            title={this.props.t('homePage.appCard.updateFolder', 'Update folder')}
           >
             <div className="row">
               <div className="col modal-main">
                 <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
                   <p>
-                    {this.props.t('homePage.appCard.move', 'Move')}
-                    <span>{` "${appOperations?.selectedApp?.name}" `}</span>
+                    {this.props.t('homePage.appCard.update', 'Update')}{' '}
+                    <span>{`${appOperations?.selectedApp?.name}'s`}</span>{' '}
+                    {this.props.t('homePage.appCard.folder', 'folder')}
                   </p>
 
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder" className="select-folder-container">
                   <Select
-                    options={this.state.folders.map((folder) => {
-                      return { name: folder.name, value: folder.id };
-                    })}
+                    options={this.state.folders
+                      .filter((folder) => {
+                        const currentSession = authenticationService.currentSessionValue;
+                        if (currentSession?.super_admin || currentSession?.admin) return true;
+
+                        // Builders have admin-level access to module folders
+                        if (this.props.appType === 'module' && currentSession?.role?.name === 'builder') return true;
+
+                        // Check if user has edit permissions for the folder
+                        const folderPermissions = currentSession?.user_permissions?.folder;
+                        if (folderPermissions?.is_all_editable) return true;
+                        if (folderPermissions?.editable_folders_id?.includes(folder.id)) return true;
+
+                        // Allow folder owners to add apps to their own folders
+                        const currentUserId = currentSession?.current_user?.id;
+                        return !!(currentUserId && folder.created_by === currentUserId);
+                      })
+                      .map((folder) => ({ name: folder.name, value: folder.id }))}
                     disabled={!!appOperations?.isAdding}
                     onChange={(newVal) => {
                       this.setState({ appOperations: { ...appOperations, selectedFolder: newVal } });
@@ -1739,11 +2164,13 @@ class HomePageComponent extends React.Component {
                         <Button
                           disabled={getDisabledState()}
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                          onClick={() =>
-                            this.setState({
-                              showCreateAppModal: true,
-                            })
-                          }
+                          onClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                            } else {
+                              this.setState({ showCreateAppModal: true });
+                            }
+                          }}
                           data-cy={`create-new-${
                             this.props.appType === 'workflow'
                               ? 'workflows'
@@ -1775,7 +2202,15 @@ class HomePageComponent extends React.Component {
                         <ImportAppMenu
                           darkMode={this.props.darkMode}
                           showTemplateLibraryModal={
-                            this.props.appType !== 'module' ? this.showTemplateLibraryModal : undefined
+                            this.props.appType !== 'module'
+                              ? () => {
+                                  if (this.isWorkspaceBranchLocked()) {
+                                    this.setState({ showSwitchBranchForCreate: true });
+                                    return;
+                                  }
+                                  this.showTemplateLibraryModal();
+                                }
+                              : undefined
                           }
                           featureAccess={featureAccess}
                           orgGit={orgGit}
@@ -1783,6 +2218,12 @@ class HomePageComponent extends React.Component {
                             this.props.appType !== 'module' ? this.toggleGitRepositoryImportModal : undefined
                           }
                           readAndImport={this.readAndImport}
+                          onImportFromDeviceClick={() => {
+                            if (this.isWorkspaceBranchLocked()) {
+                              this.setState({ showSwitchBranchForCreate: true });
+                              return false;
+                            }
+                          }}
                           appType={this.props.appType}
                         />
                       </Dropdown>
@@ -1790,25 +2231,19 @@ class HomePageComponent extends React.Component {
                   </LicenseTooltip>
                 )}
               </div>
-              {this.props.appType === 'module' ? (
-                <div>
-                  <p></p>
-                </div>
-              ) : (
-                <Folders
-                  foldersLoading={this.state.foldersLoading}
-                  folders={this.state.folders}
-                  currentFolder={currentFolder}
-                  folderChanged={this.folderChanged}
-                  foldersChanged={this.foldersChanged}
-                  canCreateFolder={this.canCreateFolder()}
-                  canDeleteFolder={this.canDeleteFolder()}
-                  canUpdateFolder={this.canUpdateFolder()}
-                  darkMode={this.props.darkMode}
-                  canCreateApp={this.canCreateApp()}
-                  appType={this.props.appType}
-                />
-              )}
+              <Folders
+                foldersLoading={this.state.foldersLoading}
+                folders={this.state.folders}
+                currentFolder={currentFolder}
+                folderChanged={this.folderChanged}
+                foldersChanged={this.foldersChanged}
+                canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
+                canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
+                darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
+                appType={this.props.appType}
+              />
               {this.props.appType === 'front-end' && (
                 <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
               )}
@@ -1845,6 +2280,9 @@ class HomePageComponent extends React.Component {
             </div>
 
             <div className={cx('col home-page-content')} data-cy="home-page-content">
+              {this.props.appType !== 'workflow' && (
+                <WorkspaceLockedBanner pageContext={this.props.appType === 'module' ? 'modules' : 'apps'} />
+              )}
               <div className="w-100 mb-5 container home-page-content-container">
                 {featuresLoaded && !isLoading ? (
                   <>
@@ -1859,6 +2297,7 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
+                {/* <WorkspaceLockedBanner pageContext={this.props.appType === 'workflow' ? 'workflows' : this.props.appType === 'module' ? 'modules' : 'apps'} /> */}
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
@@ -1909,10 +2348,28 @@ class HomePageComponent extends React.Component {
                       isLoading={true}
                       createApp={this.createApp}
                       readAndImport={this.readAndImport}
+                      onImportFromDeviceClick={() => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          this.setState({ showSwitchBranchForCreate: true });
+                          return false;
+                        }
+                      }}
                       isImportingApp={isImportingApp}
                       fileInput={this.fileInput}
-                      openCreateAppModal={this.openCreateAppModal}
-                      openCreateAppFromTemplateModal={this.openCreateAppFromTemplateModal}
+                      openCreateAppModal={() => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          this.setState({ showSwitchBranchForCreate: true });
+                        } else {
+                          this.openCreateAppModal();
+                        }
+                      }}
+                      openCreateAppFromTemplateModal={(template) => {
+                        if (this.isWorkspaceBranchLocked()) {
+                          toast.error('Master is locked. Create a branch to create an app from template.');
+                          return;
+                        }
+                        this.openCreateAppFromTemplateModal(template);
+                      }}
                       creatingApp={creatingApp}
                       darkMode={this.props.darkMode}
                       showTemplateLibraryModal={this.state.showTemplateLibraryModal}
@@ -1949,7 +2406,13 @@ class HomePageComponent extends React.Component {
                         disabled={!moduleEnabled}
                         leftIcon="folderdownload"
                         isLoading={false}
-                        onClick={this.openCreateAppModal}
+                        onClick={() => {
+                          if (this.isWorkspaceBranchLocked()) {
+                            this.setState({ showSwitchBranchForCreate: true });
+                            return;
+                          }
+                          this.openCreateAppModal();
+                        }}
                         data-cy="button-import-an-app"
                         className="col"
                         variant="tertiary"
@@ -1971,6 +2434,8 @@ class HomePageComponent extends React.Component {
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                        : this.props.appType === 'module'
+                        ? 'No Modules found'
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
@@ -1995,6 +2460,9 @@ class HomePageComponent extends React.Component {
                     basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
+                    ownedFolders={this.state.folders.filter(
+                      (folder) => folder.created_by === authenticationService.currentSessionValue?.current_user?.id
+                    )}
                   />
                 )}
               </div>
@@ -2054,3 +2522,7 @@ const withStore = (Component) => (props) => {
 };
 
 export const HomePage = withTranslation()(withStore(withRouter(HomePageComponent)));
+
+// Need to fix latest commit thing ->
+// Call the same api with latest commit flag as true once the user selects a specific app from the list,
+// It should make that call once the endpoint is selected

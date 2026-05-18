@@ -10,6 +10,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 const VersionDropdownItem = ({
   version,
@@ -31,8 +32,10 @@ const VersionDropdownItem = ({
   const versions = useVersionManagerStore((state) => state.versions);
   const developmentVersions = useStore((state) => state.developmentVersions);
   const featureAccess = useStore((state) => state.license.featureAccess);
+  const { appType } = useModuleContext();
 
   const isDraft = version.status === 'DRAFT';
+  const isEditDisabled = appType === 'module' && !isDraft;
   const isPublished = version.status === 'PUBLISHED';
   // A version is released when it matches the releasedVersionId
   const isReleased = version.id === releasedVersionId;
@@ -106,23 +109,26 @@ const VersionDropdownItem = ({
       style={{ minWidth: '160px' }}
     >
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
-        <div
-          className={cx('dropdown-item tj-text-xsm', {
-            'cursor-pointer': isDraft,
-            disabled: !isDraft,
-            'dark-theme theme-dark': darkMode,
-          })}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!isDraft) return; // disable when not a draft
-            onEdit?.(version);
-            document.body.click(); // Close popover
-          }}
-          aria-disabled={!isDraft}
-          data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-edit-version-button`}
-        >
-          Edit details
-        </div>
+        <ToolTip message="Saved versions cannot be edited" placement="left" show={isEditDisabled}>
+          <div
+            className={cx('dropdown-item tj-text-xsm', {
+              'cursor-pointer': !isEditDisabled,
+              'cursor-not-allowed': isEditDisabled,
+              'dark-theme theme-dark': darkMode,
+            })}
+            style={isEditDisabled ? { opacity: 0.5 } : {}}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isEditDisabled) return;
+              onEdit?.(version);
+              document.body.click(); // Close popover
+            }}
+            aria-disabled={isEditDisabled}
+            data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-edit-version-button`}
+          >
+            Edit details
+          </div>
+        </ToolTip>
         {!isReleased && (
           <div
             className={cx('dropdown-item cursor-pointer tj-text-xsm text-danger', {

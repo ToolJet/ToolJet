@@ -16,6 +16,7 @@ import { LoggingModule } from '@modules/logging/module';
 import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.service';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { RedisModule } from '@modules/redis/module';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -135,6 +136,7 @@ export class AppModuleLoader {
       RequestContextModule,
       GuardValidatorModule,
       LoggingModule.forRoot(),
+      RedisModule.forRoot(),
     ];
 
     // Add OpenTelemetry Module if enabled
