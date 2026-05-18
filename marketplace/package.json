@@ -15,7 +15,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "lerna": "^9.0.3",
     "mime-types": "^2.1.35",
-    "prettier": "^2.8.7",
+    "prettier": "^3.8.3",
     "recursive-readdir": "^2.2.3",
     "ts-jest": "^29.0.5"
   },
