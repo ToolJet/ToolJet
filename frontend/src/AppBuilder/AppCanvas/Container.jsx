@@ -24,7 +24,6 @@ import useSortedComponents from '../_hooks/useSortedComponents';
 import { useDropVirtualMoveableGhost } from './Grid/hooks/useDropVirtualMoveableGhost';
 import { findNewParentIdFromMousePosition } from './Grid/gridUtils';
 import { computeFlexInsertIndex } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
-import { FlexContainerChildWrapper } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerChildWrapper';
 import { FlexContainerDropIndicator } from '@/AppBuilder/Widgets/FlexContainer/FlexContainerDropIndicator';
 
 // Lazy load editor-only component to reduce viewer bundle size
@@ -167,7 +166,8 @@ const Container = React.memo(
       return realCanvasRef?.current?.offsetWidth;
     }
 
-    const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+    const containerCanvasWidth = getContainerCanvasWidth();
+    const gridWidth = containerCanvasWidth / NO_OF_GRIDS;
 
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, gridWidth);
@@ -267,20 +267,24 @@ const Container = React.memo(
         {isFlexContainer ? (
           <>
             {sortedComponents.map((componentId) => (
-              <FlexContainerChildWrapper
+              <WidgetWrapper
                 id={componentId}
                 key={componentId}
                 currentLayout={currentLayout}
-                containerWidth={getContainerCanvasWidth()}
+                gridWidth={gridWidth}
+                subContainerIndex={index}
                 onOptionChange={onOptionChange}
                 onOptionsChange={onOptionsChange}
+                inCanvas={true}
+                readOnly={isContainerReadOnly}
                 mode={currentMode}
                 darkMode={darkMode}
                 moduleId={moduleId}
                 parentId={id}
+                layoutMode="flex"
+                containerWidth={containerCanvasWidth}
                 flexDirection={flexDirectionForFlex}
                 flexShouldStack={flexShouldStack}
-                gridWidth={gridWidth}
               />
             ))}
             <FlexContainerDropIndicator flexContainerId={id} direction={flexDirectionForFlex} />
