@@ -3135,8 +3135,7 @@ export class AppImportExportService {
     }
 
     // Track the most recently saved version for downstream callers that need it
-    // (audit logs, editing-version selection). No more ensureDefaultBranchVersion
-    // call — sub-branch imports already land on the sub-branch directly.
+    // (audit logs, editing-version selection).
     let lastSavedVersion: AppVersion | undefined;
 
     for (const appVersion of appVersions) {
