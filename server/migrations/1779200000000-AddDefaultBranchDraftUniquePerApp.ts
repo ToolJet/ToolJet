@@ -87,6 +87,16 @@ export class AddDefaultBranchDraftUniquePerApp1779200000000 implements Migration
       ON app_versions (app_id, branch_id)
       WHERE status = 'DRAFT'
         AND version_type = 'version'
+        AND is_stub = FALSE
+        AND branch_id IS NOT NULL
+    `);
+
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "app_versions_app_default_branch_draft_unique_ensure_single_stub"
+      ON app_versions (app_id, branch_id)
+      WHERE status = 'DRAFT'
+        AND version_type = 'version'
+        AND is_stub = TRUE
         AND branch_id IS NOT NULL
     `);
 
