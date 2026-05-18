@@ -148,6 +148,8 @@ const DynamicForm = ({
             encryptedFieldsProps[propertyKey] = {
               disabled: !!selectedDataSource?.id,
             };
+          } else if (computedProps[propertyKey] !== undefined && computedProps[propertyKey].disabled === false) {
+            encryptedFieldsProps[propertyKey] = { disabled: false };
           } else if (!isDataSourceEditing) {
             if (type === 'password' || encrypted) {
               encryptedFieldsProps[propertyKey] = {
@@ -397,6 +399,34 @@ const DynamicForm = ({
           isDisabled:
             isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: options?.[key]?.encrypted,
+          customOption: (option) => {
+            const labelText = option?.label || '';
+            const isDeprecated = typeof labelText === 'string' && labelText.includes('(Deprecated)');
+
+            if (isDeprecated) {
+              const baseText = labelText.replace(/\(Deprecated\)/g, '').trim();
+              return (
+                <div className="d-flex align-items-center">
+                  <span>{baseText}</span>
+                  <span
+                    className="badge ms-2"
+                    style={{
+                      backgroundColor: '#F0F4F8', // light grayish-blue background
+                      color: '#111827', // dark gray text
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      textTransform: 'none',
+                    }}
+                  >
+                    Deprecated
+                  </span>
+                </div>
+              );
+            }
+            return option?.label;
+          },
         };
       case 'checkbox-group':
         return {

@@ -1,0 +1,1032 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Ship EndofDayClose API",
+		"version": "1.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://apis-sandbox.fedex.com",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "https://apis.fedex.com",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/ship/v1/endofday/": {
+			"put": {
+				"summary": "Ground End Of Day Close",
+				"description": "Use this endpoint to close the Ground shipments and generate the reports.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "groundPerformEndOfDayClose",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/v1_endofday_body"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SHPCResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "35fa49ec-1e8a-4334-abc5-7e640ac807ac",
+									"errors": [
+										{
+											"code": "AVAILABILITY.SHIP.DATE.INVALID",
+											"message": "Ship date is invalid."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/ship/v1/endofday/\");\nvar request = new RestRequest(Method.PUT);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n  .url(\"https://apis-sandbox.fedex.com/ship/v1/endofday/\")\n  .put(body)\n  .addHeader(\"Content-Type\", \"application/json\")\n  .addHeader(\"X-locale\", \"en_US\")\n  .addHeader(\"Authorization\", \"Bearer \")\n  .build();\n\nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"PUT\", \"https://apis-sandbox.fedex.com/ship/v1/endofday/\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/ship/v1/endofday/');\n$request->setMethod(HTTP_METH_PUT);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/ship/v1/endofday/\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.put(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.put(\"https://apis-sandbox.fedex.com/ship/v1/endofday/\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/ship/v1/endofday/\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"PUT\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			},
+			"post": {
+				"summary": "Reprint End of the day",
+				"description": "Use this endpoint to reprint the closed Ground shipments reports.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "performEndOfDayClose",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/v1_endofday_body_1"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SHPCResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "35fa49ec-1e8a-4334-abc5-7e640ac807ac",
+									"errors": [
+										{
+											"code": "AVAILABILITY.SHIP.DATE.INVALID",
+											"message": "Ship date is invalid."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"SHPCResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"output": {
+						"$ref": "#/components/schemas/EndOfDayCloseOutputVO"
+					}
+				}
+			},
+			"EndOfDayCloseOutputVO": {
+				"type": "object",
+				"properties": {
+					"alerts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					},
+					"closeDocuments": {
+						"type": "array",
+						"description": "The actual document contents for all provided reports.",
+						"items": {
+							"$ref": "#/components/schemas/CloseDocument"
+						}
+					}
+				}
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the api alert code.<br>Example: SHIP.RECIPIENT.POSTALCITY.MISMATCH",
+						"example": "SHIP.RECIPIENT.POSTALCITY.MISMATCH"
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the api alert type.",
+						"example": "NOTE",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"message": {
+						"type": "string",
+						"description": "Specifies the api alert message.<br>Example: Recipient Postal-City Mismatch.",
+						"example": "Recipient Postal-City Mismatch."
+					}
+				},
+				"description": "Specifies the api alerts."
+			},
+			"CloseDocument": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"description": "Specifies the type of report.",
+						"example": "OP_950",
+						"enum": [
+							"MANIFEST",
+							"OP_950"
+						]
+					},
+					"shippingCycle": {
+						"type": "string",
+						"description": "Identifies the shipping cycle covered by the content of this document.",
+						"example": "1003234523333204"
+					},
+					"shippingDocumentDisposition": {
+						"type": "string",
+						"description": "",
+						"example": "CONFIRMED"
+					},
+					"accessReference": {
+						"type": "string",
+						"description": "The name under which a STORED or DEFFERED document is written.",
+						"example": null
+					},
+					"resolution": {
+						"type": "integer",
+						"description": "Specifies the image resolution in dpi(Dots per inch)",
+						"example": 200
+					},
+					"copiesToPrint": {
+						"type": "integer",
+						"description": "Can be zero for documents whose dispositions no content is included.",
+						"example": 1
+					},
+					"parts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ShippingDocumentPart"
+						}
+					}
+				}
+			},
+			"ShippingDocumentPart": {
+				"type": "object",
+				"properties": {
+					"documentPartSequenceNumber": {
+						"type": "integer",
+						"description": "The one-origin position of this part within a document.",
+						"example": 1
+					},
+					"image": {
+						"type": "string",
+						"description": "Graphic or printer commands for this image.",
+						"example": "ICAgICAg.."
+					}
+				},
+				"description": "One or more document parts which makeup a single logical document"
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: AVAILABILITY.SHIP.DATE.INVALID,LOGIN.REAUTHENTICATE.ERROR,UNAUTHORIZED.USAGE,NOT.FOUND.ERROR,INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: We are unable to process this request. Please try again later or contact FedEx Customer Service."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "List of parameters which indicates the properties of the alert message."
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"FullSchema_GEOD_PUT": {
+				"type": "object",
+				"properties": {
+					"closeReqType": {
+						"type": "string",
+						"description": "Specify the close request type to initiate processing of shipment data.For ground close the closeReqType is GCDR and for Reprint EndofDay the applicable value is RGCDR.",
+						"example": "GCDR",
+						"enum": [
+							"GCDR",
+							"RGCDR"
+						]
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/AccountNumber_2"
+					},
+					"groundServiceCategory": {
+						"type": "string",
+						"description": "This is to specify FedEx ground category for which the shipment to be submitted for end of the day closing.",
+						"example": "GROUND",
+						"enum": [
+							"GROUND"
+						]
+					},
+					"closeDate": {
+						"type": "string",
+						"description": "Indicates the close date. <br> Example: 2020-05-05",
+						"example": "2020-05-05"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "Specify the tracking number for reprinting the report.It is only applicable for reprint EndofDay and its not applicable for ground EndofDay close endpoint. <br> Example: 7XX96XX42946",
+						"example": "794967542946"
+					},
+					"reprintOption": {
+						"type": "string",
+						"description": "Specify the reprint option to generate report. Either by close date or a tracking number.It is only applicable for reprint EndofDay and its not applicable for ground EndofDay close endpoint.",
+						"example": "BY_SHIP_DATE",
+						"enum": [
+							"BY_SHIP_DATE",
+							"BY_TRACKING_NUMBER"
+						]
+					},
+					"closeDocumentSpecification": {
+						"$ref": "#/components/schemas/CloseDocumentSpecification"
+					}
+				}
+			},
+			"AccountNumber_2": {
+				"description": "This is the FedEx Account number. <br>Example: XXX456XXX",
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/CloseAccountNumber"
+					}
+				]
+			},
+			"CloseAccountNumber": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Conditional.<br> The account number value. Max Length is 9.<br>Example: 123456789"
+					}
+				},
+				"description": "The account number for closing the  shipment.",
+				"example": {
+					"value": "123456789"
+				}
+			},
+			"CloseDocumentSpecification": {
+				"type": "object",
+				"properties": {
+					"closeDocumentTypes": {
+						"type": "array",
+						"description": "Indicated the type of close documents requested by the caller. <br> Example: OP_950",
+						"example": [
+							"OP_950"
+						],
+						"items": {
+							"type": "string",
+							"enum": [
+								"MANIFEST",
+								"OP_950"
+							]
+						}
+					},
+					"op950Detail": {
+						"$ref": "#/components/schemas/Op950Detail"
+					}
+				},
+				"description": "Specifies characteristics of the document to be returned for this request."
+			},
+			"Op950Detail": {
+				"type": "object",
+				"properties": {
+					"format": {
+						"$ref": "#/components/schemas/Op950Detail_format"
+					}
+				}
+			},
+			"MinimumSamplePayload-Put-GroundClose": {
+				"example": {
+					"closeReqType": "GCDR",
+					"groundServiceCategory": "GROUND",
+					"accountNumber": {
+						"value": 123456789
+					},
+					"closeDate": "2020-05-12"
+				}
+			},
+			"FullSchema_Reprint_POST": {
+				"type": "object",
+				"properties": {
+					"closeReqType": {
+						"type": "string",
+						"description": "Specify the close request type to initiate processing of shipment data.For ground close the closeReqType is GCDR and for Reprint EndofDay the applicable value is RGCDR.",
+						"example": "GCDR",
+						"enum": [
+							"GCDR",
+							"RGCDR"
+						]
+					},
+					"accountNumber": {
+						"$ref": "#/components/schemas/AccountNumber_2"
+					},
+					"groundServiceCategory": {
+						"type": "string",
+						"description": "This is to specify FedEx ground category for which the shipment to be submitted for end of the day closing.",
+						"example": "GROUND",
+						"enum": [
+							"GROUND"
+						]
+					},
+					"closeDate": {
+						"type": "string",
+						"description": "Indicates the close date. <br> Example: 2020-05-05",
+						"example": "2020-05-05"
+					},
+					"trackingNumber": {
+						"type": "string",
+						"description": "Specify the tracking number for reprinting the report.It is only applicable for reprint EndofDay and its not applicable for ground EndofDay close endpoint. <br> Example: 7XX96XX42946",
+						"example": "794967542946"
+					},
+					"reprintOption": {
+						"type": "string",
+						"description": "Specify the reprint option to generate report. Either by close date or a tracking number.It is only applicable for reprint EndofDay and its not applicable for ground EndofDay close endpoint.",
+						"example": "BY_SHIP_DATE",
+						"enum": [
+							"BY_SHIP_DATE",
+							"BY_TRACKING_NUMBER"
+						]
+					},
+					"closeDocumentSpecification": {
+						"$ref": "#/components/schemas/CloseDocumentSpecification"
+					}
+				}
+			},
+			"MinimumSamplePayload-Post-Reprintground": {
+				"example": {
+					"closeReqType": "RGCDR",
+					"reprintOption": "BY_SHIP_DATE",
+					"groundServiceCategory": "GROUND",
+					"accountNumber": {
+						"value": 123456789
+					}
+				}
+			},
+			"v1_endofday_body": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema_GEOD_PUT"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-Put-GroundClose"
+					}
+				]
+			},
+			"v1_endofday_body_1": {
+				"oneOf": [
+					{
+						"$ref": "#/components/schemas/FullSchema_Reprint_POST"
+					},
+					{
+						"$ref": "#/components/schemas/MinimumSamplePayload-Post-Reprintground"
+					}
+				]
+			},
+			"Op950Detail_format_topOfPageOffset": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "The numeric quantity of this measurement.",
+						"example": "0"
+					},
+					"units": {
+						"type": "string",
+						"description": "The units for this measurement.",
+						"example": "CM",
+						"enum": [
+							"CM",
+							"IN"
+						]
+					}
+				},
+				"description": "Specifies how far down the page to move the begining of the image; allows for printing on letterhead and pre printed stock."
+			},
+			"Op950Detail_format": {
+				"type": "object",
+				"properties": {
+					"topOfPageOffset": {
+						"$ref": "#/components/schemas/Op950Detail_format_topOfPageOffset"
+					},
+					"imageType": {
+						"type": "string",
+						"description": "Specify the image format used for a shipping document.",
+						"example": "PDF",
+						"enum": [
+							"DIB",
+							"DOC",
+							"DPL",
+							"EPL2",
+							"GIF",
+							"PDF",
+							"PNG",
+							"RTF",
+							"TEXT",
+							"ZPLII"
+						]
+					},
+					"stockType": {
+						"type": "string",
+						"description": "Specifies the label stock type.  Lists the correct type of paper for the Freight address label option.Specify valid value PAPER_4_PER_PAGE_PORTRAIT",
+						"example": "OP_950",
+						"enum": [
+							"OP_900_LG",
+							"OP_900_LG_B",
+							"OP_900_LL",
+							"OP_900_LL_B",
+							"OP_950",
+							"PAPER_4_PER_PAGE_PORTRAIT",
+							"PAPER_4X6",
+							"PAPER_LETTER",
+							"STOCK_4X6",
+							"STOCK_4X6.75_LEADING_DOC_TAB",
+							"STOCK_4X6.75_TRAILING_DOC_TAB",
+							"STOCK_4X8",
+							"STOCK_4X9_LEADING_DOC_TAB",
+							"STOCK_4X9_TRAILING_DOC_TAB"
+						]
+					},
+					"locale": {
+						"type": "string",
+						"description": "this is the language and language locale code for the email<br>Example: en_US, fr_CA, es_MX",
+						"example": "en_US"
+					}
+				}
+			}
+		}
+	}
+}

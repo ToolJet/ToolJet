@@ -1,6 +1,7 @@
 import React from 'react';
 //TODO: Inspector folder needs to be refactored
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
@@ -49,13 +50,15 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     );
   }
   return (
-    <Inspector
-      componentDefinitionChanged={() => {}}
-      darkMode={darkMode}
-      selectedComponentId={selectedComponentId}
-      pages={[]}
-      isModuleEditor={isModuleEditor}
-      handleRightSidebarToggle={handleToggle}
-    />
+    <ErrorBoundary key={selectedComponentId}>
+      <Inspector
+        componentDefinitionChanged={() => {}}
+        darkMode={darkMode}
+        selectedComponentId={selectedComponentId}
+        pages={[]}
+        isModuleEditor={isModuleEditor}
+        handleRightSidebarToggle={handleToggle}
+      />
+    </ErrorBoundary>
   );
 };

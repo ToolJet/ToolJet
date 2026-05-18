@@ -113,6 +113,7 @@ export const verifyLoginSettings = (pageName) => {
 
   if (pageName === "instance") {
     openInstanceSettings();
+    cy.wait(1000);
     cy.get(ssoSelector.instanceLoginListItem).click();
   } else common.navigateToManageSSO();
 

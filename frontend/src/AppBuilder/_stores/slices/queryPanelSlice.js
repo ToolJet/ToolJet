@@ -544,7 +544,7 @@ export const createQueryPanelSlice = (set, get) => ({
         );
         const successData = { status: 'ok', data: finalData };
         onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
-        if (callbackFns?.onSuccess) return callbackFns.onSuccess(successData);
+        if (callbackFns?.onSuccess) callbackFns.onSuccess(successData);
         return successData;
       };
 
@@ -606,7 +606,7 @@ export const createQueryPanelSlice = (set, get) => ({
         );
 
         onEvent('onDataQueryFailure', queryEvents);
-        if (callbackFns?.onFailure) return callbackFns.onFailure(errorData);
+        if (callbackFns?.onFailure) callbackFns.onFailure(errorData);
         return errorData;
       };
 
@@ -1029,10 +1029,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 onEvent('onDataQueryFailure', queryEvents);
                 if (callbackFns?.onFailure) {
                   const failureData = { status: data.status, data: finalData };
-                  setPreviewLoading(false);
-                  setIsPreviewQueryLoading(false);
-                  resolve(callbackFns.onFailure(failureData));
-                  return;
+                  callbackFns.onFailure(failureData);
                 }
                 if (!calledFromQuery) setPreviewData(errorData);
                 break;
@@ -1071,11 +1068,8 @@ export const createQueryPanelSlice = (set, get) => ({
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
                     const failureData = { status: data.status, data: finalData };
-                    if (callbackFns?.onFailure) {
-                      resolve(callbackFns.onFailure(failureData));
-                    } else {
-                      resolve(failureData);
-                    }
+                    if (callbackFns?.onFailure) callbackFns.onFailure(failureData);
+                    resolve(failureData);
                     if (!calledFromQuery) setPreviewData(finalData);
                     return;
                   }
@@ -1086,10 +1080,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
                 if (callbackFns?.onSuccess) {
                   const successData = { status: data.status, data: finalData };
-                  setPreviewLoading(false);
-                  setIsPreviewQueryLoading(false);
-                  resolve(callbackFns.onSuccess(successData));
-                  return;
+                  callbackFns.onSuccess(successData);
                 }
                 break;
               }
