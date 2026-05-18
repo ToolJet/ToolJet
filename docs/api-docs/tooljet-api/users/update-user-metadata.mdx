@@ -9,6 +9,9 @@ This endpoint is in beta and may change in future releases.
 
 <EndpointHeader method="PUT" path="/workspace/{workspaceIdentifier}/user/{userIdentifier}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Replaces the entire userDetails (metadata) for a user in a workspace. This is a full replace — keys not included will be removed.
 
 
@@ -16,7 +19,10 @@ Replaces the entire userDetails (metadata) for a user in a workspace. This is a 
 
 
 
-<ParamsTable title="Request Body" params={[{"name":"userDetails","type":"array","required":true,"description":"","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"userDetails","type":"array","required":true,"description":"Array of key-value pairs representing the user's metadata fields. Replaces all existing metadata.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \
   -H "Authorization: Basic <access_token>" \
@@ -35,3 +41,6 @@ Replaces the entire userDetails (metadata) for a user in a workspace. This is a 
 }'`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

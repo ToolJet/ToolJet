@@ -5,14 +5,16 @@ title: "Replace User Workspaces Relations"
 
 <EndpointHeader method="PUT" path="/user/{id}/workspaces" />
 
+<ApiColumns>
+<ApiLeft>
+
 Replaces all workspace relations associated with a user. Passing an empty array removes all existing workspace relations.
 
 
 <ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"UUID of the user.","in":"path"}]} />
 
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/user/{id}/workspaces" \
   -H "Authorization: Basic <access_token>" \
@@ -20,3 +22,6 @@ Replaces all workspace relations associated with a user. Passing an empty array 
   -d '{}'`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

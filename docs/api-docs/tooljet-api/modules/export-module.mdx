@@ -5,14 +5,18 @@ title: "Export Module"
 
 <EndpointHeader method="GET" path="/export/workspace/{workspaceId}/modules/{moduleId}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Exports a module, including its definition and optionally the ToolJet Database table schemas it uses.
 
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"},{"name":"moduleId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"},{"name":"moduleId","type":"string","required":true,"description":"The unique identifier of the module to export.","in":"path"}]} />
 
 <ParamsTable title="Query Parameters" params={[{"name":"exportTJDB","type":"boolean","required":false,"description":"When true, bundles the TJDB table schemas into the export payload.","in":"query"}]} />
 
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/export/workspace/{workspaceId}/modules/{moduleId}?exportTJDB=<exportTJDB>" \
   -H "Authorization: Basic <access_token>" \
@@ -32,3 +36,6 @@ Exports a module, including its definition and optionally the ToolJet Database t
   ],
   "tooljet_version": "3.16.0"
 }`} />
+
+</ApiRight>
+</ApiColumns>

@@ -5,13 +5,15 @@ title: "Get User by Identifier"
 
 <EndpointHeader method="GET" path="/user/{identifier}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Returns details of a user identified by UUID or email address.
 
 <ParamsTable title="Path Parameters" params={[{"name":"identifier","type":"string","required":true,"description":"UUID (e.g. `d1493ea9-...`) or email (e.g. `john@example.com`).","in":"path"}]} />
 
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/user/{identifier}" \
   -H "Authorization: Basic <access_token>" \
@@ -24,3 +26,6 @@ Returns details of a user identified by UUID or email address.
   "status": "active",
   "workspaces": []
 }`} />
+
+</ApiRight>
+</ApiColumns>

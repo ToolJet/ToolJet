@@ -5,13 +5,19 @@ title: "Create User"
 
 <EndpointHeader method="POST" path="/users" />
 
+<ApiColumns>
+<ApiLeft>
+
 Creates a user with workspace assignments and returns 201 on success.
 
 
 
 
 
-<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"","in":"body"},{"name":"email","type":"string","required":true,"description":"","in":"body"},{"name":"password","type":"string","required":false,"description":"","in":"body"},{"name":"status","type":"string","required":false,"description":"","in":"body"},{"name":"workspaces","type":"array","required":true,"description":"","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"Full name of the user.","in":"body"},{"name":"email","type":"string","required":true,"description":"Email address of the user.","in":"body"},{"name":"password","type":"string","required":false,"description":"Password for the user account. If omitted, an invite email is sent.","in":"body"},{"name":"status","type":"string","required":false,"description":"Initial status of the user. Accepted values: active, invited.","in":"body"},{"name":"workspaces","type":"array","required":true,"description":"List of workspaces to add the user to, each with optional status and group assignments.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/users" \
   -H "Authorization: Basic <access_token>" \
@@ -35,3 +41,6 @@ Creates a user with workspace assignments and returns 201 on success.
 }'`} />
 
 **Response:** `201`
+
+</ApiRight>
+</ApiColumns>

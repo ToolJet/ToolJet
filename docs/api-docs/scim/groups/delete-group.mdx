@@ -5,16 +5,19 @@ title: "Delete Group"
 
 <EndpointHeader method="DELETE" path="/Groups/{id}" />
 
+<ApiColumns>
+<ApiLeft>
 
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
 
-<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"}]} />
-
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X DELETE "https://app.tooljet.com/api/scim/v2/Groups/{id}" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
 **Response:** `204`
+
+</ApiRight>
+</ApiColumns>

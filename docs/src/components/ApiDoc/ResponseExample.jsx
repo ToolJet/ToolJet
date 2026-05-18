@@ -3,7 +3,7 @@ import './ApiDoc.css';
 
 export default function ResponseExample({ statusCode, body }) {
   return (
-    <details className="api-response-example">
+    <details className="api-response-example" open>
       <summary>
         Response{statusCode ? ` — ${statusCode}` : ''}
       </summary>

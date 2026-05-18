@@ -5,16 +5,23 @@ title: "Sync and Pull App from Git"
 
 <EndpointHeader method="PUT" path="/apps/{appId}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Sync and pull the latest changes from GitHub for an existing ToolJet app.
 
 <ParamsTable title="Path Parameters" params={[{"name":"appId","type":"string","required":true,"description":"ID of the app.","in":"path"}]} />
 
-<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"","in":"query"}]} />
+<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"Must be set to git to enable git-sync mode for this operation.","in":"query"}]} />
 
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/apps/{appId}?createMode=<createMode>" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

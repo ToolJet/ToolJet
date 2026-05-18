@@ -5,6 +5,9 @@ title: "Update User Role"
 
 <EndpointHeader method="PUT" path="/update-user-role/workspace/{workspaceId}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Updates the role of a user within a specific workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"UUID of the workspace.","in":"path"}]} />
@@ -12,6 +15,9 @@ Updates the role of a user within a specific workspace.
 
 
 <ParamsTable title="Request Body" params={[{"name":"newRole","type":"string","required":true,"description":"New role to assign.","in":"body"},{"name":"email","type":"string","required":true,"description":"Email of the user whose role is being updated.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/update-user-role/workspace/{workspaceId}" \
   -H "Authorization: Basic <access_token>" \
@@ -22,3 +28,6 @@ Updates the role of a user within a specific workspace.
 }'`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

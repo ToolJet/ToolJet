@@ -9,13 +9,15 @@ This endpoint is in beta and may change in future releases.
 
 <EndpointHeader method="GET" path="/workspace/{workspaceIdentifier}/user/{userIdentifier}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Returns metadata for a specific user within a workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceIdentifier","type":"string","required":true,"description":"Workspace UUID or slug.","in":"path"},{"name":"userIdentifier","type":"string","required":true,"description":"User UUID or email.","in":"path"}]} />
 
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \
   -H "Authorization: Basic <access_token>" \
@@ -33,3 +35,6 @@ Returns metadata for a specific user within a workspace.
     }
   ]
 }`} />
+
+</ApiRight>
+</ApiColumns>

@@ -5,13 +5,19 @@ title: "Create App from GitHub"
 
 <EndpointHeader method="POST" path="/apps" />
 
+<ApiColumns>
+<ApiLeft>
+
 Creates a new ToolJet app from a GitHub repository.
 
 
 
-<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"","in":"query"}]} />
+<ParamsTable title="Query Parameters" params={[{"name":"createMode","type":"string","required":true,"description":"Must be set to git to create an app from a GitHub repository.","in":"query"}]} />
 
 <ParamsTable title="Request Body" params={[{"name":"gitAppId","type":"string","required":true,"description":"Git App ID.","in":"body"},{"name":"gitVersionId","type":"string","required":true,"description":"Git version ID (branch or tag).","in":"body"},{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps?createMode=<createMode>" \
   -H "Authorization: Basic <access_token>" \
@@ -23,3 +29,6 @@ Creates a new ToolJet app from a GitHub repository.
 }'`} />
 
 **Response:** `201`
+
+</ApiRight>
+</ApiColumns>

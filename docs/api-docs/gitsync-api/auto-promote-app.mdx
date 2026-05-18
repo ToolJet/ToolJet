@@ -5,17 +5,22 @@ title: "Auto Promote App"
 
 <EndpointHeader method="POST" path="/apps/{appId}/promote" />
 
+<ApiColumns>
+<ApiLeft>
+
 Deploys an app by pulling the latest changes from Git and promoting the latest version to the production environment.
 
 
 <ParamsTable title="Path Parameters" params={[{"name":"appId","type":"string","required":true,"description":"ID of the app to promote.","in":"path"}]} />
 
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appId}/promote" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

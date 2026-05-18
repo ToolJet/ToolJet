@@ -50,44 +50,48 @@
   border-color: #30363d;
 }
 
-/* ─── Params Table ──────────────────────────────────────────────── */
+/* ─── Params List ────────────────────────────────────────────────── */
 .api-params-section {
   margin: 1.5rem 0;
 }
 
-.api-params-section h4 {
-  font-size: 13px;
-  font-weight: 600;
+.api-params-title {
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ifm-color-emphasis-700);
+  letter-spacing: 0.08em;
+  color: var(--ifm-color-emphasis-600);
   margin: 0 0 8px;
 }
 
-.api-params-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.api-params-table th {
-  text-align: left;
-  padding: 8px 12px;
-  background: var(--ifm-color-emphasis-100);
-  border: 1px solid var(--ifm-color-emphasis-300);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ifm-color-emphasis-700);
-}
-
-.api-params-table td {
-  padding: 9px 12px;
+.api-params-list {
   border: 1px solid var(--ifm-color-emphasis-200);
-  vertical-align: top;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.api-params-table tr:nth-child(even) td {
-  background: var(--ifm-color-emphasis-50, rgba(0,0,0,0.02));
+[data-theme='dark'] .api-params-list {
+  border-color: #30363d;
+}
+
+.api-param-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.api-param-row:last-child {
+  border-bottom: none;
+}
+
+[data-theme='dark'] .api-param-row {
+  border-bottom-color: #21262d;
+}
+
+.api-param-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
 }
 
 .api-param__name {
@@ -97,26 +101,52 @@
   color: var(--ifm-font-color-base);
 }
 
-.api-param__required {
-  font-size: 10px;
-  font-weight: 700;
-  color: #c62828;
-  margin-left: 5px;
-  vertical-align: middle;
-}
-
 .api-param__type {
   font-family: var(--ifm-font-family-monospace, monospace);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
   color: #6f42c1;
   background: #f3eeff;
-  padding: 1px 5px;
-  border-radius: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
 [data-theme='dark'] .api-param__type {
   color: #c084fc;
   background: #2a1a40;
+}
+
+.api-param__badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.api-param__badge--required {
+  color: #c62828;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+[data-theme='dark'] .api-param__badge--required {
+  color: #f87171;
+  background: #2d0808;
+  border-color: #7f1d1d;
+}
+
+.api-param__badge--optional {
+  color: var(--ifm-color-emphasis-600);
+  background: var(--ifm-color-emphasis-100);
+  border-color: var(--ifm-color-emphasis-200);
+}
+
+.api-param-row__desc {
+  margin-top: 5px;
+  font-size: 13px;
+  color: var(--ifm-color-emphasis-700);
+  line-height: 1.5;
 }
 
 /* ─── Request Example ───────────────────────────────────────────── */
@@ -445,5 +475,139 @@
 @media (max-width: 768px) {
   .api-landing-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Two-Column Endpoint Layout ───────────────────────────────── */
+.api-two-col {
+  display: grid;
+  grid-template-columns: 45fr 55fr;
+  gap: 0 32px;
+  align-items: start;
+  margin: 1.5rem 0;
+}
+
+.api-two-col__left {
+  min-width: 0;
+}
+
+.api-two-col__right {
+  min-width: 0;
+  position: sticky;
+  top: calc(var(--ifm-navbar-height, 60px) + 20px);
+}
+
+/* ── Request block card ── */
+.api-two-col__right .api-request-example {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0 0 12px;
+  color: #e6edf3;
+}
+
+.api-two-col__right .api-request-example__header {
+  margin-bottom: 12px;
+}
+
+.api-two-col__right .api-request-example__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+
+.api-two-col__right .api-request-example pre {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0 0 15px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.api-two-col__right .api-request-example pre code {
+  color: #e6edf3;
+  font-size: 12.5px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.api-two-col__right .api-copy-btn {
+  border-color: #30363d;
+  color: #8b949e;
+  background: transparent;
+}
+
+.api-two-col__right .api-copy-btn:hover {
+  background: #21262d;
+  color: #e6edf3;
+}
+
+.api-two-col__right .api-copy-btn--copied {
+  color: #3fb950;
+  border-color: #2ea043;
+}
+
+/* ── Response block card ── */
+.api-two-col__right .api-response-example {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0;
+  color: #e6edf3;
+}
+
+.api-two-col__right .api-response-example summary {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #8b949e;
+  padding: 0 0 12px;
+}
+
+.api-two-col__right .api-response-example pre {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.api-two-col__right .api-response-example pre code {
+  color: #e6edf3;
+  font-size: 12.5px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ── Plain **Response:** `xxx` text (no ResponseExample component) ── */
+.api-two-col__right > p {
+  font-size: 13px;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0;
+}
+
+/* ── Mobile: stack to single column ── */
+@media (max-width: 996px) {
+  .api-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .api-two-col__left {
+    margin-bottom: 8px;
+  }
+
+  .api-two-col__right {
+    position: static;
   }
 }

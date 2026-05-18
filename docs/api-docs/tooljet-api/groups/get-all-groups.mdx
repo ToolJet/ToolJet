@@ -9,13 +9,17 @@ This endpoint is in beta and may change in future releases.
 
 <EndpointHeader method="GET" path="/workspaces/{workspaceId}/groups" />
 
+<ApiColumns>
+<ApiLeft>
+
 Retrieves all groups in a workspace. Supports search and pagination.
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
-<ParamsTable title="Query Parameters" params={[{"name":"search","type":"string","required":false,"description":"Filter groups by name.","in":"query"},{"name":"page","type":"integer","required":false,"description":"","in":"query"},{"name":"per_page","type":"integer","required":false,"description":"","in":"query"}]} />
+<ParamsTable title="Query Parameters" params={[{"name":"search","type":"string","required":false,"description":"Filter groups by name.","in":"query"},{"name":"page","type":"integer","required":false,"description":"Page number for pagination. Defaults to 1.","in":"query"},{"name":"per_page","type":"integer","required":false,"description":"Number of items per page. Defaults to 20.","in":"query"}]} />
 
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspaces/{workspaceId}/groups?search=<search>&page=<page>&per_page=<per_page>" \
   -H "Authorization: Basic <access_token>" \
@@ -36,3 +40,6 @@ Retrieves all groups in a workspace. Supports search and pagination.
     "total_count": 1
   }
 }`} />
+
+</ApiRight>
+</ApiColumns>

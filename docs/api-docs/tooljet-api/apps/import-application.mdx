@@ -5,13 +5,19 @@ title: "Import Application"
 
 <EndpointHeader method="POST" path="/import/workspace/{workspaceId}/apps" />
 
+<ApiColumns>
+<ApiLeft>
+
 Imports an application into a ToolJet workspace.
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace to import the application into.","in":"path"}]} />
 
 
 
 <ParamsTable title="Request Body" params={[{"name":"appName","type":"string","required":false,"description":"Overrides the app name on import. Uses the exported name if omitted.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/apps" \
   -H "Authorization: Basic <access_token>" \
@@ -19,3 +25,6 @@ Imports an application into a ToolJet workspace.
   -d '{}'`} />
 
 **Response:** `201`
+
+</ApiRight>
+</ApiColumns>

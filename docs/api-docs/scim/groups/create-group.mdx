@@ -5,8 +5,13 @@ title: "Create Group"
 
 <EndpointHeader method="POST" path="/Groups" />
 
+<ApiColumns>
+<ApiLeft>
 
+Creates a new group in the organization.
 
+</ApiLeft>
+<ApiRight>
 
 
 
@@ -18,4 +23,18 @@ title: "Create Group"
   -H "Content-Type: application/json" \
   -d '{}'`} />
 
-**Response:** `201`
+<ResponseExample statusCode="201" body={`{
+  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+  "id": "e9e30dba-f08f-4109-8486-d5c6a331660a",
+  "displayName": "Engineering",
+  "members": [],
+  "meta": {
+    "resourceType": "Group",
+    "created": "2024-01-23T04:56:22Z",
+    "lastModified": "2024-01-23T04:56:22Z",
+    "location": "https://app.tooljet.com/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
+  }
+}`} />
+
+</ApiRight>
+</ApiColumns>

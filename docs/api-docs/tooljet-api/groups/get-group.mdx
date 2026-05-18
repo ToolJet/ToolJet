@@ -9,16 +9,21 @@ This endpoint is in beta and may change in future releases.
 
 <EndpointHeader method="GET" path="/workspace/{workspaceId}/groups/{groupId}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Retrieves details of a specific group including its permissions.
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"},{"name":"groupId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"},{"name":"groupId","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
 
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/groups/{groupId}" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

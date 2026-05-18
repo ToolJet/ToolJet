@@ -5,13 +5,19 @@ title: "Update User"
 
 <EndpointHeader method="PATCH" path="/user/{identifier}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Partially updates fields of a user. Returns 200 on success.
 
 <ParamsTable title="Path Parameters" params={[{"name":"identifier","type":"string","required":true,"description":"UUID or email of the user to update.","in":"path"}]} />
 
 
 
-<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"","in":"body"},{"name":"email","type":"string","required":false,"description":"","in":"body"},{"name":"password","type":"string","required":false,"description":"","in":"body"},{"name":"status","type":"string","required":false,"description":"","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"Updated full name of the user.","in":"body"},{"name":"email","type":"string","required":false,"description":"Updated email address of the user.","in":"body"},{"name":"password","type":"string","required":false,"description":"New password for the user account.","in":"body"},{"name":"status","type":"string","required":false,"description":"Updated user status. Accepted values: active, archived.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{identifier}" \
   -H "Authorization: Basic <access_token>" \
@@ -23,3 +29,6 @@ Partially updates fields of a user. Returns 200 on success.
 }'`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

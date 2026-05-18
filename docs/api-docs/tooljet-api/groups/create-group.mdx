@@ -9,14 +9,20 @@ This endpoint is in beta and may change in future releases.
 
 <EndpointHeader method="POST" path="/workspace/{workspaceId}/groups" />
 
+<ApiColumns>
+<ApiLeft>
+
 Creates a new user group in a workspace with optional workspace-level permissions and granular permissions for apps and datasources.
 
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
 
 
-<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"","in":"body"},{"name":"permissions","type":"object","required":false,"description":"","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"Name of the group.","in":"body"},{"name":"permissions","type":"object","required":false,"description":"Workspace-level permissions for the group (e.g. appCreate, appDelete).","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"List of granular permission rules scoped to specific apps or datasources.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/workspace/{workspaceId}/groups" \
   -H "Authorization: Basic <access_token>" \
@@ -46,3 +52,6 @@ Creates a new user group in a workspace with optional workspace-level permission
 }'`} />
 
 **Response:** `201`
+
+</ApiRight>
+</ApiColumns>

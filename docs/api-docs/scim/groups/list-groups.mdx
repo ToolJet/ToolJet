@@ -5,8 +5,13 @@ title: "List Groups"
 
 <EndpointHeader method="GET" path="/Groups" />
 
+<ApiColumns>
+<ApiLeft>
 
+Lists all groups in the organization.
 
+</ApiLeft>
+<ApiRight>
 
 
 
@@ -17,4 +22,25 @@ title: "List Groups"
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
-**Response:** `200`
+<ResponseExample statusCode="200" body={`{
+  "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+  "totalResults": 1,
+  "startIndex": 1,
+  "itemsPerPage": 20,
+  "Resources": [
+    {
+      "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+      "id": "e9e30dba-f08f-4109-8486-d5c6a331660a",
+      "displayName": "Engineering",
+      "members": [
+        {
+          "value": "2819c223-7f76-453a-919d-413861904646",
+          "display": "Barbara Jensen"
+        }
+      ]
+    }
+  ]
+}`} />
+
+</ApiRight>
+</ApiColumns>

@@ -5,32 +5,24 @@ export default function ParamsTable({ title, params }) {
   if (!params || params.length === 0) return null;
   return (
     <div className="api-params-section">
-      {title && <h4>{title}</h4>}
-      <table className="api-params-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Required</th>
-            <th>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {params.map((p, i) => (
-            <tr key={i}>
-              <td>
-                <span className="api-param__name">{p.name}</span>
-                {p.required && <span className="api-param__required">*</span>}
-              </td>
-              <td>
-                {p.type && <span className="api-param__type">{p.type}</span>}
-              </td>
-              <td>{p.required ? 'Yes' : 'No'}</td>
-              <td>{p.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {title && <div className="api-params-title">{title}</div>}
+      <div className="api-params-list">
+        {params.map((p, i) => (
+          <div key={i} className="api-param-row">
+            <div className="api-param-row__meta">
+              <span className="api-param__name">{p.name}</span>
+              {p.type && <span className="api-param__type">{p.type}</span>}
+              {p.required
+                ? <span className="api-param__badge api-param__badge--required">required</span>
+                : <span className="api-param__badge api-param__badge--optional">optional</span>
+              }
+            </div>
+            {p.description && (
+              <div className="api-param-row__desc">{p.description}</div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

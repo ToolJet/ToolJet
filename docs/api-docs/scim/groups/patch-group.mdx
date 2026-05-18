@@ -5,17 +5,36 @@ title: "Patch Group"
 
 <EndpointHeader method="PATCH" path="/Groups/{id}" />
 
+<ApiColumns>
+<ApiLeft>
 
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
 
-<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"}]} />
-
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PATCH "https://app.tooljet.com/api/scim/v2/Groups/{id}" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json" \
   -d '{}'`} />
 
-**Response:** `200`
+<ResponseExample statusCode="200" body={`{
+  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+  "id": "e9e30dba-f08f-4109-8486-d5c6a331660a",
+  "displayName": "Engineering",
+  "members": [
+    {
+      "value": "2819c223-7f76-453a-919d-413861904646",
+      "display": "Barbara Jensen"
+    }
+  ],
+  "meta": {
+    "resourceType": "Group",
+    "created": "2024-01-23T04:56:22Z",
+    "lastModified": "2024-05-13T04:42:34Z",
+    "location": "https://app.tooljet.com/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
+  }
+}`} />
+
+</ApiRight>
+</ApiColumns>

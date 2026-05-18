@@ -5,13 +5,19 @@ title: "Import Module"
 
 <EndpointHeader method="POST" path="/import/workspace/{workspaceId}/modules" />
 
+<ApiColumns>
+<ApiLeft>
+
 Imports a module into a workspace from a previously exported payload.
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace to import the module into.","in":"path"}]} />
 
 
 
 <ParamsTable title="Request Body" params={[{"name":"tooljet_version","type":"string","required":true,"description":"The ToolJet version the module was exported from.","in":"body"},{"name":"app","type":"object","required":false,"description":"Module definition data from the export step.","in":"body"},{"name":"appName","type":"string","required":false,"description":"Overrides the module name on import.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/modules" \
   -H "Authorization: Basic <access_token>" \
@@ -24,3 +30,6 @@ Imports a module into a workspace from a previously exported payload.
 <ResponseExample statusCode="200" body={`{
   "message": "Module imported successfully."
 }`} />
+
+</ApiRight>
+</ApiColumns>

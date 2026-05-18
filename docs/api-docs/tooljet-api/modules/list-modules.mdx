@@ -5,13 +5,15 @@ title: "List Modules"
 
 <EndpointHeader method="GET" path="/workspace/{workspaceId}/modules" />
 
+<ApiColumns>
+<ApiLeft>
+
 Retrieves a list of all modules in a workspace.
 
-<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
-
-
-
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/modules" \
   -H "Authorization: Basic <access_token>" \
@@ -30,3 +32,6 @@ Retrieves a list of all modules in a workspace.
   ],
   "total": 1
 }`} />
+
+</ApiRight>
+</ApiColumns>

@@ -5,13 +5,19 @@ title: "Replace User Workspace"
 
 <EndpointHeader method="PATCH" path="/user/{id}/workspace/{workspaceId}" />
 
+<ApiColumns>
+<ApiLeft>
+
 Updates a specific workspace relation for a user.
 
-<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"","in":"path"},{"name":"workspaceId","type":"string","required":true,"description":"","in":"path"}]} />
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"UUID of the user.","in":"path"},{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
 
 
-<ParamsTable title="Request Body" params={[{"name":"id","type":"string","required":false,"description":"","in":"body"},{"name":"name","type":"string","required":false,"description":"","in":"body"},{"name":"status","type":"string","required":false,"description":"","in":"body"},{"name":"groups","type":"array","required":false,"description":"","in":"body"}]} />
+<ParamsTable title="Request Body" params={[{"name":"id","type":"string","required":false,"description":"ID of the workspace (alternative to path parameter).","in":"body"},{"name":"name","type":"string","required":false,"description":"Name of the workspace.","in":"body"},{"name":"status","type":"string","required":false,"description":"User's status in this workspace. Accepted values: active, archived.","in":"body"},{"name":"groups","type":"array","required":false,"description":"List of groups to assign the user to in this workspace.","in":"body"}]} />
+
+</ApiLeft>
+<ApiRight>
 
 <RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{id}/workspace/{workspaceId}" \
   -H "Authorization: Basic <access_token>" \
@@ -26,3 +32,6 @@ Updates a specific workspace relation for a user.
 }'`} />
 
 **Response:** `200`
+
+</ApiRight>
+</ApiColumns>

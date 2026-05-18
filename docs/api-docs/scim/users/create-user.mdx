@@ -5,8 +5,13 @@ title: "Create User"
 
 <EndpointHeader method="POST" path="/Users" />
 
+<ApiColumns>
+<ApiLeft>
 
+Creates a new user in the organization.
 
+</ApiLeft>
+<ApiRight>
 
 
 
@@ -18,4 +23,29 @@ title: "Create User"
   -H "Content-Type: application/json" \
   -d '{}'`} />
 
-**Response:** `201`
+<ResponseExample statusCode="201" body={`{
+  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+  "id": "2819c223-7f76-453a-919d-413861904646",
+  "userName": "bjensen@tooljet.com",
+  "name": {
+    "formatted": "Barbara Jensen",
+    "familyName": "Jensen",
+    "givenName": "Barbara"
+  },
+  "emails": [
+    {
+      "value": "bjensen@tooljet.com",
+      "primary": true
+    }
+  ],
+  "active": true,
+  "meta": {
+    "resourceType": "User",
+    "created": "2024-01-23T04:56:22Z",
+    "lastModified": "2024-01-23T04:56:22Z",
+    "location": "https://app.tooljet.com/api/scim/v2/Users/2819c223-7f76-453a-919d-413861904646"
+  }
+}`} />
+
+</ApiRight>
+</ApiColumns>
