@@ -4,7 +4,12 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { DataSource as TypeOrmDataSource } from 'typeorm';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createUser, initTestApp, closeTestApp, createGroupPermission } from 'test-helper';
+import { User } from 'src/entities/user.entity';
+import { OrganizationUser } from 'src/entities/organization_user.entity';
 
 jest.setTimeout(120_000);
 
@@ -121,6 +126,25 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       const groupNames = res.body.userGroups.map((g: { name: string }) => g.name);
       expect(groupNames).toContain('builder');
       expect(groupNames).toContain('end-user');
+    });
+
+    it('should return a non-null inviteUrl even when user and workspace status are archived', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-archived@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Archived Vendor',
+          email: 'archived-vendor@example.com',
+          status: 'archived',
+          workspaces: [{ id: orgId, status: 'archived' }],
+        })
+        .expect(201);
+
+      // Tokens are generated unconditionally at creation time — status does not gate URL generation.
+      expect(res.body.workspaces[0].inviteUrl).toBeTruthy();
     });
 
     it('should add user to multiple custom groups in a workspace', async () => {
@@ -254,6 +278,77 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       res.body.workspaces.forEach((ws: { inviteUrl: string | null }) => {
         expect(ws.inviteUrl).toBeNull();
       });
+    });
+
+    it('should return inviteUrl as null after invitation tokens are cleared (post-acceptance)', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-post-accept@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const createRes = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'Acceptance Vendor', email: 'acceptance-vendor@example.com', workspaces: [{ id: orgId }] })
+        .expect(201);
+
+      const userId = createRes.body.id;
+
+      // Simulate invite acceptance: both tokens are nulled by the onboarding flow.
+      const ds = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
+      await ds.manager.update(User, { id: userId }, { invitationToken: null });
+      await ds.manager.update(OrganizationUser, { userId }, { invitationToken: null });
+
+      const getRes = await request(app.getHttpServer())
+        .get(`/api/ext/user/${userId}`)
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      getRes.body.workspaces.forEach((ws: { inviteUrl: string | null }) => {
+        expect(ws.inviteUrl).toBeNull();
+      });
+    });
+  });
+
+  describe('POST /api/ext/users — no email dispatch', () => {
+    it('should never emit an emailEvent when creating a user', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-noemail@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const emitter = app.get(EventEmitter2);
+      const spy = jest.spyOn(emitter, 'emit');
+
+      await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'No Email Vendor', email: 'no-email-vendor@example.com', workspaces: [{ id: orgId }] })
+        .expect(201);
+
+      const emailEmits = spy.mock.calls.filter(([event]) => event === 'emailEvent');
+      expect(emailEmits).toHaveLength(0);
+    });
+  });
+
+  describe('GET /api/ext/users — list endpoint', () => {
+    it('should return inviteUrl for each workspace entry across all users in the list', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-list@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const createRes = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({ name: 'List Vendor', email: 'list-vendor@example.com', workspaces: [{ id: orgId }] })
+        .expect(201);
+
+      const createdUserId = createRes.body.id;
+
+      const listRes = await request(app.getHttpServer())
+        .get('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .expect(200);
+
+      const found = listRes.body.find((u: { id: string }) => u.id === createdUserId);
+      expect(found).toBeDefined();
+      expect(found.workspaces).toHaveLength(1);
+      expect(found.workspaces[0].inviteUrl).toBeTruthy();
     });
   });
 });
