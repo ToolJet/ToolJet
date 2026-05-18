@@ -16,6 +16,7 @@ import {
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -1304,6 +1305,19 @@ export class AppImportExportService {
         await this.createPagePermissionsForGroups(pageCreated, user.organizationId, manager);
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
+
+        // Heal any parent-child cycles in the imported tree BEFORE we begin ID
+        // remapping. A cycle reaching this point (corrupt source app / hand-
+        // edited JSON / git-merge artifact) would otherwise persist verbatim
+        // and freeze the canvas on first open. The helper mutates
+        // component.parent in place on the deterministically-chosen node.
+        const { repairedIds } = repairParentCycles(pageComponents);
+        if (repairedIds.length > 0) {
+          console.warn(
+            `[app-import] Repaired ${repairedIds.length} parent-child cycle(s) on page ${page.id}. ` +
+              `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+          );
+        }
 
         const newComponentIdsMap = {};
         for (const component of pageComponents) {

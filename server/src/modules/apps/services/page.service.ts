@@ -4,6 +4,7 @@ import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -287,6 +288,18 @@ export class PageService implements IPageService {
       const pageComponents = await manager.find(Component, {
         where: { pageId },
       });
+
+      // Heal any pre-existing parent-child cycle on the source page before
+      // cloning. Otherwise the clone preserves the cycle verbatim through the
+      // ID remap and the new page is born corrupt.
+      const { repairedIds } = repairParentCycles(pageComponents);
+      if (repairedIds.length > 0) {
+        console.warn(
+          `[page-clone] Repaired ${repairedIds.length} parent-child cycle(s) on source page ${pageId}. ` +
+            `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+        );
+      }
+
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
       const mappingsToUpdate = [];
