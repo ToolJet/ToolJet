@@ -51,7 +51,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     );
 
     return new Fuse(allMethods, {
-      keys: ['serviceLabel'], // Only search service names
+      keys: ['serviceLabel', 'label'],
       threshold: 0.3,
       shouldSort: true,
     });
@@ -139,7 +139,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     // Use pre-computed search index
     const results = searchIndex.search(debouncedSearchTerm).map((r) => r.item);
 
-    // Group by service and include all methods
+    // Group by service, including only matched methods
     const grouped = {};
     results.forEach((method) => {
       const serviceKey = method.serviceValue;
@@ -151,9 +151,10 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
           value: originalService.value,
           type: originalService.type,
           service: originalService.service,
-          methods: originalService.methods, // Include all methods from the service
+          methods: [],
         };
       }
+      grouped[serviceKey].methods.push(method);
     });
 
     return Object.values(grouped);
