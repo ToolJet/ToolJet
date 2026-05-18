@@ -12,9 +12,13 @@ import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
 // Skip cleanup for debugging by setting CYPRESS_NO_CLEANUP=1 in the env.
 describe(
   "Git Sync — Flow #3: Single Module (Dev → Prod)",
-  // One retry: the module-editor → dashboard-push transition is memory-heavy
-  // and occasionally trips Chrome's renderer (see `renderer-process-crashed`
-  // in cypress.io docs). The test is otherwise deterministic.
+  // One retry covers two transient-failure classes:
+  //   - The original Chrome-renderer crash on module-editor → dashboard-push
+  //     transitions (now mostly addressed by browserConfig.js stability
+  //     flags, but kept as belt-and-braces).
+  //   - Network/server flakiness on /api/app-git/gitpush — observed 30s
+  //     timeouts on this endpoint when GitHub's API responds slowly.
+  // Both are environment-flaky rather than spec bugs.
   { retries: { runMode: 1, openMode: 0 } },
   () => {
     const testId = Date.now();
