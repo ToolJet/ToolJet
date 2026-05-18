@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { MigrationInterface, QueryRunner, TableCheck, TableColumn } from 'typeorm';
 
 export class AddProviderToOrganizationAiKeys1776500000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -12,9 +12,18 @@ export class AddProviderToOrganizationAiKeys1776500000000 implements MigrationIn
         default: "'anthropic'",
       })
     );
+    await queryRunner.createCheckConstraint(
+      'organization_ai_keys',
+      new TableCheck({
+        name: 'chk_organization_ai_keys_provider',
+        columnNames: ['provider'],
+        expression: `provider IN ('anthropic', 'gemini', 'tooljet_managed')`,
+      })
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropCheckConstraint('organization_ai_keys', 'chk_organization_ai_keys_provider');
     await queryRunner.dropColumn('organization_ai_keys', 'provider');
   }
 }
