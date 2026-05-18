@@ -676,7 +676,52 @@ export class AppsService implements IAppsService {
     return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
+  /**
+   * Set `app.editingVersion` to the right row given the request's branch context.
+   *
+   * The subscriber leaves `editingVersion` undefined for git-enabled non-workflow
+   * apps (branch context is required for a deterministic pick). This method
+   * fills it in:
+   *
+   *   - Workflow or git-disabled: subscriber already picked the row — no-op.
+   *   - Git-enabled, x-branch-id header present: load the BRANCH/VERSION row
+   *     for that branch (DRAFT). On a sub-branch this is the BRANCH-type DRAFT;
+   *     on the default branch this is the VERSION-type DRAFT.
+   *   - Git-enabled, no header: fall back to the default-branch DRAFT.
+   *   - Stub rows still resolve so the caller can decide how to react (the EE
+   *     getOne triggers hydration; CE returns the row as-is).
+   */
+  private async resolveBranchAwareEditingVersion(app: App, branchId?: string): Promise<void> {
+    if (app.editingVersion) return; // subscriber already set it (workflow / git-off)
+    if (app.type === APP_TYPES.WORKFLOW) return;
+
+    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+      where: { organizationId: app.organizationId, isDefault: true },
+      select: ['id'],
+    });
+    if (!defaultBranch) return; // git off — subscriber should have handled it
+
+    const targetBranchId = branchId ?? defaultBranch.id;
+    const version = await this.versionRepository.findOne({
+      where: { appId: app.id, branchId: targetBranchId, isStub: false },
+      order: { updatedAt: 'DESC' },
+    });
+    if (version) {
+      app.editingVersion = version;
+      (app as any).isStub = false;
+    } else {
+      (app as any).isStub = true;
+    }
+  }
+
   async getOne(app: App, user: User, branchId?: string): Promise<any> {
+    // The subscriber leaves editingVersion undefined for git-enabled non-workflow
+    // apps — branch context is required for a deterministic pick. Resolve it
+    // here from x-branch-id (or fall back to the default branch's DRAFT).
+    // Workflows + git-disabled apps already have editingVersion set by the
+    // subscriber.
+    await this.resolveBranchAwareEditingVersion(app, branchId);
+
     // Non-workflow apps store name/slug/icon/isPublic on app_versions; project them
     // onto the in-memory App so the JSON response carries the correct values.
     await this.appsUtilService.overlayAppMetadata(app, branchId);

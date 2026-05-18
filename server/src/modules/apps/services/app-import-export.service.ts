@@ -345,7 +345,7 @@ export class AppImportExportService {
     return '';
   }
 
-  async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
+  async export(user: User, id: string, searchParams: any = {}, branchId?: string): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
@@ -369,6 +369,16 @@ export class AppImportExportService {
         queryAppVersions.andWhere('app_versions.id = :versionId', {
           versionId,
         });
+      } else if (branchId && appToExport.type !== APP_TYPES.WORKFLOW) {
+        // Sub-branch file export — export only the BRANCH-type row that owns
+        // this sub-branch's editable state. Default-branch exports are blocked
+        // upstream in import-export-resources/service.ts. Workflows skip the
+        // filter (they don't carry branch_id on app_versions).
+        queryAppVersions
+          .andWhere('app_versions.branchId = :branchId', { branchId })
+          .andWhere('app_versions.versionType = :branchVersionType', {
+            branchVersionType: AppVersionType.BRANCH,
+          });
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
@@ -1339,7 +1349,7 @@ export class AppImportExportService {
       await manager.save(importedApp);
 
       // Stage metadata for downstream (createAppVersionsForImportedApp,
-      // ensureDefaultBranchVersion) so they can write it to app_versions.
+      // performLegacyAppImport) so they can write it to app_versions.
       if (!isWorkflow) {
         (importedApp as any).__importMetadata = {
           slug: appParams.slug || null,
@@ -1466,7 +1476,12 @@ export class AppImportExportService {
     // When importing multiple versions, select the right versions to import based on context:
     // - Cloning on a sub-branch (cloning=true, branchId provided): prefer non-stub BRANCH-type
     //   versions matching the source branchId. Fall back to VERSION-type if none found.
-    // - All other cases (plain import, or cloning on default branch): skip BRANCH-type versions,
+    // - Git hydrate (isGitApp + branchId): pass all (pull.service.ts re-parents).
+    // - File import onto a sub-branch (!isGitApp + !cloning + branchId): keep ONLY
+    //   the latest version. Sub-branches have a single editable BRANCH-type DRAFT —
+    //   importing history would create rows the sub-branch can't represent. Older
+    //   versions in the JSON are dropped.
+    // - All other cases (file import without branch): skip BRANCH-type versions,
     //   only import VERSION-type.
     // - Single version: allow through as-is (will be adapted in createAppVersionsForImportedApp).
     let filteredAppVersions: any[];
@@ -1487,6 +1502,11 @@ export class AppImportExportService {
         // (the original cross-workspace-import rule) leaves zero versions and crashes
         // hydration with "No versions found after import".
         filteredAppVersions = importingAppVersions;
+      } else if (!isGitApp && !cloning && branchId) {
+        // File import onto a sub-branch — keep only the latest version. Older
+        // versions are dropped (sub-branches carry one editable DRAFT, no history).
+        const latest = this.pickLatestVersionFromImport(importingAppVersions);
+        filteredAppVersions = latest ? [latest] : [];
       } else {
         filteredAppVersions = importingAppVersions.filter(
           (v: any) => !v.versionType || v.versionType === AppVersionType.VERSION
@@ -3238,8 +3258,8 @@ export class AppImportExportService {
       }
     }
 
-    // Track the most recently saved version so the post-loop ensureDefaultBranchVersion
-    // call can copy content from it.
+    // Track the most recently saved version for downstream callers that need it
+    // (audit logs, editing-version selection).
     let lastSavedVersion: AppVersion | undefined;
 
     for (const appVersion of appVersions) {
@@ -3352,69 +3372,37 @@ export class AppImportExportService {
       appVersionMapping[appVersion.id] = version.id;
     }
 
-    // For non-workflows in git-sync workspaces, ensure the default branch carries a
-    // BRANCH-type metadata row. lastSavedVersion is the most recent AppVersion from the
-    // loop above (typically the editing version).
-    if (!isWorkflow && lastSavedVersion) {
-      await this.ensureDefaultBranchVersion(manager, importedApp, lastSavedVersion, user?.organizationId);
-    }
-
     return appResourceMappings;
   }
 
   /**
-   * For non-workflows, ensure the workspace's default branch has an AppVersion row
-   * for this app. Skipped entirely for workflows (metadata stays on apps.*) and for
-   * non-git-sync workspaces (no default branch exists). If any row already exists for
-   * (appId, defaultBranch.id) — VERSION or BRANCH type — the helper is a no-op so it
-   * fires only on the first write.
+   * Pick the "most recent" version from an exported app's appVersions[] array.
    *
-   * The inserted row is BRANCH-type, name is a fresh UUID (BRANCH names are not user-
-   * visible), and all content is copied from the just-created sourceVersion. Metadata
-   * (slug/appName/icon/isPublic) prefers the staged __importMetadata, falling back to
-   * the sourceVersion's own values.
+   * Heuristic: prefer DRAFT versions (these represent the editing state at
+   * export time). Among the preferred pool, use `createdAt` DESC if any row
+   * carries the field; otherwise fall back to the last array slot (export
+   * order from the source workspace).
+   *
+   * Used by sub-branch file imports — sub-branches carry a single editable
+   * DRAFT and dropping history is the right move.
    */
-  private async ensureDefaultBranchVersion(
-    manager: EntityManager,
-    app: App,
-    sourceVersion: AppVersion,
-    organizationId: string
-  ): Promise<void> {
-    if (app.type === APP_TYPES.WORKFLOW) return;
+  private pickLatestVersionFromImport(appVersions: any[]): any | null {
+    if (!appVersions?.length) return null;
+    if (appVersions.length === 1) return appVersions[0];
 
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch) return;
+    const drafts = appVersions.filter((v: any) => !v.status || v.status === AppVersionStatus.DRAFT);
+    const pool = drafts.length > 0 ? drafts : appVersions;
 
-    const existing = await manager.findOne(AppVersion, {
-      where: { appId: app.id, branchId: defaultBranch.id },
-      select: ['id'],
-    });
-    if (existing) return;
-
-    const importMeta = (app as any).__importMetadata;
-    const branchVersion = manager.create(AppVersion, {
-      name: uuid(),
-      appId: app.id,
-      versionType: AppVersionType.BRANCH,
-      branchId: defaultBranch.id,
-      status: AppVersionStatus.DRAFT,
-      definition: sourceVersion.definition || {},
-      globalSettings: sourceVersion.globalSettings || {},
-      pageSettings: sourceVersion.pageSettings || {},
-      showViewerNavigation: sourceVersion.showViewerNavigation ?? true,
-      homePageId: sourceVersion.homePageId || null,
-      currentEnvironmentId: sourceVersion.currentEnvironmentId || null,
-      slug: importMeta?.slug ?? sourceVersion.slug,
-      appName: importMeta?.appName ?? sourceVersion.appName,
-      icon: importMeta?.icon ?? sourceVersion.icon,
-      isPublic: importMeta?.isPublic ?? sourceVersion.isPublic,
-      ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
-    } as DeepPartial<AppVersion>);
-
-    await manager.save(AppVersion, branchVersion);
+    const hasCreatedAt = pool.some((v: any) => v.createdAt);
+    if (hasCreatedAt) {
+      const sorted = [...pool].sort((a: any, b: any) => {
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tb - ta;
+      });
+      return sorted[0];
+    }
+    return pool[pool.length - 1];
   }
 
   async createDefaultDataSourceForVersion(organizationId: string, manager: EntityManager): Promise<any> {
@@ -3602,10 +3590,6 @@ export class AppImportExportService {
       }),
     });
     await manager.save(version);
-
-    // Mirror metadata onto the default branch's BRANCH-type carrier (no-op for workflows
-    // and non-git-sync workspaces).
-    await this.ensureDefaultBranchVersion(manager, importedApp, version, user?.organizationId);
 
     // Create default data sources
     const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(user.organizationId, manager);
