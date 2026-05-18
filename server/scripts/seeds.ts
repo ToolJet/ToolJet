@@ -13,7 +13,7 @@ import { OnboardingStatus } from '../src/modules/onboarding/constants';
 import { DEFAULT_GROUP_PERMISSIONS } from '../src/modules/group-permissions/constants';
 
 const SEED_DEFAULTS = {
-  email: 'dev@tooljet.io',
+  email: 'dev@tooljet.com',
   password: 'password',
   firstName: 'The',
   lastName: 'Developer',
