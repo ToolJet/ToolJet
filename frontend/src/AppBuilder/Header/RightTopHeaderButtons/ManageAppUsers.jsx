@@ -17,7 +17,8 @@ import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import InfoIcon from '@assets/images/icons/info.svg';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
-import { Share2 } from 'lucide-react';
+import { Share2, TriangleAlert } from 'lucide-react';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -217,7 +218,27 @@ class ManageAppUsersComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
-            <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
+            <Modal.Title data-cy="modal-header">
+              <div className="tw-flex tw-items-center tw-gap-2">
+                {this.props.t('editor.share', 'Share')}
+                {(() => {
+                  const { currentBranch } = useWorkspaceBranchesStore.getState();
+                  const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+                  if (!isOnFeatureBranch) return null;
+                  return (
+                    <ToolTip
+                      message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                      placement="top"
+                      width="272px"
+                    >
+                      <span className="tw-flex tw-items-center">
+                        <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                      </span>
+                    </ToolTip>
+                  );
+                })()}
+              </div>
+            </Modal.Title>
             <span onClick={this.hideModal} data-cy="modal-close-button">
               <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
             </span>
@@ -227,7 +248,11 @@ class ManageAppUsersComponent extends React.Component {
               <div class="shareable-link-container">
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
-                    {this.props.isVersionReleased ? (
+                    {this.props.isVersionReleased ||
+                    (() => {
+                      const { currentBranch } = useWorkspaceBranchesStore.getState();
+                      return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+                    })() ? (
                       <div>
                         <input
                           className="form-check-input"
@@ -284,7 +309,11 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
 
-                {this.props.isVersionReleased ? (
+                {this.props.isVersionReleased ||
+                (() => {
+                  const { currentBranch } = useWorkspaceBranchesStore.getState();
+                  return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+                })() ? (
                   <div className="shareable-link tj-app-input mb-2">
                     <label data-cy="shareable-app-link-label" className="field-name">
                       {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
@@ -306,7 +335,13 @@ class ManageAppUsersComponent extends React.Component {
                           style={{ maxWidth: '150px' }}
                           defaultValue={this.props.slug}
                           data-cy="app-name-slug-input"
-                          disabled={!this.props.isVersionReleased}
+                          disabled={
+                            !this.props.isVersionReleased &&
+                            (() => {
+                              const { currentBranch } = useWorkspaceBranchesStore.getState();
+                              return currentBranch?.is_default || currentBranch?.isDefault;
+                            })()
+                          }
                         />
                         {isSlugVerificationInProgress && (
                           <div className="icon-container">
@@ -404,7 +439,11 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 )}
 
-                {this?.props?.isVersionReleased &&
+                {(this?.props?.isVersionReleased ||
+                  (() => {
+                    const { currentBranch } = useWorkspaceBranchesStore.getState();
+                    return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+                  })()) &&
                   (this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">

@@ -61,6 +61,7 @@ import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+import { TriangleAlert } from 'lucide-react';
 
 import { appTypeToDisplayNameMapping } from './helper';
 
@@ -125,6 +126,7 @@ class HomePageComponent extends React.Component {
       showCreateAppModal: false,
       showSwitchBranchForCreate: false,
       showSwitchBranchForDelete: false,
+      showSwitchBranchForClone: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -147,6 +149,7 @@ class HomePageComponent extends React.Component {
       missingGroupsExpanded: false,
       showAIOnboardingLoadingScreen: false,
       showInsufficentPermissionModal: false,
+      showDependentAppsModal: false,
     };
   }
 
@@ -882,6 +885,17 @@ class HomePageComponent extends React.Component {
     return !!(isBranchingEnabled && isDefault);
   };
 
+  isOnFeatureBranch = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled =
+      this.props.appType === 'front-end' || this.props.appType === 'module'
+        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
+        : false;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && !isDefault);
+  };
+
   cancelDeleteAppDialog = () => {
     this.setState({
       isDeletingApp: false,
@@ -913,7 +927,15 @@ class HomePageComponent extends React.Component {
         }
       })
       .catch((error) => {
-        toast.error(error?.error || error?.message || 'Could not delete the app.');
+        const msg = error?.error || error?.message || '';
+        if (
+          this.props.appType === 'module' &&
+          (msg.includes('Cannot delete this module') || msg.includes('Cannot delete module'))
+        ) {
+          this.setState({ showDependentAppsModal: true });
+        } else {
+          toast.error(msg || 'Could not delete the app.');
+        }
       })
       .finally(() => {
         this.cancelDeleteAppDialog();
@@ -1119,6 +1141,13 @@ class HomePageComponent extends React.Component {
         });
         break;
       case 'clone-app':
+        if (this.isWorkspaceBranchLocked()) {
+          this.setState({
+            appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+            showSwitchBranchForClone: true,
+          });
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
           showCloneAppModal: true,
@@ -1596,6 +1625,7 @@ class HomePageComponent extends React.Component {
       missingGroupsExpanded,
       showAIOnboardingLoadingScreen,
       showInsufficentPermissionModal,
+      showDependentAppsModal,
     } = this.state;
 
     if (showAIOnboardingLoadingScreen) {
@@ -1713,6 +1743,14 @@ class HomePageComponent extends React.Component {
               this.setState({ showSwitchBranchForDelete: false, showAppDeletionConfirmation: true });
             }}
           />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForClone}
+            onClose={() => this.setState({ showSwitchBranchForClone: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForClone: false, showCloneAppModal: true });
+            }}
+          />
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1818,6 +1856,19 @@ class HomePageComponent extends React.Component {
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
               title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
+              titleAdornment={
+                this.isOnFeatureBranch() ? (
+                  <ToolTip
+                    message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                    placement="top"
+                    width="272px"
+                  >
+                    <span className="tw-inline-flex tw-items-center tw-ml-2">
+                      <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                    </span>
+                  </ToolTip>
+                ) : null
+              }
               actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
               actionLoadingButton={'Renaming'}
               appType={this.props.appType}
@@ -1825,22 +1876,74 @@ class HomePageComponent extends React.Component {
           )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
-            message={this.props.t(
-              this.props.appType === 'workflow'
-                ? 'homePage.deleteWorkflowAndData'
-                : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
-              {
-                appName: appToBeDeleted?.name,
-              }
-            )}
+            title="Delete"
+            message={
+              this.isOnFeatureBranch() ? (
+                <span>
+                  {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
+                    appToBeDeleted?.name
+                  } and the associated data will be deleted from this branch. On merge to main, `}
+                  <strong>
+                    {' '}
+                    {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
+                    versions
+                  </strong>
+                  {' will be deleted from git and cannot be retrieved.'}
+                  <br />
+                  <br />
+                  {'Are you sure you want to continue?'}
+                </span>
+              ) : (
+                this.props.t(
+                  this.props.appType === 'workflow'
+                    ? 'homePage.deleteWorkflowAndData'
+                    : this.props.appType === 'front-end'
+                    ? 'homePage.deleteAppAndData'
+                    : deleteModuleText,
+                  {
+                    appName: appToBeDeleted?.name,
+                  }
+                )
+              )
+            }
             confirmButtonLoading={isDeletingApp}
             onConfirm={() => this.executeAppDeletion()}
             onCancel={() => this.cancelDeleteAppDialog()}
             darkMode={this.props.darkMode}
             cancelButtonText="Cancel"
           />
+
+          <ModalBase
+            show={showDependentAppsModal}
+            handleClose={() => this.setState({ showDependentAppsModal: false })}
+            showHeader={false}
+            showFooter={false}
+            darkMode={this.props.darkMode}
+            className="dependent-apps-modal"
+          >
+            <div className="tw-flex tw-flex-col tw-gap-6 tw-p-6">
+              <div className="tw-flex tw-flex-col tw-gap-2">
+                <SolidIcon name="warning" width="40" fill="var(--icon-danger)" />
+                <div className="tw-flex tw-flex-col tw-gap-[2px]">
+                  <div className="tw-font-medium tw-text-[16px] tw-leading-6 tw-text-default tw-opacity-80">
+                    Dependent apps found!
+                  </div>
+                  <div className="tw-font-normal tw-text-xs tw-leading-[18px] tw-text-default">
+                    Cannot delete this module as it is being used in one or more apps.
+                  </div>
+                </div>
+              </div>
+              <div className="tw-flex tw-justify-end">
+                <ButtonSolid
+                  variant="tertiary"
+                  onClick={() => this.setState({ showDependentAppsModal: false })}
+                  data-cy="dependent-apps-acknowledge-button"
+                >
+                  I understand
+                </ButtonSolid>
+              </div>
+            </div>
+          </ModalBase>
 
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}

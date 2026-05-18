@@ -6,7 +6,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { AppModal } from '@/_components/AppModal';
-import { PenLine } from 'lucide-react';
+import { PenLine, TriangleAlert } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
@@ -118,6 +118,22 @@ function EditAppName() {
           selectedAppId={appId}
           selectedAppName={appName}
           title="Rename app"
+          titleAdornment={(() => {
+            const { currentBranch } = useWorkspaceBranchesStore.getState();
+            const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+            if (!isOnFeatureBranch) return null;
+            return (
+              <ToolTip
+                message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                placement="top"
+                width="272px"
+              >
+                <span className="tw-inline-flex tw-items-center tw-ml-2">
+                  <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                </span>
+              </ToolTip>
+            );
+          })()}
           actionButton="Rename app"
           actionLoadingButton={'Renaming'}
           appType="app"
