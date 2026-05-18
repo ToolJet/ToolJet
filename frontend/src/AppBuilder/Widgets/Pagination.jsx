@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const Pagination = ({
   id,
@@ -16,6 +17,7 @@ export const Pagination = ({
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
   const [isVisible, setIsVisible] = useState(visibility);
   const [isDisabled, setIsDisabled] = useState(disabledState);
+  const [isLoading, setIsLoading] = useState(false);
 
   const pageChanged = (number) => {
     setCurrentPage(number);
@@ -100,6 +102,15 @@ export const Pagination = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
+  // CSA: setLoading
+  useEffect(() => {
+    setExposedVariable('setLoading', async function (value) {
+      setIsLoading(!!value);
+      setExposedVariable('isLoading', !!value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     setExposedVariable('isVisible', isVisible);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,6 +120,11 @@ export const Pagination = ({
     setExposedVariable('isDisabled', isDisabled);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDisabled]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', isLoading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   const computedStyles = {
     height,
@@ -127,7 +143,10 @@ export const Pagination = ({
       role="navigation"
       id={`component-${id}`}
     >
-      <ul className="pagination m-0" style={computedStyles}>
+      <ul
+        className="pagination m-0"
+        style={{ ...computedStyles, ...(isLoading ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+      >
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}
@@ -148,6 +167,7 @@ export const Pagination = ({
           callback={gotoPage}
           darkMode={darkMode}
           containerWidth={width}
+          isLoading={isLoading}
         />
         <Pagination.Operator
           operator=">"
@@ -298,7 +318,7 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   );
 };
 
-const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth }) => {
+const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, isLoading }) => {
   const itemWidth = 28; // Width of each item
 
   const [maxItems, setMaxItems] = useState(0); // for max items that can fit in container
@@ -344,11 +364,28 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
 
     // Render page numbers
     for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(
-        <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-          <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
-        </li>
-      );
+      if (isLoading && i === startPage) {
+        pageNumbers.push(
+          <li
+            key={i}
+            className="page-item d-flex align-items-center justify-content-center"
+            style={{ minWidth: itemWidth }}
+          >
+            <Loader
+              width="16"
+              absolute={false}
+              style={{ margin: 0 }}
+              classes={{ loaderContainer: 'align-items-center' }}
+            />
+          </li>
+        );
+      } else {
+        pageNumbers.push(
+          <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+            <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
+          </li>
+        );
+      }
     }
     // If total pages exceed the maximum displayable page numbers, add ellipsis
     if (totalPages > maxPageNumbers) {
