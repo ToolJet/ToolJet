@@ -148,7 +148,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/'],
+          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '@tooljet/plugins'],
         },
       ],
       'react/no-unknown-property': 'off',
@@ -260,7 +260,7 @@ export default [
       'import/no-unresolved': [
         'error',
         {
-          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/'],
+          ignore: ['^@/', 'react-hot-toast', 'react-i18next', 'react-loading-skeleton', 'react-spring', 'class-variance-authority', '@radix-ui/', '@tooljet/plugins'],
         },
       ],
 

@@ -235,17 +235,17 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
               },
             },
             ...(lastName
-           ? [
-               {
-                 ...baseWhere,
-                 user: {
-                   ...baseWhere.user,
-                   firstName: ILike(`%${firstName}%`),
-                   lastName: ILike(`%${lastName}%`),
-                 },
-               },
-             ]
-           : []),
+              ? [
+                  {
+                    ...baseWhere,
+                    user: {
+                      ...baseWhere.user,
+                      firstName: ILike(`%${firstName}%`),
+                      lastName: ILike(`%${lastName}%`),
+                    },
+                  },
+                ]
+              : []),
           ],
           relations: {
             group: true,

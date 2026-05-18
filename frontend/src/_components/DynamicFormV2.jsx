@@ -5,7 +5,6 @@ import Textarea from '@/_ui/Textarea';
 import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
-import OAuthWrapper from './OAuthWrapper';
 import Toggle from '@/_ui/Toggle';
 import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
@@ -43,8 +42,6 @@ const DynamicFormV2 = ({
   showValidationErrors,
   clearValidationErrorBanner,
   elementsProps = null,
-  createDataSource = null,
-  isSaving = false,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -399,10 +396,6 @@ const DynamicFormV2 = ({
         return SqlGroupBy;
       case 'react-component-sql-aggregate':
         return SqlAggregate;
-      case 'dropdown':
-        return Select;
-      case 'react-component-oauth':
-        return OAuthWrapper;
       // TODO: Move dropdown component flip logic to be handled here
       // case 'dropdown-component-flip':
       //   return Select;
@@ -412,18 +405,7 @@ const DynamicFormV2 = ({
   };
 
   const getElementProps = (uiProperties) => {
-    const {
-      label,
-      description,
-      widget,
-      required,
-      width,
-      key,
-      help_text: helpText,
-      list,
-      buttonText,
-      oauth_configs,
-    } = uiProperties;
+    const { label, description, widget, required, width, key, help_text: helpText, list, buttonText } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
@@ -524,21 +506,6 @@ const DynamicFormV2 = ({
           labelDisabled: false,
         };
       }
-      case 'react-component-oauth':
-        return {
-          optionchanged,
-          createDataSource,
-          options,
-          isSaving,
-          selectedDataSource,
-          currentAppEnvironmentId,
-          workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
-          optionsChanged,
-          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
-          scopes: options?.scopes?.value,
-          oauth_configs,
-        };
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;
         if (isGDS) {

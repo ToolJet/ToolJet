@@ -191,7 +191,6 @@ export class EmailUtilService implements IEmailUtilService {
         console.log('to: ', to);
         console.log('Subject: ', subject);
         console.log('content: ', htmlToSend);
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const previewEmail = require('preview-email');
         const transport = nodemailer.createTransport({
           jsonTransport: true,

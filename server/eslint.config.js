@@ -21,6 +21,9 @@ const compat = new FlatCompat({
 });
 
 module.exports = defineConfig([{
+  linterOptions: {
+    reportUnusedDisableDirectives: "error",
+  },
   files: ["**/*.ts"],
   languageOptions: {
     globals: {
@@ -67,9 +70,13 @@ module.exports = defineConfig([{
     "@typescript-eslint/no-unused-vars": ["error", {
       vars: "all",
       args: "none",
+      varsIgnorePattern: "^_",
+      destructuredArrayIgnorePattern: "^_",
+      caughtErrorsIgnorePattern: "^_",
     }],
 
     "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/no-require-imports": "off",
     "@typescript-eslint/no-empty-function": 0,
     "no-unsafe-optional-chaining": "off",
 

@@ -1,9 +1,17 @@
 name: Cypress Marketplace
 
 on:
+  workflow_call:
+    inputs:
+      edition:
+        type: string
+        required: false
+        default: 'ee'
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
   pull_request_target:
     types: [labeled]
-
   workflow_dispatch:
 
 permissions:
@@ -12,15 +20,22 @@ permissions:
   issues: write
 
 env:
-  PR_NUMBER: ${{ github.event.number }}
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  PR_NUMBER: ${{ github.event.number || (github.event.workflow_run.pull_requests[0] && github.event.workflow_run.pull_requests[0].number) || '' }}
+  BRANCH_NAME: ${{ github.head_ref || github.event.workflow_run.head_branch || github.ref_name }}
   TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
+    if: >-
+      inputs.edition
+      || contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
+      || (github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success'
+        && github.event.workflow_run.event == 'pull_request'
+        && github.event.workflow_run.pull_requests[0].base.ref == 'lts-3.16')
+      || github.event_name == 'workflow_dispatch'
 
     strategy:
       fail-fast: false
@@ -60,7 +75,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }}
 
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
@@ -87,7 +102,7 @@ jobs:
             --platform=linux/amd64 \
             -f cypress-tests/cypress-lts.Dockerfile \
             --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
-            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
             --load \
@@ -420,7 +435,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch }}
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx

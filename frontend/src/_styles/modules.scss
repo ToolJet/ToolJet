@@ -69,7 +69,7 @@
         scrollbar-width: thin;
         scrollbar-color: transparent transparent;
         height: 100%;
-        overflow: hidden;
+        overflow: hidden auto;
 
         /* Hide scrollbar by default */
         &::-webkit-scrollbar {

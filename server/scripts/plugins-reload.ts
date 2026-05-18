@@ -46,12 +46,13 @@ async function validateAndReloadPlugins(nestApp: INestApplicationContext) {
     }
   }
 
-  invalidPluginDtos.length > 0 &&
+  if (invalidPluginDtos.length > 0) {
     console.log(
       'Skipping invalid plugins:',
       invalidPluginDtos.map((dto) => dto.id),
       '\n'
     );
+  }
 
   for (const dto of validPluginDtos) {
     const entityManager = nestApp.get(EntityManager);

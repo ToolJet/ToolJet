@@ -22,23 +22,23 @@ export default class CohereService implements QueryService {
       }
     } catch (error: any) {
       console.error('Error in Cohere query:', error);
-    
+
       let errorMessage = 'Unknown error occurred';
       let errorDetails: any = {};
-    
+
       if (error && typeof error === 'object') {
         try {
           errorMessage = error?.body?.message || 'Unknown error';
           errorDetails = {
             requestId: error?.req?.id || 'N/A',
-            errorType: error?.error?.type || error?.type|| error?.error?.details?.error || 'Unknown Type',
+            errorType: error?.error?.type || error?.type || error?.error?.details?.error || 'Unknown Type',
             statusCode: error?.statusCode || error?.res?.statusCode || 'Unknown status',
           };
         } catch (parseError: any) {
           console.error('Failed to parse error response:', parseError);
         }
       }
-    
+
       throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
@@ -82,8 +82,8 @@ export default class CohereService implements QueryService {
     if (!apiKey) {
       throw new Error('API key missing: No API key provided in source options.');
     }
-    
-    const cohere = new CohereClientV2({token: apiKey});
+
+    const cohere = new CohereClientV2({ token: apiKey });
 
     return cohere;
   }

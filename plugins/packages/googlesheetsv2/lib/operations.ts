@@ -1,12 +1,20 @@
 import got from 'got';
-import {QueryError} from '@tooljet-plugins/common';
+import { QueryError } from '@tooljet-plugins/common';
 
 type SpreadsheetResponseBody = {
   spreadsheetId?: string;
   sheets?: Array<any>;
 };
 
-async function makeRequestToReadValues(spreadSheetId: string, sheet: string, range: string, authHeader: any,majorDimension?: string,valueRenderOption?: string,dateTimeRenderOption?: string ){
+async function makeRequestToReadValues(
+  spreadSheetId: string,
+  sheet: string,
+  range: string,
+  authHeader: any,
+  majorDimension?: string,
+  valueRenderOption?: string,
+  dateTimeRenderOption?: string
+) {
   let url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''}!${range}`;
 
   const params = new URLSearchParams();
@@ -63,13 +71,17 @@ export async function listAllSheets(spreadsheet_id: string, authHeader: any): Pr
     const response = await makeRequestToListAllSheets(spreadsheet_id, authHeader);
     return { sheets: response.sheets };
   } catch (error) {
-    throw new QueryError(`Error fetching all sheets: ${error.response?.statusCode || ''} ${error.message}`,{},{error});
+    throw new QueryError(
+      `Error fetching all sheets: ${error.response?.statusCode || ''} ${error.message}`,
+      {},
+      { error }
+    );
   }
 }
 
 export async function createSpreadSheet(title: string, authHeader: any) {
   if (!title) {
-    throw new QueryError('Spreadsheet title is required',{},{});
+    throw new QueryError('Spreadsheet title is required', {}, {});
   }
   const requestBody = {
     properties: {
@@ -79,18 +91,17 @@ export async function createSpreadSheet(title: string, authHeader: any) {
   try {
     const response = await makeRequestToCreateSpreadsheet(requestBody, authHeader);
     return {
-      status: "success",
-      message: "Spreadsheet created successfully",
+      status: 'success',
+      message: 'Spreadsheet created successfully',
       spreadsheetId: (response as any).spreadsheetId,
       title: (response as any).properties?.title,
-      spreadsheetUrl: (response as any).spreadsheetUrl
+      spreadsheetUrl: (response as any).spreadsheetUrl,
     };
-}
- catch (error) {
-  const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
-  const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
-  const message = rawError?.error?.message || error.message || "Unknown error";
-  throw new QueryError(`Error creating spreadsheet: ${message}`,{ statusCode },{ rawError });
+  } catch (error) {
+    const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
+    const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
+    const message = rawError?.error?.message || error.message || 'Unknown error';
+    throw new QueryError(`Error creating spreadsheet: ${message}`, { statusCode }, { rawError });
   }
 }
 
@@ -134,8 +145,24 @@ export async function batchUpdateToSheet(
   return response;
 }
 
-export async function readDataFromSheet(spreadSheetId: string, sheet: string, range: string, authHeader: any,majorDimension?:any,valueRenderOption?:any,dateTimeRenderOption?:any) {
-  const data = await makeRequestToReadValues(spreadSheetId, sheet, range, authHeader,majorDimension,valueRenderOption,dateTimeRenderOption);
+export async function readDataFromSheet(
+  spreadSheetId: string,
+  sheet: string,
+  range: string,
+  authHeader: any,
+  majorDimension?: any,
+  valueRenderOption?: any,
+  dateTimeRenderOption?: any
+) {
+  const data = await makeRequestToReadValues(
+    spreadSheetId,
+    sheet,
+    range,
+    authHeader,
+    majorDimension,
+    valueRenderOption,
+    dateTimeRenderOption
+  );
 
   let headers = [];
   let values = [];
@@ -156,7 +183,6 @@ export async function readDataFromSheet(spreadSheetId: string, sheet: string, ra
   }
   return result;
 }
-
 
 async function appendDataToSheet(spreadSheetId: string, sheet: string, rows: any, authHeader: any) {
   const parsedRows = JSON.parse(rows);
@@ -220,11 +246,19 @@ export async function readData(
   spreadsheetRange: string,
   sheet: string,
   authHeader: any,
-  majorDimension?:any,
-  valueRenderOption?:any,
-  dateTimeRenderOption?:any
+  majorDimension?: any,
+  valueRenderOption?: any,
+  dateTimeRenderOption?: any
 ): Promise<any[]> {
-  return await readDataFromSheet(spreadSheetId, sheet, spreadsheetRange, authHeader,majorDimension,valueRenderOption,dateTimeRenderOption);
+  return await readDataFromSheet(
+    spreadSheetId,
+    sheet,
+    spreadsheetRange,
+    authHeader,
+    majorDimension,
+    valueRenderOption,
+    dateTimeRenderOption
+  );
 }
 
 export async function appendData(spreadSheetId: string, sheet: string, rows: any[], authHeader: any): Promise<any> {
@@ -335,7 +369,6 @@ export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filte
   return body;
 };
 
-
 export async function deleteFromSpreadsheetByFilter(
   spreadsheetId: string,
   filters: any[],
@@ -343,21 +376,23 @@ export async function deleteFromSpreadsheetByFilter(
 ): Promise<any> {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchClearByDataFilter`;
   try {
-    const response = await got.post(url, {
-      headers: authHeader,
-      json: {
-        dataFilters: filters,
-      },
-    }).json();
+    const response = await got
+      .post(url, {
+        headers: authHeader,
+        json: {
+          dataFilters: filters,
+        },
+      })
+      .json();
     return {
-      status: "success",
-      message: "Filtered data deleted successfully",
-      result: response
+      status: 'success',
+      message: 'Filtered data deleted successfully',
+      result: response,
     };
   } catch (error: any) {
     const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
     const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
-    const message = rawError?.error?.message || error.message || "Unknown error";
+    const message = rawError?.error?.message || error.message || 'Unknown error';
 
     throw new QueryError(
       `Error deleting from spreadsheet using data filters: ${message}`,
@@ -376,18 +411,14 @@ export async function bulkUpdateByPrimaryKey(
 ) {
   if (!spreadsheetId) throw new Error('spreadsheetId is required');
   if (!primaryKey) throw new Error('primaryKey is required');
-  if (!data || !Array.isArray(data) || data.length === 0)
-    throw new Error('data must be a non-empty array');
+  if (!data || !Array.isArray(data) || data.length === 0) throw new Error('data must be a non-empty array');
 
   if (!sheet || sheet.trim() === '') sheet = 'Sheet1';
   const range = 'A1:Z1000';
 
-  const readResponse = (await makeRequestToReadValues(
-    spreadsheetId,
-    sheet,
-    range,
-    authHeader
-  )) as { values?: string[][] };
+  const readResponse = (await makeRequestToReadValues(spreadsheetId, sheet, range, authHeader)) as {
+    values?: string[][];
+  };
 
   const values = readResponse.values || [];
 
@@ -399,24 +430,18 @@ export async function bulkUpdateByPrimaryKey(
       values: [headers, ...rowsToAppend],
     };
 
-    const appendResponse = await makeRequestToAppendValues(
-      spreadsheetId,
-      sheet,
-      requestBody,
-      authHeader
-    );
+    const appendResponse = await makeRequestToAppendValues(spreadsheetId, sheet, requestBody, authHeader);
     return {
-      status: 'success',                   
-      message: 'Rows created successfully', 
-      addedRows: data.length,              
-      result: appendResponse,       
+      status: 'success',
+      message: 'Rows created successfully',
+      addedRows: data.length,
+      result: appendResponse,
     };
   }
 
   const headers = values[0];
   const keyIndex = headers.indexOf(primaryKey);
-  if (keyIndex === -1)
-    throw new Error(`Primary key "${primaryKey}" not found in sheet headers`);
+  if (keyIndex === -1) throw new Error(`Primary key "${primaryKey}" not found in sheet headers`);
 
   const keyToRow = new Map<string, number>();
   for (let i = 1; i < values.length; i++) {
@@ -460,18 +485,13 @@ export async function bulkUpdateByPrimaryKey(
 
   if (inserts.length > 0) {
     const appendBody = { values: inserts };
-    await makeRequestToAppendValues(
-      spreadsheetId,
-      sheet,
-      appendBody,
-      authHeader
-    );
+    await makeRequestToAppendValues(spreadsheetId, sheet, appendBody, authHeader);
   }
   return {
-    status: 'success',                       
-    message: 'Bulk update completed',      
-    updatedCells: updates.length,        
-    insertedRows: inserts.length,       
+    status: 'success',
+    message: 'Bulk update completed',
+    updatedCells: updates.length,
+    insertedRows: inserts.length,
   };
 }
 
@@ -507,12 +527,9 @@ export async function copySpreadsheetData(
     rangePart = sourceRange;
   }
 
-  const readResponse = (await makeRequestToReadValues(
-    sourceSpreadsheetId,
-    sourceSheet,
-    rangePart,
-    authHeader
-  )) as { values?: string[][] };
+  const readResponse = (await makeRequestToReadValues(sourceSpreadsheetId, sourceSheet, rangePart, authHeader)) as {
+    values?: string[][];
+  };
 
   const values = readResponse.values || [];
   if (values.length === 0) {
@@ -531,24 +548,19 @@ export async function copySpreadsheetData(
 
   const writeResponse = await makeRequestToAppendValues(
     destinationSpreadsheetId,
-    destinationSheet, 
+    destinationSheet,
     writeBody,
     authHeader
   );
   return {
-    status: "success",                         
-    message: "Spreadsheet data copied",         
-    destinationSheet,                         
-    copiedRows: values.length,                 
-    result: writeResponse,                    
+    status: 'success',
+    message: 'Spreadsheet data copied',
+    destinationSheet,
+    copiedRows: values.length,
+    result: writeResponse,
   };
 }
-export async function listAllSpreadsheets(
-  authHeader: any,
-  pageSize?: string,
-  pageToken?: string,
-  filter?: string
-) {
+export async function listAllSpreadsheets(authHeader: any, pageSize?: string, pageToken?: string, filter?: string) {
   try {
     let query = "mimeType='application/vnd.google-apps.spreadsheet'";
     if (filter) {
@@ -568,18 +580,18 @@ export async function listAllSpreadsheets(
       headers: authHeader,
     });
     return {
-      status: "success",                    
-      message: "Spreadsheets listed",        
+      status: 'success',
+      message: 'Spreadsheets listed',
       nextPageToken: JSON.parse(response.body).nextPageToken,
-      files: JSON.parse(response.body).files,  
-      raw: JSON.parse(response.body),       
+      files: JSON.parse(response.body).files,
+      raw: JSON.parse(response.body),
     };
   } catch (error) {
-    const rawError = error.response?.body ? JSON.parse(error.response.body) : null; 
-    const statusCode = error.response?.statusCode || rawError?.error?.code || 500;  
-    const message = rawError?.error?.message || error.message || "Unknown error";  
+    const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
+    const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
+    const message = rawError?.error?.message || error.message || 'Unknown error';
 
-    throw new QueryError(`Failed to list spreadsheets: ${message}`,{ statusCode },{ rawError });
+    throw new QueryError(`Failed to list spreadsheets: ${message}`, { statusCode }, { rawError });
   }
 }
 export async function deleteByRange(
@@ -594,8 +606,7 @@ export async function deleteByRange(
 
   try {
     const sheetId = await getSheetId(spreadsheetId, sheet, authHeader);
-    const { startRowIndex, endRowIndex, startColumnIndex, endColumnIndex } =
-      convertA1RangeToIndexes(spreadsheetRange);
+    const { startRowIndex, endRowIndex, startColumnIndex, endColumnIndex } = convertA1RangeToIndexes(spreadsheetRange);
 
     const requestBody = {
       requests: [
@@ -614,26 +625,21 @@ export async function deleteByRange(
       ],
     };
 
-    const response = await makeRequestToDeleteRows(
-      spreadsheetId,
-      requestBody,
-      authHeader
-    );
+    const response = await makeRequestToDeleteRows(spreadsheetId, requestBody, authHeader);
 
     return {
-      status: "success",                    
-      message: "Range deleted successfully",  
-      sheet,                                  
-      spreadsheetRange,                     
-      shiftDimension,                     
-      result: response,                
+      status: 'success',
+      message: 'Range deleted successfully',
+      sheet,
+      spreadsheetRange,
+      shiftDimension,
+      result: response,
     };
-
-  } catch (error: any) { 
-    const rawError = error.response?.body ? JSON.parse(error.response.body) : null;  
-    const statusCode = error.response?.statusCode || rawError?.error?.code || 500;                                                                        
-    const message = rawError?.error?.message || error.message || "Unknown error";                                                    
-    throw new QueryError(`Error deleting range: ${message}`, { statusCode },{ rawError });
+  } catch (error: any) {
+    const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
+    const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
+    const message = rawError?.error?.message || error.message || 'Unknown error';
+    throw new QueryError(`Error deleting range: ${message}`, { statusCode }, { rawError });
   }
 }
 
@@ -700,8 +706,8 @@ export async function updateSpreadsheet(
       .json<UpdateValuesResponse>();
 
     return {
-      status: "success",
-      message: "Spreadsheet updated",
+      status: 'success',
+      message: 'Spreadsheet updated',
       sheet,
       spreadsheetRange,
       updatedCells: response.updatedCells,
@@ -709,11 +715,10 @@ export async function updateSpreadsheet(
       updatedColumns: response.updatedColumns,
       result: response,
     };
-
   } catch (error: any) {
     const rawError = error.response?.body ? JSON.parse(error.response.body) : null;
     const statusCode = error.response?.statusCode || rawError?.error?.code || 500;
-    const message = rawError?.error?.message || error.message || "Unknown error";
-    throw new QueryError(`Failed to update spreadsheet: ${message}`,{ statusCode },{ rawError });
+    const message = rawError?.error?.message || error.message || 'Unknown error';
+    throw new QueryError(`Failed to update spreadsheet: ${message}`, { statusCode }, { rawError });
   }
 }

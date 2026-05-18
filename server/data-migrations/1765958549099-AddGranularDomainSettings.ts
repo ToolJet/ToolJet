@@ -1,8 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import {
-  INSTANCE_CONFIGS_DATA_TYPES,
-  INSTANCE_SETTINGS_TYPE,
-} from '@modules/instance-settings/constants';
+import { INSTANCE_CONFIGS_DATA_TYPES, INSTANCE_SETTINGS_TYPE } from '@modules/instance-settings/constants';
 import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
 
 export class AddGranularDomainSettings1765958549099 implements MigrationInterface {
@@ -34,7 +31,7 @@ export class AddGranularDomainSettings1765958549099 implements MigrationInterfac
           '${INSTANCE_SETTINGS_TYPE.SYSTEM}'
         )
       ON CONFLICT (key) DO NOTHING;
-      `,
+      `
     );
   }
 
@@ -43,7 +40,7 @@ export class AddGranularDomainSettings1765958549099 implements MigrationInterfac
       `
       DELETE FROM instance_settings
       WHERE key IN ('PASSWORD_ALLOWED_DOMAINS', 'PASSWORD_RESTRICTED_DOMAINS');
-      `,
+      `
     );
   }
 }

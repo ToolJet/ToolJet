@@ -308,11 +308,11 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-    async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto) {
+  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, listTablesOptions);   
-     } catch (error) {
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, listTablesOptions);
+    } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
           status: 'failed',

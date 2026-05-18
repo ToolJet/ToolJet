@@ -22,21 +22,28 @@ type FeatureAccessResponse = Record<string, unknown> & {
 };
 
 function buildFeatureAccessResponse(navigation: boolean): FeatureAccessResponse {
-  const license = new (LicenseBase as any)(CE_BASIC_PLAN_TERMS, {
-    expiry: EXPIRY_STR,
-    type: LICENSE_TYPE.ENTERPRISE,
-    features: {},
-    app: {
-      pages: {
-        enabled: true,
-        count: 10,
-        features: { appHeaderAndLogo: true, addNavGroup: true },
+  const license = new (LicenseBase as any)(
+    CE_BASIC_PLAN_TERMS,
+    {
+      expiry: EXPIRY_STR,
+      type: LICENSE_TYPE.ENTERPRISE,
+      features: {},
+      app: {
+        pages: {
+          enabled: true,
+          count: 10,
+          features: { appHeaderAndLogo: true, addNavGroup: true },
+        },
+        permissions: { component: true, query: true, pages: true },
+        features: { promote: true, release: true, history: true },
+        components: { navigation },
       },
-      permissions: { component: true, query: true, pages: true },
-      features: { promote: true, release: true, history: true },
-      components: { navigation },
-    },
-  } satisfies Partial<Terms>, new Date(), new Date(), EXPIRY_DATE, LICENSE_TYPE.ENTERPRISE);
+    } satisfies Partial<Terms>,
+    new Date(),
+    new Date(),
+    EXPIRY_DATE,
+    LICENSE_TYPE.ENTERPRISE
+  );
 
   return {
     ...(license.features as Record<string, unknown>),
@@ -103,4 +110,3 @@ describe('LicenseController /license/access', () => {
     expect(response.body.componentNavigation).toBe(false);
   });
 });
-

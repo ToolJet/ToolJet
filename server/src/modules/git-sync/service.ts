@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 import { Injectable } from '@nestjs/common';
 import {
   OrganizationGitCreateDto,

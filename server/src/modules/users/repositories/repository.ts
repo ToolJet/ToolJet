@@ -68,7 +68,7 @@ export class UserRepository extends Repository<User> {
         });
       }
     }
-    
+
     const [items, total] = await this.manager.findAndCount(User, {
       select: {
         id: true,

@@ -273,7 +273,8 @@ const AutoSortButton = ({ darkMode: _darkMode }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
 
-  if (!featureAccess?.ai) return null;
+  // Hide entirely if the AI feature is not in the license at all
+  if (featureAccess?.aiEnabled === false) return null;
 
   const disabled = shouldFreeze || isAutoSorting;
 

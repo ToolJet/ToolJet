@@ -1,6 +1,5 @@
 import { QueryResult } from '@tooljet-plugins/common';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type SourceOptions = {
   bearer_token: string;
   username: string;

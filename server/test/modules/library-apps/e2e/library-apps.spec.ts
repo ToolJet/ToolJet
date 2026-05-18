@@ -62,12 +62,7 @@ describe('LibraryAppsController', () => {
         loggedUser = await login(app, 'developer@tooljet.io');
         nonAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         // Templates expect built-in static data sources to exist in the organization
@@ -133,12 +128,7 @@ describe('LibraryAppsController', () => {
         let loggedUser = await login(app);
         adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-        loggedUser = await login(
-          app,
-          superAdminUserData.user.email,
-          'password',
-          adminUserData.organization.id
-        );
+        loggedUser = await login(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
         superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
         let response = await request(app.getHttpServer())

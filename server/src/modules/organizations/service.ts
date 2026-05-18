@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, NotAcceptableException, NotImplementedException, Optional } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotAcceptableException,
+  NotImplementedException,
+  Optional,
+} from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';

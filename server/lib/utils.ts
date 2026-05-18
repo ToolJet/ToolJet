@@ -37,11 +37,12 @@ export function resolveCode(codeContext: any): any {
       ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
     };
     const codeToExecute = getFunctionWrappedCode(
-      'var console = { log: (...args) => __reserved_keyword_log(args.join(\', \'), \'normal\') };\n' + code,
+      "var console = { log: (...args) => __reserved_keyword_log(args.join(', '), 'normal') };\n" + code,
       globalState,
       wrapInIIFE
     );
-    const isolate = providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
+    const isolate =
+      providedIsolate || new ivm.Isolate({ memoryLimit: parseInt(process.env?.WORKFLOW_JS_MEMORY_LIMIT_MB) || 20 });
     const context = providedContext || isolate.createContextSync();
     Object.entries(globalState).forEach(([key, value]) => {
       if (typeof value === 'function' && key === 'require') {
@@ -54,7 +55,10 @@ export function resolveCode(codeContext: any): any {
           // If copying fails (e.g., for complex libraries like lodash), skip it
           // The library should be available through the bundle code execution
           if (error.message.includes('could not be cloned')) {
-            console.log(`[UTILS DEBUG] Skipping ${key} due to cloning issue, should be available via bundle:`, error.message);
+            console.log(
+              `[UTILS DEBUG] Skipping ${key} due to cloning issue, should be available via bundle:`,
+              error.message
+            );
           } else {
             throw error; // Re-throw if it's a different error
           }
@@ -69,7 +73,7 @@ export function resolveCode(codeContext: any): any {
         new ivm.Callback((msg: any, status: any) => {
           try {
             (addLog as any)(String(msg), undefined, String(status || 'normal'));
-          } catch (_) {
+          } catch {
             // ignore logging failures to avoid breaking sandbox
           }
         })
@@ -109,17 +113,14 @@ export function resolveCode(codeContext: any): any {
           shim.runSync(context, { timeout: 5000 });
         }
       } catch (bundleError) {
-        addLog && (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
+        if (addLog) {
+          (addLog as any)(`Failed to load NPM packages: ${bundleError.message}`, undefined, 'failure');
+        }
         // Continue execution without packages - don't fail the entire code execution
       }
     }
 
-    let script: ivm.Script;
-    try {
-      script = isolate.compileScriptSync(codeToExecute);
-    } catch (compileErr) {
-      throw compileErr;
-    }
+    const script: ivm.Script = isolate.compileScriptSync(codeToExecute);
 
     // const interval = setInterval(() => {
     //   const stats = isolate.getHeapStatisticsSync();
@@ -131,19 +132,11 @@ export function resolveCode(codeContext: any): any {
     //   }
     // }, 1); // Monitor every 100ms
 
-    // try {
-    try {
-      result = script.runSync(
-        context,
-        {
-          release: true,
-          timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
-          copy: true
-        }
-      );
-    } catch (runErr) {
-      throw runErr;
-    }
+    result = script.runSync(context, {
+      release: true,
+      timeout: parseInt(process.env?.WORKFLOW_JS_TIMEOUT_MS) || 100,
+      copy: true,
+    });
     //   const stats = isolate.getHeapStatisticsSync();
     //   addLog("Used heap size: " + stats.used_heap_size);
     //   addLog("heap size limit: " + stats.heap_size_limit);
@@ -180,7 +173,7 @@ function resolveVariableReference(
 export function getQueryVariables(
   options: any,
   state: any,
-  addLog: (message: string) => void = () => { },
+  addLog: (message: string) => void = () => {},
   bundleContent?: string,
   isolate?: ivm.Isolate | null,
   context?: ivm.Context | null

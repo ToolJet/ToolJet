@@ -6,8 +6,6 @@ export type SourceOptions = {
   endpoint: string;
   useInstanceMetadataCredentials?: boolean;
   roleArn?: string;
-  bucket_name?: string;
-  allow_dynamic_connection_parameters?: boolean;
 };
 export type QueryOptions = {
   operation?: Operation;

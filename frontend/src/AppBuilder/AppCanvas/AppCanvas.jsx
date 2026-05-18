@@ -34,7 +34,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
 
-  useEnableMainCanvasScroll({ canvasContentRef, enabled: !isModuleMode });
+  useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(

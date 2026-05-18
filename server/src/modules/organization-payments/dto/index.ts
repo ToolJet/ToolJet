@@ -14,7 +14,7 @@ export class PortalDto {
   returnUrl: string;
 }
 
-class ItemDto {
+export class ItemDto {
   @IsString()
   @IsNotEmpty()
   id: string;

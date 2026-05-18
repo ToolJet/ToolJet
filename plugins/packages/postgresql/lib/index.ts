@@ -249,15 +249,7 @@ export default class PostgresqlQueryService implements QueryService {
     }
     if (methodName === 'listTables') {
       const schema = args?.values?.schema || 'public';
-      return await this._fetchTables(
-        sourceOptions,
-        schema,
-        '',
-        '',
-        args?.search || '',
-        args?.page,
-        args?.limit,
-      );
+      return await this._fetchTables(sourceOptions, schema, '', '', args?.search || '', args?.page, args?.limit);
     }
     if (methodName === 'listColumns') {
       const schema = args?.values?.schema || 'public';
@@ -269,28 +261,23 @@ export default class PostgresqlQueryService implements QueryService {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
       const isPaginated = !!args?.limit;
-      const result = await this.listTables(
-        sourceOptions,
-        dataSourceId,
-        dataSourceUpdatedAt,
-        {
-          search: args?.search,
-          page:   args?.page,
-          limit:  args?.limit,
-        }
-      );
+      const result = await this.listTables(sourceOptions, dataSourceId, dataSourceUpdatedAt, {
+        search: args?.search,
+        page: args?.page,
+        limit: args?.limit,
+      });
 
       const payload = (result as any)?.data ?? [];
 
       if (isPaginated) {
-        const rows       = (payload as any)?.rows ?? [];
+        const rows = (payload as any)?.rows ?? [];
         const totalCount = (payload as any)?.totalCount ?? 0;
         const formattedTables = rows.map((row: any) => ({
           label: String(row.table_name),
           value: String(row.table_name),
         }));
         return {
-          items:      formattedTables,
+          items: formattedTables,
           totalCount: totalCount,
         };
       }
@@ -303,7 +290,7 @@ export default class PostgresqlQueryService implements QueryService {
 
       return {
         status: 'ok',
-        data:   formattedTables,
+        data: formattedTables,
       };
     }
     throw new QueryError('Method not found', `Method '${methodName}' is not supported by the PostgreSQL plugin`, {});
@@ -327,15 +314,9 @@ export default class PostgresqlQueryService implements QueryService {
   ): Promise<QueryResult> {
     let knexInstance;
     try {
-      knexInstance = await this.getConnection(
-        sourceOptions,
-        {},
-        true,
-        dataSourceId,
-        dataSourceUpdatedAt
-      );
+      knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
 
-      const schema = queryOptions?.schema || 'public';
+      const schema = queryOptions?.schema;
       const search = queryOptions?.search || '';
       const searchPattern = `%${search}%`;
 
@@ -374,13 +355,11 @@ export default class PostgresqlQueryService implements QueryService {
           ${allSchemas ? '' : 'AND table_schema = ?'}
           AND table_name ILIKE ?
         `;
-        const countParams: any[] = allSchemas ? [searchPattern] : [schema, searchPattern];
-
         const [{ rows }, { rows: countRows }] = await Promise.all([
           knexInstance.raw(query, params),
-          knexInstance.raw(countQuery, [schema, searchPattern])
+          knexInstance.raw(countQuery, allSchemas ? [searchPattern] : [schema, searchPattern]),
         ]);
-        
+
         const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
 
         return {
@@ -392,7 +371,7 @@ export default class PostgresqlQueryService implements QueryService {
       const { rows } = await knexInstance.raw(query, params);
       return {
         status: 'ok',
-        data: rows
+        data: rows,
       };
     } catch (err) {
       const errorMessage = err.message || 'An unknown error occurred';
@@ -447,7 +426,9 @@ export default class PostgresqlQueryService implements QueryService {
     search = '',
     page?: number,
     limit?: number
-  ): Promise<Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }> {
+  ): Promise<
+    Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
+  > {
     try {
       const knexInstance = await this.getConnection(
         sourceOptions,
@@ -475,9 +456,9 @@ export default class PostgresqlQueryService implements QueryService {
 
         const [{ rows }, { rows: countRows }] = await Promise.all([
           knexInstance.raw(query, params),
-          knexInstance.raw(countQuery, [schema, searchPattern])
+          knexInstance.raw(countQuery, [schema, searchPattern]),
         ]);
-        
+
         const totalCount = parseInt(countRows[0]?.total ?? '0', 10);
 
         return {
@@ -813,22 +794,6 @@ export default class PostgresqlQueryService implements QueryService {
     let resolvedDb: string = sourceOptions.database;
 
     if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
-      const parsedUrl = new URL(sourceOptions.connection_string);
-
-      const connUser = decodeURIComponent(parsedUrl.username || '');
-      const connPass = decodeURIComponent(parsedUrl.password || '');
-      const connHost = parsedUrl.hostname || '';
-      const connPort: number = parsedUrl.port ? Number(parsedUrl.port) : 5432;
-      const connDb =decodeURIComponent( parsedUrl.pathname ? parsedUrl.pathname.replace('/', '') : '');
-      const sslmode = parsedUrl.searchParams.get('sslmode') || parsedUrl.searchParams.get('ssl') || '';
-
-      let connSslEnabled: boolean | undefined;
-
-      if (sslmode === 'require' || sslmode === 'verify-full' || sslmode === 'verify-ca' || sslmode === 'true') {
-        connSslEnabled = true;
-      } else if (sslmode === 'disable' || sslmode === 'false') {
-        connSslEnabled = false;
-      }
       // Explicit UI values override connection string values
       resolvedUser = sourceOptions.username;
       resolvedPass = sourceOptions.password;
@@ -838,7 +803,6 @@ export default class PostgresqlQueryService implements QueryService {
       resolvedPort = Number(sourceOptions.port);
 
       resolvedDb = sourceOptions.database;
-
     }
 
     // --- SSL config ---

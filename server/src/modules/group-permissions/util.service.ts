@@ -179,10 +179,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     const defaultGroups: GroupPermissions[] = [];
 
     // Check if multi-environment feature is available
-    const hasMultiEnvironment = await this.licenseTermsService.getLicenseTerms(
-      LICENSE_FIELD.MULTI_ENVIRONMENT,
-      organizationId
-    );
+    await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT, organizationId);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Create all default group

@@ -21,7 +21,7 @@ export class UpdatePythonPackagesDto {
   dependencies: string; // Raw requirements.txt content, e.g., "requests==2.31.0\nnumpy>=1.24.0"
 }
 
-export class RebuildBundleDto { }
+export class RebuildBundleDto {}
 
 export class PackageSearchQueryDto {
   @IsString()

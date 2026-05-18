@@ -29,7 +29,7 @@ export class PageService implements IPageService {
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
     protected eventHandlerService: EventsService
-  ) { }
+  ) {}
 
   /**
    * Hook called before page creation - override in EE to capture state for history

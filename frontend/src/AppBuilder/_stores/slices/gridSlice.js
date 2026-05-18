@@ -407,13 +407,7 @@ export const createGridSlice = (set, get) => ({
       // below.
       const resolvedHeights = siblingIds.reduce((accumulator, siblingId) => {
         const existingTemp = temporaryLayouts?.[getDynamicLayoutKey(siblingId, contextIndices)];
-        // Treat existingTemp.height === 0 as stale: it almost always
-        // originates from an offsetHeight read while the sibling sat in a
-        // hidden ancestor subtree (e.g., an inactive tab). Trusting it would
-        // self-propagate — the next reflow reads the 0, replays it as the
-        // sibling's height, and the wrapper collapses on screen. Fall
-        // through to canonical/calc to break the chain.
-        if (existingTemp?.height != null && existingTemp.height > 0) {
+        if (existingTemp?.height != null) {
           accumulator[siblingId] = existingTemp.height;
           return accumulator;
         }

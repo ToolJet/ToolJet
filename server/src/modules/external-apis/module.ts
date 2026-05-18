@@ -67,7 +67,9 @@ export class ExternalApiModule extends SubModule {
         UserRepository,
         AppsRepository,
       ],
-      controllers: isMainImport ? [ExternalApisController, ExternalApisAppsController, ExternalApisModulesController] : [],
+      controllers: isMainImport
+        ? [ExternalApisController, ExternalApisAppsController, ExternalApisModulesController]
+        : [],
       exports: [ExternalApiUtilService],
     };
   }

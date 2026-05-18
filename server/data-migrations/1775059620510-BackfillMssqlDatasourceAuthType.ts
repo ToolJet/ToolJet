@@ -1,9 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackfillMssqlDatasourceAuthType1775059620510 implements MigrationInterface {
-
-    public async up(queryRunner: QueryRunner): Promise<void> {
-
+  public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       UPDATE data_source_options
       SET "options" = (

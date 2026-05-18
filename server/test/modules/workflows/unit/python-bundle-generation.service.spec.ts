@@ -22,7 +22,7 @@ describe('WorkflowBundle Entity - Python Support', () => {
 
   beforeEach(async () => {
     const mockRepository = {
-      create: jest.fn((entity) => ({ ...entity } as WorkflowBundle)),
+      create: jest.fn((entity) => ({ ...entity }) as WorkflowBundle),
       findOne: jest.fn(),
       save: jest.fn(),
       upsert: jest.fn(),
@@ -354,10 +354,10 @@ describe('PythonBundleGenerationService', () => {
     it('should cleanup temp directory on success', async () => {
       await service.generateBundle(mockAppVersionId, mockDependencies);
 
-      expect(mockFs.rm).toHaveBeenCalledWith(
-        expect.stringMatching(/\/tmp\/python-bundle/),
-        { recursive: true, force: true }
-      );
+      expect(mockFs.rm).toHaveBeenCalledWith(expect.stringMatching(/\/tmp\/python-bundle/), {
+        recursive: true,
+        force: true,
+      });
     });
 
     it('should cleanup temp directory on failure', async () => {
@@ -367,10 +367,10 @@ describe('PythonBundleGenerationService', () => {
 
       await expect(service.generateBundle(mockAppVersionId, mockDependencies)).rejects.toThrow('Build failed');
 
-      expect(mockFs.rm).toHaveBeenCalledWith(
-        expect.stringMatching(/\/tmp\/python-bundle/),
-        { recursive: true, force: true }
-      );
+      expect(mockFs.rm).toHaveBeenCalledWith(expect.stringMatching(/\/tmp\/python-bundle/), {
+        recursive: true,
+        force: true,
+      });
     });
 
     it('should handle empty dependencies', async () => {

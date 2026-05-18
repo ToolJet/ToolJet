@@ -70,8 +70,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter bucket",
-        "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Key",
@@ -95,8 +94,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter bucket",
-        "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Key",
@@ -151,8 +149,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter bucket",
-        "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        "placeholder": "Enter bucket"
       },
       "prefix": {
         "label": "Prefix",
@@ -205,8 +202,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter bucket",
-        "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Key",
@@ -241,8 +237,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter bucket",
-        "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Key",
@@ -287,8 +282,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter bucket",
-        "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        "placeholder": "Enter bucket"
       },
       "key": {
         "label": "Key",

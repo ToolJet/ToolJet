@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  resetDB,
   createApplication,
   createUser,
   initTestApp,
@@ -213,7 +212,7 @@ describe('AppsController', () => {
           adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
           const organization = adminUserData.organization;
-          const allUserGroup = await findEntityOrFail(GroupPermissions, {
+          await findEntityOrFail(GroupPermissions, {
             name: 'end-user',
             organizationId: adminUserData.organization.id,
           } as any);
@@ -239,7 +238,7 @@ describe('AppsController', () => {
             user: anotherOrgAdminUserData.user,
           });
 
-          const nonPermissibleApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Non Permissible App',
@@ -248,7 +247,7 @@ describe('AppsController', () => {
             false
           );
 
-          const publicApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Public App',
@@ -265,7 +264,7 @@ describe('AppsController', () => {
             },
             false
           );
-          const appNotInFolder = await createApplication(
+          await createApplication(
             app,
             {
               name: 'App not in folder',
@@ -299,9 +298,7 @@ describe('AppsController', () => {
 
           // With the granular permission system, the developer only sees apps they own.
           // No explicit group permissions were granted on publicApp, appNotInFolder, or appInFolder.
-          expect(new Set(appNames)).toEqual(
-            new Set([ownedApp.name])
-          );
+          expect(new Set(appNames)).toEqual(new Set([ownedApp.name]));
           expect(meta).toEqual({
             total_pages: 1,
             total_count: 1,
@@ -391,11 +388,7 @@ describe('AppsController', () => {
           expect(response.statusCode).toBe(200);
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
           await logout(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
-          await logout(
-            app,
-            anotherOrgAdminUserData['tokenCookie'],
-            anotherOrgAdminUserData.user.defaultOrganizationId
-          );
+          await logout(app, anotherOrgAdminUserData['tokenCookie'], anotherOrgAdminUserData.user.defaultOrganizationId);
         });
       });
 
@@ -433,7 +426,7 @@ describe('AppsController', () => {
             user: anotherOrgAdminUserData.user,
           });
 
-          const nonPermissibleApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Non Permissible App',
@@ -442,7 +435,7 @@ describe('AppsController', () => {
             false
           );
 
-          const publicApp = await createApplication(
+          await createApplication(
             app,
             {
               name: 'Public App',
@@ -460,7 +453,7 @@ describe('AppsController', () => {
             },
             false
           );
-          const appNotInfolder = await createApplication(
+          await createApplication(
             app,
             {
               name: 'App not in folder',
@@ -1476,9 +1469,13 @@ describe('AppsController', () => {
             const loggedUser = await login(app);
             adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-            const { application, appVersion: initialVersion } = await createAppWithDependencies(app, adminUserData.user, {
-              dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
-            });
+            const { application, appVersion: initialVersion } = await createAppWithDependencies(
+              app,
+              adminUserData.user,
+              {
+                dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
+              }
+            );
 
             let credentials = await findEntities(Credential);
             expect(credentials.length).toBeGreaterThan(0);
@@ -1556,11 +1553,7 @@ describe('AppsController', () => {
             .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
           expect(response.statusCode).toBe(404);
-          await logout(
-            app,
-            anotherOrgAdminUserData['tokenCookie'],
-            anotherOrgAdminUserData.user.defaultOrganizationId
-          );
+          await logout(app, anotherOrgAdminUserData['tokenCookie'], anotherOrgAdminUserData.user.defaultOrganizationId);
         });
 
         it('should able to delete app versions if user is a super admin', async () => {
@@ -1810,11 +1803,7 @@ describe('AppsController', () => {
             .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
           expect(response.statusCode).toBe(404);
-          await logout(
-            app,
-            anotherOrgAdminUserData['tokenCookie'],
-            anotherOrgAdminUserData.user.defaultOrganizationId
-          );
+          await logout(app, anotherOrgAdminUserData['tokenCookie'], anotherOrgAdminUserData.user.defaultOrganizationId);
         });
       });
 
@@ -1971,11 +1960,7 @@ describe('AppsController', () => {
             });
 
           expect(response.statusCode).toBe(404);
-          await logout(
-            app,
-            anotherOrgAdminUserData['tokenCookie'],
-            anotherOrgAdminUserData.user.defaultOrganizationId
-          );
+          await logout(app, anotherOrgAdminUserData['tokenCookie'], anotherOrgAdminUserData.user.defaultOrganizationId);
         });
 
         it('should be able to release the app if the version is promoted to production', async () => {

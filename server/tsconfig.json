@@ -13,6 +13,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2019",
+    "lib": ["es2022"],
     "allowJs": true,
     "sourceMap": true,
     "outDir": "./dist",

@@ -1118,13 +1118,11 @@ export const buildReflowPatch = ({
       // `collapsedCanonical` is the long-standing contract that widgets
       // (including Listview row templates) rely on to stay stable; only
       // the Accordion-shrink-below-canonical case needs to bypass it.
-      let otherMax = allowShrinkPullUp ? 0 : effectiveCollapsedCanonical;
+      let otherMax = allowShrinkPullUp ? 0 : collapsedCanonical;
       let hasInFlowBlocker = false;
       for (let vi = 0; vi < blockers.length; vi++) {
         const v = blockers[vi];
         if (!v.isInFlow) continue;
-        const vCanonicalTopForShadow = v.canonicalLayout?.top ?? 0;
-        if (vCanonicalTopForShadow < shadowerCanonicalTop) continue;
         hasInFlowBlocker = true;
         const vCanonicalTop = v.canonicalLayout?.top ?? 0;
         const vCanonicalBottom = vCanonicalTop + getEffectiveCanonicalHeight(v.id);
@@ -1193,14 +1191,14 @@ export const buildReflowPatch = ({
         if (constraint > otherMax) otherMax = constraint;
       }
       if (allowShrinkPullUp && !hasInFlowBlocker) {
-        otherMax = effectiveCollapsedCanonical;
+        otherMax = collapsedCanonical;
       }
 
       // On hide transitions (changed is going out of flow), existing temp
       // reflects the pre-hide layout — T needs to collapse to the structural
       // position regardless of its prior temp. In that case, ignore the
       // delta-propagation baseline and use the structural max directly.
-      nextTop = isChangedOutOfFlow ? Math.max(otherMax, effectiveCollapsedCanonical) : Math.max(proposedTop, otherMax);
+      nextTop = isChangedOutOfFlow ? Math.max(otherMax, collapsedCanonical) : Math.max(proposedTop, otherMax);
     }
 
     const currentEffectiveLayout = getEffectiveLayout(

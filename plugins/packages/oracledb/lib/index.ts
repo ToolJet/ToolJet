@@ -45,19 +45,15 @@ export default class OracledbQueryService implements QueryService {
       query = queryOptions.query;
     }
     if (sourceOptions.use_tns_alias == 'thin') {
-      try {
-        const connection: any = await this.buildConnection(sourceOptions);
-        result = await connection.execute(query, [], {
-          outFormat: oracledb.OUT_FORMAT_OBJECT,
-        });
-        await connection.close();
-        return {
-          status: 'ok',
-          data: result.rows,
-        };
-      } catch (err) {
-        throw err;
-      }
+      const connection: any = await this.buildConnection(sourceOptions);
+      result = await connection.execute(query, [], {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+      });
+      await connection.close();
+      return {
+        status: 'ok',
+        data: result.rows,
+      };
     }
 
     const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);

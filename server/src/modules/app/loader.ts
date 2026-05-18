@@ -88,14 +88,17 @@ export class AppModuleLoader {
             };
             return logLevel[process.env.NODE_ENV] || 'info';
           })(),
-          autoLogging: process.env.NODE_ENV === 'test' ? false : {
-            ignore: (req) => {
-              if (req.url === '/api/health' || req.url === '/api/metrics') {
-                return true;
-              }
-              return false;
-            },
-          },
+          autoLogging:
+            process.env.NODE_ENV === 'test'
+              ? false
+              : {
+                  ignore: (req) => {
+                    if (req.url === '/api/health' || req.url === '/api/metrics') {
+                      return true;
+                    }
+                    return false;
+                  },
+                },
           transport:
             process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
               ? {

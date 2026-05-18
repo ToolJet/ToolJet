@@ -10,7 +10,6 @@ async function setupOrganization(nestApp) {
     groups: ['end-user', 'admin'],
   });
   const adminUser = adminUserData.user;
-  const organization = adminUserData.organization;
 
   const app = await createApplication(nestApp, {
     user: adminUser,

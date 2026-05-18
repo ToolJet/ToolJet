@@ -71,7 +71,7 @@ export default class Nocodb implements QueryService {
         }
 
         case 'update_record': {
-          const record_id = Number(queryOptions.record_id) ?? 0;
+          const record_id = Number(queryOptions.record_id) || 0;
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records`, {
             method: 'patch',
             headers: this.authHeader(apiToken),
@@ -86,7 +86,7 @@ export default class Nocodb implements QueryService {
         }
 
         case 'delete_record': {
-          const record_id = Number(queryOptions.record_id) ?? 0;
+          const record_id = Number(queryOptions.record_id) || 0;
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records`, {
             method: 'delete',
             headers: this.authHeader(apiToken),

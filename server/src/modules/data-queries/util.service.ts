@@ -287,7 +287,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             dataSource.kind === 'graphql' ||
             dataSource.kind === 'googlesheets' ||
             dataSource.kind === 'slack' ||
-            dataSource.kind === 'zendesk'||
+            dataSource.kind === 'zendesk' ||
             dataSource.kind === 'googlesheetsv2'
           ) {
             queryStatus.setSuccess('needs_oauth');
@@ -362,7 +362,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async listTables(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto): Promise<object> {
+  async listTables(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    listTablesOptions?: ListTablesDto
+  ): Promise<object> {
     if (!dataSource) {
       throw new UnauthorizedException();
     }
@@ -389,12 +394,12 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       sourceOptions,
       `${dataSource.id}-${dataSourceOptions.environmentId}`,
       dataSourceOptions.updatedAt,
-      { 
-        schema: listTablesOptions?.schema, 
+      {
+        schema: listTablesOptions?.schema,
         datasetId: listTablesOptions?.datasetId,
-        search: listTablesOptions?.search, 
-        page: listTablesOptions?.page, 
-        limit: listTablesOptions?.limit 
+        search: listTablesOptions?.search,
+        page: listTablesOptions?.page,
+        limit: listTablesOptions?.limit,
       }
     );
   }
