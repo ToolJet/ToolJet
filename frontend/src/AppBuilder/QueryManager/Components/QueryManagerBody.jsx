@@ -46,7 +46,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
   const queryName = selectedQuery?.name ?? '';
-  const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
+  const sourcecomponentName = selectedQuery?.kind?.charAt(0).toUpperCase() + selectedQuery?.kind?.slice(1);
 
   // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
   // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
@@ -54,7 +54,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const isDummyDataSource = selectedDataSource?.is_dummy === true;
   const ElementToRender = isDummyDataSource
     ? null
-    : selectedDataSource?.plugin_id
+    : selectedQuery?.plugin_id
     ? source
     : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
@@ -239,7 +239,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           <ElementToRender
             renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
             key={selectedQuery?.id}
-            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            pluginSchema={
+              selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data
+            }
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
