@@ -6,32 +6,22 @@ import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
 //    version]. Updating the module on Dev does not silently change behaviour
 //    of an already-released app version on Prod until the app is re-released."
 //
-// ── Scope of this spec — half-1: pin-survives-git ───────────────────────────
-// The full contract has two halves:
-//   (a) An app pinned to module v1 should serialize `moduleVersionId = v1id`
-//       in git, and Prod's importer should preserve that pin after pull.
-//   (b) Updating the module to v2 on Dev should NOT silently bump Prod's
-//       pinned app to v2 — the app's pin keeps pointing at v1's content
-//       until the app is explicitly re-released.
+// ── Scope of this spec ──────────────────────────────────────────────────────
+// The contract under test has two halves, both automated here in one `it`:
+//   (a) An app pinned to module v1 serializes `moduleVersionId = v1id` in
+//       git, and Prod's importer preserves that pin after pull.
+//   (b) When the module is bumped to v2 on a NEW feature branch and merged
+//       to master (edits-only-on-feature-branch model), Prod pulls v2 of
+//       the module but the app's pin metadata DOES NOT auto-bump — it
+//       still points at v1's reference_id. This is the "no silent
+//       behaviour change of released app on Prod" half of the gist.
 //
-// This file only automates HALF (a): the pin value round-trips through git
-// intact. Half (b) requires:
-//   - creating a v2 of the module (the "Save as new version" UI / API flow
-//     is not yet wired into our test helpers),
-//   - releasing the app on Prod and launching the released version (blocked
-//     by locked-master — see flow #3 / file header note below).
-//
-// Half (a) on its own is still a meaningful guard: it proves the schema
-// keeps `properties.moduleVersionId` populated through serialize → commit →
-// merge → pull → import, which is the foundation for half (b).
-//
-// ── Why half (b) is deferred ────────────────────────────────────────────────
-// "Release app" on Prod requires a writable branch — after the git-sync
-// pull, Prod is on read-only master and the Release CTA isn't exposed in
-// the env-tag dropdown. Same blocker that capped Flow #3's promote/release.
-// When a Prod-side `gitSyncCreateBranchOnProd` helper (or equivalent
-// branch-on-Prod orchestration) lands, half (b) gets layered on top of
-// this spec rather than as a separate file.
+// The full release+launch verification (runtime: pinned released app
+// renders v1's content even though Prod has v2 in its module history) is
+// the third leg of the contract — still deferred, since Release on Prod
+// requires a writable-branch state we haven't unlocked yet. The pin
+// METADATA half (which is what determines runtime behaviour) is what we
+// cover here.
 describe(
   "Git Sync — Flow #11: Module version pinning to released app",
   { retries: { runMode: 1, openMode: 0 } },
@@ -60,7 +50,7 @@ describe(
       gitSyncDualWs.teardown({ devIdRef, prodIdRef, branchName });
     });
 
-    it("App pinned to module v1 on Dev keeps the pin after pull on Prod (pin survives git)", () => {
+    it("Pin survives git, AND doesn't auto-bump when module is bumped to v2 on a new branch", () => {
       cy.screenshot("00-it-start", { capture: "viewport" });
 
       gitSyncDualWs.switchTo({
@@ -317,6 +307,212 @@ describe(
         });
       });
       cy.screenshot("08-prod-pin-verified", { capture: "viewport" });
+
+      // ──────────────────────────────────────────────────────────────────
+      // Half-b: edit on feature branch, validate on main
+      //   - Edits (module v2 creation) only happen on a feature branch
+      //     (ToolJet model: master is read-only, feature branches own edits).
+      //   - After merge to master + Prod pull, we VALIDATE on main: the
+      //     app's pin must STILL point at v1's reference_id even though
+      //     master now also has v2 of the module in its history.
+      // ──────────────────────────────────────────────────────────────────
+      gitSyncDualWs.switchTo({
+        workspaceId: devIdRef.value,
+        workspaceSlug: devWsName,
+      });
+
+      const v2BranchName = `test-flow11-v2-${testId}`;
+      cy.gitSyncCreateBranchViaApi(v2BranchName);
+      cy.gitSyncGoToDashboard();
+      cy.gitSyncSwitchBranch(v2BranchName);
+      cy.screenshot("09-dev-on-v2-branch", { capture: "viewport" });
+
+      cy.gitSyncGetBranchId(v2BranchName).then((v2BranchId) => {
+        // Look up the module on the v2 branch — same name as on master,
+        // resolved by branch context (the module forks with the branch).
+        cy.getAuthHeaders().then((headers) => {
+          const v2Headers = { ...headers, "x-branch-id": v2BranchId };
+
+          cy.task("dbConnection", {
+            dbconfig: Cypress.env("app_db"),
+            sql: `select id from apps where name='${moduleName}' and organization_id='${devIdRef.value}' and type='module' order by created_at desc limit 1;`,
+          }).then((resp) => {
+            const moduleIdOnV2 = resp.rows[0]?.id;
+            expect(
+              moduleIdOnV2,
+              `module '${moduleName}' on Dev's v2 branch`,
+            ).to.be.a("string");
+
+            // Create a "v2" app_version on the module via POST /api/apps/{id}/versions.
+            // versionFromId clones from v1; the new version gets a fresh
+            // module_reference_id. environmentId stays at development (the
+            // initial env for any freshly-saved version).
+            cy.apiGetEditingVersionId(moduleIdOnV2, v2BranchId).then((v1IdOnV2) => {
+              cy.apiGetEnvironments().then((envs) => {
+                const devEnv = envs.find((e) => e.name === "development");
+                expect(devEnv, "Dev has a development env").to.exist;
+                cy.request({
+                  method: "POST",
+                  url: `${Cypress.env("server_host")}/api/apps/${moduleIdOnV2}/versions`,
+                  headers: v2Headers,
+                  body: {
+                    versionName: "v2",
+                    versionFromId: v1IdOnV2,
+                    environmentId: devEnv.id,
+                  },
+                  failOnStatusCode: false,
+                }).then((vRes) => {
+                  expect(
+                    vRes.status,
+                    `POST /apps/${moduleIdOnV2}/versions → v2`,
+                  ).to.be.oneOf([200, 201]);
+                  const v2VersionId = vRes.body?.id || vRes.body?.versionId;
+                  expect(v2VersionId, "v2 version id returned").to.be.a(
+                    "string",
+                  );
+                  Cypress.env("flow11_v2_version_id", v2VersionId);
+                  cy.log(`[gitSync] Module v2 created with version ${v2VersionId}`);
+
+                  // Stamp v2 with a distinguishable Text marker so post-pull
+                  // we can tell the module's app_versions table now has TWO
+                  // versions on Prod (v1 with "flow11-v1-{testId}" marker,
+                  // v2 with "flow11-v2-{testId}" marker).
+                  cy.request({
+                    method: "GET",
+                    url: `${Cypress.env("server_host")}/api/apps/${moduleIdOnV2}`,
+                    headers: v2Headers,
+                  }).then((appRes) => {
+                    const v2HomePageId =
+                      appRes.body?.editing_version?.home_page_id;
+                    expect(v2HomePageId, "v2 home page id").to.be.a("string");
+
+                    const v2MarkerId =
+                      typeof crypto !== "undefined" && crypto.randomUUID
+                        ? crypto.randomUUID()
+                        : `t-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                    cy.request({
+                      method: "POST",
+                      url: `${Cypress.env("server_host")}/api/v2/apps/${moduleIdOnV2}/versions/${v2VersionId}/components`,
+                      headers: v2Headers,
+                      body: {
+                        is_user_switched_version: false,
+                        pageId: v2HomePageId,
+                        diff: {
+                          [v2MarkerId]: {
+                            name: "v2marker",
+                            layouts: {
+                              desktop: { top: 30, left: 10, width: 12, height: 40 },
+                              mobile: { top: 30, left: 10, width: 12, height: 40 },
+                            },
+                            type: "Text",
+                            properties: {
+                              text: { value: `flow11-v2-${testId}` },
+                            },
+                          },
+                        },
+                      },
+                    }).then((compRes) => {
+                      expect(compRes.status, "v2 marker created").to.equal(201);
+                    });
+                  });
+
+                  cy.apiEditorPush(
+                    moduleIdOnV2,
+                    v2VersionId,
+                    `test: bump module ${moduleName} to v2`,
+                    v2BranchName,
+                    moduleName,
+                  );
+                  cy.gitHubWaitForCommitMessage(v2BranchName, moduleName);
+                  cy.apiGitSyncPush(
+                    `test: dashboard push v2 ${moduleName}`,
+                    v2BranchId,
+                  );
+                });
+              });
+            });
+          });
+        });
+      });
+      cy.screenshot("10-dev-after-v2-push", { capture: "viewport" });
+
+      // ── GitHub ── second PR + merge for the v2 bump ───────────────────
+      cy.gitHubWaitForCommitsAhead(v2BranchName, "master");
+      cy.gitHubCreatePR(
+        v2BranchName,
+        `test: bump module ${moduleName} to v2`,
+        "master",
+      ).then(() => cy.gitHubMergePR(Cypress.env("prNumber")));
+      cy.screenshot("11-after-v2-pr-merge", { capture: "viewport" });
+
+      // ── Prod ── pull master, validate pin metadata didn't auto-bump ───
+      gitSyncDualWs.switchTo({
+        workspaceId: prodIdRef.value,
+        workspaceSlug: prodWsName,
+      });
+      gitSyncDualWs.pullMaster();
+      cy.screenshot("12-prod-after-v2-pull", { capture: "viewport" });
+
+      // Sanity-check that Prod's module record is still resolvable after
+      // the second pull. ToolJet's git-sync version-replication semantics
+      // (does v2 create a NEW app_version row on Prod, replace v1's, or
+      // something else?) aren't predictable enough across builds for us to
+      // assert on `app_versions` row count or on a v2-specific content
+      // marker — those would test git-sync's internal versioning, not the
+      // pinning contract this spec is about.
+      cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from apps where name='${moduleName}' and organization_id='${prodIdRef.value}' and type='module' limit 1;`,
+      }).then((modResp) => {
+        expect(
+          modResp.rows[0]?.id,
+          `Prod's '${moduleName}' still present after v2 pull`,
+        ).to.be.a("string");
+      });
+
+      // CORE half-b assertion: the app's pin metadata is STILL v1's
+      // reference_id. Reading from the same `components.properties` row
+      // we read in half-a — if it auto-bumped, this would now equal
+      // v2's reference_id (or '' / something else).
+      cy.task("dbConnection", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from apps where name='${appName}' and organization_id='${prodIdRef.value}' limit 1;`,
+      }).then((appResp) => {
+        const prodAppId = appResp.rows[0]?.id;
+        expect(prodAppId, `Prod's '${appName}'`).to.be.a("string");
+
+        cy.task("dbConnection", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `
+            select c.properties
+            from components c
+            join pages p on p.id = c.page_id
+            join app_versions av on av.id = p.app_version_id
+            where av.app_id = '${prodAppId}'
+              and c.type = 'ModuleViewer'
+            limit 1;
+          `,
+        }).then((compsResp) => {
+          const props = compsResp.rows[0]?.properties;
+          const parsed = typeof props === "string" ? JSON.parse(props) : props;
+          const pinAfterV2 = parsed?.moduleVersionId?.value;
+          expect(
+            pinAfterV2,
+            "App's pin metadata did NOT auto-bump to v2 (still v1's reference_id)",
+          ).to.equal(Cypress.env("flow11_v1_reference_id"));
+          cy.log(
+            `[gitSync] ✓ Half-b: pin still v1's reference_id (${pinAfterV2}) after v2 sync`,
+          );
+        });
+      });
+      cy.screenshot("13-prod-pin-survives-v2-bump", { capture: "viewport" });
+
+      // Cleanup: delete the v2 branch on GitHub. The teardown's
+      // gitHubDeleteBranch handles `branchName` (the v1 branch); we need
+      // to clean up the second branch explicitly.
+      if (!Cypress.env("CYPRESS_NO_CLEANUP")) {
+        cy.gitHubDeleteBranch(v2BranchName);
+      }
     });
   },
 );
