@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { FolderApp } from '../../entities/folder_app.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
-import { EntityManager } from 'typeorm';
+import { EntityManager, IsNull } from 'typeorm';
 import { decamelizeKeys } from 'humps';
 import { FoldersUtilService } from '@modules/folders/util.service';
 import { FolderAppsUtilService } from './util.service';
@@ -23,18 +23,19 @@ export class FolderAppsService implements IFolderAppsService {
     protected folderAppsUtilService: FolderAppsUtilService
   ) {}
 
-  async create(folderId: string, appId: string): Promise<FolderApp> {
-    return this.folderAppsUtilService.create(folderId, appId);
+  async create(folderId: string, appId: string, branchId?: string): Promise<FolderApp> {
+    return this.folderAppsUtilService.create(folderId, appId, branchId);
   }
 
-  async bulkCreate(folderId: string, appIds: string[]): Promise<FolderApp[]> {
-    return this.folderAppsUtilService.bulkCreate(folderId, appIds);
+  async bulkCreate(folderId: string, appIds: string[], branchId?: string): Promise<FolderApp[]> {
+    return this.folderAppsUtilService.bulkCreate(folderId, appIds, branchId);
   }
 
-  async remove(folderId: string, appId: string): Promise<void> {
+  async remove(folderId: string, appId: string, branchId?: string): Promise<void> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // TODO: folder under user.organizationId
-      return await manager.delete(FolderApp, { folderId, appId });
+      const where = branchId ? { folderId, appId, branchId } : { folderId, appId, branchId: IsNull() };
+      return await manager.delete(FolderApp, where);
     });
   }
 
@@ -55,7 +56,8 @@ export class FolderAppsService implements IFolderAppsService {
     const manager = getConnectionInstance().manager;
     const type = query.type;
     const searchKey = query.searchKey;
-    let branchId = query.branchId;
+    // workflows are not git-synced; their folder_apps rows always have branch_id = NULL
+    let branchId = type === APP_TYPES.WORKFLOW ? undefined : query.branchId;
 
     // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App
     // entity (557+ N+1 hits per request observed pre-fix), including App entities loaded

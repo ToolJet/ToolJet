@@ -1069,7 +1069,7 @@ class HomePageComponent extends React.Component {
 
     const appIds = selectedApps.map((app) => app.value);
     folderService
-      .bulkAddToFolder(appIds, appOperations.selectedFolder)
+      .bulkAddToFolder(appIds, appOperations.selectedFolder, this.props.appType)
       .then(() => {
         toast.success(`Apps moved to "${folderName}" folder successfully!`);
         this.foldersChanged();
@@ -1094,7 +1094,7 @@ class HomePageComponent extends React.Component {
     this.setState({ isDeletingAppFromFolder: true });
 
     folderService
-      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
+      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id, this.props.appType)
       .then(() => {
         toast.success('Application removed from folder successfully!');
 
