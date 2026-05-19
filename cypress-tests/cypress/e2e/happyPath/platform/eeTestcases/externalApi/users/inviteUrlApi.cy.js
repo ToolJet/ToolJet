@@ -27,6 +27,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
 
   it("invited user: default status is invited, inviteUrl is non-null and contains correct oid", () => {
     cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      // invited + no password + ws invited (default)
       createUser({
         name: fake.firstName,
         email: `${sanitize(fake.lastName)}@example.com`,
@@ -37,6 +38,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
         expect(response.body.workspaces).to.have.length(1);
         const inviteUrl = response.body.workspaces[0].inviteUrl;
         expect(inviteUrl, "inviteUrl should be non-null").to.exist;
+        expect(inviteUrl).to.include("/invitations/");
         expect(inviteUrl).to.include(`oid=${workspaceId}`);
 
         // GET should also return non-null inviteUrl for an invited user with ws invited
@@ -44,6 +46,21 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
           expect(getResponse.status).to.eq(200);
           expect(getResponse.body.workspaces[0].inviteUrl).to.exist;
         });
+      });
+
+      // invited + with password + ws invited — password does not affect URL generation
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        password: "Password",
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("invited");
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
+        expect(inviteUrl).to.include("/invitations/");
+        expect(inviteUrl).to.include(`oid=${workspaceId}`);
       });
     });
   });
@@ -411,9 +428,10 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
     });
   });
 
-  it("invited user with no password and workspace status active: visit inviteUrl → set password → workspace loads", () => {
+  it("invited user with no password and workspace status active: reset password → login → not-active error", () => {
     cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
       const email = `${sanitize(fake.lastName)}@example.com`;
+      const newPassword = "Password";
 
       createUser({
         name: fake.firstName,
@@ -422,22 +440,44 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
       }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.status).to.eq("invited");
-        // POST: non-null (user.invitationToken is set for invited users)
-        const inviteUrl = response.body.workspaces[0].inviteUrl;
-        expect(inviteUrl).to.exist;
+        expect(response.body.workspaces[0].inviteUrl).to.exist;
 
         cy.apiLogout();
-        cy.visit(inviteUrl);
+        cy.visit("/");
 
-        cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-        cy.get(commonSelectors.signUpButton).click();
-        cy.get(commonSelectors.acceptInviteButton, { timeout: 10000 }).click();
-        cy.get(commonSelectors.workspaceName, { timeout: 20000 }).should(
-          "be.visible"
-        );
+        cy.get(commonSelectors.forgotPasswordLink).click();
+        cy.clearAndType('[data-cy="email-input-field-input"]', email);
+        cy.get(commonSelectors.resetPasswordLinkButton).click();
 
-        cy.clearCookies();
-        cy.apiLogin();
+        cy.task("dbConnection", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select forgot_password_token from users where email='${email}';`,
+        }).then((resp) => {
+          const token = resp.rows[0].forgot_password_token;
+          cy.intercept("GET", "**/api/metadata").as("resetMeta");
+          cy.intercept("GET", "**/api/white-labelling").as("resetWhiteLabel");
+          cy.visit(`/reset-password/${token}`);
+          cy.wait(["@resetMeta", "@resetWhiteLabel"]);
+
+          cy.get(commonSelectors.newPasswordInputField).should("be.visible");
+          cy.clearAndType(commonSelectors.newPasswordInputField, newPassword);
+          cy.get(commonSelectors.confirmPasswordInputField).should("be.visible");
+          cy.clearAndType(commonSelectors.confirmPasswordInputField, newPassword);
+          cy.get(commonSelectors.resetPasswordButton).click();
+
+          cy.get(commonSelectors.backToLoginButton).click();
+          cy.url().should("not.include", "reset-password");
+          cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+          cy.clearAndType(onboardingSelectors.loginPasswordInput, newPassword);
+          cy.get(onboardingSelectors.signInButton).click();
+
+          cy.contains(
+            "The user is not active, please use the invite link shared to activate"
+          ).should("be.visible");
+
+          cy.clearCookies();
+          cy.apiLogin();
+        });
       });
     });
   });
@@ -510,13 +550,176 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
           sql: `select forgot_password_token from users where email='${email}';`,
         }).then((resp) => {
           const token = resp.rows[0].forgot_password_token;
+          cy.intercept("GET", "**/api/metadata").as("resetMeta");
+          cy.intercept("GET", "**/api/white-labelling").as("resetWhiteLabel");
           cy.visit(`/reset-password/${token}`);
+          cy.wait(["@resetMeta", "@resetWhiteLabel"]);
 
-          cy.get(commonSelectors.newPasswordInputField).type(newPassword);
-          cy.get(commonSelectors.confirmPasswordInputField).type(newPassword);
+          cy.get(commonSelectors.newPasswordInputField).should("be.visible");
+          cy.clearAndType(commonSelectors.newPasswordInputField, newPassword);
+          cy.get(commonSelectors.confirmPasswordInputField).should("be.visible");
+          cy.clearAndType(commonSelectors.confirmPasswordInputField, newPassword);
+          cy.get(commonSelectors.resetPasswordButton).click();
+
+          // Visit the org-invite URL from the POST response and login to accept the workspace invite
+          cy.visit(inviteUrl);
+          cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+          cy.clearAndType(onboardingSelectors.loginPasswordInput, newPassword);
+          cy.get(onboardingSelectors.signInButton).click();
+          cy.get(commonSelectors.acceptInviteButton).click();
+          cy.get(commonSelectors.workspaceName).should(
+            "have.text",
+            data.workspaceName
+          );
+
+          cy.clearCookies();
+          cy.apiLogin();
+        });
+      });
+    });
+  });
+
+  it("invited user with password: visit inviteUrl → enter password → accept invite → workspace loads", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
+      const password = "Password";
+
+      createUser({
+        name: fake.firstName,
+        email,
+        password,
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("invited");
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
+        expect(inviteUrl).to.include("/invitations/");
+
+        cy.apiLogout();
+        cy.visit(inviteUrl);
+
+        cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+        cy.get(commonSelectors.signUpButton).click();
+        cy.get(commonSelectors.acceptInviteButton).click();
+        cy.get(commonSelectors.workspaceName).should(
+          "have.text",
+          data.workspaceName
+        );
+
+        cy.clearCookies();
+        cy.apiLogin();
+      });
+    });
+  });
+
+  it("invited user with password and workspace status active: login → not-active error", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
+      const password = "Password";
+
+      createUser({
+        name: fake.firstName,
+        email,
+        password,
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("invited");
+        expect(response.body.workspaces[0].inviteUrl).to.exist;
+        expect(response.body.workspaces[0].inviteUrl).to.include("/invitations/");
+
+        cy.apiLogout();
+        cy.visit("/");
+        cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+        cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+        cy.get(onboardingSelectors.signInButton).click();
+
+        cy.contains(
+          "The user is not active, please use the invite link shared to activate"
+        ).should("be.visible");
+
+        cy.clearCookies();
+        cy.apiLogin();
+      });
+    });
+  });
+
+  it("active user with password and workspace status active: inviteUrl is null — login directly to workspace", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
+      const password = "Password";
+
+      createUser({
+        name: fake.firstName,
+        email,
+        status: "active",
+        password,
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("active");
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
+
+        cy.apiLogout();
+        cy.visit("/");
+        cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+        cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+        cy.get(onboardingSelectors.signInButton).click();
+        cy.visit("/" + data.workspaceSlug);
+        cy.get(commonSelectors.workspaceName, { timeout: 20000 }).should(
+          "be.visible"
+        );
+
+        cy.clearCookies();
+        cy.apiLogin();
+      });
+    });
+  });
+
+  it("active user with no password and workspace status active: inviteUrl is null — reset password then login", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
+      const newPassword = "Password";
+
+      createUser({
+        name: fake.firstName,
+        email,
+        status: "active",
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("active");
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
+
+        cy.apiLogout();
+        cy.visit("/");
+
+        cy.get(commonSelectors.forgotPasswordLink).click();
+        cy.clearAndType('[data-cy="email-input-field-input"]', email);
+        cy.get(commonSelectors.resetPasswordLinkButton).click();
+
+        cy.task("dbConnection", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select forgot_password_token from users where email='${email}';`,
+        }).then((resp) => {
+          const token = resp.rows[0].forgot_password_token;
+          cy.intercept("GET", "**/api/metadata").as("resetMeta");
+          cy.intercept("GET", "**/api/white-labelling").as("resetWhiteLabel");
+          cy.visit(`/reset-password/${token}`);
+          cy.wait(["@resetMeta", "@resetWhiteLabel"]);
+
+          cy.get(commonSelectors.newPasswordInputField).should("be.visible");
+          cy.clearAndType(commonSelectors.newPasswordInputField, newPassword);
+          cy.get(commonSelectors.confirmPasswordInputField).should("be.visible");
+          cy.clearAndType(
+            commonSelectors.confirmPasswordInputField,
+            newPassword
+          );
           cy.get(commonSelectors.resetPasswordButton).click();
 
           cy.get(commonSelectors.backToLoginButton).click();
+          cy.url().should("not.include", "reset-password");
           cy.clearAndType(onboardingSelectors.signupEmailInput, email);
           cy.clearAndType(onboardingSelectors.loginPasswordInput, newPassword);
           cy.get(onboardingSelectors.signInButton).click();
