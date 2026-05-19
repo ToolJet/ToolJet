@@ -135,6 +135,8 @@ const WidgetWrapper = memo(
       flexShouldStack,
       visibility,
       mode,
+      isWidgetActive,
+      enabled: isFlexLayout,
     });
 
     if (!canShowInCurrentLayout || !layoutData) {
@@ -185,13 +187,17 @@ const WidgetWrapper = memo(
     const configWidgetHeight = isFlexLayout
       ? flexLayout.configWidgetHeight
       : temporaryLayouts?.height ?? layoutData.height;
-
     const isModuleContainer = componentType === 'ModuleContainer';
+    const configHandleClassName = cx({
+      'module-container': isModuleContainer,
+      [flexLayout.configHandleClassName]: isFlexLayout && flexLayout.configHandleClassName,
+    });
 
     if (!componentType) return null;
     return (
       <>
         <div
+          ref={isFlexLayout ? flexLayout.wrapperRef : null}
           className={cx(`ele-${id}`, {
             [`target widget-target target1  moveable-box widget-${id}`]: !readOnly,
             [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
@@ -212,6 +218,9 @@ const WidgetWrapper = memo(
           style={outerStyle}
           onMouseEnter={() => {
             if (isDragging || isModuleContainer) return;
+            if (isFlexLayout) {
+              flexLayout.refreshConfigWidgetTop();
+            }
             setHoveredComponentForGrid(id);
           }}
           onMouseLeave={() => {
@@ -228,7 +237,7 @@ const WidgetWrapper = memo(
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
-              customClassName={isModuleContainer ? 'module-container' : ''}
+              customClassName={configHandleClassName}
               isModuleContainer={isModuleContainer}
               subContainerIndex={subContainerIndex}
               isDynamicHeightEnabled={isDynamicHeightEnabled}

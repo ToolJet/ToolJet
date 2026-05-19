@@ -27,7 +27,12 @@ const FlexContainerDropIndicator = ({ flexContainerId, direction = 'column' }) =
   };
 
   if (children.length === 0) {
-    return <div style={{ ...baseStyle, left: 8, top: 8, width: isRow ? BAR : 24, height: isRow ? 24 : BAR }} />;
+    return (
+      <div
+        data-cy="flex-container-drop-indicator"
+        style={{ ...baseStyle, left: 8, top: 8, width: isRow ? BAR : 24, height: isRow ? 24 : BAR }}
+      />
+    );
   }
 
   const isAfterLast = target.index >= children.length;
@@ -48,7 +53,7 @@ const FlexContainerDropIndicator = ({ flexContainerId, direction = 'column' }) =
         height: BAR,
       };
 
-  return <div style={{ ...baseStyle, ...style }} />;
+  return <div data-cy="flex-container-drop-indicator" style={{ ...baseStyle, ...style }} />;
 };
 
 export { FlexContainerDropIndicator };

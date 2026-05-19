@@ -96,22 +96,15 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
     }
   };
 
-  const handleHeightPxChange = (e) => {
-    const parsed = parseInt(e.target.value, 10);
-    if (!isNaN(parsed) && parsed > 0) {
-      update({ fillHeight: false, heightPx: parsed });
-    }
-  };
-
-  const handleStackedWidthBehaviorChange = (value) => {
-    update({ stackedWidthBehavior: value });
-  };
-
   return (
-    <div className="flex-child-layout-panel" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div
+      className="flex-child-layout-panel"
+      data-cy="flex-child-layout-panel"
+      style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <label style={labelStyle}>Width</label>
-        <div style={{ width: '168px' }}>
+        <div data-cy="flex-child-width-mode" style={{ width: '168px' }}>
           <Dropdown
             options={SIZE_OPTIONS}
             value={widthMode}
@@ -125,44 +118,16 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
       {!fillWidth && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <label style={labelStyle}>Width (px)</label>
-          <input type="number" min={1} value={widthValue} onChange={handleWidthPxChange} style={inputStyle} />
-        </div>
-      )}
-
-      {/* <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <label style={labelStyle}>Height</label>
-        <div style={{ width: '168px' }}>
-          <Dropdown
-            options={SIZE_OPTIONS}
-            value={heightMode}
-            size="small"
-            width="168px"
-            onChange={handleHeightModeChange}
+          <input
+            data-cy="flex-child-width-px"
+            type="number"
+            min={1}
+            value={widthValue}
+            onChange={handleWidthPxChange}
+            style={inputStyle}
           />
         </div>
-      </div>
-
-      {!fillHeight && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <label style={labelStyle}>Height (px)</label>
-          <input type="number" min={1} value={heightValue} onChange={handleHeightPxChange} style={inputStyle} />
-        </div>
-      )} */}
-
-      {/* {showStackedWidth && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <label style={labelStyle}>When stacked, width</label>
-          <div style={{ width: '168px' }}>
-            <Dropdown
-              options={STACKED_WIDTH_OPTIONS}
-              value={stackedWidthBehavior}
-              size="small"
-              width="168px"
-              onChange={handleStackedWidthBehaviorChange}
-            />
-          </div>
-        </div>
-      )} */}
+      )}
     </div>
   );
 };

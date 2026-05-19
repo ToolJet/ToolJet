@@ -3,6 +3,7 @@ import React from 'react';
 const FlexContainerEmptyPlaceholder = () => {
   return (
     <div
+      data-cy="flex-container-empty-placeholder"
       style={{
         height: '64px',
         width: '100%',

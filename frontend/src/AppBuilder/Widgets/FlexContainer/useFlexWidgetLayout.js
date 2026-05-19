@@ -1,5 +1,8 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { resolveFlexChildSizing } from './flexContainer.utils';
+
+export const getFlexConfigWidgetTop = (widgetElement) => widgetElement?.offsetTop ?? 0;
 
 export const useFlexWidgetLayout = ({
   layoutData,
@@ -9,7 +12,11 @@ export const useFlexWidgetLayout = ({
   flexShouldStack,
   visibility,
   mode,
+  isWidgetActive,
+  enabled = true,
 }) => {
+  const wrapperRef = useRef(null);
+  const [configWidgetTop, setConfigWidgetTop] = useState(0);
   const flexLayoutData = layoutData ?? {};
   const gridDerivedWidthPx = gridWidth * (flexLayoutData?.width ?? 1);
   const isFlexRow = flexDirection === 'row';
@@ -38,6 +45,25 @@ export const useFlexWidgetLayout = ({
       widgetWidth = Math.min(effectiveWidthPx, availableWidth);
     }
   }
+
+  const refreshConfigWidgetTop = useCallback(() => {
+    const nextTop = getFlexConfigWidgetTop(wrapperRef.current);
+    setConfigWidgetTop((currentTop) => (currentTop === nextTop ? currentTop : nextTop));
+  }, []);
+
+  useEffect(() => {
+    if (!enabled || !isWidgetActive) return;
+    refreshConfigWidgetTop();
+  }, [
+    enabled,
+    isWidgetActive,
+    refreshConfigWidgetTop,
+    containerWidth,
+    flexDirection,
+    flexShouldStack,
+    visibility,
+    mode,
+  ]);
 
   const outerStyle = {
     ...(flexShouldStack && !isFlexRow
@@ -74,7 +100,10 @@ export const useFlexWidgetLayout = ({
     outerStyle,
     widgetWidth,
     widgetHeight,
-    configWidgetTop: 15,
+    wrapperRef,
+    configWidgetTop,
     configWidgetHeight: effectiveHeightPx || flexLayoutData.height,
+    configHandleClassName: 'flex-child-config-handle',
+    refreshConfigWidgetTop,
   };
 };

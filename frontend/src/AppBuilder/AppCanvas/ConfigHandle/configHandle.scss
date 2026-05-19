@@ -12,6 +12,10 @@
   visibility: visible !important;
 }
 
+.flex-child-wrapper > .config-handle.flex-child-config-handle {
+  position: absolute;
+}
+
 .multiple-components-config-handle {
   position: absolute;
   left: 54px;
