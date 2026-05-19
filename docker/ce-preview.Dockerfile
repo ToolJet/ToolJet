@@ -39,7 +39,8 @@ COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN apt-get update && apt-get install -y freetds-dev libaio1 wget supervisor
+RUN apt-get update && \
+    apt-get install -y freetds-dev libaio1 wget redis-server supervisor
 
 # Install Instantclient Basic Light Oracle and Dependencies
 WORKDIR /opt/oracle
@@ -72,6 +73,20 @@ COPY --from=builder /app/server/node_modules ./app/server/node_modules
 COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
+
+# Define non-sudo user and set up Redis dirs
+RUN useradd --create-home --home-dir /home/appuser appuser \
+    && chown -R appuser:0 /app \
+    && chown -R appuser:0 /home/appuser \
+    && chmod u+x /app \
+    && chmod -R g=u /app \
+    && mkdir -p /var/lib/redis /var/log/redis \
+    && chown -R appuser:0 /var/lib/redis /var/log/redis \
+    && chmod -R g=u /var/lib/redis /var/log/redis
+
+# Configure Redis
+RUN printf 'bind 127.0.0.1\nport 6379\nprotected-mode yes\ndaemonize yes\nlogfile /var/log/redis/redis.log\ndir /var/lib/redis\n' \
+    > /app/redis.conf
 
 WORKDIR /app
 
@@ -140,7 +155,8 @@ ENV TOOLJET_HOST=http://localhost \
     HOME=/home/appuser \
     TERM=xterm
 
-
+ENV npm_config_cache /home/appuser/.npm
+USER appuser
 RUN chmod +x ./server/scripts/preview.sh
 # Set the entrypoint
 ENTRYPOINT ["./server/scripts/preview.sh"]
