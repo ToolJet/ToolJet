@@ -128,6 +128,46 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       expect(groupNames).toContain('end-user');
     });
 
+    it('should return an org-invite URL (not a full invite URL) when user status is active', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-active-user@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Active User Vendor',
+          email: 'active-user-vendor@example.com',
+          status: 'active',
+          workspaces: [{ id: orgId }],
+        })
+        .expect(201);
+
+      const inviteUrl: string = res.body.workspaces[0].inviteUrl;
+      expect(inviteUrl).toBeTruthy();
+      // Active users have no invitationToken — workspace-only invite URL is returned.
+      expect(inviteUrl).toContain('organization-invitations');
+      expect(inviteUrl).not.toContain('/invitations/');
+    });
+
+    it('should return inviteUrl as null when workspace status is active', async () => {
+      const { user: adminUser } = await createUser(app, { email: 'admin-active-ws@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Active WS Vendor',
+          email: 'active-ws-vendor@example.com',
+          status: 'active',
+          workspaces: [{ id: orgId, status: 'active' }],
+        })
+        .expect(201);
+
+      expect(res.body.workspaces[0].inviteUrl).toBeNull();
+    });
+
     it('should return a non-null inviteUrl even when user and workspace status are archived', async () => {
       const { user: adminUser } = await createUser(app, { email: 'admin-archived@tooljet.io' });
       const orgId = adminUser.defaultOrganizationId;
