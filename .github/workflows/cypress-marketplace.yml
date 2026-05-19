@@ -64,7 +64,7 @@ jobs:
 
             # ← VPN: Connect before any step that needs private resource
       - name: Connect to VPN
-        uses: adishM98/auth-vpn@v2.1.4
+        uses: adishM98/auth-vpn@v2.3.0
         with:
           server: ${{ secrets.VPN_SERVER }}
           api-key: ${{ secrets.VPN_API_KEY }}
@@ -420,7 +420,7 @@ jobs:
        # ← VPN: Disconnect — always runs even if earlier steps fail
       - name: Disconnect VPN
         if: always()
-        uses: adishM98/auth-vpn/disconnect@v2.1.4
+        uses: adishM98/auth-vpn/disconnect@v2.3.0
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
