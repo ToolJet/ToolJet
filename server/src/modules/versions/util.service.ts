@@ -100,6 +100,15 @@ export class VersionUtilService implements IVersionUtilService {
 
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
+      // chk_app_versions_branched_implies_draft (1779300000000) requires
+      // non-DRAFT rows to be branchless. Detach branch_id in the SAME UPDATE
+      // as the status flip so the row never lands in the violating state
+      // mid-transaction. handleDefaultBranchPublish below still fires for the
+      // default-branch publish path; its own branch_id detach (line 245)
+      // becomes an idempotent no-op once we've done it inline here.
+      if (appVersionUpdateDto.status !== AppVersionStatus.DRAFT && appVersion.branchId) {
+        editableParams['branchId'] = null;
+      }
     }
     if (
       appVersionUpdateDto?.description !== undefined &&
@@ -281,7 +290,13 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
-    const { versionName, versionFromId, versionDescription, versionType, branchId } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
+    // Workflows must always have branch_id NULL — they don't participate in branching.
+    // The controller forwards the x-branch-id header into versionCreateDto.branchId
+    // even for workflows; drop it here so the new row doesn't land with branch_id
+    // set + app_name/slug NULL (which would trip chk_app_versions_branch_metadata,
+    // since workflow versions don't carry those fields).
+    const branchId = app.type === APP_TYPES.WORKFLOW ? undefined : versionCreateDto.branchId;
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
