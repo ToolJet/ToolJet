@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager, In } from 'typeorm';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -144,6 +144,11 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
     const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+      const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
+      if (Object.keys(parentWrites).length > 0) {
+        await this.assertNoParentCycle(parentWrites, appVersionId, manager);
+      }
+
       for (const componentId in componenstLayoutDiff) {
         const doesComponentExist = await manager.findAndCount(Component, {
           where: { id: componentId },
@@ -391,6 +396,81 @@ export class ComponentsService implements IComponentsService {
     return result;
   }
 
+  // Strips the `-<slot>` suffix (e.g. `-tab1`, `-header`, `-modal`) and returns
+  // the bare component UUID. Mirrors the frontend getBaseParentId helper.
+  private extractBaseParentId(parentId: string | null | undefined): string | null {
+    if (!parentId) return null;
+    const match = parentId.match(/([a-fA-F0-9-]{36})-(.+)/);
+    return match ? match[1] : parentId;
+  }
+
+  // Authoritative server-side cycle reject. Loads the (id, parent) graph for
+  // the appVersion, overlays the proposed parent writes (and any in-flight
+  // creations), and walks up from every affected node. Throws if any chain
+  // closes back on itself. Pre-existing cycles unrelated to the write are
+  // left intact — the import boundary's repairParentCycles handles those.
+  protected async assertNoParentCycle(
+    proposedParentById: Record<string, string | null | undefined>,
+    appVersionId: string,
+    manager: EntityManager,
+    options: { newComponentParents?: Record<string, string | null | undefined> } = {}
+  ): Promise<void> {
+    const affectedIds = Object.keys(proposedParentById);
+    if (affectedIds.length === 0) return;
+
+    const rows: { id: string; parent: string | null }[] = await manager
+      .createQueryBuilder(Component, 'component')
+      .leftJoin('component.page', 'page')
+      .where('page.appVersionId = :appVersionId', { appVersionId })
+      .select('component.id', 'id')
+      .addSelect('component.parent', 'parent')
+      .getRawMany();
+
+    const parentById = new Map<string, string | null>();
+    rows.forEach((row) => parentById.set(row.id, row.parent ?? null));
+
+    const { newComponentParents = {} } = options;
+    for (const [id, parent] of Object.entries(newComponentParents)) {
+      parentById.set(id, parent ?? null);
+    }
+    for (const [id, parent] of Object.entries(proposedParentById)) {
+      parentById.set(id, parent ?? null);
+    }
+
+    for (const id of affectedIds) {
+      const visited = new Set<string>([id]);
+      let next = this.extractBaseParentId(parentById.get(id));
+      while (next) {
+        if (next === id) {
+          throw new BadRequestException({
+            message: `Parent assignment for component ${id} would create a parent-child loop.`,
+            code: 'PARENT_CYCLE_DETECTED',
+            componentId: id,
+          });
+        }
+        if (visited.has(next)) break;
+        visited.add(next);
+        next = this.extractBaseParentId(parentById.get(next));
+      }
+    }
+  }
+
+  // Pulls the proposed parent writes from a diff whose values may carry a
+  // `component.parent` field (used by both updateComponents and the two
+  // layout-update entry points).
+  private collectParentWritesFromDiff(
+    diff: Record<string, { component?: { parent?: string | null } }>
+  ): Record<string, string | null | undefined> {
+    const writes: Record<string, string | null | undefined> = {};
+    for (const id in diff) {
+      const candidate = diff[id]?.component;
+      if (candidate && Object.prototype.hasOwnProperty.call(candidate, 'parent')) {
+        writes[id] = candidate.parent ?? null;
+      }
+    }
+    return writes;
+  }
+
   // Common methods used by both the original methods and batch operations
   protected async createComponentsAndLayouts(
     diff: object,
@@ -403,6 +483,18 @@ export class ComponentsService implements IComponentsService {
     });
 
     const newComponents = this.transformComponentData(diff);
+
+    // Validate the proposed graph BEFORE inserting. New components overlay the
+    // existing tree so a cycle introduced by a buggy paste/import gets caught
+    // at the DB boundary even if the client guard was bypassed.
+    const newComponentParents: Record<string, string | null> = {};
+    newComponents.forEach((component) => {
+      newComponentParents[component.id] = component.parent ?? null;
+    });
+    await this.assertNoParentCycle(newComponentParents, appVersionId, manager, {
+      newComponentParents,
+    });
+
     const componentLayouts = [];
 
     newComponents.forEach((component) => {
@@ -435,6 +527,11 @@ export class ComponentsService implements IComponentsService {
   }
 
   protected async updateComponents(diff: object, appVersionId: string, manager: EntityManager) {
+    const parentWrites = this.collectParentWritesFromDiff(diff as any);
+    if (Object.keys(parentWrites).length > 0) {
+      await this.assertNoParentCycle(parentWrites, appVersionId, manager);
+    }
+
     for (const componentId in diff) {
       const { component } = diff[componentId];
 
@@ -539,6 +636,20 @@ export class ComponentsService implements IComponentsService {
     layoutDiff: Record<string, { layouts: LayoutData; component?: { parent: string } }>,
     manager: EntityManager
   ) {
+    const parentWrites = this.collectParentWritesFromDiff(layoutDiff);
+    if (Object.keys(parentWrites).length > 0) {
+      // Signature doesn't carry appVersionId, so resolve it from the first
+      // component's page. Single extra query — only fires when re-parenting.
+      const firstComponentId = Object.keys(layoutDiff)[0];
+      const sampleComponent = await manager.findOne(Component, {
+        where: { id: firstComponentId },
+        relations: ['page'],
+      });
+      if (sampleComponent?.page?.appVersionId) {
+        await this.assertNoParentCycle(parentWrites, sampleComponent.page.appVersionId, manager);
+      }
+    }
+
     for (const componentId in layoutDiff) {
       const doesComponentExist = await manager.findAndCount(Component, {
         where: { id: componentId },

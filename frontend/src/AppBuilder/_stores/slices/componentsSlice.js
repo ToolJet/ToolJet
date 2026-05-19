@@ -1656,6 +1656,9 @@ export const createComponentsSlice = (set, get) => ({
     const currentPageIndex = getCurrentPageIndex(moduleId);
     let hasParentChanged = false;
     let oldParentId;
+    // Snapshot pre-mutation parents per affected component so we can revert if
+    // the server's authoritative cycle guard rejects the batch.
+    const oldParentByComponentId = {};
 
     // Reject the whole batch if any re-parent in it would form a cycle.
     // Skipping just the parent write while keeping the layout write would
@@ -1672,6 +1675,23 @@ export const createComponentsSlice = (set, get) => ({
         toast.error(`Cannot move "${draggedName}" here — it would create a parent-child loop.`);
         return;
       }
+    }
+
+    // Capture per-component pre-mutation parents AND layouts for the revert
+    // path. The drag handler writes new coordinates (computed in the new
+    // parent's coordinate system) before save fires, so a cycle reject needs
+    // to restore both the parent ref AND the prior position to put the widget
+    // back where it started visually.
+    const oldLayoutByComponentId = {};
+    if (updateParent) {
+      const pageComponents = get().modules[moduleId].pages[currentPageIndex].components;
+      Object.keys(componentLayouts).forEach((componentId) => {
+        const comp = pageComponents[componentId];
+        oldParentByComponentId[componentId] = comp?.component?.parent ?? null;
+        if (comp?.layouts?.[currentLayout]) {
+          oldLayoutByComponentId[componentId] = { ...comp.layouts[currentLayout] };
+        }
+      });
     }
 
     // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
@@ -1845,12 +1865,51 @@ export const createComponentsSlice = (set, get) => ({
 
         // Use batch operations to combine layout changes and component updates in a single API call
         // This creates only one history entry
+        const revertParents = () => {
+          set(
+            (state) => {
+              const page = state.modules[moduleId].pages[currentPageIndex];
+              if (!page) return;
+              Object.entries(oldParentByComponentId).forEach(([componentId, restoredParent]) => {
+                const component = page.components[componentId];
+                if (!component) return;
+                // Restore the pre-drag layout (x/y/w/h) — without this the
+                // widget stays at the new-parent coordinates but under the
+                // old parent, which renders in the wrong spot.
+                const restoredLayout = oldLayoutByComponentId[componentId];
+                if (restoredLayout && component.layouts) {
+                  component.layouts[currentLayout] = { ...restoredLayout };
+                }
+                const currentParent = component.component.parent;
+                if (currentParent === restoredParent) return;
+                component.component.parent = restoredParent;
+                // Detach from current parent bucket, reattach to restored parent bucket.
+                const currentBucket = currentParent || moduleId;
+                if (state.containerChildrenMapping[currentBucket]) {
+                  state.containerChildrenMapping[currentBucket] = state.containerChildrenMapping[currentBucket].filter(
+                    (id) => id !== componentId
+                  );
+                }
+                const restoreBucket = restoredParent || moduleId;
+                if (!state.containerChildrenMapping[restoreBucket]) {
+                  state.containerChildrenMapping[restoreBucket] = [];
+                }
+                if (!state.containerChildrenMapping[restoreBucket].includes(componentId)) {
+                  state.containerChildrenMapping[restoreBucket].push(componentId);
+                }
+              });
+            },
+            false,
+            { type: 'revertLayoutParentsAfterCycleReject' }
+          );
+        };
         performBatchComponentOperations(
           {
             updated: Object.keys(updatedDiff).length > 0 ? updatedDiff : undefined,
             layout: diff,
           },
-          moduleId
+          moduleId,
+          { onCycleReject: revertParents }
         );
       } else {
         // Simple layout change (resize, move within same parent) - use the regular layout endpoint
@@ -2124,7 +2183,38 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     if (saveAfterAction) {
-      saveComponentChanges(diff, 'components', 'update', moduleId);
+      // If the server's authoritative cycle guard rejects this re-parent (e.g.
+      // the local snapshot was stale relative to a concurrent edit), put the
+      // parent back so the canvas matches what actually persisted.
+      const revertParent = () => {
+        set(
+          (state) => {
+            const component = state.modules[moduleId].pages[currentPageIndex].components[componentId];
+            if (!component) return;
+            component.component.parent = oldParentId ?? null;
+            // Re-thread containerChildrenMapping to match the restored parent.
+            if (newParentId && state.containerChildrenMapping[newParentId]) {
+              state.containerChildrenMapping[newParentId] = state.containerChildrenMapping[newParentId].filter(
+                (id) => id !== componentId
+              );
+            } else if (state.containerChildrenMapping[moduleId]) {
+              state.containerChildrenMapping[moduleId] = state.containerChildrenMapping[moduleId].filter(
+                (id) => id !== componentId
+              );
+            }
+            const restoreBucket = oldParentId || moduleId;
+            if (!state.containerChildrenMapping[restoreBucket]) {
+              state.containerChildrenMapping[restoreBucket] = [];
+            }
+            if (!state.containerChildrenMapping[restoreBucket].includes(componentId)) {
+              state.containerChildrenMapping[restoreBucket].push(componentId);
+            }
+          },
+          false,
+          { type: 'revertParentAfterCycleReject', payload: { componentId, oldParentId } }
+        );
+      };
+      saveComponentChanges(diff, 'components', 'update', moduleId, { onCycleReject: revertParent });
       get().multiplayer.broadcastUpdates({ componentId, newParentId }, 'components', 'parent');
     }
   },
@@ -2173,7 +2263,7 @@ export const createComponentsSlice = (set, get) => ({
       false,
       { type: 'setFocusedParentId', payload: { parentId } };
   },
-  saveComponentChanges: (diff, type, operation, moduleId = 'canvas') => {
+  saveComponentChanges: (diff, type, operation, moduleId = 'canvas', { onCycleReject } = {}) => {
     set(
       (state) => {
         state.appStore.modules[moduleId].app.isSaving = true;
@@ -2201,7 +2291,27 @@ export const createComponentsSlice = (set, get) => ({
           resolve(response);
         })
         .catch((error) => {
-          toast.error('App could not be saved.');
+          // handle-response.js rejects with { error: <message string>, data: <full body>, statusCode }.
+          // The structured fields (code, componentId) live on `error.data`, not on the message string.
+          const errorBody = error?.data || error?.response?.data || error;
+          const errorMsg = errorBody?.message || error?.error;
+          const isCycleReject =
+            errorBody?.code === 'PARENT_CYCLE_DETECTED' ||
+            (typeof errorMsg === 'string' && errorMsg.includes('parent-child loop'));
+          if (isCycleReject) {
+            // Caller-supplied revert restores pre-mutation parent refs locally
+            // so the canvas matches the authoritative server state.
+            if (typeof onCycleReject === 'function') {
+              try {
+                onCycleReject();
+              } catch (revertErr) {
+                console.error('Error reverting after parent-cycle reject:', revertErr);
+              }
+            }
+            toast.error(errorMsg || 'Move rejected: would create a parent-child loop.');
+          } else {
+            toast.error('App could not be saved.');
+          }
           console.error('Error saving component changes:', error);
         })
         .finally(() => {
