@@ -1133,7 +1133,9 @@ export const EventManager = ({
                 {events.map((event, index) => {
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
                   const isGoToAppBroken =
-                    event.event.actionId === 'go-to-app' && !isLinkedAppValid(event.event.correlationId, linkedAppsMap);
+                    event.event.actionId === 'go-to-app' &&
+                    event.event.correlationId &&
+                    !isLinkedAppValid(event.event.correlationId, linkedAppsMap);
                   // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                   return (
                     <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>

@@ -655,25 +655,37 @@ export const createEventsSlice = (set, get) => ({
           }
           case 'go-to-app': {
             try {
-              if (!event.correlationId) {
-                throw new Error('No application selected');
-              }
+              let slug;
 
-              const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
-              const appSlug = linkedApps[event.correlationId]?.slug;
-
-              // Editor: throw → routed to debugger via logError below.
-              // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
-              if (mode !== 'view') {
-                const isValid = isLinkedAppValid(event.correlationId, linkedApps);
-                if (!isValid) {
-                  const errMessage = `App ${event.correlationId} undefined. Check if the linked app exists and has a released version.`;
-                  throw new Error(errMessage);
+              if (event.source === 'app-action') {
+                // RunJS app action go-to-app still send a slug directly for backward compatibility.
+                if (!event.slug) {
+                  throw new Error('No application slug provided');
                 }
+
+                slug = getResolvedValue(event.slug, customVariables, moduleId);
+              } else {
+                // Builder-configured go-to-app events resolve the target via correlationId.
+                if (!event.correlationId) {
+                  throw new Error('No application selected');
+                }
+
+                const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
+                const appSlug = linkedApps[event.correlationId]?.slug;
+
+                // Editor: throw → routed to debugger via logError below.
+                // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
+                if (mode !== 'view') {
+                  const isValid = isLinkedAppValid(event.correlationId, linkedApps);
+                  if (!isValid) {
+                    const errMessage = `App ${event.correlationId} undefined. Check if the linked app exists and has a released version.`;
+                    throw new Error(errMessage);
+                  }
+                }
+
+                slug = getResolvedValue(appSlug, customVariables, moduleId);
               }
 
-              const resolvedValue = getResolvedValue(appSlug, customVariables, moduleId);
-              const slug = resolvedValue;
               const queryParams = event.queryParams?.reduce(
                 (result, queryParam) => ({
                   ...result,
@@ -1211,6 +1223,7 @@ export const createEventsSlice = (set, get) => ({
       const goToApp = (slug = '', queryParams = []) => {
         const event = {
           actionId: 'go-to-app',
+          source: 'app-action',
           slug,
           queryParams,
         };

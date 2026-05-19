@@ -110,7 +110,8 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
 
   const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
-  const isValid = type !== 'app' || isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
+  const isInvalid =
+    type === 'app' && page?.targetCorelationId && !isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
 
   useEffect(() => {
     setError(null);
@@ -413,7 +414,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
               <Select
                 options={appOptions}
                 search={true}
-                value={isValid ? page?.targetCorelationId : { label: 'Undefined app', value: page?.targetCorelationId }}
+                value={
+                  !isInvalid ? page?.targetCorelationId : { label: 'Undefined app', value: page?.targetCorelationId }
+                }
                 onChange={(value) => {
                   const selected = appOptions.find((opt) => opt.value === value);
                   updatePageTargetApp(
@@ -430,12 +433,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
                 width={'168px'}
                 borderRadius="6px"
                 styles={{
-                  border: `1px solid ${!isValid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
+                  border: `1px solid ${isInvalid ? 'var(--border-danger-strong)' : 'var(--border-default)'} !important`,
                 }}
                 className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
               />
             </div>
-            {!isValid && (
+            {isInvalid && (
               <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
                 <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
                 <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">{`App ${page?.targetCorelationId} undefined. Check if the linked app exists and has a released version.`}</span>

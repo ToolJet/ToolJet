@@ -36,7 +36,8 @@ export const PageMenuItem = withRouter(
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
     const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
-    const isValid = page?.type !== 'app' || isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
+    const isInvalid =
+      page?.type === 'app' && page?.targetCorelationId && !isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
@@ -208,7 +209,7 @@ export const PageMenuItem = withRouter(
               {page.name}
             </OverflowTooltip>
             <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
-              {!isValid && (
+              {isInvalid && (
                 <ToolTip
                   message={
                     <>
