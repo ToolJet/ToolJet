@@ -132,7 +132,10 @@ const DraggableHeader = ({ header, darkMode, id, table }) => {
                 'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
               })}
               data-cy={`${generateCypressDataCy(column.name)}-column-header`}
-              style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
+              style={{
+                textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none',
+                textAlign: column.columnType !== 'selector' ? column?.horizontalAlignment || 'left' : undefined,
+              }}
               onMouseEnter={() => setShowOverlay(true)}
               onMouseLeave={() => setShowOverlay(false)}
             >
