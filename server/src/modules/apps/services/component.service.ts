@@ -418,6 +418,18 @@ export class ComponentsService implements IComponentsService {
     const affectedIds = Object.keys(proposedParentById);
     if (affectedIds.length === 0) return;
 
+    // Serialize concurrent parent-mutating transactions for the same app
+    // version. Without this, two parallel autosaves can each independently
+    // read a cycle-free snapshot, each pass the walk below, and both commit —
+    // producing a cycle the per-transaction guard cannot see. The transaction-
+    // scoped advisory lock blocks the second transaction at this point until
+    // the first commits, then it re-reads the now-current graph and rejects
+    // cleanly. Lock is auto-released on COMMIT/ROLLBACK. hashtext returns
+    // int4; collisions across distinct app versions are possible but harmless
+    // (they'd just serialize against each other unnecessarily, no correctness
+    // impact).
+    await manager.query('SELECT pg_advisory_xact_lock(hashtext($1))', [appVersionId]);
+
     const rows: { id: string; parent: string | null }[] = await manager
       .createQueryBuilder(Component, 'component')
       .leftJoin('component.page', 'page')
