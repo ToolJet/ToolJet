@@ -1,6 +1,7 @@
 import {
   createUser,
   getUser,
+  getAllUsers,
 } from "Support/utils/externalApi";
 import { fake } from "Fixtures/fake";
 import { sanitize } from "Support/utils/common";
@@ -22,94 +23,208 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
     );
   });
 
-  // afterEach(() => {
-  //   cy.apiDeleteAllWorkspaces();
-  // });
+  // ── SECTION 1: Invited user (default status) ─────────────────────────────────
 
-  it("should validate inviteUrl presence and workspace assignment in POST /ext/users", () => {
-    const workspaceId = Cypress.env("workspaceId");
+  it("invited user: default status is invited, inviteUrl is non-null and contains correct oid", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("invited");
+        expect(response.body.workspaces).to.have.length(1);
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl, "inviteUrl should be non-null").to.exist;
+        expect(inviteUrl).to.include(`oid=${workspaceId}`);
 
-    // Case 1: Response includes a non-null inviteUrl per workspace
-    createUser({
-      name: "Vendor One",
-      email: `${sanitize(fake.lastName)}@example.com`,
-      workspaces: [{ id: workspaceId }],
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-      expect(response.body.workspaces).to.be.an("array").and.have.length(1);
-      expect(
-        response.body.workspaces[0].inviteUrl,
-        "inviteUrl should be present and non-null"
-      ).to.exist;
-    });
-
-    // Case 2: inviteUrl contains correct oid query param matching the workspace id
-    createUser({
-      name: "Vendor Two",
-      email: `${sanitize(fake.lastName)}@example.com`,
-      workspaces: [{ id: workspaceId }],
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-      const inviteUrl = response.body.workspaces[0].inviteUrl;
-      expect(inviteUrl, "inviteUrl should contain oid matching workspace id").to.include(
-        `oid=${workspaceId}`
-      );
+        // GET should also return non-null inviteUrl for an invited user with ws invited
+        getUser(response.body.id).then((getResponse) => {
+          expect(getResponse.status).to.eq(200);
+          expect(getResponse.body.workspaces[0].inviteUrl).to.exist;
+        });
+      });
     });
   });
 
-  it("should validate multi-workspace user creation in POST /ext/users", () => {
+  // ── SECTION 2: Active user — inviteUrl behavior by workspace status ──────────
+  //
+  // When status=active, User.invitationToken is null at creation time so the full
+  // invite URL (/invitations/{userToken}/workspaces/{ouToken}) cannot be generated.
+  // Instead, a workspace-only org-invite URL (/organization-invitations/{ouToken})
+  // is returned when the workspace membership is not yet active.
+  // When workspace status is also active, no URL is generated at all (null).
+
+  it("active user + ws invited: POST inviteUrl is an org-invite URL (not a full invite URL)", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      // active + no password + ws invited (default)
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        status: "active",
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("active");
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
+        expect(inviteUrl).to.include("organization-invitations");
+        expect(inviteUrl).to.not.include("/invitations/");
+
+        // GET also returns org-invite URL: ou.status is not active, ou.invitationToken is set,
+        // user.invitationToken is null → org-invite URL format
+        getUser(response.body.id).then((getResponse) => {
+          expect(getResponse.status).to.eq(200);
+          const getInviteUrl = getResponse.body.workspaces[0].inviteUrl;
+          expect(getInviteUrl).to.exist;
+          expect(getInviteUrl).to.include("organization-invitations");
+        });
+      });
+
+      // active + with password + ws invited (default)
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        status: "active",
+        password: "Password",
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
+        expect(inviteUrl).to.include("organization-invitations");
+      });
+    });
+  });
+
+  it("archived user: POST inviteUrl is non-null (tokens generated unconditionally at creation)", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        status: "archived",
+        workspaces: [{ id: workspaceId, status: "archived" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("archived");
+        expect(response.body.workspaces[0].inviteUrl).to.exist;
+      });
+    });
+  });
+
+  it("active user + ws active: POST inviteUrl is null (no URL when workspace membership is already active)", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      // active + no password + ws active
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        status: "active",
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
+      });
+
+      // active + with password + ws active
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        status: "active",
+        password: "Password",
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
+      });
+    });
+  });
+
+  // ── SECTION 3: Workspace status active — POST vs GET inviteUrl difference ────
+  //
+  // POST inviteUrl depends only on user.invitationToken (non-null for invited users).
+  // GET inviteUrl additionally checks ou.status — if active, returns null.
+
+  it("invited user with workspace status active: POST inviteUrl non-null, GET inviteUrl null", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      // invited + no password + ws active
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("invited");
+        expect(response.body.workspaces[0].inviteUrl).to.exist;
+
+        getUser(response.body.id).then((getResponse) => {
+          expect(getResponse.status).to.eq(200);
+          expect(getResponse.body.workspaces[0].inviteUrl).to.be.null;
+        });
+      });
+
+      // invited + with password + ws active
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        password: "Password",
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.workspaces[0].inviteUrl).to.exist;
+      });
+    });
+  });
+
+  // ── SECTION 4: Multi-workspace, roles, and custom groups ─────────────────────
+
+  it("should create user in all requested workspaces with per-workspace inviteUrls", () => {
     cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
       const ts2 = Date.now();
-      data.workspaceName2 = `${sanitize(fake.lastName)}${ts2}`;
-      data.workspaceSlug2 = `${sanitize(fake.lastName)}${ts2}`;
-      cy.apiCreateWorkspace(data.workspaceName2, data.workspaceSlug2).then(
-        (wsResponse) => {
-          const secondWorkspaceId = wsResponse.body.organization_id;
-
-          // Case 3: Creates the user in every requested workspace
-          createUser({
-            name: "Vendor Multi",
-            email: `${sanitize(fake.lastName)}@example.com`,
-            workspaces: [
-              { id: workspaceId },
-              { id: secondWorkspaceId },
-            ],
-          }).then((response) => {
-            expect(response.status).to.eq(201);
-            expect(response.body.workspaces).to.be.an("array").and.have.length(2);
-            const returnedIds = response.body.workspaces.map((ws) => ws.id);
-            expect(returnedIds).to.include(workspaceId);
-            expect(returnedIds).to.include(secondWorkspaceId);
-          });
-        }
-      );
-    });
-  });
-
-  it("should validate role assignment via POST /ext/users", () => {
-    const workspaceId = Cypress.env("workspaceId");
-
-    // Case 4: Assigns the specified role to the user in the workspace
-    createUser({
-      name: "Builder User",
-      email: `${sanitize(fake.lastName)}@example.com`,
-      workspaces: [{ id: workspaceId, role: "builder" }],
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-      const groupNames = response.body.userGroups.map((g) => g.name);
-      expect(groupNames).to.include("builder");
-    });
-
-    // Case 5: Assigns different roles across multiple workspaces
-    const ts3 = Date.now();
-    data.workspaceName2 = `${sanitize(fake.lastName)}${ts3}`;
-    data.workspaceSlug2 = `${sanitize(fake.lastName)}${ts3}`;
-    cy.apiCreateWorkspace(data.workspaceName2, data.workspaceSlug2).then(
-      (wsResponse) => {
+      cy.apiCreateWorkspace(
+        `${sanitize(fake.lastName)}${ts2}`,
+        `${sanitize(fake.lastName)}${ts2}`
+      ).then((wsResponse) => {
         const secondWorkspaceId = wsResponse.body.organization_id;
 
         createUser({
-          name: "Multi Role User",
+          name: fake.firstName,
+          email: `${sanitize(fake.lastName)}@example.com`,
+          workspaces: [{ id: workspaceId }, { id: secondWorkspaceId }],
+        }).then((response) => {
+          expect(response.status).to.eq(201);
+          expect(response.body.workspaces).to.have.length(2);
+          const returnedIds = response.body.workspaces.map((ws) => ws.id);
+          expect(returnedIds).to.include(workspaceId);
+          expect(returnedIds).to.include(secondWorkspaceId);
+          response.body.workspaces.forEach((ws) => {
+            expect(ws.inviteUrl).to.exist;
+          });
+        });
+      });
+    });
+  });
+
+  it("should assign specified roles across single and multiple workspaces", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      createUser({
+        name: fake.firstName,
+        email: `${sanitize(fake.lastName)}@example.com`,
+        workspaces: [{ id: workspaceId, role: "builder" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        const groupNames = response.body.userGroups.map((g) => g.name);
+        expect(groupNames).to.include("builder");
+      });
+
+      const ts3 = Date.now();
+      cy.apiCreateWorkspace(
+        `${sanitize(fake.lastName)}${ts3}`,
+        `${sanitize(fake.lastName)}${ts3}`
+      ).then((wsResponse) => {
+        const secondWorkspaceId = wsResponse.body.organization_id;
+        createUser({
+          name: fake.firstName,
           email: `${sanitize(fake.lastName)}@example.com`,
           workspaces: [
             { id: workspaceId, role: "builder" },
@@ -117,244 +232,315 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
           ],
         }).then((response) => {
           expect(response.status).to.eq(201);
-          expect(response.body.workspaces).to.have.length(2);
           const groupNames = response.body.userGroups.map((g) => g.name);
           expect(groupNames).to.include("builder");
           expect(groupNames).to.include("end-user");
         });
-      }
-    );
+      });
+    });
   });
 
-  it("should validate custom group assignment in POST /ext/users", () => {
-    const workspaceId = Cypress.env("workspaceId");
-
-    // Create two custom groups in the workspace via the internal API
-    cy.getAuthHeaders().then((headers) => {
-      cy.request({
-        method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-        headers: headers,
-        body: { name: "Viewer Group A" },
-        failOnStatusCode: false,
-      }).then((groupAResponse) => {
-        expect(groupAResponse.status).to.eq(201);
-
+  it("should add user to multiple custom groups in a workspace", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      cy.getAuthHeaders().then((headers) => {
         cy.request({
           method: "POST",
           url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-          headers: headers,
-          body: { name: "Viewer Group B" },
+          headers,
+          body: { name: "Viewer Group A" },
           failOnStatusCode: false,
-        }).then((groupBResponse) => {
-          expect(groupBResponse.status).to.eq(201);
-
-          // Case 6: Adds user to multiple custom groups in a workspace
-          createUser({
-            name: "Multi Group User",
-            email: `${sanitize(fake.lastName)}@example.com`,
-            workspaces: [
-              {
-                id: workspaceId,
-                groups: [
-                  { name: "Viewer Group A" },
-                  { name: "Viewer Group B" },
-                ],
-              },
-            ],
-          }).then((response) => {
-            expect(response.status).to.eq(201);
-            const groupNames = response.body.userGroups.map((g) => g.name);
-            expect(groupNames).to.include("Viewer Group A");
-            expect(groupNames).to.include("Viewer Group B");
+        }).then(() => {
+          cy.request({
+            method: "POST",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+            headers,
+            body: { name: "Viewer Group B" },
+            failOnStatusCode: false,
+          }).then(() => {
+            createUser({
+              name: fake.firstName,
+              email: `${sanitize(fake.lastName)}@example.com`,
+              workspaces: [
+                {
+                  id: workspaceId,
+                  groups: [
+                    { name: "Viewer Group A" },
+                    { name: "Viewer Group B" },
+                  ],
+                },
+              ],
+            }).then((response) => {
+              expect(response.status).to.eq(201);
+              const groupNames = response.body.userGroups.map((g) => g.name);
+              expect(groupNames).to.include("Viewer Group A");
+              expect(groupNames).to.include("Viewer Group B");
+            });
           });
         });
       });
     });
   });
 
-  it("should validate failing conditions in POST /ext/users", () => {
-    const workspaceId = Cypress.env("workspaceId");
-    const sharedEmail = `${sanitize(fake.lastName)}@example.com`;
+  // ── SECTION 5: Error / validation ────────────────────────────────────────────
 
-    // Case 7: Returns 400 when email already exists
-    createUser({
-      name: "Duplicate Vendor",
-      email: sharedEmail,
-      workspaces: [{ id: workspaceId }],
-    }).then((firstResponse) => {
-      expect(firstResponse.status).to.eq(201);
+  it("should return 400 for validation failures", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const sharedEmail = `${sanitize(fake.lastName)}@example.com`;
 
+      // duplicate email
       createUser({
         name: "Duplicate Vendor",
         email: sharedEmail,
         workspaces: [{ id: workspaceId }],
+      }).then((firstResponse) => {
+        expect(firstResponse.status).to.eq(201);
+        createUser({
+          name: "Duplicate Vendor",
+          email: sharedEmail,
+          workspaces: [{ id: workspaceId }],
+        }).then((response) => {
+          expect(response.status).to.eq(400);
+          expect(response.body.message).to.include("already exists");
+        });
+      });
+
+      // non-existent workspace id
+      createUser({
+        name: "Ghost Vendor",
+        email: `${sanitize(fake.lastName)}@example.com`,
+        workspaces: [{ id: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d" }],
       }).then((response) => {
         expect(response.status).to.eq(400);
-        expect(response.body.message).to.include("already exists");
+        expect(response.body.message).to.include("do not exist");
       });
-    });
 
-    // Case 8: Returns 400 when workspace id does not exist
-    createUser({
-      name: "Ghost Vendor",
-      email: `${sanitize(fake.lastName)}@example.com`,
-      workspaces: [{ id: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d" }],
-    }).then((response) => {
-      expect(response.status).to.eq(400);
-      expect(response.body.message).to.include("do not exist");
-    });
+      // default group name in groups field (use role field instead)
+      createUser({
+        name: "Invalid Group Vendor",
+        email: `${sanitize(fake.lastName)}@example.com`,
+        workspaces: [{ id: workspaceId, groups: [{ name: "builder" }] }],
+      }).then((response) => {
+        expect(response.status).to.eq(400);
+        expect(response.body.message).to.include("role field");
+      });
 
-    // Case 9: Returns 400 when a default group name is passed in the groups field
-    createUser({
-      name: "Invalid Group Vendor",
-      email: `${sanitize(fake.lastName)}@example.com`,
-      workspaces: [{ id: workspaceId, groups: [{ name: "builder" }] }],
-    }).then((response) => {
-      expect(response.status).to.eq(400);
-      expect(response.body.message).to.include("role field");
-    });
-
-    // Case 10: Returns 400 when a custom group does not exist in the workspace
-    createUser({
-      name: "Bad Group Vendor",
-      email: `${sanitize(fake.lastName)}@example.com`,
-      workspaces: [
-        { id: workspaceId, groups: [{ name: "non-existent-custom-group" }] },
-      ],
-    }).then((response) => {
-      expect(response.status).to.eq(400);
-      expect(response.body.message).to.include(
-        "Group permission id or name not found"
-      );
+      // non-existent custom group
+      createUser({
+        name: "Bad Group Vendor",
+        email: `${sanitize(fake.lastName)}@example.com`,
+        workspaces: [
+          { id: workspaceId, groups: [{ name: "non-existent-custom-group" }] },
+        ],
+      }).then((response) => {
+        expect(response.status).to.eq(400);
+        expect(response.body.message).to.include(
+          "Group permission id or name not found"
+        );
+      });
     });
   });
 
-  it("should validate conflicting-permissions error in POST /ext/users", () => {
-    const workspaceId = Cypress.env("workspaceId");
-
-    // Create a builder-level custom group (appCreate: true) via internal API
-    cy.getAuthHeaders().then((headers) => {
-      cy.request({
-        method: "POST",
-        url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
-        headers: headers,
-        body: { name: "Elevated Builders" },
-        failOnStatusCode: false,
-      }).then((groupResponse) => {
-        expect(groupResponse.status).to.eq(201);
-        const groupId = groupResponse.body.id;
-
-        // Update the group to have builder-level (appCreate) permissions
+  it("should return 400 when end-user is added to a builder-level custom group", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      cy.getAuthHeaders().then((headers) => {
         cy.request({
-          method: "PUT",
-          url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
-          headers: headers,
-          body: { appCreate: true },
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/v2/group-permissions`,
+          headers,
+          body: { name: "Elevated Builders" },
           failOnStatusCode: false,
-        }).then(() => {
-          // Case 11: Returns 400 when end-user is added to a builder-level custom group
-          createUser({
-            name: "Conflict Vendor",
-            email: `${sanitize(fake.lastName)}@example.com`,
-            workspaces: [
-              {
-                id: workspaceId,
-                role: "end-user",
-                groups: [{ name: "Elevated Builders" }],
-              },
-            ],
-          }).then((response) => {
-            expect(response.status).to.eq(400);
-            expect(response.body.message).to.be.an("object");
-            expect(response.body.message.title).to.eq("Conflicting permissions");
+        }).then((groupResponse) => {
+          const groupId = groupResponse.body.id;
+          cy.request({
+            method: "PUT",
+            url: `${Cypress.env("server_host")}/api/v2/group-permissions/${groupId}`,
+            headers,
+            body: { appCreate: true },
+            failOnStatusCode: false,
+          }).then(() => {
+            createUser({
+              name: "Conflict Vendor",
+              email: `${sanitize(fake.lastName)}@example.com`,
+              workspaces: [
+                {
+                  id: workspaceId,
+                  role: "end-user",
+                  groups: [{ name: "Elevated Builders" }],
+                },
+              ],
+            }).then((response) => {
+              expect(response.status).to.eq(400);
+              expect(response.body.message).to.be.an("object");
+              expect(response.body.message.title).to.eq("Conflicting permissions");
+            });
           });
         });
       });
     });
   });
 
-  it("should complete onboarding via inviteUrl for an invited user", () => {
-    const workspaceId = Cypress.env("workspaceId");
-    const email = `${sanitize(fake.lastName)}@example.com`;
+  // ── SECTION 6: UI end-to-end flows ───────────────────────────────────────────
 
-    createUser({
-      name: fake.firstName,
-      email,
-      workspaces: [{ id: workspaceId }],
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-      const inviteUrl = response.body.workspaces[0].inviteUrl;
-      expect(inviteUrl).to.exist;
+  it("invited user with no password: visit inviteUrl → set password → accept invite", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
 
-      cy.apiLogout();
-      cy.visit(inviteUrl);
+      createUser({
+        name: fake.firstName,
+        email,
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
 
-      cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-      cy.get(commonSelectors.signUpButton).click();
-      cy.get(commonSelectors.acceptInviteButton).click();
-      cy.get(commonSelectors.workspaceName).should(
-        "have.text",
-        data.workspaceName
-      );
+        cy.apiLogout();
+        cy.visit(inviteUrl);
 
-      // Clear all cookies then re-login as admin so that afterEach cleanup
-      // (apiDeleteAllWorkspaces) uses the admin credentials. Without clearing,
-      // cy.getCookie("tj_auth_token") returns the invited user's cookie that was
-      // set by cy.visit(inviteUrl), causing 401 in apiArchiveWorkspace.
-      cy.clearCookies();
-      cy.apiLogin();
+        cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+        cy.get(commonSelectors.signUpButton).click();
+        cy.get(commonSelectors.acceptInviteButton).click();
+        cy.get(commonSelectors.workspaceName).should(
+          "have.text",
+          data.workspaceName
+        );
+
+        cy.clearCookies();
+        cy.apiLogin();
+      });
     });
   });
 
-  it("should allow direct login for an active user created with a password", () => {
-    const workspaceId = Cypress.env("workspaceId");
-    const email = `${sanitize(fake.lastName)}@example.com`;
-    const password = "password";
+  it("invited user with no password and workspace status active: visit inviteUrl → set password → workspace loads", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
 
-    createUser({
-      name: fake.firstName,
-      email,
-      status: "active",
-      password,
-      workspaces: [{ id: workspaceId }],
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-      expect(response.body.status).to.eq("active");
+      createUser({
+        name: fake.firstName,
+        email,
+        workspaces: [{ id: workspaceId, status: "active" }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("invited");
+        // POST: non-null (user.invitationToken is set for invited users)
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
 
-      cy.apiLogout();
-      cy.visit("/");
-      cy.clearAndType(onboardingSelectors.signupEmailInput, email);
-      cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
-      cy.get(onboardingSelectors.signInButton).click();
-      cy.visit("/" + data.workspaceSlug);
-      cy.get(commonSelectors.workspaceName, { timeout: 20000 }).should(
-        "be.visible"
-      );
-      cy.clearCookies();
-      cy.apiLogin();
+        cy.apiLogout();
+        cy.visit(inviteUrl);
+
+        cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+        cy.get(commonSelectors.signUpButton).click();
+        cy.get(commonSelectors.acceptInviteButton, { timeout: 10000 }).click();
+        cy.get(commonSelectors.workspaceName, { timeout: 20000 }).should(
+          "be.visible"
+        );
+
+        cy.clearCookies();
+        cy.apiLogin();
+      });
     });
   });
 
-  it("should validate GET /ext/user/:id returns inviteUrl null for users without invitation tokens", () => {
-    // Case 12: GET /ext/user/:id returns inviteUrl: null for users without invitation tokens
-    // The admin user (dev@tooljet.io) was created via internal path and never gets an invitationToken,
-    // so their workspaces should have inviteUrl: null.
+  it("active user with password: POST returns org-invite URL — direct login to workspace", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
+      const password = "Password";
 
-    // Get any user id from the users list
-    cy.request({
-      method: "GET",
-      url: `${Cypress.env("API_URL")}/ext/users`,
-      headers: {
-        Authorization: Cypress.env("AUTH_TOKEN"),
-        "Content-Type": "application/json",
-      },
-      failOnStatusCode: false,
-    }).then((listResponse) => {
+      createUser({
+        name: fake.firstName,
+        email,
+        status: "active",
+        password,
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("active");
+        // Active users have no User.invitationToken, so a workspace-only org-invite URL is
+        // returned instead of the full invite URL. The user logs in directly with their password.
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
+        expect(inviteUrl).to.include("organization-invitations");
+
+        cy.apiLogout();
+        cy.visit("/");
+        cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+        cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+        cy.get(onboardingSelectors.signInButton).click();
+        cy.visit("/" + data.workspaceSlug);
+        cy.get(commonSelectors.workspaceName, { timeout: 20000 }).should(
+          "be.visible"
+        );
+
+        cy.clearCookies();
+        cy.apiLogin();
+      });
+    });
+  });
+
+  it("active user with no password: POST returns org-invite URL — reset password via DB token then login", () => {
+    cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
+      const email = `${sanitize(fake.lastName)}@example.com`;
+      const newPassword = "Password";
+
+      createUser({
+        name: fake.firstName,
+        email,
+        status: "active",
+        workspaces: [{ id: workspaceId }],
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        expect(response.body.status).to.eq("active");
+        // Active users have no User.invitationToken — a workspace-only org-invite URL is
+        // returned. No password is set, so the user must reset via forgot-password first.
+        const inviteUrl = response.body.workspaces[0].inviteUrl;
+        expect(inviteUrl).to.exist;
+        expect(inviteUrl).to.include("organization-invitations");
+
+        cy.apiLogout();
+        cy.visit("/");
+
+        cy.get(commonSelectors.forgotPasswordLink).click();
+        cy.clearAndType('[data-cy="email-input-field-input"]', email);
+        cy.get(commonSelectors.resetPasswordLinkButton).click();
+
+        // Fetch reset token directly from DB to avoid email dependency
+        cy.task("dbConnection", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select forgot_password_token from users where email='${email}';`,
+        }).then((resp) => {
+          const token = resp.rows[0].forgot_password_token;
+          cy.visit(`/reset-password/${token}`);
+
+          cy.get(commonSelectors.newPasswordInputField).type(newPassword);
+          cy.get(commonSelectors.confirmPasswordInputField).type(newPassword);
+          cy.get(commonSelectors.resetPasswordButton).click();
+
+          cy.get(commonSelectors.backToLoginButton).click();
+          cy.clearAndType(onboardingSelectors.signupEmailInput, email);
+          cy.clearAndType(onboardingSelectors.loginPasswordInput, newPassword);
+          cy.get(onboardingSelectors.signInButton).click();
+
+          cy.visit("/" + data.workspaceSlug);
+          cy.get(commonSelectors.workspaceName, { timeout: 20000 }).should(
+            "be.visible"
+          );
+
+          cy.clearCookies();
+          cy.apiLogin();
+        });
+      });
+    });
+  });
+
+  // ── SECTION 7: GET /ext/user/:id ─────────────────────────────────────────────
+
+  it("GET /ext/user/:id returns inviteUrl null for pre-existing users without invitation tokens", () => {
+    getAllUsers().then((listResponse) => {
       expect(listResponse.status).to.eq(200);
       expect(listResponse.body).to.be.an("array").and.not.be.empty;
 
-      // Use the first user (admin, created via internal path — no invitationToken)
+      // Admin user was created via internal path — no invitationToken is ever set
       const adminUserId = listResponse.body[0].id;
 
       getUser(adminUserId).then((response) => {
@@ -363,7 +549,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
         response.body.workspaces.forEach((ws) => {
           expect(
             ws.inviteUrl,
-            `workspace ${ws.id} inviteUrl should be null for admin user`
+            `workspace ${ws.id} should have null inviteUrl for admin user`
           ).to.be.null;
         });
       });
