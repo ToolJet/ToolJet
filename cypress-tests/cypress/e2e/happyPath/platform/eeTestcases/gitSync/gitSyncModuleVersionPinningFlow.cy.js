@@ -507,6 +507,26 @@ describe(
       });
       cy.screenshot("13-prod-pin-survives-v2-bump", { capture: "viewport" });
 
+      // ──────────────────────────────────────────────────────────────────
+      // Leg-c (deferred): promote module + app to production, release on
+      // Prod, then assert the released app renders v1's content.
+      //
+      // Tried this via the REST chain
+      //   PUT /api/v2/apps/{id}/versions/{vid}/promote
+      //   PUT /api/apps/{id}/release  { versionToBeReleased }
+      // and confirmed both endpoints exist, but draft-state versions
+      // synced from git are refused by the promote endpoint with 400
+      // "You cannot promote a draft version" (same gate Flow #10 verifies
+      // intentionally fires for the embedded-module restriction). To get
+      // past that, the synced version needs to be saved first — which
+      // requires a writable branch on Prod, which master is not.
+      //
+      // The pin-metadata contract (half-a + half-b) is the substantive
+      // half of Flow #11. The runtime-render verification waits on either
+      // a Prod-side feature-branch helper or a different test fixture
+      // that pushes saved (not draft) versions through git.
+      // ──────────────────────────────────────────────────────────────────
+
       // Cleanup: delete the v2 branch on GitHub. The teardown's
       // gitHubDeleteBranch handles `branchName` (the v1 branch); we need
       // to clean up the second branch explicitly.
