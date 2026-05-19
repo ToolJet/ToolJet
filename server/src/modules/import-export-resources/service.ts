@@ -12,7 +12,6 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { AppsRepository } from '@modules/apps/repository';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
 @Injectable()
 export class ImportExportResourcesService {
@@ -35,13 +34,6 @@ export class ImportExportResourcesService {
       tooljet_database?: Array<ImportTooljetDatabaseDto>;
       app?: Array<Record<string, unknown>>;
     } = {};
-
-    // Branch validation. Git-enabled workspaces must export from a feature
-    // branch — exports from the default branch are blocked because the
-    // default-branch DRAFT is the editor working state, not a publishable
-    // artifact. Git-disabled workspaces (no default branch row) skip this
-    // check and behave as before.
-    await this.validateBranchForImportExport(user.organizationId, branchId, 'export');
 
     if (exportResourcesDto.tooljet_database?.length) {
       const exportedDbs: ImportTooljetDatabaseDto[] = [];
@@ -71,7 +63,7 @@ export class ImportExportResourcesService {
 
     if (exportResourcesDto.app?.length) {
       const appData = await this.appsRepository.findOne({
-        where: { id: exportResourcesDto.app[0].id }
+        where: { id: exportResourcesDto.app[0].id },
       });
       //APP_EXPORT audit
       const auditLogsData = {
@@ -97,19 +89,6 @@ export class ImportExportResourcesService {
     const imports = { app: [], tooljet_database: [], tableNameMapping: {} };
     const importingVersion = importResourcesDto.tooljet_version;
     const skipPermissionsGroupCheck = importResourcesDto.skip_permissions_group_check;
-
-    // Branch validation. Git-enabled workspaces must import onto a feature
-    // branch — imports onto the default branch are blocked because the
-    // default-branch DRAFT is reserved for the publish hook to seed. Git
-    // imports (`isGitApp=true`) skip this — they own their own branch
-    // handling via createGitApp / createBranchVersionFromGit / importTagVersion.
-    if (!isGitApp) {
-      await this.validateBranchForImportExport(
-        importResourcesDto.organization_id ?? user.organizationId,
-        importResourcesDto.branchId,
-        'import'
-      );
-    }
 
     if (!isEmpty(importResourcesDto.app) && !skipPermissionsGroupCheck) {
       for (const appImportDto of importResourcesDto.app) {
@@ -193,12 +172,22 @@ export class ImportExportResourcesService {
     const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
     const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
     if (exportedVersions.length > 0 && !hasNonStubVersion) {
-      throw new BadRequestException('App contents are still syncing from Git. Open the app to finish loading, then try again.');
+      throw new BadRequestException(
+        'App contents are still syncing from Git. Open the app to finish loading, then try again.'
+      );
     }
 
     // TODO: Verify if this is required as we always pass name on imports
     // Without this appImportExportService.import will throw an error
     resourceExport.app[0].definition.appV2.name = newAppName;
+
+    // Clear the source app's slug so the import generates a fresh one from the
+    // new app's id. Without this the (slug, branch_id) unique index is violated
+    // because the source and clone live on the same branch.
+    delete resourceExport.app[0].definition.appV2.slug;
+    for (const ver of exportedVersions) {
+      delete ver.slug;
+    }
 
     const importResourcesDto: ImportResourcesDto = {
       organization_id,
@@ -222,53 +211,5 @@ export class ImportExportResourcesService {
       resourceName: createdApp.app[0]?.name,
     });
     return createdApp;
-  }
-
-  /**
-   * Branch policy for file imports/exports:
-   *
-   *   - **Git-disabled workspace** (no `workspace_branches.is_default=true` row): no
-   *     branch required, no branch allowed. Pass `branchId=undefined`.
-   *   - **Git-enabled workspace, feature branch supplied**: allowed. Caller continues
-   *     with the sub-branch import/export path.
-   *   - **Git-enabled workspace, no branch supplied**: 400 — must specify a
-   *     feature branch via `x-branch-id`.
-   *   - **Git-enabled workspace, default branch supplied**: 400 — default branch
-   *     is the editor working state, not a publishable artifact. Switch to a
-   *     feature branch.
-   */
-  private async validateBranchForImportExport(
-    organizationId: string,
-    branchId: string | undefined,
-    operation: 'import' | 'export'
-  ): Promise<void> {
-    if (!organizationId) return;
-
-    const defaultBranch = await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOne(WorkspaceBranch, {
-        where: { organizationId, isDefault: true },
-        select: ['id'],
-      });
-    });
-
-    const isGitEnabled = !!defaultBranch;
-
-    if (!isGitEnabled) {
-      // Git-disabled — branch context is meaningless. If the caller sent one, ignore
-      // silently (don't reject; the clone DTO carries branchId for symmetry).
-      return;
-    }
-
-    if (!branchId) {
-      throw new BadRequestException(
-        `${operation === 'import' ? 'Import' : 'Export'} requires a feature branch in git-enabled workspaces (missing x-branch-id header).`
-      );
-    }
-
-    if (branchId === defaultBranch.id) {
-      throw new BadRequestException(
-        `${operation === 'import' ? 'Imports onto' : 'Exports from'} the default branch are not allowed. Switch to a feature branch and retry.`
-      );
-    }
   }
 }

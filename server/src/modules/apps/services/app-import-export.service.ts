@@ -33,6 +33,7 @@ import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { AppsRepository } from '../repository';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { ComponentsService } from './component.service';
 import { GroupPermissions } from '@entities/group_permissions.entity';
@@ -277,7 +278,8 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
-    protected entityManager: EntityManager
+    protected entityManager: EntityManager,
+    protected appsRepository: AppsRepository
   ) {}
 
   /**
@@ -351,13 +353,10 @@ export class AppImportExportService {
     // filter by search params
     const versionId = searchParams?.version_id;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const queryForAppToExport = manager
-        .createQueryBuilder(App, 'apps')
-        .where('apps.id = :id AND apps.organization_id = :organizationId', {
-          id,
-          organizationId: user?.organizationId,
-        });
-      const appToExport = await queryForAppToExport.getOne();
+      // findById runs the metadata overlay so app.name/slug/icon/isPublic resolve from
+      // the right app_versions row (branch-aware) instead of leaking raw NULL apps.*
+      // columns into the exported JSON for non-workflow apps.
+      const appToExport = await this.appsRepository.findById(id, user?.organizationId, versionId, branchId);
 
       const queryAppVersions = manager
         .createQueryBuilder(AppVersion, 'app_versions')
@@ -660,25 +659,7 @@ export class AppImportExportService {
       // into per-version files. Workflows leave the export unchanged — apps.* already
       // carries the canonical metadata for them.
       if (appToExport?.type !== APP_TYPES.WORKFLOW) {
-        // Prefer a version in the current export scope that already carries metadata.
-        let sourceVersion: AppVersion | null = appVersions.find((v) => v.appName != null || v.slug != null) || null;
-        // If the narrowed export scope (versionId-filtered push) has only a NULL-metadata
-        // row, look across other versions of the same app — any branch row that holds
-        // metadata is a valid source since the canonical values are app-wide.
-        if (!sourceVersion) {
-          sourceVersion = await manager
-            .createQueryBuilder(AppVersion, 'av')
-            .where('av.app_id = :appId', { appId: appToExport.id })
-            .andWhere('(av.app_name IS NOT NULL OR av.slug IS NOT NULL)')
-            .orderBy('av.updated_at', 'DESC')
-            .getOne();
-        }
-        if (sourceVersion) {
-          if (sourceVersion.appName != null) (appToExport as any).name = sourceVersion.appName;
-          if (sourceVersion.slug != null) (appToExport as any).slug = sourceVersion.slug;
-          if (sourceVersion.icon != null) (appToExport as any).icon = sourceVersion.icon;
-          if (sourceVersion.isPublic != null) (appToExport as any).isPublic = sourceVersion.isPublic;
-        }
+        // this.appsRepository.findById sets app meta data from versions to app
         for (const v of appVersions) {
           delete (v as any).appName;
           delete (v as any).slug;
@@ -1292,6 +1273,7 @@ export class AppImportExportService {
   }
 
   async createImportedAppForUser(
+    //Overrides on EE to set userId to super admin's id
     manager: EntityManager,
     appParams: any,
     user: User,
@@ -1363,6 +1345,10 @@ export class AppImportExportService {
     }, [
       {
         dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE,
+        message: 'This app name is already taken.',
+      },
+      {
+        dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
         message: 'This app name is already taken.',
       },
     ]);
@@ -3258,10 +3244,6 @@ export class AppImportExportService {
       }
     }
 
-    // Track the most recently saved version for downstream callers that need it
-    // (audit logs, editing-version selection).
-    let lastSavedVersion: AppVersion | undefined;
-
     for (const appVersion of appVersions) {
       const appEnvIds: string[] = [...organization.appEnvironments.map((env) => env.id)];
 
@@ -3366,8 +3348,6 @@ export class AppImportExportService {
       }
 
       await manager.save(version);
-      lastSavedVersion = version;
-
       appDefaultEnvironmentMapping[appVersion.id] = appEnvIds;
       appVersionMapping[appVersion.id] = version.id;
     }
@@ -3773,7 +3753,8 @@ export class AppImportExportService {
     // JOIN Section
     if (joinOptions?.joins && joinOptions.joins.length > 0) {
       const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
-        const updatedJoinCondition = { ...joinCondition };
+        const { join_type, ...restJoinCondition } = joinCondition;
+        const updatedJoinCondition = { ...restJoinCondition, joinType: restJoinCondition.joinType ?? join_type };
         // Updating Join tableId
         if (updatedJoinCondition.table)
           updatedJoinCondition.table =
@@ -3822,13 +3803,11 @@ export class AppImportExportService {
 
     // Sort Section
     if (joinOptions?.order_by) {
-      joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
-        if (eachOrderBy.table) {
-          eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
-          return eachOrderBy;
-        }
-        return eachOrderBy;
-      });
+      joinOptions.order_by = joinOptions.order_by.map(({ column_name, columnName, table, ...rest }) => ({
+        ...rest,
+        ...(table && { table: tooljetDatabaseMapping[table]?.id ?? table }),
+        columnName: columnName ?? column_name,
+      }));
     }
 
     return {
@@ -3839,22 +3818,36 @@ export class AppImportExportService {
     };
   }
 
-  updateNewTableIdForFilter(joinConditions, tooljetDatabaseMapping) {
-    const { conditionsList = [] } = { ...joinConditions };
-    const updatedConditionList = conditionsList.map((condition) => {
+  private remapConditionField(field: Record<string, any>, tooljetDatabaseMapping: Record<string, any>) {
+    const rawField = field ?? {};
+    const columnName = rawField.columnName ?? rawField.column_name;
+    return {
+      type: rawField.type,
+      ...(rawField.table && { table: tooljetDatabaseMapping[rawField.table]?.id ?? rawField.table }),
+      ...(columnName !== undefined && { columnName }),
+      ...(rawField.value !== undefined && { value: rawField.value }),
+      ...(rawField.jsonpath !== undefined && { jsonpath: rawField.jsonpath }),
+    };
+  }
+
+  updateNewTableIdForFilter(joinConditions: Record<string, any>, tooljetDatabaseMapping: Record<string, any>) {
+    const rawConditionsList =
+      [joinConditions?.conditions_list, joinConditions?.conditionsList].find((list) => list?.length) ?? [];
+    const updatedConditionList = rawConditionsList.map((condition: Record<string, any>) => {
       if (condition.conditions) {
         return this.updateNewTableIdForFilter(condition.conditions, tooljetDatabaseMapping);
-      } else {
-        const { operator = '=', leftField = {}, rightField = {} } = { ...condition };
-        if (leftField?.table) leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
-        if (rightField?.table) rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
-        return { operator, leftField, rightField };
       }
+      const leftField = this.remapConditionField(condition.leftField ?? condition.left_field, tooljetDatabaseMapping);
+      const rightField = this.remapConditionField(
+        condition.rightField ?? condition.right_field,
+        tooljetDatabaseMapping
+      );
+      return { operator: condition.operator ?? '=', leftField, rightField };
     });
     return {
       conditions: {
-        ...joinConditions,
-        conditionsList: [...updatedConditionList],
+        operator: joinConditions?.operator,
+        conditionsList: updatedConditionList,
       },
     };
   }

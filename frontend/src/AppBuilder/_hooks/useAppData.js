@@ -43,6 +43,8 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'runOnPageLoad',
   'runOnDependencyChange',
   'requestConfirmation',
+  'requestConfirmationFx',
+  'confirmationMessage',
   'showSuccessNotification',
   'successMessage',
   'notificationDuration',

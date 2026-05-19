@@ -39,7 +39,7 @@ export const CustomToggleSwitch = ({
     <div
       data-tooltip-id={dataCy === 'copilot' ? 'tooltip-for-active-copilot' : ''}
       data-tooltip-content="Only workspace admins can enable or disable Copilot."
-      className={`custom-toggle-switch d-flex col gap-2 align-items-top`}
+      className={`custom-toggle-switch d-flex col gap-2 align-items-center`}
     >
       {switchToggle}
       <div className="d-flex flex-column">
