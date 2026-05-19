@@ -8,6 +8,7 @@ import {
   ValidateNested,
   MinLength,
   MaxLength,
+  Matches,
   ValidateIf,
   IsNotEmpty,
   IsDefined,
@@ -325,6 +326,7 @@ export class SaveVersionBodyDto {
   @IsString()
   @IsOptional()
   @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
   name?: string;
 }
 
