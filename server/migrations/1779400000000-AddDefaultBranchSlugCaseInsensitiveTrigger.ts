@@ -8,10 +8,10 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * status, any version_type — within a given apps.type bucket.
  *
  * Predicate (same as the user-stated condition):
- *   NEW.branch_id IS NOT NULL AND workspace_branches.is_default(NEW.branch_id) = true
+ *   NEW.branch_id IS NOT NULL AND organization_git_sync_branches.is_default(NEW.branch_id) = true
  *
  * Enforcement lives in a BEFORE trigger because:
- *   - workspace_branches.is_default isn't a column on app_versions, so a
+ *   - organization_git_sync_branches.is_default isn't a column on app_versions, so a
  *     partial unique index can't reference it.
  *   - apps.type lives on the apps table for the same reason.
  *
@@ -87,7 +87,7 @@ export class AddDefaultBranchSlugCaseInsensitiveTrigger1779400000000 implements 
         END IF;
 
         SELECT is_default INTO v_is_default
-        FROM workspace_branches
+        FROM organization_git_sync_branches
         WHERE id = NEW.branch_id;
 
         IF v_is_default IS NOT TRUE THEN
@@ -108,7 +108,7 @@ export class AddDefaultBranchSlugCaseInsensitiveTrigger1779400000000 implements 
           SELECT 1
           FROM app_versions av
           JOIN apps a ON a.id = av.app_id
-          JOIN workspace_branches wb ON wb.id = av.branch_id AND wb.is_default = true
+          JOIN organization_git_sync_branches wb ON wb.id = av.branch_id AND wb.is_default = true
           WHERE LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
             AND av.id <> NEW.id
