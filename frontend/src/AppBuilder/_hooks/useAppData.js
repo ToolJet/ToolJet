@@ -43,9 +43,13 @@ const QUERY_OPTION_KEYS_TO_NORMALIZE = [
   'runOnPageLoad',
   'runOnDependencyChange',
   'requestConfirmation',
+  'requestConfirmationFx',
+  'confirmationMessage',
   'showSuccessNotification',
   'successMessage',
   'notificationDuration',
+  'disableQuery',
+  'disabledMessage',
 ];
 
 const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);

@@ -48,7 +48,7 @@ export async function getChatCompletion(
   openai: OpenAI,
   options: QueryOptions
 ): Promise<string | any> {
-  const { model, prompt, max_tokens, temperature, stop_sequence } = options;
+  const { model, prompt, message_history, system_prompt, max_tokens, temperature, stop_sequence } = options;
 
   const tokenLimit = typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens;
   const modelName = model?.toLowerCase() || '';
@@ -60,9 +60,34 @@ export async function getChatCompletion(
     modelName.includes('gpt-4-turbo') || 
     modelName.includes('gpt-3.5-turbo');
 
+  let parsedMessages: any[] = [];
+
+  if (system_prompt && typeof system_prompt === 'string' && system_prompt.trim() !== '') {
+    parsedMessages.push({
+      role: 'system',
+      content: system_prompt
+    });
+  }
+
+  if (message_history && message_history !== '') {
+    try {
+      const historyArray = typeof message_history === 'string' ? JSON.parse(message_history) : message_history;
+      if (Array.isArray(historyArray)) {
+        parsedMessages.push(...historyArray);
+      }
+    } catch (e) {
+      console.error("Failed to parse message_history JSON", e);
+      throw new Error('Invalid JSON provided for message history.');
+    }
+  }
+
+  if (prompt && prompt !== '') {
+     parsedMessages.push({ role: 'user', content: String(prompt) });
+  }
+
   const requestPayload: any = {
     model: model || 'gpt-4o',
-    messages: [{ role: 'user', content: prompt }],
+    messages: parsedMessages,
     stop: stop_sequence || null,
   };
 
@@ -96,7 +121,7 @@ export async function generateImage(
 
   const response = await openai.images.generate({
     model: finalModel,
-    prompt: prompt || '',
+    prompt: (prompt as string) || '',
     size: getSizeEnum(finalModel, size),
   });
 

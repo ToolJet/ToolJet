@@ -866,8 +866,9 @@ export class TooljetDbTableOperationsService {
   }
 
   protected async joinTable(organizationId: string, params: Record<string, any>) {
-    const { joinQueryJson, dataQuery, user } = params;
-    if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const { joinQueryJson: rawJoinQueryJson, dataQuery, user } = params;
+    if (!Object.keys(rawJoinQueryJson).length) throw new BadRequestException("Input can't be empty");
+    const joinQueryJson = this.normalizeJoinQueryJsonToNewFormat(rawJoinQueryJson);
 
     const tjdbTenantConfigs = isSQLModeDisabled()
       ? {
@@ -950,6 +951,60 @@ export class TooljetDbTableOperationsService {
         // });
       }
     }
+  }
+
+  private normalizeFieldToNewFormat(field: Record<string, any>): Record<string, any> {
+    if (!field) return field;
+    const result: Record<string, any> = { type: field.type };
+    if (field.table !== undefined) result.table = field.table;
+    result.columnName = field.columnName ?? field.column_name;
+    if (field.value !== undefined) result.value = field.value;
+    if (field.jsonpath !== undefined) result.jsonpath = field.jsonpath;
+    return result;
+  }
+
+  private normalizeConditionsToNewFormat(conditions: Record<string, any>): Record<string, any> {
+    if (!conditions) return conditions;
+    const rawConditionsList: Array<Record<string, any>> = conditions.conditions_list ?? [];
+    return {
+      operator: conditions.operator,
+      conditionsList: rawConditionsList.map((condition) => ({
+        operator: condition.operator,
+        leftField: this.normalizeFieldToNewFormat(condition.leftField ?? condition.left_field),
+        rightField: this.normalizeFieldToNewFormat(condition.rightField ?? condition.right_field),
+      })),
+    };
+  }
+
+  private normalizeJoinQueryJsonToNewFormat(queryJson: Record<string, any>): Record<string, any> {
+    if (!queryJson?.joins?.length) return queryJson;
+
+    const firstJoin = queryJson.joins[0];
+    const isOldFormat =
+      'join_type' in firstJoin ||
+      'conditions_list' in (firstJoin?.conditions ?? {}) ||
+      'conditions_list' in (queryJson?.conditions ?? {});
+
+    if (!isOldFormat) return queryJson;
+
+    return {
+      ...queryJson,
+      joins: queryJson.joins.map((join) => ({
+        id: join.id,
+        table: join.table,
+        joinType: join.joinType ?? join.join_type,
+        conditions: this.normalizeConditionsToNewFormat(join.conditions),
+      })),
+      ...(queryJson.conditions && {
+        conditions: this.normalizeConditionsToNewFormat(queryJson.conditions),
+      }),
+      order_by: (queryJson.order_by ?? []).map((orderByEntry) => ({
+        table: orderByEntry.table,
+        columnName: orderByEntry.columnName ?? orderByEntry.column_name,
+        direction: orderByEntry.direction,
+        ...(orderByEntry.jsonpath !== undefined && { jsonpath: orderByEntry.jsonpath }),
+      })),
+    };
   }
 
   protected buildJoinQuery(

@@ -1,0 +1,665 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Postal Code Validation API",
+		"version": "1.0.0"
+	},
+	"servers": [
+		{
+			"url": "",
+			"description": "Sandbox Server"
+		},
+		{
+			"url": "",
+			"description": "Production Server"
+		}
+	],
+	"paths": {
+		"/country/v1/postal/validate": {
+			"post": {
+				"summary": "Validate Postal",
+				"description": "Use this endpoint to validate postal codes and service commitments. Supports city, postal, country and origin-destination related lookups and validations.<br><i>Note: FedEx APIs do not support Cross-Origin Resource Sharing (CORS) mechanism.</i>",
+				"operationId": "Validate Postal",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"oneOf": [
+									{
+										"$ref": "#/components/schemas/FullSchema-ValidatePostal"
+									}
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CountryCXSResponseVO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO"
+								},
+								"example": {
+									"transactionId": "35fa49ec-1e8a-4334-abc5-7e640ac807ac",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "CITYNAME.POSTALCODE.REQUIRED",
+											"message": "City Name or Postal Code is required."
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO401"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.AUTHORIZED.ERROR",
+											"message": "Access token expired. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO403"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "FORBIDDEN.ERROR",
+											"message": "We could not authorize your credentials. Please check your permissions and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO404"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"errors": [
+										{
+											"code": "NOT.FOUND.ERROR",
+											"message": "The resource you requested is no longer available. Please modify your request and try again."
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Failure",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO500"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "INTERNAL.SERVER.ERROR",
+											"message": "We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Service Unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponseVO503"
+								},
+								"example": {
+									"transactionId": "624deea6-b709-470c-8c39-4b5511281492",
+									"customerTransactionId": "AnyCo_order123456789",
+									"errors": [
+										{
+											"code": "SERVICE.UNAVAILABLE.ERROR",
+											"message": "The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"parameters": [
+					{
+						"in": "header",
+						"name": "x-customer-transaction-id",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply.",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "624deea6-b709-470c-8c39-4b5511281492"
+						}
+					},
+					{
+						"in": "header",
+						"name": "content-type",
+						"description": "This is used to indicate the media type of the resource. The media type is a string sent along with the file indicating format of the file.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "application/json"
+						}
+					},
+					{
+						"in": "header",
+						"name": "x-locale",
+						"description": "This indicates the combination of language code and country code.  <a onclick='loadDocReference(\"locales\")'>Click here to see Locales</a>",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"example": "en_US"
+						}
+					},
+					{
+						"in": "header",
+						"name": "authorization",
+						"description": "This indicates the authorization token for the input request.",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "Bearer XXX"
+						}
+					}
+				],
+				"x-code-samples": [
+					{
+						"lang": "C#",
+						"source": "var client = new RestClient(\"https://apis-sandbox.fedex.com/country/v1/postal/validate\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer \");\nrequest.AddHeader(\"X-locale\", \"en_US\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\n// 'input' refers to JSON Payload\nrequest.AddParameter(\"application/x-www-form-urlencoded\", input, ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);\n\n\n\n\n"
+					},
+					{
+						"lang": "JAVA",
+						"source": "OkHttpClient client = new OkHttpClient();\n\nMediaType mediaType = MediaType.parse(\"application/json\");\n// 'input' refers to JSON Payload\nRequestBody body = RequestBody.create(mediaType, input);\nRequest request = new Request.Builder()\n    .url(\"https://apis-sandbox.fedex.com/country/v1/postal/validate\")\n    .post(body)\n    .addHeader(\"Content-Type\", \"application/json\")\n    .addHeader(\"X-locale\", \"en_US\")\n    .addHeader(\"Authorization\", \"Bearer \")\n    .build();\n            \nResponse response = client.newCall(request).execute();"
+					},
+					{
+						"lang": "JAVASCRIPT",
+						"source": "// 'input' refers to JSON Payload\nvar data = JSON.stringify(input);\n  \n  var xhr = new XMLHttpRequest();\n  xhr.withCredentials = true;\n  \n  xhr.addEventListener(\"readystatechange\", function () {\n    if (this.readyState === 4) {\n      console.log(this.responseText);\n    }\n  });\n  \n  xhr.open(\"POST\", \"https://apis-sandbox.fedex.com/country/v1/postal/validate\");\n  xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n  xhr.setRequestHeader(\"X-locale\", \"en_US\");\n  xhr.setRequestHeader(\"Authorization\", \"Bearer \");\n  \n  xhr.send(data);"
+					},
+					{
+						"lang": "PHP",
+						"source": "<?php\n\n$request = new HttpRequest();\n$request->setUrl('https://apis-sandbox.fedex.com/country/v1/postal/validate');\n$request->setMethod(HTTP_METH_POST);\n\n$request->setHeaders(array(\n  'Authorization' => 'Bearer ',\n  'X-locale' => 'en_US',\n  'Content-Type' => 'application/json'\n));\n\n$request->setBody(input); // 'input' refers to JSON Payload\n\ntry {\n  $response = $request->send();\n\n  echo $response->getBody();\n} catch (HttpException $ex) {\n  echo $ex;\n}"
+					},
+					{
+						"lang": "PYTHON",
+						"source": "import requests\n\nurl = \"https://apis-sandbox.fedex.com/country/v1/postal/validate\"\n\npayload = input # 'input' refers to JSON Payload\nheaders = {\n    'Content-Type': \"application/json\",\n    'X-locale': \"en_US\",\n    'Authorization': \"Bearer \"\n    }\n\nresponse = requests.post(url, data=payload, headers=headers)\n\nprint(response.text)"
+					},
+					{
+						"lang": "RUST",
+						"source": "extern crate reqwest;\n\nuse std::io::Read;\n\nfn construct_headers() -> HeaderMap {\n    let mut headers = HeaderMap::new();\n    headers.insert(\"Content-Type\", \"application/json\");\n    headers.insert(\"X-locale\", \"en_US\");\n    headers.insert(\"Authorization\", \"Bearer \");\n    headers\n}\n\nfn run() -> Result<()> {\n    let client = reqwest::Client::new();\n    let mut res = client.post(\"https://apis-sandbox.fedex.com/country/v1/postal/validate\")\n        .body(input) // 'input' refers to JSON Payload\n        .headers(construct_headers())\n        .send()?;\n    let mut body = String::new();\n    res.read_to_string(&mut body)?;\n\n    println!(\"Status: {}\", res.status());\n    println!(\"Headers:\\n{:#?}\", res.headers());\n    println!(\"Body:\\n{}\", body);\n\n    Ok(())\n}"
+					},
+					{
+						"lang": "SWIFT",
+						"source": "import Foundation\n\nlet headers = [\n  \"Content-Type\": \"application/json\",\n  \"X-locale\": \"en_US\",\n  \"Authorization\": \"Bearer \"\n]\nlet parameters = [\n  input // 'input' refers to JSON Payload\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://apis-sandbox.fedex.com/country/v1/postal/validate\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                                    timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"FullSchema-ValidatePostal": {
+				"required": [
+					"carrierCode",
+					"countryCode",
+					"postalCode",
+					"shipDate",
+					"stateOrProvinceCode"
+				],
+				"type": "object",
+				"properties": {
+					"carrierCode": {
+						"type": "string",
+						"description": "Specify the four letter code of a FedEx operating company that meets your requirements<br>Examples of FedEx Operating Companies are:<ul><li>FDXE - FedEx Express</li><li>FDXG - FedEx Ground</li><li>FXSP - FedEx SmartPost</li><li>FXCC - FedEx Custom Critical.</li></ul>",
+						"example": "FDXG",
+						"enum": [
+							"FDXE",
+							"FDXG",
+							"FXSP",
+							"FDXC",
+							"FXCC"
+						]
+					},
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country. <br>Example:US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is the state or province code. Format and presence of this field will vary, depending on country. <br> Example: US<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State Or Province Code</a>",
+						"example": "US"
+					},
+					"postalCode": {
+						"type": "string",
+						"description": "Identification code of a region (usally small) for easier and accurate mail/package delivery. The format and presence of this field may vary depending on the country.  <br> Example: 75063-8659 <br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "502267"
+					},
+					"shipDate": {
+						"type": "string",
+						"description": "Specify the date on which the package is to be shipped. The specified date should not be the current date or any date, 10 days after the current date. The date format must be YYYY-MM-DD. <br> Example: 2019-10-04",
+						"example": "2019-10-04"
+					},
+					"routingCode": {
+						"type": "string",
+						"description": "Specify the routing code for the shipment. Routing code is the information that identifies the route the package or shipment may take. <br> Example: Memphis 38017 - HKA/NQA",
+						"example": "Memphis 38017 - HKA/NQA"
+					},
+					"checkForMismatch": {
+						"type": "boolean",
+						"description": "This element checks for mismatch between State/Province Code and Postal Code. <ul><li>When the checkForMismatch is set TRUE, for U.S. and Canada: The values in State/Province Code are checked with respect to Postal Code provided. If these entries are valid, the response provides respective State/Province Code and Postal Code. In case of mismatch of Postal Code and State/Province Code an error message is displayed.</li><li> When the checkForMismatch is set FALSE, for U.S. and Canada: The values in State/Province Code are not checked with respect to Postal Code provided. Instead the given data is reflected in the response.</li></ul> <br> For regions other than U.S and Canada regardless of the value of checkForMismatch the State/Province Code are checked with respect to the Postal Code and the response provides the respective State/Province Code and Postal Code.",
+						"example": true
+					}
+				},
+				"description": "The request elements for validating a postal code."
+			},
+			"CountryCXSResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is special set of number that allows FedEx customer to assign a unique identifier to their each transaction. Helps in matching requests to reply.<br>Max 40 characters.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"output": {
+						"$ref": "#/components/schemas/BaseProcessOutputVO"
+					}
+				}
+			},
+			"BaseProcessOutputVO": {
+				"$ref": "#/components/schemas/ValidatePostalOutputVO"
+			},
+			"ValidatePostalOutputVO": {
+				"type": "object",
+				"properties": {
+					"countryCode": {
+						"type": "string",
+						"description": "The two-letter code used to identify a country. <br>Example:US<br><a onclick='loadDocReference(\"countrycodes\")'>Click here to see Country Codes</a>",
+						"example": "US"
+					},
+					"cityFirstInitials": {
+						"type": "string",
+						"description": "Initials of the City"
+					},
+					"stateOrProvinceCode": {
+						"type": "string",
+						"description": "This is the state or province code. Format and presence of this element will vary, depending on country. <br> Max length is 2. <br> Example: US<br><a onclick='loadDocReference(\"canadaprovincecodes\")'>Click here to see State Or Province Code</a>",
+						"example": "US"
+					},
+					"alerts": {
+						"type": "array",
+						"description": "This object specifies Alert details returned in the reply such as code, message and any other parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Alert"
+						}
+					},
+					"locationDescriptions": {
+						"type": "array",
+						"description": "This object specifies location details returned in the reply such as location ID, service area and airport ID etc.",
+						"items": {
+							"$ref": "#/components/schemas/LocationDescription"
+						}
+					},
+					"cleanedPostalCode": {
+						"type": "string",
+						"description": "This is a cleaned postal code returned in the reply.</br>Example: 94267<br><a onclick='loadDocReference(\"postalawarecountries\")'>Click here to see Postal aware countries</a>",
+						"example": "94267"
+					}
+				},
+				"description": "Indicates data returned in the postal validation reply."
+			},
+			"Alert": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Specifies the API alert code.<br>Example: CITYNAME.POSTALCODE.REQUIRED",
+						"example": "CITYNAME.POSTALCODE.REQUIRED"
+					},
+					"alertType": {
+						"type": "string",
+						"description": "Specifies the alert type.",
+						"example": "NOTE",
+						"enum": [
+							"NOTE",
+							"WARNING"
+						]
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "List of parameters which indicates the properties of the alert message.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "This is the alert message. <br> Example: We are unable to process this request. Please try again later or contact FedEx Customer Service.",
+						"example": "We are unable to process this request. Please try again later or contact FedEx Customer Service."
+					}
+				},
+				"description": "Specifies the api alerts."
+			},
+			"Parameter": {
+				"type": "object",
+				"properties": {
+					"value": {
+						"type": "string",
+						"description": "Identifies the error option to be applied."
+					},
+					"key": {
+						"type": "string",
+						"description": "Indicates the value associated with the key."
+					}
+				},
+				"description": "These are alert parameters."
+			},
+			"LocationDescription": {
+				"required": [
+					"airportId",
+					"locationId",
+					"locationNumber",
+					"serviceArea"
+				],
+				"type": "object",
+				"properties": {
+					"locationId": {
+						"type": "string",
+						"description": "Location id of the postal code provided. <br> Example: MAAPD",
+						"example": "MAAPD"
+					},
+					"locationNumber": {
+						"type": "string",
+						"description": "Location number of the postal code provided. <br> Example: 6955",
+						"example": "6955"
+					},
+					"serviceArea": {
+						"type": "string",
+						"description": "Service area of the postal code provided. <br> Example: AA",
+						"example": "AA"
+					},
+					"airportId": {
+						"type": "string",
+						"description": "Airport Id of the postal code provided. <br> Example: BLR",
+						"example": "BLR"
+					}
+				},
+				"description": "Location Description"
+			},
+			"ErrorResponseVO": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError"
+						}
+					}
+				}
+			},
+			"CXSError": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br> Example:CITYNAME.POSTALCODE.REQUIRED",
+						"example": "CITYNAME.POSTALCODE.REQUIRED"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"type": "string",
+						"description": "Indicates the description of API error alert message.<br>Example: City Name or Postal Code is required."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO401": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError401"
+						}
+					}
+				}
+			},
+			"CXSError401": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.AUTHORIZED.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: Access token expired. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO403": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError403"
+						}
+					}
+				}
+			},
+			"CXSError403": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: FORBIDDEN.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We could not authorize your credentials. Please check your permissions and try again"
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO404": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError404"
+						}
+					}
+				}
+			},
+			"CXSError404": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: NOT.FOUND.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The resource you requested is no longer available. Please modify your request and try again."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO500": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"customerTransactionId": {
+						"type": "string",
+						"description": "This element allows you to assign a unique identifier to your transaction. This element is also returned in the reply and helps you match the request to the reply. <br> Example: AnyCo_order123456789",
+						"example": "AnyCo_order123456789"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError500"
+						}
+					}
+				}
+			},
+			"CXSError500": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: INTERNAL.SERVER.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: We encountered an unexpected error and are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			},
+			"ErrorResponseVO503": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"description": "The transaction ID is a special set of numbers that defines each transaction.<br>Example: 624deea6-b709-470c-8c39-4b5511281492",
+						"example": "624deea6-b709-470c-8c39-4b5511281492"
+					},
+					"errors": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CXSError503"
+						}
+					}
+				}
+			},
+			"CXSError503": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "Indicates the error code.<br>Example: SERVICE.UNAVAILABLE.ERROR"
+					},
+					"parameterList": {
+						"type": "array",
+						"description": "Specifies the list of parameters.",
+						"items": {
+							"$ref": "#/components/schemas/Parameter"
+						}
+					},
+					"message": {
+						"description": "Indicates the description of API error alert message.<br>Example: The service is currently unavailable and we are working to resolve the issue. We apologize for any inconvenience. Please check back at a later time."
+					}
+				},
+				"description": "Indicates error alert when suspicious files, potential exploits and viruses found while scanning files , directories and user accounts. This includes code, message and parameter"
+			}
+		}
+	}
+}

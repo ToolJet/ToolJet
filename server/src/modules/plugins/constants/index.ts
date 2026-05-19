@@ -8,4 +8,5 @@ export enum FEATURE_KEY {
   DEPENDENT_PLUGINS = 'dependent_plugins',
   INSTALL_DEPENDENT_PLUGINS = 'install_dependent_plugins',
   UNINSTALL_PLUGINS = 'uninstall_plugins',
+  GET_SPEC = 'get_spec',
 }

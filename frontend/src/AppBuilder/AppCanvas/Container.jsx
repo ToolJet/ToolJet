@@ -57,6 +57,7 @@ const Container = React.memo(
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id, moduleId), shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
+    const isEmbeddedModule = appType === 'module' && !isModuleEditor;
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
@@ -91,7 +92,9 @@ const Container = React.memo(
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
+        if (isContainerReadOnly) return;
         const clientOffset = monitor.getClientOffset();
 
         const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
@@ -210,6 +213,7 @@ const Container = React.memo(
           // Prevent the scroll when dragging a widget inside the container or moving out of the container
           overflow: isWidgetInSubContainerDragging ? 'hidden' : undefined,
           ...(id !== 'canvas' && appType !== 'module' && { backgroundColor: 'transparent' }), // Ensure the container's background isn't overridden by the canvas background color.
+          ...(isEmbeddedModule && id === moduleId && { backgroundColor: 'transparent' }), // Embedded module root canvas inherits host app background
         }}
         className={cx('real-canvas', {
           'sub-canvas': id !== 'canvas' && appType !== 'module',

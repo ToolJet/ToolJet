@@ -34,6 +34,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.CREATE_CONVERSATION,
           FEATURE_KEY.GET_CONVERSATION,
           FEATURE_KEY.AUTO_SORT_QUERIES,
+          FEATURE_KEY.GET_THREAD_TOKEN_USAGE,
         ],
         AiConversation
       );

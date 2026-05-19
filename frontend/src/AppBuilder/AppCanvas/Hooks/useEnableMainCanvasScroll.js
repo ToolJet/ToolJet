@@ -2,13 +2,13 @@ import { useEffect, useRef } from 'react';
 
 // It is used to show the scrollbar of the main canvas only when the user is scrolling
 // Uses direct DOM manipulation to avoid React re-renders which cause icon flickering
-export default function useEnableMainCanvasScroll({ canvasContentRef }) {
+export default function useEnableMainCanvasScroll({ canvasContentRef, enabled = true }) {
   const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
     const element = canvasContentRef.current;
 
-    if (!element) return;
+    if (!element || !enabled) return;
 
     const handleScroll = () => {
       // Remove scrollbar-hidden class to show scrollbar
@@ -34,6 +34,7 @@ export default function useEnableMainCanvasScroll({ canvasContentRef }) {
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
+      element.classList.remove('scrollbar-hidden');
     };
-  }, [canvasContentRef]);
+  }, [canvasContentRef, enabled]);
 }
