@@ -162,7 +162,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
   // POST inviteUrl depends only on user.invitationToken (non-null for invited users).
   // GET inviteUrl additionally checks ou.status — if active, returns null.
 
-  it("invited user with workspace status active: POST inviteUrl non-null, GET inviteUrl null", () => {
+  it("invited user with workspace status active: POST inviteUrl null, GET inviteUrl null", () => {
     cy.then(() => Cypress.env("workspaceId")).then((workspaceId) => {
       // invited + no password + ws active
       createUser({
@@ -172,7 +172,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
       }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.status).to.eq("invited");
-        expect(response.body.workspaces[0].inviteUrl).to.exist;
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
 
         getUser(response.body.id).then((getResponse) => {
           expect(getResponse.status).to.eq(200);
@@ -188,7 +188,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
         workspaces: [{ id: workspaceId, status: "active" }],
       }).then((response) => {
         expect(response.status).to.eq(201);
-        expect(response.body.workspaces[0].inviteUrl).to.exist;
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
       });
     });
   });
@@ -440,7 +440,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
       }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.status).to.eq("invited");
-        expect(response.body.workspaces[0].inviteUrl).to.exist;
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
 
         cy.apiLogout();
         cy.visit("/");
@@ -626,8 +626,7 @@ describe("ToolJet: Create User — inviteUrl API Validation", () => {
       }).then((response) => {
         expect(response.status).to.eq(201);
         expect(response.body.status).to.eq("invited");
-        expect(response.body.workspaces[0].inviteUrl).to.exist;
-        expect(response.body.workspaces[0].inviteUrl).to.include("/invitations/");
+        expect(response.body.workspaces[0].inviteUrl).to.be.null;
 
         cy.apiLogout();
         cy.visit("/");
