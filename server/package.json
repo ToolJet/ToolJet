@@ -161,7 +161,7 @@
     "simple-git": "^3.27.0",
     "socket.io-client": "^4.8.1",
     "sshpk": "^1.17.0",
-    "stripe": "^20.1.2",
+    "stripe": "^22.1.1",
     "typeorm": "^0.3.24",
     "undici": "^7.11.0",
     "utf-8-validate": "^6.0.6",
