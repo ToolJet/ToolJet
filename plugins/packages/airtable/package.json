@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "got": "^11.8.6",
+    "got": "^15.0.5",
     "nock": "^13.3.0",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

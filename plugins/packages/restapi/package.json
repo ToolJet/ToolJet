@@ -21,7 +21,7 @@
     "@smithy/signature-v4": "^4.2.0",
     "@tooljet-plugins/common": "file:../common",
     "form-data": "^4.0.0",
-    "got": "^11.8.6",
+    "got": "^15.0.5",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
     "url": "^0.11.0"
