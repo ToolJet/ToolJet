@@ -40,26 +40,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       })
     );
 
-    // type mirrors apps.type so the partial unique indexes below can include it.
-    // Apps and modules are different product surfaces — they should be allowed to
-    // share names/slugs on the same branch. apps.type isn't reachable from a partial
-    // index expression (only same-table columns are allowed), so we denormalize.
-    // Stored as varchar (not an enum) so we don't have to keep the column's enum
-    // in lockstep with apps.type values — the source of truth is apps.type, and the
-    // trigger added later in this migration keeps the columns in sync.
-    await queryRunner.addColumn(
-      'app_versions',
-      new TableColumn({
-        name: 'type',
-        type: 'varchar',
-        length: '50',
-        isNullable: true,
-      })
-    );
-
-    // Step 2: Backfill icon, is_public, slug, app_name on non-workflow versions, and
-    // backfill the new `type` column on ALL versions (including workflows) so the
-    // type-scoped partial unique indexes below have a value to filter on.
+    // Step 2: Backfill icon, is_public, slug, app_name on non-workflow versions.
     //
     // Type comparison: the apps.type enum stores 'front-end' (with a hyphen) and
     // 'module'. Earlier revisions of this migration used the underscore form
@@ -75,12 +56,6 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       FROM apps a
       WHERE av.app_id = a.id
         AND a.type IN ('front-end', 'module')
-    `);
-    await queryRunner.query(`
-      UPDATE app_versions av
-      SET type = a.type
-      FROM apps a
-      WHERE av.app_id = a.id
     `);
 
     // Step 2a: Defensive fallback before the branch-row CHECK constraint below — any
@@ -109,11 +84,11 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         CHECK (branch_id IS NULL OR (app_name IS NOT NULL AND slug IS NOT NULL));
     `);
 
-    // Step 4a: Dedupe (slug, branch_id, type) among branch-type rows.
-    // Partition by type so an app and a module on the same branch can keep the same
-    // slug — they're different product surfaces and the partial unique index below
-    // also includes type. Suffixes rename later duplicates within the same
-    // (branch, type) scope.
+    // Step 4a: Dedupe (slug, branch_id, apps.type) among branch-type rows.
+    // Partition by apps.type so an app and a module on the same branch can keep
+    // the same slug — they're different product surfaces and the trigger below
+    // also scopes by apps.type. Suffixes rename later duplicates within the
+    // same (branch, type) scope.
     await queryRunner.query(`
       DO $$
       DECLARE
@@ -122,15 +97,16 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         suffix INT;
       BEGIN
         FOR rec IN
-          SELECT id, slug, branch_id, type
+          SELECT id, slug, branch_id, app_type
           FROM (
-            SELECT id, slug, branch_id, type,
+            SELECT av.id, av.slug, av.branch_id, a.type AS app_type,
                    ROW_NUMBER() OVER (
-                     PARTITION BY slug, branch_id, type
-                     ORDER BY created_at ASC, id ASC
+                     PARTITION BY av.slug, av.branch_id, a.type
+                     ORDER BY av.created_at ASC, av.id ASC
                    ) AS rn
-            FROM app_versions
-            WHERE version_type = 'branch' AND slug IS NOT NULL
+            FROM app_versions av
+            JOIN apps a ON a.id = av.app_id
+            WHERE av.version_type = 'branch' AND av.slug IS NOT NULL
           ) ranked
           WHERE rn > 1
         LOOP
@@ -138,11 +114,13 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
           LOOP
             new_value := rec.slug || '_' || suffix;
             EXIT WHEN NOT EXISTS (
-              SELECT 1 FROM app_versions
-              WHERE version_type = 'branch'
-                AND slug = new_value
-                AND branch_id IS NOT DISTINCT FROM rec.branch_id
-                AND type IS NOT DISTINCT FROM rec.type
+              SELECT 1
+              FROM app_versions av2
+              JOIN apps a2 ON a2.id = av2.app_id
+              WHERE av2.version_type = 'branch'
+                AND av2.slug = new_value
+                AND av2.branch_id IS NOT DISTINCT FROM rec.branch_id
+                AND a2.type IS NOT DISTINCT FROM rec.app_type
             );
             suffix := suffix + 1;
           END LOOP;
@@ -151,8 +129,8 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       END $$;
     `);
 
-    // Step 4b: Dedupe (app_name, branch_id, type) among branch-type rows. Same
-    // algorithm as Step 4a; app_name and slug can collide independently.
+    // Step 4b: Dedupe (app_name, branch_id, apps.type) among branch-type rows.
+    // Same algorithm as Step 4a; app_name and slug can collide independently.
     await queryRunner.query(`
       DO $$
       DECLARE
@@ -161,15 +139,16 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         suffix INT;
       BEGIN
         FOR rec IN
-          SELECT id, app_name, branch_id, type
+          SELECT id, app_name, branch_id, app_type
           FROM (
-            SELECT id, app_name, branch_id, type,
+            SELECT av.id, av.app_name, av.branch_id, a.type AS app_type,
                    ROW_NUMBER() OVER (
-                     PARTITION BY app_name, branch_id, type
-                     ORDER BY created_at ASC, id ASC
+                     PARTITION BY av.app_name, av.branch_id, a.type
+                     ORDER BY av.created_at ASC, av.id ASC
                    ) AS rn
-            FROM app_versions
-            WHERE version_type = 'branch' AND app_name IS NOT NULL
+            FROM app_versions av
+            JOIN apps a ON a.id = av.app_id
+            WHERE av.version_type = 'branch' AND av.app_name IS NOT NULL
           ) ranked
           WHERE rn > 1
         LOOP
@@ -177,11 +156,13 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
           LOOP
             new_value := rec.app_name || '_' || suffix;
             EXIT WHEN NOT EXISTS (
-              SELECT 1 FROM app_versions
-              WHERE version_type = 'branch'
-                AND app_name = new_value
-                AND branch_id IS NOT DISTINCT FROM rec.branch_id
-                AND type IS NOT DISTINCT FROM rec.type
+              SELECT 1
+              FROM app_versions av2
+              JOIN apps a2 ON a2.id = av2.app_id
+              WHERE av2.version_type = 'branch'
+                AND av2.app_name = new_value
+                AND av2.branch_id IS NOT DISTINCT FROM rec.branch_id
+                AND a2.type IS NOT DISTINCT FROM rec.app_type
             );
             suffix := suffix + 1;
           END LOOP;
@@ -190,43 +171,116 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
       END $$;
     `);
 
-    // Step 4c: Type-scoped unique indexes — duplicates resolved above. Apps and
-    // modules can share names/slugs on the same branch; only same-type clashes
-    // are blocked.
+    // Step 4c: Trigger-based uniqueness scoped by apps.type. Replaces the
+    // partial unique indexes that previously included a denormalized type column
+    // on app_versions — apps.type can't be referenced from an index predicate,
+    // so we enforce via BEFORE INSERT/UPDATE triggers that join apps.
+    //
+    // pg_advisory_xact_lock on (branch_id, app_type, key_value) closes the
+    // read-then-insert race that a naked EXISTS leaves open. Raised as ERRCODE
+    // 23505 with the original index name so catchDbException's substring match
+    // continues to work without changes to db_constraints.constants.ts.
     await queryRunner.query(`
-      CREATE UNIQUE INDEX "app_versions_slug_branch_id_unique"
-      ON app_versions (slug, branch_id, type)
-      WHERE version_type = 'branch'
-    `);
-
-    await queryRunner.query(`
-      CREATE UNIQUE INDEX "app_versions_app_name_branch_id_unique"
-      ON app_versions (app_name, branch_id, type)
-      WHERE version_type = 'branch'
-    `);
-
-    // Step 4d: Trigger to keep app_versions.type in sync with apps.type. Fires
-    // BEFORE INSERT/UPDATE on app_versions, looks up the parent apps row, and
-    // writes its type into NEW.type. Avoids touching every code path that
-    // creates an AppVersion row (subscriber + manager.create scattered widely)
-    // and guarantees the column is non-stale for the partial indexes above.
-    await queryRunner.query(`
-      CREATE OR REPLACE FUNCTION sync_app_versions_type_from_apps()
+      CREATE OR REPLACE FUNCTION enforce_app_versions_slug_branch_unique()
       RETURNS TRIGGER AS $$
+      DECLARE
+        v_app_type varchar;
       BEGIN
-        IF NEW.app_id IS NOT NULL THEN
-          SELECT type INTO NEW.type FROM apps WHERE id = NEW.app_id;
+        IF NEW.version_type::text <> 'branch' OR NEW.slug IS NULL THEN
+          RETURN NEW;
         END IF;
+
+        SELECT type INTO v_app_type FROM apps WHERE id = NEW.app_id;
+        IF v_app_type IS NULL THEN
+          RETURN NEW;
+        END IF;
+
+        PERFORM pg_advisory_xact_lock(hashtextextended(
+          'avs:' || COALESCE(NEW.branch_id::text, '') || '|' || v_app_type || '|' || NEW.slug,
+          0
+        ));
+
+        IF EXISTS (
+          SELECT 1
+          FROM app_versions av
+          JOIN apps a ON a.id = av.app_id
+          WHERE av.version_type::text = 'branch'
+            AND av.slug = NEW.slug
+            AND av.branch_id IS NOT DISTINCT FROM NEW.branch_id
+            AND a.type = v_app_type
+            AND av.id <> NEW.id
+        ) THEN
+          RAISE EXCEPTION 'app_versions_slug_branch_id_unique'
+            USING ERRCODE = 'unique_violation';
+        END IF;
+
         RETURN NEW;
       END;
       $$ LANGUAGE plpgsql;
     `);
+
     await queryRunner.query(`
-      CREATE TRIGGER trg_app_versions_sync_type
-      BEFORE INSERT OR UPDATE OF app_id ON app_versions
-      FOR EACH ROW EXECUTE FUNCTION sync_app_versions_type_from_apps();
+      DROP TRIGGER IF EXISTS trg_app_versions_slug_branch_unique
+        ON app_versions
     `);
-    
+    await queryRunner.query(`
+      CREATE TRIGGER trg_app_versions_slug_branch_unique
+        BEFORE INSERT OR UPDATE OF slug, branch_id, version_type, app_id
+        ON app_versions
+        FOR EACH ROW
+        EXECUTE FUNCTION enforce_app_versions_slug_branch_unique()
+    `);
+
+    await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION enforce_app_versions_app_name_branch_unique()
+      RETURNS TRIGGER AS $$
+      DECLARE
+        v_app_type varchar;
+      BEGIN
+        IF NEW.version_type::text <> 'branch' OR NEW.app_name IS NULL THEN
+          RETURN NEW;
+        END IF;
+
+        SELECT type INTO v_app_type FROM apps WHERE id = NEW.app_id;
+        IF v_app_type IS NULL THEN
+          RETURN NEW;
+        END IF;
+
+        PERFORM pg_advisory_xact_lock(hashtextextended(
+          'avn:' || COALESCE(NEW.branch_id::text, '') || '|' || v_app_type || '|' || NEW.app_name,
+          0
+        ));
+
+        IF EXISTS (
+          SELECT 1
+          FROM app_versions av
+          JOIN apps a ON a.id = av.app_id
+          WHERE av.version_type::text = 'branch'
+            AND av.app_name = NEW.app_name
+            AND av.branch_id IS NOT DISTINCT FROM NEW.branch_id
+            AND a.type = v_app_type
+            AND av.id <> NEW.id
+        ) THEN
+          RAISE EXCEPTION 'app_versions_app_name_branch_id_unique'
+            USING ERRCODE = 'unique_violation';
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+
+    await queryRunner.query(`
+      DROP TRIGGER IF EXISTS trg_app_versions_app_name_branch_unique
+        ON app_versions
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trg_app_versions_app_name_branch_unique
+        BEFORE INSERT OR UPDATE OF app_name, branch_id, version_type, app_id
+        ON app_versions
+        FOR EACH ROW
+        EXECUTE FUNCTION enforce_app_versions_app_name_branch_unique()
+    `);
 
     // Step 5: Clean apps table for non-workflows (slug = id placeholder for existing
     // constraint). Same enum spelling as Step 2 — 'front-end' with a hyphen.
