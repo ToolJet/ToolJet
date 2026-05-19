@@ -16,15 +16,6 @@ export class RemoveAppVersionIdFromDataSourceVersions1776700000000 implements Mi
     await queryRunner.query(`
       ALTER TABLE data_source_versions DROP COLUMN IF EXISTS app_version_id CASCADE
     `);
-
-    // This is removed with the table changes. Re adding here
-    await queryRunner.query(`
-      CREATE UNIQUE INDEX idx_unique_active_name_branch
-        ON data_source_versions (
-          LOWER(name),
-          COALESCE(branch_id, '00000000-0000-0000-0000-000000000000')
-        )
-        WHERE is_active = true AND is_default = false;`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
