@@ -90,9 +90,14 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Use branchId from DTO (passed by frontend from localStorage), or fall back to default branch
-      let branchId = appCreateDto.branchId;
-      if (!branchId) {
+      // Workflows don't participate in branching — their app_versions row must have
+      // branch_id NULL. Drop any DTO-supplied branchId (frontend may send the current
+      // dashboard branch from localStorage even for workflows) and skip the
+      // default-branch auto-fill below. Otherwise the row lands with branch_id set
+      // but app_name/slug NULL (the workflow create path doesn't write those), which
+      // trips chk_app_versions_branch_metadata.
+      let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
+      if (!branchId && type !== APP_TYPES.WORKFLOW) {
         const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
         if (orgGit) {
           const defaultBranch = await manager.findOne(WorkspaceBranch, {

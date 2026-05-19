@@ -788,20 +788,34 @@ export class AppsUtilService implements IAppsUtilService {
   // version on the branch; filtering it out would hide the module entirely.
   // The UUID-name-leak concern is handled by the inner `versions`-aliased join
   // in viewableAppsQueryUsingPermissions (read by ModuleManager).
+  //
+  // The default branch carries multiple VERSION-type rows per app (DRAFT +
+  // RELEASED + PROMOTED) sharing branch_id. A naive `branch_id = :branchId`
+  // join fans those rows out and TypeORM's `take()` LIMITs the joined rows,
+  // not distinct apps — so apps with extra versions on the branch crowd out
+  // others and the page returns fewer apps than APPS_PAGE_SIZE. The
+  // correlated subquery pins the join to one row per app (the same row the
+  // listing already orders by: non-stub first, most recently edited).
   private applyAppVersionsJoin(
     qb: SelectQueryBuilder<AppBase>,
     type: string,
     branchId: string | undefined,
     isGetAll: boolean
   ): void {
+    const branchPick = `appVersions.branchId = :branchId AND appVersions.id = (
+      SELECT av_pick.id FROM app_versions av_pick
+      WHERE av_pick.app_id = apps.id AND av_pick.branch_id = :branchId
+      ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+      LIMIT 1
+    )`;
     if (type === APP_TYPES.MODULE && !isGetAll) {
       if (branchId) {
-        qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+        qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
       } else {
         qb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
     } else if (branchId && type === APP_TYPES.FRONT_END) {
-      qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+      qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
     }
   }
 
