@@ -225,7 +225,7 @@
     "prettier": "^2.8.4",
     "react-refresh": "^0.17.0",
     "sass": "^1.93.2",
-    "sass-loader": "^16.0.5",
+    "sass-loader": "^16.0.8",
     "storybook": "^9.1.5",
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.4.1",
