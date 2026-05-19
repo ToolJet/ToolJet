@@ -107,7 +107,7 @@
     "react-big-calendar": "^1.6.5",
     "react-bootstrap": "^2.7.2",
     "react-burger-menu": "^3.0.9",
-    "react-checkbox-tree": "^1.8.0",
+    "react-checkbox-tree": "^2.0.1",
     "react-circular-progressbar": "^2.1.0",
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.1.0",
