@@ -1,11 +1,5 @@
 import { GRID_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
-/** Width breakpoints aligned with widget config labels (Mobile 375px, Tablet 768px). */
-export const STACK_THRESHOLD_PX = {
-  mobile: 375,
-  tablet: 768,
-};
-
 /**
  * Returns the main app canvas width in CSS pixels, or +Infinity if unavailable (SSR / no DOM).
  */
@@ -22,8 +16,8 @@ export const getMainCanvasWidthPx = () => {
  */
 export const computeShouldStackFlex = (stackBelow) => {
   if (!stackBelow || stackBelow === 'none') return false;
-  const threshold = STACK_THRESHOLD_PX[stackBelow];
-  if (threshold === undefined) return false;
+  const threshold = Number(stackBelow);
+  if (!Number.isFinite(threshold) || threshold <= 0) return false;
   return getMainCanvasWidthPx() <= threshold;
 };
 

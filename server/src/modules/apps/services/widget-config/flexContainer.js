@@ -84,13 +84,14 @@ export const flexContainerConfig = {
       type: 'select',
       displayName: 'Stack below',
       options: [
-        { name: 'None', value: 'none' },
-        { name: 'Mobile (375px)', value: 'mobile' },
-        { name: 'Tablet (768px)', value: 'tablet' },
+        { name: 'No stacking', value: 'none' },
+        { name: 'Mobile (375px)', value: '375' },
+        { name: 'Tablet (768px)', value: '768' },
+        { name: 'Desktop (1440px)', value: '1440' },
       ],
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'mobile',
+        defaultValue: 'none',
       },
     },
     dynamicHeight: {
