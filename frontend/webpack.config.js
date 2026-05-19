@@ -289,7 +289,12 @@ module.exports = {
         use: ['file-loader'],
       },
       {
-        test: /\.svg$/,
+        test: /\.svg$/i,
+        type: 'asset/resource',
+        resourceQuery: /url/, // SVGs with path has *.svg?url
+      },
+      {
+        test: /\.svg$/i,
         use: ({ resource }) => ({
           loader: '@svgr/webpack',
           options: {
@@ -305,6 +310,7 @@ module.exports = {
             },
           },
         }),
+        resourceQuery: { not: [/url/] }, // exclude react component if path has *.svg?url
       },
       {
         test: /\.css$/,
