@@ -128,7 +128,8 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       expect(groupNames).toContain('end-user');
     });
 
-    it('should return an org-invite URL (not a full invite URL) when user status is active', async () => {
+    it('should return null inviteUrl when user status is active and workspace status is not explicitly set', async () => {
+      // user:active + workspace:unset → workspace inherits active → no tokens, no invite URL
       const { user: adminUser } = await createUser(app, { email: 'admin-active-user@tooljet.io' });
       const orgId = adminUser.defaultOrganizationId;
 
@@ -143,11 +144,71 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
         })
         .expect(201);
 
+      expect(res.body.workspaces[0].inviteUrl).toBeNull();
+    });
+
+    it('should set OrganizationUser status to active when user status is active and workspace status is not set', async () => {
+      // Root cause of the login bug: OrganizationUser was INVITED even though user was ACTIVE,
+      // causing "User is not assigned to any workspaces" on authenticate.
+      const { user: adminUser } = await createUser(app, { email: 'admin-active-orguser@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Active OrgUser Vendor',
+          email: 'active-orguser-vendor@example.com',
+          status: 'active',
+          workspaces: [{ id: orgId }],
+        })
+        .expect(201);
+
+      const ds = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
+      const orgUser = await ds.manager.findOne(OrganizationUser, { where: { userId: res.body.id } });
+
+      expect(orgUser.status).toBe('active');
+      expect(orgUser.invitationToken).toBeNull();
+    });
+
+    it('should return an org-invite URL when user is active but workspace status is explicitly set to invited', async () => {
+      // user:active (no invitationToken) + workspace:invited (explicit) → org-invite URL only
+      const { user: adminUser } = await createUser(app, { email: 'admin-active-ws-invited@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'Active User Invited WS',
+          email: 'active-user-invited-ws@example.com',
+          status: 'active',
+          workspaces: [{ id: orgId, status: 'invited' }],
+        })
+        .expect(201);
+
       const inviteUrl: string = res.body.workspaces[0].inviteUrl;
       expect(inviteUrl).toBeTruthy();
-      // Active users have no invitationToken — workspace-only invite URL is returned.
       expect(inviteUrl).toContain('organization-invitations');
       expect(inviteUrl).not.toContain('/invitations/');
+    });
+
+    it('should return null inviteUrl when workspace status is explicitly active regardless of user status', async () => {
+      // user:unset (defaults to invited) + workspace:active → workspace active → no invite URL
+      const { user: adminUser } = await createUser(app, { email: 'admin-ws-active@tooljet.io' });
+      const orgId = adminUser.defaultOrganizationId;
+
+      const res = await request(app.getHttpServer())
+        .post('/api/ext/users')
+        .set('Authorization', getExtAuth())
+        .send({
+          name: 'WS Active Vendor',
+          email: 'ws-active-vendor@example.com',
+          workspaces: [{ id: orgId, status: 'active' }],
+        })
+        .expect(201);
+
+      expect(res.body.workspaces[0].inviteUrl).toBeNull();
     });
 
     it('should return inviteUrl as null when workspace status is active', async () => {

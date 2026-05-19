@@ -55,7 +55,7 @@ export class WorkspaceDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.INVITED;
+  status?: Status;
 
   @IsArray()
   @ValidateNested({ each: true })
