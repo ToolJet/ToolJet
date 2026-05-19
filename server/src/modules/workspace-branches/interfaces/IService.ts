@@ -32,8 +32,16 @@ export interface IWorkspaceBranchService {
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string
+    branchId?: string,
   ): Promise<{ success: boolean }>;
+  pullApp(
+    organizationId: string,
+    user: User,
+    appId: string,
+    branchId?: string,
+    tagSha?: string,
+    tagName?: string,
+  ): Promise<{ success: boolean; draftVersionId: string | null }>;
   ensureAppDraft(
     organizationId: string,
     appId: string,

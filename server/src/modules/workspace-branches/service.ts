@@ -38,8 +38,19 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string
+    branchId?: string,
   ): Promise<{ success: boolean }> {
+    throw new NotFoundException();
+  }
+
+  async pullApp(
+    organizationId: string,
+    user: User,
+    appId: string,
+    branchId?: string,
+    tagSha?: string,
+    tagName?: string,
+  ): Promise<{ success: boolean; draftVersionId: string | null }> {
     throw new NotFoundException();
   }
 

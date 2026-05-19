@@ -156,6 +156,19 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
+        async pullApp(appId, tagSha, tagName) {
+          set({ isPulling: true });
+          try {
+            const branchId = get().activeBranchId;
+            const result = await workspaceBranchesService.pullApp(appId, branchId, tagSha, tagName);
+            set({ isPulling: false });
+            return result;
+          } catch (error) {
+            set({ isPulling: false });
+            throw error;
+          }
+        },
+
         async fetchRemoteBranches() {
           try {
             const result = await workspaceBranchesService.listRemoteBranches();

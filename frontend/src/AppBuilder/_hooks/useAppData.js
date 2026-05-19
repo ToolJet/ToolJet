@@ -449,6 +449,7 @@ const useAppData = (
             isReleasedApp: isReleasedApp,
             appType: appData.type,
             currentVersionId: appData.editing_version?.id || appData.current_version_id,
+            co_relation_id: appData.co_relation_id,
           },
           moduleId
         );
@@ -783,6 +784,7 @@ const useAppData = (
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
+          co_relation_id: appData.co_relation_id,
         });
 
         setGlobalSettings(
