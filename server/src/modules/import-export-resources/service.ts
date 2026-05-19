@@ -181,6 +181,14 @@ export class ImportExportResourcesService {
     // Without this appImportExportService.import will throw an error
     resourceExport.app[0].definition.appV2.name = newAppName;
 
+    // Clear the source app's slug so the import generates a fresh one from the
+    // new app's id. Without this the (slug, branch_id) unique index is violated
+    // because the source and clone live on the same branch.
+    delete resourceExport.app[0].definition.appV2.slug;
+    for (const ver of exportedVersions) {
+      delete ver.slug;
+    }
+
     const importResourcesDto: ImportResourcesDto = {
       organization_id,
       tooljet_version: globalThis.TOOLJET_VERSION,
