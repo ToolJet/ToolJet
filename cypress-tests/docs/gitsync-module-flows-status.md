@@ -3,9 +3,19 @@
 Branch: `test/git-sync-module-flows`
 Submodule branch (`frontend/ee`): `test/git-sync-module-flows` (commit `682c0407`)
 
+**PRs**:
+- Parent: <https://github.com/ToolJet/ToolJet/pull/16467>
+- Submodule (frontend/ee): <https://github.com/ToolJet/ee-frontend/pull/468>
+
 Source of truth for the 5 numbered "module-branching" user-flows scaffolded
 in commit `3a13290502`, plus the supporting test-hooks and infrastructure
 work that landed alongside them.
+
+> **TL;DR** — all 5 flows green; Flow #11 leg-c (runtime release-render
+> verification) is the only piece still deferred and the blocker is
+> understood (draft-version state on locked Prod master). Spec code is
+> ~45% shorter after the helper refactor; common API-authoring patterns
+> live in `gitSyncDualWs.*`.
 
 ---
 
@@ -183,10 +193,38 @@ prevent the renderer-process crashes that bit Flow #3:
 | `frontend/src/AppBuilder/Header/FreezeVersionInfo.jsx` | `freeze-version-info` (on the container div) | The app-editor lock indicator (different component from module editor's `LockedBranchBanner`). Lets Cypress assert locked read-state on a Prod app, parallel to the module-editor `locked-branch-banner`. |
 | `frontend/ee/modules/Modules/components/ModuleViewer/ModuleViewer.jsx` (submodule) | `moduleviewer-wrapper` (on the inner content div) | Lets Cypress target the embedded module's rendered content separately from the outer `draggable-widget-{name}` chrome. Needed by Flow #11's deferred leg-c (when un-blocked, asserts which version's content renders). |
 
-### Helpers (existing — no new ones added)
+### Helpers extracted (`gitSyncDualWs.js`)
 
-All five flows use the existing `gitSyncDualWs` helper for the
-two-workspace Dev + Prod setup. No new test-side helpers were needed.
+After the initial green pass, common patterns were extracted to reduce
+spec duplication. Spec-only line counts dropped ~45% (1932 → 1064 lines)
+while the helper grew from 94 → 316 lines.
+
+| Helper | Used by |
+| --- | --- |
+| `setupDevAndProd({...})` | all flows |
+| `switchTo({workspaceId, workspaceSlug})` | all flows |
+| `pullMaster()` | all flows |
+| `teardown({...})` | all flows |
+| `createSameNameDsOnBoth({dsName, devUrl, prodUrl, ...})` | #7, #9 |
+| `componentId()` — UUID for diff keys | #3, #7, #9, #10, #11 |
+| `textComponent({name, text, layout})` | #7, #9, #10, #11 |
+| `buttonComponent({name, text, layout})` | #7, #9 |
+| `moduleViewerComponent({name, moduleId, moduleVersionId, layout})` | #9, #10, #11 |
+| `addComponents({appId, versionId, branchId, diff})` — branch-aware diff POST | #7, #9, #10, #11 |
+| `createRestQuery({appId, versionId, branchId, dsId, queryName})` | #7, #9 |
+| `mergePr({branchName, message})` — wait-ahead → create-PR → merge-PR | all flows |
+| `findProdAppId({name, prodOrgId, type})` — DB lookup, disambiguates by org | #7, #10, #11 |
+| `readModuleViewerPin({prodAppId})` — DB read of moduleVersionId | #11 |
+
+Per-flow line counts after the refactor:
+
+| Spec | Before | After |
+| --- | --- | --- |
+| `gitSyncSingleModuleFlow.cy.js` (#3) | 200 | 118 |
+| `gitSyncModuleWithDsFlow.cy.js` (#7) | 436 | 232 |
+| `gitSyncAppWithModuleDsFlow.cy.js` (#9) | 409 | 193 |
+| `gitSyncSavePromoteRestrictionFlow.cy.js` (#10) | 308 | 174 |
+| `gitSyncModuleVersionPinningFlow.cy.js` (#11) | 579 | 347 |
 
 ---
 
@@ -231,17 +269,19 @@ two-workspace Dev + Prod setup. No new test-side helpers were needed.
 Reverse chronological, since the scaffold `3a13290502`:
 
 ```
-1f590b3b45 test(gitSync): document leg-c blocker in flow #11
-b2654c7156 test(gitSync): flow #11 half-b green — pin doesn't auto-bump
+ff13f893a8 refactor(gitSync): extract common authoring helpers into gitSyncDualWs
+f58e5f0408 docs(gitSync): status doc for the module-flows automation work
+1f590b3b45 test(gitSync): document leg-c blocker in flow #11, keep half-a + half-b
+b2654c7156 test(gitSync): flow #11 half-b green — pin doesn't auto-bump on v2 sync
 ac89a67b89 test(gitSync): expand the retries comment on flow #3
-a7001b6d70 test(gitSync): flow #10 green — promote-restriction
+a7001b6d70 test(gitSync): flow #10 green — promote of app embedding unpromoted module
 88a6cf04ac chore(submodule): bump frontend/ee for ModuleViewer data-cy
 f099f876a7 feat(test-hooks): add data-cy on FreezeVersionInfo container
 ffb420a182 test(gitSync): flow #11 half-a green — pin survives git round-trip
 d2e1ea97ac test(gitSync): document blockers in flow #10 and #11 skeletons
 846d30a54a test(gitSync): app embedding module-with-DS flow #9 green
 90721585b1 test(gitSync): module-with-DS flow #7 green + renderer-stability flags
-9dd27b7ddd test(gitSync): single-module flow — green
+9dd27b7ddd test(gitSync): single-module flow — green, API-only push + locked-master verify
 3a13290502 test: scaffold gitSync module-branching specs (1 full, 2 draft, 2 skeleton)
 ```
 
@@ -250,6 +290,16 @@ Plus one commit on `frontend/ee`'s `test/git-sync-module-flows` branch:
 ```
 682c0407 feat(test-hooks): add data-cy on ModuleViewer's content wrapper
 ```
+
+## PR base — why `main`
+
+The skill default is `lts-3.16`, but the branch was forked from `main`:
+- 14 commits ahead of `main` (just this work)
+- 366 ahead of `lts-3.16`
+- 4299 ahead of `develop`
+
+Targeting `main` produces a clean 10-file diff. Targeting `lts-3.16`
+would pull in 352 unrelated LTS commits.
 
 ---
 
