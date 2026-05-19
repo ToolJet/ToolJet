@@ -202,7 +202,7 @@
     "@types/humps": "^2.0.1",
     "@types/jest": "^30.0.0",
     "@types/ldapjs": "^3.0.0",
-    "@types/multer": "^1.4.7",
+    "@types/multer": "^2.1.0",
     "@types/node": "^24.0.1",
     "@types/passport-jwt": "^3.0.6",
     "@types/pg": "^8.11.10",
