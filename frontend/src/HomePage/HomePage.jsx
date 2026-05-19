@@ -2284,7 +2284,7 @@ class HomePageComponent extends React.Component {
                 currentFolder={currentFolder}
                 folderChanged={this.folderChanged}
                 foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                canCreateFolder={this.canCreateFolder()}
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
                 isGitSyncEnabled={this.isGitEnabled()}
