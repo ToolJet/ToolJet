@@ -470,23 +470,28 @@ export class TooljetDbTableOperationsService {
     }
   }
 
-private async findQueriesLinkedToTable(tableId: string): Promise<boolean> {
-  const result = await this.manager.query(
-    `
-      SELECT EXISTS (
-        SELECT 1
-        FROM data_queries dq
-        INNER JOIN data_sources ds
-          ON dq.data_source_id = ds.id
-        WHERE ds.kind = 'tooljetdb'
-          AND dq.options->>'table_id' = $1
-      ) AS exists
-    `,
-    [tableId]
-  );
+  private async findQueriesLinkedToTable(tableId: string): Promise<boolean> {
+    const result = await this.manager.query(
+      `
+        SELECT EXISTS (
+          SELECT 1
+          FROM data_queries dq
+          INNER JOIN data_sources ds
+            ON dq.data_source_id = ds.id
+          INNER JOIN (
+            SELECT DISTINCT ON (app_id) id
+            FROM app_versions
+            ORDER BY app_id, created_at DESC
+          ) latest_versions ON latest_versions.id = dq.app_version_id
+          WHERE ds.kind = 'tooljetdb'
+            AND dq.options::text LIKE $1
+        ) AS exists
+      `,
+      [`%${tableId}%`]
+    );
 
-  return result[0]?.exists ?? false;
-}
+    return result[0]?.exists ?? false;
+  }
 
   protected async editTable(organizationId: string, params) {
     const { table_name: tableName, columns } = params;
