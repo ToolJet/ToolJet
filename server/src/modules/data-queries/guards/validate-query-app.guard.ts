@@ -10,9 +10,6 @@ import { User } from '@entities/user.entity';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { AppVersion } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class ValidateQueryAppGuard implements CanActivate {
@@ -29,6 +26,8 @@ export class ValidateQueryAppGuard implements CanActivate {
       const { id, versionId } = request.params;
       const appId = request.body?.app_id;
       const user: User = request.user;
+      // Forward x-branch-id so metadata overlay reflects the caller's active branch.
+      const branchId = (request.headers['x-branch-id'] as string) || undefined;
 
       if (!id && !versionId && !appId) {
         throw new BadRequestException();
@@ -43,7 +42,7 @@ export class ValidateQueryAppGuard implements CanActivate {
         app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
       }
       if (!app && appId) {
-        app = await this.appsRepository.findById(appId, user?.organizationId, versionId);
+        app = await this.appsRepository.findById(appId, user?.organizationId, versionId, branchId);
       }
       if (!app && versionId) {
         app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);
@@ -52,40 +51,6 @@ export class ValidateQueryAppGuard implements CanActivate {
       // If app is not found, throw NotFoundException
       if (!app) {
         throw new NotFoundException('App not found');
-      }
-
-      // Workflows keep is_public on apps.*; non-workflows carry it on every version row
-      // (default branch uses VERSION-type, sub-branches BRANCH-type, all hold the flag).
-      // Resolve the version via the most-specific identifier; the appId-only fallback
-      // routes by git-sync state so we don't pick a sub-branch row in a git-enabled
-      // workspace.
-      if (app.type !== APP_TYPES.WORKFLOW) {
-        let version: AppVersion | null = null;
-        if (versionId) {
-          version = await this.versionRepository.findOne({
-            where: { id: versionId },
-            select: ['id', 'isPublic'],
-          });
-        } else if (id) {
-          version = await this.versionRepository
-            .createQueryBuilder('av')
-            .innerJoin('av.dataQueries', 'dq', 'dq.id = :dqId', { dqId: id })
-            .select(['av.id', 'av.isPublic'])
-            .getOne();
-        } else if (appId) {
-          const defaultBranch = await this.versionRepository.manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-            select: ['id'],
-          });
-          version = await this.versionRepository.findOne({
-            where: defaultBranch ? { appId, branchId: defaultBranch.id } : { appId },
-            order: { updatedAt: 'DESC' },
-            select: ['id', 'isPublic'],
-          });
-        }
-        if (version) {
-          app.isPublic = version.isPublic;
-        }
       }
 
       // Attach the found app to the request

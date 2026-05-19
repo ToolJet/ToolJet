@@ -10,11 +10,12 @@ import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
 import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { User } from '@entities/user.entity';
+import { AddableResourceItem } from '../types/granular_permissions';
 
 export interface IGranularPermissionsService {
   create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto): Promise<void>;
-  getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]>;
-  getAddableDataSources(organizationId: string): Promise<{ AddableResourceItem }[]>;
+  getAddableApps(organizationId: string): Promise<AddableResourceItem[]>;
+  getAddableDataSources(organizationId: string): Promise<AddableResourceItem[]>;
   getAll(
     groupId: string,
     organizationId: string,

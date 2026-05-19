@@ -4,6 +4,7 @@ import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export function useAppPreviewLink() {
   const { moduleId } = useModuleContext();
@@ -30,6 +31,8 @@ export function useAppPreviewLink() {
     shallow
   );
 
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+
   const [appPreviewLink, setAppPreviewLink] = useState('');
 
   useEffect(() => {
@@ -40,10 +43,15 @@ export function useAppPreviewLink() {
       featureAccess?.licenseStatus?.isLicenseValid === false ||
       featureAccess?.plan === 'starter';
 
+    const isBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
+    const isDraft = selectedVersion?.status === 'DRAFT' || selectedVersion?.isDraft || selectedVersion?.is_draft;
+    const suppressBranchId = currentBranch && !isBranchVersion && !isDraft;
+
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
       // Include env param unless license is invalid/expired or starter plan
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
+      ...(suppressBranchId ? { is_branch: false } : {}),
     });
 
     const link = editingVersion
@@ -61,6 +69,8 @@ export function useAppPreviewLink() {
     featureAccess?.licenseStatus?.isLicenseValid,
     selectedEnvironment?.name,
     selectedVersion?.name,
+    selectedVersion?.versionType,
+    currentBranch,
   ]);
 
   return appPreviewLink;

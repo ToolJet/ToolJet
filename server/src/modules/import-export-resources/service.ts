@@ -24,7 +24,8 @@ export class ImportExportResourcesService {
 
   async export(
     user: User,
-    exportResourcesDto: ExportResourcesDto
+    exportResourcesDto: ExportResourcesDto,
+    branchId?: string
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -52,7 +53,7 @@ export class ImportExportResourcesService {
       const exportedApps: Record<string, unknown>[] = [];
       for (const app of exportResourcesDto.app) {
         const exportedApp = {
-          definition: await this.appImportExportService.export(user, app.id, app.search_params),
+          definition: await this.appImportExportService.export(user, app.id, app.search_params, branchId),
         };
         exportedApps.push(exportedApp);
       }
@@ -62,7 +63,7 @@ export class ImportExportResourcesService {
 
     if (exportResourcesDto.app?.length) {
       const appData = await this.appsRepository.findOne({
-        where: { id: exportResourcesDto.app[0].id }
+        where: { id: exportResourcesDto.app[0].id },
       });
       //APP_EXPORT audit
       const auditLogsData = {
@@ -171,7 +172,9 @@ export class ImportExportResourcesService {
     const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
     const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
     if (exportedVersions.length > 0 && !hasNonStubVersion) {
-      throw new BadRequestException('App contents are still syncing from Git. Open the app to finish loading, then try again.');
+      throw new BadRequestException(
+        'App contents are still syncing from Git. Open the app to finish loading, then try again.'
+      );
     }
 
     // TODO: Verify if this is required as we always pass name on imports

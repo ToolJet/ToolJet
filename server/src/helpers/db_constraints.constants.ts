@@ -8,6 +8,8 @@ export enum DataBaseConstraints {
   APP_VERSION_NAME_UNIQUE = 'name_app_id_app_versions_unique',
   APP_VERSION_SLUG_BRANCH_UNIQUE = 'app_versions_slug_branch_id_unique',
   APP_VERSION_APP_NAME_BRANCH_UNIQUE = 'app_versions_app_name_branch_id_unique',
+  APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE = 'app_versions_slug_default_branch_unique',
+  APP_VERSION_APP_DEFAULT_BRANCH_DRAFT_UNIQUE = 'app_versions_app_default_branch_draft_unique',
   CONFIG_SCOPE_ORGANIZATION_SSO_UNIQUE = 'config_scope_organization_sso_unique',
   CONFIG_SCOPE_INSTANCE_SSO_UNIQUE = 'config_scope_sso_unique',
   GROUP_NAME_UNIQUE = 'group_name_organization_id_unique',
