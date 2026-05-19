@@ -59,6 +59,33 @@ let value = queries.getSalesData.getData();
 // replace getSalesData with your query name
 ```
 
+The response returned by `actions.runQuery()` and `queries.queryName.run()` is an object containing both status and data, allowing inline access to query results immediately after execution.
+
+```js
+const response = await actions.runQuery("getOrders", 
+{
+  limit: 10 
+});
+
+return response;
+```
+
+<details id="tj-dropdown">
+<summary> **Response Example** </summary>
+```
+{ 
+  status: "ok", 
+  data: [ 
+    { 
+      id: 1, 
+      customer_name: "John Doe", 
+      total: 250 
+    } 
+  ] 
+}
+```
+</details>
+
 ### Trigger a query and retrieve its raw data:
 
 ```js
