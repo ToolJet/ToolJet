@@ -2209,6 +2209,19 @@ class HomePageComponent extends React.Component {
             show={showChangeIconModal && !!appOperations.selectedApp}
             closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
             title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
+            titleAdornment={
+              this.isOnFeatureBranch() ? (
+                <ToolTip
+                  message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                  placement="top"
+                  width="272px"
+                >
+                  <span className="tw-inline-flex tw-items-center tw-ml-2">
+                    <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                  </span>
+                </ToolTip>
+              ) : null
+            }
           >
             <div className="row">
               <div className="col modal-main icon-change-modal">
