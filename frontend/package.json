@@ -41,7 +41,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-google-maps/api": "^2.18.1",
-    "@sentry/react": "^7.100.1",
+    "@sentry/react": "^10.53.1",
     "@sentry/webpack-plugin": "^2.14.0",
     "@tabler/icons-react": "^2.4.0",
     "@tanstack/react-table": "^8.20.5",
