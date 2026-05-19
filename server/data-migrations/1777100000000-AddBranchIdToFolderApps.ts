@@ -47,6 +47,7 @@ export class AddBranchIdToFolderApps1777100000000 implements MigrationInterface 
     // Step 4: Materialise branch-scoped rows for git orgs using app_versions as source of truth.
     // Only create a row if the app actually has a version on that branch — never assume
     // main and feature have identical app sets.
+    // Workflows are excluded — they are not git-synced and must always use branch_id = NULL.
     // The JOIN to organization_git_sync_branches already limits to git orgs — no extra EXISTS needed.
     await queryRunner.query(`
       INSERT INTO folder_apps (folder_id, app_id, branch_id, created_at, updated_at)
@@ -56,6 +57,7 @@ export class AddBranchIdToFolderApps1777100000000 implements MigrationInterface 
       JOIN organization_git_sync_branches wb ON wb.organization_id = f.organization_id
       JOIN app_versions av ON av.app_id = fa.app_id AND av.branch_id = wb.id
       WHERE fa.branch_id IS NULL
+        AND fa.app_id NOT IN (SELECT id FROM apps WHERE type = 'workflow')
       ON CONFLICT DO NOTHING
     `);
 
