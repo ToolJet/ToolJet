@@ -1,0 +1,1187 @@
+openapi: 3.0.0
+info:
+  version: 12.0.0
+  title: Xero Bank Feeds API
+  description: The Bank Feeds API is a closed API that is only available to financial institutions that have an established financial services partnership with Xero. If you're an existing financial services partner that wants access, contact your local Partner Manager. If you're a financial institution who wants to provide bank feeds to your business customers, contact us to become a financial services partner.
+  termsOfService: https://developer.xero.com/xero-developer-platform-terms-conditions/
+  contact:
+    name: Xero Platform Team
+    email: api@xero.com
+    url: https://developer.xero.com
+  license:
+    name: MIT
+    url: https://github.com/XeroAPI/Xero-OpenAPI/blob/master/LICENSE
+servers:
+  - description: Xero Bank Feeds API base url
+    url: https://api.xero.com/bankfeeds.xro/1.0
+paths:
+  /FeedConnections:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Searches for feed connections
+      operationId: getFeedConnections
+      description: By passing in the appropriate options, you can search for available feed connections in the system.
+      parameters:
+        - name: page
+          in: query
+          description: Page number which specifies the set of records to retrieve. By default the number of the records per set is 10. Example - https://api.xero.com/bankfeeds.xro/1.0/FeedConnections?page=1 to get the second set of the records. When page value is not a number or a negative number, by default, the first set of records is returned.
+          schema:
+            type: integer
+            example: 1
+        - name: pageSize
+          in: query
+          description: Page size which specifies how many records per page will be returned (default 10). Example - https://api.xero.com/bankfeeds.xro/1.0/FeedConnections?pageSize=100 to specify page size of 100.
+          schema:
+            type: integer
+            example: 100
+      responses:
+        "202":
+          description: search results matching criteria returned with pagination and items array
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedConnections"
+              example:
+                pagination:
+                  page: 1
+                  pageCount: 1
+                  pageSize: 87654321
+                  itemCount: 39
+                items:
+                  - id: c0eb97b5-4f97-465a-8268-276513c14396
+                    accountToken: foobar31306
+                    accountType: BANK
+                    accountNumber: "123496842"
+                    accountName: SDK Bank 95921
+                    accountId: aefbf6be-4285-4ca5-bf39-0f486c8515c7
+                    currency: GBP
+                    country: GB
+                  - id: 3b44b539-4e39-4d53-9334-d8ba01674752
+                    accountToken: foobar74770
+                    accountType: BANK
+                    accountNumber: "123481122"
+                    accountName: SDK Bank 11272
+                    accountId: fc2f3cc2-126e-40d7-9fc1-12e52d0a71f1
+                    currency: GBP
+                    country: GB
+        "400":
+          description: validation error response
+    post:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Create one or more new feed connection
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      operationId: createFeedConnections
+      x-hasBankFeedsValidationError: true
+      description: By passing in the FeedConnections array object in the body, you can create one or more new feed connections
+      requestBody:
+        required: true
+        description: Feed Connection(s) array object in the body
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedConnections"
+            example:
+              items:
+                - accountToken: foobar71760
+                  accountNumber: "123458637"
+                  accountName: SDK Bank 90861
+                  accountType: BANK
+                  currency: GBP
+      responses:
+        "202":
+          description: success new feed connection(s)response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedConnections"
+              example:
+                items:
+                  - id: 2a19d46c-2a92-4e50-9401-dcf2cb895be7
+                    accountToken: foobar71760
+                    status: PENDING
+        "400":
+          description: failed to create new feed connection(s)response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedConnections"
+              example:
+                items:
+                  - accountToken: foobar71760
+                    status: REJECTED
+                    error:
+                      type: invalid-request
+                      title: Invalid Request
+                      status: 400
+                      detail: For the request field 'AccountNumber' exceeded the maximum length of 40.
+  /FeedConnections/{id}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Retrieve single feed connection based on a unique id provided
+      operationId: getFeedConnection
+      description: By passing in a FeedConnection Id options, you can search for matching feed connections
+      parameters:
+        - required: true
+          in: path
+          name: id
+          description: Unique identifier for retrieving single object
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: success returns a FeedConnection object matching the id in response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedConnection"
+              example:
+                id: b58b685a-1bee-4904-91f1-fee30bb6ea52
+                accountToken: foobar84778
+                accountType: BANK
+                accountNumber: "123434859"
+                accountName: SDK Bank 5517
+                accountId: f4c4d595-da94-493b-999a-19d1ae1f508a
+                currency: GBP
+                country: GB
+        "400":
+          description: bad input parameter
+  /FeedConnections/DeleteRequests:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    post:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Delete an existing feed connection
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      operationId: deleteFeedConnections
+      description: By passing in FeedConnections array object in the body, you can delete a feed connection.
+      requestBody:
+        required: true
+        description: Feed Connections array object in the body
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedConnections"
+            example:
+              items:
+                - id: b4cc693b-24d9-42ec-a6d4-2943d253ff63
+      responses:
+        "202":
+          description: Success response for deleted feed connection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedConnections"
+              example:
+                items:
+                  - id: b4cc693b-24d9-42ec-a6d4-2943d253ff63
+                    status: PENDING
+                  - accountToken: "10000125"
+                    status: REJECTED
+                    error:
+                      type: feed-connected-in-different-organisation
+                      title: Feed connected in different organisation
+                      detail: The AccountToken is connected to another Xero Bank Account associated with this bank. This Xero Bank Account belongs to a different Xero Organisation.
+        "400":
+          description: bad input parameter
+  /Statements:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Retrieve all statements
+      operationId: getStatements
+      description: By passing in parameters, you can search for matching statements
+      parameters:
+        - in: query
+          name: page
+          description: unique id for single object
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: pageSize
+          description: Page size which specifies how many records per page will be returned (default 10). Example - https://api.xero.com/bankfeeds.xro/1.0/Statements?pageSize=100 to specify page size of 100.
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: Xero-Application-Id
+          in: header
+          required: false
+          schema:
+            type: string
+            default: 00000000-0000-0000-0000-0000000010000
+        - name: Xero-User-Id
+          in: header
+          required: false
+          schema:
+            type: string
+            default: 00000000-0000-0000-0000-0000030000000
+      responses:
+        "200":
+          description: success returns Statements array of objects response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                pagination:
+                  page: 1
+                  pageCount: 210
+                  pageSize: 3
+                  itemCount: 3
+                items:
+                  - id: 9817e4b8-82b3-4526-91f7-040bd278053f
+                    feedConnectionId: 6a4b9ff5-3a5f-4321-936b-4796163550f6
+                    status: REJECTED
+                    startDate: "2019-08-01"
+                    endDate: "2019-08-15"
+                    startBalance:
+                      amount: "100.0000"
+                      creditDebitIndicator: CREDIT
+                    endBalance:
+                      amount: "150.0000"
+                      creditDebitIndicator: CREDIT
+                    statementLineCount: "1"
+                    errors:
+                      - type: duplicate-statement
+                        title: Duplicate Statement Received
+                        status: 409
+                        detail: The received statement was marked as a duplicate.
+                  - id: 2fc57bac-7aa7-4981-a5cd-8aee83fe698c
+                    feedConnectionId: 6a4b9ff5-3a5f-4321-936b-4796163550f6
+                    status: DELIVERED
+                    startDate: "2019-08-01"
+                    endDate: "2019-08-15"
+                    startBalance:
+                      amount: "100.0000"
+                      creditDebitIndicator: CREDIT
+                    endBalance:
+                      amount: "150.0000"
+                      creditDebitIndicator: CREDIT
+                    statementLineCount: "1"
+        "400":
+          description: bad input parameter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                type: invalid-request
+                title: Invalid Request
+                status: 400
+                detail: For the request field missing parameter.
+    post:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Creates one or more new statements
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      operationId: createStatements
+      x-hasBankFeedsValidationError: true
+      responses:
+        "202":
+          description: Success returns Statements array of objects in response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                items:
+                  - id: d69b02b7-a30c-464a-99cf-ba9770373c61
+                    feedConnectionId: 6a4b9ff5-3a5f-4321-936b-4796163550f6
+                    status: PENDING
+                  - id: 598f255c-015b-4138-93df-2e06c64565b3
+                    feedConnectionId: 2ebe6393-f3bb-48ab-9a0e-b04fa8585a70
+                    status: PENDING
+        "400":
+          description: Statement failed validation
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                type: invalid-request
+                title: Invalid Request
+                status: 400
+                detail: For the request field 'StatementLine.ChequeNumber' exceeded the maximum length of 20.
+        "403":
+          description: Invalid application or feed connection
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                type: invalid-application
+                title: Invalid Application
+                status: 403
+                detail: The application has not been configured to use these API endpoints.
+        "409":
+          description: Duplicate statement received
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                items:
+                  - id: 29fefeb6-f449-470d-9179-f1d8900930d6
+                    feedConnectionId: 6a4b9ff5-3a5f-4321-936b-4796163550f6
+                    status: REJECTED
+                    errors:
+                      - type: duplicate-statement
+                        title: Duplicate Statement Received
+                        status: 409
+                        detail: The received statement was marked as a duplicate.
+        "413":
+          description: Statement exceeds size limit
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                type: invalid-request
+                title: Request too large
+                status: 413
+                detail: Request size of 3500000 bytes exceeds the limit of 3000000 bytes.
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                type: invalid-end-balance
+                title: Invalid End Balance
+                status: 422
+                detail: End balance does not match start balance +/- statement line amounts.
+        "500":
+          description: Intermittent Xero Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Statements"
+              example:
+                type: internal-error
+                title: Intermittent Internal Xero Error
+                status: 500
+                detail: The request should be retried. If the error persists, a Xero support issue should be raised.
+      requestBody:
+        description: Statements array of objects in the body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Statements"
+            example:
+              items:
+                - feedConnectionId: 6a4b9ff5-3a5f-4321-936b-4796163550f6
+                  startDate: "2019-08-11"
+                  endDate: "2019-08-11"
+                  startBalance:
+                    amount: "100"
+                    creditDebitIndicator: CREDIT
+                  endBalance:
+                    amount: "150"
+                    creditDebitIndicator: CREDIT
+                  statementLines:
+                    - postedDate: "2019-08-11"
+                      description: My new line
+                      amount: "50"
+                      creditDebitIndicator: CREDIT
+                      transactionId: "123446422"
+                      payeeName: StarLord90315
+                      reference: Foobar95578
+                      chequeNumber: "12379009"
+                      transactionType: Refund
+                - feedConnectionId: 2ebe6393-f3bb-48ab-9a0e-b04fa8585a70
+                  startDate: "2019-08-11"
+                  endDate: "2019-08-11"
+                  startBalance:
+                    amount: "100"
+                    creditDebitIndicator: CREDIT
+                  endBalance:
+                    amount: "150"
+                    creditDebitIndicator: CREDIT
+                  statementLines:
+                    - postedDate: "2019-08-11"
+                      description: My new line
+                      amount: "50"
+                      creditDebitIndicator: CREDIT
+                      transactionId: "123449402"
+                      payeeName: StarLord56705
+                      reference: Foobar67355
+                      chequeNumber: "12379350"
+                      transactionType: Currency Conversion Fee
+  /Statements/{statementId}:
+    parameters:
+      - $ref: "#/components/parameters/requiredHeader"
+    get:
+      security:
+        - OAuth2:
+            - bankfeeds
+      tags:
+        - BankFeeds
+      summary: Retrieve single statement based on unique id provided
+      operationId: getStatement
+      description: By passing in a statement id, you can search for matching statements
+      parameters:
+        - name: statementId
+          description: statement id for single object
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: search results matching id for single statement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Statement"
+              example:
+                id: 97aca24a-dd10-4cda-98c7-1084a048257b
+                feedConnectionId: 6a4b9ff5-3a5f-4321-936b-4796163550f6
+                status: DELIVERED
+                startDate: "2019-08-11"
+                endDate: "2019-10-11"
+                startBalance:
+                  amount: "100.0000"
+                  creditDebitIndicator: CREDIT
+                endBalance:
+                  amount: "150.0000"
+                  creditDebitIndicator: CREDIT
+                statementLineCount: "1"
+        "404":
+          description: Statement not found
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: For more information visit https://developer.xero.com/documentation/oauth2/overview
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.xero.com/identity/connect/authorize
+          tokenUrl: https://identity.xero.com/connect/token
+          scopes:
+            email: Grant read-only access to your email
+            openid: Grant read-only access to your open id
+            profile: your profile information
+            bankfeeds: Grant read-write access to bankfeeds
+  parameters:
+    requiredHeader:
+      in: header
+      name: Xero-Tenant-Id
+      description: Xero identifier for Tenant
+      schema:
+        type: string
+      required: true
+    idempotencyKey:
+      in: header
+      name: Idempotency-Key
+      x-snake: idempotency_key
+      description: This allows you to safely retry requests without the risk of duplicate processing. 128 character max.
+      example: KEY_VALUE
+      schema:
+        type: string
+  schemas:
+    FeedConnections:
+      externalDocs:
+        url: https://developer.xero.com/documentation/bank-feeds-api/feed-connections
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedConnection"
+    FeedConnection:
+      externalDocs:
+        url: https://developer.xero.com/documentation/bank-feeds-api/feed-connections
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0d3cf8d-95dc-4466-8dc0-47e6d1197e28
+          description: GUID used to identify the Account.
+        accountToken:
+          type: string
+          example: "10000123"
+          maximum: 50
+          description: This account identifier is generated by the financial institute (FI). This must be unique for your financial institute.
+        accountNumber:
+          type: string
+          example: "3809087654321500"
+          maximum: 40
+          description: String(40) when AccountType is BANK String(4) when AccountType is CREDITCARD The Account Number is used to match the feed to a Xero Bank Account. The API will create a new Xero Bank Account if a match to an existing Xero Bank Account is not found. Only the last 4 digits must be supplied for Credit Card numbers. Must be included if AccountId is not specified.
+        accountName:
+          type: string
+          example: Joe's Savings Account
+          maximum: 30
+          description: The Account Name will be used for the creation of a new Xero Bank Account if a matching Xero Bank Account is not found.
+        accountId:
+          type: string
+          format: uuid
+          example: 079a88ea-276d-41fb-a1f1-366ef3e22921
+          description: Xero identifier for a bank account in Xero. Must be included if AccountNumber is not specified.
+        accountType:
+          enum:
+            - BANK
+            - CREDITCARD
+          example: BANK
+          description: High level bank account type - BANK CREDITCARD BANK encompasses all bank account types other than credit cards.
+        currency:
+          $ref: "#/components/schemas/CurrencyCode"
+        country:
+          $ref: "#/components/schemas/CountryCode"
+        status:
+          type: string
+          enum:
+            - PENDING
+            - REJECTED
+          example: REJECTED
+          description: the current status of the feed connection
+        error:
+          $ref: "#/components/schemas/Error"
+    Statements:
+      externalDocs:
+        url: https://developer.xero.com/documentation/bank-feeds-api/statements
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Statement"
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+          description: Page number which specifies the set of records to retrieve. Example - https://api.xero.com/bankfeeds.xro/1.0/Statements?page=2 to get the second set of the records. When page value is not a number or a negative number, by default, the first set of records is returned.
+        pageSize:
+          type: integer
+          example: 10
+          description: Page size which specifies how many records per page will be returned (default 50). Example - https://api.xero.com/bankfeeds.xro/1.0/Statements?pageSize=100 to specify page size of 100.
+        pageCount:
+          type: integer
+          example: 1
+          description: Number of pages available
+        itemCount:
+          type: integer
+          example: 2
+          description: Number of items returned
+    Statement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ba4f3127-5e46-427d-80ea-dea2fcd26afe
+          description: GUID used to identify the Statement.
+        feedConnectionId:
+          type: string
+          format: uuid
+          example: 87cb0dc8-fa32-409c-b622-19f8de8dcc83
+          description: The Xero generated feed connection Id that identifies the Xero Bank Account Container into which the statement should be delivered. This is obtained by calling GET FeedConnections.
+        status:
+          enum:
+            - PENDING
+            - REJECTED
+            - DELIVERED
+          example: PENDING
+          description: Current status of statements
+        startDate:
+          type: string
+          format: date
+          example: "2018-07-27"
+          description: Opening balance date (can be no older than one year from the current date) ISO-8601 YYYY-MM-DD
+        endDate:
+          type: string
+          format: date
+          example: "2018-07-27"
+          description: Closing balance date ISO-8601 YYYY-MM-DD
+        startBalance:
+          $ref: "#/components/schemas/StartBalance"
+        endBalance:
+          $ref: "#/components/schemas/EndBalance"
+        statementLines:
+          $ref: "#/components/schemas/StatementLines"
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+        statementLineCount:
+          type: integer
+          example: 1
+    StartBalance:
+      description: The starting balance of the statement
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+          x-is-money: true
+          example: "9.0000"
+          description: decimal(19,4) unsigned Opening/closing balance amount.
+        creditDebitIndicator:
+          $ref: "#/components/schemas/CreditDebitIndicator"
+    EndBalance:
+      description: The StartBalance plus all the Statement Line Amounts should be equal to the EndBalance Amount.
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+          x-is-money: true
+          example: "10.1340"
+        creditDebitIndicator:
+          $ref: "#/components/schemas/CreditDebitIndicator"
+    StatementLines:
+      type: array
+      items:
+        $ref: "#/components/schemas/StatementLine"
+    StatementLine:
+      type: object
+      description: the lines details for a statement
+      properties:
+        postedDate:
+          type: string
+          format: date
+          example: "2018-06-10"
+          description: The date that the transaction was processed or cleared as seen in internet banking ISO-8601 YYYY-MM-DD
+        description:
+          type: string
+          example: Description for statement line 2
+          maximum: 2000
+          description: Transaction description
+        amount:
+          type: number
+          format: double
+          x-is-money: true
+          example: "5.00"
+          description: Transaction amount
+        creditDebitIndicator:
+          $ref: "#/components/schemas/CreditDebitIndicator"
+        transactionId:
+          type: string
+          example: transaction-id-2
+          description: Financial institute's internal transaction identifier. If provided this field is factored into duplicate detection.
+        payeeName:
+          type: string
+          example: Payee name for statement line 2
+          description: Typically the merchant or payee name
+          maximum: 255
+        reference:
+          type: string
+          example: Reference for statement line 2
+          description: Optional field to enhance the Description
+          maximum: 255
+        chequeNumber:
+          type: string
+          example: "021"
+          description: The cheque/check number
+          maximum: 20
+        transactionType:
+          type: string
+          example: Refund
+          description: Descriptive transaction type
+          maximum: 30
+    Error:
+      type: object
+      description: On error, the API consumer will receive an HTTP response with a HTTP Status Code of 4xx or 5xx and a Content-Type of application/problem+json.
+      properties:
+        title:
+          type: string
+          maximum: 255
+          description: Human readable high level error description.
+          example: Invalid Application
+        status:
+          type: integer
+          description: The numeric HTTP Status Code, e.g. 404
+          example: 403
+        detail:
+          type: string
+          maximum: 255
+          description: Human readable detailed error description.
+          example: The application has not been configured to use these API endpoints.
+        type:
+          type: string
+          description: Identifies the type of error.
+          enum:
+            - invalid-request
+            - invalid-application
+            - invalid-feed-connection
+            - duplicate-statement
+            - invalid-end-balance
+            - invalid-start-and-end-date
+            - invalid-start-date
+            - internal-error
+            - feed-already-connected-in-current-organisation
+            - invalid-end-date
+            - statement-not-found
+            - feed-connected-in-different-organisation
+            - feed-already-connected-in-different-organisation
+            - bank-feed-not-found
+            - invalid-country-specified
+            - invalid-organisation-bank-feeds
+            - invalid-organisation-multi-currency
+            - invalid-feed-connection-for-organisation
+            - invalid-user-role
+            - account-not-valid
+            - feed-not-found-or-already-deleted
+          example: invalid-application
+    CreditDebitIndicator:
+      type: string
+      description: If the statement balances are credit or debit, the CreditDebitIndicator should be specified from the perspective of the Customer.
+      enum:
+        - CREDIT
+        - DEBIT
+    CurrencyCode:
+      description: 3 letter alpha code for the ISO-4217 currency code, e.g. USD, AUD.
+      example: AUD
+      type: string
+      enum:
+        - AED
+        - AFN
+        - ALL
+        - AMD
+        - ANG
+        - AOA
+        - ARS
+        - AUD
+        - AWG
+        - AZN
+        - BAM
+        - BBD
+        - BDT
+        - BGN
+        - BHD
+        - BIF
+        - BMD
+        - BND
+        - BOB
+        - BRL
+        - BSD
+        - BTN
+        - BWP
+        - BYN
+        - BZD
+        - CAD
+        - CDF
+        - CHF
+        - CLP
+        - CNY
+        - COP
+        - CRC
+        - CUC
+        - CUP
+        - CVE
+        - CZK
+        - DJF
+        - DKK
+        - DOP
+        - DZD
+        - EGP
+        - ERN
+        - ETB
+        - EUR
+        - FJD
+        - FKP
+        - GBP
+        - GEL
+        - GGP
+        - GHS
+        - GIP
+        - GMD
+        - GNF
+        - GTQ
+        - GYD
+        - HKD
+        - HNL
+        - HRK
+        - HTG
+        - HUF
+        - IDR
+        - ILS
+        - IMP
+        - INR
+        - IQD
+        - IRR
+        - ISK
+        - JEP
+        - JMD
+        - JOD
+        - JPY
+        - KES
+        - KGS
+        - KHR
+        - KMF
+        - KPW
+        - KRW
+        - KWD
+        - KYD
+        - KZT
+        - LAK
+        - LBP
+        - LKR
+        - LRD
+        - LSL
+        - LYD
+        - MAD
+        - MDL
+        - MGA
+        - MKD
+        - MMK
+        - MNT
+        - MOP
+        - MRU
+        - MUR
+        - MVR
+        - MWK
+        - MXN
+        - MYR
+        - MZN
+        - NAD
+        - NGN
+        - NIO
+        - NOK
+        - NPR
+        - NZD
+        - OMR
+        - PAB
+        - PEN
+        - PGK
+        - PHP
+        - PKR
+        - PLN
+        - PYG
+        - QAR
+        - RON
+        - RSD
+        - RUB
+        - RWF
+        - SAR
+        - SBD
+        - SCR
+        - SDG
+        - SEK
+        - SGD
+        - SHP
+        - SLL
+        - SOS
+        - SPL
+        - SRD
+        - STN
+        - SVC
+        - SYP
+        - SZL
+        - THB
+        - TJS
+        - TMT
+        - TND
+        - TOP
+        - TRY
+        - TTD
+        - TVD
+        - TWD
+        - TZS
+        - UAH
+        - UGX
+        - USD
+        - UYU
+        - UZS
+        - VEF
+        - VND
+        - VUV
+        - WST
+        - XAF
+        - XCD
+        - XDR
+        - XOF
+        - XPF
+        - YER
+        - ZAR
+        - ZMW
+        - ZMK
+        - ZWD
+    CountryCode:
+      type: string
+      example: GB
+      description: ISO-3166 alpha-2 country code, e.g. US, AU This element is required only when the Application supports multi-region. Talk to your Partner Manager to confirm if this is the case.
+      enum:
+        - AD
+        - AE
+        - AF
+        - AG
+        - AI
+        - AL
+        - AM
+        - AN
+        - AO
+        - AQ
+        - AR
+        - AS
+        - AT
+        - AU
+        - AW
+        - AZ
+        - BA
+        - BB
+        - BD
+        - BE
+        - BF
+        - BG
+        - BH
+        - BI
+        - BJ
+        - BL
+        - BM
+        - BN
+        - BO
+        - BR
+        - BS
+        - BT
+        - BW
+        - BY
+        - BZ
+        - CA
+        - CC
+        - CD
+        - CF
+        - CG
+        - CH
+        - CI
+        - CK
+        - CL
+        - CM
+        - CN
+        - CO
+        - CR
+        - CU
+        - CV
+        - CW
+        - CX
+        - CY
+        - CZ
+        - DE
+        - DJ
+        - DK
+        - DM
+        - DO
+        - DZ
+        - EC
+        - EE
+        - EG
+        - EH
+        - ER
+        - ES
+        - ET
+        - FI
+        - FJ
+        - FK
+        - FM
+        - FO
+        - FR
+        - GA
+        - GB
+        - GD
+        - GE
+        - GG
+        - GH
+        - GI
+        - GL
+        - GM
+        - GN
+        - GQ
+        - GR
+        - GT
+        - GU
+        - GW
+        - GY
+        - HK
+        - HN
+        - HR
+        - HT
+        - HU
+        - ID
+        - IE
+        - IL
+        - IM
+        - IN
+        - IO
+        - IQ
+        - IR
+        - IS
+        - IT
+        - JE
+        - JM
+        - JO
+        - JP
+        - KE
+        - KG
+        - KH
+        - KI
+        - KM
+        - KN
+        - KP
+        - KR
+        - KW
+        - KY
+        - KZ
+        - LA
+        - LB
+        - LC
+        - LI
+        - LK
+        - LR
+        - LS
+        - LT
+        - LU
+        - LV
+        - LY
+        - MA
+        - MC
+        - MD
+        - ME
+        - MF
+        - MG
+        - MH
+        - MK
+        - ML
+        - MM
+        - MN
+        - MO
+        - MP
+        - MR
+        - MS
+        - MT
+        - MU
+        - MV
+        - MW
+        - MX
+        - MY
+        - MZ
+        - NA
+        - NC
+        - NE
+        - NG
+        - NI
+        - NL
+        - NO
+        - NP
+        - NR
+        - NU
+        - NZ
+        - OM
+        - PA
+        - PE
+        - PF
+        - PG
+        - PH
+        - PK
+        - PL
+        - PM
+        - PN
+        - PR
+        - PS
+        - PT
+        - PW
+        - PY
+        - QA
+        - RE
+        - RO
+        - RS
+        - RU
+        - RW
+        - SA
+        - SB
+        - SC
+        - SD
+        - SE
+        - SG
+        - SH
+        - SI
+        - SJ
+        - SK
+        - SL
+        - SM
+        - SN
+        - SO
+        - SR
+        - SS
+        - ST
+        - SV
+        - SX
+        - SY
+        - SZ
+        - TC
+        - TD
+        - TG
+        - TH
+        - TJ
+        - TK
+        - TL
+        - TM
+        - TN
+        - TO
+        - TR
+        - TT
+        - TV
+        - TW
+        - TZ
+        - UA
+        - UG
+        - US
+        - UY
+        - UZ
+        - VA
+        - VC
+        - VE
+        - VG
+        - VI
+        - VN
+        - VU
+        - WF
+        - WS
+        - XK
+        - YE
+        - YT
+        - ZA
+        - ZM
+        - ZW

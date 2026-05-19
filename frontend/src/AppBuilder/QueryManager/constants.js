@@ -55,6 +55,8 @@ export const customToggles = {
     action: 'requestConfirmation',
     label: 'Request confirmation before running query',
     translatedLabel: 'editor.queryManager.confirmBeforeQueryRun',
+    fx: true,
+    fxKey: 'requestConfirmationFx',
   },
   showSuccessNotification: {
     dataCy: 'notification-on-success',
