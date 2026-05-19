@@ -121,6 +121,14 @@ export const useFilePicker = ({
     );
   }, []);
 
+  // Reusable function to clear error states
+  const clearErrorStates = useCallback(() => {
+    setUiErrorMessage('');
+    setDropzoneRejections([]);
+    setFileErrors({});
+    setUploadingStatus({});
+  }, []);
+
   const fileReader = useCallback(
     async (file, internalId) => {
       const fileStateKey = internalId ?? file?.name;
@@ -378,14 +386,6 @@ export const useFilePicker = ({
       return acc;
     }, {});
   }, [fileTypeCategory]);
-
-  // Reusable function to clear error states
-  const clearErrorStates = useCallback(() => {
-    setUiErrorMessage('');
-    setDropzoneRejections([]);
-    setFileErrors({});
-    setUploadingStatus({});
-  }, []);
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     accept: acceptProp, // Use the calculated accept prop
