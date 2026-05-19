@@ -677,6 +677,7 @@
                 "marketplace/plugins/marketplace-plugin-harperdb",
                 "marketplace/plugins/marketplace-plugin-hubspot",
                 "marketplace/plugins/marketplace-plugin-hugging_face",
+                "marketplace/plugins/marketplace-plugin-intercom",
                 "marketplace/plugins/marketplace-plugin-jira",
                 "marketplace/plugins/marketplace-plugin-microsoft_graph",
                 "marketplace/plugins/marketplace-plugin-mistral_ai",
