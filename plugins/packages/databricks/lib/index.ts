@@ -15,40 +15,6 @@ import IDBSQLSession from '@databricks/sql/dist/contracts/IDBSQLSession';
 import IOperation from '@databricks/sql/dist/contracts/IOperation';
 import got, { Headers } from 'got';
 import Int64 from 'node-int64';
-import * as crypto from 'crypto';
-
-// Temporary server-side storage for PKCE code_verifiers during oauth_u2m flow.
-// Keyed by state param. Entries expire after 5 minutes.
-const pkceStore = new Map<string, { codeVerifier: string; expiresAt: number }>();
-const PKCE_TTL_MS = 5 * 60 * 1000;
-
-function generateCodeVerifier(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  return Array.from(crypto.randomBytes(64))
-    .map((b) => chars[b % chars.length])
-    .join('');
-}
-
-function generateCodeChallenge(codeVerifier: string): string {
-  return crypto.createHash('sha256').update(codeVerifier).digest('base64url');
-}
-
-function storePkceVerifier(state: string, codeVerifier: string): void {
-  const now = Date.now();
-  // Clean expired entries to prevent unbounded growth
-  for (const [k, v] of pkceStore.entries()) {
-    if (v.expiresAt < now) pkceStore.delete(k);
-  }
-  pkceStore.set(state, { codeVerifier, expiresAt: now + PKCE_TTL_MS });
-}
-
-function retrieveAndDeletePkceVerifier(state: string): string | null {
-  const entry = pkceStore.get(state);
-  if (!entry) return null;
-  pkceStore.delete(state);
-  if (entry.expiresAt < Date.now()) return null;
-  return entry.codeVerifier;
-}
 
 export default class Databricks implements QueryService {
   private static readonly PARAM_THRESHOLD = 16384;
@@ -89,11 +55,6 @@ export default class Databricks implements QueryService {
     const tooljetHost = process.env.TOOLJET_HOST;
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${tooljetHost}${subpath ? subpath : '/'}`;
-
-    const state = crypto.randomBytes(32).toString('hex');
-    const codeVerifier = generateCodeVerifier();
-    const codeChallenge = generateCodeChallenge(codeVerifier);
-    storePkceVerifier(state, codeVerifier);
 
     return (
       `https://${workspaceHost}/oidc/v1/authorize` +
@@ -582,11 +543,19 @@ export default class Databricks implements QueryService {
     }
 
     // PAT and legacy oauth2 — use DBSQLClient
+    const sqlText = queryOptions.query || queryOptions.sql_query;
+    const finalSql = this.isSqlParametersUsed(queryOptions)
+      ? this._substituteNamedParams(
+          sqlText,
+          Object.fromEntries((queryOptions.query_params || []).filter(([k]) => k && k.trim() !== ''))
+        )
+      : sqlText;
+
     let result: any[];
     const client = await this.getConnection(sourceOptions, userId, isAppPublic);
     const session: IDBSQLSession = await client.openSession();
     try {
-      const queryOperation: IOperation = await session.executeStatement(queryOptions.sql_query, {
+      const queryOperation: IOperation = await session.executeStatement(finalSql, {
         runAsync: true,
         queryTimeout: new Int64(10000),
       });
@@ -651,12 +620,20 @@ export default class Databricks implements QueryService {
     const warehouseId = this.extractWarehouseId(httpPath);
     const host = sourceOptions.host;
 
+    const sqlText = queryOptions.query || queryOptions.sql_query;
+    const finalSql = this.isSqlParametersUsed(queryOptions)
+      ? this._substituteNamedParams(
+          sqlText,
+          Object.fromEntries((queryOptions.query_params || []).filter(([k]) => k && k.trim() !== ''))
+        )
+      : sqlText;
+
     try {
       const response = await got(`https://${host}/api/2.0/sql/statements`, {
         method: 'POST',
         json: {
           warehouse_id: warehouseId,
-          statement: queryOptions.sql_query,
+          statement: finalSql,
           wait_timeout: '50s',
         },
         headers: {
@@ -742,32 +719,58 @@ export default class Databricks implements QueryService {
 
   async invokeMethod(
     methodName: string,
-    _context: { user?: User; app?: App },
+    context: { user?: User; app?: App },
     sourceOptions: SourceOptions,
     args?: any
   ): Promise<any> {
     const authType = sourceOptions['authentication_type'] || 'personal_access_token';
+    const userId = context?.user?.id;
+    const isAppPublic = context?.app?.isPublic;
 
     if (methodName === 'listTables') {
-      // oauth_u2m has no source-level http_path; return empty list gracefully
       if (authType === 'oauth_u2m') {
-        return args?.limit ? { items: [], totalCount: 0 } : [];
+        const httpPath = sourceOptions.http_path || '';
+        if (!httpPath)
+          throw new QueryError('Missing http_path', 'HTTP path is required for OAuth U2M table listing.', {});
+        try {
+          const accessToken = this._getOAuthU2MAccessToken(sourceOptions, userId, isAppPublic);
+          return await this._fetchTablesViaRest(
+            sourceOptions.host,
+            accessToken,
+            httpPath,
+            args?.search,
+            args?.page,
+            args?.limit
+          );
+        } catch (err) {
+          if (err instanceof OAuthUnauthorizedClientError) throw err;
+          throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
+        }
       }
       try {
-        return await this._fetchTables(sourceOptions, args?.search, args?.page, args?.limit);
+        return await this._fetchTables(sourceOptions, args?.search, args?.page, args?.limit, userId, isAppPublic);
       } catch (err) {
         throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
       }
     }
 
     if (methodName === 'listColumns') {
-      if (authType === 'oauth_u2m') {
-        return [];
-      }
       const table = args?.values?.table || '';
       if (!table) return [];
+      if (authType === 'oauth_u2m') {
+        const httpPath = sourceOptions.http_path || '';
+        if (!httpPath)
+          throw new QueryError('Missing http_path', 'HTTP path is required for OAuth U2M column listing.', {});
+        try {
+          const accessToken = this._getOAuthU2MAccessToken(sourceOptions, userId, isAppPublic);
+          return await this._fetchColumnsViaRest(sourceOptions.host, accessToken, httpPath, table);
+        } catch (err) {
+          if (err instanceof OAuthUnauthorizedClientError) throw err;
+          throw new QueryError('Could not fetch columns', err.message || 'Unknown error', {});
+        }
+      }
       try {
-        return await this._fetchColumns(sourceOptions, table);
+        return await this._fetchColumns(sourceOptions, table, userId, isAppPublic);
       } catch (err) {
         throw new QueryError('Could not fetch columns', err.message || 'Unknown error', {});
       }
@@ -784,54 +787,60 @@ export default class Databricks implements QueryService {
     sourceOptions: SourceOptions,
     search = '',
     page?: number,
-    limit?: number
+    limit?: number,
+    userId?: string,
+    isAppPublic?: boolean
   ): Promise<
     { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
   > {
-    const client = await this.getConnection(sourceOptions);
+    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
     const session: IDBSQLSession = await client.openSession();
     try {
       const safeSearch = search.replace(/'/g, "''");
-      const catalogFilter = sourceOptions.default_catalog
-        ? `AND table_catalog = '${sourceOptions.default_catalog.replace(/'/g, "''")}' `
-        : '';
+      const safeCatalog = sourceOptions.default_catalog?.replace(/`/g, '``');
+      const infoSchema = safeCatalog ? `\`${safeCatalog}\`.information_schema` : 'information_schema';
       const schemaFilter = sourceOptions.default_schema
         ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
         : '';
       const searchFilter = safeSearch ? `AND table_name LIKE '%${safeSearch}%' ` : '';
-      const baseWhere = `table_type IN ('TABLE', 'MANAGED', 'EXTERNAL') ${catalogFilter}${schemaFilter}${searchFilter}`;
+      const baseWhere = `table_type = 'BASE TABLE' ${schemaFilter}${searchFilter}`;
 
       if (limit) {
         const offset = ((page || 1) - 1) * limit;
 
         const countOp: IOperation = await session.executeStatement(
-          `SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE ${baseWhere}`,
+          `SELECT COUNT(*) AS cnt FROM ${infoSchema}.tables WHERE ${baseWhere}`,
           { runAsync: true, queryTimeout: new Int64(10000) }
         );
         const countRows = await countOp.fetchAll();
         const totalCount = Number((countRows as any[])?.[0]?.cnt ?? (countRows as any[])?.[0]?.CNT ?? 0);
 
         const dataOp: IOperation = await session.executeStatement(
-          `SELECT table_name FROM information_schema.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
+          `SELECT table_name FROM ${infoSchema}.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
           { runAsync: true, queryTimeout: new Int64(10000) }
         );
         const dataRows = (await dataOp.fetchAll()) as any[];
-        const items = dataRows.map((row) => ({
-          value: row.table_name || row.TABLE_NAME,
-          label: row.table_name || row.TABLE_NAME,
-        }));
+        const items = dataRows.map((row) => {
+          const name = row.table_name || row.TABLE_NAME;
+          const qualified = this._qualifyTableName(name, sourceOptions.default_catalog, sourceOptions.default_schema);
+          return { value: qualified, label: qualified };
+        });
         return { items, totalCount };
       }
 
       const op: IOperation = await session.executeStatement(
-        `SELECT table_name FROM information_schema.tables WHERE ${baseWhere} ORDER BY table_name`,
+        `SELECT table_name FROM ${infoSchema}.tables WHERE ${baseWhere} ORDER BY table_name`,
         { runAsync: true, queryTimeout: new Int64(10000) }
       );
       const rows = (await op.fetchAll()) as any[];
-      return rows.map((row) => ({
-        value: row.table_name || row.TABLE_NAME,
-        label: row.table_name || row.TABLE_NAME,
-      }));
+      return rows.map((row) => {
+        const name = row.table_name || row.TABLE_NAME;
+        const qualified = this._qualifyTableName(name, sourceOptions.default_catalog, sourceOptions.default_schema);
+        return { value: qualified, label: qualified };
+      });
+    } catch (err) {
+      console.log(err, 'sus');
+      throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
     } finally {
       await session.close();
       await client.close();
@@ -844,21 +853,22 @@ export default class Databricks implements QueryService {
 
   private async _fetchColumns(
     sourceOptions: SourceOptions,
-    table: string
+    table: string,
+    userId?: string,
+    isAppPublic?: boolean
   ): Promise<Array<{ value: string; label: string }>> {
-    const client = await this.getConnection(sourceOptions);
+    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
     const session: IDBSQLSession = await client.openSession();
     try {
       const safeTable = table.replace(/'/g, "''");
-      const catalogFilter = sourceOptions.default_catalog
-        ? `AND table_catalog = '${sourceOptions.default_catalog.replace(/'/g, "''")}' `
-        : '';
+      const safeCatalog = sourceOptions.default_catalog?.replace(/`/g, '``');
+      const infoSchema = safeCatalog ? `\`${safeCatalog}\`.information_schema` : 'information_schema';
       const schemaFilter = sourceOptions.default_schema
         ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
         : '';
 
       const op: IOperation = await session.executeStatement(
-        `SELECT column_name FROM information_schema.columns WHERE table_name = '${safeTable}' ${catalogFilter}${schemaFilter} ORDER BY ordinal_position`,
+        `SELECT column_name FROM ${infoSchema}.columns WHERE table_name = '${safeTable}' ${schemaFilter} ORDER BY ordinal_position`,
         { runAsync: true, queryTimeout: new Int64(10000) }
       );
       const rows = (await op.fetchAll()) as any[];
@@ -873,8 +883,186 @@ export default class Databricks implements QueryService {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  //  _getOAuthU2MAccessToken — extracts the current user's access token
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private _getOAuthU2MAccessToken(sourceOptions: SourceOptions, userId?: string, isAppPublic?: boolean): string {
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    let accessToken: string;
+
+    if (isMultiAuthEnabled) {
+      const currentUserToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
+      if (!currentUserToken) {
+        throw new OAuthUnauthorizedClientError(
+          'Authentication required',
+          'Access token not found for current user. Please authenticate via OAuth U2M.',
+          {}
+        );
+      }
+      accessToken = currentUserToken['access_token'];
+    } else {
+      accessToken = sourceOptions['access_token'] as string;
+    }
+
+    if (!accessToken) {
+      throw new OAuthUnauthorizedClientError(
+        'Authentication required',
+        'Databricks access token not found. Please authenticate via OAuth U2M.',
+        {}
+      );
+    }
+
+    return accessToken;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  _executeSqlViaRest — run a SQL statement via the Statements API
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private async _executeSqlViaRest(
+    host: string,
+    accessToken: string,
+    warehouseId: string,
+    sql: string,
+    catalog?: string,
+    schema?: string
+  ): Promise<any[]> {
+    const body: Record<string, any> = { warehouse_id: warehouseId, statement: sql, wait_timeout: '50s' };
+    if (catalog) body.catalog = catalog;
+    if (schema) body.schema = schema;
+    const response = await got(`https://${host}/api/2.0/sql/statements`, {
+      method: 'POST',
+      json: body,
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    });
+    const result = JSON.parse(response.body);
+    const state = result.status?.state;
+    if (state === 'FAILED') {
+      throw new QueryError('SQL execution failed', result.status?.error?.message || 'Unknown error', {});
+    }
+    if (state === 'RUNNING' || state === 'PENDING') {
+      const polled = await this.pollStatementResult(host, result.statement_id, accessToken);
+      return Array.isArray(polled.data) ? (polled.data as any[]) : [];
+    }
+    return this.formatStatementResult(result);
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  _fetchTablesViaRest — list all tables across all schemas (oauth_u2m)
+  //  Queries information_schema.tables using the warehouse's default (workspace) catalog.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private async _fetchTablesViaRest(
+    host: string,
+    accessToken: string,
+    httpPath: string,
+    search = '',
+    page?: number,
+    limit?: number
+  ): Promise<
+    { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
+  > {
+    const warehouseId = this.extractWarehouseId(httpPath);
+
+    const catalogRows = await this._executeSqlViaRest(
+      host,
+      accessToken,
+      warehouseId,
+      'SELECT current_catalog() AS catalog'
+    );
+    const workspaceCatalog = catalogRows[0]?.catalog || catalogRows[0]?.CATALOG || '';
+
+    const infoSchema = workspaceCatalog ? `\`${workspaceCatalog}\`.information_schema` : 'information_schema';
+    const tableRows = await this._executeSqlViaRest(
+      host,
+      accessToken,
+      warehouseId,
+      `SELECT table_catalog, table_schema, table_name FROM ${infoSchema}.tables` +
+        ` WHERE table_type NOT IN ('VIEW', 'MATERIALIZED_VIEW') ORDER BY table_schema, table_name`
+    );
+
+    const allTables = tableRows
+      .map((row: any) => {
+        const catalog = row.table_catalog || row.TABLE_CATALOG;
+        const schema = row.table_schema || row.TABLE_SCHEMA;
+        const name = row.table_name || row.TABLE_NAME;
+        if (!schema || !name) return null;
+        const fullName = catalog ? `${catalog}.${schema}.${name}` : `${schema}.${name}`;
+        return { value: fullName, label: fullName };
+      })
+      .filter(Boolean) as Array<{ value: string; label: string }>;
+
+    const filtered = search ? allTables.filter((t) => t.label.toLowerCase().includes(search.toLowerCase())) : allTables;
+
+    if (limit) {
+      const offset = ((page || 1) - 1) * limit;
+      return { items: filtered.slice(offset, offset + limit), totalCount: filtered.length };
+    }
+
+    return filtered;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  _fetchColumnsViaRest — list columns for a table via SQL (oauth_u2m)
+  //  Accepts catalog.schema.table or schema.table
+  // ──────────────────────────────────────────────────────────────────────────
+
+  private async _fetchColumnsViaRest(
+    host: string,
+    accessToken: string,
+    httpPath: string,
+    table: string
+  ): Promise<Array<{ value: string; label: string }>> {
+    const parts = table.split('.');
+    if (parts.length < 2) return [];
+
+    const warehouseId = this.extractWarehouseId(httpPath);
+    let sql: string;
+
+    if (parts.length >= 3) {
+      const [catalog, schema, tableName] = parts;
+      const safeCatalog = catalog.replace(/`/g, '``');
+      const safeSchema = schema.replace(/'/g, "''");
+      const safeTable = tableName.replace(/'/g, "''");
+      sql =
+        `SELECT column_name FROM \`${safeCatalog}\`.information_schema.columns` +
+        ` WHERE table_schema = '${safeSchema}' AND table_name = '${safeTable}' ORDER BY ordinal_position`;
+    } else {
+      const [schema, tableName] = parts;
+      const safeSchema = schema.replace(/'/g, "''");
+      const safeTable = tableName.replace(/'/g, "''");
+      sql =
+        `SELECT column_name FROM information_schema.columns` +
+        ` WHERE table_schema = '${safeSchema}' AND table_name = '${safeTable}' ORDER BY ordinal_position`;
+    }
+
+    const rows = await this._executeSqlViaRest(host, accessToken, warehouseId, sql);
+    return rows.map((row: any) => {
+      const name = row.column_name || row.COLUMN_NAME;
+      return { value: name, label: name };
+    });
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   //  GUI mode — helpers
   // ──────────────────────────────────────────────────────────────────────────
+
+  private isSqlParametersUsed(queryOptions: QueryOptions): boolean {
+    const queryParams = queryOptions.query_params || [];
+    return queryParams.some(([key]) => key && key.trim() !== '');
+  }
+
+  // Substitute :name placeholders for SQL mode named parameters.
+  private _substituteNamedParams(query: string, params: Record<string, any>): string {
+    return query.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, (_match, name) => {
+      if (!(name in params)) return `:${name}`;
+      const val = params[name];
+      if (val === null || val === undefined) return 'NULL';
+      if (typeof val === 'number' && isFinite(val as number)) return String(val);
+      if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
+      return `'${String(val).replace(/'/g, "''")}'`;
+    });
+  }
 
   // Safely substitute ? placeholders with their values to produce a final SQL string.
   // Databricks does not support client-side positional binding via a standard driver interface,
@@ -929,6 +1117,22 @@ export default class Databricks implements QueryService {
     return batches;
   }
 
+  private _qualifyTableName(table: string, catalog?: string, schema?: string): string {
+    if (catalog && schema) return `${catalog}.${schema}.${table}`;
+    if (schema) return `${schema}.${table}`;
+    return table;
+  }
+
+  // Split backtick-quoted dotted identifiers: `a.b.c` → `a`.`b`.`c`
+  private _fixDottedIdentifiers(sql: string): string {
+    return sql.replace(/`([^`]*\.[^`]*)`/g, (_, inner) =>
+      inner
+        .split('.')
+        .map((p: string) => `\`${p.replace(/`/g, '``')}\``)
+        .join('.')
+    );
+  }
+
   // Execute a built SQL string (with params substituted) using the appropriate auth path.
   private async _executeGuiSql(
     sourceOptions: SourceOptions,
@@ -937,7 +1141,7 @@ export default class Databricks implements QueryService {
     userId?: string,
     isAppPublic?: boolean
   ): Promise<any[]> {
-    const finalSql = this._substituteParams(sql, params);
+    const finalSql = this._fixDottedIdentifiers(this._substituteParams(sql, params));
     const authType = sourceOptions['authentication_type'] || 'personal_access_token';
 
     if (authType === 'oauth_u2m') {
@@ -1045,8 +1249,7 @@ export default class Databricks implements QueryService {
       throw new QueryError('Table is required', 'A table name must be specified for GUI mode queries', {});
     }
 
-    // Databricks supports ANSI SQL with MERGE INTO — same dialect as Snowflake
-    const qb = createQueryBuilder('snowflake');
+    const qb = createQueryBuilder('mysql');
 
     switch (operation) {
       case 'list_rows': {

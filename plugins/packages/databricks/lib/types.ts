@@ -19,6 +19,8 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   sql_query: string;
+  query: string;
+  query_params: [string, string][];
   mode: string;
   // GUI mode fields
   table?: string;
