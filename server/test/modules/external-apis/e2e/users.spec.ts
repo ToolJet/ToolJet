@@ -128,8 +128,8 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       expect(groupNames).toContain('end-user');
     });
 
-    it('should return null inviteUrl when user status is active and workspace status is not explicitly set', async () => {
-      // user:active + workspace:unset → workspace inherits active → no tokens, no invite URL
+    it('should return an org-invite URL (not a full invite URL) when user status is active and workspace status is not set', async () => {
+      // user:active (no invitationToken) + workspace:unset (defaults to invited) → org-invite URL only
       const { user: adminUser } = await createUser(app, { email: 'admin-active-user@tooljet.io' });
       const orgId = adminUser.defaultOrganizationId;
 
@@ -144,12 +144,14 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
         })
         .expect(201);
 
-      expect(res.body.workspaces[0].inviteUrl).toBeNull();
+      const inviteUrl: string = res.body.workspaces[0].inviteUrl;
+      expect(inviteUrl).toBeTruthy();
+      expect(inviteUrl).toContain('organization-invitations');
+      expect(inviteUrl).not.toContain('/invitations/');
     });
 
-    it('should set OrganizationUser status to active when user status is active and workspace status is not set', async () => {
-      // Root cause of the login bug: OrganizationUser was INVITED even though user was ACTIVE,
-      // causing "User is not assigned to any workspaces" on authenticate.
+    it('should set OrganizationUser status to invited and generate an invitationToken when user is active and workspace status is not set', async () => {
+      // workspace always defaults to invited regardless of user status — caller must share the org-invite URL
       const { user: adminUser } = await createUser(app, { email: 'admin-active-orguser@tooljet.io' });
       const orgId = adminUser.defaultOrganizationId;
 
@@ -167,8 +169,8 @@ describe('ExternalApisUsersController (EE enterprise)', () => {
       const ds = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
       const orgUser = await ds.manager.findOne(OrganizationUser, { where: { userId: res.body.id } });
 
-      expect(orgUser.status).toBe('active');
-      expect(orgUser.invitationToken).toBeNull();
+      expect(orgUser.status).toBe('invited');
+      expect(orgUser.invitationToken).toBeTruthy();
     });
 
     it('should return an org-invite URL when user is active but workspace status is explicitly set to invited', async () => {
