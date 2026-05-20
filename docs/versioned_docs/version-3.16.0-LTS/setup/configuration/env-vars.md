@@ -254,7 +254,7 @@ ToolJet supports **GitHub (HTTPS)**, **GitLab**, and **Git (SSH)**. For example,
 This feature is currently in beta and is not recommended for production use.
 :::
 
-The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. This is especially useful in ephemeral or frequently recycled environments, for example, setups where a fresh instance is spun up for each developer and dissolved after a few days. Setting `TJ_LICENSE_KEY` ensures the license is applied automatically at startup without any manual configuration.
+The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. Setting `TJ_LICENSE_KEY` ensures the license is applied automatically at startup without any manual configuration.
 
 | **Variable** | **Description** |
 |:--- |:--- |
