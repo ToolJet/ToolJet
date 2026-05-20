@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
+import { isUUID } from 'class-validator';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from 'src/entities/app_version.entity';
@@ -582,7 +583,7 @@ export class AppImportExportService {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
 
           let versionDbId: string | undefined;
-          if (moduleAppId.versionIdentifier && resolvedId) {
+          if (moduleAppId.versionIdentifier && isUUID(moduleAppId.versionIdentifier) && resolvedId) {
             // PINNED: explicit module_reference_id from the ModuleViewer.
             const byRefId = await manager.findOne(AppVersion, {
               where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
