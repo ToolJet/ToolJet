@@ -88,7 +88,7 @@ export function defineDataQueryAppAbility(
   }
 
   if (isEndUser) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER], App);
+    can([FEATURE_KEY.GET, FEATURE_KEY.RUN_VIEWER, FEATURE_KEY.RUN_EDITOR], App);
     return;
   }
 }
