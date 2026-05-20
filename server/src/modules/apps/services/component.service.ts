@@ -279,14 +279,13 @@ export class ComponentsService implements IComponentsService {
         height: number;
         widthPx?: number;
         fillWidth?: boolean;
-        heightPx?: number;
         updatedAt: Date | null;
       }
     > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, widthPx, fillWidth, heightPx, updatedAt } = layout as any;
+        const { type, top, left, width, height, widthPx, fillWidth, updatedAt } = layout as any;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
@@ -301,7 +300,6 @@ export class ComponentsService implements IComponentsService {
           updatedAt: updatedAt ?? null,
           ...(widthPx != null ? { widthPx } : {}),
           ...(fillWidth != null ? { fillWidth } : {}),
-          ...(heightPx != null ? { heightPx } : {}),
         };
       }
     });
@@ -437,7 +435,6 @@ export class ComponentsService implements IComponentsService {
           newLayout.height = layout.height;
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
-          if (layout.heightPx != null) newLayout.heightPx = layout.heightPx;
           newLayout.component = component;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

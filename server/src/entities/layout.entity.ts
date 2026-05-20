@@ -27,9 +27,6 @@ export class Layout {
   @Column({ type: 'boolean', name: 'fill_width', nullable: true })
   fillWidth: boolean | null;
 
-  @Column({ type: 'double precision', name: 'height_px', nullable: true })
-  heightPx: number | null;
-
   @Column({ name: 'component_id' })
   componentId: string;
 

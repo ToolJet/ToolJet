@@ -1886,25 +1886,24 @@ export const createComponentsSlice = (set, get) => ({
                 // FlexContainer children: write only flex-specific fields, strip grid fields
                 const defaultFlexLayout = createDefaultFlexChildLayout({
                   widthPx: layout.widthPx,
-                  heightPx: layout.heightPx,
+                  height: layout.height,
                 });
-                const { fillWidth, widthPx, heightPx } = {
+                const { fillWidth, widthPx, height } = {
                   ...defaultFlexLayout,
                   ...layout,
                 };
                 const flexLayout = {};
                 if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
                 if (widthPx !== undefined) flexLayout.widthPx = widthPx;
-                if (heightPx !== undefined) flexLayout.heightPx = heightPx;
+                if (height !== undefined) flexLayout.height = height;
                 component.layouts[currentLayout] = {
                   ...component.layouts[currentLayout],
                   ...flexLayout,
                 };
-                // Strip absolute-grid fields when moving into FlexContainer
+                // Strip absolute-grid position/width fields when moving into FlexContainer.
                 delete component.layouts[currentLayout].top;
                 delete component.layouts[currentLayout].left;
                 delete component.layouts[currentLayout].width;
-                delete component.layouts[currentLayout].height;
               } else if (
                 oldParentComponentType === 'FlexContainer' &&
                 newParentComponentType !== 'FlexContainer' &&
@@ -1921,7 +1920,6 @@ export const createComponentsSlice = (set, get) => ({
                 };
                 delete component.layouts[currentLayout].fillWidth;
                 delete component.layouts[currentLayout].widthPx;
-                delete component.layouts[currentLayout].heightPx;
               } else {
                 component.layouts[currentLayout] = {
                   ...component.layouts[currentLayout],

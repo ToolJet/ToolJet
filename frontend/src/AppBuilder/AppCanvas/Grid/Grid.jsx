@@ -467,7 +467,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         if (parent && getComponentTypeFromId(parent) === 'FlexContainer') {
           layouts[id] = createDefaultFlexChildLayout({
             widthPx: _width * containerWidth,
-            heightPx: _height,
+            height: _height,
           });
         } else {
           layouts[id] = {
@@ -783,7 +783,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               );
               const flexPatch = {
                 widthPx: snappedW,
-                heightPx: snappedH,
+                height: snappedH,
                 fillWidth: false,
               };
 

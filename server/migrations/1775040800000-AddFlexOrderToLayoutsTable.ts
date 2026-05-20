@@ -13,16 +13,10 @@ export class AddFlexSizingToLayoutsTable1775040800001 implements MigrationInterf
         type: 'boolean',
         isNullable: true,
       }),
-      new TableColumn({
-        name: 'height_px',
-        type: 'double precision',
-        isNullable: true,
-      }),
     ]);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropColumn('layouts', 'height_px');
     await queryRunner.dropColumn('layouts', 'fill_width');
     await queryRunner.dropColumn('layouts', 'width_px');
   }

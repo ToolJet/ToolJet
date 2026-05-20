@@ -96,21 +96,21 @@ export const getOrderedFlexChildrenFromSnapshot = (components, flexContainerId, 
  */
 export const resolveFlexChildSizing = (layoutData = {}, fallbacks = {}) => {
   const fallbackWidthPx = fallbacks.widthPx ?? null;
-  const fallbackHeightPx = fallbacks.heightPx ?? null;
+  const fallbackHeight = fallbacks.height ?? null;
 
   const fillWidth = layoutData.fillWidth !== undefined ? layoutData.fillWidth : true;
 
   const widthPx = layoutData.widthPx ?? fallbackWidthPx ?? null;
-  const heightPx = layoutData.heightPx ?? fallbackHeightPx ?? null;
+  const height = layoutData.height ?? fallbackHeight ?? null;
 
-  return { fillWidth, widthPx, heightPx };
+  return { fillWidth, widthPx, height };
 };
 
 /** Default flex-child layout when a widget is first dropped into a FlexContainer. */
-export const createDefaultFlexChildLayout = ({ widthPx, heightPx }) => ({
+export const createDefaultFlexChildLayout = ({ widthPx, height }) => ({
   fillWidth: true,
   widthPx,
-  heightPx,
+  height,
 });
 
 /**

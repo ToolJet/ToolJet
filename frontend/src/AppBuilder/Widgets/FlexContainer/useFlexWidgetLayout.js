@@ -21,13 +21,13 @@ export const useFlexWidgetLayout = ({
   const gridDerivedWidthPx = gridWidth * (flexLayoutData?.width ?? 1);
   const isFlexRow = flexDirection === 'row';
 
-  const { fillWidth, widthPx, heightPx } = resolveFlexChildSizing(flexLayoutData, {
+  const { fillWidth, widthPx, height } = resolveFlexChildSizing(flexLayoutData, {
     widthPx: gridDerivedWidthPx,
-    heightPx: flexLayoutData.height ?? 100,
+    height: flexLayoutData.height ?? 100,
   });
 
   const effectiveWidthPx = widthPx ?? gridDerivedWidthPx ?? 100;
-  const visibleHeightPx = heightPx ?? flexLayoutData.height ?? 100;
+  const visibleHeightPx = height ?? flexLayoutData.height ?? 100;
   const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
   const availableWidth = containerWidth ?? effectiveWidthPx;
   let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;

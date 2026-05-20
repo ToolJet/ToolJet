@@ -109,7 +109,7 @@ export const addNewWidgetToTheEditor = (
 
     const flexLayout = createDefaultFlexChildLayout({
       widthPx: dropWidthPx,
-      heightPx: dropHeightPx,
+      height: dropHeightPx,
     });
     activeLayoutData = flexLayout;
     nonActiveLayoutData = { ...flexLayout };
