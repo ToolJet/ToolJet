@@ -58,8 +58,8 @@ This operation retrieves all available Sharepoint sites. For more details, see t
 
 #### Optional Parameters
 
-- **Top**: The number of sites to retrieve
-- **Page**: The page number to retrieve
+- **Top**: The number of sites to retrieve.
+- **Page**: The page number to retrieve.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/getall-sites.png" alt="Get All Sites" />
 
@@ -91,9 +91,9 @@ This operation retrieves all available Sharepoint sites. For more details, see t
 
 This operation retrieves information about a specific site.
 
-#### Required Parameters
+#### Required Parameter
 
-- **Site ID**: The ID of the site to retrieve
+- **Site ID**: The ID of the site to retrieve.
 
 #### Example:
 
@@ -131,10 +131,10 @@ This operation retrieves analytics for a specific site.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **Time Interval**:
-  - **Last 7 Days**
-  - **All Time**
+- **Site ID**: The ID of the site.
+- **Time Interval**: The duration between each automatic synchronization or polling request.
+  - Last 7 Days
+  - All Time
 
 #### Example:
 
@@ -167,21 +167,20 @@ Time Interval: Last 7 Days
   }
 }
 ```
-
 </details>
 
 ### Get Pages Of a Site
 
 This operation retrieves all pages from a specific site.
 
-#### Required Parameters
+#### Required Parameter
 
-- **Site ID**: The ID of the site
+- **Site ID**: The ID of the site.
 
 #### Optional Parameters
 
-- **Top**: The number of sites to retrieve
-- **Page**: The page number to retrieve
+- **Top**: The number of sites to retrieve.
+- **Page**: The page number to retrieve.
 
 #### Example:
 
@@ -248,13 +247,13 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 
 This operation retrieves all lists from a specific site.
 
-#### Required Parameters
+#### Required Parameter
 
-- **Site ID**: The ID of the site
+- **Site ID**: The ID of the site.
 
-#### Optional Parameters
+#### Optional Parameter
 
-- **Page**: The page number to retrieve
+- **Page**: The page number to retrieve.
 
 #### Example:
 
@@ -316,9 +315,10 @@ This operation retrieves metadata for a specific list.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **List Name**: The name of the list, only used if List ID is not provided
-- **List ID**: The ID of the list, required if List Name is not provided
+- **Site ID**: The ID of the site.
+- **List Name**: The name of the list, only used if List ID is not provided.
+- **List ID**: The ID of the list, required if List Name is not provided.
+
 #### Example:
 
 ```yaml
@@ -448,8 +448,8 @@ This operation creates a new list in a Sharepoint site.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **Body**: The list configuration in JSON format
+- **Site ID**: The ID of the site.
+- **Body**: The list configuration in JSON format.
 
 #### Example:
 
@@ -521,13 +521,13 @@ This operation retrieves items from a specific list.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **List ID**: The ID of the list
+- **Site ID**: The ID of the site.
+- **List ID**: The ID of the list.
 
 #### Optional Parameters
 
-- **Top**: The number of sites to retrieve
-- **Page**: The page number to retrieve
+- **Top**: The number of sites to retrieve.
+- **Page**: The page number to retrieve.
 
 #### Example:
 
@@ -614,10 +614,10 @@ This operation updates an existing item in a list.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **List ID**: The ID of the list
-- **Item ID**: The ID of the item to update
-- **Body**: The updated values in JSON format
+- **Site ID**: The ID of the site.
+- **List ID**: The ID of the list.
+- **Item ID**: The ID of the item to update.
+- **Body**: The updated values in JSON format.
 
 #### Example:
 
@@ -652,9 +652,9 @@ This operation removes an item from a list.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **List ID**: The ID of the list
-- **Item ID**: The ID of the item to delete
+- **Site ID**: The ID of the site.
+- **List ID**: The ID of the list.
+- **Item ID**: The ID of the item to delete.
 
 #### Example:
 
@@ -684,9 +684,9 @@ This operation adds a new item to a list.
 
 #### Required Parameters
 
-- **Site ID**: The ID of the site
-- **List ID**: The ID of the list
-- **Body**: The new item's data in JSON format
+- **Site ID**: The ID of the site.
+- **List ID**: The ID of the list.
+- **Body**: The new item's data in JSON format.
 
 #### Example:
 
