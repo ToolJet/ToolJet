@@ -36,9 +36,9 @@ Fetches the current value of a metric at a single point in time.
 **Required Parameters**
 
 - **Query**: A valid PromQL expression to fetch the metric.
-- **Request method**: Defines how the request is sent (GET or POST)
+- **Request method**: Defines how the request is sent (GET or POST).
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **Time**: Specific timestamp to evaluate the query against.
 - **Timeout**: Maximum duration the query is allowed to run before timing out.
@@ -67,7 +67,7 @@ Retrieves metric data over a specified time range.
 - **Step**: Interval between data points within the time range.
 - **Request method**: Defines how the request is sent (GET or POST).
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **Timeout**: Maximum duration the query is allowed to run before timing out.
 - **Limit**: Restricts the number of results returned.

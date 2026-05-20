@@ -44,10 +44,11 @@ Portkey in ToolJet supports the following operations:
 
 This operation generates text completions based on a given prompt.
 
-#### Parameters:
-
+#### Required Parameters:
 - **Prompt**: The input text to generate completions for.
 - **Model**: The AI model to use.
+
+#### Optional Parameters:
 - **Max Tokens**: Maximum number of tokens to generate.
 - **Temperature**: Controls randomness.
 - **Stop Sequences**: Sequences where the API will stop generating further tokens.
@@ -90,10 +91,11 @@ This operation generates text completions based on a given prompt.
 
 This operation generates chat completions based on a series of messages.
 
-#### Parameters:
-
+#### Required Parameters:
 - **Messages**: An array of message objects representing the conversation.
 - **Model**: The AI model to use.
+
+#### Operational Parameters:
 - **Max Tokens**: Maximum number of tokens to generate.
 - **Temperature**: Controls randomness.
 - **Stop Sequence**: Sequences where the API will stop generating further tokens.
@@ -139,9 +141,10 @@ This operation generates chat completions based on a series of messages.
 
 This operation generates completions based on a pre-defined prompt.
 
-#### Parameters:
-
+#### Required Parameter:
 - **Prompt ID**: The ID of the pre-defined prompt to use.
+
+#### Optional Parameters:
 - **Variables**: Variables to be used in the prompt.
 - **Parameters**: Additional parameters for the prompt completion.
 - **Metadata**: Additional metadata for the request.
@@ -185,11 +188,14 @@ This operation generates completions based on a pre-defined prompt.
 
 This operation creates embeddings for given input text.
 
-#### Parameters:
-
+#### Required Parameters:
 - **Input**: The input text to create embeddings for.
 - **Model**: The AI model to use for creating embeddings.
+
+#### Optional Parameters:
 - **Metadata**: Additional metadata for the request.
+- **Config**: Configuration options for the request.
+- **Virtual Key**: A specific virtual key to use for the request, overriding the default.
 
 <div style={{textAlign: 'center'}}>
   <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/embed-query.png" alt="Create Embedding Operation for Portkey" />
@@ -235,9 +241,3 @@ This operation creates embeddings for given input text.
 }
 ```
 </details>
-
-For all operations, you can optionally specify:
-
-- **Config**: Configuration options for the request.
-- **Virtual Key**: A specific virtual key to use for the request, overriding the default.
-

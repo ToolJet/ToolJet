@@ -44,7 +44,7 @@ ToolJet supports executing SQL queries on PrestoDB databases.
 
 This operation allows you to execute SQL queries on your PrestoDB database.
 
-#### Parameters:
+#### Required Parameter:
 
 - **SQL Query**: The SQL query to execute.
 
