@@ -47,7 +47,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
@@ -273,7 +273,7 @@ export const EventManager = ({
   }
 
   const fetchApps = async () => {
-    const { apps } = await appService.getAllAddableApps();
+    const { apps } = await appsService.getAllAddableApps();
     updateState({
       apps: apps.map((app) => ({
         id: app.id,

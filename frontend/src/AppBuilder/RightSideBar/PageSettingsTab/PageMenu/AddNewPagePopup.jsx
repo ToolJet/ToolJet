@@ -10,7 +10,7 @@ import { kebabCase } from 'lodash';
 import Select from '@/_ui/Select';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { ToolTip } from '@/_components';
 import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -169,7 +169,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   //Nav item with app hooks
   useEffect(() => {
     const fetchApps = async () => {
-      const { apps } = await appService.getAllAddableApps();
+      const { apps } = await appsService.getAllAddableApps();
       return apps;
     };
 
