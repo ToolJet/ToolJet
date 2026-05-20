@@ -18,6 +18,8 @@ export class GroupPermissionsModule extends SubModule {
       GroupPermissionLicenseUtilService,
       GroupPermissionsDuplicateService,
       GranularPermissionsController,
+      GroupAdminService,
+      GroupAdminController,
     } = await this.getProviders(configs, 'group-permissions', [
       'service',
       'util.service',
@@ -27,12 +29,16 @@ export class GroupPermissionsModule extends SubModule {
       'util-services/license.util.service',
       'services/duplicate.service',
       'controllers/granular-permissions.controller',
+      'services/group-admin.service',
+      'controllers/group-admin.controller',
     ]);
 
     return {
       module: GroupPermissionsModule,
       imports: [await RolesModule.register(configs)],
-      controllers: isMainImport ? [GranularPermissionsController, GroupPermissionsControllerV2] : [],
+      controllers: isMainImport
+        ? [GranularPermissionsController, GroupPermissionsControllerV2, GroupAdminController]
+        : [],
       providers: [
         GranularPermissionsService,
         GroupPermissionsService,
@@ -40,13 +46,14 @@ export class GroupPermissionsModule extends SubModule {
         GroupPermissionsUtilService,
         GranularPermissionsUtilService,
         GroupPermissionLicenseUtilService,
+        GroupAdminService,
         OrganizationUsersRepository,
         RolesRepository,
         UserRepository,
         GroupPermissionsRepository,
         FeatureAbilityFactory,
       ],
-      exports: [GroupPermissionsUtilService, GranularPermissionsUtilService],
+      exports: [GroupPermissionsUtilService, GranularPermissionsUtilService, GroupAdminService],
     };
   }
-}
+}         

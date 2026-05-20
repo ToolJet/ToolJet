@@ -5,7 +5,7 @@ export const snowflakeUIConfig = {
             fieldName: "Account",
             validations: {
                 isRequired: false,
-                placeholder: "Enter account",
+                placeholder: "Enter Snowflake account identifier (e.g. xy12345.us-east-1)",
                 defaultValue: "",
                 disabled: false
             }
@@ -15,7 +15,7 @@ export const snowflakeUIConfig = {
             fieldName: "Database",
             validations: {
                 isRequired: false,
-                placeholder: "Enter database",
+                placeholder: "Enter database name",
                 defaultValue: "",
                 disabled: false
             }
@@ -25,7 +25,7 @@ export const snowflakeUIConfig = {
             fieldName: "Schema",
             validations: {
                 isRequired: false,
-                placeholder: "Enter schema",
+                placeholder: "Enter schema name",
                 defaultValue: "",
                 disabled: false
             }
@@ -35,7 +35,7 @@ export const snowflakeUIConfig = {
             fieldName: "Warehouse",
             validations: {
                 isRequired: false,
-                placeholder: "Enter warehouse",
+                placeholder: "Enter warehouse name",
                 defaultValue: "",
                 disabled: false
             }

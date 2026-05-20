@@ -15,7 +15,7 @@ import './styles/style.scss';
 
 import SaveIndicator from './SaveIndicator';
 
-export const EditorHeader = ({ darkMode }) => {
+export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
   const { isSaving, saveError, isVersionReleased, appId, organizationId, selectedVersion } = useStore(
     (state) => ({
@@ -56,7 +56,7 @@ export const EditorHeader = ({ darkMode }) => {
                 >
                   <div className="global-settings-app-wrapper p-0 m-0 ">
                     <h1 className="navbar-brand d-none-navbar-horizontal p-0 tw-shrink-0" data-cy="editor-page-logo">
-                      <LogoNavDropdown darkMode={darkMode} />
+                      <LogoNavDropdown darkMode={darkMode} type={appType} />
                     </h1>
                     <div className="d-flex flex-row tw-mr-1">
                       {isModuleEditor && <ModuleEditorBanner showBeta={true} />}
@@ -84,12 +84,8 @@ export const EditorHeader = ({ darkMode }) => {
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
               <div className="d-flex align-items-center p-0">
                 <div className="d-flex version-manager-container p-0  align-items-center gap-0">
-                  {!isModuleEditor && (
-                    <>
-                      <PreviewAndShareIcons />
-                      {<BranchDropdown appId={appId} organizationId={organizationId} />}
-                    </>
-                  )}
+                  {!isModuleEditor && <PreviewAndShareIcons />}
+                  <BranchDropdown appId={appId} organizationId={organizationId} />
                   {/* Hide version dropdown when on a feature branch (per-app or platform git sync) */}
                   {selectedVersion?.versionType !== 'branch' && !isOnWorkspaceFeatureBranch && (
                     <VersionManagerErrorBoundary>

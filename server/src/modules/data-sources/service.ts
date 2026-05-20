@@ -24,7 +24,6 @@ import * as fs from 'fs';
 import { UserPermissions } from '@modules/ability/types';
 import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
-import { AppVersion } from '@entities/app_version.entity';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
 
@@ -44,18 +43,9 @@ export class DataSourcesService implements IDataSourcesService {
   ): Promise<{ data_sources: object[] }> {
     const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
 
-    // Derive branchId from the AppVersion if not explicitly provided
-    if (!query.branchId && query.appVersionId) {
-      const appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
-        return manager.findOne(AppVersion, {
-          where: { id: query.appVersionId },
-          select: ['id', 'branchId'],
-        });
-      });
-      if (appVersion?.branchId) {
-        query = { ...query, branchId: appVersion.branchId };
-      }
-    }
+    // Removed: appVersionId-based branchId derivation (app_version_id dropped from data_source_versions).
+    // Released versions now use is_default DSV; branch editors pass branchId directly.
+    // if (!query.branchId && query.appVersionId) { ... }
 
     let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
 
@@ -76,7 +66,6 @@ export class DataSourcesService implements IDataSourcesService {
       query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
 
     const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
-      appVersionId: query.appVersionId,
       environmentId: selectedEnvironmentId,
       types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
       branchId: query.branchId,
@@ -385,6 +374,12 @@ export class DataSourcesService implements IDataSourcesService {
         {
           user: { id: user?.id },
           app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+          dataSourceDetails: {
+            datasourceId: dataSource?.id,
+            datasourcekind: dataSource?.kind,
+            datasourceUpdatedAt: dataSourceOptions?.updatedAt,
+            dataSourceOptionsEnvironmentId: dataSourceOptions?.environmentId,
+          },
         },
         sourceOptions,
         args

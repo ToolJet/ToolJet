@@ -26,6 +26,7 @@ import { camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { ConfirmDialog, ToolTip } from '@/_components';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
@@ -37,6 +38,27 @@ import InfoIcon from '@assets/images/info.svg';
 import './dataSourceManager.theme.scss';
 import { canUpdateDataSource } from '@/_helpers';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
+// eslint-disable-next-line import/no-unresolved
+import { allManifests } from '@tooljet/plugins/client';
+
+// Dummy DSes (created by git-sync when a referenced DS isn't in the repo) are
+// persisted with empty DSVO options `{}`. The DS Manager form expects options
+// to be pre-populated with manifest defaults — DynamicFormV2 doesn't auto-fill
+// them on mount. Without this, the connection_type dropdown shows "Select.."
+// and the form is unusable. Compute defaults from the kind's V2 manifest so
+// the user can configure the dummy locally as a temporary workaround until
+// they pull the real DS from git.
+const getDummyDefaultOptions = (dataSource) => {
+  if (!dataSource?.is_dummy) return null;
+  const manifestKey = (dataSource.kind || '').charAt(0).toUpperCase() + (dataSource.kind || '').slice(1);
+  const schema = allManifests?.[manifestKey];
+  if (!schema?.['tj:version']) return null;
+  try {
+    return new DataSourceSchemaManager(schema).getDefaults();
+  } catch {
+    return null;
+  }
+};
 import MultiEnvTabs from './MultiEnvTabs';
 import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -55,6 +77,10 @@ class DataSourceManagerComponent extends React.Component {
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
       options = selectedDataSource.options;
+      if (selectedDataSource.is_dummy && isEmpty(options)) {
+        const dummyDefaults = getDummyDefaultOptions(selectedDataSource);
+        if (dummyDefaults) options = dummyDefaults;
+      }
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
       dataSourceSchema = props.selectedDataSource?.plugin?.manifestFile?.data;
       selectedDataSourceIcon = props.selectDataSource?.plugin?.iconFile.data;
@@ -113,9 +139,14 @@ class DataSourceManagerComponent extends React.Component {
     this.props.setGlobalDataSourceStatus({ saveAction: this.createDataSource });
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
       let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
+      let nextOptions = this.props.selectedDataSource?.options;
+      if (this.props.selectedDataSource?.is_dummy && isEmpty(nextOptions)) {
+        const dummyDefaults = getDummyDefaultOptions(this.props.selectedDataSource);
+        if (dummyDefaults) nextOptions = dummyDefaults;
+      }
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
-        options: this.props.selectedDataSource?.options,
+        options: nextOptions,
         dataSourceMeta,
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
@@ -132,7 +163,16 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.pluginId) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
+      const manifestData = dataSource?.plugin?.manifestFile?.data;
+
+      // Handle new tj:version schema format
+      if (manifestData?.['tj:version']) {
+        const dsm = new DataSourceSchemaManager(manifestData);
+        return dsm.getSourceMetadata();
+      }
+
+      // // Old schema format
+      let dataSourceMeta = camelizeKeys(manifestData?.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
@@ -415,6 +455,9 @@ class DataSourceManagerComponent extends React.Component {
       case 'googlesheetsv2': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
+      case 'bigquery': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
       default:
         return true;
     }
@@ -678,7 +721,22 @@ class DataSourceManagerComponent extends React.Component {
     );
   };
 
-  createSampleApp = () => {
+  createSampleApp = async () => {
+    const { currentBranch, actions } = useWorkspaceBranchesStore.getState();
+    if (currentBranch) {
+      try {
+        const exists = await actions.checkBranchExistsOnRemote(currentBranch.name);
+        if (!exists) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        /* allow on network error */
+      }
+    }
+
     let _self = this;
     _self.setState({ creatingApp: true });
     libraryAppService
@@ -970,10 +1028,27 @@ class DataSourceManagerComponent extends React.Component {
       },
       { ...(selectedDataSource?.options ?? {}) }
     );
-    const isSaveDisabled = selectedDataSource
-      ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
-        selectedDataSource?.name === datasourceName
-      : true;
+    // Dummy DSes (git-sync placeholder for missing-from-git) have empty saved
+    // options `{}`. We seed state.options with V2 manifest defaults on mount so
+    // the form is usable; mirror that here so the initial diff is zero and the
+    // discard-changes modal doesn't fire on first click.
+    if (selectedDataSource?.is_dummy && isEmpty(selectedDataSource?.options)) {
+      const dummyDefaults = getDummyDefaultOptions(selectedDataSource);
+      if (dummyDefaults) {
+        Object.keys(dummyDefaults).forEach((key) => {
+          if (normalizedSavedOptions[key] === undefined) normalizedSavedOptions[key] = dummyDefaults[key];
+        });
+      }
+    }
+    // Sample datasources are read-only (no DynamicForm, no save button), so they're never "editing".
+    // Without this guard, normalizedSavedOptions gets defaults added that state.options never receives
+    // (since DynamicForm which fills defaults isn't rendered for sample dbs), causing a false mismatch.
+    const isSaveDisabled =
+      isSampleDb ||
+      (selectedDataSource
+        ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+          selectedDataSource?.name === datasourceName
+        : true);
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
@@ -1036,22 +1111,46 @@ class DataSourceManagerComponent extends React.Component {
                     {selectedDataSource && !isSampleDb ? (
                       <div className="row selected-ds img-container">
                         {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-                        <div className="input-icon" style={{ width: '160px' }}>
-                          <input
-                            type="text"
-                            onChange={(e) => this.onNameChanged(e.target.value)}
-                            className="form-control-plaintext form-control-plaintext-sm color-slate12 tw-border-x tw-border-y"
-                            value={decodeEntities(selectedDataSource.name)}
-                            style={{ width: '160px' }}
-                            data-cy="data-source-name-input-field"
-                            autoFocus
-                            autoComplete="off"
-                            disabled={this.props.isWorkspaceBranchLocked || !canUpdateDataSource(selectedDataSource.id)}
-                          />
-                          {!this.props.isEditing && (
-                            <span className="input-icon-addon">
-                              <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
-                            </span>
+                        <div className="tw-flex tw-items-center tw-gap-2 tw-w-auto">
+                          <div className="input-icon" style={{ width: '160px' }}>
+                            <input
+                              type="text"
+                              onChange={(e) => this.onNameChanged(e.target.value)}
+                              className="form-control-plaintext form-control-plaintext-sm color-slate12 tw-border-x tw-border-y"
+                              value={
+                                selectedDataSource.is_dummy
+                                  ? 'Undefined data source'
+                                  : decodeEntities(selectedDataSource.name)
+                              }
+                              style={{ width: '160px' }}
+                              data-cy="data-source-name-input-field"
+                              autoFocus
+                              autoComplete="off"
+                              disabled={
+                                this.props.isWorkspaceBranchLocked ||
+                                !canUpdateDataSource(selectedDataSource.id) ||
+                                selectedDataSource.is_dummy
+                              }
+                            />
+                            {!this.props.isEditing && !selectedDataSource.is_dummy && (
+                              <span className="input-icon-addon">
+                                <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
+                              </span>
+                            )}
+                          </div>
+                          {selectedDataSource.is_dummy && (
+                            <ToolTip
+                              placement="right"
+                              message={
+                                selectedDataSource.co_relation_id
+                                  ? `Data source #${selectedDataSource.co_relation_id} is missing, pull from git to resolve this`
+                                  : 'Data source is missing, pull from git to resolve this'
+                              }
+                            >
+                              <span className="tw-inline-flex tw-items-center" data-cy="dummy-ds-header-warning-icon">
+                                <SolidIcon name="warning" width="18" fill="var(--icon-warning)" />
+                              </span>
+                            </ToolTip>
                           )}
                         </div>
                       </div>
@@ -1191,8 +1290,8 @@ class DataSourceManagerComponent extends React.Component {
                       )}
 
                       {connectionTestError && (
-                        <div className="row w-100">
-                          <div className="alert alert-danger" role="alert">
+                        <div className="w-100">
+                          <div className="alert alert-danger datasource-error-alert" role="alert">
                             <div className="text-muted" data-cy="connection-alert-text">
                               {connectionTestError.message}
                             </div>

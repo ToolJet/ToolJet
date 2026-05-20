@@ -17,6 +17,7 @@ const CommonOAuthFields = ({
   grant_type,
   oauth_configs,
   isFieldAllowed,
+  isDisabled = false,
 }) => {
   const { access_token_url, access_token_custom_headers } = tokenConfig;
   const { client_id, client_secret, client_auth } = clientConfig;
@@ -127,6 +128,7 @@ const CommonOAuthFields = ({
                 className="form-control"
                 onChange={(e) => optionchanged('client_id', e.target.value)}
                 value={client_id}
+                disabled={isDisabled}
                 workspaceConstants={workspaceConstants}
                 placeholder="Enter client ID"
               />
@@ -336,6 +338,7 @@ const OAuthConfiguration = ({
   handlers,
   oauth_configs,
   isFieldAllowed,
+  isDisabled,
 }) => {
   const { optionchanged } = handlers;
   const { grant_type } = authConfig;
@@ -381,6 +384,7 @@ const OAuthConfiguration = ({
           oauth_configs={oauth_configs}
           grant_type={grant_type}
           isFieldAllowed={isFieldAllowed}
+          isDisabled={isDisabled}
         />
         {grant_type === 'client_credentials' ? (
           <ClientCredentialsFields

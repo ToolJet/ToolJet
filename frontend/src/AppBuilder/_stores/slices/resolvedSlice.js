@@ -236,6 +236,11 @@ export const createResolvedSlice = (set, get) => ({
         data: [],
         rawData: [],
         id: queryId,
+        metadata: undefined,
+        request: undefined,
+        response: undefined,
+        responseHeaders: undefined,
+        error: undefined,
       };
     });
     set((state) => {
@@ -437,9 +442,8 @@ export const createResolvedSlice = (set, get) => ({
         payload: { id, type, values, moduleId },
       }
     );
-    Object.entries(values).forEach(([key, value]) => {
-      if (typeof value !== 'function' && !skipKeys.has(key))
-        get().updateDependencyValues(`components.${id}.${key}`, moduleId);
+    Object.entries(values).forEach(([key]) => {
+      if (!skipKeys.has(key)) get().updateDependencyValues(`components.${id}.${key}`, moduleId);
     });
   },
 

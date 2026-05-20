@@ -20,6 +20,9 @@ import { decamelizeKeys } from 'humps';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { v4 as uuid } from 'uuid';
+import { APP_TYPES } from '@modules/apps/constants';
+import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -64,7 +67,7 @@ export class VersionUtilService implements IVersionUtilService {
     return obj && typeof obj === 'object';
   }
 
-  async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto) {
+  async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto, manager?: EntityManager) {
     const editableParams = {};
 
     const { globalSettings, homePageId, pageSettings, name } = appVersion;
@@ -105,7 +108,11 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
-    await this.versionRepository.update(appVersion.id, editableParams);
+    if (manager) {
+      await manager.update(AppVersion, { id: appVersion.id }, editableParams);
+    } else {
+      await this.versionRepository.update(appVersion.id, editableParams);
+    }
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -196,6 +203,7 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
+          ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
         })
       );
@@ -225,6 +233,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
     try {
+      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
       const results = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -232,14 +241,20 @@ export class VersionUtilService implements IVersionUtilService {
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
         .select('DISTINCT app.name', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = :versionId", { versionId })
+        .andWhere(
+          `(component.properties::jsonb -> 'moduleVersionId' ->> 'value') = :versionId
+           OR EXISTS (
+             SELECT 1 FROM app_versions av
+             WHERE av.id::text = :versionId
+               AND (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.name
+           )`,
+          { versionId }
+        )
         .getRawMany();
 
       const appNames = results.map((r) => r.appName).filter(Boolean);
       if (appNames.length > 0) {
-        throw new BadRequestException(
-          `Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`
-        );
+        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`);
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -248,36 +263,129 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  async checkDraftModulesInApp(versionId: string, manager: EntityManager): Promise<void> {
+  async checkDraftModulesInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
     try {
-      const draftModules = await manager
-        .createQueryBuilder(Component, 'component')
-        .innerJoin('component.page', 'page')
-        .innerJoin('page.appVersion', 'appVersion')
-        .innerJoin('app_versions', 'mod_ver',
-          "mod_ver.id::text = component.properties::jsonb -> 'moduleVersionId' ->> 'value'")
-        .innerJoin('apps', 'mod_app', 'mod_app.id = mod_ver.app_id')
-        .select('DISTINCT mod_app.name', 'moduleName')
-        .addSelect('mod_ver.name', 'versionName')
-        .where('component.type = :type', { type: 'ModuleViewer' })
-        .andWhere('appVersion.id = :versionId', { versionId })
-        .andWhere('mod_ver.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT })
-        .getRawMany();
+      // Resolve pins to runtime rows. Strict policy — block:
+      //   no-row             — module unusable (zero candidate rows or module app missing)
+      //   orphan-fallback    — UUID pin matched no row; runtime drifts to active draft
+      //   unpinned-fallback  — pin empty; runtime drifts to active draft
+      //   pin-hit + DRAFT    — pin points directly at the editing draft
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const offenders = resolved.filter(
+        (v) =>
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback' ||
+          (v.resolved && v.resolved.status === AppVersionStatus.DRAFT)
+      );
 
-      if (draftModules.length > 0) {
-        const moduleList = draftModules.map((m) => `${m.moduleName} (${m.versionName})`).join(', ');
+      if (offenders.length > 0) {
+        const seen = new Set<string>();
+        const unique: ResolvedModuleViewer[] = [];
+        for (const o of offenders) {
+          // componentId tiebreaker — prevents malformed components collapsing to one bucket.
+          const key = o.moduleName ?? (o.moduleAppCoRel || o.componentId);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push(o);
+        }
+        const formatEntry = (m: ResolvedModuleViewer) => {
+          const name = m.moduleName ?? 'unknown module';
+          if (m.matchKind === 'no-row') {
+            return `Module "${name}" has no saved version yet. Save the module first.`;
+          }
+          if (m.matchKind === 'orphan-fallback') {
+            return `Module "${name}" pin is invalid. Pin a saved version.`;
+          }
+          if (m.matchKind === 'unpinned-fallback') {
+            return `Module "${name}" has active draft pinned. Pin a saved version.`;
+          }
+          // pin-hit + DRAFT remaining.
+          const versionName = m.resolved?.versionName ?? 'draft';
+          return `Module "${name}" version "${versionName}" is still in draft. Save the module first.`;
+        };
+        const moduleList = unique.map(formatEntry).join(' ');
         const message =
-          draftModules.length === 1
-            ? `Save blocked - Module "${draftModules[0].moduleName} (${draftModules[0].versionName})" is still in draft. Save the module first.`
-            : `Save blocked - ${draftModules.length} modules are still in draft. Save them first.`;
+          unique.length === 1
+            ? `Save blocked - ${formatEntry(unique[0])}`
+            : `Save blocked - ${unique.length} modules need saving. ${moduleList}`;
         throw new BadRequestException({
-          message: { error: message, details: `Draft modules: ${moduleList}` },
+          message: { error: message, details: moduleList },
         });
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error('Failed to check draft modules in app', error?.stack || error);
       throw new BadRequestException('Failed to validate module versions');
+    }
+  }
+
+  async checkModulesPromotableToEnvironment(
+    versionId: string,
+    targetEnvironmentName: string,
+    targetPriority: number,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    try {
+      // Resolve pins; flag row below target env priority. Strict: no-row, orphan-fallback,
+      // unpinned-fallback also block — runtime fallback isn't a stable promote target.
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const offenders = resolved.filter((v) => {
+        if (
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback' ||
+          !v.resolved
+        ) {
+          return true;
+        }
+        const priority = v.resolved.envPriority;
+        return priority === null || priority < targetPriority;
+      });
+
+      if (offenders.length > 0) {
+        const seen = new Set<string>();
+        const unique: ResolvedModuleViewer[] = [];
+        for (const o of offenders) {
+          // componentId tiebreaker — prevents malformed components collapsing to one bucket.
+          const key = o.moduleName ?? (o.moduleAppCoRel || o.componentId);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          unique.push(o);
+        }
+        const formatEntry = (m: ResolvedModuleViewer) => {
+          const name = m.moduleName ?? 'unknown module';
+          if (m.matchKind === 'no-row') {
+            return `Module "${name}" has no saved version. Save the module first.`;
+          }
+          if (m.matchKind === 'orphan-fallback') {
+            return `Module "${name}" pin is invalid. Pin a saved version.`;
+          }
+          if (m.matchKind === 'unpinned-fallback') {
+            return `Module "${name}" has active draft pinned. Pin a saved version.`;
+          }
+          // pin-hit + env priority below target.
+          const versionName = m.resolved?.versionName ?? 'unresolved';
+          return `Module "${name}" version "${versionName}" not promoted to ${targetEnvironmentName} yet.`;
+        };
+        const moduleList = unique.map(formatEntry).join(' ');
+        const message =
+          unique.length === 1
+            ? `Promote blocked - ${formatEntry(unique[0])}`
+            : `Promote blocked - ${unique.length} dependent modules need attention. ${moduleList}`;
+        throw new BadRequestException({
+          message: { error: message, details: moduleList },
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error('Failed to check module environment availability', error?.stack || error);
+      throw new BadRequestException('Failed to validate module versions for promote');
     }
   }
 

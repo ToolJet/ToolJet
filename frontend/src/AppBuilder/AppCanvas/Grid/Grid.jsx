@@ -1066,11 +1066,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               left = revertPos.left;
               top = revertPos.top;
 
-              if (!isModalToCanvas) {
-                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
-              }
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
+              } else if (!isModalToCanvas) {
+                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
               }
             }
 

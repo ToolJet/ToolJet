@@ -7,6 +7,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 export interface AddableResourceItem {
   name: string;
   id: string;
+  type?: APP_TYPES;
 }
 type CreateResourcePermissionMap = {
   [ResourceType.APP]: CreateAppsPermissionsObject;

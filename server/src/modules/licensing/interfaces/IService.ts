@@ -36,6 +36,9 @@ export abstract class LicenseInitService {
   abstract init(): Promise<void>;
   abstract initForCloud(): Promise<void>;
   abstract getLicenseFieldValue(type: any, licenseInstance: LicenseBase): any;
+  abstract isEnvConfigured(): boolean;
+  abstract isUsingEnvLicense(): boolean;
+  abstract setUseEnvLicense(value: boolean): void;
 }
 
 export interface ILicenseDecryptService {

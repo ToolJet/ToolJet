@@ -2,14 +2,28 @@
 // Displays below the editor navigation when branch is locked
 
 .locked-branch-banner {
-    width: 100%;
-    height: 40px;
     display: flex;
     justify-content: center;
-    align-items: center;                                                                                                                                                                                 
-    padding: 12px 20px;                                                                                                                                                                                  
-    background-color: var(--background-surface-layer-03); 
+    align-items: center;
+    padding: 12px 20px;
+    background-color: var(--background-surface-layer-03);
     margin: 0;
+
+  &--inline {
+    width: 100%;
+    height: 40px;
+  }
+
+  &--floating {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-top: 46px;
+    margin-left: 20px;
+    margin-right: 47px;
+    z-index: 2;
+  }
 
   &-content {
     display: flex;

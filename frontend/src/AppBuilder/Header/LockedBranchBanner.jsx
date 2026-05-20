@@ -10,7 +10,13 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
  * @param {string} branchName - Name of the locked branch
  * @param {string} reason - Reason why branch is locked (e.g., "merged", "released")
  */
-const LockedBranchBanner = ({ isVisible = false, branchName = '', reason = 'merged', pageContext = '' }) => {
+const LockedBranchBanner = ({
+  isVisible = false,
+  branchName = '',
+  reason = 'merged',
+  pageContext = '',
+  variant = 'inline',
+}) => {
   if (!isVisible) {
     return null;
   }
@@ -24,7 +30,7 @@ const LockedBranchBanner = ({ isVisible = false, branchName = '', reason = 'merg
       : 'This branch has been merged and is now read-only';
 
   return (
-    <div className="locked-branch-banner">
+    <div className={`locked-branch-banner locked-branch-banner--${variant}`} data-cy="locked-branch-banner">
       <div className="locked-branch-banner-content">
         {/* <svg
           className="locked-branch-banner-icon"
@@ -41,7 +47,7 @@ const LockedBranchBanner = ({ isVisible = false, branchName = '', reason = 'merg
             strokeWidth="1.2"
           /> 
         </svg> */}
-        <SolidIcon name="lock" width="16" />
+        <SolidIcon name={variant === 'floating' ? 'information' : 'lock'} fill="var(--icon-default)" width="16" />
         <div className="locked-branch-banner-text">
           <span className="locked-branch-banner-message">{reasonText}</span>
           {/* {branchName && (

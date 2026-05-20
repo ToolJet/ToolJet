@@ -47,6 +47,7 @@ const Input = ({ classes, helpText, onBlur, ...props }) => {
           {...props}
           type={inputType}
           onFocus={() => setIsFocused(true)}
+          disabled={disabled}
           onBlur={(event) => {
             setIsFocused(false);
             onBlur(event);

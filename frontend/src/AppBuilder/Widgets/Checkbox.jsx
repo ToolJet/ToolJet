@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
 export const Checkbox = ({
@@ -24,6 +25,7 @@ export const Checkbox = ({
   const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
   const [checked, setChecked] = useState(defaultValueFromProperties);
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
 
   const { label } = properties;
   const textColor = ['#1B1F24', '#000', '#000000ff'].includes(styles.textColor)
@@ -258,9 +260,7 @@ export const Checkbox = ({
             >
               <label htmlFor={inputId}>
                 {label}
-                {isMandatory && !checked && (
-                  <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>
-                )}
+                {isMandatory && <span style={{ color: 'var(--cc-error-systemStatus)', marginLeft: '1px' }}>{'*'}</span>}
               </label>
             </OverflowTooltip>
           </>
