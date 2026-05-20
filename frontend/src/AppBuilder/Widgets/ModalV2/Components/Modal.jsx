@@ -194,7 +194,10 @@ export const ModalWidget = ({ ...restProps }) => {
               canvasHeight={modalBodyHeight}
               styles={{
                 backgroundColor: customStyles.modalBody.backgroundColor,
-                overflowY: isDisabled ? 'hidden' : 'auto',
+                // Dynamic mode (view-only) hides the canvas scroll to avoid
+                // the one-frame flash while children grow ahead of the
+                // parent reflow. Static mode keeps the default auto-scroll.
+                overflowY: isDisabled || isDynamicHeightEnabled ? 'hidden' : 'auto',
               }}
               canvasWidth={modalWidth}
               darkMode={darkMode}

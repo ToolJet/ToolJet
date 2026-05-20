@@ -72,3 +72,12 @@
   top: -4px;
   bottom: unset;
 }
+
+/* Dynamic-height mode (view-only): suppress the transient scrollbar that
+ * flashes for a frame while modal-body children grow ahead of the Modal
+ * reflow. The `dynamic-{id}` class is only applied to .modal-content when
+ * isDynamicHeightEnabled is true.
+ */
+.modal-content[class*="dynamic-"] .modal-body .real-canvas {
+  overflow-y: hidden !important;
+}
