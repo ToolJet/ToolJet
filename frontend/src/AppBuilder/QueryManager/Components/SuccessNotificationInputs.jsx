@@ -16,6 +16,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
         <div className="flex-grow-1" style={{ maxWidth: '460px' }}>
           <CodeHinter
             type="basic"
+            componentName="Success Message"
             initialValue={options.successMessage}
             onChange={(value) => optionchanged('successMessage', value)}
             placeholder={t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}
