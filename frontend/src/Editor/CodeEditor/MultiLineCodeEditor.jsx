@@ -216,6 +216,7 @@ const MultiLineCodeEditor = (props) => {
           selectors={{ className: 'preview-block-portal' }}
           dragResizePortal={true}
           callgpt={null}
+          headerTitle={paramLabel}
         >
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
