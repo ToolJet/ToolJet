@@ -47,7 +47,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
           FROM (
             SELECT av.id, av.slug, a.type AS app_type,
                    ROW_NUMBER() OVER (
-                     PARTITION BY av.slug, a.type
+                     PARTITION BY LOWER(av.slug), a.type
                      ORDER BY av.created_at ASC, av.id ASC
                    ) AS rn
             FROM app_versions av
@@ -69,7 +69,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
               WHERE av2.status = 'DRAFT'
                 AND av2.branch_id IS NOT NULL
                 AND av2.version_type = 'version'
-                AND av2.slug = new_value
+                AND LOWER(av2.slug) = LOWER(new_value)
                 AND a2.type IS NOT DISTINCT FROM rec.app_type
             );
             suffix := suffix + 1;
@@ -103,7 +103,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
         END IF;
 
         PERFORM pg_advisory_xact_lock(hashtextextended(
-          'avsdb:' || v_app_type || '|' || NEW.slug,
+          'avsdb:' || v_app_type || '|' || LOWER(NEW.slug),
           0
         ));
 
@@ -114,7 +114,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
           WHERE av.status::text = 'DRAFT'
             AND av.branch_id IS NOT NULL
             AND av.version_type::text = 'version'
-            AND av.slug = NEW.slug
+            AND LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
             AND av.id <> NEW.id
         ) THEN

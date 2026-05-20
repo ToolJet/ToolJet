@@ -101,7 +101,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
           FROM (
             SELECT av.id, av.slug, av.branch_id, a.type AS app_type,
                    ROW_NUMBER() OVER (
-                     PARTITION BY av.slug, av.branch_id, a.type
+                     PARTITION BY LOWER(av.slug), av.branch_id, a.type
                      ORDER BY av.created_at ASC, av.id ASC
                    ) AS rn
             FROM app_versions av
@@ -118,7 +118,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
               FROM app_versions av2
               JOIN apps a2 ON a2.id = av2.app_id
               WHERE av2.version_type = 'branch'
-                AND av2.slug = new_value
+                AND LOWER(av2.slug) = LOWER(new_value)
                 AND av2.branch_id IS NOT DISTINCT FROM rec.branch_id
                 AND a2.type IS NOT DISTINCT FROM rec.app_type
             );
@@ -196,7 +196,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         END IF;
 
         PERFORM pg_advisory_xact_lock(hashtextextended(
-          'avs:' || COALESCE(NEW.branch_id::text, '') || '|' || v_app_type || '|' || NEW.slug,
+          'avs:' || COALESCE(NEW.branch_id::text, '') || '|' || v_app_type || '|' || LOWER(NEW.slug),
           0
         ));
 
@@ -205,7 +205,7 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
           FROM app_versions av
           JOIN apps a ON a.id = av.app_id
           WHERE av.version_type::text = 'branch'
-            AND av.slug = NEW.slug
+            AND LOWER(av.slug) = LOWER(NEW.slug)
             AND av.branch_id IS NOT DISTINCT FROM NEW.branch_id
             AND a.type = v_app_type
             AND av.id <> NEW.id
