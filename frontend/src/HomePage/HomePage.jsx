@@ -1129,6 +1129,13 @@ class HomePageComponent extends React.Component {
         this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
         break;
       case 'change-icon':
+        if (this.isWorkspaceBranchLocked()) {
+          this.setState({
+            appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+            showSwitchBranchForChangeIcon: true,
+          });
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
           showChangeIconModal: true,
@@ -1749,6 +1756,14 @@ class HomePageComponent extends React.Component {
             onBranchSwitch={() => {
               this.fetchApps(1, this.state.currentFolder.id);
               this.setState({ showSwitchBranchForClone: false, showCloneAppModal: true });
+            }}
+          />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForChangeIcon}
+            onClose={() => this.setState({ showSwitchBranchForChangeIcon: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForChangeIcon: false, showChangeIconModal: true });
             }}
           />
           <AppActionModal

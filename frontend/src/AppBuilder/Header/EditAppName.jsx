@@ -82,6 +82,7 @@ function EditAppName() {
         <ToolTip
           message={getDisabledTooltipMessage()}
           placement="bottom"
+          width="210px"
           isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
         >
           <button
