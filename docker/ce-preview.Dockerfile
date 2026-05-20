@@ -156,7 +156,6 @@ ENV TOOLJET_HOST=http://localhost \
     TERM=xterm
 
 ENV npm_config_cache /home/appuser/.npm
-USER appuser
-RUN chmod +x ./server/scripts/preview.sh
+RUN chmod +x /app/server/scripts/preview.sh
 # Set the entrypoint
 ENTRYPOINT ["./server/scripts/preview.sh"]
