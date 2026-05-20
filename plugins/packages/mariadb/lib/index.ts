@@ -30,7 +30,12 @@ export default class Mariadb implements QueryService {
     );
     try {
       conn = await mariadbConnectionPool.getConnection();
-      const rows = await conn.query(queryOptions.query);
+      const queryParams = queryOptions.query_params || [];
+      const namedParams = Object.fromEntries(queryParams.filter(([k]) => k !== ''));
+      const rows =
+        Object.keys(namedParams).length > 0
+          ? await conn.query({ namedPlaceholders: true, sql: queryOptions.query }, namedParams)
+          : await conn.query(queryOptions.query);
       const result = this.toJson(rows);
       return {
         status: 'ok',

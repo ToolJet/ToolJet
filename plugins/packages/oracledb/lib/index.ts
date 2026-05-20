@@ -44,10 +44,15 @@ export default class OracledbQueryService implements QueryService {
     } else {
       query = queryOptions.query;
     }
+
+    const queryParams = queryOptions.query_params || [];
+    const namedParams = Object.fromEntries(queryParams.filter(([k]) => k !== ''));
+    const hasParams = Object.keys(namedParams).length > 0;
+
     if (sourceOptions.use_tns_alias == 'thin') {
       try {
         const connection: any = await this.buildConnection(sourceOptions);
-        result = await connection.execute(query, [], {
+        result = await connection.execute(query, hasParams ? namedParams : [], {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
         });
         await connection.close();
@@ -64,7 +69,7 @@ export default class OracledbQueryService implements QueryService {
 
     // eslint-disable-next-line no-useless-catch
     try {
-      result = await knexInstance.raw(query);
+      result = await knexInstance.raw(query, hasParams ? namedParams : undefined);
 
       return {
         status: 'ok',

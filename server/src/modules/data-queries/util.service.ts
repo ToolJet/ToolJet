@@ -553,6 +553,33 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       if (typeof obj === 'string') {
         let resolvedValue = obj.replace(/\n/g, ' ');
 
+        // SQL injection prevention: when resolving {{}} placeholders inside a SQL query
+        // field, collect user-supplied values as named parameters instead of
+        // interpolating them directly into the SQL string. This routes execution
+        // through the safe knex-parameterized path (handleRawQuery) in every plugin.
+        if (key === 'query' && parent?.mode === 'sql') {
+          const allVars = resolvedValue.match(/\{\{(.*?)\}\}/g) || [];
+          const userVars = allVars.filter((v) => Object.prototype.hasOwnProperty.call(options, v));
+
+          if (userVars.length > 0) {
+            const existingParams: [string, any][] = Array.isArray(parent.query_params)
+              ? [...parent.query_params]
+              : [];
+            let paramIndex = existingParams.length;
+            let parameterizedQuery = resolvedValue;
+
+            for (const variable of userVars) {
+              const paramName = `tj_param_${paramIndex++}`;
+              parameterizedQuery = parameterizedQuery.split(variable).join(`:${paramName}`);
+              existingParams.push([paramName, (options as Record<string, any>)[variable]]);
+            }
+
+            parent.query = parameterizedQuery;
+            parent.query_params = existingParams;
+            continue;
+          }
+        }
+
         // a: Handle strings with both {{ }} and %% (%% - deprecated removed) TODO: CHECK IF ITS NEEDED
         if (typeof resolvedValue === 'string' && resolvedValue.includes('{{') && resolvedValue.includes('}}')) {
           const resolvedVar = options[resolvedValue];
