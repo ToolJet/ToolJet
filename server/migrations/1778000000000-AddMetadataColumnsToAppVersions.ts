@@ -74,6 +74,22 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         AND (av.app_name IS NULL OR av.slug IS NULL)
     `);
 
+    // Step 2a-bis: Workflows don't participate in branching — branch_id should
+    // always be NULL on workflow version rows. Legacy data may still have
+    // workflow rows pointing at a workspace branch; the CHECK below would
+    // reject those if their app_name/slug is also NULL (which is the norm for
+    // workflows since metadata stays on apps.* for them). Detach branch_id on
+    // any such rows so the CHECK validates cleanly and runtime invariants for
+    // workflows (branch_id IS NULL) are restored.
+    await queryRunner.query(`
+      UPDATE app_versions av
+      SET branch_id = NULL
+      FROM apps a
+      WHERE av.app_id = a.id
+        AND a.type = 'workflow'
+        AND av.branch_id IS NOT NULL
+    `);
+
     // Step 2b: Enforce that branched version rows always carry metadata. branch_id IS NULL
     // rows (non-git-sync versions, workflows) are exempt — only branch-scoped rows must
     // have app_name and slug set. The constraint covers BRANCH-type sub-branch rows and

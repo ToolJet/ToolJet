@@ -78,6 +78,30 @@ export class TightenDataSourceVersionConstraints1778700000000 implements Migrati
         EXECUTE FUNCTION enforce_unique_active_default_dsv_name_per_org()
     `);
 
+    // Pre-CHECK cleanup #1: drop the default flag on any soft-deleted default
+    // rows (is_default=true AND is_active=false). Reactivating them would
+    // un-delete the DSV, which is too aggressive; instead we drop the default
+    // flag so the partial unique index idx_data_source_versions_one_default
+    // frees up the slot and application code can re-seed a default on next
+    // access. Without this, the CHECK below would reject those rows at ALTER
+    // TABLE time.
+    await queryRunner.query(`
+      UPDATE data_source_versions
+      SET is_default = false
+      WHERE is_default = true AND is_active = false
+    `);
+
+    // Pre-CHECK cleanup #2: defaults are workspace-wide / branch-agnostic.
+    // Any legacy row with is_default=true AND branch_id IS NOT NULL is a
+    // contradiction — treat it as branch-scoped (drop the default flag) so
+    // the second CHECK below validates cleanly. The branch DSV remains usable
+    // as a regular (non-default) row.
+    await queryRunner.query(`
+      UPDATE data_source_versions
+      SET is_default = false
+      WHERE is_default = true AND branch_id IS NOT NULL
+    `);
+
     // A soft-deleted default would leave the data_source with no live default while
     // still satisfying idx_data_source_versions_one_default — block that state.
     await queryRunner.query(`
