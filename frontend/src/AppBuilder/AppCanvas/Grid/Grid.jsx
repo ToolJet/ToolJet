@@ -41,11 +41,8 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import {
-  computeFlexInsertIndex,
-  createDefaultFlexChildLayout,
-  getEffectiveFlexDirectionForFlexContainer,
-} from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
 import './Grid.css';
@@ -113,7 +110,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const newDragParentId = useRef(null);
   const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
   const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
-  const setFlexContainerDropTarget = useStore((state) => state.setFlexContainerDropTarget, shallow);
   const currentDragCanvasId = useGridStore((state) => state.currentDragCanvasId, shallow);
   const checkHoveredComponentDynamicHeight = useStore((state) => state.checkHoveredComponentDynamicHeight, shallow);
   const pageMenuProperties = useStore((state) => state?.pageSettings?.definition?.properties ?? {});
@@ -121,7 +117,8 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
-  const flexDragRafRef = useRef(null);
+  const { scheduleFlexContainerDropTargetUpdate, cancelFlexContainerDropTargetUpdate, clearFlexContainerDropTarget } =
+    useFlexContainerDropTarget({ boxList, moduleId });
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;
@@ -1110,10 +1107,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             newDragParentId.current = null;
 
             // FlexContainer child drag: route to flex-specific handler
-            if (flexDragRafRef.current) {
-              cancelAnimationFrame(flexDragRafRef.current);
-              flexDragRafRef.current = null;
-            }
+            cancelFlexContainerDropTargetUpdate();
             const handledByFlex = handleFlexContainerDragEnd({
               e,
               boxList,
@@ -1127,7 +1121,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               getResolvedComponent,
             });
             if (handledByFlex) {
-              setFlexContainerDropTarget(null);
+              clearFlexContainerDropTarget();
               setTimeout(() => setSelectedComponents([e.target.id]), 100);
               return;
             }
@@ -1241,38 +1235,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             }px)`;
             positionGhostElement(e.target, 'moveable-ghost-widget');
             updateMousePosition(e.clientX, e.clientY, e.target);
-            // Update drop indicator (rAF-throttled)
-            if (!flexDragRafRef.current) {
-              flexDragRafRef.current = requestAnimationFrame(() => {
-                flexDragRafRef.current = null;
-                const hoveredId = findNewParentIdFromMousePosition(e.clientX, e.clientY, currentWidget.id);
-                let hoveredFlexId = null;
-                if (hoveredId && getComponentTypeFromId(hoveredId) === 'FlexContainer') {
-                  hoveredFlexId = hoveredId;
-                } else if (hoveredId) {
-                  const hoveredWidget = boxList.find((b) => b.id === hoveredId);
-                  const hoveredParentId = hoveredWidget?.component?.parent ?? null;
-                  if (hoveredParentId && getComponentTypeFromId(hoveredParentId) === 'FlexContainer') {
-                    hoveredFlexId = hoveredParentId;
-                  }
-                }
-
-                if (!hoveredFlexId) {
-                  setFlexContainerDropTarget(null);
-                  return;
-                }
-
-                const parentDir = getEffectiveFlexDirectionForFlexContainer(
-                  getResolvedComponent,
-                  hoveredFlexId,
-                  moduleId
-                );
-                // Exclude the dragged element so its own rect doesn't skew the midpoint calculation.
-                // Passing excludeId is safe even when dragging across containers (id won't be present).
-                const idx = computeFlexInsertIndex(hoveredFlexId, e.clientX, e.clientY, parentDir, currentWidget.id);
-                setFlexContainerDropTarget({ flexContainerId: hoveredFlexId, index: idx });
-              });
-            }
+            scheduleFlexContainerDropTargetUpdate({
+              candidateId: findNewParentIdFromMousePosition(e.clientX, e.clientY, currentWidget.id),
+              clientX: e.clientX,
+              clientY: e.clientY,
+              excludeId: currentWidget.id,
+            });
             return;
           }
           const currentParentId =
@@ -1306,24 +1274,11 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             e.target.style.width = `${e.target.clientWidth}px`;
           }
 
-          let hoveredFlexId = null;
-          if (newParentId && getComponentTypeFromId(newParentId) === 'FlexContainer') {
-            hoveredFlexId = newParentId;
-          } else if (newParentId) {
-            const hoveredWidget = boxList.find((b) => b.id === newParentId);
-            const hoveredParentId = hoveredWidget?.component?.parent ?? null;
-            if (hoveredParentId && getComponentTypeFromId(hoveredParentId) === 'FlexContainer') {
-              hoveredFlexId = hoveredParentId;
-            }
-          }
-
-          if (hoveredFlexId) {
-            const parentDir = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, hoveredFlexId, moduleId);
-            const idx = computeFlexInsertIndex(hoveredFlexId, e.clientX, e.clientY, parentDir);
-            setFlexContainerDropTarget({ flexContainerId: hoveredFlexId, index: idx });
-          } else {
-            setFlexContainerDropTarget(null);
-          }
+          scheduleFlexContainerDropTargetUpdate({
+            candidateId: newParentId,
+            clientX: e.clientX,
+            clientY: e.clientY,
+          });
 
           if (newParentId !== prevDragParentId.current) {
             // setDragParentId(newParentId === 'canvas' ? null : newParentId);
