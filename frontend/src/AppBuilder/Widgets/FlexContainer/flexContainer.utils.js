@@ -76,6 +76,11 @@ export const insertId = (order = [], id, index) => {
 
 export const moveId = (order = [], id, index) => insertId(order, id, index);
 
+export const getNextFlexChildOrderOnInsert = ({ childOrder = [], actualChildIds = [], childId, targetIndex }) => {
+  const baseOrder = normalizeChildOrder(childOrder, actualChildIds);
+  return insertId(baseOrder, childId, targetIndex);
+};
+
 export const getFlexContainerChildOrder = (components, flexContainerId) => {
   const value = components?.[flexContainerId]?.component?.definition?.properties?.childOrder?.value;
   return Array.isArray(value) ? value : [];

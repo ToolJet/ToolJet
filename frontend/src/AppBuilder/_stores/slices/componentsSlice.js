@@ -30,13 +30,7 @@ import {
   NESTING_LEVEL_LIMITS,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
-import {
-  createDefaultFlexChildLayout,
-  insertId,
-  moveId,
-  normalizeChildOrder,
-  removeId,
-} from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 // Debounce timers for query re-runs triggered by dependency changes
 const queryRerunTimers = new Map();
@@ -72,29 +66,6 @@ function clearAllQueryRerunTimers() {
   queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
   queryRerunTimers.clear();
 }
-
-const getDefinitionWithoutRuntimeFields = (component = {}) => {
-  const { events, exposedVariables, ...filteredDefinition } = component.definition || {};
-  return filteredDefinition;
-};
-
-const getChildOrderValue = (component) => {
-  const value = component?.definition?.properties?.childOrder?.value;
-  return Array.isArray(value) ? value : [];
-};
-
-const buildChildOrderComponentDiff = (component, childOrder) => ({
-  component: {
-    ...component,
-    definition: {
-      ...getDefinitionWithoutRuntimeFields(component),
-      properties: {
-        ...(component.definition?.properties ?? {}),
-        childOrder: { value: childOrder },
-      },
-    },
-  },
-});
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array
@@ -1375,17 +1346,13 @@ export const createComponentsSlice = (set, get) => ({
             }
             const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
             page.components[newComponent.id] = newComponent;
-            const parentComponent = page.components[parentId]?.component;
-            if (parentComponent?.component === 'FlexContainer' && newComponent.component.parent === parentId) {
-              const actualChildIds = state.containerChildrenMapping[parentId];
-              const baseOrder = normalizeChildOrder(getChildOrderValue(parentComponent), actualChildIds);
-              const lockedTarget = state.flexContainerDropTarget;
-              const targetIndex = lockedTarget?.flexContainerId === parentId ? lockedTarget.index : baseOrder.length;
-              const nextOrder = insertId(baseOrder, newComponent.id, targetIndex);
-              if (!parentComponent.definition.properties) parentComponent.definition.properties = {};
-              parentComponent.definition.properties.childOrder = { value: nextOrder };
-              flexChildOrderUpdates[parentId] = nextOrder;
-            }
+            get().addFlexContainerChildOrderToDraft({
+              state,
+              page,
+              parentId,
+              childId: newComponent.id,
+              flexChildOrderUpdates,
+            });
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
@@ -1400,7 +1367,7 @@ export const createComponentsSlice = (set, get) => ({
       if (saveAfterAction) {
         const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
           const component = getComponentDefinition(componentId, moduleId)?.component;
-          if (component) acc[componentId] = buildChildOrderComponentDiff(component, childOrder);
+          if (component) acc[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
           return acc;
         }, {});
 
@@ -1515,14 +1482,11 @@ export const createComponentsSlice = (set, get) => ({
             );
           });
 
-          Object.entries(page.components).forEach(([componentId, pageComponent]) => {
-            if (toDeleteComponents.includes(componentId)) return;
-            if (pageComponent?.component?.component !== 'FlexContainer') return;
-            const childOrder = getChildOrderValue(pageComponent.component);
-            if (!childOrder.includes(id)) return;
-            const nextOrder = removeId(flexChildOrderUpdates[componentId] ?? childOrder, id);
-            flexChildOrderUpdates[componentId] = nextOrder;
-            pageComponent.component.definition.properties.childOrder = { value: nextOrder };
+          get().removeDeletedComponentFromFlexChildOrdersInDraft({
+            page,
+            childId: id,
+            toDeleteComponents,
+            flexChildOrderUpdates,
           });
 
           if (checkIfComponentIsModule(id, moduleId)) {
@@ -1577,7 +1541,7 @@ export const createComponentsSlice = (set, get) => ({
 
       const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
         const component = getComponentDefinition(componentId, moduleId)?.component;
-        if (component) acc[componentId] = buildChildOrderComponentDiff(component, childOrder);
+        if (component) acc[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
         return acc;
       }, {});
 
@@ -1704,141 +1668,6 @@ export const createComponentsSlice = (set, get) => ({
     return [snappedX, snappedY];
   },
 
-  moveFlexContainerChild: ({
-    childId,
-    sourceContainerId,
-    targetContainerId,
-    targetIndex,
-    moduleId = 'canvas',
-    layoutPatch = {},
-    updateParent = true,
-    saveAfterAction = true,
-    skipUndoRedo = false,
-  }) => {
-    if (!childId || !sourceContainerId || !targetContainerId) return;
-    const {
-      getCurrentPageIndex,
-      getCurrentMode,
-      saveComponentChanges,
-      withUndoRedo,
-      getComponentDefinition,
-      setResolvedComponent,
-      getResolvedComponent,
-    } = get();
-    const currentPageIndex = getCurrentPageIndex(moduleId);
-    const currentMode = getCurrentMode(moduleId);
-    const updatedChildOrders = {};
-    let parentChanged = false;
-
-    set(
-      withUndoRedo((state) => {
-        const page = state.modules[moduleId].pages[currentPageIndex];
-        const source = page?.components?.[sourceContainerId]?.component;
-        const target = page?.components?.[targetContainerId]?.component;
-        const child = page?.components?.[childId];
-        if (!page || !source || !target || !child) return;
-
-        const sourceChildren = state.containerChildrenMapping[sourceContainerId] ?? [];
-        const targetChildren = state.containerChildrenMapping[targetContainerId] ?? [];
-
-        if (sourceContainerId === targetContainerId) {
-          const normalized = normalizeChildOrder(getChildOrderValue(source), sourceChildren);
-          updatedChildOrders[sourceContainerId] = moveId(normalized, childId, targetIndex);
-        } else {
-          const sourceOrder = normalizeChildOrder(getChildOrderValue(source), sourceChildren);
-          const targetOrder = normalizeChildOrder(
-            getChildOrderValue(target),
-            targetChildren.filter((id) => id !== childId)
-          );
-          updatedChildOrders[sourceContainerId] = removeId(sourceOrder, childId);
-          updatedChildOrders[targetContainerId] = insertId(targetOrder, childId, targetIndex);
-
-          if (updateParent && child.component.parent !== targetContainerId) {
-            parentChanged = true;
-            if (child.component.parent && state.containerChildrenMapping[child.component.parent]) {
-              state.containerChildrenMapping[child.component.parent] = state.containerChildrenMapping[
-                child.component.parent
-              ].filter((id) => id !== childId);
-            }
-            if (!state.containerChildrenMapping[targetContainerId]) {
-              state.containerChildrenMapping[targetContainerId] = [];
-            }
-            if (!state.containerChildrenMapping[targetContainerId].includes(childId)) {
-              state.containerChildrenMapping[targetContainerId].push(childId);
-            }
-            child.component.parent = targetContainerId;
-          }
-        }
-
-        Object.entries(updatedChildOrders).forEach(([containerId, childOrder]) => {
-          const container = page.components[containerId]?.component;
-          if (!container.definition.properties) container.definition.properties = {};
-          container.definition.properties.childOrder = { value: childOrder };
-          state.containerChildrenMapping[containerId] = normalizeChildOrder(
-            childOrder,
-            state.containerChildrenMapping[containerId] ?? []
-          );
-        });
-
-        if (Object.keys(layoutPatch).length > 0) {
-          child.layouts[state.currentLayout] = {
-            ...child.layouts[state.currentLayout],
-            ...layoutPatch,
-          };
-          delete child.layouts[state.currentLayout].top;
-          delete child.layouts[state.currentLayout].left;
-          delete child.layouts[state.currentLayout].width;
-          delete child.layouts[state.currentLayout].height;
-        }
-      }, skipUndoRedo),
-      false,
-      'moveFlexContainerChild'
-    );
-
-    Object.entries(updatedChildOrders).forEach(([containerId, childOrder]) => {
-      const resolvedComponent = deepClone(getResolvedComponent(containerId, null, moduleId) ?? {});
-      resolvedComponent.properties = {
-        ...(resolvedComponent.properties ?? {}),
-        childOrder,
-      };
-      setResolvedComponent(containerId, resolvedComponent, moduleId);
-    });
-
-    if (currentMode !== 'view' && saveAfterAction && Object.keys(updatedChildOrders).length > 0) {
-      const componentUpdates = Object.entries(updatedChildOrders).reduce((acc, [containerId, childOrder]) => {
-        const component = getComponentDefinition(containerId, moduleId)?.component;
-        if (component) acc[containerId] = buildChildOrderComponentDiff(component, childOrder);
-        return acc;
-      }, {});
-
-      const layoutDiff = {
-        [childId]: {
-          ...(parentChanged ? { component: { parent: targetContainerId } } : {}),
-          ...(Object.keys(layoutPatch).length > 0
-            ? {
-                layouts: {
-                  [get().currentLayout]: {
-                    ...layoutPatch,
-                  },
-                },
-              }
-            : {}),
-        },
-      };
-
-      saveComponentChanges(
-        {
-          update: { diff: componentUpdates },
-          ...(parentChanged || Object.keys(layoutPatch).length > 0 ? { layout: { diff: layoutDiff } } : {}),
-        },
-        'components/batch',
-        'update',
-        moduleId
-      );
-      get().multiplayer.broadcastUpdates({ childId, sourceContainerId, targetContainerId }, 'components', 'update');
-    }
-  },
-
   setComponentLayout: (
     componentLayouts,
     newParentId,
@@ -1934,13 +1763,12 @@ export const createComponentsSlice = (set, get) => ({
             hasParentChanged = oldParentId !== newParentId;
             if (hasParentChanged && updateParent) {
               if (oldParentComponentType === 'FlexContainer' && oldParentId) {
-                const oldParent = page.components[oldParentId]?.component;
-                if (oldParent) {
-                  const nextOrder = removeId(getChildOrderValue(oldParent), componentId);
-                  if (!oldParent.definition.properties) oldParent.definition.properties = {};
-                  oldParent.definition.properties.childOrder = { value: nextOrder };
-                  flexChildOrderUpdates[oldParentId] = nextOrder;
-                }
+                get().removeFlexContainerChildOrderFromDraft({
+                  page,
+                  parentId: oldParentId,
+                  childId: componentId,
+                  flexChildOrderUpdates,
+                });
               }
 
               // Update the component's parent
@@ -1965,17 +1793,13 @@ export const createComponentsSlice = (set, get) => ({
                   state.containerChildrenMapping[newParentId].push(componentId);
                 }
                 if (newParentComponentType === 'FlexContainer') {
-                  const newParent = page.components[newParentId]?.component;
-                  const actualChildIds = state.containerChildrenMapping[newParentId] ?? [];
-                  const baseOrder = normalizeChildOrder(getChildOrderValue(newParent), actualChildIds);
-                  const lockedTarget = state.flexContainerDropTarget;
-                  const targetIndex =
-                    lockedTarget?.flexContainerId === newParentId ? lockedTarget.index : baseOrder.length;
-                  const nextOrder = insertId(baseOrder, componentId, targetIndex);
-                  if (!newParent.definition.properties) newParent.definition.properties = {};
-                  newParent.definition.properties.childOrder = { value: nextOrder };
-                  state.containerChildrenMapping[newParentId] = normalizeChildOrder(nextOrder, actualChildIds);
-                  flexChildOrderUpdates[newParentId] = nextOrder;
+                  get().addFlexContainerChildOrderToDraft({
+                    state,
+                    page,
+                    parentId: newParentId,
+                    childId: componentId,
+                    flexChildOrderUpdates,
+                  });
                 }
               } else {
                 if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
@@ -2085,7 +1909,7 @@ export const createComponentsSlice = (set, get) => ({
         Object.entries(flexChildOrderUpdates).forEach(([componentId, childOrder]) => {
           const component = getComponentDefinition(componentId, moduleId)?.component;
           if (component) {
-            updatedDiff[componentId] = buildChildOrderComponentDiff(component, childOrder);
+            updatedDiff[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
           }
         });
 
