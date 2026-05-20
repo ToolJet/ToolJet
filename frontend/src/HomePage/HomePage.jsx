@@ -1134,6 +1134,7 @@ class HomePageComponent extends React.Component {
             ...appOperations,
             selectedApp: app,
             selectedApps: [{ label: app.name, name: app.name, value: app.id }],
+            selectedFolder: folder?.id || null,
           },
           showAddToFolderModal: true,
           addToFolderApps: [],
