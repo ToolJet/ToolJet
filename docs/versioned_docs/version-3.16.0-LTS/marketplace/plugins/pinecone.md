@@ -104,7 +104,7 @@ This operation retrieves specific vectors by their IDs from an index.
 - **Index**: The name of the index to fetch vectors from.
 - **IDs**: Array of vector IDs to fetch.
 
-#### Optional Parameters
+#### Optional Parameter
 
 - **Namespace**: Specific namespace to fetch vectors from.
 
@@ -128,7 +128,7 @@ This operation inserts or updates vectors in an index.
 - **Index**: The name of the index to upsert vectors into.
 - **Vectors**: Array of vectors to upsert, including IDs and values.
 
-#### Optional Parameters
+#### Optional Parameter
 
 - **Namespace**: Specific namespace to upsert vectors into
 
@@ -178,7 +178,7 @@ Update Successful
 
 This operation deletes vectors from an index.
 
-#### Required Parameters
+#### Required Parameter
 
 - **Index**: The name of the index to delete vectors from.
 
