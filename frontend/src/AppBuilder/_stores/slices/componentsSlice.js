@@ -2313,6 +2313,7 @@ export const createComponentsSlice = (set, get) => ({
             toast.error('App could not be saved.');
           }
           console.error('Error saving component changes:', error);
+          resolve(null);
         })
         .finally(() => {
           set(

@@ -454,11 +454,13 @@ export class ComponentsService implements IComponentsService {
       let next = this.extractBaseParentId(parentById.get(id));
       while (next) {
         if (next === id) {
-          throw new BadRequestException({
+          const exc = new BadRequestException({
             message: `Parent assignment for component ${id} would create a parent-child loop.`,
             code: 'PARENT_CYCLE_DETECTED',
             componentId: id,
           });
+          (exc as any).code = 'PARENT_CYCLE_DETECTED';
+          throw exc;
         }
         if (visited.has(next)) break;
         visited.add(next);
