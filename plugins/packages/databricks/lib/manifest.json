@@ -1,109 +1,187 @@
-
 {
-  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Databricks datasource",
   "description": "A schema defining Databricks datasource",
-  "type": "api",
-  "source": {
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
     "name": "Databricks",
     "kind": "databricks",
-    "exposedVariables": {
-      "isLoading": false,
-      "data": {},
-      "rawData": {}
-    },
-    "options": {
-      "client_secret": {
-        "type": "string",
-        "encrypted": true
-      }
-    }
-  },
-  "defaults": {
-    "authentication_type": {
-      "value": "personal_access_token"
-    },
-    "auth_type": {
-      "value": "oauth2"
-    },
-    "grant_type": {
-      "value": "authorization_code"
-    },
-    "oauth_type": {
-      "value": "custom_app"
-    }
+    "type": "api"
   },
   "properties": {
-    "credentials": {
-      "label": "Authentication type",
-      "key": "authentication_type",
-      "type": "dropdown-component-flip",
+    "authentication_type": {
+      "type": "string",
+      "title": "Authentication type",
       "description": "Single select dropdown for choosing authentication type",
-      "list": [
-        {
-          "value": "personal_access_token",
-          "name": "Personal Access Token"
-        },
-        {
-          "value": "oauth_u2m",
-          "name": "OAuth U2M (per-user)"
+      "enum": ["personal_access_token", "oauth_u2m"],
+      "default": "personal_access_token"
+    },
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "host.cloud.databricks.com"
+    },
+    "port": {
+      "type": "string",
+      "title": "Port",
+      "description": "443"
+    },
+    "http_path": {
+      "type": "string",
+      "title": "HTTP path",
+      "description": "/sql/2.0/warehouse/id"
+    },
+    "default_catalog": {
+      "type": "string",
+      "title": "Default catalog",
+      "description": "tooljet_metastore"
+    },
+    "default_schema": {
+      "type": "string",
+      "title": "Default schema",
+      "description": "default"
+    },
+    "personal_access_token": {
+      "type": "string",
+      "title": "Personal access token",
+      "description": "Databricks personal access token"
+    },
+    "auth_type": {
+      "type": "string",
+      "default": "oauth2"
+    },
+    "grant_type": {
+      "type": "string",
+      "default": "authorization_code"
+    },
+    "oauth_type": {
+      "type": "string",
+      "default": "custom_app"
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client secret"
+    }
+  },
+  "tj:encrypted": [
+    "personal_access_token",
+    "client_secret"
+  ],
+  "required": ["authentication_type"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "authentication_type": { "const": "personal_access_token" }
         }
+      },
+      "then": {
+        "required": ["host", "http_path", "personal_access_token"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authentication_type": { "const": "oauth_u2m" }
+        }
+      },
+      "then": {
+        "required": ["host", "http_path"]
+      }
+    }
+  ],
+  "tj:ui:properties": {
+    "authentication_type": {
+      "order": 1,
+      "$ref": "#/properties/authentication_type",
+      "key": "authentication_type",
+      "label": "Authentication type",
+      "description": "Single select dropdown for choosing authentication type",
+      "widget": "dropdown-component-flip",
+      "list": [
+        { "value": "personal_access_token", "name": "Personal Access Token" },
+        { "value": "oauth_u2m", "name": "OAuth U2M (per-user)" }
       ]
     },
     "personal_access_token": {
       "host": {
-        "label": "Host",
+        "order": 10,
+        "$ref": "#/properties/host",
         "key": "host",
-        "type": "text",
-        "description": "host.cloud.databricks.com"
+        "label": "Host",
+        "description": "host.cloud.databricks.com",
+        "widget": "text-v3",
+        "required": true
       },
       "port": {
-        "label": "Port",
+        "order": 20,
+        "$ref": "#/properties/port",
         "key": "port",
-        "type": "text",
-        "description": "443"
+        "label": "Port",
+        "description": "443",
+        "widget": "text-v3",
+        "help_text": "Default Databricks port is 443"
       },
       "http_path": {
-        "label": "HTTP path",
+        "order": 30,
+        "$ref": "#/properties/http_path",
         "key": "http_path",
-        "type": "text",
-        "description": "/sql/2.0/warehouse/id"
+        "label": "HTTP path",
+        "description": "/sql/2.0/warehouse/id",
+        "widget": "text-v3",
+        "required": true
       },
       "default_catalog": {
-        "label": "Default catalog",
+        "order": 40,
+        "$ref": "#/properties/default_catalog",
         "key": "default_catalog",
-        "type": "text",
-        "description": "tooljet_metastore"
+        "label": "Default catalog",
+        "description": "tooljet_metastore",
+        "widget": "text-v3"
       },
       "default_schema": {
-        "label": "Default schema",
+        "order": 50,
+        "$ref": "#/properties/default_schema",
         "key": "default_schema",
-        "type": "text",
-        "description": "default"
+        "label": "Default schema",
+        "description": "default",
+        "widget": "text-v3"
       },
       "personal_access_token": {
-        "label": "Personal access token",
+        "order": 60,
+        "$ref": "#/properties/personal_access_token",
         "key": "personal_access_token",
-        "type": "password",
-        "description": "Databricks personal access token"
+        "label": "Personal access token",
+        "description": "Databricks personal access token",
+        "widget": "password-v3",
+        "required": true,
+        "help_text": "Supports secrets (e.g., {{secrets.databricks_token}})"
       }
     },
     "oauth_u2m": {
       "host": {
-        "label": "Host",
+        "order": 10,
+        "$ref": "#/properties/host",
         "key": "host",
-        "type": "text",
-        "description": "e.g. 1234567890123456.7.gcp.databricks.com"
+        "label": "Host",
+        "description": "e.g. 1234567890123456.7.gcp.databricks.com",
+        "widget": "text-v3",
+        "required": true
       },
       "http_path": {
-        "label": "HTTP path",
+        "order": 20,
+        "$ref": "#/properties/http_path",
         "key": "http_path",
-        "type": "text",
-        "description": "/sql/1.0/warehouses/abc123"
+        "label": "HTTP path",
+        "description": "/sql/1.0/warehouses/abc123",
+        "widget": "text-v3",
+        "required": true
       },
       "oauth": {
+        "order": 30,
         "key": "oauth",
-        "type": "react-component-oauth",
+        "widget": "react-component-oauth",
         "description": "Databricks OAuth U2M — each user authenticates independently",
         "oauth_configs": {
           "allowed_auth_types": [
