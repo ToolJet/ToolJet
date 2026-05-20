@@ -48,15 +48,6 @@ export class ComponentLayoutDto {
   @IsNumber()
   @IsOptional()
   heightPx?: number;
-
-  @IsBoolean()
-  @IsOptional()
-  fillHeight?: boolean;
-
-  /** FlexContainer child sort key (persisted on `layouts.flex_order`; may be fractional for midpoint reorder). */
-  @IsNumber()
-  @IsOptional()
-  flexOrder?: number;
 }
 
 export class LayoutData {

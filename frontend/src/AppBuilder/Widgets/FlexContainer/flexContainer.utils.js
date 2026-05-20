@@ -1,5 +1,3 @@
-import { GRID_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-
 /**
  * Returns the main app canvas width in CSS pixels, or +Infinity if unavailable (SSR / no DOM).
  */
@@ -33,17 +31,6 @@ export const getEffectiveFlexDirectionForFlexContainer = (getResolvedComponent, 
   const stackBelow = props.stackBelow ?? 'none';
   return computeEffectiveFlexDirection(direction, stackBelow);
 };
-
-const FLEX_LAYOUT_FIELDS = [
-  'flexOrder',
-  'fillWidth',
-  'fillHeight',
-  'widthPx',
-  'heightPx',
-  'crossAlignSelf',
-  'stackedWidthBehavior',
-];
-const GRID_LAYOUT_FIELDS = ['top', 'left', 'width', 'height'];
 
 const clampIndex = (index, length) => {
   const numericIndex = Number.isFinite(index) ? index : length;
@@ -102,42 +89,26 @@ export const getOrderedFlexChildrenFromSnapshot = (components, flexContainerId, 
   return normalizeChildOrder(getFlexContainerChildOrder(components, flexContainerId), actualChildIds);
 };
 
-export const getOrderedFlexChildren = (flexContainerId, moduleId, storeState) => {
-  const components = storeState?.getCurrentPageComponents?.(moduleId) ?? {};
-  const mapping = storeState?.containerChildrenMapping?.[flexContainerId] ?? [];
-  return getOrderedFlexChildrenFromSnapshot(components, flexContainerId, mapping);
-};
-
 /**
- * Resolves per-axis sizing for a FlexContainer child from its layout object.
+ * Resolves sizing for a FlexContainer child from its layout object.
  *
- * Returns `{ fillWidth, fillHeight, widthPx, heightPx }`, falling back to legacy
- * `fillMain` / `mainSize` when the new fields are absent so apps saved before the
- * two-axis migration continue to render unchanged.
- *
- * Defaults preserve historical visuals: cross axis fills, main axis is fixed.
+ * Width may fill; height is fixed.
  */
-export const resolveFlexChildSizing = (layoutData = {}, direction = 'column', fallbacks = {}) => {
-  const isRow = direction === 'row';
-  const legacyFill = layoutData.fillMain;
-  const legacyMainPx = layoutData.mainSize;
-
+export const resolveFlexChildSizing = (layoutData = {}, fallbacks = {}) => {
   const fallbackWidthPx = fallbacks.widthPx ?? null;
   const fallbackHeightPx = fallbacks.heightPx ?? null;
 
   const fillWidth = layoutData.fillWidth !== undefined ? layoutData.fillWidth : true;
-  const fillHeight = layoutData.fillHeight !== undefined ? layoutData.fillHeight : isRow ? true : legacyFill ?? false;
 
-  const widthPx = layoutData.widthPx ?? (isRow ? legacyMainPx ?? fallbackWidthPx : fallbackWidthPx) ?? null;
-  const heightPx = layoutData.heightPx ?? (isRow ? fallbackHeightPx : legacyMainPx ?? fallbackHeightPx) ?? null;
+  const widthPx = layoutData.widthPx ?? fallbackWidthPx ?? null;
+  const heightPx = layoutData.heightPx ?? fallbackHeightPx ?? null;
 
-  return { fillWidth, fillHeight, widthPx, heightPx };
+  return { fillWidth, widthPx, heightPx };
 };
 
 /** Default flex-child layout when a widget is first dropped into a FlexContainer. */
 export const createDefaultFlexChildLayout = ({ widthPx, heightPx }) => ({
   fillWidth: true,
-  fillHeight: false,
   widthPx,
   heightPx,
 });
@@ -150,11 +121,11 @@ export const createDefaultFlexChildLayout = ({ widthPx, heightPx }) => ({
  * column for column-direction), picks the bucket containing the cursor's cross coord
  * (or nearest if between buckets), then resolves the main-axis insertion index inside it.
  */
-export const computeInsertionIndex = (rects, mousePos, direction = 'column') => {
+const computeInsertionIndex = (rects, mousePos, direction = 'column') => {
   if (!rects || rects.length === 0) return 0;
   const isRow = direction === 'row';
   const mainStart = isRow ? 'left' : 'top';
-  const mainSize = isRow ? 'width' : 'height';
+  const mainLength = isRow ? 'width' : 'height';
   const crossStart = isRow ? 'top' : 'left';
   const crossEnd = isRow ? 'bottom' : 'right';
   const mouseMain = isRow ? mousePos.x : mousePos.y;
@@ -189,63 +160,11 @@ export const computeInsertionIndex = (rects, mousePos, direction = 'column') => 
   // Inside the chosen bucket, find first child whose main-axis midpoint is past the cursor.
   for (let i = 0; i < target.items.length; i++) {
     const r = target.items[i].rect;
-    const mid = r[mainStart] + r[mainSize] / 2;
+    const mid = r[mainStart] + r[mainLength] / 2;
     if (mouseMain < mid) return target.items[i].index;
   }
   // Cursor past every child in this bucket — insert after the bucket's last item.
   return target.items[target.items.length - 1].index + 1;
-};
-
-/**
- * Synthesizes an absolute grid layout from drop coordinates.
- * Used when dragging a FlexContainer child OUT to the canvas.
- */
-export const synthesizeGridLayoutFromDrop = (
-  clientX,
-  clientY,
-  canvasRect,
-  gridWidth,
-  defaultWidth = 10,
-  defaultHeight = 100
-) => {
-  const rawLeft = clientX - canvasRect.left;
-  const rawTop = clientY - canvasRect.top;
-  const left = Math.max(0, Math.round(rawLeft / gridWidth));
-  const top = Math.max(0, Math.round(rawTop / GRID_HEIGHT) * GRID_HEIGHT);
-  return { top, left, width: defaultWidth, height: defaultHeight };
-};
-
-/**
- * Strips FlexContainer-only layout fields.
- * Used when reparenting a flex child to the grid.
- */
-export const stripFlexContainerLayoutFields = (layout) => {
-  if (!layout) return {};
-  const result = { ...layout };
-  FLEX_LAYOUT_FIELDS.forEach((f) => delete result[f]);
-  return result;
-};
-
-/**
- * Strips grid layout fields.
- * Used when reparenting a grid child into a FlexContainer.
- */
-export const stripGridLayoutFields = (layout) => {
-  if (!layout) return {};
-  const result = { ...layout };
-  GRID_LAYOUT_FIELDS.forEach((f) => delete result[f]);
-  return result;
-};
-
-/**
- * Returns the child rects (as DOMRect[]) for the direct flex children
- * of a FlexContainer, in DOM order.
- */
-export const getFlexChildRects = (flexContainerId) => {
-  const inner = document.querySelector(`[data-parentId="${flexContainerId}"]`);
-  if (!inner) return [];
-  const children = inner.querySelectorAll(':scope > .flex-child-wrapper');
-  return Array.from(children).map((el) => el.getBoundingClientRect());
 };
 
 /**

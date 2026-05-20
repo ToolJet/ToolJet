@@ -113,12 +113,8 @@ export function handleFlexContainerDragEnd({
     const sourceLayout = currentWidget.layouts?.[currentLayout] ?? {};
     const carriedSizing = {};
     if (sourceLayout.fillWidth !== undefined) carriedSizing.fillWidth = sourceLayout.fillWidth;
-    if (sourceLayout.fillHeight !== undefined) carriedSizing.fillHeight = sourceLayout.fillHeight;
     if (sourceLayout.widthPx !== undefined) carriedSizing.widthPx = sourceLayout.widthPx;
     if (sourceLayout.heightPx !== undefined) carriedSizing.heightPx = sourceLayout.heightPx;
-    if (sourceLayout.crossAlignSelf !== undefined) carriedSizing.crossAlignSelf = sourceLayout.crossAlignSelf;
-    if (sourceLayout.stackedWidthBehavior !== undefined)
-      carriedSizing.stackedWidthBehavior = sourceLayout.stackedWidthBehavior;
 
     useStore.getState().moveFlexContainerChild({
       childId: widgetId,
@@ -153,11 +149,9 @@ export function handleFlexContainerDragEnd({
     newLeft = Math.max(0, NO_OF_GRIDS - newWidth);
   }
 
-  // Synthesize a grid height from the widget's current main-axis size. Prefer the new
-  // heightPx (or widthPx-derived height when not present), with legacy mainSize as fallback.
+  // Synthesize a grid height from the widget's current rendered height.
   const sourceLayoutOnDragOut = currentWidget.layouts?.[currentLayout] ?? {};
-  const synthesizedHeight =
-    sourceLayoutOnDragOut.heightPx ?? sourceLayoutOnDragOut.mainSize ?? sourceLayoutOnDragOut.height ?? 100;
+  const synthesizedHeight = sourceLayoutOnDragOut.heightPx ?? sourceLayoutOnDragOut.height ?? 100;
 
   setComponentLayout(
     { [widgetId]: { top: newTop, left: newLeft, width: newWidth, height: synthesizedHeight } },

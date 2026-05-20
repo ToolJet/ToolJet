@@ -280,16 +280,13 @@ export class ComponentsService implements IComponentsService {
         widthPx?: number;
         fillWidth?: boolean;
         heightPx?: number;
-        fillHeight?: boolean;
-        flexOrder?: number;
         updatedAt: Date | null;
       }
     > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, widthPx, fillWidth, heightPx, fillHeight, flexOrder, updatedAt } =
-          layout as any;
+        const { type, top, left, width, height, widthPx, fillWidth, heightPx, updatedAt } = layout as any;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
@@ -305,8 +302,6 @@ export class ComponentsService implements IComponentsService {
           ...(widthPx != null ? { widthPx } : {}),
           ...(fillWidth != null ? { fillWidth } : {}),
           ...(heightPx != null ? { heightPx } : {}),
-          ...(fillHeight != null ? { fillHeight } : {}),
-          ...(flexOrder != null ? { flexOrder } : {}),
         };
       }
     });
@@ -443,8 +438,6 @@ export class ComponentsService implements IComponentsService {
           if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
           if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
           if (layout.heightPx != null) newLayout.heightPx = layout.heightPx;
-          if (layout.fillHeight != null) newLayout.fillHeight = layout.fillHeight;
-          if (layout.flexOrder != null) newLayout.flexOrder = layout.flexOrder;
           newLayout.component = component;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

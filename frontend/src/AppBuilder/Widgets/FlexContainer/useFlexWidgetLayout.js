@@ -20,11 +20,8 @@ export const useFlexWidgetLayout = ({
   const flexLayoutData = layoutData ?? {};
   const gridDerivedWidthPx = gridWidth * (flexLayoutData?.width ?? 1);
   const isFlexRow = flexDirection === 'row';
-  const stackedWidthBehavior = flexLayoutData.stackedWidthBehavior ?? 'fill-parent';
-  const { crossAlignSelf } = flexLayoutData;
 
-  // Resolve per-axis sizing with backward-compat fallback to legacy fillMain.
-  const { fillWidth, fillHeight, widthPx, heightPx } = resolveFlexChildSizing(flexLayoutData, flexDirection, {
+  const { fillWidth, widthPx, heightPx } = resolveFlexChildSizing(flexLayoutData, {
     widthPx: gridDerivedWidthPx,
     heightPx: flexLayoutData.height ?? 100,
   });
@@ -35,11 +32,11 @@ export const useFlexWidgetLayout = ({
   const availableWidth = containerWidth ?? effectiveWidthPx;
   let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;
   const widgetHeight = effectiveHeightPx;
-  const flexMainFill = isFlexRow ? fillWidth : fillHeight;
+  const flexMainFill = isFlexRow ? fillWidth : false;
   const flexMainPx = isFlexRow ? effectiveWidthPx : effectiveHeightPx;
 
   if (flexShouldStack && !isFlexRow) {
-    if (fillWidth || stackedWidthBehavior === 'fill-parent') {
+    if (fillWidth) {
       widgetWidth = availableWidth;
     } else {
       widgetWidth = Math.min(effectiveWidthPx, availableWidth);
@@ -69,19 +66,17 @@ export const useFlexWidgetLayout = ({
     ...(flexShouldStack && !isFlexRow
       ? {
           flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
-          height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
+          height: `${effectiveHeightPx}px`,
           minHeight: 0,
           ...(fillWidth
             ? { width: '100%', minWidth: 0 }
-            : stackedWidthBehavior === 'keep-original'
-            ? { width: `${effectiveWidthPx}px`, maxWidth: '100%', minWidth: 0 }
-            : { width: '100%', minWidth: 0 }),
+            : { width: `${Math.min(effectiveWidthPx, availableWidth)}px`, maxWidth: '100%', minWidth: 0 }),
         }
       : {
           flex: flexMainFill ? '1 0 auto' : `0 0 ${flexMainPx}px`,
           ...(isFlexRow
             ? {
-                height: fillHeight ? '100%' : `${effectiveHeightPx}px`,
+                height: `${effectiveHeightPx}px`,
                 minWidth: 0,
               }
             : {
@@ -89,7 +84,6 @@ export const useFlexWidgetLayout = ({
                 minHeight: 0,
               }),
         }),
-    alignSelf: crossAlignSelf || undefined,
     position: 'relative',
     display: !visibility && mode === 'view' ? 'none' : 'block',
     boxSizing: 'content-box',

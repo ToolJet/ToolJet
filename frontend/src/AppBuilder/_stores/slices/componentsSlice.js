@@ -1789,9 +1789,6 @@ export const createComponentsSlice = (set, get) => ({
           delete child.layouts[state.currentLayout].left;
           delete child.layouts[state.currentLayout].width;
           delete child.layouts[state.currentLayout].height;
-          delete child.layouts[state.currentLayout].flexOrder;
-          delete child.layouts[state.currentLayout].mainSize;
-          delete child.layouts[state.currentLayout].fillMain;
         }
       }, skipUndoRedo),
       false,
@@ -1891,17 +1888,14 @@ export const createComponentsSlice = (set, get) => ({
                   widthPx: layout.widthPx,
                   heightPx: layout.heightPx,
                 });
-                const { fillWidth, fillHeight, widthPx, heightPx, crossAlignSelf, stackedWidthBehavior } = {
+                const { fillWidth, widthPx, heightPx } = {
                   ...defaultFlexLayout,
                   ...layout,
                 };
                 const flexLayout = {};
                 if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
-                if (fillHeight !== undefined) flexLayout.fillHeight = fillHeight;
                 if (widthPx !== undefined) flexLayout.widthPx = widthPx;
                 if (heightPx !== undefined) flexLayout.heightPx = heightPx;
-                if (crossAlignSelf !== undefined) flexLayout.crossAlignSelf = crossAlignSelf;
-                if (stackedWidthBehavior !== undefined) flexLayout.stackedWidthBehavior = stackedWidthBehavior;
                 component.layouts[currentLayout] = {
                   ...component.layouts[currentLayout],
                   ...flexLayout,
@@ -1911,10 +1905,6 @@ export const createComponentsSlice = (set, get) => ({
                 delete component.layouts[currentLayout].left;
                 delete component.layouts[currentLayout].width;
                 delete component.layouts[currentLayout].height;
-                // Strip retired single-axis fields if any apps still carry them
-                delete component.layouts[currentLayout].flexOrder;
-                delete component.layouts[currentLayout].mainSize;
-                delete component.layouts[currentLayout].fillMain;
               } else if (
                 oldParentComponentType === 'FlexContainer' &&
                 newParentComponentType !== 'FlexContainer' &&
@@ -1929,16 +1919,9 @@ export const createComponentsSlice = (set, get) => ({
                   width,
                   height,
                 };
-                delete component.layouts[currentLayout].flexOrder;
                 delete component.layouts[currentLayout].fillWidth;
-                delete component.layouts[currentLayout].fillHeight;
                 delete component.layouts[currentLayout].widthPx;
                 delete component.layouts[currentLayout].heightPx;
-                delete component.layouts[currentLayout].crossAlignSelf;
-                delete component.layouts[currentLayout].stackedWidthBehavior;
-                // Retired legacy fields
-                delete component.layouts[currentLayout].mainSize;
-                delete component.layouts[currentLayout].fillMain;
               } else {
                 component.layouts[currentLayout] = {
                   ...component.layouts[currentLayout],

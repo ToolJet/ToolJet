@@ -30,12 +30,6 @@ export class Layout {
   @Column({ type: 'double precision', name: 'height_px', nullable: true })
   heightPx: number | null;
 
-  @Column({ type: 'boolean', name: 'fill_height', nullable: true })
-  fillHeight: boolean | null;
-
-  @Column({ type: 'double precision', name: 'flex_order', nullable: true })
-  flexOrder: number | null;
-
   @Column({ name: 'component_id' })
   componentId: string;
 

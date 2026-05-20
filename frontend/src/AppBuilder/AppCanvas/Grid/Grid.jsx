@@ -27,7 +27,6 @@ import {
   updateDashedBordersOnHover,
   updateDashedBordersOnDragResize,
   getCanvasBottomBound,
-  computeFlexContainerInsertIndex,
   findNewParentIdFromMousePosition,
 } from './gridUtils';
 import {
@@ -43,6 +42,7 @@ import {
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
 import {
+  computeFlexInsertIndex,
   createDefaultFlexChildLayout,
   getEffectiveFlexDirectionForFlexContainer,
 } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
@@ -785,7 +785,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
                 widthPx: snappedW,
                 heightPx: snappedH,
                 fillWidth: false,
-                fillHeight: false,
               };
 
               setComponentLayout({ [currentWidget.id]: flexPatch });
@@ -853,20 +852,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               x: transformX || 0,
               y: transformY || 0,
             };
-            // FlexContainer child: write mainSize only, no grid fields
-            // if (
-            //   currentWidget.component?.parent &&
-            //   getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
-            // ) {
-            //   const parentDir =
-            //     getResolvedComponent(currentWidget.component.parent, null, moduleId)?.properties?.direction ?? 'column';
-            //   const rawPx = parentDir === 'row' ? e.lastEvent?.width : e.lastEvent?.height;
-            //   const mainSize = Math.max(GRID_HEIGHT, Math.round((rawPx ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT);
-            //   setComponentLayout({ [currentWidget.id]: { mainSize } });
-            //   setReorderContainerChildren(currentWidget.component.parent);
-            //   incrementCanvasUpdater();
-            //   return;
-            // }
             if (currentWidget.component?.parent) {
               resizeData.gw = _gridWidth;
             }
@@ -1284,13 +1269,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
                 );
                 // Exclude the dragged element so its own rect doesn't skew the midpoint calculation.
                 // Passing excludeId is safe even when dragging across containers (id won't be present).
-                const idx = computeFlexContainerInsertIndex(
-                  hoveredFlexId,
-                  e.clientX,
-                  e.clientY,
-                  parentDir,
-                  currentWidget.id
-                );
+                const idx = computeFlexInsertIndex(hoveredFlexId, e.clientX, e.clientY, parentDir, currentWidget.id);
                 setFlexContainerDropTarget({ flexContainerId: hoveredFlexId, index: idx });
               });
             }
@@ -1340,7 +1319,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
           if (hoveredFlexId) {
             const parentDir = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, hoveredFlexId, moduleId);
-            const idx = computeFlexContainerInsertIndex(hoveredFlexId, e.clientX, e.clientY, parentDir);
+            const idx = computeFlexInsertIndex(hoveredFlexId, e.clientX, e.clientY, parentDir);
             setFlexContainerDropTarget({ flexContainerId: hoveredFlexId, index: idx });
           } else {
             setFlexContainerDropTarget(null);
