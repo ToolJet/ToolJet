@@ -243,13 +243,13 @@ You can enable the **Authentication required for all users** toggle in the confi
 
 ### Users
 
-**Operation** : `GET/me`
+**Operation** : `GET/ me`
 
 This operation retrieves the profile details of the currently authenticated user.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/microsoft-graph/example1.png" alt="Microsoft Graph example query" />
 
-**Operation** : `GET/users`
+**Operation** : `GET/ users`
 
 This operation retrieves a list of users from your Azure AD tenant.
 

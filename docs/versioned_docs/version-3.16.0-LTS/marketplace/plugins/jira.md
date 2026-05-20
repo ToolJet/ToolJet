@@ -80,7 +80,7 @@ This operation retrieves details of a specific Jira issue.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issue-query.png" alt="Jira Get Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to retrieve.
 - **Params/Body**: Additional parameters such as fields to retrieve, expand options, etc.
@@ -104,7 +104,7 @@ This operation creates a new Jira issue.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/create-issue-query.png" alt="Jira Create Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Params/Body**: The details of the issue to be created.
 
@@ -141,9 +141,12 @@ This operation deletes a specific Jira issue.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-issue-query.png" alt="Jira Delete Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Issue key**: The key or id of the issue to delete.
+
+#### Optional Parameter:
+
 - **Delete subtasks**: Whether to delete the issue's subtasks.
 
 #### Sample Example:
@@ -161,7 +164,7 @@ This operation assigns a Jira issue to a specific user.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/assign-issue-query.png" alt="Jira Assign Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to assign.
 - **Account id**: The account ID of the user to assign the issue to.
@@ -181,7 +184,7 @@ This operation modifies an existing Jira issue.
     <img className="screenshot-full" src="/img/marketplace/plugins/jira/edit-issue-query.png" alt="Jira Edit Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to edit.
 - **Params/Body**: The fields to update and their new values.
@@ -209,9 +212,12 @@ This operation retrieves details of a specific Jira user.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-user-query.png" alt="Jira Get User"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Account id**: The account ID of the user to retrieve.
+
+#### Optional Parameter:
+
 - **Expand**: Additional user details to include in the response.
 
 #### Sample Example:
@@ -229,9 +235,12 @@ This operation searches for users based on a query.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/find-users-query.png" alt="Jira Find Users"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Query**: The search query in Jira Query Language (JQL) format.
+
+#### Optional Parameter:
+
 - **Start at**: The index of the first user to return.
 - **Max results**: The maximum number of users to return.
 
@@ -243,7 +252,7 @@ Start at: 1
 Max results: 10
 ```
 
-### Find Assignable Users
+### Assignable Users
 
 This operation finds users that can be assigned to issues.
 
@@ -251,12 +260,15 @@ This operation finds users that can be assigned to issues.
     <img className="screenshot-full" src="/img/marketplace/plugins/jira/assignable-users-query.png" alt="Jira Assignable Users"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Query**: The search query in Jira Query Language (JQL) format.
 - **Account id**: The account ID of the user to find assignable users for.
 - **Project key**: The key or id of the project to find assignable users for.
 - **Issue key**: The key or id of the issue to find assignable users for.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first user to return.
 - **Max results**: The maximum number of users to return.
 - **Action descriptor id**: The action descriptor ID to find assignable users for.
@@ -289,9 +301,12 @@ This operation retrieves the worklogs for a specific issue.
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-worklogs-query.png" alt="Jira Get Issue Worklogs"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Issue key**: The key or id of the issue to get worklogs for.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first worklog to return.
 - **Max results**: The maximum number of worklogs to return.
 - **Started after**: The date and time to start retrieving worklogs from.
@@ -315,7 +330,7 @@ This operation adds a new worklog entry to an issue.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/add-worklog-query.png" alt="Jira Add Worklog"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to add the worklog to.
 - **Params/Body**: The details of the worklog entry.
@@ -343,10 +358,13 @@ This operation deletes a specific worklog entry from an issue.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-worklog-query.png" alt="Jira Delete Worklog"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
-- **Issue key**: The key or id of the issue containing the worklog
-- **Worklog id**: The ID of the worklog to delete
+- **Issue key**: The key or id of the issue containing the worklog.
+- **Worklog id**: The ID of the worklog to delete.
+
+#### Optional Parameters:
+
 - **Params/Body**: Additional parameters such as notify users, adjust estimate, etc.
 
 #### Example:
@@ -371,9 +389,12 @@ This operation retrieves issues from a board's backlog.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-board-backlog.png" alt="Jira Backlog Issues"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Board id**: The ID of the board to get backlog issues from.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first issue to return.
 - **Max results**: The maximum number of issues to return.
 - **Expand**: Additional issue details to include in the response.
@@ -400,9 +421,12 @@ This operation retrieves all boards visible to the user.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-all-boards.png" alt="Jira All Boards"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Project key**: Limit the boards to a specific project.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first board to return.
 - **Name**: The name of the board to search for.
 - **Max results**: The maximum number of boards to return.
@@ -426,9 +450,12 @@ This operation retrieves all issues from a specific board.
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issues-board.png" alt="Jira Board Issues"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Board id**: The ID of the board to get issues from.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first issue to return.
 - **Max results**: The maximum number of issues to return.
 - **Expand**: Additional issue details to include in the response.
