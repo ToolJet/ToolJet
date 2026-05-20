@@ -37,6 +37,8 @@ import { commonWidgetText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
 
 describe("Password Input", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-Passwordinput-App`);

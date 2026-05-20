@@ -31,6 +31,8 @@ import {
 } from "Support/utils/commonWidget";
 
 describe("Date Picker widget", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-datepicker-App`);

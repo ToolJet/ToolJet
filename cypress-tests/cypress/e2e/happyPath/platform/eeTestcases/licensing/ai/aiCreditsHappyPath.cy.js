@@ -11,6 +11,8 @@ import { licenseText } from "Texts/license";
 import { aiText } from "Texts/platform/ai";
 
 describe("AI Credits Plan - Happy Path", () => {
+  before(() => cy.realDragInit());
+
   const data = {};
 
   beforeEach(() => {

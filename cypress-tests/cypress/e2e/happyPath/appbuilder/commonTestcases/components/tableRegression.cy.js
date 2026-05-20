@@ -55,6 +55,8 @@ import { resizeQueryPanel } from "Support/utils/dataSource";
 import { waitForQueryAction } from "Support/utils/queries";
 
 describe("Table", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-table-App`);

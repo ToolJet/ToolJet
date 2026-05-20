@@ -9,6 +9,8 @@ import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import testData from "Fixtures/inspectorItems.json";
 
 describe("Editor- Inspector", () => {
+  before(() => cy.realDragInit());
+
   let currentVersion = "";
   let newVersion = [];
   let versionFrom = "";

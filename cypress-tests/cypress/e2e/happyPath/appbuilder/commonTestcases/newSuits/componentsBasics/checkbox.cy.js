@@ -9,6 +9,8 @@ import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeDa
 
 
 describe('Checkbox Component Tests', () => {
+  before(() => cy.realDragInit());
+
     const functions = [
 
         {

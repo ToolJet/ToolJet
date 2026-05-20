@@ -14,6 +14,8 @@ import { InstanceSSO, verifyPreviewIsDisabled } from "Support/utils/platform/eeC
 import { smtpConfig } from "Constants/constants/whitelabel";
 
 describe("Private and Public apps", () => {
+  before(() => cy.realDragInit());
+
   const generateTestData = () => ({
     appName: `${fake.companyName} P P App`,
     slug: `${fake.companyName} P P App`.toLowerCase().replace(/\s+/g, "-"),

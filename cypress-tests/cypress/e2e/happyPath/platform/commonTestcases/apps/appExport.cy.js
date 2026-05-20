@@ -21,6 +21,8 @@ import {
 } from "Support/utils/common";
 
 describe("App Export", () => {
+  before(() => cy.realDragInit());
+
   const TEST_DATA = {
     appFiles: {
       multiVersion: "cypress/fixtures/templates/three-versions.json",

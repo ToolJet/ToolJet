@@ -34,6 +34,8 @@ import { addCSA, verifyCSA } from "Support/utils/editor/passwordNumberInput.js";
 import { commonWidgetText } from "Texts/common";
 
 describe("Number Input", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-numberinput-App`);

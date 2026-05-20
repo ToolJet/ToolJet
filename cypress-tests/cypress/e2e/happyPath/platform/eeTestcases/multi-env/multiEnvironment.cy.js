@@ -26,6 +26,8 @@ import {
 } from "Support/utils/platform/multiEnv";
 
 describe("Multi-Environment Behavior", () => {
+  before(() => cy.realDragInit());
+
   let testData = {};
   let names = {};     
 

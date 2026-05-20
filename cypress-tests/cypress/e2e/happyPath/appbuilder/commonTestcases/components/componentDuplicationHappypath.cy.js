@@ -7,6 +7,8 @@ import { addBasicData, verifyBasicData } from "Support/utils/button";
 import { openEditorSidebar } from "Support/utils/commonWidget";
 
 describe("Editor- component duplication", () => {
+  before(() => cy.realDragInit());
+
   const data = {};
   beforeEach(() => {
     cy.apiLogin();

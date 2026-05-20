@@ -9,6 +9,8 @@ import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeDa
 
 
 describe('Text Input Component Tests', () => {
+  before(() => cy.realDragInit());
+
     const functions = [
 
         {

@@ -15,7 +15,9 @@ module.exports = defineConfig({
     setupNodeEvents (on, config) {
       require("./cypress/config/tasks")(on);
       require("./cypress/config/browserConfig")(on);
-
+      // cypress-real-dnd is registered globally via cypress/plugins/index.js
+      // so cy.realDrag / cy.realDragAndDrop / cy.realDragInit work in every
+      // config (no duplicate `on("task", ...)` here).
       return require("./cypress/plugins/index.js")(on, config);
     },
 

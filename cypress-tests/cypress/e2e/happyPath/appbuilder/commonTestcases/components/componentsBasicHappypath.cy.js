@@ -32,6 +32,8 @@ import {
 import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Basic components", () => {
+  before(() => cy.realDragInit());
+
   const data = {};
   beforeEach(() => {
     data.appName = `${fake.companyName}-${fake.companyName}-App`;

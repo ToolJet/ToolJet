@@ -33,6 +33,8 @@ import {
 } from "Support/utils/events";
 
 describe("Editor- Test Button widget ", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-button-App`);

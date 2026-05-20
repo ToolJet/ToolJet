@@ -39,6 +39,8 @@ import {
 } from "Support/utils/events";
 
 describe("Modal", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-Modal-App`);

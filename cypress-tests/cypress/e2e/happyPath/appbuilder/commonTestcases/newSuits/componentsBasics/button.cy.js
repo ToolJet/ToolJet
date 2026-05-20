@@ -9,6 +9,8 @@ import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeDa
 
 
 describe('Button Component Tests', () => {
+  before(() => cy.realDragInit());
+
     const functions = [
 
         {

@@ -23,6 +23,8 @@ import { randomString } from "Support/utils/editor/textInput";
 import { buttonText } from "Texts/button";
 
 describe("Text Input", () => {
+  before(() => cy.realDragInit());
+
   const data = {};
   beforeEach(() => {
     cy.viewport(1200, 1200);

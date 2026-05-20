@@ -15,6 +15,8 @@ import { verifyComponent } from "Support/utils/basicComponents";
 import { commonWidgetText } from "Texts/common";
 
 describe("Editor- CSA", () => {
+  before(() => cy.realDragInit());
+
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
     const appName1 = `${fake.companyName}-${fake.companyName}-App`;

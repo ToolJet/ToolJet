@@ -9,6 +9,8 @@ import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyNodeDa
 
 
 describe('Number Input Component Tests', () => {
+  before(() => cy.realDragInit());
+
     const functions = [
 
         {

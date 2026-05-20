@@ -10,6 +10,8 @@ import { addSuccessNotification, chainQuery } from "Support/utils/queries";
 import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Chaining of queries", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-chaining-App`);

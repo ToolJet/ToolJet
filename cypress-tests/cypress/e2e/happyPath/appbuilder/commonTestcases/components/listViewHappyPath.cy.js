@@ -33,6 +33,8 @@ import {
 } from "Support/utils/commonWidget";
 
 describe("List view widget", () => {
+  before(() => cy.realDragInit());
+
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-Listview-App`);
