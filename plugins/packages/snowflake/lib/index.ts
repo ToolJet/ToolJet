@@ -130,20 +130,25 @@ export default class Snowflake implements QueryService {
       const connection: any = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
       const search = queryOptions?.search || '';
       const searchPattern = `%${search.toUpperCase()}%`;
-      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+      const schemaName = sourceOptions.schema ? sourceOptions.schema.toUpperCase() : null;
+      const schemaCondition = schemaName ? ` AND TABLE_SCHEMA = ?` : '';
+
+      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?${schemaCondition}`;
+      const baseBinds: unknown[] = [searchPattern];
+      if (schemaName) baseBinds.push(schemaName);
 
       if (queryOptions?.limit) {
         const page = queryOptions.page || 1;
         const limit = queryOptions.limit;
         const offset = (page - 1) * limit;
-        const countSqlText = `SELECT COUNT(*) AS TOTAL FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+        const countSqlText = `SELECT COUNT(*) AS TOTAL FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?${schemaCondition}`;
 
         const [tableResult, countResult]: any[] = await Promise.all([
           this.connExecuteAsync(connection, {
             sqlText: `${baseSqlText} ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
-            binds: [searchPattern, limit, offset],
+            binds: [...baseBinds, limit, offset],
           }),
-          this.connExecuteAsync(connection, { sqlText: countSqlText, binds: [searchPattern] }),
+          this.connExecuteAsync(connection, { sqlText: countSqlText, binds: [...baseBinds] }),
         ]);
 
         const totalCount = parseInt(countResult.rows[0]?.TOTAL ?? '0', 10);
@@ -153,7 +158,7 @@ export default class Snowflake implements QueryService {
 
       const result: any = await this.connExecuteAsync(connection, {
         sqlText: `${baseSqlText} ORDER BY TABLE_NAME`,
-        binds: [searchPattern],
+        binds: baseBinds,
       });
       const rows = result.rows.map((row: any) => ({ table_name: row.TABLE_NAME }));
       return { status: 'ok', data: { rows, totalCount: rows.length } };
@@ -183,19 +188,22 @@ export default class Snowflake implements QueryService {
         context
       );
       const searchPattern = `%${search.toUpperCase()}%`;
+      const schemaName = sourceOptions.schema ? sourceOptions.schema.toUpperCase() : null;
+      const schemaCondition = schemaName ? ` AND TABLE_SCHEMA = ?` : '';
 
-      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
-      const binds: unknown[] = [searchPattern];
+      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?${schemaCondition}`;
+      const baseBinds: unknown[] = [searchPattern];
+      if (schemaName) baseBinds.push(schemaName);
 
       if (limit) {
         const offset = ((page || 1) - 1) * limit;
-        const countSqlText = `SELECT COUNT(*) AS TOTAL FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?`;
+        const countSqlText = `SELECT COUNT(*) AS TOTAL FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?${schemaCondition}`;
         const [tableResult, countResult]: any[] = await Promise.all([
           this.connExecuteAsync(connection, {
             sqlText: `${baseSqlText} ORDER BY TABLE_NAME LIMIT ? OFFSET ?`,
-            binds: [...binds, limit, offset],
+            binds: [...baseBinds, limit, offset],
           }),
-          this.connExecuteAsync(connection, { sqlText: countSqlText, binds: [searchPattern] }),
+          this.connExecuteAsync(connection, { sqlText: countSqlText, binds: [...baseBinds] }),
         ]);
         const totalCount = parseInt(countResult.rows[0]?.TOTAL ?? '0', 10);
         return {
@@ -206,7 +214,7 @@ export default class Snowflake implements QueryService {
 
       const result: any = await this.connExecuteAsync(connection, {
         sqlText: `${baseSqlText} ORDER BY TABLE_NAME`,
-        binds,
+        binds: baseBinds,
       });
       return result.rows.map((row: any) => ({ value: row.TABLE_NAME, label: row.TABLE_NAME }));
     } catch (err) {
@@ -230,8 +238,12 @@ export default class Snowflake implements QueryService {
         dataSourceUpdatedAt,
         context
       );
-      const sqlText = `SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? ORDER BY ORDINAL_POSITION`;
-      const result: any = await this.connExecuteAsync(connection, { sqlText, binds: [table.toUpperCase()] });
+      const schemaName = sourceOptions.schema ? sourceOptions.schema.toUpperCase() : null;
+      const schemaCondition = schemaName ? ` AND TABLE_SCHEMA = ?` : '';
+      const sqlText = `SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ?${schemaCondition} ORDER BY ORDINAL_POSITION`;
+      const binds: unknown[] = [table.toUpperCase()];
+      if (schemaName) binds.push(schemaName);
+      const result: any = await this.connExecuteAsync(connection, { sqlText, binds });
       return result.rows.map((row: any) => ({ value: row.COLUMN_NAME, label: row.COLUMN_NAME }));
     } catch (err) {
       throw new QueryError('Could not fetch columns', err.message || 'An unknown error occurred', {});
