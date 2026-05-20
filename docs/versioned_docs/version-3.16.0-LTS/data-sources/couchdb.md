@@ -84,10 +84,9 @@ This query lists all the records in a database.
 
 This operation fetches a single record by its record ID.
 
-#### Required Parameters: 
+#### Required Parameter: 
 
 - **Record ID**
-
 
 <img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-retrieve.png" alt="Couch retrieve view" />
 
@@ -108,12 +107,11 @@ This operation fetches a single record by its record ID.
 
 Inserts a new record into the database.
 
-#### Required Parameters: 
+#### Required Parameter: 
 
 - **Records**
 
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-create.png" alt="Couch create view"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-create.png" alt="Couch create view" />
 
 #### Example
 
@@ -141,9 +139,7 @@ You get the document as JSON in the response. For each update to the document, t
 - **Record ID**
 - **Revision ID**
 
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-update.png" alt="Couch update view" />
-
 
 #### Example
 
@@ -170,7 +166,6 @@ Removes a record from the database by its record ID.
 - **Record ID**
 - **Revision ID**
 
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-delete.png" alt="Couch delete view"/>
 
 <details id="tj-dropdown">
@@ -196,9 +191,7 @@ NOTE:
 selector syntax: https://pouchdb.com/guides/mango-queries.html
 :::
 
-
 <img className="screenshot-full img-full" src="/img/datasource-reference/couchdb/cdb-find.png" alt="Couch find" />
-
 
 #### Example
 
@@ -221,7 +214,6 @@ Views are the primary tool used for querying and reporting on CouchDB documents.
 
 #### Required Parameters
 - **View url**
-
 
 #### Optional Parameters: 
 - **Start key**
