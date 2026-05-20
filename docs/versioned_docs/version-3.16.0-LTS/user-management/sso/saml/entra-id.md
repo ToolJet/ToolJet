@@ -42,9 +42,11 @@ To configure, group sync with Microsoft Entra ID SAML, follow these steps:
 2. To obtain the Azure group Object ID, sign in to the Azure Developer Portal and navigate to Groups > All groups. Select the group you want to map and copy its Object ID.
     <img className="screenshot-full img-full" src="/img/user-management/sso/saml/entra-id/group_object_id.png" alt="Entra ID: Azure Group Object ID"/>
 
-3. In your ToolJet application, go to **Workspace settings > Workspace login > SAML** and enable **Group sync**.
+3. In the Enterprise application, go to **Manage > Single sign-on**, edit **Attributes & Claims**, and add a new **Group Claim**. Under **Which groups associated with the user should be returned in the claim**, select **All groups** or whichever group types you need. Set the **Source attribute** to **Group ID**. Click **Save**.
 
-4. In the Group attribute field, enter `groups`.
+4. In your ToolJet application, go to **Workspace settings > Workspace login > SAML** and enable **Group sync**.
+
+5. In the Group attribute field, enter `groups`.
     <img className="screenshot-full img-full" src="/img/user-management/sso/saml/entra-id/enable_group_sync.png" alt="Entra ID: Enable Group Sync"/>
 
 Once configured, ToolJet will automatically sync user groups from Microsoft Entra ID based on the defined mappings.
