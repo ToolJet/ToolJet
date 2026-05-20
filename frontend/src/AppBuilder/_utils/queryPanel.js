@@ -79,7 +79,7 @@ export function extractQueryReferences(kind, options) {
 }
 
 // Plugins that support dual SQL/GUI mode via options.mode
-const SQL_GUI_PLUGINS = new Set(['postgresql', 'mysql', 'mssql', 'oracledb']);
+const SQL_GUI_PLUGINS = new Set(['postgresql', 'mysql', 'mssql', 'oracledb', 'databricks']);
 
 function getEffectiveOptions(kind, options) {
   if (kind === 'tooljetdb') {

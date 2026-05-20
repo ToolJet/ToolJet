@@ -1234,10 +1234,6 @@ export default class Databricks implements QueryService {
     return { status: 'ok', data: { rowsAffected } };
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
-  //  handleGuiQuery — dispatches GUI mode operations
-  // ──────────────────────────────────────────────────────────────────────────
-
   private async handleGuiQuery(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
