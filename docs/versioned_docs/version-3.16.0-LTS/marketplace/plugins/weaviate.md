@@ -325,7 +325,7 @@ Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/conf
 
 Use this operation to delete a collection.
 
-**Required Parameters**
+**Required Parameter**
 
 - **Collection Name**: Collection name that needs to be deleted.
 
@@ -341,7 +341,7 @@ Use this operation to list all the objects of a collection.
 
 - **Collection Name**: Collection name to list its objects.
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **Include vectors**: Specify names of the vectors to include.
 - **After**: A threshold UUID of the objects to retrieve after.
@@ -408,7 +408,6 @@ Use this operation to create a new object within the selected collection.
     "vector":[0.12345,0.12345,.......,0.12345,0.12345]
 }
 ```
-
 </details>
 
 ### Get Object By Id
@@ -434,7 +433,6 @@ Use this operation to fetch an object using it's ID.
     "vectorWeights":null
 }
 ```
-
 </details>
 
 ### Delete Object By Id
