@@ -8,6 +8,7 @@ export type SourceOptions = {
   default_schema: string;
   personal_access_token: string;
   // OAuth shared fields
+  connection_options: string[][];
   client_id: string;
   client_secret: string;
   access_token: string;

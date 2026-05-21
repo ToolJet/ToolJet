@@ -30,6 +30,12 @@ export default class Databricks implements QueryService {
     return option?.value || option || '';
   }
 
+  private getOAuthConnectionOptions(sourceOptions: SourceOptions): Record<string, string> {
+    const opts = sourceOptions.connection_options || [];
+    const filtered = opts.filter((o) => o.length >= 2 && o[0] && o[0].trim() !== '');
+    return Object.fromEntries(filtered.map(([k, v]) => [k.trim(), v || '']));
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
   //  authUrl — generates the OAuth authorization URL
   // ──────────────────────────────────────────────────────────────────────────
@@ -628,14 +634,18 @@ export default class Databricks implements QueryService {
         )
       : sqlText;
 
+    const connOpts = this.getOAuthConnectionOptions(sourceOptions);
+    const catalog = connOpts['default_catalog'];
+    const schema = connOpts['default_schema'];
+
     try {
+      const body: Record<string, any> = { warehouse_id: warehouseId, statement: finalSql, wait_timeout: '50s' };
+      if (catalog) body.catalog = catalog;
+      if (schema) body.schema = schema;
+
       const response = await got(`https://${host}/api/2.0/sql/statements`, {
         method: 'POST',
-        json: {
-          warehouse_id: warehouseId,
-          statement: finalSql,
-          wait_timeout: '50s',
-        },
+        json: body,
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -734,13 +744,16 @@ export default class Databricks implements QueryService {
           throw new QueryError('Missing http_path', 'HTTP path is required for OAuth U2M table listing.', {});
         try {
           const accessToken = this._getOAuthU2MAccessToken(sourceOptions, userId, isAppPublic);
+          const connOpts = this.getOAuthConnectionOptions(sourceOptions);
           return await this._fetchTablesViaRest(
             sourceOptions.host,
             accessToken,
             httpPath,
             args?.search,
             args?.page,
-            args?.limit
+            args?.limit,
+            connOpts['default_catalog'],
+            connOpts['default_schema']
           );
         } catch (err) {
           if (err instanceof OAuthUnauthorizedClientError) throw err;
@@ -958,27 +971,37 @@ export default class Databricks implements QueryService {
     httpPath: string,
     search = '',
     page?: number,
-    limit?: number
+    limit?: number,
+    defaultCatalog?: string,
+    defaultSchema?: string
   ): Promise<
     { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
   > {
     const warehouseId = this.extractWarehouseId(httpPath);
 
-    const catalogRows = await this._executeSqlViaRest(
-      host,
-      accessToken,
-      warehouseId,
-      'SELECT current_catalog() AS catalog'
-    );
-    const workspaceCatalog = catalogRows[0]?.catalog || catalogRows[0]?.CATALOG || '';
+    let workspaceCatalog: string;
+    if (defaultCatalog) {
+      workspaceCatalog = defaultCatalog;
+    } else {
+      const catalogRows = await this._executeSqlViaRest(
+        host,
+        accessToken,
+        warehouseId,
+        'SELECT current_catalog() AS catalog'
+      );
+      workspaceCatalog = catalogRows[0]?.catalog || catalogRows[0]?.CATALOG || '';
+    }
 
-    const infoSchema = workspaceCatalog ? `\`${workspaceCatalog}\`.information_schema` : 'information_schema';
+    const infoSchema = workspaceCatalog
+      ? `\`${workspaceCatalog.replace(/`/g, '``')}\`.information_schema`
+      : 'information_schema';
+    const schemaFilter = defaultSchema ? ` AND table_schema = '${defaultSchema.replace(/'/g, "''")}'` : '';
     const tableRows = await this._executeSqlViaRest(
       host,
       accessToken,
       warehouseId,
       `SELECT table_catalog, table_schema, table_name FROM ${infoSchema}.tables` +
-        ` WHERE table_type NOT IN ('VIEW', 'MATERIALIZED_VIEW') ORDER BY table_schema, table_name`
+        ` WHERE table_type NOT IN ('VIEW', 'MATERIALIZED_VIEW')${schemaFilter} ORDER BY table_schema, table_name`
     );
 
     const allTables = tableRows

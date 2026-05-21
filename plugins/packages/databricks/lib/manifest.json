@@ -62,6 +62,11 @@
     "client_secret": {
       "type": "string",
       "title": "Client secret"
+    },
+    "connection_options": {
+      "type": "array",
+      "title": "Connection options",
+      "description": "Additional connection options as key-value pairs (e.g. default_catalog, default_schema)"
     }
   },
   "tj:encrypted": [
@@ -177,6 +182,13 @@
         "description": "/sql/1.0/warehouses/abc123",
         "widget": "text-v3",
         "required": true
+      },
+      "connection_options": {
+        "order": 25,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
       },
       "oauth": {
         "order": 30,
