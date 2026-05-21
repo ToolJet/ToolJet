@@ -45,7 +45,15 @@ function logout(avoidRedirection = false, organizationId = null) {
     const appMatch = currentPath.match(/^\/applications\/([^/]+)/);
     if (appMatch) {
       const subpath = window.public_config?.SUB_PATH || '/';
-      window.location.href = `${subpath}applications/${appMatch[1]}/login`;
+      const appLoginPath = `${subpath}applications/${appMatch[1]}/login`;
+      if (avoidRedirection) {
+        window.location.href = appLoginPath;
+      } else {
+        const pathname = getRedirectToWithParams(true);
+        window.location.href = `${appLoginPath}?redirectTo=${encodeURIComponent(
+          pathname.indexOf('/') === 0 ? pathname : `/${pathname}`
+        )}`;
+      }
       return;
     }
 
