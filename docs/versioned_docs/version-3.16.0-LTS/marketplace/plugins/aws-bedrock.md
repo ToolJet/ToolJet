@@ -27,7 +27,7 @@ Sends input to the selected foundation model and returns the generated output ba
 - **Model ID**: The identifier of the foundation model to be used for content generation.
 - **Request body**: The input payload sent to the selected model, containing the prompt or data for generation.
 
-**Optional Parameters**
+**Optional Parameter**
 - **Content-Type**: Specifies the format of the request body, typically `application/json`.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/bedrock/generate-v2.png" alt="AWS Bedrock query"/>
@@ -36,7 +36,7 @@ Sends input to the selected foundation model and returns the generated output ba
 
 Fetches all available foundation models from your AWS Bedrock account, including model ID, provider, and supported input/output types.
 
-**Optional Parameters**
+**Optional Parameter**
 - **Provider**: Filter models by the model provider (e.g., Anthropic, Amazon, Cohere).
 - **Customization Type**: Filter by customization type such as fine-tuned or base models.
 - **Inference Type**: Filter models based on the inference mode, like on-demand or provisioned.
