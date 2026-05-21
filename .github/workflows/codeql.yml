@@ -7,7 +7,7 @@ on:
     inputs:
       branch:
         description: "Branch to scan"
-        default: "main"
+        default: "develop"
 
 jobs:
   analyze:
@@ -33,7 +33,7 @@ jobs:
       - name: Checkout target branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch || 'main' }}
+          ref: ${{ github.event.inputs.branch || github.event.repository.default_branch }}
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
