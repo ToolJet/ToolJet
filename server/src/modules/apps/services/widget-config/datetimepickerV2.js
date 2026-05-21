@@ -73,7 +73,7 @@ export const datetimePickerV2Config = {
     },
     enableUtcFormat: {
       type: 'toggle',
-      displayName: 'Enable UTC/Z format',
+      displayName: 'UTC Designator',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'Data',
     },
