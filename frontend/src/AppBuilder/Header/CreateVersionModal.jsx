@@ -4,11 +4,11 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Warning from '@/_ui/Icon/solidIcons/Warning';
 import '../../_styles/version-modal.scss';
 
 const CreateVersionModal = ({
@@ -30,9 +30,6 @@ const CreateVersionModal = ({
   const [versionDescription, setVersionDescription] = useState('');
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
   const { current_organization_id } = authenticationService.currentSessionValue;
-  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
-  // fall back to the store value set by fetchAppGit.
-  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const {
     changeEditorVersionAction,
@@ -68,6 +65,10 @@ const CreateVersionModal = ({
     }),
     shallow
   );
+
+  // isBranchingEnabled may not be passed as a prop when rendered from VersionManagerDropdown;
+  // fall back to the store value set by fetchAppGit.
+  const effectiveIsBranchingEnabled = isBranchingEnabled ?? branchingEnabled;
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
   const textareaRef = React.useRef(null);
@@ -105,9 +106,7 @@ const CreateVersionModal = ({
     if (versionId) {
       const versionToPromote = developmentVersions.find((version) => version?.id === versionId);
       if (versionToPromote) {
-        setSelectedVersionForCreation(versionToPromote);
-        setVersionName(versionToPromote.name);
-        setVersionDescription(versionToPromote.description || '');
+        selectVersionForCreation(versionToPromote);
       }
       return;
     }
@@ -116,21 +115,24 @@ const CreateVersionModal = ({
     if (selectedVersion?.id) {
       const selected = developmentVersions.find((version) => version?.id === selectedVersion?.id);
       if (selected) {
-        setSelectedVersionForCreation(selected);
-        setVersionName(selected.name);
-        setVersionDescription(selected.description || '');
+        selectVersionForCreation(selected);
         return;
       }
     }
 
     // Fallback: if no version is selected or found, use the first development version
     if (developmentVersions.length > 0) {
-      setSelectedVersionForCreation(developmentVersions[0]);
-      setVersionName(developmentVersions[0].name);
-      setVersionDescription(developmentVersions[0].description || '');
+      const fallback = developmentVersions[0];
+      selectVersionForCreation(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [developmentVersions, versionId, showCreateAppVersion]);
+
+  const selectVersionForCreation = (version) => {
+    setSelectedVersionForCreation(version);
+    setVersionName(isGitSyncEnabled ? '' : version.name);
+    setVersionDescription(isGitSyncEnabled ? '' : version.description || '');
+  };
 
   const { t } = useTranslation();
 
@@ -150,6 +152,13 @@ const CreateVersionModal = ({
 
     if (!selectedVersionForCreation) {
       toast.error('Please wait while versions are loading...');
+      return;
+    }
+
+    if (/[\s~^:?*[\]\\@{]/.test(versionName.trim())) {
+      toast.error(
+        'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
+      );
       return;
     }
 
@@ -175,9 +184,14 @@ const CreateVersionModal = ({
             setIsCreatingVersion(false);
             return;
           }
+          if (tagCheck.invalidFormat) {
+            toast.error(
+              'Version name cannot contain spaces or special characters (`~ ^ : ? * [ \\ @ {`). Please remove them and try again.'
+            );
+            setIsCreatingVersion(false);
+            return;
+          }
         } catch (error) {
-          // If check fails, log warning but allow save to proceed
-          // (tag creation will fail separately if there's an issue)
           console.warn('Tag existence check failed, proceeding with save', error);
         }
       }
@@ -185,7 +199,7 @@ const CreateVersionModal = ({
       // Only call git-related APIs if git sync is enabled
       await appVersionService.save(appId, selectedVersionForCreation.id, {
         name: versionName,
-        description: versionDescription || undefined,
+        description: versionDescription,
         // need to add commit changes logic here
         status: 'PUBLISHED',
       });
@@ -348,6 +362,28 @@ const CreateVersionModal = ({
           }}
         >
           <div className="create-version-body mb-3">
+            {isGitSyncEnabled && (
+              <div
+                className="mb-3 d-flex align-items-start"
+                style={{
+                  backgroundColor: 'var(--background-warning-weak)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  gap: '6px',
+                }}
+                data-cy="version-immutability-info"
+              >
+                <span style={{ flexShrink: 0, display: 'inline-flex', marginTop: '1px' }}>
+                  <Warning fill="var(--text-warning)" width="18" />
+                </span>
+                <span
+                  className="tj-text-xsm"
+                  style={{ color: 'var(--text-medium)', lineHeight: '18px', fontSize: '12px' }}
+                >
+                  Name and description cannot be edited after saving
+                </span>
+              </div>
+            )}
             <div className="col">
               <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                 {t('editor.appVersionManager.versionName', 'Version Name')}
@@ -365,7 +401,10 @@ const CreateVersionModal = ({
                 maxLength="25"
               />
               <small className="version-name-helper-text" data-cy="version-name-helper-text">
-                {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
+                {t(
+                  'editor.appVersionManager.versionNameHelper',
+                  'Version name cannot contain spaces, special characters or exceed 25 characters'
+                )}
               </small>
             </div>
             <div className="col mt-2">
@@ -382,7 +421,7 @@ const CreateVersionModal = ({
                 placeholder={t('editor.appVersionManager.enterVersionDescription', 'Enter version description')}
                 disabled={isCreatingVersion}
                 value={versionDescription}
-                autoFocus={true}
+                autoFocus={!isGitSyncEnabled}
                 minLength="0"
                 maxLength="500"
                 rows={1}

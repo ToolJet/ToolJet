@@ -184,6 +184,7 @@ export enum FEATURE_KEY {
   GET_DOMAINS = 'get_domains',
   GET_TERMS = 'get_terms',
   UPDATE_LICENSE = 'update_license',
+  UPDATE_ENV_LICENSE_SETTING = 'update_env_license_setting',
   GET_APP_LIMITS = 'get_app_limits',
   CHECK_AUDIT_LOGS_LICENSE = 'check_audit_logs_license',
   GET_AUDIT_LOGS_MAX_DURATION = 'get_audit_logs_max_duration',
