@@ -239,6 +239,18 @@ export class VersionService implements IVersionService {
         shouldFreezeEditor = true;
       }
       editingVersion['globalSettings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete editingVersion['globalSettings']['libraries'];
+        delete editingVersion['globalSettings']['preloadedScript'];
+      }
+
       return {
         ...appData,
         editing_version: editingVersion,

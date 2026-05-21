@@ -676,14 +676,14 @@ const useAppData = (
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
-        // Load JS libraries and preloaded JS from globalSettings before running queries
+        // Load JS libraries and preloaded JS from globalSettings before running queries.
+        // The BE strips libraries from globalSettings when the org is not licensed, so
+        // no feature-access check is needed here.
         const globalSettings = useStore.getState().globalSettings;
         const jsLibraries = globalSettings?.libraries?.javascript || [];
         const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
-        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
-
-        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+        if (jsLibraries.length > 0 || preloadedJS) {
           setJsLibraryLoading(true);
           try {
             const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};

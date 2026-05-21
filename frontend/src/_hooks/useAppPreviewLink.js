@@ -41,7 +41,7 @@ export function useAppPreviewLink() {
     const isBasicPlan =
       featureAccess?.licenseStatus?.isExpired === true ||
       featureAccess?.licenseStatus?.isLicenseValid === false ||
-      featureAccess?.plan === 'starter';
+      featureAccess?.multiEnvironment === false;
 
     const isBranchVersion = selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
     const isDraft = selectedVersion?.status === 'DRAFT' || selectedVersion?.isDraft || selectedVersion?.is_draft;
@@ -49,7 +49,6 @@ export function useAppPreviewLink() {
 
     const previewQuery = queryString.stringify({
       version: selectedVersion?.name,
-      // Include env param unless license is invalid/expired or starter plan
       ...(!isBasicPlan ? { env: selectedEnvironment?.name } : {}),
       ...(suppressBranchId ? { is_branch: false } : {}),
     });

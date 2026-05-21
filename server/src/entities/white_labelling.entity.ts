@@ -32,6 +32,9 @@ export class WhiteLabelling {
   @Column({ type: 'varchar', length: 255 })
   favicon: string;
 
+  @Column({ name: 'banner_image', type: 'varchar', length: 1024, nullable: true, default: null })
+  bannerImage: string;
+
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP(6)', name: 'created_at' })
   createdAt: Date;
 
