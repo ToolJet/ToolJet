@@ -75,6 +75,18 @@
         ]
       },
       "list_rows": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -87,7 +99,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to query",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "where_filters": {
           "label": "Filter",
@@ -96,7 +109,7 @@
           "parse_key": "list_rows.where_filters",
           "description": "Filter conditions for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "order_filters": {
           "label": "Sort",
@@ -105,7 +118,7 @@
           "parse_key": "list_rows.order_filters",
           "description": "Sort conditions for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "aggregates": {
           "label": "Aggregate",
@@ -114,7 +127,7 @@
           "parse_key": "list_rows.aggregates",
           "description": "Aggregate functions for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "group_by": {
           "label": "Group by",
@@ -123,7 +136,7 @@
           "parse_key": "list_rows.group_by",
           "description": "Group by columns for the query",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "limit": {
           "label": "Limit",
@@ -147,6 +160,18 @@
         }
       },
       "create_row": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -159,7 +184,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to insert into",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "columns": {
           "label": "Columns",
@@ -168,10 +194,22 @@
           "parse_key": "create_row.columns",
           "description": "Column name and value pairs to insert",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         }
       },
       "update_rows": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -184,7 +222,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to update",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "where_filters": {
           "label": "Filter",
@@ -193,7 +232,7 @@
           "parse_key": "update_rows.where_filters",
           "description": "Filter conditions to target rows for update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "columns": {
           "label": "Columns",
@@ -202,7 +241,7 @@
           "parse_key": "update_rows.columns",
           "description": "Column name and value pairs to update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "allow_multiple_updates": {
           "label": "Allow this query to update multiple rows",
@@ -218,6 +257,18 @@
         }
       },
       "delete_rows": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -230,7 +281,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to delete from",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "where_filters": {
           "label": "Filter",
@@ -239,7 +291,7 @@
           "parse_key": "delete_rows.where_filters",
           "description": "Filter conditions to target rows for deletion",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "limit": {
           "label": "Limit",
@@ -251,6 +303,12 @@
           "className": "codehinter-plugins",
           "placeholder": "Enter limit"
         },
+        "allow_multiple_updates": {
+          "label": "Allow this query to delete multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, the query can delete multiple rows at once"
+        },
         "zero_records_as_success": {
           "label": "Consider query that deletes zero records as success",
           "key": "zero_records_as_success",
@@ -259,6 +317,18 @@
         }
       },
       "upsert_rows": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -271,7 +341,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to upsert into",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "primary_key_columns": {
           "label": "Primary key column(s)",
@@ -290,7 +361,7 @@
           "parse_key": "upsert_rows.columns",
           "description": "Column name and value pairs to insert or update",
           "columnSelectorOperation": { "invokeMethod": "listColumns", "label": "Fetch Columns" },
-          "columnSelectorDependsOn": ["table"]
+          "columnSelectorDependsOn": ["schema", "table"]
         },
         "allow_multiple_updates": {
           "label": "Allow this query to update multiple rows",
@@ -306,6 +377,18 @@
         }
       },
       "bulk_insert": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -318,7 +401,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to insert into",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "records": {
           "label": "Records to insert",
@@ -331,6 +415,18 @@
         }
       },
       "bulk_update_pkey": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -343,7 +439,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to update",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "primary_key_column": {
           "label": "Primary key column",
@@ -366,6 +463,18 @@
         }
       },
       "bulk_upsert_pkey": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "dynamic-selector",
+          "fxEnabled": true,
+          "operation": {
+            "invokeMethod": "listSchemas",
+            "label": "Fetch Schemas"
+          },
+          "description": "Select the schema (owner). Leave empty to use current user's tables.",
+          "placeholder": "Select schema (optional)"
+        },
         "table": {
           "label": "Table",
           "key": "table",
@@ -378,7 +487,8 @@
           "pagination": true,
           "pageSize": 6,
           "description": "Select the table to upsert into",
-          "placeholder": "Select table"
+          "placeholder": "Select table",
+          "dependsOn": ["schema"]
         },
         "primary_key_columns": {
           "label": "Primary key column(s)",
