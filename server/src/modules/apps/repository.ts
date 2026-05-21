@@ -73,57 +73,50 @@ export class AppsRepository extends Repository<App> {
     return app;
   }
 
-  async findAppBySlug(slug: string, branchId?: string): Promise<App> {
+  async findAppBySlug(slug: string): Promise<App> {
     // Caller (apps/guards/app-auth.guard.ts) checks `if (!app)` and throws its
     // own NotFoundException — return null on miss instead of throwing here.
+    // Workflows carry their slug on apps.slug; everything else moved to
+    // app_versions.slug after migration 1778000000000. This is a released-app
+    // resolution path (slug is the public URL handle), so the slug match is
+    // exact / case-sensitive — the trigger-level case-insensitive uniqueness
+    // already prevents same-LOWER(slug) duplicates from being created.
     const workflow = await this.findOne({
-      where: {
-        type: APP_TYPES.WORKFLOW,
-        slug,
-      },
+      where: { type: APP_TYPES.WORKFLOW, slug },
     });
 
     if (workflow) {
       return workflow;
     }
 
-    if (branchId) {
-      // Explicit branch context: slug must resolve on that branch.
-      const version = await this.dataSource.getRepository(AppVersion).findOne({
-        where: { slug, branchId },
-        relations: ['app'],
-      });
-      if (!version?.app) {
-        return null;
-      }
-      const app = version.app;
-      this.overlayMetadata(app, version);
-      return app;
-    }
-
     let resolvedVersion: AppVersion = null;
-    // No branch context: pick either a non-git row (branch_id IS NULL) or the
-    // workspace default-branch row for git-enabled workspaces.
+    // Pick either a non-git row (branch_id IS NULL) or any default-branch row
+    // on the INSTANCE (not just this org's default branch). Slug uniqueness is
+    // enforced instance-wide on default-branch rows by
+    // trg_app_versions_default_branch_slug_unique (migration 1779400000000),
+    // so a default-branch slug resolves to exactly one app across all
+    // workspaces. Dropping the org scope here is what enables cross-workspace
+    // slug lookup (e.g. public app sharing where the requesting user is in a
+    // different workspace than the app's owner).
     if (await this.checkIfGitEnabled(this.manager)) {
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
         .innerJoinAndSelect('av.app', 'app')
-        .leftJoin(
-          WorkspaceBranch,
-          'wb',
-          'wb.id = av.branch_id AND wb.organization_id = app.organization_id AND wb.is_default = true'
-        )
+        .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
         .where('av.slug = :slug', { slug })
         .orderBy('av.updated_at', 'DESC')
         .getOne();
     } else {
-      // Git sync disabled — find any slug match across non-branch rows.
+      // Git sync disabled — pick any app_versions row whose slug matches.
+      // Without git, there's no branch scoping concept: branchless rows hold
+      // the canonical metadata for every version, and stray branch_id values
+      // (if any from legacy data) can still legitimately back the slug lookup.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
         .innerJoinAndSelect('av.app', 'app')
-        .where('av.slug = :slug AND av.branch_id IS NULL', { slug })
+        .where('av.slug = :slug', { slug })
         .orderBy('av.updated_at', 'DESC')
         .getOne();
     }
