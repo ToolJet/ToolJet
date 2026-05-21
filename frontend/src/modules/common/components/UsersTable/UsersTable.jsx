@@ -86,6 +86,11 @@ const UsersTable = ({
                     User role
                   </th>
                 )}
+                {wsSettings && !isLoadingAllUsers && (
+                  <th data-cy="users-table-admin-groups-column-header" data-name="admin-groups-header">
+                    Group admins
+                  </th>
+                )}
                 {isLoadingAllUsers && (
                   <th data-cy="users-table-type-column-header" data-name="type-header">
                     {translator('header.organization.menus.manageUsers.userType', 'Type')}
@@ -172,6 +177,9 @@ const UsersTable = ({
                       )}
                       {!isLoadingAllUsers && (
                         <GroupChipTD groups={user.role_group.map((group) => group.name)} isRole={true} />
+                      )}
+                      {wsSettings && !isLoadingAllUsers && (
+                        <GroupChipTD groups={(user.admin_groups ?? []).map((group) => group.name)} />
                       )}
                       {!isLoadingAllUsers && <GroupChipTD groups={user.groups.map((group) => group.name)} />}
                       {user.status && (
@@ -323,6 +331,8 @@ const GroupChipTD = ({ groups = [], isRole = false }) => {
     setShowAllGroups(!showAllGroups);
   };
 
+  const overflowCount = orderedArray.length > 2 ? orderedArray.length - 2 : 0;
+
   const renderGroupChip = (group, index) => (
     <ToolTip message={group}>
       <span className="group-chip" key={index} data-cy="group-chip">
@@ -347,27 +357,15 @@ const GroupChipTD = ({ groups = [], isRole = false }) => {
         {orderedArray.length === 0 ? (
           <div className="empty-text">-</div>
         ) : (
-          orderedArray.slice(0, 2).map((group, index) => {
-            if (orderedArray.length <= 2) {
-              return renderGroupChip(group, index);
-            }
-
-            if (orderedArray.length > 2 && index === 1) {
-              return (
-                <React.Fragment key={index}>
-                  {renderGroupChip(group, index)}
-                  <span className="group-chip">+{orderedArray.length - 2} more</span>
-                  {showAllGroups && (
-                    <div className="all-groups-list">
-                      {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            }
-
-            return renderGroupChip(group, index);
-          })
+          <>
+            {orderedArray.slice(0, 2).map((group, index) => renderGroupChip(group, index))}
+            {overflowCount > 0 && <span className="group-chip group-chip--overflow">+{overflowCount} more</span>}
+            {showAllGroups && (
+              <div className="all-groups-list">
+                {orderedArray.slice(2).map((group, index) => renderGroupChip(group, index))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </td>

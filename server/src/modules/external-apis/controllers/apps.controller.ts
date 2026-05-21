@@ -3,7 +3,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { Controller, UseGuards } from '@nestjs/common';
 import { FeatureAbilityGuard } from '../ability/guard';
 import { IExternalApisAppsController } from '../Interfaces/IController';
-import { AppGitPullDto, AppGitPushDto, AppImportRequestDto } from '../dto';
+import { AppGitPullDto, AppGitPushDto, AppImportRequestDto, AutoDeployBodyDto, SaveVersionBodyDto } from '../dto';
 
 @Controller('ext')
 @InitModule(MODULES.EXTERNAL_APIS)
@@ -18,7 +18,10 @@ export class ExternalApisAppsController implements IExternalApisAppsController {
   pushVersionToGit(appId: string, versionId: string, payload: AppGitPushDto): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  autoDeployApp(appId: string): Promise<any> {
+  autoDeployApp(appIdOrSlug: string, body: AutoDeployBodyDto): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  saveAppVersion(appIdOrSlug: string, body: SaveVersionBodyDto): Promise<any> {
     throw new Error('Method not implemented.');
   }
   getAllWorkspaceApps(workspaceId: string): Promise<any> {

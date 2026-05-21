@@ -1,4 +1,4 @@
-import { Controller, Param, Post, Put, UseGuards, Get, Query, Body } from '@nestjs/common';
+import { Controller, Param, Post, Put, UseGuards, Get, Query, Body, Headers } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FolderAppsService } from './service';
@@ -19,9 +19,14 @@ export class FolderAppsController {
 
   @InitFeature(FEATURE_KEY.GET_FOLDERS)
   @Get()
-  async index(@User() user: UserEntity, @Query() query, @UserPermissionsDecorator() userPermissions: UserPermissions) {
+  async index(
+    @User() user: UserEntity,
+    @Query() query,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Headers('x-branch-id') branchId?: string
+  ) {
     user.roleGroup = userPermissions.isEndUser ? USER_ROLE.END_USER : undefined;
-    return await this.folderAppsService.getFolders(user, query);
+    return await this.folderAppsService.getFolders(user, { ...query, branchId });
   }
 
   @InitFeature(FEATURE_KEY.CREATE_FOLDER_APP)

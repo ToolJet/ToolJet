@@ -38,6 +38,18 @@ export class OrganizationGitSync extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ name: 'is_branching_enabled', nullable: false, default: true })
+  isBranchingEnabled: boolean;
+
+  @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
+  schemaVersion: string;
+
+  @Column({ name: 'use_env_config', type: 'boolean', default: false })
+  useEnvConfig: boolean;
+
+  // Not persisted — populated at runtime from OrganizationEnvRegistryService
+  envGitProvider: GITConnectionType | null;
+
   @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
   @JoinTable({
     name: 'app_git_sync',
@@ -62,4 +74,8 @@ export class OrganizationGitSync extends BaseEntity {
 
   @OneToOne(() => OrganizationGitLab, (gitLab) => gitLab.orgGitSync, {})
   gitLab: OrganizationGitLab;
+
+  get isEnabled(): boolean {
+    return !!(this.gitSsh?.isEnabled || this.gitHttps?.isEnabled || this.gitLab?.isEnabled);
+  }
 }

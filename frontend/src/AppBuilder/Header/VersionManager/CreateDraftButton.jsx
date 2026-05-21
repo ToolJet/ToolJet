@@ -4,11 +4,16 @@ import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import './style.scss';
 
-const CreateDraftButton = ({ onClick, disabled = false, darkMode = false }) => {
+const CreateDraftButton = ({
+  onClick,
+  disabled = false,
+  darkMode = false,
+  disabledTooltip = 'Draft version can only be created from saved versions.',
+}) => {
   return (
     <div className={cx('create-draft-button', { 'dark-theme theme-dark': darkMode })} style={{ padding: '8px' }}>
       <ToolTip
-        message={'Draft version can only be created from saved versions.'}
+        message={disabledTooltip}
         tooltipClassName="create-draft-button-tooltip"
         placement="left"
         show={disabled}

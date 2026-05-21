@@ -105,7 +105,7 @@ const Menu = (props) => {
 
 export const SingleValue = ({ selectProps = {} }) => {
   const appVersionName = selectProps.value?.appVersionName;
-  const { menuIsOpen, onToggleMenu } = selectProps;
+  const { menuIsOpen, onToggleMenu, isDisabled } = selectProps;
   return (
     <div className="d-inline-flex align-items-center tw-w-full" data-cy="app-version-label" style={{ gap: '8px' }}>
       <Button
@@ -116,7 +116,10 @@ export const SingleValue = ({ selectProps = {} }) => {
           }
         }}
         variant="ghost"
-        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen ? 'tw-bg-button-outline-hover' : ''}`}
+        disabled={isDisabled}
+        className={`tw-w-full tw-min-w-[80px] ${menuIsOpen && !isDisabled ? 'tw-bg-button-outline-hover' : ''} ${
+          isDisabled ? '!tw-cursor-default tw-opacity-50' : ''
+        }`}
       >
         <Tag width="16" height="16" className="tw-text-icon-success" />
 

@@ -1,8 +1,8 @@
-import { ConflictException, Injectable, NotAcceptableException, NotImplementedException, Optional } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotAcceptableException, NotImplementedException, Optional } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, Transaction } from 'typeorm';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { OrganizationStatusUpdateDto, OrganizationUpdateDto } from '@modules/organizations/dto';
 import { IOrganizationsService } from '@modules/organizations/interfaces/IService';
@@ -18,6 +18,7 @@ import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { getTooljetEdition } from 'src/helpers/utils.helper';
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { CustomDomainRepository } from '@modules/custom-domains/repository';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class OrganizationsService implements IOrganizationsService {
@@ -27,7 +28,7 @@ export class OrganizationsService implements IOrganizationsService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly licenseUserService: LicenseUserService,
     @Optional() protected readonly customDomainRepository: CustomDomainRepository
-  ) {}
+  ) { }
 
   async fetchOrganizations(
     user: any,
@@ -63,8 +64,8 @@ export class OrganizationsService implements IOrganizationsService {
       const orgIds = organizations.map((o) => o.id);
       const activeDomains = this.customDomainRepository
         ? await this.customDomainRepository.find({
-            where: { organizationId: In(orgIds), status: 'active' },
-          })
+          where: { organizationId: In(orgIds), status: 'active' },
+        })
         : [];
       const domainMap = new Map(activeDomains.map((d) => [d.organizationId, d.domain]));
 
@@ -90,7 +91,7 @@ export class OrganizationsService implements IOrganizationsService {
   }
 
   async updateOrganizationNameAndSlug(user: User, updatableData: OrganizationUpdateDto): Promise<Organization> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
+    await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationId = user.organizationId;
       const organization = await manager.findOne(Organization, { where: { id: organizationId } });
       await this.organizationRepository.updateOne(organizationId, updatableData, manager);
@@ -115,8 +116,9 @@ export class OrganizationsService implements IOrganizationsService {
         },
       };
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
-      return;
     });
+
+    return;
   }
 
   async updateOrganizationStatus(
@@ -140,17 +142,17 @@ export class OrganizationsService implements IOrganizationsService {
       const resourceData =
         updatableData.status === WORKSPACE_STATUS.ACTIVE
           ? {
-              unarchived_workspace: {
-                id: organizationId,
-                name: organization.name,
-              },
-            }
+            unarchived_workspace: {
+              id: organizationId,
+              name: organization.name,
+            },
+          }
           : {
-              archived_workspace: {
-                id: organizationId,
-                name: organization.name,
-              },
-            };
+            archived_workspace: {
+              id: organizationId,
+              name: organization.name,
+            },
+          };
 
       const auditLogsData = {
         userId: user.id,
@@ -194,4 +196,5 @@ export class OrganizationsService implements IOrganizationsService {
   async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
     throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
+
 }

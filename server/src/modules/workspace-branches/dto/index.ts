@@ -1,0 +1,65 @@
+import { IsNotEmpty, IsString, IsOptional, IsUUID } from 'class-validator';
+
+export class CreateBranchDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsUUID()
+  sourceBranchId?: string;
+
+  @IsOptional()
+  @IsString()
+  commitSha?: string;
+}
+
+export class SwitchBranchDto {
+  @IsNotEmpty()
+  @IsUUID()
+  branchId: string;
+}
+
+export class WorkspacePushDto {
+  @IsNotEmpty()
+  @IsString()
+  commitMessage: string;
+
+  @IsOptional()
+  @IsString()
+  targetBranch?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+}
+
+export class WorkspacePullDto {
+  @IsOptional()
+  @IsString()
+  sourceBranch?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+}
+
+export class EnsureDraftDto {
+  @IsNotEmpty()
+  @IsUUID()
+  appId: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+
+  // Present when the user selected a git tag instead of "Latest commit"
+  @IsOptional()
+  @IsString()
+  tagSha?: string;
+
+  // Full tag name (e.g. "my-app/v1") used to populate source_tag on the version
+  @IsOptional()
+  @IsString()
+  tagName?: string;
+}

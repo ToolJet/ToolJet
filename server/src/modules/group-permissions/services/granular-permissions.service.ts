@@ -1,5 +1,5 @@
 import { AppBase } from '@entities/app_base.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { CreateGranularPermissionDto, UpdateGranularPermissionDto } from '../dto/granular-permissions';
@@ -8,12 +8,14 @@ import { GranularPermissionsUtilService } from '../util-services/granular-permis
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { GranularPermissionQuerySearchParam } from '../types';
+import { AddableResourceItem } from '../types/granular_permissions';
 import { IGranularPermissionsService } from '../interfaces/IService';
 import { GroupPermissionLicenseUtilService } from '../util-services/license.util.service';
 import { USER_ROLE } from '../constants';
 import { User } from '@entities/user.entity';
 import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import { skipAppEditingVersionHydration } from '@modules/apps/subscribers/apps.subscriber';
 
 @Injectable()
 export class GranularPermissionsService implements IGranularPermissionsService {
@@ -53,24 +55,21 @@ export class GranularPermissionsService implements IGranularPermissionsService {
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, auditLogsData);
     });
   }
-  async getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const apps = await manager.find(AppBase, {
-        where: {
-          organizationId,
-        },
-      });
-      return apps.map((app) => {
-        return {
-          name: app.name,
-          id: app.id,
-          type: app.type,
-        };
-      });
-    });
+  async getAddableApps(organizationId: string): Promise<AddableResourceItem[]> {
+    // Raw query — skips entity hydration + subscribers, projects only the 3 needed columns.
+    return getConnectionInstance()
+      .createQueryBuilder()
+      .select(['ab.id AS id', 'ab.name AS name', 'ab.type AS type'])
+      .from(AppBase, 'ab')
+      .where('ab.organization_id = :organizationId', { organizationId })
+      .getRawMany<AddableResourceItem>();
   }
 
-  async getAddableDataSources(organizationId: string): Promise<{ AddableResourceItem }[]> {
+  async getAddableDataSources(organizationId: string): Promise<AddableResourceItem[]> {
+    return [];
+  }
+
+  async getAddableFolders(organizationId: string): Promise<AddableResourceItem[]> {
     return [];
   }
 
@@ -79,24 +78,19 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     organizationId: string,
     searchParam?: GranularPermissionQuerySearchParam
   ): Promise<GranularPermissions[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Check if plan is restricted (basic/starter have read-only permissions)
+    // Repository joins App rows via granular_permissions.appsGroupPermissions.groupApps.app —
+    // muzzle subscriber to skip per-App AppVersion N+1.
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const manager = getConnectionInstance().manager;
       const isRestrictedPlan = await this.licenseUtilService.isRestrictedPlan(organizationId);
       const isFeatureEnabled = await this.licenseUtilService.isFeatureEnabled(organizationId);
-      const groupPermission = await this.groupPermissionRepository.getGroup({
-        id: groupId,
-        organizationId,
-      });
+      const groupPermission = await this.groupPermissionRepository.getGroup({ id: groupId, organizationId }, manager);
 
-      // For restricted plans (basic/starter) or if the feature (custom groups) is not enabled, return basic plan granular permissions regardless of the group permission
       if (isRestrictedPlan || !isFeatureEnabled) {
         return this.granularPermissionUtilService.getBasicPlanGranularPermissions(groupPermission.name as USER_ROLE);
       }
-      return await this.groupPermissionRepository.getAllGranularPermissions(
-        {
-          groupId,
-          ...searchParam,
-        },
+      return this.groupPermissionRepository.getAllGranularPermissions(
+        { groupId, ...searchParam },
         organizationId,
         manager
       );

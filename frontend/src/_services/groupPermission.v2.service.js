@@ -8,6 +8,7 @@ export const groupPermissionV2Service = {
   getGroup,
   getGroups,
   fetchAddableApps,
+  fetchAddableFolders,
   getUsersInGroup,
   getUsersNotInGroup,
   updateUserRole,
@@ -19,6 +20,11 @@ export const groupPermissionV2Service = {
   updateGranularPermission,
   duplicate,
   fetchAddableDs,
+  getGroupAdmins,
+  getAddableAdmins,
+  assignGroupAdmin,
+  revokeGroupAdmin,
+  getUserAdminGroups,
 };
 
 function create(name) {
@@ -85,6 +91,17 @@ function fetchAddableDs() {
   );
 }
 
+function fetchAddableFolders() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/addable-folders`, requestOptions).then(
+    handleResponse
+  );
+}
+
 function getGroups() {
   const requestOptions = {
     method: 'GET',
@@ -120,7 +137,14 @@ function createGranularPermission(id, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  const type = body.type === 'app' ? 'app' : 'data-source';
+  let type;
+  if (body.type === 'app') {
+    type = 'app';
+  } else if (body.type === 'folder') {
+    type = 'folder';
+  } else {
+    type = 'data-source';
+  }
   return fetch(`${config.apiUrl}/v2/group-permissions/${id}/granular-permissions/${type}`, requestOptions).then(
     handleResponse
   );
@@ -134,7 +158,14 @@ function updateGranularPermission(permission, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  const type = permission.type === 'app' ? 'app' : 'data-source';
+  let type;
+  if (permission.type === 'app') {
+    type = 'app';
+  } else if (permission.type === 'folder') {
+    type = 'folder';
+  } else {
+    type = 'data-source';
+  }
   return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${type}/${id}`, requestOptions).then(
     handleResponse
   );
@@ -147,7 +178,14 @@ function deleteGranularPermission(permission) {
     headers: authHeader(),
     credentials: 'include',
   };
-  const type = permission.type === 'app' ? 'app' : 'data-source';
+  let type;
+  if (permission.type === 'app') {
+    type = 'app';
+  } else if (permission.type === 'folder') {
+    type = 'folder';
+  } else {
+    type = 'data-source';
+  }
   return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${type}/${id}`, requestOptions).then(
     handleResponse
   );
@@ -206,6 +244,66 @@ function duplicate(groupPermissionId, body) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/duplicate`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getGroupAdmins(groupPermissionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getAddableAdmins(groupPermissionId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins/addable`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function assignGroupAdmin(groupPermissionId, userId) {
+  const body = {
+    userId,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function revokeGroupAdmin(groupPermissionId, adminId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/admins/${adminId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getUserAdminGroups(userId) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/users/${userId}/admin-groups`, requestOptions).then(
     handleResponse
   );
 }

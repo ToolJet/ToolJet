@@ -43,6 +43,7 @@ const DynamicFormV2 = ({
   showValidationErrors,
   clearValidationErrorBanner,
   elementsProps = null,
+  isWorkspaceBranchLocked = false,
   createDataSource = null,
   isSaving = false,
 }) => {
@@ -112,7 +113,7 @@ const DynamicFormV2 = ({
       .map((item) => item.key);
   };
   React.useEffect(() => {
-    if (isGDS) {
+    if (isGDS && currentAppEnvironmentId) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
         const constants = {
           globals: {},
@@ -426,12 +427,23 @@ const DynamicFormV2 = ({
     } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
-    const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
+    const isEncrypted =
+      widget === 'password-v3' ||
+      widget === 'password-v3-textarea' ||
+      widget === 'password' ||
+      encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
     const skipValidation =
       (!hasUserInteracted && !showValidationErrors) || (!interactedFields.has(key) && !showValidationErrors);
+
+    // On locked master branch, disable non-encrypted fields (encrypted fields remain editable)
+    const isFieldDisabledByBranchLock = isWorkspaceBranchLocked && !isEncrypted;
     const workspaceConstant = options?.[key]?.workspace_constant;
     const isEditing = computedProps[key] && computedProps[key].disabled === false;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
 
     const handleOptionChange = (key, value, flag = true) => {
       if (!hasUserInteracted) {
@@ -465,7 +477,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -473,6 +485,8 @@ const DynamicFormV2 = ({
           onBlur,
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
+          disabled: isFieldDisabledByBranchLock,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       }
       case 'password-v3':
@@ -509,7 +523,7 @@ const DynamicFormV2 = ({
             'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: helpText,
+          helpText: finalHelpText,
           value: currentValue || '',
           onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
@@ -517,7 +531,10 @@ const DynamicFormV2 = ({
           onBlur,
           isRequired: isRequired,
           isValidatedMessages: validationStatus,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           workspaceVariables,
           workspaceConstants: currentOrgEnvironmentConstants,
           isEditing: isEditing,
@@ -554,7 +571,8 @@ const DynamicFormV2 = ({
           handleOptionChange,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           encrypted: isEncrypted,
           buttonText,
           width: width,
@@ -588,6 +606,8 @@ const DynamicFormV2 = ({
           defaultChecked: currentValue,
           checked: currentValue,
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'toggle-flip':
         // eslint-disable-next-line no-case-declarations
@@ -596,7 +616,8 @@ const DynamicFormV2 = ({
           checked: isEnabled,
           label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => {
             const booleanMode = options?.[key]?.value === true || options?.[key]?.value === false;
             handleOptionChange(
@@ -611,7 +632,8 @@ const DynamicFormV2 = ({
           checked: currentValue,
           label: label,
           helpText: helpText,
-          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'dropdown':
@@ -622,6 +644,7 @@ const DynamicFormV2 = ({
           onChange: (value) => handleOptionChange(key, value, true),
           width: width || '100%',
           encrypted: options?.[key]?.encrypted,
+          isDisabled: isFieldDisabledByBranchLock,
         };
       case 'checkbox':
         return {
@@ -632,7 +655,10 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
           helpText: helpText,
           isRequired: isRequired,
-          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          disabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          isDisabled:
+            isFieldDisabledByBranchLock || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
         };
       case 'checkbox-group':
         return {

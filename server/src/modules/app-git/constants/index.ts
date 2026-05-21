@@ -3,9 +3,14 @@ export enum FEATURE_KEY {
   GIT_UPDATE_APP = 'git_update_app', // Corresponds to pullGitAppChanges (POST 'gitpull/app/:appId')
   GIT_GET_APPS = 'git_get_apps', // Corresponds to getAppsMetaFile (GET 'gitpull')
   GIT_GET_APP = 'git_get_app', // Corresponds to getAppMetaFile (GET 'gitpull/app/:appId')
+  GIT_GET_APP_BY_NAME = 'git_get_app_by_name', // Corresponds to getAppMetaFileByName (GET 'gitpull/app/name/:appName')
   GIT_GET_APP_CONFIG = 'git_get_app_config', // Corresponds to getAppConfig (GET ':workspaceId/app/:versionId')
   GIT_SYNC_APP = 'git_sync_app', // Corresponds to gitSyncApp (POST 'gitpush/:appGitId/:versionId')
   GIT_APP_VERSION_RENAME = 'git_app_version_rename', // Corresponds to gitSyncApp (POST 'gitpush/:appGitId/:versionId')
   GIT_APP_CONFIGS_UPDATE = 'git_app_configs_update',
   GIT_FETCH_APP_CONFIGS = 'get_app_git_configs',
+  GET_ALL_BRANCHES = 'get_all_branches',
+  CREATE_BRANCH = 'create_branch',
+  FETCH_PULL_REQUESTS = 'fetch_pull_requests',
+  CREATE_GIT_TAG = 'CREATE_GIT_TAG',
 }

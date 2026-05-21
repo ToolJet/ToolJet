@@ -21,6 +21,7 @@ const ConfigHandleButton = ({
     <span className={`config-handle-button ${className}`}>
       <ToolTip message={message} show={show} delay={{ show: 500, hide: 50 }}>
         <button
+          type="button"
           style={{
             background: 'var(--background-accent-strong)',
             color: 'var(--text-on-solid)',

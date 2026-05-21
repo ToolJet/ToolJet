@@ -8,7 +8,8 @@ jobs:
   merge-submodules:
     if: |
       github.event.pull_request.merged == true &&
-      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'lts-3.16')
+      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'lts-3.16') &&
+      !startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +47,8 @@ jobs:
     needs: merge-submodules
     if: |
       github.event.pull_request.merged == true &&
-      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'lts-3.16')
+      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'lts-3.16') &&
+      !startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
 
     steps:

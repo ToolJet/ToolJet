@@ -8,6 +8,7 @@ import {
   ValidateNested,
   MinLength,
   MaxLength,
+  Matches,
   ValidateIf,
   IsNotEmpty,
   IsDefined,
@@ -298,6 +299,54 @@ export class ValidatePATSessionDto {
   @IsString()
   accessToken: string;
 }
+
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+export class AutoDeployBodyDto {
+  @IsString()
+  @IsOptional()
+  versionId?: string;
+
+  @IsString()
+  @IsOptional()
+  versionName?: string;
+}
+
+export class SaveVersionBodyDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
+  name?: string;
+}
+
+// Export groups DTOs
+export {
+  CreateGroupExternalDto,
+  GranularPermissionDto,
+  GranularPermissionResourceType,
+  AppEnvironment,
+  AppPermissionsDto,
+  DataSourcePermissionsDto,
+  FolderPermissionsDto,
+  WorkspacePermissionsDto,
+  WorkflowPermissionsDto,
+} from './groups.dto';
 
 export class WorkspaceModuleDto {
   id: string;
