@@ -836,9 +836,18 @@ export class AppsService implements IAppsService {
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
-      const versionToLoad = app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+      // app.editingVersion is populated by AppSubscriber.afterLoad ONLY when
+      // git sync is off (or when the entity is a workflow). For git-enabled
+      // front-end / module apps the subscriber returns early without
+      // populating it, so we need a hard fallback to currentVersionId. If
+      // neither is available the app has no resolvable version and we can't
+      // serve the slug — throw a clear 404 instead of crashing on a
+      // findVersion(undefined) call further down.
+      const versionId = app.currentVersionId ?? app.editingVersion?.id;
+      if (!versionId) {
+        throw new NotFoundException('No released or editing version found for this app');
+      }
+      const versionToLoad = await this.versionRepository.findVersion(versionId);
 
       const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];

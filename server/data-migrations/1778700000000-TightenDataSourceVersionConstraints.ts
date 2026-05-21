@@ -7,6 +7,54 @@ export class TightenDataSourceVersionConstraints1778700000000 implements Migrati
     // that actually enforces unique default names.
     await queryRunner.query(`DROP INDEX IF EXISTS idx_unique_default_name`);
 
+    // Pre-CREATE dedupe: collapse pre-existing (LOWER(name), COALESCE(branch_id, '00…'))
+    // duplicates among active non-default DSVs. Without this, the new index below
+    // fails with `23505 unique_violation` on the first colliding pair (e.g. two
+    // branchless 'fna-fact-repository' rows left over from before the column
+    // dropped via 1776700000000's CASCADE). Keep the oldest row's name; suffix
+    // later duplicates with _N until the new value is also unique within the
+    // same (LOWER(name), branch_id) bucket. The inner NOT EXISTS check guards
+    // against suffix collisions when several originals share the same base name.
+    await queryRunner.query(`
+      DO $$
+      DECLARE
+        rec RECORD;
+        new_value VARCHAR;
+        suffix INT;
+      BEGIN
+        FOR rec IN
+          SELECT id, name, branch_id
+          FROM (
+            SELECT id, name, branch_id,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY LOWER(name),
+                                  COALESCE(branch_id, '00000000-0000-0000-0000-000000000000'::uuid)
+                     ORDER BY created_at ASC, id ASC
+                   ) AS rn
+            FROM data_source_versions
+            WHERE is_active = true AND is_default = false AND name IS NOT NULL
+          ) ranked
+          WHERE rn > 1
+        LOOP
+          suffix := 1;
+          LOOP
+            new_value := rec.name || '_' || suffix;
+            EXIT WHEN NOT EXISTS (
+              SELECT 1
+              FROM data_source_versions dsv2
+              WHERE LOWER(dsv2.name) = LOWER(new_value)
+                AND COALESCE(dsv2.branch_id, '00000000-0000-0000-0000-000000000000'::uuid)
+                    = COALESCE(rec.branch_id, '00000000-0000-0000-0000-000000000000'::uuid)
+                AND dsv2.is_active = true
+                AND dsv2.is_default = false
+            );
+            suffix := suffix + 1;
+          END LOOP;
+          UPDATE data_source_versions SET name = new_value WHERE id = rec.id;
+        END LOOP;
+      END $$;
+    `);
+
     // Moved here from 1776700000000-RemoveAppVersionIdFromDataSourceVersions so
     // all data_source_versions constraint changes live in one migration.
     await queryRunner.query(`
