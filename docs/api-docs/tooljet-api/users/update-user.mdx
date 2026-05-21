@@ -16,6 +16,13 @@ Partially updates fields of a user. Returns 200 on success.
 
 <ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"Updated full name of the user.","in":"body"},{"name":"email","type":"string","required":false,"description":"Updated email address of the user.","in":"body"},{"name":"password","type":"string","required":false,"description":"New password for the user account.","in":"body"},{"name":"status","type":"string","required":false,"description":"Updated user status. Accepted values: active, archived.","in":"body"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Validation failure — invalid status value, email format, or other field constraint."},
+  {"status":"401","description":"Missing or invalid Authorization token."},
+  {"status":"404","description":"User not found or not available on Community Edition."},
+  {"status":"451","description":"License not present."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

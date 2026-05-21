@@ -16,6 +16,13 @@ Deletes a group from the workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"},{"name":"groupId","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Cannot delete a default group."},
+  {"status":"403","description":"External API disabled or missing EXTERNAL_API license."},
+  {"status":"404","description":"Not available on Community Edition."},
+  {"status":"451","description":"Feature not enabled in license."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

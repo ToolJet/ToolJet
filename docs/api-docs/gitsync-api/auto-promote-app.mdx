@@ -13,6 +13,15 @@ Deploys an app by pulling the latest changes from Git and promoting the latest v
 
 <ParamsTable title="Path Parameters" params={[{"name":"appId","type":"string","required":true,"description":"ID of the app to promote.","in":"path"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid UUID, MULTI_ENVIRONMENT check failed, or the app version is still in DRAFT state."},
+  {"status":"401","description":"Missing or invalid Authorization token."},
+  {"status":"403","description":"Insufficient permissions to promote this app."},
+  {"status":"404","description":"App not found."},
+  {"status":"406","description":"currentEnvironmentId is stale — the version has already been promoted."},
+  {"status":"500","description":"No higher-priority environment exists to promote to."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -20,7 +29,34 @@ Deploys an app by pulling the latest changes from Git and promoting the latest v
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
-**Response:** `200`
+<ResponseExample statusCode="200" body={`{
+  "editorEnvironment": {
+    "id": "env-uuid-staging",
+    "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8",
+    "name": "staging",
+    "isDefault": false,
+    "priority": 2,
+    "enabled": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-05-01T10:00:00.000Z"
+  },
+  "environments": [
+    {
+      "id": "env-uuid-dev",
+      "name": "development",
+      "priority": 1,
+      "enabled": true,
+      "appVersionsCount": 3
+    },
+    {
+      "id": "env-uuid-staging",
+      "name": "staging",
+      "priority": 2,
+      "enabled": true,
+      "appVersionsCount": 2
+    }
+  ]
+}`} />
 
 </ApiRight>
 </ApiColumns>

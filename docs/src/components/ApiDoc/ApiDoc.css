@@ -149,6 +149,24 @@
   line-height: 1.5;
 }
 
+.api-error__status {
+  font-family: var(--ifm-font-family-monospace, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+[data-theme='dark'] .api-error__status {
+  color: #fbbf24;
+  background: #2d1a00;
+  border-color: #78350f;
+}
+
 /* ─── Request Example ───────────────────────────────────────────── */
 .api-request-example {
   margin: 1.5rem 0;

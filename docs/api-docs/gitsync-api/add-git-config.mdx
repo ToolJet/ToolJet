@@ -17,6 +17,11 @@ Configure GitHub HTTPS settings for an organization by associating a GitHub App 
 
 <ParamsTable title="Request Body" params={[{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"},{"name":"gitUrl","type":"string","required":true,"description":"Full HTTPS Git URL.","in":"body"},{"name":"branchName","type":"string","required":true,"description":"Branch to sync with (e.g. \"main\").","in":"body"},{"name":"githubAppId","type":"string","required":true,"description":"GitHub App ID.","in":"body"},{"name":"githubAppInstallationId","type":"string","required":true,"description":"GitHub App installation ID.","in":"body"},{"name":"githubAppPrivateKey","type":"string","required":true,"description":"GitHub App private key in PEM format.","in":"body"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Workspace is archived, no admin user found, git connection test failed, or request body validation failure."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization header."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

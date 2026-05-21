@@ -16,6 +16,14 @@ Creates a new ToolJet app from a GitHub repository.
 
 <ParamsTable title="Request Body" params={[{"name":"gitAppId","type":"string","required":true,"description":"Git App ID.","in":"body"},{"name":"gitVersionId","type":"string","required":true,"description":"Git version ID (branch or tag).","in":"body"},{"name":"organizationId","type":"string","required":true,"description":"UUID of the organization.","in":"body"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"App name already exists, no git provider enabled, repository clone failed, or import error."},
+  {"status":"401","description":"Missing or invalid Authorization token."},
+  {"status":"403","description":"Insufficient permissions."},
+  {"status":"404","description":"Not available on Community Edition."},
+  {"status":"451","description":"GIT_SYNC license not present."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -28,7 +36,20 @@ Creates a new ToolJet app from a GitHub repository.
   "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8"
 }'`} />
 
-**Response:** `201`
+<ResponseExample statusCode="201" body={`{
+  "app": {
+    "id": "ae06cc7a-2922-4fe7-9064-462741558813",
+    "name": "My Git App",
+    "slug": "ae06cc7a-2922-4fe7-9064-462741558813",
+    "type": "front-end",
+    "is_public": false,
+    "is_maintenance_on": false,
+    "organization_id": "45892c81-c1f0-48c6-8875-c2e4fca516f8",
+    "current_version_id": "37be6442-ca1b-4a5a-a6f4-f929e00a0ac1",
+    "created_at": "2024-05-01T10:00:00.000Z",
+    "updated_at": "2024-05-01T10:00:00.000Z"
+  }
+}`} />
 
 </ApiRight>
 </ApiColumns>

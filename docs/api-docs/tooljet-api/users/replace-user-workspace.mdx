@@ -16,6 +16,13 @@ Updates a specific workspace relation for a user.
 
 <ParamsTable title="Request Body" params={[{"name":"id","type":"string","required":false,"description":"ID of the workspace (alternative to path parameter).","in":"body"},{"name":"name","type":"string","required":false,"description":"Name of the workspace.","in":"body"},{"name":"status","type":"string","required":false,"description":"User's status in this workspace. Accepted values: active, archived.","in":"body"},{"name":"groups","type":"array","required":false,"description":"List of groups to assign the user to in this workspace.","in":"body"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"User account is archived, group not found, invalid group type, or end-user/editable group conflict."},
+  {"status":"402","description":"User seat limit exceeded."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"User not found."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

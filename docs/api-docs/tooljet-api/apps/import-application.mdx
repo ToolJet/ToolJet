@@ -12,6 +12,13 @@ Imports an application into a ToolJet workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace to import the application into.","in":"path"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid workspace UUID, workspace not found, payload version newer than server version, missing app name, or MODULE type apps cannot be imported via this endpoint."},
+  {"status":"401","description":"Missing or invalid Authorization token."},
+  {"status":"409","description":"A ToolJet Database table with the same name already exists."},
+  {"status":"500","description":"Internal server error."}
+]} />
+
 
 
 <ParamsTable title="Request Body" params={[{"name":"appName","type":"string","required":false,"description":"Overrides the app name on import. Uses the exported name if omitted.","in":"body"}]} />
@@ -24,7 +31,9 @@ Imports an application into a ToolJet workspace.
   -H "Content-Type: application/json" \
   -d '{}'`} />
 
-**Response:** `201`
+<ResponseExample statusCode="201" body={`{
+  "message": "App imported successfully into workspace : <workspaceId>"
+}`} />
 
 </ApiRight>
 </ApiColumns>

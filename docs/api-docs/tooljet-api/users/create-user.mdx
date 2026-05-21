@@ -16,6 +16,14 @@ Creates a user with workspace assignments and returns 201 on success.
 
 <ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"Full name of the user.","in":"body"},{"name":"email","type":"string","required":true,"description":"Email address of the user.","in":"body"},{"name":"password","type":"string","required":false,"description":"Password for the user account. If omitted, an invite email is sent.","in":"body"},{"name":"status","type":"string","required":false,"description":"Initial status of the user. Accepted values: active, invited.","in":"body"},{"name":"workspaces","type":"array","required":true,"description":"List of workspaces to add the user to, each with optional status and group assignments.","in":"body"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Missing required fields, email already exists, workspace or group not found, or invalid group type."},
+  {"status":"402","description":"User count exceeds the license limit."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"Not available on Community Edition."},
+  {"status":"451","description":"EXTERNAL_API license not available."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -40,7 +48,27 @@ Creates a user with workspace assignments and returns 201 on success.
   ]
 }'`} />
 
-**Response:** `201`
+<ResponseExample statusCode="201" body={`{
+  "id": "2819c223-7f76-453a-919d-413861904646",
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "status": "invited",
+  "workspaces": [
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "team-space",
+      "status": "invited",
+      "inviteUrl": "https://app.tooljet.com/invitations/<userToken>/workspaces/<orgToken>?oid=<orgId>",
+      "userPermission": {}
+    }
+  ],
+  "userGroups": [
+    {"id": "c3d4e5f6-a7b8-9012-cdef-123456789012", "name": "all_users"}
+  ],
+  "userDetails": [
+    {"organizationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901", "ssoUserInfo": null, "userMetadata": null}
+  ]
+}`} />
 
 </ApiRight>
 </ApiColumns>

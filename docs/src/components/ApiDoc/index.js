@@ -9,3 +9,4 @@ export { default as ApiSetupSteps } from './ApiSetupSteps';
 export { default as ApiColumns } from './ApiColumns';
 export { default as ApiLeft } from './ApiLeft';
 export { default as ApiRight } from './ApiRight';
+export { default as ErrorsTable } from './ErrorsTable';

@@ -16,6 +16,12 @@ Push a specific app version to the configured GitHub repository.
 
 <ParamsTable title="Request Body" params={[{"name":"commitMessage","type":"string","required":true,"description":"Git commit message.","in":"body"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Wrong version ID, app not found, git sync not enabled for this app, or clone/commit/push to GitHub failed."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"Not available on Community Edition."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

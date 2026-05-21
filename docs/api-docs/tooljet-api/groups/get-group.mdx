@@ -16,6 +16,14 @@ Retrieves details of a specific group including its permissions.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"},{"name":"groupId","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Group not found in the specified workspace."},
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"Feature not available in current plan."},
+  {"status":"404","description":"Not available on Community Edition."},
+  {"status":"451","description":"License does not include this feature."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -23,7 +31,28 @@ Retrieves details of a specific group including its permissions.
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
-**Response:** `200`
+<ResponseExample statusCode="200" body={`{
+  "group": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Platform Engineers",
+    "type": "custom",
+    "organizationId": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "appCreate": true,
+    "appDelete": false,
+    "folderCRUD": false,
+    "orgConstantCRUD": false,
+    "dataSourceCreate": false,
+    "dataSourceDelete": false,
+    "workflowCreate": false,
+    "workflowDelete": false,
+    "appPromote": false,
+    "appRelease": false,
+    "disabled": false,
+    "createdAt": "2024-03-15T10:00:00.000Z",
+    "updatedAt": "2024-05-01T12:30:00.000Z"
+  },
+  "isBuilderLevel": false
+}`} />
 
 </ApiRight>
 </ApiColumns>
