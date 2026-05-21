@@ -38,9 +38,7 @@ export const useTableRefresh = (id, fireEvent = () => {}) => {
     }
 
     if (queriesToRun.length === 0) {
-      setIsRefreshing(id, true);
       fireEvent('onRefresh');
-      setIsRefreshing(id, false);
       return;
     }
 
