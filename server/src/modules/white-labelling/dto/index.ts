@@ -17,4 +17,9 @@ export class UpdateWhiteLabellingDto {
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   white_label_favicon: string;
+
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => sanitizeInput(value))
+  white_label_banner: string;
 }

@@ -614,7 +614,7 @@ export class AppImportExportService {
             }
           }
 
-          moduleApps.push(await this.export(user, resolvedId, { version_id: versionDbId }));
+          moduleApps.push(await this.export(user, resolvedId, { version_id: versionDbId }, parentBranchId));
         })
       );
 
@@ -875,6 +875,12 @@ export class AppImportExportService {
           }
         } else {
           // Module doesn't exist — import it fresh.
+          // For git-sync imports, override the module's slug with a fresh UUID to
+          // avoid collisions with the app_versions_default_branch_slug_unique constraint.
+          // The source slug (typically the source App.id) is meaningless in the target workspace.
+          if (isGitApp && importedModule?.appV2) {
+            importedModule.appV2.slug = uuid();
+          }
 
           const { newApp, resourceMapping } = await this.import(
             user,
@@ -887,6 +893,16 @@ export class AppImportExportService {
             manager,
             branchId
           );
+
+          // For git-sync imports, preserve the source module's co_relation_id so
+          // ModuleViewer components (which store moduleAppId.value = co_relation_id)
+          // resolve correctly without rewriting. createImportedAppForUser sets
+          // co_relation_id = source.id by default, but ModuleViewer references
+          // the source's co_relation_id field — overwrite to match.
+          if (isGitApp && importedModule?.appV2?.co_relation_id && newApp.co_relation_id !== importedModule.appV2.co_relation_id) {
+            await manager.update(App, { id: newApp.id }, { co_relation_id: importedModule.appV2.co_relation_id });
+            newApp.co_relation_id = importedModule.appV2.co_relation_id;
+          }
 
           // createImportedAppForUser sets new.co_relation_id = source.id. Use
           // the target's co_relation_id as the stable key so consumer

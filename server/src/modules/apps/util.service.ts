@@ -419,7 +419,8 @@ export class AppsUtilService implements IAppsUtilService {
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-    if (environmentName && !isMultiEnvironmentEnabled) {
+    const isDevelopmentEnv = environmentName?.toLowerCase() === 'development';
+    if (environmentName && !isDevelopmentEnv && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
 
@@ -556,6 +557,29 @@ export class AppsUtilService implements IAppsUtilService {
         });
         if (conflictingVersion) {
           throw new BadRequestException('This slug is already taken on this branch.');
+        }
+
+        // Instance-wide default-branch slug uniqueness, scoped by apps.type.
+        // Mirrors trg_app_versions_default_branch_slug_unique (migration
+        // 1779400000000) so the same case-insensitive collision is rejected
+        // here with a user-facing message instead of bubbling up as a trigger
+        // exception from manager.update further down. Joining
+        // organization_git_sync_branches with is_default=true makes the check
+        // span every workspace's default branch on this instance, which is the
+        // multi-workspace collision case (e.g. two workspaces pulled the same
+        // git repo and now have the same slug on their default branches).
+        const defaultBranchSlugCollision = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .innerJoin(App, 'a', 'a.id = av.app_id')
+          .innerJoin('organization_git_sync_branches', 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+          .where('LOWER(av.slug) = LOWER(:slug)', { slug: versionParams.slug })
+          .andWhere('a.type = :appType', { appType: app.type })
+          .andWhere('av.app_id <> :appId', { appId })
+          .select('av.id')
+          .limit(1)
+          .getOne();
+        if (defaultBranchSlugCollision) {
+          throw new BadRequestException('This slug is already taken.');
         }
       } else if (isWorkflow && appParams.slug) {
         const conflictingApp = await manager.findOne(App, {

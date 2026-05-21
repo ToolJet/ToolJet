@@ -824,15 +824,35 @@ export class AppsService implements IAppsService {
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
       response['editing_version']['global_settings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete response['editing_version']['global_settings']['libraries'];
+        delete response['editing_version']['global_settings']['preloadedScript'];
+      }
     }
     return response;
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
-      const versionToLoad = app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+      // app.editingVersion is populated by AppSubscriber.afterLoad ONLY when
+      // git sync is off (or when the entity is a workflow). For git-enabled
+      // front-end / module apps the subscriber returns early without
+      // populating it, so we need a hard fallback to currentVersionId. If
+      // neither is available the app has no resolvable version and we can't
+      // serve the slug — throw a clear 404 instead of crashing on a
+      // findVersion(undefined) call further down.
+      const versionId = app.currentVersionId ?? app.editingVersion?.id;
+      if (!versionId) {
+        throw new NotFoundException('No released or editing version found for this app');
+      }
+      const versionToLoad = await this.versionRepository.findVersion(versionId);
 
       const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
@@ -851,6 +871,18 @@ export class AppsService implements IAppsService {
         });
       }
 
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      const globalSettings = { ...versionToLoad.globalSettings, theme: appTheme };
+      if (!hasJsLibrariesAccess) {
+        delete globalSettings.libraries;
+        delete globalSettings.preloadedScript;
+      }
+
       // serialize
       return {
         id: app.id,
@@ -864,7 +896,7 @@ export class AppsService implements IAppsService {
         events: eventsForVersion,
         pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
         homePageId: versionToLoad.homePageId,
-        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        globalSettings,
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
         appId: app.id,

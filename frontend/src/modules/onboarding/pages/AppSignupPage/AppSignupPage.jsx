@@ -8,7 +8,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { getSubpath } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { SignupForm } from '../SignupPage/components';
 import { getPostSignupRedirectPath } from '@/_helpers/platform/utils/auth.utils';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
@@ -137,7 +137,7 @@ const AppSignupPage = () => {
             <h2>{error || 'Unable to load application'}</h2>
           </div>
         )}
-        RightSideComponent={GeneralFeatureImage}
+        RightSideComponent={LoginPageRightPanel}
       />
     );
   }
@@ -168,7 +168,7 @@ const AppSignupPage = () => {
           appSlug={slug}
         />
       )}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };

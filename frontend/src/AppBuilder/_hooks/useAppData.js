@@ -22,7 +22,7 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getPreviewQueryParams, replaceEditorURL } from '@/_helpers/routes';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -544,6 +544,14 @@ const useAppData = (
         const newState = { ...currentState, ...pageInfo };
         window.history.replaceState(newState, '', window.location.href);
 
+        // Sync the browser URL if it was opened with the app UUID but the app has a proper slug
+        if (appData.slug && mode === 'edit' && !moduleMode) {
+          const currentUrlSlug = window.location.pathname.split('/apps/')[1]?.split('/')[0];
+          if (currentUrlSlug && currentUrlSlug !== appData.slug) {
+            replaceEditorURL(appData.slug, startingPage.handle);
+          }
+        }
+
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);
         setResolvedPageConstants(
@@ -670,14 +678,14 @@ const useAppData = (
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
-        // Load JS libraries and preloaded JS from globalSettings before running queries
+        // Load JS libraries and preloaded JS from globalSettings before running queries.
+        // The BE strips libraries from globalSettings when the org is not licensed, so
+        // no feature-access check is needed here.
         const globalSettings = useStore.getState().globalSettings;
         const jsLibraries = globalSettings?.libraries?.javascript || [];
         const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
-        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
-
-        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+        if (jsLibraries.length > 0 || preloadedJS) {
           setJsLibraryLoading(true);
           try {
             const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
