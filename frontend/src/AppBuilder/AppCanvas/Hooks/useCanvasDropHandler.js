@@ -113,6 +113,7 @@ export const useCanvasDropHandler = () => {
           ...dropComponent,
           isStub: false,
           versionId: hydratedVersion.module_reference_id ?? hydratedVersion.moduleReferenceId,
+          versionName: hydratedVersion.name ?? '',
           environmentId: hydratedVersion.current_environment_id,
           moduleContainer: hydrated.module_container,
           defaultSize: {
@@ -132,6 +133,7 @@ export const useCanvasDropHandler = () => {
       ? {
           moduleId: dropComponent.moduleId,
           versionId: dropComponent.versionId,
+          versionName: dropComponent.versionName ?? '',
           moduleName: dropComponent.displayName,
           moduleContainer: dropComponent.moduleContainer,
         }
