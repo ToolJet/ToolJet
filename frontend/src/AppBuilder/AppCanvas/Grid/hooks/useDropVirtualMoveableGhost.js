@@ -17,16 +17,8 @@ export const useDropVirtualMoveableGhost = () => {
     mainEditorCanvas.classList.toggle(moveableGhostClass, shouldEnable);
   };
 
-  const createGhostMoveElement = (componentSize) => {
-    if (ghostElementRef.current) return ghostElementRef.current;
-    const existingGhost = document.getElementById('moveable-virtual-ghost-element');
-    if (existingGhost) {
-      ghostElementRef.current = existingGhost;
-      return existingGhost;
-    }
+  const applyGhostElementStyles = (ghost, componentSize) => {
     toggleMoveableGhostClass(true);
-    const ghost = document.createElement('div');
-    ghost.id = 'moveable-virtual-ghost-element';
     ghost.className = 'moveable-ghost target';
     ghost.style.cssText = `
       position: absolute;
@@ -41,6 +33,19 @@ export const useDropVirtualMoveableGhost = () => {
       left: 0;
       border: 1px solid #4af;
     `;
+  };
+
+  const createGhostMoveElement = (componentSize) => {
+    if (ghostElementRef.current) return ghostElementRef.current;
+    const existingGhost = document.getElementById('moveable-virtual-ghost-element');
+    if (existingGhost) {
+      applyGhostElementStyles(existingGhost, componentSize);
+      ghostElementRef.current = existingGhost;
+      return existingGhost;
+    }
+    const ghost = document.createElement('div');
+    ghost.id = 'moveable-virtual-ghost-element';
+    applyGhostElementStyles(ghost, componentSize);
     const container = document.getElementById('real-canvas');
 
     if (!container) {
