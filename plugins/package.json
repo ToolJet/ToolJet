@@ -74,8 +74,10 @@
     "typescript": "^4.9.5"
   },
   "overrides": {
-    "tar": "^7.5.3"
-  },
+  "tar": "^7.5.3",
+  "@databricks/sql": "1.14.0",
+  "thrift": "0.23.0"
+},
   "devDependencies": {
     "@types/jest": "^27.5.2",
     "@types/node-int64": "^0.4.32",
