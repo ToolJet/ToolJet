@@ -133,7 +133,7 @@ export default class Snowflake implements QueryService {
       const schemaName = sourceOptions.schema ? sourceOptions.schema.toUpperCase() : null;
       const schemaCondition = schemaName ? ` AND TABLE_SCHEMA = ?` : '';
 
-      const baseSqlText = `SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?${schemaCondition}`;
+      const baseSqlText = `SELECT TABLE_NAME, TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND UPPER(TABLE_NAME) LIKE ?${schemaCondition}`;
       const baseBinds: unknown[] = [searchPattern];
       if (schemaName) baseBinds.push(schemaName);
 
@@ -152,7 +152,10 @@ export default class Snowflake implements QueryService {
         ]);
 
         const totalCount = parseInt(countResult.rows[0]?.TOTAL ?? '0', 10);
-        const rows = tableResult.rows.map((row: any) => ({ table_name: row.TABLE_NAME }));
+        const rows = tableResult.rows.map((row: any) => ({
+          table_name: row.TABLE_NAME,
+          table_schema: row.TABLE_SCHEMA,
+        }));
         return { status: 'ok', data: { rows, totalCount } };
       }
 
@@ -160,8 +163,8 @@ export default class Snowflake implements QueryService {
         sqlText: `${baseSqlText} ORDER BY TABLE_NAME`,
         binds: baseBinds,
       });
-      const rows = result.rows.map((row: any) => ({ table_name: row.TABLE_NAME }));
-      return { status: 'ok', data: { rows, totalCount: rows.length } };
+      const tables = result.rows.map((row: any) => ({ table_name: row.TABLE_NAME, table_schema: row.TABLE_SCHEMA }));
+      return { status: 'ok', data: tables };
     } catch (err) {
       throw new QueryError('Could not fetch tables', err.message || 'An unknown error occurred', {});
     }
