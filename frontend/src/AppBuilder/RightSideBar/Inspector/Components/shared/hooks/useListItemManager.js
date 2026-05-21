@@ -44,10 +44,14 @@ export const useListItemManager = ({ component, paramUpdated, currentState, conf
     [propertyName, typeProp, nonEditableTypes, currentState]
   );
 
-  // Sync isAllEditable state with items changes
+  // Sync isAllEditable state with items changes.
+  // Skip when list is empty so the user's manual toggle choice persists
+  // (every() returns true on [], which would otherwise force the toggle on
+  // and block toggling it off).
   useEffect(() => {
+    if (items.length === 0) return;
     setIsAllEditable(checkIfAllEditable(component));
-  }, [component, checkIfAllEditable]);
+  }, [component, checkIfAllEditable, items.length]);
 
   // Add new item
   const addItem = useCallback(() => {
