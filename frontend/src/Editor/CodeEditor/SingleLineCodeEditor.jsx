@@ -407,7 +407,7 @@ const DynamicEditorBridge = (props) => {
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>
           <div className={`col code-hinter-col`}>
             <div className="d-flex">
-              <SingleLineCodeEditor initialValue {...props} />
+              <SingleLineCodeEditor initialValue componentName={paramLabel} {...props} />
             </div>
           </div>
         </div>
@@ -420,3 +420,4 @@ SingleLineCodeEditor.Editor = EditorInput;
 SingleLineCodeEditor.EditorBridge = DynamicEditorBridge;
 
 export default SingleLineCodeEditor;
+
