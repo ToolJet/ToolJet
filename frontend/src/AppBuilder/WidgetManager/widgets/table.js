@@ -661,6 +661,7 @@ export const tableConfig = {
           options: [
             { name: 'Ascending', value: 'asc' },
             { name: 'Descending', value: 'desc' },
+            { name: 'Auto', value: 'auto' },
           ],
           defaultValue: '{{asc}}',
           type: 'select',

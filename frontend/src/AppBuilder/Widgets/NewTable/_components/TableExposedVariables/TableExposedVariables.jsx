@@ -384,9 +384,9 @@ export const TableExposedVariables = ({
         table.setSorting([]);
         return;
       }
-      if (direction !== 'asc' && direction !== 'desc') {
+      if (direction !== 'asc' && direction !== 'desc' && direction !== 'auto') {
         // eslint-disable-next-line no-console
-        console.warn(`setSort: invalid direction "${direction}" — expected 'asc' or 'desc'`);
+        console.warn(`setSort: invalid direction "${direction}" — expected 'asc', 'desc' or 'auto'`);
         return;
       }
       const tanstackId = columns.find((col) => col.columnDef?.accessorKey === columnKey)?.id;
@@ -395,7 +395,14 @@ export const TableExposedVariables = ({
         console.warn(`setSort: column key "${columnKey}" not found`);
         return;
       }
-      table.setSorting([{ id: tanstackId, desc: direction === 'desc' }]);
+      let desc;
+      if (direction === 'auto') {
+        const currentSort = table.getState().sorting?.find((s) => s.id === tanstackId);
+        desc = currentSort ? !currentSort.desc : false;
+      } else {
+        desc = direction === 'desc';
+      }
+      table.setSorting([{ id: tanstackId, desc }]);
     }
     setExposedVariables({ setSort });
   }, [setExposedVariables, columns, table]);
