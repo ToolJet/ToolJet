@@ -35,6 +35,8 @@ export const ModalWidget = ({ ...restProps }) => {
     isFullScreen,
     subContainerIndex,
     isDynamicHeightEnabled,
+    isCustomWidth,
+    customModalWidth,
   } = restProps['modalProps'];
 
   const setComponentProperty = useStore((state) => state.setComponentProperty);
@@ -134,6 +136,11 @@ export const ModalWidget = ({ ...restProps }) => {
   return (
     <BootstrapModal
       {...restProps}
+      dialogClassName={classNames(isCustomWidth && 'tj-modal-widget-custom-width-dialog')}
+      style={{
+        ...(restProps.style || {}),
+        ...(isCustomWidth ? { '--tj-modal-custom-width': customModalWidth } : {}),
+      }}
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
         isDynamicHeightEnabled && `dynamic-${id}`

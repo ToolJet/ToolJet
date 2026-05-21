@@ -72,3 +72,8 @@
   top: -4px;
   bottom: unset;
 }
+
+.tj-modal-widget-custom-width-dialog {
+  width: calc(100vw - 24px);
+  max-width: min(var(--tj-modal-custom-width, 600px), calc(100vw - 24px));
+}

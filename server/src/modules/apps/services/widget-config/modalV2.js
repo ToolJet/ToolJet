@@ -96,10 +96,21 @@ export const modalV2Config = {
         { name: 'medium', value: 'lg' },
         { name: 'large', value: 'xl' },
         { name: 'fullscreen', value: 'fullscreen' },
+        { name: 'custom', value: 'custom' },
       ],
       validation: {
         schema: { type: 'string' },
         defaultValue: 'lg',
+      },
+    },
+    modalWidth: {
+      type: 'numberInput',
+      displayName: 'Modal width',
+      accordian: 'Data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 600 },
+      conditionallyRender: {
+        key: 'size',
+        value: 'custom',
       },
     },
     modalHeight: {
@@ -413,6 +424,7 @@ export const modalV2Config = {
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },
       size: { value: 'lg' },
+      modalWidth: { value: '{{600}}' },
       showHeader: { value: '{{true}}' },
       showFooter: { value: '{{true}}' },
       hideCloseButton: { value: '{{false}}' },

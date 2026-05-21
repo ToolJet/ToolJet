@@ -6,6 +6,7 @@ const MODAL_HEADER = {
 const MODAL_FOOTER = {
   HEIGHT: 80,
 };
+const DEFAULT_MODAL_WIDTH = 600;
 
 export const getCanvasHeight = (height) => {
   const parsedHeight = height.includes('px') ? parseInt(height, 10) : height;
@@ -43,6 +44,17 @@ export const getModalFooterHeight = (showFooter, footerHeight = MODAL_FOOTER.HEI
   let parsedHeight = showFooter ? parseInt(footerHeight, 10) : 0;
 
   return `${parsedHeight}px`;
+};
+
+export const getCustomModalWidth = (value) => {
+  const trimmedValue = String(value ?? '').trim();
+  const parsedValue = typeof value === 'number' ? value : trimmedValue === '' ? NaN : Number(trimmedValue);
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return `${DEFAULT_MODAL_WIDTH}px`;
+  }
+
+  return `${parsedValue}px`;
 };
 
 export function isFalsyOrMultipleZeros(value) {
