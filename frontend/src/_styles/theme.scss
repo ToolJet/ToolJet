@@ -325,8 +325,6 @@
 
 @layer utilities {
   .tw-transparent-scrollbar {
-    // scrollbar-color: transparent transparent;
-
     &::-webkit-scrollbar-thumb {
       background: transparent;
     }
@@ -337,10 +335,21 @@
   }
 
   .tw-show-scrollbar {
-    // scrollbar-color: var(--slate8);
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--slate8);
+      background: var(--interactive-hover);
+      background-clip: padding-box;
+      border: 2px solid transparent;
+      border-radius: 9999px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background: var(--interactive-selected);
+      background-clip: padding-box;
     }
 
     &::-webkit-scrollbar-track {
