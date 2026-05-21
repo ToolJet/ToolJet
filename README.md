@@ -118,7 +118,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 Check out our [roadmap](https://github.com/orgs/ToolJet/projects/15) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
-We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
+We use the git-flow branching model. The base branch is `main`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
 Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes. <br>
