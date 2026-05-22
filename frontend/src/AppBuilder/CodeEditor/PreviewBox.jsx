@@ -617,6 +617,7 @@ const PreviewContainer = ({
   );
 
   const initialPlacement = isInsideQueryManager ? 'bottom-start' : previewPlacement || 'left';
+  const hasValue = currentValue !== '' && currentValue !== undefined && currentValue !== null;
 
   return (
     <>
@@ -625,7 +626,7 @@ const PreviewContainer = ({
           key={overlayKey}
           placement={initialPlacement}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
-          show={showPreview}
+          show={showPreview && hasValue}
           rootClose
           shouldUpdatePosition={true}
           container={document.body}

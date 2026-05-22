@@ -131,6 +131,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, [moduleId, setIsComponentLayoutReady]);
 
+  // canvas-content is the scroll container and is reused across page switches
+  // (only the inner layout is re-keyed by pageKey), so scrollTop carries over.
+  // Reset to top whenever the page changes so every page starts at the top
+  useEffect(() => {
+    canvasContentRef.current?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [currentPageId]);
+
   useCanvasResizing({
     setCanvasWidth,
     moduleId,

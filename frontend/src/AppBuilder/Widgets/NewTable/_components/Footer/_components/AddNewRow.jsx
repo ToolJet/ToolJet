@@ -11,6 +11,7 @@ import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
+  const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
@@ -64,7 +65,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
             ...column,
             isEditable: true,
           })),
-          columnSizes: {},
+          columnSizes: columnSizes ?? {},
           defaultColumn: { width: 150 },
           tableData: addNewRowDetailsLength > 0 ? [...addNewRowDetails.values()] : [newEmptyRow],
           id,
@@ -76,7 +77,16 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           columnForAddNewRow: true,
         }).filter(Boolean),
       ].filter(Boolean),
-    [id, columnProperties, darkMode, handleCellValueChange, newEmptyRow, addNewRowDetails, addNewRowDetailsLength]
+    [
+      id,
+      columnProperties,
+      columnSizes,
+      darkMode,
+      handleCellValueChange,
+      newEmptyRow,
+      addNewRowDetails,
+      addNewRowDetailsLength,
+    ]
   );
 
   const table = useReactTable({
