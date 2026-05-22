@@ -4,6 +4,7 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class QueryAuthGuard extends AuthGuard('jwt') {
@@ -38,6 +39,15 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       request.tj_app = app;
       request.tj_resource_id = app.id;
+
+      if (app.type === APP_TYPES.MODULE && !request.headers['authorization']) {
+        const publicParent = await this.appRepository.findPublicParentByModuleId(app.id);
+        if (publicParent) {
+          this.organizationRepository.touchLastAccessedAt(app.organizationId);
+          request.tj_app.isPublic = true;
+          return true;
+        }
+      }
 
       if (app.isPublic === true) {
         // No need to do user validation

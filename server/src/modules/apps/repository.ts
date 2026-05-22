@@ -100,4 +100,15 @@ export class AppsRepository extends Repository<App> {
       });
     }, manager || this.manager);
   }
+
+  async findPublicParentByModuleId(moduleId: string): Promise<App | null> {
+    return this.createQueryBuilder('app')
+      .innerJoin('app.appVersions', 'av')
+      .innerJoin('pages', 'page', 'page.app_version_id = av.id')
+      .innerJoin('components', 'c', 'c.page_id = page.id')
+      .where('c.type = :type', { type: 'ModuleViewer' })
+      .andWhere("(c.properties::jsonb->'moduleAppId'->>'value') = :moduleId", { moduleId })
+      .andWhere('app.isPublic = true')
+      .getOne();
+  }
 }
