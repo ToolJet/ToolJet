@@ -136,6 +136,11 @@ export const ModalV2 = function Modal({
     clearSelectedComponents();
   };
 
+  const showModalRef = useRef(false);
+  useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
+
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -152,6 +157,18 @@ export const ModalV2 = function Modal({
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  // If modal is unmounted while open (e.g. parent page switches via an action
+  // fired from inside the modal), onHide never runs and canvas-content keeps
+  // the inline `overflow: hidden !important` set by onShowSideEffects, leaving
+  // the next page unscrollable.
+  useEffect(() => {
+    return () => {
+      if (showModalRef.current) {
+        onHideSideEffects();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)

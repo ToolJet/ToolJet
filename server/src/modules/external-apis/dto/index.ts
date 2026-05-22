@@ -8,6 +8,7 @@ import {
   ValidateNested,
   MinLength,
   MaxLength,
+  Matches,
   ValidateIf,
   IsNotEmpty,
   IsDefined,
@@ -23,6 +24,7 @@ import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-dat
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
+  INVITED = 'invited',
 }
 
 export class GroupDto {
@@ -54,7 +56,7 @@ export class WorkspaceDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.ARCHIVED;
+  status?: Status;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -98,7 +100,7 @@ export class CreateUserDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.ARCHIVED;
+  status?: Status = Status.INVITED;
 
   @IsString()
   @IsOptional()
@@ -128,6 +130,10 @@ export class UpdateUserDto {
   @IsEnum(Status)
   @IsOptional()
   status?: Status;
+
+  @IsString()
+  @IsOptional()
+  defaultOrganizationId?: string;
 }
 
 export class UpdateUserWorkspaceDto {
@@ -321,6 +327,14 @@ export class AutoDeployBodyDto {
   versionName?: string;
 }
 
+export class SaveVersionBodyDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
+  name?: string;
+}
+
 // Export groups DTOs
 export {
   CreateGroupExternalDto,
@@ -333,3 +347,43 @@ export {
   WorkspacePermissionsDto,
   WorkflowPermissionsDto,
 } from './groups.dto';
+
+export class WorkspaceModuleDto {
+  id: string;
+  name: string;
+  icon: string;
+  slug: string;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class WorkspaceModulesResponseDto {
+  modules: WorkspaceModuleDto[];
+  total: number;
+}
+
+export class ModuleImportDto {
+  @IsDefined()
+  @IsObject()
+  definition: any;
+}
+
+export class ModuleImportRequestDto {
+  @IsString()
+  tooljet_version: string;
+
+  @IsOptional()
+  app?: ModuleImportDto[];
+
+  @IsOptional()
+  @IsString()
+  appName?: string;
+
+  @IsOptional()
+  @Transform(TjdbSchemaToLatestVersion)
+  @ValidateNested({ each: true })
+  @Type(() => ImportTooljetDatabaseDto)
+  @ValidateTooljetDatabaseImportSchema({ each: true })
+  tooljet_database?: ImportTooljetDatabaseDto[];
+}

@@ -10,6 +10,7 @@ import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -33,7 +34,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     developmentVersions,
     setSelectedVersion,
     fetchDevelopmentVersions,
-    orgGit,
   } = useStore(
     (state) => ({
       appId: state.appId ?? state.appStore.modules[moduleId]?.app?.appId,
@@ -49,7 +49,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       developmentVersions: state.developmentVersions,
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       setSelectedVersion: state.setSelectedVersion,
-      orgGit: state.orgGit,
     }),
     shallow
   );
@@ -69,6 +68,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     refreshVersions,
   } = useVersionManagerStore();
 
+  const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
@@ -78,13 +78,16 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
-  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes
-  // This ensures the filter is correct after page reloads from environment switches
+  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes.
+  // Also refresh the version list immediately so VersionActionButtons reflect the new
+  // environment state without waiting for the dropdown to open (e.g. after promote).
   useEffect(() => {
-    if (currentEnvironment) {
-      setSelectedEnvironmentFilter(currentEnvironment);
+    if (!currentEnvironment) return;
+    setSelectedEnvironmentFilter(currentEnvironment);
+    if (appId && currentEnvironment.id) {
+      fetchVersionsForEnvironment(appId, currentEnvironment.id);
     }
-  }, [currentEnvironment, setSelectedEnvironmentFilter]);
+  }, [currentEnvironment?.id, appId, setSelectedEnvironmentFilter, fetchVersionsForEnvironment]);
 
   // Fetch development versions on mount to check for draft status
   useEffect(() => {
@@ -121,13 +124,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Check if there's a draft in development environment (global check across all environments)
   // Drafts only exist in Development environment
   const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
-  const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
 
   // Check if there's only one draft and no other saved versions
   // draftVersions are versions of type 'version' (not branches)
   const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
-  const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
 
   // Disable create draft logic:
   // - Git sync enabled: disable if any draft already exists
@@ -238,6 +239,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const handleCreateVersion = (version) => {
     setVersionToPromote(version);
     setShowPromoteModal(true);
+    closeDropdown();
+  };
+
+  const handleEditVersion = (version) => {
+    setVersionToEdit(version);
+    setShowEditVersionModal(true);
     closeDropdown();
   };
 
@@ -356,11 +363,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   onSelect={() => handleVersionSelect(version)}
                   onPromote={() => handlePromoteDraft(version)}
                   onCreateVersion={() => handleCreateVersion(version)}
-                  onEdit={(v) => {
-                    setVersionToEdit(v);
-                    setShowEditVersionModal(true);
-                    closeDropdown();
-                  }}
+                  onEdit={(v) => handleEditVersion(v)}
                   onDelete={(v) => openDeleteModal(v)}
                   appId={appId}
                   darkMode={darkMode}
@@ -467,18 +470,17 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {...props}
       />
 
-      {/* Edit Version Modal */}
-      <EditVersionModal
-        showEditAppVersion={showEditVersionModal}
-        setShowEditAppVersion={(show) => {
-          setShowEditVersionModal(show);
-          if (!show) {
-            setVersionToEdit(null);
-          }
-        }}
-        versionToEdit={versionToEdit}
-        {...props}
-      />
+      {/* Edit Version Modal — only for non-git-sync workspaces */}
+      {!isGitSyncEnabled && (
+        <EditVersionModal
+          showEditAppVersion={showEditVersionModal}
+          setShowEditAppVersion={(show) => {
+            setShowEditVersionModal(show);
+            if (!show) setVersionToEdit(null);
+          }}
+          versionToEdit={versionToEdit}
+        />
+      )}
 
       {/* Delete Confirm Dialog */}
       <ConfirmDialog

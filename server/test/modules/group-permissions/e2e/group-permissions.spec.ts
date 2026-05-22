@@ -6,6 +6,7 @@ import {
   initTestApp,
   closeTestApp,
   createApplication,
+  createFolder,
   login,
   findEntityOrFail,
   findEntity,
@@ -13,6 +14,8 @@ import {
 } from 'test-helper';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { GroupUsers } from 'src/entities/group_users.entity';
+import { GroupFolders } from 'src/entities/group_folders.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 
 /**
  * V2 Group Permissions API | e2e tests.
@@ -109,7 +112,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('POST /api/v2/group-permissions | Create group', () => {
       it('should not allow non-admin to create a group', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await createGroupViaApi(cookie, defaultUser.defaultOrganizationId, 'avengers');
@@ -117,13 +122,18 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to create a custom group', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         const response = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
         expect(response.statusCode).toBe(201);
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
         expect(group).toMatchObject({
           name: 'avengers',
           organizationId: organization.id,
@@ -133,7 +143,9 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should reject duplicate group names within the same organization', async () => {
-        const { organization: { adminUser } } = await setupOrganizations();
+        const {
+          organization: { adminUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         const first = await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
@@ -144,7 +156,10 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow the same group name in different organizations', async () => {
-        const { organization: { adminUser }, anotherOrganization: { anotherAdminUser } } = await setupOrganizations();
+        const {
+          organization: { adminUser },
+          anotherOrganization: { anotherAdminUser },
+        } = await setupOrganizations();
         const adminCookie = await authenticate('admin@tooljet.io');
         const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
 
@@ -162,7 +177,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('GET /api/v2/group-permissions | List groups', () => {
       it('should not allow non-admin to list groups', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -174,7 +191,9 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to list all groups', async () => {
-        const { organization: { adminUser } } = await setupOrganizations();
+        const {
+          organization: { adminUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         // Create a custom group first
@@ -202,7 +221,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('GET /api/v2/group-permissions/:id | Get group', () => {
       it('should not allow non-admin to get a group', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -214,12 +235,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to get a group by id', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .get(`/api/v2/group-permissions/${group.id}`)
@@ -234,13 +260,19 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should return 404 for group from another organization', async () => {
-        const { organization: { adminUser, organization }, anotherOrganization: { anotherAdminUser } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+          anotherOrganization: { anotherAdminUser },
+        } = await setupOrganizations();
         const adminCookie = await authenticate('admin@tooljet.io');
         const anotherAdminCookie = await authenticate('another_admin@tooljet.io');
 
         await createGroupViaApi(adminCookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         // Another org's admin should not be able to access
         const response = await request(nestApp.getHttpServer())
@@ -259,7 +291,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('PUT /api/v2/group-permissions/:id | Update group', () => {
       it('should not allow non-admin to update a group', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -272,12 +306,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to rename a custom group', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .put(`/api/v2/group-permissions/${group.id}`)
@@ -292,12 +331,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should reject renaming to an existing group name', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         // Try to rename to 'admin' which is a default group
         const response = await request(nestApp.getHttpServer())
@@ -310,12 +354,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to update group permission flags', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .put(`/api/v2/group-permissions/${group.id}`)
@@ -339,7 +388,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('DELETE /api/v2/group-permissions/:id | Delete group', () => {
       it('should not allow non-admin to delete a group', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -351,12 +402,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to delete a custom group', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .delete(`/api/v2/group-permissions/${group.id}`)
@@ -376,7 +432,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('POST /api/v2/group-permissions/:id/users | Add user to group', () => {
       it('should not allow non-admin to add users', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -389,12 +447,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to add users to a custom group', async () => {
-        const { organization: { adminUser, defaultUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, defaultUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .post(`/api/v2/group-permissions/${group.id}/users`)
@@ -416,7 +479,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('GET /api/v2/group-permissions/:id/users | List group users', () => {
       it('should not allow non-admin to list group users', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -428,11 +493,16 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to list users in a group', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         // Get the admin default group
-        const adminGroup = await findEntityOrFail(GroupPermissions, { name: 'admin', organizationId: organization.id } as any);
+        const adminGroup = await findEntityOrFail(GroupPermissions, {
+          name: 'admin',
+          organizationId: organization.id,
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .get(`/api/v2/group-permissions/${adminGroup.id}/users`)
@@ -452,7 +522,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('DELETE /api/v2/group-permissions/users/:id | Remove user from group', () => {
       it('should not allow non-admin to remove a user from a group', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -464,12 +536,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to remove a user from a custom group', async () => {
-        const { organization: { adminUser, defaultUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, defaultUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         // Add user first
         await request(nestApp.getHttpServer())
@@ -500,7 +577,9 @@ describe('GroupPermissionsControllerV2', () => {
 
     describe('GET /api/v2/group-permissions/:id/users/addable-users | List addable users', () => {
       it('should not allow non-admin to search addable users', async () => {
-        const { organization: { defaultUser } } = await setupOrganizations();
+        const {
+          organization: { defaultUser },
+        } = await setupOrganizations();
         const cookie = await authenticate('developer@tooljet.io');
 
         const response = await request(nestApp.getHttpServer())
@@ -512,12 +591,17 @@ describe('GroupPermissionsControllerV2', () => {
       });
 
       it('should allow admin to search for addable users', async () => {
-        const { organization: { adminUser, organization } } = await setupOrganizations();
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
         const cookie = await authenticate('admin@tooljet.io');
 
         await createGroupViaApi(cookie, adminUser.defaultOrganizationId, 'avengers');
 
-        const group = await findEntityOrFail(GroupPermissions, { organizationId: organization.id, name: 'avengers' } as any);
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'avengers',
+        } as any);
 
         const response = await request(nestApp.getHttpServer())
           .get(`/api/v2/group-permissions/${group.id}/users/addable-users?input=developer`)
@@ -529,6 +613,100 @@ describe('GroupPermissionsControllerV2', () => {
         // developer@tooljet.io should appear as addable
         const emails = users.map((u: any) => u.email);
         expect(emails).toContain('developer@tooljet.io');
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // GET /api/v2/group-permissions/granular-permissions/addable-folders
+    // -------------------------------------------------------------------------
+
+    describe('GET /api/v2/group-permissions/granular-permissions/addable-folders | List addable folders', () => {
+      it('should return only front-end folders and hide module folders', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const appFolder = await createFolder(nestApp, {
+          name: 'App Folder',
+          type: APP_TYPES.FRONT_END,
+          organizationId: organization.id,
+        });
+
+        const moduleFolder = await createFolder(nestApp, {
+          name: 'Module Folder',
+          type: APP_TYPES.MODULE,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .get('/api/v2/group-permissions/granular-permissions/addable-folders')
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie);
+
+        expect(response.statusCode).toBe(200);
+
+        const folderIds = response.body.map((folder: any) => folder.id);
+        expect(folderIds).toContain(appFolder.id);
+        expect(folderIds).not.toContain(moduleFolder.id);
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // POST /api/v2/group-permissions/:id/granular-permissions/folder
+    // -------------------------------------------------------------------------
+
+    describe('POST /api/v2/group-permissions/:id/granular-permissions/folder | Create folder granular permissions', () => {
+      it('should still persist module folder ids when sent directly', async () => {
+        const {
+          organization: { adminUser, organization },
+        } = await setupOrganizations();
+        const cookie = await authenticate('admin@tooljet.io');
+
+        const customGroupResponse = await createGroupViaApi(
+          cookie,
+          adminUser.defaultOrganizationId,
+          'module-folder-access'
+        );
+        expect(customGroupResponse.statusCode).toBe(201);
+
+        const group = await findEntityOrFail(GroupPermissions, {
+          organizationId: organization.id,
+          name: 'module-folder-access',
+        } as any);
+
+        const moduleFolder = await createFolder(nestApp, {
+          name: 'Module Folder - direct grant',
+          type: APP_TYPES.MODULE,
+          organizationId: organization.id,
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .post(`/api/v2/group-permissions/${group.id}/granular-permissions/folder`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({
+            name: 'Module Folder Access',
+            groupId: group.id,
+            type: 'folder',
+            isAll: false,
+            createResourcePermissionObject: {
+              canEditFolder: false,
+              canEditApps: false,
+              canViewApps: true,
+              resourcesToAdd: [{ folderId: moduleFolder.id }],
+            },
+          });
+
+        expect(response.statusCode).toBe(201);
+
+        const groupFolders = await findEntities(GroupFolders, {
+          where: {
+            folderId: moduleFolder.id,
+          },
+        });
+
+        expect(groupFolders.length).toBeGreaterThan(0);
       });
     });
   });

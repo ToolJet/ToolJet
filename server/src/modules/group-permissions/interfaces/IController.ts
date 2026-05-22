@@ -6,6 +6,7 @@ import { GetUsersResponse } from '../types';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { GroupUsers } from '@entities/group_users.entity';
 import { UserPermissions } from '@modules/ability/types';
+import { AddableResourceItem } from '../types/granular_permissions';
 
 export interface IGroupPermissionsControllerV2 {
   create(user: UserEntity, createGroupPermissionDto: CreateGroupPermissionDto): Promise<GroupPermissions>;
@@ -21,8 +22,8 @@ export interface IGroupPermissionsControllerV2 {
 }
 
 export interface IGranularPermissionsController {
-  getAddableApps(user: UserEntity): Promise<{ AddableResourceItem }[]>;
-  getAddableDs(user: UserEntity): Promise<{ AddableResourceItem }[]>;
+  getAddableApps(user: UserEntity): Promise<AddableResourceItem[]>;
+  getAddableDs(user: UserEntity): Promise<AddableResourceItem[]>;
   createGranularAppPermissions(
     user: UserEntity,
     groupId: string,

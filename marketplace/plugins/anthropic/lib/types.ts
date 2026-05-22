@@ -7,7 +7,9 @@ export type QueryOptions = {
   model?: string; 
   operation: Operation; 
   system_prompt?: string; 
-  message?: string; 
+  message?: string; // Legacy parameter
+  history?: string; // New parameter
+  prompt?: string; // New parameter
   temperature?: number | string; 
   max_size?: number | string; 
 };
@@ -32,5 +34,6 @@ export type ImageSource = {
 
 export enum Operation {
   Chat = "chat",
+  ChatV2 = "chat-v2",
   Vision = "vision"
 }

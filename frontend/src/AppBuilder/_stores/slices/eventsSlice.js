@@ -226,13 +226,13 @@ export const createEventsSlice = (set, get) => ({
         state.eventsSlice.module[moduleId].events = newEvents;
       });
     },
-    setTablePageIndex: (tableId, index, eventObj) => {
+    setTablePageIndex: (tableId, index, eventObj, moduleId = 'canvas') => {
       try {
         const { getExposedValueOfComponent } = get();
         if (typeof index !== 'number' && index !== undefined) {
           throw new Error('Invalid page index.');
         }
-        const exposedValue = getExposedValueOfComponent(tableId);
+        const exposedValue = getExposedValueOfComponent(tableId, moduleId);
         if (!exposedValue) {
           throw new Error('No table is associated with this event.');
         }
@@ -244,14 +244,14 @@ export const createEventsSlice = (set, get) => ({
         });
       }
     },
-    showModal: (modal, show, eventObj) => {
+    showModal: (modal, show, eventObj, moduleId = 'canvas') => {
       try {
         const { getExposedValueOfComponent } = get();
         const modalId = modal?.id ?? modal;
         if (_.isEmpty(modalId)) {
           throw new Error('No modal is associated with this event.');
         }
-        const exposedValue = getExposedValueOfComponent(modalId);
+        const exposedValue = getExposedValueOfComponent(modalId, moduleId);
         show ? exposedValue.open() : exposedValue.close();
 
         return Promise.resolve();
@@ -696,10 +696,10 @@ export const createEventsSlice = (set, get) => ({
           }
 
           case 'show-modal':
-            return get().eventsSlice.showModal(event.modal, true, eventObj);
+            return get().eventsSlice.showModal(event.modal, true, eventObj, moduleId);
 
           case 'close-modal':
-            return get().eventsSlice.showModal(event.modal, false, eventObj);
+            return get().eventsSlice.showModal(event.modal, false, eventObj, moduleId);
           case 'copy-to-clipboard': {
             const contentToCopy = getResolvedValue(event.contentToCopy, customVariables, moduleId);
             copyToClipboard(contentToCopy);
@@ -730,7 +730,8 @@ export const createEventsSlice = (set, get) => ({
             get().eventsSlice.setTablePageIndex(
               event.table,
               getResolvedValue(event.pageIndex, undefined, moduleId),
-              eventObj
+              eventObj,
+              moduleId
             );
             break;
           }
@@ -891,7 +892,7 @@ export const createEventsSlice = (set, get) => ({
               const parent = componentDefinition?.component?.parent;
               const parentDefinition = getComponentDefinition(parent, moduleId);
               const parentType = parentDefinition?.component?.component;
-              let component = getExposedValueOfComponent(event.componentId);
+              let component = getExposedValueOfComponent(event.componentId, moduleId);
               if (parentType === 'Form' && componentName) {
                 component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
               }
