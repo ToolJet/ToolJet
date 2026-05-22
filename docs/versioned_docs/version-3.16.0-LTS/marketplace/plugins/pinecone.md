@@ -15,7 +15,7 @@ For connecting to Pinecone, the following credential is required:
 
 - **API Key**: API key for Pinecone can be generated from the [Pinecone Console](https://app.pinecone.io/organizations/-/projects/-/keys).
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/connection.png" alt="Configuring Pinecone in ToolJet" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/connection.png" alt="Configuring Pinecone in ToolJet" />
 
 ## Supported Operations
 
@@ -35,18 +35,21 @@ This operation retrieves statistics about a specific index in your Pinecone data
 
 - **Index**: The name of the index to get statistics for.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/get-index-query.png" alt="Get Index Stats Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats.png" alt="Get Index Stats Operation" />
 
 <details id="tj-dropdown">
-<summary>**Response Example**</summary>
+<summary>**Example Response**</summary>
 
 ```json
 {
-  "namespaces" : {} 1 key
-
-  "dimension" : 4
-  "indexFullness" : 0  
-  "totalRecordCount" : 1
+  "namespaces": {
+    "": {
+      "recordCount": 100
+    }
+  },
+  "dimension": 1024,
+  "indexFullness": 0,
+  "totalRecordCount": 100
 }
 ```
 
@@ -67,10 +70,10 @@ This operation retrieves a list of vector IDs from a specified index.
 - **Pagination Token**: Token for retrieving the next page of results.
 - **Namespace**: Specific namespace to query within the index.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/list-vector-query.png" alt="List Vector IDs Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/list-vector-ids.png" alt="List Vector IDs Operation" />
 
 <details id="tj-dropdown">
-<summary>**Response Example**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 {
@@ -104,14 +107,14 @@ This operation retrieves specific vectors by their IDs from an index.
 - **Index**: The name of the index to fetch vectors from.
 - **IDs**: Array of vector IDs to fetch.
 
-#### Optional Parameter
+#### Optional Parameters
 
 - **Namespace**: Specific namespace to fetch vectors from.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/fetch-vec-query.png" alt="Fetch Vectors Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/fetch-vectors.png" alt="Fetch Vectors Operation" />
 
 <details id="tj-dropdown">
-<summary>**Response Example**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 { "records": {}, "namespace": "", "usage": { "readUnits": 1 } }
@@ -128,18 +131,14 @@ This operation inserts or updates vectors in an index.
 - **Index**: The name of the index to upsert vectors into.
 - **Vectors**: Array of vectors to upsert, including IDs and values.
 
-#### Optional Parameter
+#### Optional Parameters
 
 - **Namespace**: Specific namespace to upsert vectors into
 
-```yaml
-[{"id": "1", "values": [-0.057448626,0.040567733,-0.057180677,0.031162664]}]
-```
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/upsert-query.png" alt="Upsert Vectors Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" />
 
 <details id="tj-dropdown">
-<summary>**Response Example**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Upsert Successful
@@ -163,10 +162,10 @@ This operation updates a single vector's values or metadata.
 - **Metadata**: Additional metadata for the vector.
 - **Namespace**: Specific namespace containing the vector.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/update-vec-query.png" alt="Update Vector Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" />
 
 <details id="tj-dropdown">
-<summary>**Response Example**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Update Successful
@@ -178,7 +177,7 @@ Update Successful
 
 This operation deletes vectors from an index.
 
-#### Required Parameter
+#### Required Parameters
 
 - **Index**: The name of the index to delete vectors from.
 
@@ -189,10 +188,10 @@ This operation deletes vectors from an index.
 - **Namespace**: Specific namespace to delete vectors from.
 - **Filter**: Filter condition for selective deletion.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/delete-query.png" alt="Delete Vectors Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/delete-vectors.png" alt="Delete Vectors Operation" />
 
 <details id="tj-dropdown">
-<summary>**Response Example**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Delete Successful
@@ -218,4 +217,4 @@ This operation queries vectors in an index based on similarity.
 - **Include Metadata**: Boolean to include metadata in results.
 - **Sparse Vector**: Sparse vector for hybrid search.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/pinecone/query-vec.png" alt="Query Vectors Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/query-vectors.png" alt="Query Vectors Operation" />
