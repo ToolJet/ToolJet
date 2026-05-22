@@ -10,7 +10,7 @@ ToolJet offers the capability to establish a connection with Azure Repos in orde
 To connect with Azure Repos, you will need the **Organization Name (e.g., https://dev.azure.com/your-organization)** and a **Personal Access Token (PAT)**.
 Generate a Personal Access Token(PAT) by navigating to User Settings, then selecting Personal Access Tokens. Ensure the token includes the necessary scopes based on the operations you want to perform.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/azurerepos/personal-access-token.png" alt="get azure repository"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/connection.png" alt="Azure Repos Connection TJ"/>
 
 ## Supported Operations
 
@@ -20,6 +20,9 @@ Generate a Personal Access Token(PAT) by navigating to User Settings, then selec
 4. **[Get Repository Pushes](#get-repository-pushes)**
 5. **[Get Project Pull Requests](#get-project-pull-requests)**
 
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/listops.png" alt="Azure Repos supported operations"/>
+
+
 ### Get Azure Repository
 
 Retrieves details of a specific repository within your Azure DevOps project.
@@ -28,7 +31,7 @@ Retrieves details of a specific repository within your Azure DevOps project.
 
 - **Project**
 
-<img className="screenshot-full" src="/img/marketplace/plugins/azurerepos/get-repo.png" alt="get azure repository"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/azure-query.png" alt="get azure repository"/>
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -47,13 +50,14 @@ Fetches a list of commits made to a selected repository.
 
 - **Project**
 
-<img className="screenshot-full" src="/img/marketplace/plugins/azurerepos/get-commits.png" alt="get repository commits"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/commit-query.png" alt="get repository commits"/>
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
 ```json
-Project: test
+Project name: test
+Repository commits: ToolJet
 ```
 
 </details>
@@ -66,7 +70,7 @@ Lists all branches available in a specified Azure repository.
 
 - **Project**
 
-<img className="screenshot-full" src="/img/marketplace/plugins/azurerepos/get-branches.png" alt="get repository branches"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/branch-query.png" alt="get repository branches"/>
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -86,7 +90,7 @@ Retrieves information about recent pushes made to the repository.
 
 - **Project**
 
-<img className="screenshot-full" src="/img/marketplace/plugins//azurerepos/get-pushes.png" alt="get repository pushes"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins//azurerepos/push-query.png" alt="get repository pushes"/>
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>
@@ -106,7 +110,7 @@ Fetches pull requests associated with the selected project and repository.
 
 - **Project**
 
-<img className="screenshot-full" src="/img/marketplace/plugins/azurerepos/get-prs.png" alt="get project pull requests"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/azurerepos/pr-query.png" alt="get project pull requests"/>
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>

@@ -9,7 +9,7 @@ ClickUp is a cloud-based project management and collaboration platform designed 
 
 To connect with ClickUp, you will need an API Key, which can be generated from [ClickUp Settings](https://app.clickup.com/settings/apps).
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/clickup/connection.png" alt="Marketplace ClickUp Plugin"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/clickup/connection.png" alt="ClickUp Plugin's connection"/>
 
 ## Supported Operations
 
@@ -69,21 +69,21 @@ User
 To get a `view_id` (which is needed to access a specific list view like board, table, or list), you must go through the following steps:
 
 1. Get Team ID
-    - Operation: `GET /v2/team`
+    - Operation: **`GET /v2/team`**
     - returns a list of `team_ids` available to the authenticated user.
 2. Get Space ID
-    - Operation: `GET /v2/team/{team_id}/space`
+    - Operation: **`GET /v2/team/{team_id}/space`**
     - returns the `space_ids` under that team.
 3. Get Folder ID
-    - `GET /space/{space_id}/folder`
+    - Operation: **`GET /space/{space_id}/folder`**
     - returns folder_ids in the selected space.
 4. Get List ID
-    - Operation: `GET /folder/{folder_id}/list`
+    - Operation: **`GET /folder/{folder_id}/list`**
     - returns the `list_ids` under that folder. <br/>
     If the space has lists directly (not inside folders), you can use:
-    - Operation: `GET /space/{space_id}/list`
+    - Operation: **`GET /space/{space_id}/list`**
 5. Get View ID
-    - Operation: `GET /list/{list_id}/view`
+    - Operation: **`GET /list/{list_id}/view`**
     - returns `view_ids` associated with that list, such as Board view, List view, etc.
 
 ## Example: Creating a Task
@@ -94,5 +94,6 @@ To create a task using the ClickUp plugin in ToolJet, you’ll need the `list_id
 - **list_id**: The ID of the list where the new task will be added.
 - **name**: The name/title of the task to be created.
 
-##### Sample Output:
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/clickup/post-task.png" alt="Marketplace ClickUp Plugin"/>
+**Sample Output:**
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/clickup/post-query.png" alt="Clickup Querying"/>
