@@ -9,7 +9,7 @@ Mistral AI can be integrated with ToolJet to generate high-quality text content.
 
 To connect with Mistral AI, you will need an **API Key**, which can be generated from **[Mistral AI Console](https://console.mistral.ai/api-keys/)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/mistral/config.png" alt="Mistral Configuration" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/mistral/config.png" alt="Mistral data source configuration" />
 
 ## Supported Operations
 
@@ -48,7 +48,30 @@ Use this operation to generate text content by controlling various parameters to
 - **Completions (N)**: Set the number of response variations to generate.
 - **Safe prompt**: Ensure the prompt is free of inappropriate or sensitive content.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/mistral/query.png" alt="Mistral Query" />
+Here is the sample input message :
+
+```yaml
+Messages
+[{
+    "role": "system",
+    "content": "You are a financial advisor of a fortune 500 company"
+},
+{
+    "role": "user",
+    "content": "Can you help me with tax benefits for the employee"
+},
+{
+    "role": "assistant",
+    "content": "Sure! Please help me with more specific details of your employment and salary structure."
+},
+{
+    "role": "user",
+    "content": "I am a salaried employee with 220,000 USD yearly compensation"
+}
+]
+```
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/marketplace/plugins/mistral/query-v2.png" alt="Mistral Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
