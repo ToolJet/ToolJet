@@ -8,7 +8,8 @@ import { setCookie } from '@/_helpers/cookie';
 import { getSubpath } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { GeneralFeatureImage, SSOAuthModule } from '@/modules/common/components';
+import { SSOAuthModule } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { LoginForm } from '../LoginPage/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -148,7 +149,7 @@ const AppLoginPage = () => {
             <h2>{error || 'Unable to load application'}</h2>
           </div>
         )}
-        RightSideComponent={GeneralFeatureImage}
+        RightSideComponent={LoginPageRightPanel}
       />
     );
   }
@@ -181,7 +182,7 @@ const AppLoginPage = () => {
           appSlug={slug}
         />
       )}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };
