@@ -54,7 +54,7 @@ export class AppEnvironmentsController implements IAppEnvironmentsController {
   @Get('default')
   async getDefaultEnvironment(@User() user, @Req() req) {
     const organizationId = user?.organizationId ?? req.headers['tj-workspace-id'];
-    const environment = await this.appEnvironmentServices.get(organizationId, null, false);
+    const environment = await this.appEnvironmentServices.get(organizationId, null, false, true);
     return decamelizeKeys({ environment });
   }
 
