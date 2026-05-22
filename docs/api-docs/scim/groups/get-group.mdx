@@ -8,12 +8,20 @@ title: "Get Group by ID"
 <ApiColumns>
 <ApiLeft>
 
+Retrieves a single group by its SCIM ID, including its current member list.
+
 <ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
+
+<ErrorsTable errors={[
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"404","description":"Group not found."}
+]} />
 
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X GET "https://app.tooljet.com/api/scim/v2/Groups/{id}" \
+<RequestExample code={`curl -X GET "https://{your-domain}/api/scim/v2/Groups/{id}" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 
@@ -31,7 +39,7 @@ title: "Get Group by ID"
     "resourceType": "Group",
     "created": "2024-01-23T04:56:22Z",
     "lastModified": "2024-05-13T04:42:34Z",
-    "location": "https://app.tooljet.com/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
+    "location": "https://{your-domain}/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
   }
 }`} />
 

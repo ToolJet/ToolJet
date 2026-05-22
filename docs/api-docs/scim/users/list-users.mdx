@@ -10,6 +10,12 @@ title: "List Users"
 
 Lists all users in the organization.
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid filter syntax."},
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -18,7 +24,7 @@ Lists all users in the organization.
 
 
 
-<RequestExample code={`curl -X GET "https://app.tooljet.com/api/scim/v2/Users" \
+<RequestExample code={`curl -X GET "https://{your-domain}/api/scim/v2/Users" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json"`} />
 

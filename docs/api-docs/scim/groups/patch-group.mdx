@@ -8,12 +8,21 @@ title: "Patch Group"
 <ApiColumns>
 <ApiLeft>
 
+Partially updates a group using SCIM patch operations. Commonly used to add or remove group members.
+
 <ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid PATCH operation or unsupported attribute."},
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"404","description":"Group not found."}
+]} />
 
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X PATCH "https://app.tooljet.com/api/scim/v2/Groups/{id}" \
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/scim/v2/Groups/{id}" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json" \
   -d '{}'`} />
@@ -32,7 +41,7 @@ title: "Patch Group"
     "resourceType": "Group",
     "created": "2024-01-23T04:56:22Z",
     "lastModified": "2024-05-13T04:42:34Z",
-    "location": "https://app.tooljet.com/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
+    "location": "https://{your-domain}/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
   }
 }`} />
 

@@ -10,12 +10,31 @@ title: SCIM
 
 ToolJet supports **SCIM 2.0** (System for Cross-domain Identity Management) for automated user and group provisioning. Connect your Identity Provider (Okta, Azure AD, OneLogin, etc.) to automatically sync users and groups with ToolJet.
 
+## Setup
+
+SCIM is configured entirely via server-side environment variables. Set these on your ToolJet deployment before connecting an Identity Provider:
+
+| Variable | Required | Description |
+|:---------|:---------|:------------|
+| `SCIM_ENABLED` | Yes | Must be `"true"` to enable the SCIM API |
+| `SCIM_HEADER_AUTH_TOKEN` | Yes | Bearer token — any secret string you generate (e.g. a UUID) |
+| `SCIM_BASIC_AUTH_USER` | Yes | Username for Basic auth |
+| `SCIM_BASIC_AUTH_PASS` | Yes | Password for Basic auth |
+
+Once the server restarts with these variables set, copy the token value into your Identity Provider's SCIM connector configuration. Both Bearer and Basic auth are supported simultaneously.
+
 ## Authentication
 
-SCIM requests use a Bearer token configured in your ToolJet workspace SSO settings.
+All SCIM requests must include an `Authorization` header. Two schemes are supported:
 
+**Bearer token** (recommended):
 ```bash
-Authorization: Bearer <scim_token>
+Authorization: Bearer <SCIM_HEADER_AUTH_TOKEN>
+```
+
+**Basic auth**:
+```bash
+Authorization: Basic <base64(SCIM_BASIC_AUTH_USER:SCIM_BASIC_AUTH_PASS)>
 ```
 
 ## Base URL

@@ -10,6 +10,13 @@ title: "Create User"
 
 Creates a new user in the organization.
 
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid request body or missing required fields (e.g. userName)."},
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"409","description":"A user with the same userName already exists."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -18,7 +25,7 @@ Creates a new user in the organization.
 
 
 
-<RequestExample code={`curl -X POST "https://app.tooljet.com/api/scim/v2/Users" \
+<RequestExample code={`curl -X POST "https://{your-domain}/api/scim/v2/Users" \
   -H "Authorization: Basic <access_token>" \
   -H "Content-Type: application/json" \
   -d '{}'`} />
@@ -43,7 +50,7 @@ Creates a new user in the organization.
     "resourceType": "User",
     "created": "2024-01-23T04:56:22Z",
     "lastModified": "2024-01-23T04:56:22Z",
-    "location": "https://app.tooljet.com/api/scim/v2/Users/2819c223-7f76-453a-919d-413861904646"
+    "location": "https://{your-domain}/api/scim/v2/Users/2819c223-7f76-453a-919d-413861904646"
   }
 }`} />
 
