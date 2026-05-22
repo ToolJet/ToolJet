@@ -34,7 +34,6 @@ import { AiModule } from '@modules/ai/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
@@ -186,7 +185,6 @@ export class WorkflowsModule extends SubModule {
         DataSourcesRepository,
         OrganizationConstantRepository,
         VersionRepository,
-        AppGitRepository,
         OrganizationGitSyncRepository,
         OrganizationRepository,
         AppsService,

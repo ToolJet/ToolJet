@@ -31,7 +31,6 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
@@ -48,7 +47,6 @@ export class VersionService implements IVersionService {
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
@@ -226,15 +224,6 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
-      }
-      // Modules are branch-scoped like apps — same git-sync freeze applies.
-      if (appGit) {
-        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
-      }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
       }

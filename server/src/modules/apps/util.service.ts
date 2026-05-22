@@ -1197,43 +1197,19 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   /**
-   * Determines if the editor should be frozen based on version status, type, and git configuration
-   * @param editingVersion - The app version being edited
-   * @param environmentPriority - The priority of the current environment (> 1 means production-like)
-   * @param appGit - The app's git configuration
-   * @param orgGit - The organization's git configuration
-   * @returns boolean indicating if editor should be frozen
+   * Determines if the editor should be frozen based on version status, type, and git configuration.
+   * Workspace-level git sync replaced the per-app allowEditing toggle — branching alone now
+   * decides whether default-branch VERSION rows are frozen.
    */
-  shouldFreezeEditor(editingVersion: AppVersion, appGit: any, orgGit: any): boolean {
-    let shouldFreezeEditor = false;
-    // Check version status and type
-    if (editingVersion?.status === AppVersionStatus.PUBLISHED) {
-      shouldFreezeEditor = true;
-    } else if (
-      editingVersion?.versionType === AppVersionType.VERSION &&
-      editingVersion?.status === AppVersionStatus.DRAFT &&
-      (!orgGit || !orgGit?.isBranchingEnabled)
-    ) {
-      // Draft VERSION without branching — not frozen
-    } else if (
-      editingVersion?.versionType === AppVersionType.VERSION &&
-      editingVersion?.status !== AppVersionStatus.DRAFT
-    ) {
-      shouldFreezeEditor = true;
-    } else {
-      // Workspace branching takes precedence: if branching is enabled, VERSION-type drafts on the
-      // default branch are always frozen (edits must happen on feature branches).
-      if (orgGit && orgGit?.isBranchingEnabled && editingVersion?.versionType === AppVersionType.VERSION) {
-        shouldFreezeEditor = true;
-      } else if (editingVersion?.versionType === AppVersionType.BRANCH) {
-        // Feature-branch versions are editable by definition — allowEditing on the
-        // canonical appGit (default branch) must not freeze branch copies.
-      } else if (appGit) {
-        shouldFreezeEditor = !appGit?.allowEditing || shouldFreezeEditor;
-      }
+  shouldFreezeEditor(editingVersion: AppVersion, orgGit: any): boolean {
+    if (editingVersion?.status === AppVersionStatus.PUBLISHED) return true;
+
+    if (editingVersion?.versionType === AppVersionType.VERSION) {
+      if (editingVersion?.status !== AppVersionStatus.DRAFT) return true;
+      if (orgGit?.isBranchingEnabled) return true;
     }
 
-    return shouldFreezeEditor;
+    return false;
   }
 
   async checkModuleInUseByApps(moduleApp: App, manager: EntityManager): Promise<void> {

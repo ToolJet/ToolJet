@@ -42,7 +42,6 @@ const CreateVersionModal = ({
     currentEnvironment,
     environments,
     setIsEditorFreezed,
-    appGit,
     branchingEnabled,
   } = useStore(
     (state) => ({
@@ -60,7 +59,6 @@ const CreateVersionModal = ({
       currentEnvironment: state.selectedEnvironment,
       environments: state.environments,
       setIsEditorFreezed: state.setIsEditorFreezed,
-      appGit: state.appGit,
       branchingEnabled: state.branchingEnabled,
     }),
     shallow
@@ -166,14 +164,6 @@ const CreateVersionModal = ({
 
     try {
       if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
-        if (!appGit?.git_app_name || !appGit?.id) {
-          toast.error(
-            "Empty apps can't be versioned. Build your app first and then save your work through version control."
-          );
-          setIsCreatingVersion(false);
-          return;
-        }
-
         try {
           const tagCheck = await gitSyncService.checkTagExists(appId, versionName.trim());
           if (tagCheck.exists) {
