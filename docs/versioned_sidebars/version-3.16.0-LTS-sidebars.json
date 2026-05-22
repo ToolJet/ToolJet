@@ -689,6 +689,7 @@
                 "marketplace/plugins/marketplace-plugin-Presto",
                 "marketplace/plugins/marketplace-plugin-prometheus",
                 "marketplace/plugins/marketplace-plugin-qdrant",
+                "marketplace/plugins/marketplace-plugin-quickbooks",
                 "marketplace/plugins/marketplace-plugin-salesforce",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
