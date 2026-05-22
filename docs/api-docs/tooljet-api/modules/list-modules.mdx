@@ -12,6 +12,14 @@ Retrieves a list of all modules in a workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"400","description":"workspaceId is not a valid UUID, or workspace does not exist."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic token."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"500","description":"Unexpected database error."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

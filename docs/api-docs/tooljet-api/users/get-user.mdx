@@ -12,6 +12,14 @@ Returns details of a user identified by UUID or email address.
 
 <ParamsTable title="Path Parameters" params={[{"name":"identifier","type":"string","required":true,"description":"UUID (e.g. `d1493ea9-...`) or email (e.g. `john@example.com`).","in":"path"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"200","description":"Returns an empty array [] if the identifier matches no user — no 404 is thrown."},
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"404","description":"CE (non-EE) deployment — this endpoint is EE-only."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

@@ -12,6 +12,13 @@ Returns app details for all applications in a workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"400","description":"workspaceId is not a valid UUID, or workspace does not exist."},
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

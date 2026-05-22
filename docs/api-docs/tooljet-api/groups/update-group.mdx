@@ -20,6 +20,15 @@ Updates group name, workspace-level permissions, or granular permissions.
 
 <ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"Updated name for the group.","in":"body"},{"name":"permissions","type":"object","required":false,"description":"Updated workspace-level permissions for the group.","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"Updated list of granular permission rules for apps and datasources.","in":"body"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Body fails DTO validation, groupId is a default group (admin/builder/end-user), or a resource cannot be resolved."},
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or token invalid."},
+  {"status":"404","description":"workspaceId or groupId not found."},
+  {"status":"422","description":"granularPermissions contains more than one applyToAll: true entry for the same resource type."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -28,7 +37,7 @@ Updates group name, workspace-level permissions, or granular permissions.
   -H "Content-Type: application/json" \
   -d '{}'`} />
 
-**Response:** `200`
+<ResponseExample statusCode="204" body='{"message": "Group updated successfully."}' />
 
 </ApiRight>
 </ApiColumns>

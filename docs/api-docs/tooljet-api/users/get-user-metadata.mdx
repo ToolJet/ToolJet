@@ -16,6 +16,13 @@ Returns metadata for a specific user within a workspace.
 
 <ParamsTable title="Path Parameters" params={[{"name":"workspaceIdentifier","type":"string","required":true,"description":"Workspace UUID or slug.","in":"path"},{"name":"userIdentifier","type":"string","required":true,"description":"User UUID or email.","in":"path"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
+  {"status":"404","description":"Workspace not found, user not found, or user is not a member of the specified workspace."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

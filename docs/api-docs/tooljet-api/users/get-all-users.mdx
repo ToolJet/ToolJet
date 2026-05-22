@@ -15,6 +15,13 @@ Retrieves a list of all users along with their workspace permissions and group m
 
 <ParamsTable title="Query Parameters" params={[{"name":"group_names","type":"string","required":false,"description":"Comma-separated list of group names to filter by (e.g. `admin,end-user`).","in":"query"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"404","description":"CE (non-EE) deployment — this endpoint is EE-only."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 

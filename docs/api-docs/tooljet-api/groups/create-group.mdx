@@ -21,6 +21,16 @@ Creates a new user group in a workspace with optional workspace-level permission
 
 <ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"Name of the group.","in":"body"},{"name":"permissions","type":"object","required":false,"description":"Workspace-level permissions for the group (e.g. appCreate, appDelete).","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"List of granular permission rules scoped to specific apps or datasources.","in":"body"}]} />
 
+
+<ErrorsTable errors={[
+  {"status":"400","description":"name fails format constraints (length, invalid chars, reserved keyword, or role name collision)."},
+  {"status":"400","description":"workspaceId not found or no admin user exists in the workspace."},
+  {"status":"400","description":"A resource in granularPermissions[].resources not found."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic token."},
+  {"status":"409","description":"A group with the same name already exists in the workspace."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."}
+]} />
+
 </ApiLeft>
 <ApiRight>
 
@@ -51,7 +61,7 @@ Creates a new user group in a workspace with optional workspace-level permission
   ]
 }'`} />
 
-**Response:** `201`
+<ResponseExample statusCode="201" body='{"message": "Group created successfully."}' />
 
 </ApiRight>
 </ApiColumns>
