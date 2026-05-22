@@ -1040,13 +1040,24 @@ class DataSourceManagerComponent extends React.Component {
         });
       }
     }
+    // Plugin DSes pulled from git have encrypted fields omitted from the DSVO (credentials are never
+    // stored in git). state.options therefore lacks those keys while normalizedSavedOptions has them
+    // filled from dsDefaults, producing a false mismatch on first open. Normalize both sides the same
+    // way so the initial diff is zero.
+    const normalizedCurrentOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...options }
+    );
     // Sample datasources are read-only (no DynamicForm, no save button), so they're never "editing".
     // Without this guard, normalizedSavedOptions gets defaults added that state.options never receives
     // (since DynamicForm which fills defaults isn't rendered for sample dbs), causing a false mismatch.
     const isSaveDisabled =
       isSampleDb ||
       (selectedDataSource
-        ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        ? deepEqual(normalizedCurrentOptions, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
           selectedDataSource?.name === datasourceName
         : true);
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
