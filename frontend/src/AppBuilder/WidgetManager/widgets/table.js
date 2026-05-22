@@ -657,7 +657,7 @@ export const tableConfig = {
         { handle: 'columnKey', displayName: 'Column key' },
         {
           handle: 'direction',
-          displayName: 'Direction',
+          displayName: 'Order',
           options: [
             { name: 'Ascending', value: 'asc' },
             { name: 'Descending', value: 'desc' },
