@@ -8,7 +8,7 @@ title: Jira
 ToolJet allows you to connect to your Jira instance to perform various operations such as managing issues, users, worklogs, and boards.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/jira-homepage.png" alt="Jira Homepage" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/jira-signup-page.png" alt="Jira Homepage" />
 </div>
 
 ## Connection
@@ -22,7 +22,7 @@ To connect to your Jira instance, the following details are required:
 - **Token**: Your Jira API token
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/connect.png" alt="Jira Connect" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/connection.png" alt="Jira data source configuration" />
 </div>
 
 :::tip
@@ -41,6 +41,8 @@ Query results can be transformed using transformations. Refer to our transformat
 ## Supported Resources and Operations
 
 ToolJet supports the following Jira resources and operations:
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/listops.png" alt="Jira supported operations" />
 
 #### Issue
 
@@ -75,18 +77,18 @@ ToolJet supports the following Jira resources and operations:
 This operation retrieves details of a specific Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-issue.png" alt="Jira Get Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issue-query.png" alt="Jira Get Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to retrieve.
 - **Params/Body**: Additional parameters such as fields to retrieve, expand options, etc.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
-Issue Key: 10001
+Issue Key: 10004
 Params/Body:
 {
     "fields": "summary,description,created",
@@ -99,14 +101,14 @@ Params/Body:
 This operation creates a new Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/create-issue.png" alt="Jira Create Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/create-issue-query.png" alt="Jira Create Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Params/Body**: The details of the issue to be created.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Params/Body:
@@ -136,18 +138,21 @@ Params/Body:
 This operation deletes a specific Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/delete-issue.png" alt="Jira Delete Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-issue-query.png" alt="Jira Delete Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Issue key**: The key or id of the issue to delete.
+
+#### Optional Parameter:
+
 - **Delete subtasks**: Whether to delete the issue's subtasks.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
-Issue Key: 10001
+Issue Key: SCRUM-32
 Delete Subtasks: Yes // Can be Yes or No
 ```
 
@@ -156,15 +161,15 @@ Delete Subtasks: Yes // Can be Yes or No
 This operation assigns a Jira issue to a specific user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/assign-issue.png" alt="Jira Assign Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/assign-issue-query.png" alt="Jira Assign Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to assign.
 - **Account id**: The account ID of the user to assign the issue to.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Issue Key: 10001
@@ -176,15 +181,15 @@ Account id: 712020:4581444c-054e-41d8-90ed-6d1d849557f7
 This operation modifies an existing Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/edit-issue.png" alt="Jira Edit Issue"/>
+    <img className="screenshot-full" src="/img/marketplace/plugins/jira/edit-issue-query.png" alt="Jira Edit Issue"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to edit.
 - **Params/Body**: The fields to update and their new values.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Issue Key: 10007
@@ -204,15 +209,18 @@ Params/Body:
 This operation retrieves details of a specific Jira user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-user.png" alt="Jira Get User"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-user-query.png" alt="Jira Get User"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Account id**: The account ID of the user to retrieve.
+
+#### Optional Parameter:
+
 - **Expand**: Additional user details to include in the response.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Account id: 5b10a2844c20165700ede21g
@@ -224,16 +232,19 @@ Expand: groups,applicationRoles
 This operation searches for users based on a query.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/find-users.png" alt="Jira Find Users"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/find-users-query.png" alt="Jira Find Users"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Query**: The search query in Jira Query Language (JQL) format.
+
+#### Optional Parameter:
+
 - **Start at**: The index of the first user to return.
 - **Max results**: The maximum number of users to return.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Query: is assignee of PROJ
@@ -241,20 +252,23 @@ Start at: 1
 Max results: 10
 ```
 
-### Find Assignable Users
+### Assignable Users
 
 This operation finds users that can be assigned to issues.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/assignable-users.png" alt="Jira Assignable Users"/>
+    <img className="screenshot-full" src="/img/marketplace/plugins/jira/assignable-users-query.png" alt="Jira Assignable Users"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Query**: The search query in Jira Query Language (JQL) format.
 - **Account id**: The account ID of the user to find assignable users for.
 - **Project key**: The key or id of the project to find assignable users for.
 - **Issue key**: The key or id of the issue to find assignable users for.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first user to return.
 - **Max results**: The maximum number of users to return.
 - **Action descriptor id**: The action descriptor ID to find assignable users for.
@@ -264,7 +278,7 @@ This operation finds users that can be assigned to issues.
 Note: Query and Account id are mutually exclusive parameters. You can only use one of them.
 :::
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Query: Mark // Search for users with "Mark" in their name, username, or email
@@ -284,18 +298,21 @@ Recommended: Yes
 This operation retrieves the worklogs for a specific issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-issue-worklogs.png" alt="Jira Get Issue Worklogs"/>
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-worklogs-query.png" alt="Jira Get Issue Worklogs"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Issue key**: The key or id of the issue to get worklogs for.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first worklog to return.
 - **Max results**: The maximum number of worklogs to return.
 - **Started after**: The date and time to start retrieving worklogs from.
 - **Started before**: The date and time to stop retrieving worklogs.
 
-#### Example:
+#### Sample Example:
 
 ```yaml
 Issue Key: SCRUM-1
@@ -310,10 +327,10 @@ Started before: 1726228754515
 This operation adds a new worklog entry to an issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/add-worklog.png" alt="Jira Add Worklog"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/add-worklog-query.png" alt="Jira Add Worklog"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
 - **Issue key**: The key or id of the issue to add the worklog to.
 - **Params/Body**: The details of the worklog entry.
@@ -324,12 +341,12 @@ This operation adds a new worklog entry to an issue.
 Issue Key: SCRUM-1
 Params/Body:
 {
-  "comment": "I did some work here.",
-  "created": "2017-03-14T10:35:37.097+0000",
+  "comment": "It's important to keep the team motivated!",
+  "created": "2026-02-25T10:56:25.035+0000",
   "id": "100028",
   "issueId": "SCRUM-1",
-  "started": "2017-03-14T10:35:37.097+0000",
-  "timeSpent": "3h 20m"
+  "started": "2026-02-25T10:59:49.015+0000",
+  "timeSpent": "2h 47m"
 }
 ```
 
@@ -338,13 +355,16 @@ Params/Body:
 This operation deletes a specific worklog entry from an issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/delete-worklog.png" alt="Jira Delete Worklog"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-worklog-query.png" alt="Jira Delete Worklog"/>
 </div>
 
-#### Parameters:
+#### Required Parameters:
 
-- **Issue key**: The key or id of the issue containing the worklog
-- **Worklog id**: The ID of the worklog to delete
+- **Issue key**: The key or id of the issue containing the worklog.
+- **Worklog id**: The ID of the worklog to delete.
+
+#### Optional Parameters:
+
 - **Params/Body**: Additional parameters such as notify users, adjust estimate, etc.
 
 #### Example:
@@ -366,12 +386,15 @@ Params/Body:
 This operation retrieves issues from a board's backlog.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/backlog-issues.png" alt="Jira Backlog Issues"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-board-backlog.png" alt="Jira Backlog Issues"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Board id**: The ID of the board to get backlog issues from.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first issue to return.
 - **Max results**: The maximum number of issues to return.
 - **Expand**: Additional issue details to include in the response.
@@ -380,13 +403,13 @@ This operation retrieves issues from a board's backlog.
 #### Example:
 
 ```yaml
-Board id: 1
+Board id: 001
 Start at: 1
 Max results: 10
-Expand: changelog
+Expand: widget
 Params/Body:
 {
-    "fields": ["summary", "description", "created"],
+    "fields": ["color", "transparency", "color_radius"]
 }
 ```
 
@@ -395,12 +418,15 @@ Params/Body:
 This operation retrieves all boards visible to the user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/all-boards.png" alt="Jira All Boards"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-all-boards.png" alt="Jira All Boards"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Project key**: Limit the boards to a specific project.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first board to return.
 - **Name**: The name of the board to search for.
 - **Max results**: The maximum number of boards to return.
@@ -411,7 +437,7 @@ This operation retrieves all boards visible to the user.
 ```yaml
 Project key: PROJ
 Start at: 1
-Name: SCRUM
+Name: SCRUM board
 Max results: 10
 Expand: projects
 ```
@@ -421,12 +447,15 @@ Expand: projects
 This operation retrieves all issues from a specific board.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/board-issues.png" alt="Jira Board Issues"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issues-board.png" alt="Jira Board Issues"/>
 </div>
 
-#### Parameters:
+#### Required Parameter:
 
 - **Board id**: The ID of the board to get issues from.
+
+#### Optional Parameters:
+
 - **Start at**: The index of the first issue to return.
 - **Max results**: The maximum number of issues to return.
 - **Expand**: Additional issue details to include in the response.
@@ -435,12 +464,12 @@ This operation retrieves all issues from a specific board.
 #### Example:
 
 ```yaml
-Board id: 1
+Board id: 05
 Start at: 1
 Max results: 10
-Expand: changelog
+Expand: projects
 Params/Body:
 {
-    "fields": ["summary", "description", "created"],
+    "fields": ["scope", "budget", "quality"]
 }
 ```
