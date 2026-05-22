@@ -90,9 +90,14 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Use branchId from DTO (passed by frontend from localStorage), or fall back to default branch
-      let branchId = appCreateDto.branchId;
-      if (!branchId) {
+      // Workflows don't participate in branching — their app_versions row must have
+      // branch_id NULL. Drop any DTO-supplied branchId (frontend may send the current
+      // dashboard branch from localStorage even for workflows) and skip the
+      // default-branch auto-fill below. Otherwise the row lands with branch_id set
+      // but app_name/slug NULL (the workflow create path doesn't write those), which
+      // trips chk_app_versions_branch_metadata.
+      let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
+      if (!branchId && type !== APP_TYPES.WORKFLOW) {
         const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
         if (orgGit) {
           const defaultBranch = await manager.findOne(WorkspaceBranch, {
@@ -814,15 +819,35 @@ export class AppsService implements IAppsService {
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
       response['editing_version']['global_settings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete response['editing_version']['global_settings']['libraries'];
+        delete response['editing_version']['global_settings']['preloadedScript'];
+      }
     }
     return response;
   }
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
-      const versionToLoad = app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+      // app.editingVersion is populated by AppSubscriber.afterLoad ONLY when
+      // git sync is off (or when the entity is a workflow). For git-enabled
+      // front-end / module apps the subscriber returns early without
+      // populating it, so we need a hard fallback to currentVersionId. If
+      // neither is available the app has no resolvable version and we can't
+      // serve the slug — throw a clear 404 instead of crashing on a
+      // findVersion(undefined) call further down.
+      const versionId = app.currentVersionId ?? app.editingVersion?.id;
+      if (!versionId) {
+        throw new NotFoundException('No released or editing version found for this app');
+      }
+      const versionToLoad = await this.versionRepository.findVersion(versionId);
 
       const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
@@ -841,6 +866,18 @@ export class AppsService implements IAppsService {
         });
       }
 
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      const globalSettings = { ...versionToLoad.globalSettings, theme: appTheme };
+      if (!hasJsLibrariesAccess) {
+        delete globalSettings.libraries;
+        delete globalSettings.preloadedScript;
+      }
+
       // serialize
       return {
         id: app.id,
@@ -854,7 +891,7 @@ export class AppsService implements IAppsService {
         events: eventsForVersion,
         pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
         homePageId: versionToLoad.homePageId,
-        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        globalSettings,
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
         appId: app.id,

@@ -6,7 +6,7 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceGitSyncModal } from '@/_ui/WorkspaceGitSyncModal';
 import { toast } from 'react-hot-toast';
 
-export function WorkspaceGitCTA({ showCommit = true }) {
+export function WorkspaceGitCTA() {
   const [showModal, setShowModal] = useState(false);
   const [initialTab, setInitialTab] = useState('push');
   const { currentBranch, orgGitConfig, actions } = useWorkspaceBranchesStore((state) => ({
@@ -49,19 +49,16 @@ export function WorkspaceGitCTA({ showCommit = true }) {
 
   return (
     <>
-      <div className="lifecycle-cta-button">
-        {/* <Button variant="secondary" onClick={() => setShowModal(true)}>
-          <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />
-          <span>{isOnDefaultBranch ? 'Pull commit ' : 'Commit'}</span>
-        </Button> */}
-        <Button variant="secondary" onClick={handlePullClick} data-cy="workspace-git-pull-button">
-          <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
-          <span>Pull</span>
-        </Button>
-      </div>
+      {isOnDefaultBranch && (
+        <div className="lifecycle-cta-button">
+          <Button variant="secondary" onClick={handlePullClick} data-cy="workspace-git-pull-button">
+            <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
+            <span>Pull</span>
+          </Button>
+        </div>
+      )}
 
-      {/* {showModal && <WorkspaceGitSyncModal isOnDefaultBranch={isOnDefaultBranch} onClose={() => setShowModal(false)} />} */}
-      {showCommit && !isOnDefaultBranch && (
+      {!isOnDefaultBranch && (
         <div className="lifecycle-cta-button">
           <Button variant="secondary" onClick={handleCommitClick} data-cy="workspace-git-commit-button">
             <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />

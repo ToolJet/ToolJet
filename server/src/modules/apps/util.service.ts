@@ -419,7 +419,8 @@ export class AppsUtilService implements IAppsUtilService {
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-    if (environmentName && !isMultiEnvironmentEnabled) {
+    const isDevelopmentEnv = environmentName?.toLowerCase() === 'development';
+    if (environmentName && !isDevelopmentEnv && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
 
@@ -556,6 +557,29 @@ export class AppsUtilService implements IAppsUtilService {
         });
         if (conflictingVersion) {
           throw new BadRequestException('This slug is already taken on this branch.');
+        }
+
+        // Instance-wide default-branch slug uniqueness, scoped by apps.type.
+        // Mirrors trg_app_versions_default_branch_slug_unique (migration
+        // 1779400000000) so the same case-insensitive collision is rejected
+        // here with a user-facing message instead of bubbling up as a trigger
+        // exception from manager.update further down. Joining
+        // organization_git_sync_branches with is_default=true makes the check
+        // span every workspace's default branch on this instance, which is the
+        // multi-workspace collision case (e.g. two workspaces pulled the same
+        // git repo and now have the same slug on their default branches).
+        const defaultBranchSlugCollision = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .innerJoin(App, 'a', 'a.id = av.app_id')
+          .innerJoin('organization_git_sync_branches', 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
+          .where('LOWER(av.slug) = LOWER(:slug)', { slug: versionParams.slug })
+          .andWhere('a.type = :appType', { appType: app.type })
+          .andWhere('av.app_id <> :appId', { appId })
+          .select('av.id')
+          .limit(1)
+          .getOne();
+        if (defaultBranchSlugCollision) {
+          throw new BadRequestException('This slug is already taken.');
         }
       } else if (isWorkflow && appParams.slug) {
         const conflictingApp = await manager.findOne(App, {
@@ -788,20 +812,34 @@ export class AppsUtilService implements IAppsUtilService {
   // version on the branch; filtering it out would hide the module entirely.
   // The UUID-name-leak concern is handled by the inner `versions`-aliased join
   // in viewableAppsQueryUsingPermissions (read by ModuleManager).
+  //
+  // The default branch carries multiple VERSION-type rows per app (DRAFT +
+  // RELEASED + PROMOTED) sharing branch_id. A naive `branch_id = :branchId`
+  // join fans those rows out and TypeORM's `take()` LIMITs the joined rows,
+  // not distinct apps — so apps with extra versions on the branch crowd out
+  // others and the page returns fewer apps than APPS_PAGE_SIZE. The
+  // correlated subquery pins the join to one row per app (the same row the
+  // listing already orders by: non-stub first, most recently edited).
   private applyAppVersionsJoin(
     qb: SelectQueryBuilder<AppBase>,
     type: string,
     branchId: string | undefined,
     isGetAll: boolean
   ): void {
+    const branchPick = `appVersions.branchId = :branchId AND appVersions.id = (
+      SELECT av_pick.id FROM app_versions av_pick
+      WHERE av_pick.app_id = apps.id AND av_pick.branch_id = :branchId
+      ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
+      LIMIT 1
+    )`;
     if (type === APP_TYPES.MODULE && !isGetAll) {
       if (branchId) {
-        qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+        qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
       } else {
         qb.leftJoinAndSelect('apps.appVersions', 'appVersions');
       }
     } else if (branchId && type === APP_TYPES.FRONT_END) {
-      qb.innerJoinAndSelect('apps.appVersions', 'appVersions', 'appVersions.branchId = :branchId', { branchId });
+      qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
     }
   }
 

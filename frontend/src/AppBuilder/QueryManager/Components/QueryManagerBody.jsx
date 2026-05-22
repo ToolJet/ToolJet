@@ -13,6 +13,9 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
 import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import ConfirmationInputs from './ConfirmationInputs';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -22,10 +25,11 @@ import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
+  const { moduleId } = useModuleContext();
+  const getResolvedValue = useStore((state) => state.getResolvedValue);
   const { isModuleEditor } = useModuleContext();
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
@@ -46,7 +50,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
   const queryName = selectedQuery?.name ?? '';
-  const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
+  const sourcecomponentName = selectedQuery?.kind?.charAt(0).toUpperCase() + selectedQuery?.kind?.slice(1);
 
   // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
   // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
@@ -54,7 +58,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const isDummyDataSource = selectedDataSource?.is_dummy === true;
   const ElementToRender = isDummyDataSource
     ? null
-    : selectedDataSource?.plugin_id
+    : selectedQuery?.plugin_id
     ? source
     : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
@@ -239,7 +243,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           <ElementToRender
             renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
             key={selectedQuery?.id}
-            pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
+            pluginSchema={
+              selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data
+            }
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
@@ -358,17 +364,58 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             {t('editor.queryManager.settings', 'Triggers')}
           </div>
           <div className="flex-grow-1">
-            {Object.keys(customToggles).map((toggle, index) => (
-              <CustomToggleFlag
-                {...customToggles[toggle]}
-                toggleOption={toggleOption}
-                value={selectedQuery?.options?.[customToggles[toggle]?.action]}
-                index={index}
-                key={toggle}
-                darkMode={darkMode}
-                queryKind={selectedQuery?.kind}
-              />
-            ))}
+            {Object.keys(customToggles).map((toggle, index) => {
+              const config = customToggles[toggle];
+              const fxMode = config.fx ? !!selectedQuery?.options?.[config.fxKey] : false;
+              const handleFxToggle = config.fx
+                ? () => {
+                    if (fxMode) {
+                      const currentExpression = selectedQuery?.options?.[config.action];
+                      let evaluated = false;
+                      try {
+                        evaluated = !!getResolvedValue(currentExpression, {}, moduleId);
+                      } catch (e) {
+                        evaluated = false;
+                      }
+                      optionsChanged({
+                        ...options,
+                        [config.action]: evaluated,
+                        [config.fxKey]: false,
+                      });
+                    } else {
+                      const currentBool = !!selectedQuery?.options?.[config.action];
+                      optionsChanged({
+                        ...options,
+                        [config.action]: currentBool ? '{{true}}' : '{{false}}',
+                        [config.fxKey]: true,
+                      });
+                    }
+                  }
+                : undefined;
+              const toggleValue = fxMode ? false : !!selectedQuery?.options?.[config?.action];
+              return (
+                <React.Fragment key={toggle}>
+                  <CustomToggleFlag
+                    {...config}
+                    toggleOption={toggleOption}
+                    value={toggleValue}
+                    index={index}
+                    darkMode={darkMode}
+                    queryKind={selectedQuery?.kind}
+                    fxMode={fxMode}
+                    onFxToggle={handleFxToggle}
+                  />
+                  {config.action === 'requestConfirmation' && (
+                    <ConfirmationInputs
+                      options={options}
+                      darkMode={darkMode}
+                      optionchanged={optionchanged}
+                      queryName={queryName}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
             {selectedQuery?.kind === 'restapi' &&
               Object.keys(RestAPIToggles).map((toggle, index) => (
                 <CustomToggleFlag
@@ -548,6 +595,9 @@ const CustomToggleFlag = ({
   toggleOption,
   darkMode,
   queryKind,
+  fx,
+  fxMode,
+  onFxToggle,
 }) => {
   const [flag, setFlag] = useState(false);
   const { t } = useTranslation();
@@ -562,18 +612,23 @@ const CustomToggleFlag = ({
 
   return (
     <div className="query-manager-settings-toggles">
-      <CustomToggleSwitch
-        dataCy={dataCy}
-        isChecked={flag}
-        toggleSwitchFunction={(flag) => {
-          setFlag((state) => !state);
-          toggleOption(flag);
-        }}
-        action={action}
-        darkMode={darkMode}
-        label={t(translatedLabel, label)}
-        subLabel={subLabel}
-      />
+      <div className={cx({ 'toggle-fx-row': fx && onFxToggle, 'fx-active': fxMode })}>
+        <CustomToggleSwitch
+          dataCy={dataCy}
+          isChecked={flag}
+          toggleSwitchFunction={(flag) => {
+            if (fxMode) return;
+            setFlag((state) => !state);
+            toggleOption(flag);
+          }}
+          action={action}
+          darkMode={darkMode}
+          label={t(translatedLabel, label)}
+          subLabel={subLabel}
+          disabled={fxMode}
+        />
+        {fx && onFxToggle && <FxButton active={!!fxMode} onPress={onFxToggle} dataCy={dataCy} />}
+      </div>
     </div>
   );
 };

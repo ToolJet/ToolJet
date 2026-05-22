@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '@helpers/utils.helper';
 import { AppVersionType } from '@entities/app_version.entity';
@@ -8,6 +8,7 @@ export class VersionCreateDto {
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty({ message: 'Version name cannot be empty.' })
   @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
   versionName: string;
 
   @IsUUID()

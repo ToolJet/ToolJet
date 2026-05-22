@@ -239,6 +239,18 @@ export class VersionService implements IVersionService {
         shouldFreezeEditor = true;
       }
       editingVersion['globalSettings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete editingVersion['globalSettings']['libraries'];
+        delete editingVersion['globalSettings']['preloadedScript'];
+      }
+
       return {
         ...appData,
         editing_version: editingVersion,
@@ -295,6 +307,22 @@ export class VersionService implements IVersionService {
 
       if (appVersionUpdateDto?.status === AppVersionStatus.PUBLISHED && app.type !== 'module') {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
+      }
+
+      if (appVersion.status === AppVersionStatus.PUBLISHED) {
+        const nameChanging = appVersionUpdateDto.name && appVersionUpdateDto.name !== appVersion.name;
+        const descChanging =
+          appVersionUpdateDto.description !== undefined &&
+          appVersionUpdateDto.description !== appVersion.description;
+        if (nameChanging || descChanging) {
+          const organizationGit = await this.organizationGitRepository.findOrgGitByOrganizationId(
+            user.organizationId,
+            manager
+          );
+          if (organizationGit?.isEnabled) {
+            throw new BadRequestException('Cannot edit name or description of a saved version.');
+          }
+        }
       }
 
       await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto, manager);

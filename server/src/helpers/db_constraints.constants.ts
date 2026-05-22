@@ -15,4 +15,5 @@ export enum DataBaseConstraints {
   GROUP_NAME_UNIQUE = 'group_name_organization_id_unique',
   GROUP_USER_UNIQUE = 'user_group_unique',
   GRANULAR_PERMISSIONS_NAME_UNIQUE = 'granular_permissions_name_unique',
+  DATA_SOURCE_VERSION_DEFAULT_NAME_ORG_UNIQUE = 'data_source_version_default_name_organization_id_unique',
 }

@@ -9,6 +9,10 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useTranslation } from 'react-i18next';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { ToolTip } from '@/_components/ToolTip';
+import { TriangleAlert } from 'lucide-react';
+import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 // import { useStore } from '@/store';
 
 const SlugInput = () => {
@@ -87,26 +91,60 @@ const SlugInput = () => {
 
   const delayedSlugChange = _.debounce((value, field) => handleInputChange(value, field), 500);
 
+  const { currentBranch } = useWorkspaceBranchesStore();
+  const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
+
+  const SlugLabel = () => {
+    const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+
+    return (
+      <div className="tw-flex tw-items-center tw-gap-1 tw-mb-1">
+        <label className="tw-text-xs tw-font-medium tw-text-default tw-m-0">Unique app slug</label>
+        {isOnFeatureBranch && (
+          <ToolTip
+            message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+            placement="top"
+            width="272px"
+          >
+            <span className="tw-flex tw-items-center">
+              <TriangleAlert size={14} className="tw-text-[var(--icon-warning)]" />
+            </span>
+          </ToolTip>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="app-slug-container">
       <div className="row">
         <div className="col">
-          <InputComponent
-            helperText={
-              !slug?.error && !isSlugUpdated
-                ? "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
-                : undefined
-            }
-            label="Unique app slug"
-            placeholder={t('editor.appSlug', 'Unique app slug')}
-            maxLength={50}
-            onChange={(e, validateObj) => {
-              e.persist();
-              delayedSlugChange(e.target.value, 'slug');
-            }}
-            data-cy="app-slug-input-field"
-            defaultValue={slug?.value || oldSlug || ''}
-          />
+          <SlugLabel />
+          <ToolTip
+            message={TOOLTIP_MESSAGES.DEFAULT_BRANCH_LOCKED}
+            placement="top"
+            width="210px"
+            show={isDefaultBranch}
+          >
+            <div>
+              <InputComponent
+                helperText={
+                  !slug?.error && !isSlugUpdated
+                    ? "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                    : undefined
+                }
+                placeholder={t('editor.appSlug', 'Unique app slug')}
+                maxLength={50}
+                onChange={(e, validateObj) => {
+                  e.persist();
+                  delayedSlugChange(e.target.value, 'slug');
+                }}
+                data-cy="app-slug-input-field"
+                defaultValue={slug?.value || oldSlug || ''}
+                disabled={isDefaultBranch}
+              />
+            </div>
+          </ToolTip>
           {slug?.error ? (
             <label className="label tj-input-error" data-cy="app-slug-error-label">
               {slug?.error || ''}
