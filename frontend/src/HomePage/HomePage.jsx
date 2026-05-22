@@ -2142,7 +2142,7 @@ class HomePageComponent extends React.Component {
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
                   isLoading={appOperations?.isAdding}
-                  disabled={!appOperations?.selectedFolder}
+                  disabled={!appOperations?.selectedFolder || !appOperations?.selectedApps?.length}
                 >
                   {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
                 </ButtonSolid>
