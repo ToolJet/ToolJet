@@ -145,13 +145,13 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
         {!(selectedQuery === null || showCreateQuery) && (
           <>
             <GenerateQueryButton />
+            <AbortButton />
             <RunButton buttonLoadingState={buttonLoadingState} />
             <PreviewButton
               disabled={shouldFreeze}
               onClick={previewButtonOnClick}
               buttonLoadingState={buttonLoadingState}
             />
-            <AbortButton />
           </>
         )}
       </div>
@@ -301,9 +301,15 @@ const GenerateQueryButton = () => {
   // Derived boolean so the component only re-renders when mention is added/removed, not on every keystroke
   const isQueryMentioned = useStore((state) => hasQueryMention(state.ai?.inputMessage ?? '', queryName));
   const [buttonPressedForQuery, setButtonPressedForQuery] = useState(null);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
 
-  if (featureAccess?.aiEnabled === false) return null;
-  if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+  // if (featureAccess?.aiEnabled === false) return null;
+  // if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+  if (isActive) return null;
 
   const isPressed = buttonPressedForQuery === queryName && isQueryMentioned;
 
@@ -387,6 +393,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
+const ABORT_BUTTON_DELAY_MS = 3000;
+
 const AbortButton = () => {
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const abortQuery = useStore((state) => state.queryPanel.abortQuery);
@@ -396,7 +404,17 @@ const AbortButton = () => {
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const isActive = isLoading || isPreviewQueryLoading;
 
-  if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind)) return null;
+  const [hasExceededDelay, setHasExceededDelay] = useState(false);
+  useEffect(() => {
+    if (!isActive) {
+      setHasExceededDelay(false);
+      return;
+    }
+    const timer = setTimeout(() => setHasExceededDelay(true), ABORT_BUTTON_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isActive]);
+
+  if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind) || !isActive || !hasExceededDelay) return null;
 
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
   const shortcutDisplay = `Stop waiting for the response  ${isMac ? '⌘.' : 'Ctrl+.'}`;
