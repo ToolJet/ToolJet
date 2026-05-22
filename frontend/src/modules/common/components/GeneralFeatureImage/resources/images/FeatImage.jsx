@@ -6,7 +6,7 @@ const FeatImage = () => {
   // New Images are used.
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  return <img src={darkMode ? mainImageDark : mainImage} alt="Feature" />;
+  return <img src={darkMode ? mainImageDark : mainImage} alt="Tooljet features" />;
 };
 
 export default FeatImage;
