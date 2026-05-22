@@ -5,12 +5,6 @@ title: HarperDB
 
 HarperDB is a database and application development platform that is focused on performance and ease of use. With flexible user-defined APIs, simple HTTP/S interface, and a high-performance single-model data store that accommodates both NoSQL and SQL workloads, HarperDB scales with your application from proof of concept to production. ToolJet integrates with HarperDB, providing a streamlined interface for reading and writing data.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/harperconnect.gif" alt="Marketplace: HarperDB" />
-
-</div>
-
 :::note
 Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
 :::
@@ -27,29 +21,15 @@ To establish a connection with HarperDB, you need the following credentials:
 4. **Username**: Your authentication username for HarperDB instance.
 5. **Password**: Your password for authentication (hidden for security purposes).
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/creds.png" alt="Marketplace: HarperDB" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/connection.png" alt="HarperDB data source configuration" />
 
 </div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Querying HarperDB
 
 To perform queries on HarperDB, click the `+Add` button in the query manager located at the bottom panel of the app builder. Select the HarperDB from the Global Datasource section in the query editor.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/query.png" alt="Marketplace: HarperDB" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/listops.png" alt="HarperDB supported ops" />
 
 ### SQL Mode
 
@@ -70,11 +50,7 @@ Syntax:
 SELECT * FROM sampleorg.people WHERE id = 1
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/select.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/select-query.png" alt="Marketplace: HarperDB" />
 
 #### Insert
 
@@ -83,14 +59,10 @@ The INSERT statement is used to add one or more rows to a database table.
 Syntax:
 
 ```sql
-INSERT INTO sampleorg.people (id, name, age, country, hobby) VALUE (5, 'Shubh', 26, 'India', 'Football')
+INSERT INTO sampleorg.people (id, name, age, country, hobby) VALUE (10, 'John', 30, 'India', 'Gaming')
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/insert.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/insert-query.png" alt="Marketplace: HarperDB" />
 
 #### Update
 
@@ -99,14 +71,10 @@ The UPDATE statement is used to change the values of specified attributes in one
 Syntax:
 
 ```sql
-UPDATE sampleorg.people SET hobby = 'chess' WHERE id = 5
+UPDATE sampleorg.people SET hobby = 'Chess' WHERE id = 10
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/update.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/update-query.png" alt="Marketplace: HarperDB" />
 
 #### Delete
 
@@ -115,18 +83,10 @@ The DELETE statement is used to remove one or more rows of data from a database 
 Syntax:
 
 ```sql
-DELETE FROM sampleorg.people WHERE id = 5
+DELETE FROM sampleorg.people WHERE id = 10
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/delete.png" alt="Marketplace: HarperDB" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/delete-query.png" alt="Marketplace: HarperDB" />
 
 ### NoSQL Mode
 
@@ -152,14 +112,10 @@ Insert operation allows to add one or more rows of data to a database table.
 **Example Records:**
 
 ```js
-[{id: 22, name: "James Scott", age: 26, country:"Italy", hobby: "football"},...]
+[{id: 22, name: "James Scott", age: 26, country:"Italy", hobby: "Football"}]
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_insert.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/nosql-insert.png" alt="Marketplace: HarperDB" />
 
 #### Update (NoSQL)
 
@@ -174,14 +130,10 @@ The Update operation modifies the values of specified attributes in one or more 
 **Example Records:**
 
 ```js
-[{id:12, name:"Jeff Hannistor"},...] // Record having 12 as Primary key value will be updated
+[{id:12, name:"Jeff Hannistor"}] // Record having 12 as Primary key value will be updated
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_update.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{  marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/nosql-update.png" alt="Marketplace: HarperDB" />
 
 #### Delete (NoSQL)
 
@@ -196,14 +148,10 @@ Removes one or more rows of data from a specified table.
 **Example Hash Values:**
 
 ```js
-[6, 15]; // Records having 6 and 15 as Primary key value will be deleted
+[6, 22]; // Records having 6 and 22 as Primary key value will be deleted
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_delete.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/nosql-delete.png" alt="Marketplace: HarperDB" />
 
 #### Search by hash
 
@@ -219,7 +167,7 @@ Returns data from a table for one or more hash values.
 **Example Hash Values:**
 
 ```js
-[124, 66]; // Records having 6 and 15 as Primary key value will be retrieved
+[124, 66]; // Records having 6 and 22 as Primary key value will be retrieved
 ```
 
 **Example Table Attributes:**
@@ -228,11 +176,7 @@ Returns data from a table for one or more hash values.
 ["id", "name", "age", "hobby", "country"]; // Only the provided columns will be retrieved from the table
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyhash.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/search-hash-nosql.png" alt="Marketplace: HarperDB" />
 
 #### Search by value
 
@@ -267,26 +211,21 @@ Joh* // using wild card
 ["id", "name", "age", "hobby", "country"]; // Only the provided columns will be retrieved from the table
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyvalue.png" alt="Marketplace: HarperDB" />
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/search-value-nosql.png" alt="Marketplace: HarperDB" />
 
 #### Search by conditions
 
 Returns data from a table for one or more matching conditions.
 
-| <div style={{ width:"100px"}}> Parameters </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Schema (required)                                | schema where the table you are searching lives                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Table (required)                                 | table you wish to search                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Operator in-between each condition (optional)    | the operator used between each condition - 'And', 'Or'. The default is 'And'.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Offset (optional)                                | the number of records that the query results will skip. The default is 0.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Limit (optional)                                 | the number of records that the query results will include. The default is null, resulting in no limit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Table Attributes (required)                      | define which attributes you want returned.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Conditions to filter (required)                  | the array of conditions objects, to filter by. Must include one or more object in the array. **search_attribute** (required) - the attribute you wish to search, can be any attribute. **search_type** (required) - the type of search to perform - 'equals', 'contains', 'starts_with', 'ends_with', 'greater_than', 'greater_than_equal', 'less_than', 'less_than_equal', 'between'. **search_value** (required) - case-sensitive value you wish to search. If the search_type is 'between' then use an array of two values to search between. Check the example below. |
-
+| Parameter                               | Description |
+|-----------------------------------------|-------------|
+| **Schema** (required)                  | Schema where the table you are searching lives. |
+| **Table** (required)                   | Table you wish to search. |
+| **Operator in-between each condition** (optional) | The operator used between each condition — `And` or `Or`. Default is `And`. |
+| **Offset** (optional)                  | The number of records that the query results will skip. Default is `0`. |
+| **Limit** (optional)                   | The number of records that the query results will include. Default is `null` (no limit). |
+| **Table Attributes** (required)        | Define which attributes you want returned. |
+| **Conditions to filter** (required)    | Array of condition objects used to filter results. Must include one or more objects in the array. <br/><br/> Each object must include: <br/> • **search_attribute** (required) – Attribute you wish to search (can be any attribute). <br/> • **search_type** (required) – Type of search: `equals`, `contains`, `starts_with`, `ends_with`, `greater_than`, `greater_than_equal`, `less_than`, `less_than_equal`, `between`. <br/> • **search_value** (required) – Case-sensitive value to search. If `search_type` is `between`, use an array of two values. |
 **Example Table Attributes:**
 
 ```js
@@ -302,10 +241,4 @@ Returns data from a table for one or more matching conditions.
 ];
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyconditions.png" alt="Marketplace: HarperDB" />
-
-</div>
-
-</div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/search-conditions-nosql.png" alt="Marketplace: HarperDB" />

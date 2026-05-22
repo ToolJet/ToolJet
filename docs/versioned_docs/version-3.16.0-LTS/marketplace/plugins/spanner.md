@@ -9,7 +9,7 @@ Integrating Google Cloud Spanner with ToolJet allows you to connect your Spanner
 
 You will need the Private key and Instance id to connect with the Google Cloud Spanner.
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/spanner/connection.png" alt="Cloud Spanner Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/spanner/connection.png" alt="Cloud Spanner Configuration" />
 
 ## Supported SQL Dialects 
 
@@ -20,11 +20,17 @@ Use this to access Spanner’s native features and leverage its full scalability
 **Parameters**
 - **Database ID**: Identifier of the Spanner database to connect and execute queries against.
 - **SQL Query**: The SQL statement to be executed on the selected Spanner database.
+- **Query Mode** : Specifies the type of operation to perform on the database, such as executing read/write queries or applying schema changes (CREATE, ALTER, DROP).
 - **SQL Parameters**: Key-value pairs used to safely pass dynamic values into the SQL query.
 - **Types**: Data types assigned to each SQL parameter to ensure correct query execution.
 - **Options**: Additional settings to customize query behavior.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/spanner/google-sql.png" alt="Cloud Spanner Configuration" />
+```sql
+INSERT INTO employees (employee_id, first_name, last_name, email) 
+VALUES (2, 'Jane', 'Smith', 'jane.smith@example.com');
+```
+
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/spanner/gs-sql-query.png" alt="Spanner google sql query " />
 
 ### PostgreSQL
 
@@ -37,4 +43,4 @@ Use this to access Spanner with PostgreSQL-compatible syntax and tooling, ideal 
 - **Types**: Data types assigned to each SQL parameter to ensure correct query execution.
 - **Options**: Additional settings to customize query behavior.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/spanner/posgre-sql.png" alt="Cloud Spanner Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/spanner/postgre-sql-query.png" alt="Spanner postgresql " />
