@@ -48,7 +48,7 @@ This method enables the creation of a sample application with a pre-configured c
    4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
    5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/sample-app-v3.png" alt="Create Sample App" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/sample-app-v3.png" alt=" Create Sample App " />
 
 ## Sample Data Source Schema
 
@@ -61,19 +61,3 @@ The sample data source contains various tables with different data types.
 | `public.sample_data_users`           | `first_name`, `last_name`, `company_name`, `address`, `city`, `county`, `state`, `zip`, `phone1`, `phone2`, `email`, `web`     | 499              |
 | `public.sample_data_orders`          | `row_id`, `order_id`, `order_date`, `ship_date`, `ship_mode`, `customer_id`, `customer_name`, `segment`, `country`, `city`, `state`, `postal_code`, `region`, `product_id`, `category`, `sub_category`, `product_name`, `sales`, `quantity`, `discount`, `profit` | 500              |
 | `public.sample_data_product_cars` | `car`, `mpg`, `cylinders`, `displacement`, `horsepower`, `weight`, `acceleration`, `model`, `origin`                          | 406              |
-
-## Sample Use Cases
-
-### 1. Build a dashboard
-- Use `sample_data_orders`
-- Show total sales (Text widget)
-- Add chart grouped by region
-
-### 2. Create a user directory
-- Use `sample_data_users`
-- Display in Table component
-- Add search/filter on name
-
-### 3. Analyze country GDP
-- Use `sample_data_country_gdp`
-- Plot GDP vs population
