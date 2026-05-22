@@ -44,9 +44,67 @@ Use this operation to retrieve metadata and configuration details about a specif
     "indexed_vectors_count": 0,
     "points_count": 0,
     "segments_count": 2,
-    "config": {} 6keys
+    "config": {
+      "params": {
+        "vectors": {
+          "abstract-dense-vector": {
+          "size": 512,
+          "distance": "Cosine",
+            "hnsw_config": {
+              "m": 24,
+              "ef_construct": 256,
+              "payload_m": 24
+          },
+          "on_disk": false,
+          "datatype": "float32"
+        }
+      },
+      "shard_number": 1,
+      "replication_factor": 1,
+      "write_consistency_factor": 1,
+      "on_disk_payload": true,
+      "sparse_vectors": {
+        "vec1": {
+          "index": {
+            "on_disk": true
+          }
+        }
+      }
+    },
+      "hnsw_config": {
+      "m": 16,
+      "ef_construct": 100,
+      "full_scan_threshold": 10000,
+      "max_indexing_threads": 0,
+      "on_disk": false
+    },
+      "optimizer_config": {
+      "deleted_threshold": 0.2,
+      "vacuum_min_vector_number": 1000,
+      "default_segment_number": 0,
+      "max_segment_size": null,
+      "memmap_threshold": null,
+      "indexing_threshold": 10000,
+      "flush_interval_sec": 5,
+      "max_optimization_threads": null,
+      "prevent_unoptimized": null
+    },
+      "wal_config": {
+      "wal_capacity_mb": 32,
+      "wal_segments_ahead": 0,
+      "wal_retain_closed": 1
+    },
+    "quantization_config": null,
+      "strict_mode_config": {
+      "enabled": true,
+      "unindexed_filtering_retrieve": false,
+      "unindexed_filtering_update": false,
+      "max_payload_index_count": 100
+    }
+  }
     "payload_schema": {}
-    "update_queue": {} 1key
+    "update_queue": 
+      length: 0
 }
 ```
 </details>
@@ -74,7 +132,7 @@ Use this operation to retrieve specific data points from a collection using thei
 ```yaml
 [{
     "id": 2,
-    "payload": {} 4 keys
+    "payload": 
      {
         "file_name": "662c577775a44fc22d66d4da_Xavier_Dolan_V6_p.jpeg",
         image_url:"https://storage.googleapis.com/demo-midjourney/images/662c577775a44fc22d66d4da_Xavier_Dolan_V6_p.jpeg",
