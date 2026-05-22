@@ -4,6 +4,7 @@ import { WORKSPACE_STATUS } from '@modules/users/constants/lifecycle';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { AppsRepository } from '@modules/apps/repository';
 import { TransactionLogger } from '@modules/logging/service';
+import { APP_TYPES } from '@modules/apps/constants';
 
 @Injectable()
 export class QueryAuthGuard extends AuthGuard('jwt') {
@@ -30,6 +31,12 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
 
       if (!app) {
         throw new BadRequestException();
+      }
+      if (app.type === APP_TYPES.MODULE) {
+        const hostApp = await this.appRepository.findPublicHostAppForModuleQuery(id, app.organizationId);
+        if (hostApp) {
+          app.isPublic = hostApp.isPublic;
+        }
       }
       const organization = await this.organizationRepository.getSingleOrganizationWithId(app?.organizationId);
       if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE) {
