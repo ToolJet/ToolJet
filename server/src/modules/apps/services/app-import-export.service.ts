@@ -525,11 +525,17 @@ export class AppImportExportService {
               where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
             });
             versionDbId = byRefId?.id;
-          } else if (resolvedId && parentBranchId) {
-            // UNPINNED: prefer the module's branch-local row (matches the parent app's
-            // branch). Falls back to the default-branch row to mirror resolveModuleRef's
-            // runtime behavior so unpinned exports stay portable when the parent's
-            // branch lacks a module row (e.g. module added after the branch was created).
+          }
+
+          // Fall through to branch-local resolution when:
+          //   - The pin didn't resolve (cross-workspace import where module_reference_id
+          //     from the source workspace doesn't exist locally), OR
+          //   - The module ref was unpinned (empty versionIdentifier).
+          // Without this fallthrough, an unresolvable pin causes export() to run without
+          // a version_id filter, pulling ALL app_versions (including stubs on other
+          // branches) into the serialized module — breaking the one-version-per-branch
+          // git contract.
+          if (!versionDbId && resolvedId && parentBranchId) {
             const branchRow = await manager.findOne(AppVersion, {
               where: { appId: resolvedId, branchId: parentBranchId, isStub: false },
               order: { createdAt: 'DESC' },
