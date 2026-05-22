@@ -71,7 +71,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
   const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
   const openPageEditPopover = useStore((state) => state.openPageEditPopover);
-  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.appId);
 
   const [page, setPage] = useState(editingPage || props?.page);
 
@@ -110,8 +110,12 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   const [appOptionsLoading, setAppOptionsLoading] = useState(true);
 
   const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
-  const isInvalid =
-    type === 'app' && page?.targetCorelationId && !isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
+  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
+    page?.targetCorelationId,
+    linkedAppsMap
+  );
+  const isInvalid = type === 'app' && !isLinkValid;
+  const isTargetMissing = page?.targetCorelationId && !appOptions.some((opt) => opt.value === page?.targetCorelationId);
 
   useEffect(() => {
     setError(null);
@@ -178,7 +182,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
       const apps = await fetchApps(0);
       let appsOptionsList = [];
       apps
-        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .filter((item) => item.slug !== undefined && item.id !== appId)
         .forEach((item) => {
           appsOptionsList.push({
             label: item.name,
@@ -415,7 +419,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
                 options={appOptions}
                 search={true}
                 value={
-                  !isInvalid ? page?.targetCorelationId : { label: 'Undefined app', value: page?.targetCorelationId }
+                  isTargetMissing
+                    ? { label: 'Undefined app', value: page?.targetCorelationId }
+                    : page?.targetCorelationId
                 }
                 onChange={(value) => {
                   const selected = appOptions.find((opt) => opt.value === value);
@@ -441,7 +447,9 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
             {isInvalid && (
               <div className="tw-mt-1 tw-flex tw-items-center tw-gap-1">
                 <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
-                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">{`App ${page?.targetCorelationId} undefined. Check if the linked app exists and has a released version.`}</span>
+                <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                  {linkedAppErrorMessage}
+                </span>
               </div>
             )}
           </div>

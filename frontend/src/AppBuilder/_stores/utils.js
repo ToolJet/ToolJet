@@ -831,11 +831,22 @@ export const formatSecondsToHHMMSS = (totalSeconds) => {
   return `${hh}:${mm}:${ss}`;
 };
 
+// Validate a go-to-app link target by looking up its correlationId in the linkedApps map populated on app load.
 export function isLinkedAppValid(correlationId, linkedAppsMap) {
-  if (!correlationId) return false;
+  if (!correlationId) return { isValid: true, errorMessage: null };
 
   const entry = linkedAppsMap?.[correlationId];
-  if (!entry || !entry.currentVersionId || !entry.slug) return false;
-
-  return true;
+  if (!entry || !entry.slug) {
+    return {
+      isValid: false,
+      errorMessage: `App ${correlationId} undefined. Check if the linked app exists and has a released version.`,
+    };
+  }
+  if (!entry.currentVersionId) {
+    return {
+      isValid: false,
+      errorMessage: 'Check if the linked app has a released version.',
+    };
+  }
+  return { isValid: true, errorMessage: null };
 }

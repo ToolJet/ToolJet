@@ -676,10 +676,9 @@ export const createEventsSlice = (set, get) => ({
                 // Editor: throw → routed to debugger via logError below.
                 // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
                 if (mode !== 'view') {
-                  const isValid = isLinkedAppValid(event.correlationId, linkedApps);
+                  const { isValid, errorMessage } = isLinkedAppValid(event.correlationId, linkedApps);
                   if (!isValid) {
-                    const errMessage = `App ${event.correlationId} undefined. Check if the linked app exists and has a released version.`;
-                    throw new Error(errMessage);
+                    throw new Error(errorMessage);
                   }
                 }
 

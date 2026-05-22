@@ -15,7 +15,10 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
   const [appOptions, setAppOptions] = useState([]);
   const queryParams = event.queryParams ?? [];
 
-  const isInvalid = event.correlationId && !isLinkedAppValid(event.correlationId, linkedAppsMap);
+  const { isValid: isLinkValid, errorMessage: linkedAppErrorMessage } = isLinkedAppValid(
+    event.correlationId,
+    linkedAppsMap
+  );
 
   useEffect(() => {
     getAllApps()
@@ -58,13 +61,15 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
               );
             }}
             placeholder={isLoading ? 'Loading…' : undefined}
-            invalid={isInvalid}
+            invalid={!isLinkValid}
             errLabel="Undefined app"
           />
-          {isInvalid && (
+          {!isLinkValid && (
             <div className="tw-flex tw-items-center tw-gap-1">
               <AlertTriangle className="tw-h-[12px] tw-w-[12px] tw-shrink-0 tw-text-[var(--icon-danger)]" />
-              <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">{`App ${event.correlationId} undefined. Check if the linked app exists and has a released version.`}</span>
+              <span className="tw-font-['IBM_Plex_Sans'] tw-text-[11px]/[16px] tw-font-[400] tw-text-[var(--text-danger)]">
+                {linkedAppErrorMessage}
+              </span>
             </div>
           )}
         </div>

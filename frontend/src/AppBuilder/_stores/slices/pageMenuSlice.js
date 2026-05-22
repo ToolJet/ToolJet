@@ -624,10 +624,8 @@ export const createPageMenuSlice = (set, get) => {
         // Editor: throw → routed to debugger via logError below.
         // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
         if (currentMode !== 'view') {
-          const isValid = isLinkedAppValid(page.targetCorelationId, linkedApps);
+          const { isValid, errorMessage } = isLinkedAppValid(page.targetCorelationId, linkedApps);
           if (!isValid) {
-            const message = `App ${page.targetCorelationId} undefined. Check if the linked app exists and has a released version.`;
-
             get().debugger?.log?.({
               logLevel: 'error',
               type: 'navigation',
@@ -635,8 +633,8 @@ export const createPageMenuSlice = (set, get) => {
               key: `[Page ${page.name.replace(/ /g, '_')}]`,
               errorTarget: 'Pages',
               error: {
-                message: message,
-                description: JSON.stringify(message, null, 2),
+                message: errorMessage,
+                description: JSON.stringify(errorMessage, null, 2),
               },
               strace: 'app_level',
               timestamp: moment().toISOString(),

@@ -36,8 +36,9 @@ export const PageMenuItem = withRouter(
     const isHidden = useStore((state) => state.getPagesVisibility('canvas', page?.id));
     const isDisabled = page?.disabled ?? false;
     const linkedAppsMap = useStore((state) => state.appStore.modules[moduleId]?.linkedApps);
-    const isInvalid =
-      page?.type === 'app' && page?.targetCorelationId && !isLinkedAppValid(page?.targetCorelationId, linkedAppsMap);
+    const linkedAppValidation = page?.type === 'app' ? isLinkedAppValid(page?.targetCorelationId, linkedAppsMap) : null;
+    const linkedAppErrorMessage =
+      linkedAppValidation && !linkedAppValidation.isValid ? linkedAppValidation.errorMessage : null;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
     const hasAppPermissionPages = useStore((state) => state.license?.featureAccess?.appPermissionPages);
@@ -209,16 +210,8 @@ export const PageMenuItem = withRouter(
               {page.name}
             </OverflowTooltip>
             <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
-              {isInvalid && (
-                <ToolTip
-                  message={
-                    <>
-                      {`App ${page?.targetCorelationId} undefined.`}
-                      <br />
-                      {'Check if the linked app exists and has a released version.'}
-                    </>
-                  }
-                >
+              {linkedAppErrorMessage && (
+                <ToolTip message={linkedAppErrorMessage}>
                   <div className="d-flex align-items-center justify-content-center">
                     <AlertTriangle
                       className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"

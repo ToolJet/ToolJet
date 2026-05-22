@@ -291,7 +291,7 @@ export const EventManager = ({
     const apps = await fetchApps();
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+      .filter((item) => item.slug !== undefined && item.id !== appId)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,
@@ -1132,11 +1132,12 @@ export const EventManager = ({
               <div {...droppableProps} ref={innerRef}>
                 {events.map((event, index) => {
                   const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
-                  const isGoToAppBroken =
-                    event.event.actionId === 'go-to-app' &&
-                    event.event.correlationId &&
-                    !isLinkedAppValid(event.event.correlationId, linkedAppsMap);
-                  // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                  const goToAppValidation =
+                    event.event.actionId === 'go-to-app'
+                      ? isLinkedAppValid(event.event.correlationId, linkedAppsMap)
+                      : null;
+                  const goToAppErrorMessage =
+                    goToAppValidation && !goToAppValidation.isValid ? goToAppValidation.errorMessage : null;
                   return (
                     <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                       {renderDraggable((provided, snapshot) => {
@@ -1187,16 +1188,8 @@ export const EventManager = ({
                                         {event?.name}
                                       </TooltipContent>
                                     </Tooltip>
-                                    {isGoToAppBroken && (
-                                      <ToolTip
-                                        message={
-                                          <>
-                                            {`App ${event.event.correlationId} undefined.`}
-                                            <br />
-                                            {'Check if the linked app exists and has a released version.'}
-                                          </>
-                                        }
-                                      >
+                                    {goToAppErrorMessage && (
+                                      <ToolTip message={goToAppErrorMessage}>
                                         <AlertTriangle
                                           className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
                                           onClick={(e) => e.stopPropagation()}

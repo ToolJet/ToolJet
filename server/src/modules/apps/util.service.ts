@@ -1007,43 +1007,58 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   /**
-   * Resolve current-release info for a set of apps identified by their `co_relation_id`.
-   * Returns Map<co_relation_id, { slug, currentVersionId }>.
+   * Resolve `{ slug, currentVersionId }` for a set of apps identified by `co_relation_id`.
    *
-   * IMPORTANT: an entry is set for every app row the query returns, even when slug or currentVersionId is null.
-   * Callers distinguish "row missing" (app deleted in this workspace) from "row present, no released version"
+   * Slug source:
+   *  - Released apps  → slug from the version at `apps.current_version_id` (1:1 join).
+   *  - Unreleased apps → any non-null slug from one of the app's versions.
+   *    We only need to prove an app exists; the exact pick doesn't matter functionally.
    *
-   * @param released
-   *    When true (default), the slug is read from `app_versions` where
-   *    id = apps.current_version_id. Apps without a released version yield
-   *    `{ slug: null, currentVersionId: null }`.
-   *    When false, falls back to any non-null slug on the app so unreleased apps still
-   *    resolve a slug; `currentVersionId` still mirrors `apps.current_version_id`.
+   * An entry is set for every app row the query returns. Callers distinguish:
+   *   - row missing or row present but both null  → app doesn't exist in this workspace
+   *   - row present, `currentVersionId` null      → app exists but has no released version
    */
   async findAppDataByCorelationIds(
     coRelationIds: string[],
     organizationId: string,
-    released = true,
+    branchId?: string,
     manager?: EntityManager
   ): Promise<Map<string, { slug: string | null; currentVersionId: string | null }>> {
     const ids = Array.from(new Set((coRelationIds || []).filter(Boolean)));
     if (ids.length === 0) return new Map();
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const releasedJoin = branchId
+        ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
+        : 'released.id = app.currentVersionId';
+      const avJoin = branchId
+        ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
+        : 'av.appId = app.id AND av.slug IS NOT NULL';
+
       const qb = manager
         .createQueryBuilder(App, 'app')
+        .leftJoin(AppVersion, 'released', releasedJoin, branchId ? { branchId } : undefined)
+        .leftJoin(AppVersion, 'av', avJoin, branchId ? { branchId } : undefined)
         .where('app.co_relation_id IN (:...ids)', { ids })
         .andWhere('app.organizationId = :organizationId', { organizationId })
         .select('app.co_relation_id', 'coRelationId')
-        .addSelect('app.currentVersionId', 'currentVersionId');
+        .addSelect('app.currentVersionId', 'currentVersionId')
+        .addSelect('COALESCE(released.slug, MIN(av.slug))', 'slug')
+        .groupBy('app.co_relation_id')
+        .addGroupBy('app.currentVersionId')
+        .addGroupBy('released.slug');
 
-      if (released) {
-        qb.leftJoin(AppVersion, 'released', 'released.id = app.currentVersionId').addSelect('released.slug', 'slug');
-      } else {
-        qb.leftJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
-          .addSelect('MAX(av.slug)', 'slug')
-          .groupBy('app.co_relation_id')
-          .addGroupBy('app.currentVersionId');
+      if (branchId) {
+        qb.andWhere((sub) => {
+          const exists = sub
+            .subQuery()
+            .select('1')
+            .from(AppVersion, 'scope')
+            .where('scope.appId = app.id')
+            .andWhere('scope.branch_id = :branchId', { branchId })
+            .getQuery();
+          return 'EXISTS ' + exists;
+        });
       }
 
       const rows = await qb.getRawMany<{
@@ -1075,6 +1090,7 @@ export class AppsUtilService implements IAppsUtilService {
     pages: any[],
     events: any[],
     organizationId: string,
+    branchId?: string,
     manager?: EntityManager
   ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>> {
     const ids = new Set<string>();
@@ -1086,7 +1102,7 @@ export class AppsUtilService implements IAppsUtilService {
     }
     if (ids.size === 0) return {};
 
-    const meta = await this.findAppDataByCorelationIds(Array.from(ids), organizationId, true, manager);
+    const meta = await this.findAppDataByCorelationIds(Array.from(ids), organizationId, branchId, manager);
 
     const result: Record<string, { slug: string | null; currentVersionId: string | null }> = {};
     for (const [id, info] of meta) {

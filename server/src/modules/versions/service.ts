@@ -272,7 +272,8 @@ export class VersionService implements IVersionService {
     response['linkedApps'] = await this.appUtilService.collectLinkedAppsForResponse(
       allPages,
       allEvents,
-      app.organizationId
+      app.organizationId,
+      app.appVersions?.[0]?.branchId
     );
 
     return response;

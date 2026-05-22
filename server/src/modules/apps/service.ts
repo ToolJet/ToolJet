@@ -756,7 +756,8 @@ export class AppsService implements IAppsService {
     response['linkedApps'] = await this.appsUtilService.collectLinkedAppsForResponse(
       pagesForVersion,
       eventsForVersion,
-      app.organizationId
+      app.organizationId,
+      branchId
     );
 
     //! if editing version exists, camelize the definition

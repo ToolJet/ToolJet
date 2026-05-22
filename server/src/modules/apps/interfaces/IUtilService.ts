@@ -22,13 +22,14 @@ export interface IAppsUtilService {
   findAppDataByCorelationIds(
     coRelationIds: string[],
     organizationId: string,
-    released?: boolean,
+    branchId?: string,
     manager?: EntityManager
   ): Promise<Map<string, { slug: string | null; currentVersionId: string | null }>>;
   collectLinkedAppsForResponse(
     pages: any[],
     events: any[],
     organizationId: string,
+    branchId?: string,
     manager?: EntityManager
   ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>>;
 }
