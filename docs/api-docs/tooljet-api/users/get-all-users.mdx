@@ -19,15 +19,14 @@ Retrieves a list of all users along with their workspace permissions and group m
 <ErrorsTable errors={[
   {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
   {"status":"451","description":"EXTERNAL_API license not active on the instance."},
-  {"status":"404","description":"CE (non-EE) deployment — this endpoint is EE-only."}
+  {"status":"404","description":"Not available on Community Edition."}
 ]} />
 
 </ApiLeft>
 <ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/users?group_names=<group_names>" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json"`} />
+  -H "Authorization: Basic <access_token>"`} />
 
 <ResponseExample statusCode="200" body={`[
   {

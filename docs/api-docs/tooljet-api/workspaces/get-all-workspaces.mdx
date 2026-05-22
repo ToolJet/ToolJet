@@ -13,15 +13,14 @@ Retrieves a list of all workspaces.
 
 <ErrorsTable errors={[
   {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
-  {"status":"404","description":"CE (non-EE) deployment — this endpoint is EE-only."}
+  {"status":"404","description":"Not available on Community Edition."}
 ]} />
 
 </ApiLeft>
 <ApiRight>
 
 <RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspaces" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json"`} />
+  -H "Authorization: Basic <access_token>"`} />
 
 <ResponseExample statusCode="200" body={`[
   {
