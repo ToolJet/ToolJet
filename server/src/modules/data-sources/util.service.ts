@@ -482,6 +482,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
+        if (!branchId && name) {
+          await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
+        }
+
         const updatableParams = {
           id: dataSourceId,
           name,
@@ -492,6 +496,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         cleanObject(updatableParams);
 
         await manager.save(DataSource, updatableParams);
+
+        if (!branchId && name) {
+          await manager.update(DataSourceVersion, { dataSourceId, isDefault: true }, { name, updatedAt: new Date() });
+        }
       });
     } finally {
       this.inMemoryCacheService.clear();
