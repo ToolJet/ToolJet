@@ -350,12 +350,14 @@ const useAppData = (
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
           const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
+          const rawLinkedApps = appData?.linkedApps;
           appData = convertAllKeysToSnakeCase(appData);
 
           appData.data_queries = rawDataQueries;
           if (appData.editing_version && rawEditingVersionDataQueries) {
             appData.editing_version.data_queries = rawEditingVersionDataQueries;
           }
+          if (rawLinkedApps) appData.linkedApps = rawLinkedApps;
 
           editorEnvironment = {
             id: environmentId,
