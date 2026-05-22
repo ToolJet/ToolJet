@@ -1,11 +1,12 @@
 import React from 'react';
-import MainImage from './MainImage';
-import MainImageDark from './MainImageDark';
+import mainImage from './mainImage.svg?url';
+import mainImageDark from './mainImageDark.svg?url';
 
 const FeatImage = () => {
   // New Images are used.
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  return darkMode ? <MainImageDark /> : <MainImage />;
+
+  return <img src={darkMode ? mainImageDark : mainImage} alt="Feature" />;
 };
 
 export default FeatImage;
