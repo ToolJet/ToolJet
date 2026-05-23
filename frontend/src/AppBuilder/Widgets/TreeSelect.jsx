@@ -19,6 +19,7 @@ export const TreeSelect = ({
   const { label } = properties;
   const { visibility, disabledState, checkboxColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
+  const darkModeClass = darkMode ? 'theme-dark' : '';
   const [checked, setChecked] = useState(checkedData);
   const [expanded, setExpanded] = useState(expandedData);
   const data = isExpectedDataType(properties.data, 'array');
@@ -105,7 +106,7 @@ export const TreeSelect = ({
 
   return (
     <div
-      className="custom-checkbox-tree"
+      className={`custom-checkbox-tree ${darkModeClass}`}
       data-disabled={disabledState}
       style={{
         maxHeight: height,
