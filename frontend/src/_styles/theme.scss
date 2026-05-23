@@ -6337,6 +6337,14 @@ input.hide-input-arrows {
   }
 }
 
+.theme-dark .custom-checkbox-tree {
+  color: #d1d5db;
+
+  .react-checkbox-tree label {
+    color: #d1d5db;
+  }
+}
+
 // sso enable/disable box
 .tick-cross-info {
   .main-box {
