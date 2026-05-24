@@ -34,7 +34,7 @@
       "key": "baseUrl",
       "type": "text",
       "description": "Enter your Bilig WorkPaper formula server URL.",
-      "helpText": "For local testing, start a sidecar with <code>npm exec --package @bilig/workpaper@0.90.0 -- bilig-n8n-formula-server --port 4321</code>."
+      "helpText": "For local testing, start a sidecar with <code>npm exec --package @bilig/workpaper@0.90.8 -- bilig-n8n-formula-server --port 4321</code>."
     },
     "formulaReadbackPath": {
       "label": "Formula readback path",
