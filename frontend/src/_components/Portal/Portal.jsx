@@ -120,7 +120,7 @@ const Modal = ({
             className="codehinder-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {componentName || 'Code Editor'}
           </span>
         </div>
 
