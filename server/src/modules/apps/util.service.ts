@@ -107,6 +107,23 @@ export class AppsUtilService implements IAppsUtilService {
           if (conflictingNameVersion) {
             throw new BadRequestException('This app name is already taken.');
           }
+        } else if (branchId) {
+          // Git-sync ON + targeting a specific branch — mirror the
+          // enforce_app_versions_app_name_branch_unique trigger BEFORE the
+          // INSERT so a name clash returns a clean BadRequest instead of a
+          // mid-INSERT trigger abort (which poisons the surrounding TX).
+          const conflictingBranchVersion = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin(App, 'app', 'app.id = av.appId')
+            .where('av.app_name = :appName', { appName: name })
+            .andWhere('av.branch_id = :branchId', { branchId })
+            .andWhere('av.version_type = :versionType', { versionType: AppVersionType.BRANCH })
+            .andWhere('app.organization_id = :organizationId', { organizationId: user.organizationId })
+            .andWhere('app.type = :type', { type })
+            .getOne();
+          if (conflictingBranchVersion) {
+            throw new BadRequestException('This app name is already taken.');
+          }
         }
       }
 
@@ -166,8 +183,7 @@ export class AppsUtilService implements IAppsUtilService {
             await manager.save(
               AppVersion,
               manager.create(AppVersion, {
-                // name: uuidv4(),
-                name: type === APP_TYPES.WORKFLOW ? 'v1' : workspaceBranch!.name,
+                name: type === APP_TYPES.WORKFLOW ? 'v1' : uuidv4(),
                 appId: app.id,
                 definition: {},
                 currentEnvironmentId: firstPriorityEnv.id,

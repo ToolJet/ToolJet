@@ -105,6 +105,22 @@ export class AppsService implements IAppsService {
         }
       }
 
+      // Reject app creation on the default branch when branching is enabled.
+      // Apps must be authored on feature branches and merged in; creating
+      // directly on main would bypass the git-sync review flow entirely.
+      if (type !== APP_TYPES.WORKFLOW && branchId) {
+        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+        if (orgGit?.isBranchingEnabled) {
+          const targetBranch = await manager.findOne(WorkspaceBranch, {
+            where: { id: branchId, organizationId: user.organizationId },
+            select: ['id', 'isDefault'],
+          });
+          if (targetBranch?.isDefault) {
+            throw new BadRequestException('Apps cannot be created on the default branch. Switch to a feature branch.');
+          }
+        }
+      }
+
       // Metadata (name/slug/icon) is written directly during creation —
       // appsUtilService.create routes to apps.* for workflows and to app_versions for
       // non-workflows. No follow-up update call needed.

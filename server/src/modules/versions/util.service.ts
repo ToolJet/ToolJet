@@ -199,24 +199,14 @@ export class VersionUtilService implements IVersionUtilService {
     // fails so the column is never NULL on the inserted row.
     const firstPriorityEnv = await this.appEnvironmentUtilService.get(parentApp.organizationId, null, true, manager);
 
-    // Step 1: name with `_draft` suffix, plus `_N` on (name, app_id) collision.
-    const baseName = `${sourceVersion?.name ?? appVersion.name}_draft`;
-    let candidateName = baseName;
-    let suffix = 1;
-    while (
-      await manager.findOne(AppVersion, {
-        where: { appId: appVersion.appId, name: candidateName },
-        select: ['id'],
-      })
-    ) {
-      candidateName = `${baseName}_${suffix}`;
-      suffix += 1;
-    }
-
+    // Step 1: random UUID name for the new draft. Mirrors branch-version
+    // naming (apps/util.service.ts) — drafts are internal records that the
+    // user names later via the save-version dialog, so any unique value is
+    // fine. UUID is collision-free, so no _N suffix loop is needed.
     const newDraft = await manager.save(
       AppVersion,
       manager.create(AppVersion, {
-        name: candidateName,
+        name: uuid(),
         appId: appVersion.appId,
         status: AppVersionStatus.DRAFT,
         versionType: AppVersionType.VERSION,
