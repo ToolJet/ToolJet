@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Bilig WorkPaper datasource",
+  "description": "A schema defining Bilig WorkPaper datasource",
+  "type": "api",
+  "source": {
+    "name": "Bilig WorkPaper",
+    "kind": "bilig_workpaper",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "baseUrl": {
+        "type": "string"
+      },
+      "formulaReadbackPath": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "baseUrl": {
+      "value": "http://localhost:4321"
+    },
+    "formulaReadbackPath": {
+      "value": "/api/workpaper/n8n/forecast"
+    }
+  },
+  "properties": {
+    "baseUrl": {
+      "label": "Base URL",
+      "key": "baseUrl",
+      "type": "text",
+      "description": "Enter your Bilig WorkPaper formula server URL.",
+      "helpText": "For local testing, start a sidecar with <code>npm exec --package @bilig/workpaper@0.86.1 -- bilig-n8n-formula-server --port 4321</code>."
+    },
+    "formulaReadbackPath": {
+      "label": "Formula readback path",
+      "key": "formulaReadbackPath",
+      "type": "text",
+      "description": "POST endpoint for formula readback.",
+      "helpText": "Default: /api/workpaper/n8n/forecast"
+    }
+  },
+  "required": ["baseUrl"]
+}
