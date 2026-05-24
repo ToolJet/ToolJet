@@ -7,7 +7,7 @@ Bilig WorkPaper lets ToolJet apps call a workbook formula service from datasourc
 Start a Bilig WorkPaper formula server before testing the datasource:
 
 ```bash
-npm exec --package @bilig/workpaper@0.86.1 -- bilig-n8n-formula-server --port 4321
+npm exec --package @bilig/workpaper@0.90.0 -- bilig-n8n-formula-server --port 4321
 ```
 
 Use `http://localhost:4321` as the datasource base URL. The default formula-readback path is `/api/workpaper/n8n/forecast`.
