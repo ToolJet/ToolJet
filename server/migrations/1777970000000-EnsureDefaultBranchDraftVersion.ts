@@ -103,7 +103,7 @@ export class EnsureDefaultBranchDraftVersion1777970000000 implements MigrationIn
             app_rec.default_branch_id,
             published_rec.co_relation_id,
             published_rec.id,
-            false,
+            true,
             NOW(),
             NOW()
           );
