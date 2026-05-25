@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
@@ -22,6 +22,8 @@ import { ColorSwatches } from '@/modules/Appbuilder/components';
 import { getColumnIcon } from './utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useColumnManager, useActionButtonManager, usePopoverState } from './hooks';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 // Helper function to get display text for column type
 const getColumnTypeDisplayText = (columnType) => {
@@ -104,8 +106,17 @@ export const Table = (props) => {
     activeIndex: activeColumnPopoverIndex,
     isRootCloseEnabled,
     togglePopover: handleToggleColumnPopover,
+    closePopover: closeColumnPopover,
     setRootCloseBlocker: setColumnPopoverRootCloseBlocker,
   } = usePopoverState();
+
+  const isQueryPaneExpanded = useStore((state) => state.queryPanel.isQueryPaneExpanded, shallow);
+
+  useEffect(() => {
+    if (isQueryPaneExpanded && activeColumnPopoverIndex !== null) {
+      closeColumnPopover();
+    }
+  }, [isQueryPaneExpanded]);
 
   // Event handlers
   const handleDragEnd = useCallback(
@@ -145,8 +156,7 @@ export const Table = (props) => {
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',
-          maxHeight: resolveReferences(column.isEditable) ? '100vh' : 'inherit',
-          zIndex: '9999',
+          zIndex: 11,
         }}
       >
         <ColumnPopoverContent
@@ -517,11 +527,33 @@ export const Table = (props) => {
                                 >
                                   <OverlayTrigger
                                     trigger="click"
-                                    placement="left"
-                                    flip={true}
+                                    show={activeColumnPopoverIndex === index}
+                                    placement="left-start"
+                                    flip={false}
                                     rootClose={isRootCloseEnabled}
                                     overlay={renderColumnPopover(item, index)}
                                     onToggle={(show) => handleToggleColumnPopover(index, show)}
+                                    popperConfig={{
+                                      modifiers: [
+                                        {
+                                          name: 'computeStyles',
+                                          options: { gpuAcceleration: false },
+                                        },
+                                        {
+                                          name: 'preventOverflow',
+                                          options: { padding: 0 },
+                                        },
+                                        {
+                                          name: 'pinToEditorTop',
+                                          enabled: true,
+                                          phase: 'beforeWrite',
+                                          requires: ['computeStyles'],
+                                          fn: ({ state }) => {
+                                            state.styles.popper.top = '48px';
+                                          },
+                                        },
+                                      ],
+                                    }}
                                   >
                                     <div className="table-column-lists">
                                       <List.Item
