@@ -271,7 +271,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 >
                   {environmentLoadingState !== 'loading' && (
                     <SuspenseCountProvider
-                      key={pageLoader ? 'loading' : currentPageId}
+                      key={currentPageId}
                       disabled={pageLoader}
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
@@ -292,6 +292,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       ) : (
                         <DesktopLayout
@@ -316,6 +317,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       )}
                     </SuspenseCountProvider>

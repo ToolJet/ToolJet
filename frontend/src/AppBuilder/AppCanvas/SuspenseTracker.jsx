@@ -89,10 +89,10 @@ export const TrackedSuspense = ({ fallback = null, children }) => {
 };
 
 // Loading overlay shown while lazy components are resolving
-export const SuspenseLoadingOverlay = ({ darkMode }) => {
+export const SuspenseLoadingOverlay = ({ darkMode, pageLoader = false }) => {
   const isLoading = useSuspenseLoading();
 
-  if (!isLoading) return null;
+  if (!isLoading && !pageLoader) return null;
 
   return (
     <div
