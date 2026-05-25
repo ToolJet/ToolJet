@@ -60,6 +60,10 @@ export class PullAppDto {
   @IsOptional()
   @IsString()
   tagName?: string;
+
+  @IsOptional()
+  @IsString()
+  tagDescription?: string;
 }
 
 export class EnsureDraftDto {

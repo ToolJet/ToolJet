@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { shallow } from 'zustand/shallow';
 import { toast } from 'react-hot-toast';
@@ -10,6 +10,10 @@ import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
+import { IconRefresh } from '@tabler/icons-react';
+import { Button } from '@/components/ui/Button/Button';
+import { gitSyncService } from '@/_services/git_sync.service';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
@@ -68,6 +72,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     refreshVersions,
   } = useVersionManagerStore();
 
+  const { currentBranch, pullApp: pullAppAction } = useWorkspaceBranchesStore(
+    (state) => ({ currentBranch: state.currentBranch, pullApp: state.actions.pullApp }),
+    shallow
+  );
+
   const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
@@ -77,6 +86,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const [openMenuVersionId, setOpenMenuVersionId] = useState(null);
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
+  const [gitVersionStatus, setGitVersionStatus] = useState(new Map());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isPullingVersion, setIsPullingVersion] = useState(null);
 
   // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes.
   // Also refresh the version list immediately so VersionActionButtons reflect the new
@@ -147,6 +159,24 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     }
   }
 
+  const mergedVersions = useMemo(() => {
+    const gitOnlyItems = [];
+    gitVersionStatus.forEach((status, versionName) => {
+      if (!status.isLocal) {
+        if (searchQuery && !versionName.toLowerCase().includes(searchQuery.toLowerCase())) return;
+        gitOnlyItems.push({
+          id: `git-${versionName}`,
+          name: versionName,
+          versionType: 'version',
+          status: null,
+          isGitOnly: true,
+          description: status.tagDescription,
+        });
+      }
+    });
+    return [...filteredVersions, ...gitOnlyItems];
+  }, [filteredVersions, gitVersionStatus, searchQuery]);
+
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
     setDropdownOpen(false);
@@ -179,6 +209,82 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   const handleSearchChange = (query) => {
     setSearchQuery(query);
+  };
+
+  const handleRefreshFromGit = async () => {
+    if (isRefreshing) return;
+    if (!appId || !isGitSyncEnabled) return;
+    setIsRefreshing(true);
+    try {
+      const data = await gitSyncService.checkForUpdates(appId, currentBranch?.name || '');
+      const tags = data?.meta_data?.tags ?? [];
+      const newStatus = new Map();
+      tags.forEach((tag) => {
+        const versionName = tag.name.split('/').slice(1).join('/');
+        if (!versionName) return;
+        // NOTE: `versions` is scoped to the current environment. A version pulled in another
+        // environment may incorrectly appear as git-only here.
+        const isLocal = versions.some(
+          (v) => v.name === versionName && (v.versionType || v.version_type) === 'version' && v.status !== 'DRAFT'
+        );
+        console.log('Git tag found:', versionName, 'isLocal:', isLocal);
+        newStatus.set(versionName, {
+          isInGit: true,
+          isLocal,
+          tagSha: tag.commit?.sha,
+          tagName: tag.name,
+          tagDescription: tag.message?.includes(' | ')
+            ? tag.message.split(' | ')[0].trim() || undefined
+            : tag.message?.trim() || undefined,
+        });
+      });
+      setGitVersionStatus(newStatus);
+    } catch {
+      toast.error('Failed to refresh versions from git');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handlePullVersion = async (version, gitStatus) => {
+    if (!gitStatus?.tagSha) return;
+    if (!appId || isPullingVersion) return;
+    setIsPullingVersion(version.name);
+    try {
+      const result = await pullAppAction(appId, gitStatus.tagSha, version.name, gitStatus.tagDescription);
+      if (!result || !result.success) {
+        toast.error(result?.message || `Failed to pull version "${version.name}"`);
+        return;
+      }
+      const draftVersionId = result?.draftVersionId;
+      const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
+      await refreshVersions(appId, environmentToRefresh?.id);
+      toast.success(`Version "${version.name}" pulled successfully`);
+      if (draftVersionId) {
+        closeDropdown();
+        changeEditorVersionAction(
+          appId,
+          draftVersionId,
+          () => {
+            setCurrentVersionId(draftVersionId);
+          },
+          (error) => {
+            toast.error(error?.message || 'Failed to switch to pulled version');
+          }
+        );
+      } else {
+        closeDropdown();
+      }
+      setGitVersionStatus((prev) => {
+        const updated = new Map(prev);
+        updated.set(version.name, { ...gitStatus, isLocal: true });
+        return updated;
+      });
+    } catch (error) {
+      toast.error(error?.message || `Failed to pull ${version.name}`);
+    } finally {
+      setIsPullingVersion(null);
+    }
   };
 
   const handleCreateDraft = () => {
@@ -318,6 +424,34 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           </div>
         )}
 
+        {/* Versions header with Refresh — only when git sync is enabled */}
+        {isGitSyncEnabled && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              padding: '12px 16px 2px',
+            }}
+          >
+            <span className="tj-text-sm" style={{ fontWeight: 500, color: 'var(--text-default)' }}>
+              Versions
+            </span>
+            <Button
+              variant="secondary"
+              size="small"
+              leftIcon={<IconRefresh size={12} />}
+              onClick={handleRefreshFromGit}
+              disabled={isRefreshing}
+              loading={isRefreshing}
+              className={cx({ 'dark-theme theme-dark': darkMode })}
+              style={{ padding: '2px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              Refresh
+            </Button>
+          </div>
+        )}
+
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
@@ -337,7 +471,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
               <VersionItemSkeleton />
               <VersionItemSkeleton />
             </>
-          ) : filteredVersions.length === 0 ? (
+          ) : mergedVersions.length === 0 ? (
             <div
               className="d-flex align-items-center justify-content-center tj-text-sm"
               style={{
@@ -345,10 +479,14 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                 color: 'var(--text-secondary)',
               }}
             >
-              {searchQuery ? 'No versions found' : 'No versions available'}
+              {searchQuery
+                ? 'No versions found'
+                : gitVersionStatus.size === 0 && isGitSyncEnabled
+                ? 'No versions available — click Refresh to check git'
+                : 'No versions available'}
             </div>
           ) : (
-            filteredVersions.map((version) => {
+            mergedVersions.map((version) => {
               const isViewingCurrentEnvironment = selectedEnvironmentFilter?.id === currentEnvironment?.id;
               const isVersionSelected = version.id === currentVersionId && isViewingCurrentEnvironment;
 
@@ -369,6 +507,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   darkMode={darkMode}
                   openMenuVersionId={openMenuVersionId}
                   setOpenMenuVersionId={setOpenMenuVersionId}
+                  gitStatus={gitVersionStatus.get(version.name)}
+                  onPull={(v, gs) => handlePullVersion(v, gs)}
+                  isPulling={isPullingVersion === version.name}
                 />
               );
             })

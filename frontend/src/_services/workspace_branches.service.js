@@ -73,12 +73,13 @@ function pullWorkspace(sourceBranch, branchId) {
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
 }
 
-function pullApp(appId, branchId, tagSha, tagName) {
+function pullApp(appId, branchId, tagSha, tagName, tagDescription) {
   const body = {
     appId,
     ...(branchId && { branchId }),
     ...(tagSha && { tagSha }),
     ...(tagName && { tagName }),
+    ...(tagDescription && { tagDescription }),
   };
   const requestOptions = {
     method: 'POST',

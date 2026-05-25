@@ -156,11 +156,11 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async pullApp(appId, tagSha, tagName) {
+        async pullApp(appId, tagSha, tagName, tagDescription) {
           set({ isPulling: true });
           try {
             const branchId = get().activeBranchId;
-            const result = await workspaceBranchesService.pullApp(appId, branchId, tagSha, tagName);
+            const result = await workspaceBranchesService.pullApp(appId, branchId, tagSha, tagName, tagDescription);
             set({ isPulling: false });
             return result;
           } catch (error) {
