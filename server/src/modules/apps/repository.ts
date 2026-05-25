@@ -4,10 +4,6 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { DataQuery } from '@entities/data_query.entity';
-import { Component } from '@entities/component.entity';
-import { Page } from '@entities/page.entity';
-import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class AppsRepository extends Repository<App> {
@@ -75,34 +71,6 @@ export class AppsRepository extends Repository<App> {
         appVersions: { dataQueries: { id: dataQueryId }, ...(versionId ? { id: versionId } : {}) },
       },
     });
-  }
-
-  async findPublicHostAppForModuleQuery(dataQueryId: string, organizationId: string): Promise<App | null> {
-    const dataQuery = await this.dataSource.getRepository(DataQuery).findOne({
-      where: { id: dataQueryId },
-      relations: ['appVersion'],
-    });
-
-    if (!dataQuery?.appVersion?.appId) {
-      return null;
-    }
-
-    return await this.createQueryBuilder('app')
-      .innerJoin(AppVersion, 'app_version', 'app_version.app_id = app.id')
-      .innerJoin(Page, 'page', 'page.app_version_id = app_version.id')
-      .innerJoin(Component, 'component', 'component.page_id = page.id')
-      .where('component.type = :componentType', { componentType: 'ModuleViewer' })
-      .andWhere('app.organization_id = :organizationId', { organizationId })
-      .andWhere('app.is_public = true')
-      .andWhere('app.current_version_id = app_version.id')
-      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleAppId", {
-        moduleAppId: dataQuery.appVersion.appId,
-      })
-      .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = :moduleVersionId", {
-        moduleVersionId: dataQuery.appVersionId,
-      })
-      .limit(1)
-      .getOne();
   }
 
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
