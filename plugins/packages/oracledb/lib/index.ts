@@ -186,7 +186,7 @@ export default class OracledbQueryService implements QueryService {
 
   async buildConnection(sourceOptions: SourceOptions) {
     try {
-      if (sourceOptions.use_tns_alias == 'thin' && sourceOptions.wallet_file) {
+      if ((sourceOptions.use_tns_alias == 'thin' || sourceOptions.use_tns_alias == 'thick') && sourceOptions.wallet_file) {
         const base64Data = sourceOptions.wallet_file.split(',')[1] || sourceOptions.wallet_file;
         const buffer = Buffer.from(base64Data, 'base64');
 
