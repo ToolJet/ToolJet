@@ -122,6 +122,8 @@ function getEffectiveOptions(kind, options) {
   delete filtered.runOnPageLoad;
   delete filtered.runOnDependencyChange;
   delete filtered.requestConfirmation;
+  delete filtered.requestConfirmationFx;
+  delete filtered.confirmationMessage;
   delete filtered.showSuccessNotification;
   delete filtered.notificationDuration;
   delete filtered.successMessage;

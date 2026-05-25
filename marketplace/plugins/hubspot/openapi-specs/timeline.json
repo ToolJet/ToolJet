@@ -1,0 +1,2026 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "Timeline events",
+    "description" : "This feature allows an app to create and configure custom events that can show up in the timelines of certain CRM objects like contacts, companies, tickets, or deals. You'll find multiple use cases for this API in the sections below.",
+    "version" : "v3"
+  },
+  "servers" : [ {
+    "url" : "https://api.hubapi.com/"
+  } ],
+  "tags" : [ {
+    "name" : "Templates",
+    "description" : "Definitions and configuration for timeline events."
+  }, {
+    "name" : "Tokens",
+    "description" : "Specific tokens that map to CRM properties and can be used by timeline events. This is how you can use property stamping to create full CRM objects."
+  }, {
+    "name" : "Events",
+    "description" : "Events shown on a CRM object's timeline."
+  } ],
+  "paths" : {
+    "/crm/v3/timeline/events" : {
+      "post" : {
+        "tags" : [ "Events" ],
+        "summary" : "Create a single event",
+        "description" : "Creates an instance of a timeline event based on an event template. Once created, this event is immutable on the object timeline and cannot be modified. If the event template was configured to update object properties via `objectPropertyName`, this call will also attempt to updates those properties, or add them if they don't exist.",
+        "operationId" : "post-/integrators/timeline/v3/events_create",
+        "requestBody" : {
+          "description" : "The timeline event definition.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimelineEvent"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventResponse"
+                },
+                "example" : {
+                  "objectType" : "contacts",
+                  "id" : "petspot:1001298:art3mis-pup@petspot.com-004",
+                  "eventTemplateId" : "1001298",
+                  "email" : "art3mis-pup@petspot.com",
+                  "objectId" : "28001",
+                  "timestamp" : "2020-01-30T17:42:10.276Z",
+                  "tokens" : {
+                    "petName" : "Art3mis",
+                    "petColor" : "black",
+                    "petAge" : "3"
+                  },
+                  "extraData" : {
+                    "questions" : [ {
+                      "question" : "Who's a good girl?",
+                      "answer" : "Bark!"
+                    }, {
+                      "question" : "Do you wanna go on a walk?",
+                      "answer" : "Woof!"
+                    } ]
+                  },
+                  "timelineIFrame" : {
+                    "linkLabel" : "View Art3mis",
+                    "headerLabel" : "Art3mis dog",
+                    "url" : "https://my.petspot.com/pets/Art3mis",
+                    "width" : 600,
+                    "height" : 400
+                  }
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/events/batch/create" : {
+      "post" : {
+        "tags" : [ "Events" ],
+        "summary" : "Creates multiple events",
+        "description" : "Creates multiple instances of timeline events based on an event template. Once created, these event are immutable on the object timeline and cannot be modified. If the event template was configured to update object properties via `objectPropertyName`, this call will also attempt to updates those properties, or add them if they don't exist.",
+        "operationId" : "post-/integrators/timeline/v3/events/batch/create_createBatch",
+        "requestBody" : {
+          "description" : "The timeline event definition.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchInputTimelineEvent"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponseTimelineEventResponse"
+                }
+              }
+            }
+          },
+          "207" : {
+            "description" : "multiple statuses",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BatchResponseTimelineEventResponseWithErrors"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.write" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.write" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.write" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.write" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.write" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.write" ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/events/{eventTemplateId}/{eventId}" : {
+      "get" : {
+        "tags" : [ "Events" ],
+        "summary" : "Gets the event",
+        "description" : "This returns the previously created event. It contains all existing info for the event, but not necessarily the CRM object.",
+        "operationId" : "get-/integrators/timeline/v3/events/{eventTemplateId}/{eventId}_getById",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "The event ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventResponse"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/events/{eventTemplateId}/{eventId}/detail" : {
+      "get" : {
+        "tags" : [ "Events" ],
+        "summary" : "Gets the detailTemplate as rendered",
+        "description" : "This will take the `detailTemplate` from the event template and return an object rendering the specified event. If the template references `extraData` that isn't found in the event, it will be ignored and we'll render without it.",
+        "operationId" : "get-/integrators/timeline/v3/events/{eventTemplateId}/{eventId}/detail_getDetailById",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "The event ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EventDetail"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/events/{eventTemplateId}/{eventId}/render" : {
+      "get" : {
+        "tags" : [ "Events" ],
+        "summary" : "Renders the header or detail as HTML",
+        "description" : "This will take either the `headerTemplate` or `detailTemplate` from the event template and render for the specified event as HTML. If the template references `extraData` that isn't found in the event, it will be ignored and we'll render without it.",
+        "operationId" : "get-/integrators/timeline/v3/events/{eventTemplateId}/{eventId}/render_getRenderById",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "eventId",
+          "in" : "path",
+          "description" : "The event ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "detail",
+          "in" : "query",
+          "description" : "Set to 'true', we want to render the `detailTemplate` instead of the `headerTemplate`.",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "text/html" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "oauth2" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.contacts.read" ]
+        }, {
+          "oauth2_legacy" : [ "tickets" ]
+        }, {
+          "oauth2" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "timeline" ]
+        }, {
+          "oauth2" : [ "crm.objects.deals.read" ]
+        }, {
+          "private_apps_legacy" : [ "contacts" ]
+        }, {
+          "private_apps" : [ "crm.objects.contacts.read" ]
+        }, {
+          "private_apps" : [ "crm.objects.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.objects.companies.read" ]
+        }, {
+          "private_apps" : [ "crm.schemas.companies.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.companies.read" ]
+        }, {
+          "private_apps_legacy" : [ "tickets" ]
+        }, {
+          "private_apps" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2" : [ "crm.schemas.deals.read" ]
+        }, {
+          "oauth2_legacy" : [ "timeline" ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/{appId}/event-templates" : {
+      "get" : {
+        "tags" : [ "Templates" ],
+        "summary" : "List all event templates for your app",
+        "description" : "Use this to list all event templates owned by your app.",
+        "operationId" : "get-/integrators/timeline/v3/{appId}/event-templates_getAll",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionResponseTimelineEventTemplateNoPaging"
+                },
+                "example" : {
+                  "results" : [ {
+                    "id" : "15758",
+                    "objectType" : "companies",
+                    "name" : "company test",
+                    "headerTemplate" : "abcde",
+                    "tokens" : [ ]
+                  }, {
+                    "id" : "1000151",
+                    "objectType" : "deals",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "name" : "deal test",
+                    "headerTemplate" : "deal",
+                    "detailTemplate" : "Deal occurred at {{#formatDate timestamp}}{{/formatDate}}\n\ntest",
+                    "tokens" : [ {
+                      "name" : "test",
+                      "type" : "string",
+                      "createdAt" : "2020-02-12T20:58:26Z",
+                      "updatedAt" : "2020-02-12T20:58:26Z",
+                      "label" : "test",
+                      "objectPropertyName" : "test",
+                      "options" : [ ]
+                    } ]
+                  }, {
+                    "id" : "1001298",
+                    "objectType" : "contacts",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "name" : "PetSpot Registration",
+                    "headerTemplate" : "Registered for [{{petName}}](https://my.petspot.com/pets/{{petName}})",
+                    "detailTemplate" : "Registration occurred at {{#formatDate timestamp}}{{/formatDate}}\n\n#### Questions\n{{#each extraData.questions}}\n  **{{question}}**: {{answer}}\n{{/each}}\n\nEDIT",
+                    "tokens" : [ {
+                      "name" : "petAge",
+                      "type" : "number",
+                      "createdAt" : "2020-02-12T20:58:26Z",
+                      "updatedAt" : "2020-02-12T20:58:26Z",
+                      "label" : "Pet Age",
+                      "options" : [ ]
+                    }, {
+                      "name" : "petColor",
+                      "type" : "enumeration",
+                      "createdAt" : "2020-02-12T20:58:26Z",
+                      "updatedAt" : "2020-02-12T20:58:26Z",
+                      "label" : "Pet Color",
+                      "options" : [ {
+                        "value" : "black",
+                        "label" : "Black"
+                      }, {
+                        "value" : "brown",
+                        "label" : "Brown"
+                      }, {
+                        "value" : "other",
+                        "label" : "Other"
+                      }, {
+                        "value" : "white",
+                        "label" : "White"
+                      }, {
+                        "value" : "yellow",
+                        "label" : "Yellow"
+                      } ]
+                    }, {
+                      "name" : "petName",
+                      "type" : "string",
+                      "createdAt" : "2020-02-12T20:58:26Z",
+                      "updatedAt" : "2020-02-12T20:58:26Z",
+                      "label" : "Pet Name",
+                      "options" : [ ]
+                    } ]
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Create an event template for your app",
+        "description" : "Event templates define the general structure for a custom timeline event. This includes formatted copy for its heading and details, as well as any custom property definitions. The event could be something like viewing a video, registering for a webinar, or filling out a survey. A single app can define multiple event templates.\n\nEvent templates will be created for contacts by default, but they can be created for companies, tickets, and deals as well.\n\nEach event template contains its own set of tokens and `Markdown` templates. These tokens can be associated with any CRM object properties via the `objectPropertyName` field to fully build out CRM objects.\n\nYou must create an event template before you can create events.",
+        "operationId" : "post-/integrators/timeline/v3/{appId}/event-templates_create",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "The new event template definition.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimelineEventTemplateCreateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventTemplate"
+                },
+                "example" : {
+                  "id" : "1001298",
+                  "objectType" : "contacts",
+                  "createdAt" : "2020-02-12T20:58:26Z",
+                  "updatedAt" : "2020-02-12T20:58:26Z",
+                  "name" : "PetSpot Registration",
+                  "headerTemplate" : "Registered for [{{petName}}](https://my.petspot.com/pets/{{petName}})",
+                  "detailTemplate" : "Registration occurred at {{#formatDate timestamp}}{{/formatDate}}\n\n#### Questions\n{{#each extraData.questions}}\n  **{{question}}**: {{answer}}\n{{/each}}",
+                  "tokens" : [ {
+                    "name" : "petName",
+                    "type" : "string",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Name",
+                    "options" : [ ]
+                  }, {
+                    "name" : "petAge",
+                    "type" : "number",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Age",
+                    "options" : [ ]
+                  }, {
+                    "name" : "petColor",
+                    "type" : "enumeration",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Color",
+                    "options" : [ {
+                      "value" : "white",
+                      "label" : "White"
+                    }, {
+                      "value" : "black",
+                      "label" : "Black"
+                    }, {
+                      "value" : "brown",
+                      "label" : "Brown"
+                    }, {
+                      "value" : "other",
+                      "label" : "Other"
+                    } ]
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/{appId}/event-templates/{eventTemplateId}" : {
+      "get" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Gets a specific event template for your app",
+        "description" : "View the current state of a specific template and its tokens.",
+        "operationId" : "get-/integrators/timeline/v3/{appId}/event-templates/{eventTemplateId}_getById",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventTemplate"
+                },
+                "example" : {
+                  "id" : "1001298",
+                  "objectType" : "contacts",
+                  "createdAt" : "2020-02-12T20:58:26Z",
+                  "updatedAt" : "2020-02-12T20:58:26Z",
+                  "name" : "PetSpot Registration",
+                  "headerTemplate" : "Registered for [{{petName}}](https://my.petspot.com/pets/{{petName}})",
+                  "detailTemplate" : "Registration occurred at {{#formatDate timestamp}}{{/formatDate}}\n\n#### Questions\n{{#each extraData.questions}}\n  **{{question}}**: {{answer}}\n{{/each}}\n\nEDIT",
+                  "tokens" : [ {
+                    "name" : "petAge",
+                    "type" : "number",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Age",
+                    "options" : [ ]
+                  }, {
+                    "name" : "petColor",
+                    "type" : "enumeration",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Color",
+                    "options" : [ {
+                      "value" : "black",
+                      "label" : "Black"
+                    }, {
+                      "value" : "brown",
+                      "label" : "Brown"
+                    }, {
+                      "value" : "other",
+                      "label" : "Other"
+                    }, {
+                      "value" : "white",
+                      "label" : "White"
+                    }, {
+                      "value" : "yellow",
+                      "label" : "Yellow"
+                    } ]
+                  }, {
+                    "name" : "petName",
+                    "type" : "string",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Name",
+                    "options" : [ ]
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Update an existing event template",
+        "description" : "Updates an existing template and its tokens. This is primarily used to update the headerTemplate/detailTemplate, and those changes will take effect for existing events.\n\nYou can also update or replace all the tokens in the template here instead of doing individual API calls on the `/tokens` endpoint.",
+        "operationId" : "put-/integrators/timeline/v3/{appId}/event-templates/{eventTemplateId}_update",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "The updated event template definition.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimelineEventTemplateUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventTemplate"
+                },
+                "example" : {
+                  "id" : "1001298",
+                  "objectType" : "contacts",
+                  "createdAt" : "2020-02-12T20:58:26Z",
+                  "updatedAt" : "2020-02-12T20:58:26Z",
+                  "name" : "PetSpot Registration",
+                  "headerTemplate" : "Registered for [{{petName}}](https://my.petspot.com/pets/{{petName}})",
+                  "detailTemplate" : "Registration occurred at {{#formatDate timestamp}}{{/formatDate}}\n\n#### Questions\n{{#each extraData.questions}}\n  **{{question}}**: {{answer}}\n{{/each}}\n\nEDIT",
+                  "tokens" : [ {
+                    "name" : "petAge",
+                    "type" : "number",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Age",
+                    "options" : [ ]
+                  }, {
+                    "name" : "petColor",
+                    "type" : "enumeration",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Color",
+                    "options" : [ {
+                      "value" : "white",
+                      "label" : "White"
+                    }, {
+                      "value" : "black",
+                      "label" : "Black"
+                    }, {
+                      "value" : "brown",
+                      "label" : "Brown"
+                    }, {
+                      "value" : "yellow",
+                      "label" : "Yellow"
+                    }, {
+                      "value" : "other",
+                      "label" : "Other"
+                    } ]
+                  }, {
+                    "name" : "petName",
+                    "type" : "string",
+                    "createdAt" : "2020-02-12T20:58:26Z",
+                    "updatedAt" : "2020-02-12T20:58:26Z",
+                    "label" : "Pet Name",
+                    "objectPropertyName" : "firstname",
+                    "options" : [ ]
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Templates" ],
+        "summary" : "Deletes an event template for the app",
+        "description" : "This will delete the event template. All associated events will be removed from search results and the timeline UI.\n\nThis action can't be undone, so it's highly recommended that you stop using any associated events before deleting a template.",
+        "operationId" : "delete-/integrators/timeline/v3/{appId}/event-templates/{eventTemplateId}_archive",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/{appId}/event-templates/{eventTemplateId}/tokens" : {
+      "post" : {
+        "tags" : [ "Tokens" ],
+        "summary" : "Adds a token to an existing event template",
+        "description" : "Once you've defined an event template, it's likely that you'll want to define tokens for it as well. You can do this on the event template itself or update individual tokens here.\n\nEvent type tokens allow you to attach custom data to events displayed in a timeline or used for list segmentation.\n\nYou can also use `objectPropertyName` to associate any CRM object properties. This will allow you to fully build out CRM objects.\n\nToken names should be unique across the template.",
+        "operationId" : "post-/integrators/timeline/v3/{appId}/event-templates/{eventTemplateId}/tokens_create",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "The new token definition.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimelineEventTemplateToken"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventTemplateToken"
+                },
+                "example" : {
+                  "name" : "petType",
+                  "type" : "enumeration",
+                  "createdAt" : "2020-02-12T20:58:26Z",
+                  "updatedAt" : "2020-02-12T20:58:26Z",
+                  "label" : "Pet Type",
+                  "options" : [ {
+                    "value" : "dog",
+                    "label" : "Dog"
+                  }, {
+                    "value" : "cat",
+                    "label" : "Cat"
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    },
+    "/crm/v3/timeline/{appId}/event-templates/{eventTemplateId}/tokens/{tokenName}" : {
+      "put" : {
+        "tags" : [ "Tokens" ],
+        "summary" : "Updates an existing token on an event template",
+        "description" : "This will update the existing token on an event template. Name and type can't be changed on existing tokens.",
+        "operationId" : "put-/integrators/timeline/v3/{appId}/event-templates/{eventTemplateId}/tokens/{tokenName}_update",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "tokenName",
+          "in" : "path",
+          "description" : "The token name.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "The updated token definition.",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TimelineEventTemplateTokenUpdateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimelineEventTemplateToken"
+                },
+                "example" : {
+                  "name" : "petType",
+                  "type" : "enumeration",
+                  "createdAt" : "2020-02-12T20:58:26Z",
+                  "updatedAt" : "2020-02-12T20:58:26Z",
+                  "label" : "Pet Type",
+                  "options" : [ {
+                    "value" : "dog",
+                    "label" : "Dog"
+                  }, {
+                    "value" : "cat",
+                    "label" : "Cat"
+                  }, {
+                    "value" : "bird",
+                    "label" : "Bird"
+                  } ]
+                }
+              }
+            }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Tokens" ],
+        "summary" : "Removes a token from the event template",
+        "description" : "This will remove the token from an existing template. Existing events and CRM objects will still retain the token and its mapped object properties, but new ones will not.\n\nThe timeline will still display this property for older CRM objects if it's still referenced in the template `Markdown`. New events will not.\n\nAny lists or reports referencing deleted tokens will no longer return new contacts, but old ones will still exist in the lists.",
+        "operationId" : "delete-/integrators/timeline/v3/{appId}/event-templates/{eventTemplateId}/tokens/{tokenName}_archive",
+        "parameters" : [ {
+          "name" : "eventTemplateId",
+          "in" : "path",
+          "description" : "The event template ID.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "tokenName",
+          "in" : "path",
+          "description" : "The token name.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "The ID of the target app.",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No content",
+            "content" : { }
+          },
+          "default" : {
+            "$ref" : "#/components/responses/Error"
+          }
+        },
+        "security" : [ {
+          "developer_hapikey" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "TimelineEvent" : {
+        "required" : [ "eventTemplateId", "tokens" ],
+        "type" : "object",
+        "properties" : {
+          "eventTemplateId" : {
+            "type" : "string",
+            "description" : "The event template ID."
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address used for contact-specific events. This can be used to identify existing contacts, create new ones, or change the email for an existing contact (if paired with the `objectId`)."
+          },
+          "objectId" : {
+            "type" : "string",
+            "description" : "The CRM object identifier. This is required for every event other than contacts (where utk or email can be used)."
+          },
+          "utk" : {
+            "type" : "string",
+            "description" : "Use the `utk` parameter to associate an event with a contact by `usertoken`. This is recommended if you don't know a user's email, but have an identifying user token in your cookie."
+          },
+          "domain" : {
+            "type" : "string",
+            "description" : "The event domain (often paired with utk)."
+          },
+          "timestamp" : {
+            "type" : "string",
+            "description" : "The time the event occurred. If not passed in, the curren time will be assumed. This is used to determine where an event is shown on a CRM object's timeline.",
+            "format" : "date-time"
+          },
+          "tokens" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A collection of token keys and values associated with the template tokens."
+          },
+          "extraData" : {
+            "type" : "object",
+            "properties" : { },
+            "description" : "Additional event-specific data that can be interpreted by the template's markdown."
+          },
+          "timelineIFrame" : {
+            "$ref" : "#/components/schemas/TimelineEventIFrame"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "Identifier for the event. This is optional, and we recommend you do not pass this in. We will create one for you if you omit this. You can also use `{{uuid}}` anywhere in the ID to generate a unique string, guaranteeing uniqueness."
+          }
+        },
+        "description" : "The state of the timeline event.",
+        "example" : {
+          "eventTemplateId" : "1001298",
+          "email" : "art3mis-pup@petspot.com",
+          "tokens" : {
+            "petName" : "Art3mis",
+            "petAge" : 3,
+            "petColor" : "black"
+          },
+          "extraData" : {
+            "questions" : [ {
+              "question" : "Who's a good girl?",
+              "answer" : "Bark!"
+            }, {
+              "question" : "Do you wanna go on a walk?",
+              "answer" : "Woof!"
+            } ]
+          },
+          "timelineIFrame" : {
+            "linkLabel" : "View Art3mis",
+            "headerLabel" : "Art3mis dog",
+            "url" : "https://my.petspot.com/pets/Art3mis",
+            "width" : 600,
+            "height" : 400
+          }
+        }
+      },
+      "TimelineEventIFrame" : {
+        "required" : [ "headerLabel", "height", "linkLabel", "url", "width" ],
+        "type" : "object",
+        "properties" : {
+          "linkLabel" : {
+            "type" : "string",
+            "description" : "The text displaying the link that will display the iframe."
+          },
+          "headerLabel" : {
+            "type" : "string",
+            "description" : "The label of the modal window that displays the iframe contents."
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "The URI of the iframe contents."
+          },
+          "width" : {
+            "type" : "integer",
+            "description" : "The width of the modal window in pixels.",
+            "format" : "int32"
+          },
+          "height" : {
+            "type" : "integer",
+            "description" : "The height of the modal window in pixels.",
+            "format" : "int32"
+          }
+        },
+        "example" : {
+          "linkLabel" : "View Art3mis",
+          "headerLabel" : "Art3mis dog",
+          "url" : "https://my.petspot.com/pets/Art3mis",
+          "width" : 600,
+          "height" : 400
+        }
+      },
+      "StandardError" : {
+        "required" : [ "category", "context", "errors", "links", "message", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/ErrorCategory"
+          },
+          "subCategory" : {
+            "type" : "object",
+            "properties" : { }
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "category", "correlationId", "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate",
+            "example" : "An error occurred"
+          },
+          "correlationId" : {
+            "type" : "string",
+            "description" : "A unique identifier for the request. Include this value with any error reports or support tickets",
+            "format" : "uuid",
+            "example" : "aeb5f871-7f07-4993-9211-075dc63e7cbf"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "The error category"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "further information about the error",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorDetail"
+            }
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "invalidPropertyName" : [ "propertyValue" ],
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A map of link names to associated URIs containing documentation about the error or recommended remediation steps"
+          }
+        },
+        "example" : {
+          "message" : "Invalid input (details will vary based on the error)",
+          "correlationId" : "aeb5f871-7f07-4993-9211-075dc63e7cbf",
+          "category" : "VALIDATION_ERROR",
+          "links" : {
+            "knowledge-base" : "https://www.hubspot.com/products/service/knowledge-base"
+          }
+        }
+      },
+      "EventDetail" : {
+        "required" : [ "details" ],
+        "type" : "object",
+        "properties" : {
+          "details" : {
+            "type" : "string",
+            "description" : "The details Markdown rendered as HTML."
+          }
+        },
+        "description" : "The details Markdown rendered as HTML.",
+        "example" : {
+          "details" : "<p>Registration occurred at Jan 30, 2020, 1:13:25 PM</p><h4>Questions</h4><p><strong>Who&#x27;s a good kitty?</strong>: Purr...</p><p><strong>Will you stop playing with that?</strong>: Meow!</p><p>EDIT</p>"
+        }
+      },
+      "TimelineEventTemplateCreateRequest" : {
+        "required" : [ "name", "objectType", "tokens" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The template name."
+          },
+          "headerTemplate" : {
+            "type" : "string",
+            "description" : "This uses Markdown syntax with Handlebars and event-specific data to render HTML on a timeline as a header."
+          },
+          "detailTemplate" : {
+            "type" : "string",
+            "description" : "This uses Markdown syntax with Handlebars and event-specific data to render HTML on a timeline when you expand the details."
+          },
+          "tokens" : {
+            "type" : "array",
+            "description" : "A collection of tokens that can be used as custom properties on the event and to create fully fledged CRM objects.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventTemplateToken"
+            }
+          },
+          "objectType" : {
+            "type" : "string",
+            "description" : "The type of CRM object this template is for. [Contacts, companies, tickets, and deals] are supported."
+          }
+        },
+        "description" : "State of the template definition being created.",
+        "example" : {
+          "name" : "PetSpot Registration",
+          "objectType" : "contacts",
+          "headerTemplate" : "Registered for [{{petName}}](https://my.petspot.com/pets/{{petName}})",
+          "detailTemplate" : "Registration occurred at {{#formatDate timestamp}}{{/formatDate}}\n\n#### Questions\n{{#each extraData.questions}}\n  **{{question}}**: {{answer}}\n{{/each}}",
+          "tokens" : [ {
+            "name" : "petName",
+            "label" : "Pet Name",
+            "type" : "string"
+          }, {
+            "name" : "petAge",
+            "label" : "Pet Age",
+            "type" : "number"
+          }, {
+            "name" : "petColor",
+            "label" : "Pet Color",
+            "type" : "enumeration",
+            "options" : [ {
+              "value" : "white",
+              "label" : "White"
+            }, {
+              "value" : "black",
+              "label" : "Black"
+            }, {
+              "value" : "brown",
+              "label" : "Brown"
+            }, {
+              "value" : "other",
+              "label" : "Other"
+            } ]
+          } ]
+        }
+      },
+      "TimelineEventTemplateUpdateRequest" : {
+        "required" : [ "id", "name", "tokens" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The template name."
+          },
+          "headerTemplate" : {
+            "type" : "string",
+            "description" : "This uses Markdown syntax with Handlebars and event-specific data to render HTML on a timeline as a header."
+          },
+          "detailTemplate" : {
+            "type" : "string",
+            "description" : "This uses Markdown syntax with Handlebars and event-specific data to render HTML on a timeline when you expand the details."
+          },
+          "tokens" : {
+            "type" : "array",
+            "description" : "A collection of tokens that can be used as custom properties on the event and to create fully fledged CRM objects.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventTemplateToken"
+            }
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The template ID."
+          }
+        },
+        "description" : "State of the template definition being updated.",
+        "example" : {
+          "id" : "1001298",
+          "name" : "PetSpot Registration",
+          "headerTemplate" : "Registered for [{{petName}}](https://my.petspot.com/pets/{{petName}})",
+          "detailTemplate" : "Registration occurred at {{#formatDate timestamp}}{{/formatDate}}\n\n#### Questions\n{{#each extraData.questions}}\n  **{{question}}**: {{answer}}\n{{/each}}\n\nEDIT",
+          "tokens" : [ {
+            "name" : "petName",
+            "label" : "Pet Name",
+            "type" : "string",
+            "objectPropertyName" : "firstname"
+          }, {
+            "name" : "petAge",
+            "label" : "Pet Age",
+            "type" : "number"
+          }, {
+            "name" : "petColor",
+            "label" : "Pet Color",
+            "type" : "enumeration",
+            "options" : [ {
+              "value" : "white",
+              "label" : "White"
+            }, {
+              "value" : "black",
+              "label" : "Black"
+            }, {
+              "value" : "brown",
+              "label" : "Brown"
+            }, {
+              "value" : "yellow",
+              "label" : "Yellow"
+            }, {
+              "value" : "other",
+              "label" : "Other"
+            } ]
+          } ]
+        }
+      },
+      "CollectionResponseTimelineEventTemplateNoPaging" : {
+        "required" : [ "results" ],
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventTemplate"
+            }
+          }
+        }
+      },
+      "ErrorDetail" : {
+        "required" : [ "message" ],
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "description" : "A human readable message describing the error along with remediation steps where appropriate"
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "The name of the field or parameter in which the error was found."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "The status code associated with the error detail"
+          },
+          "subCategory" : {
+            "type" : "string",
+            "description" : "A specific category that contains more specific detail about the error"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            },
+            "description" : "Context about the error condition",
+            "example" : {
+              "missingScopes" : [ "scope1", "scope2" ]
+            }
+          }
+        }
+      },
+      "BatchResponseTimelineEventResponse" : {
+        "required" : [ "completedAt", "results", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the batch response. Should always be COMPLETED if processed.",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "results" : {
+            "type" : "array",
+            "description" : "Successfully created events.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventResponse"
+            }
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "description" : "The time the request occurred.",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "description" : "The time the request began processing.",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "description" : "The time the request was completed.",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "The state of the batch event request.",
+        "example" : {
+          "results" : [ {
+            "objectType" : "contacts",
+            "id" : "petspot:1001298:art3mis-pup@petspot.com-6edaa73d-d734-404d-908f-74774d58ac2b",
+            "eventTemplateId" : "1001298",
+            "email" : "art3mis-pup@petspot.com",
+            "objectId" : "28001",
+            "timestamp" : "2020-01-30T18:13:25.665Z",
+            "tokens" : {
+              "petName" : "Art3mis",
+              "petColor" : "black",
+              "petAge" : "3"
+            },
+            "extraData" : {
+              "questions" : [ {
+                "question" : "Who's a good girl?",
+                "answer" : "Bark!"
+              }, {
+                "question" : "Do you wanna go on a walk?",
+                "answer" : "Woof!"
+              } ]
+            },
+            "timelineIFrame" : {
+              "linkLabel" : "View Art3mis",
+              "headerLabel" : "Art3mis dog",
+              "url" : "https://my.petspot.com/pets/Art3mis",
+              "width" : 600,
+              "height" : 400
+            }
+          }, {
+            "objectType" : "contacts",
+            "id" : "petspot:1001298:pocket-tiger@petspot.com-0df6277b-6eba-4d1f-8c19-1994cbfaa4ca",
+            "eventTemplateId" : "1001298",
+            "email" : "pocket-tiger@petspot.com",
+            "objectId" : "28651",
+            "timestamp" : "2020-01-30T18:13:25.665Z",
+            "tokens" : {
+              "petName" : "Pocket",
+              "petColor" : "yellow",
+              "petAge" : "3"
+            },
+            "extraData" : {
+              "questions" : [ {
+                "question" : "Who's a good kitty?",
+                "answer" : "Purr..."
+              }, {
+                "question" : "Will you stop playing with that?",
+                "answer" : "Meow!"
+              } ]
+            },
+            "timelineIFrame" : {
+              "linkLabel" : "View Pocket",
+              "headerLabel" : "Pocket Tiger",
+              "url" : "https://my.petspot.com/pets/Pocket",
+              "width" : 600,
+              "height" : 400
+            }
+          } ],
+          "status" : "COMPLETE",
+          "startedAt" : "2020-01-30T18:13:24.974023Z",
+          "completedAt" : "2020-01-30T18:13:26.227559Z"
+        }
+      },
+      "BatchInputTimelineEvent" : {
+        "required" : [ "inputs" ],
+        "type" : "object",
+        "properties" : {
+          "inputs" : {
+            "type" : "array",
+            "description" : "A collection of timeline events we want to create.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEvent"
+            }
+          }
+        },
+        "description" : "Used to create timeline events in batches.",
+        "example" : {
+          "inputs" : [ {
+            "eventTemplateId" : "1001298",
+            "email" : "art3mis-pup@petspot.com",
+            "tokens" : {
+              "petName" : "Art3mis",
+              "petAge" : 3,
+              "petColor" : "black"
+            },
+            "extraData" : {
+              "questions" : [ {
+                "question" : "Who's a good girl?",
+                "answer" : "Bark!"
+              }, {
+                "question" : "Do you wanna go on a walk?",
+                "answer" : "Woof!"
+              } ]
+            },
+            "timelineIFrame" : {
+              "linkLabel" : "View Art3mis",
+              "headerLabel" : "Art3mis dog",
+              "url" : "https://my.petspot.com/pets/Art3mis",
+              "width" : 600,
+              "height" : 400
+            }
+          }, {
+            "eventTemplateId" : "1001298",
+            "email" : "pocket-tiger@petspot.com",
+            "tokens" : {
+              "petName" : "Pocket",
+              "petAge" : 3,
+              "petColor" : "yellow"
+            },
+            "extraData" : {
+              "questions" : [ {
+                "question" : "Who's a good kitty?",
+                "answer" : "Purr..."
+              }, {
+                "question" : "Will you stop playing with that?",
+                "answer" : "Meow!"
+              } ]
+            },
+            "timelineIFrame" : {
+              "linkLabel" : "View Pocket",
+              "headerLabel" : "Pocket Tiger",
+              "url" : "https://my.petspot.com/pets/Pocket",
+              "width" : 600,
+              "height" : 400
+            }
+          } ]
+        }
+      },
+      "ErrorCategory" : {
+        "required" : [ "httpStatus", "name" ],
+        "type" : "object",
+        "properties" : {
+          "httpStatus" : {
+            "type" : "string",
+            "enum" : [ "CONTINUE", "SWITCHING_PROTOCOLS", "PROCESSING", "OK", "CREATED", "ACCEPTED", "NON_AUTHORITATIVE_INFORMATION", "NO_CONTENT", "RESET_CONTENT", "PARTIAL_CONTENT", "MULTI_STATUS", "ALREADY_REPORTED", "IM_USED", "MULTIPLE_CHOICES", "MOVED_PERMANENTLY", "FOUND", "SEE_OTHER", "NOT_MODIFIED", "USE_PROXY", "TEMPORARY_REDIRECT", "PERMANENT_REDIRECT", "BAD_REQUEST", "UNAUTHORIZED", "PAYMENT_REQUIRED", "FORBIDDEN", "NOT_FOUND", "METHOD_NOT_ALLOWED", "NOT_ACCEPTABLE", "PROXY_AUTHENTICATION_REQUIRED", "REQUEST_TIMEOUT", "CONFLICT", "GONE", "LENGTH_REQUIRED", "PRECONDITION_FAILED", "REQUEST_ENTITY_TOO_LARGE", "REQUEST_URI_TOO_LONG", "UNSUPPORTED_MEDIA_TYPE", "REQUESTED_RANGE_NOT_SATISFIABLE", "EXPECTATION_FAILED", "IM_A_TEAPOT", "MISDIRECTED_REQUEST", "UNPROCESSABLE_ENTITY", "LOCKED", "FAILED_DEPENDENCY", "UPGRADE_REQUIRED", "PRECONDITION_REQUIRED", "TOO_MANY_REQUESTS", "REQUEST_HEADERS_FIELDS_TOO_LARGE", "INTERNAL_STALE_SERVICE_DISCOVERY", "UNAVAILABLE_FOR_LEGAL_REASONS", "MIGRATION_IN_PROGRESS", "INTERNAL_SERVER_ERROR", "NOT_IMPLEMENTED", "BAD_GATEWAY", "SERVICE_UNAVAILABLE", "GATEWAY_TIMEOUT", "HTTP_VERSION_NOT_SUPPORTED", "VARIANT_ALSO_NEGOTIATES", "INSUFFICIENT_STORAGE", "LOOP_DETECTED", "NOT_EXTENDED", "NETWORK_AUTHENTICATION_REQUIRED" ]
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TimelineEventTemplate" : {
+        "required" : [ "id", "name", "objectType", "tokens" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "The template name."
+          },
+          "headerTemplate" : {
+            "type" : "string",
+            "description" : "This uses Markdown syntax with Handlebars and event-specific data to render HTML on a timeline as a header."
+          },
+          "detailTemplate" : {
+            "type" : "string",
+            "description" : "This uses Markdown syntax with Handlebars and event-specific data to render HTML on a timeline when you expand the details."
+          },
+          "tokens" : {
+            "type" : "array",
+            "description" : "A collection of tokens that can be used as custom properties on the event and to create fully fledged CRM objects.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventTemplateToken"
+            }
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "The template ID."
+          },
+          "objectType" : {
+            "type" : "string",
+            "description" : "The type of CRM object this template is for. [Contacts, companies, tickets, and deals] are supported."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "The date and time that the Event Template was created, as an ISO 8601 timestamp. Will be null if the template was created before Feb 18th, 2020.",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "The date and time that the Event Template was last updated, as an ISO 8601 timestamp. Will be null if the template was created before Feb 18th, 2020.",
+            "format" : "date-time"
+          }
+        },
+        "description" : "The current state of the template definition."
+      },
+      "TimelineEventTemplateTokenOption" : {
+        "required" : [ "label", "value" ],
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TimelineEventTemplateToken" : {
+        "required" : [ "label", "name", "options", "type" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "Used for list segmentation and reporting."
+          },
+          "objectPropertyName" : {
+            "type" : "string",
+            "description" : "The name of the CRM object property. This will populate the CRM object property associated with the event. With enough of these, you can fully build CRM objects via the Timeline API."
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "If type is `enumeration`, we should have a list of options to choose from.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventTemplateTokenOption"
+            }
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name of the token referenced in the templates. This must be unique for the specific template. It may only contain alphanumeric characters, periods, dashes, or underscores (. - _)."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "The data type of the token. You can currently choose from [string, number, date, enumeration].",
+            "enum" : [ "date", "enumeration", "number", "string" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "description" : "The date and time that the Event Template Token was created, as an ISO 8601 timestamp. Will be null if the template was created before Feb 18th, 2020.",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "description" : "The date and time that the Event Template Token was last updated, as an ISO 8601 timestamp. Will be null if the template was created before Feb 18th, 2020.",
+            "format" : "date-time"
+          }
+        },
+        "description" : "State of the token definition.",
+        "example" : {
+          "name" : "petType",
+          "label" : "Pet Type",
+          "type" : "enumeration",
+          "createdAt" : "2020-02-12T20:58:26Z",
+          "updatedAt" : "2020-02-12T20:58:26Z",
+          "objectPropertyName" : "customPropertyPetType",
+          "options" : [ {
+            "value" : "dog",
+            "label" : "Dog"
+          }, {
+            "value" : "cat",
+            "label" : "Cat"
+          } ]
+        }
+      },
+      "TimelineEventResponse" : {
+        "required" : [ "eventTemplateId", "id", "objectType", "tokens" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "Identifier for the event. This should be unique to the app and event template. If you use the same ID for different CRM objects, the last to be processed will win and the first will not have a record. You can also use `{{uuid}}` anywhere in the ID to generate a unique string, guaranteeing uniqueness."
+          },
+          "eventTemplateId" : {
+            "type" : "string",
+            "description" : "The event template ID."
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The email address used for contact-specific events. This can be used to identify existing contacts, create new ones, or change the email for an existing contact (if paired with the `objectId`)."
+          },
+          "objectId" : {
+            "type" : "string",
+            "description" : "The CRM object identifier. This is required for every event other than contacts (where utk or email can be used)."
+          },
+          "utk" : {
+            "type" : "string",
+            "description" : "Use the `utk` parameter to associate an event with a contact by `usertoken`. This is recommended if you don't know a user's email, but have an identifying user token in your cookie."
+          },
+          "domain" : {
+            "type" : "string",
+            "description" : "The event domain (often paired with utk)."
+          },
+          "timestamp" : {
+            "type" : "string",
+            "description" : "The time the event occurred. If not passed in, the curren time will be assumed. This is used to determine where an event is shown on a CRM object's timeline.",
+            "format" : "date-time"
+          },
+          "tokens" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "A collection of token keys and values associated with the template tokens."
+          },
+          "extraData" : {
+            "type" : "object",
+            "properties" : { },
+            "description" : "Additional event-specific data that can be interpreted by the template's markdown."
+          },
+          "timelineIFrame" : {
+            "$ref" : "#/components/schemas/TimelineEventIFrame"
+          },
+          "objectType" : {
+            "type" : "string",
+            "description" : "The ObjectType associated with the EventTemplate."
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "description" : "The current state of the timeline event.",
+        "example" : {
+          "objectType" : "contacts",
+          "id" : "petspot:1001298:art3mis-pup@petspot.com-004-invalid",
+          "eventTemplateId" : "1001298",
+          "email" : "art3mis-pup@petspot.com",
+          "objectId" : "28001",
+          "timestamp" : "2020-01-30T18:37:15.569Z",
+          "tokens" : {
+            "petName" : "Art3mis",
+            "petColor" : "black",
+            "petAge" : "3"
+          },
+          "extraData" : {
+            "questions" : [ {
+              "question" : "Who's a good girl?",
+              "answer" : "Bark!"
+            }, {
+              "question" : "Do you wanna go on a walk?",
+              "answer" : "Woof!"
+            } ]
+          },
+          "timelineIFrame" : {
+            "linkLabel" : "View Art3mis",
+            "headerLabel" : "Art3mis dog",
+            "url" : "https://my.petspot.com/pets/Art3mis",
+            "width" : 600,
+            "height" : 400
+          }
+        }
+      },
+      "TimelineEventTemplateTokenUpdateRequest" : {
+        "required" : [ "label", "options" ],
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "description" : "Used for list segmentation and reporting."
+          },
+          "objectPropertyName" : {
+            "type" : "string",
+            "description" : "The name of the CRM object property. This will populate the CRM object property associated with the event. With enough of these, you can fully build CRM objects via the Timeline API."
+          },
+          "options" : {
+            "type" : "array",
+            "description" : "If type is `enumeration`, we should have a list of options to choose from.",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventTemplateTokenOption"
+            }
+          }
+        },
+        "description" : "State of the token definition for update requests.",
+        "example" : {
+          "label" : "petType edit",
+          "options" : [ {
+            "value" : "dog",
+            "label" : "Dog"
+          }, {
+            "value" : "cat",
+            "label" : "Cat"
+          }, {
+            "value" : "bird",
+            "label" : "Bird"
+          } ]
+        }
+      },
+      "BatchResponseTimelineEventResponseWithErrors" : {
+        "required" : [ "completedAt", "results", "startedAt", "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "CANCELED", "COMPLETE" ]
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimelineEventResponse"
+            }
+          },
+          "numErrors" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StandardError"
+            }
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "links" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "responses" : {
+      "Error" : {
+        "description" : "An error occurred.",
+        "content" : {
+          "*/*" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "oauth2_legacy" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "tickets" : "Read and write tickets",
+              "timeline" : "Create timeline events"
+            }
+          }
+        }
+      },
+      "developer_hapikey" : {
+        "type" : "apiKey",
+        "name" : "hapikey",
+        "in" : "query"
+      },
+      "oauth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://app.hubspot.com/oauth/authorize",
+            "tokenUrl" : "https://api.hubapi.com/oauth/v1/token",
+            "scopes" : {
+              "crm.schemas.contacts.write" : " ",
+              "crm.objects.contacts.write" : " ",
+              "crm.schemas.companies.write" : " ",
+              "crm.objects.companies.write" : " ",
+              "crm.objects.deals.write" : " ",
+              "crm.schemas.deals.write" : " ",
+              "crm.objects.contacts.read" : " ",
+              "crm.schemas.contacts.read" : " ",
+              "crm.schemas.companies.read" : " ",
+              "crm.objects.companies.read" : " ",
+              "crm.objects.deals.read" : " ",
+              "crm.schemas.deals.read" : " "
+            }
+          }
+        }
+      },
+      "private_apps_legacy" : {
+        "type" : "apiKey",
+        "name" : "private-app-legacy",
+        "in" : "header"
+      },
+      "private_apps" : {
+        "type" : "apiKey",
+        "name" : "private-app",
+        "in" : "header"
+      }
+    }
+  },
+  "x-hubspot-available-client-libraries" : [ "PHP", "Node", "Python", "Ruby" ]
+}
