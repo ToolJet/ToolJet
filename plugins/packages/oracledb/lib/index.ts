@@ -606,6 +606,10 @@ export default class OracledbQueryService implements QueryService {
         await (conn as any).close();
       }
     } else {
+       if (sourceOptions.allow_dynamic_connection_parameters) {
+        sourceOptions.host = (queryOptions as any).host || sourceOptions.host;
+        sourceOptions.database = (queryOptions as any).database || sourceOptions.database;
+      }
       const checkCache = !sourceOptions.allow_dynamic_connection_parameters;
       const conn = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
       try {
