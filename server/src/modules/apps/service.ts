@@ -55,7 +55,6 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
@@ -82,7 +81,6 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository,
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
     protected readonly organizationEnvRegistryService: GitSyncEnvUtilService
@@ -104,6 +102,22 @@ export class AppsService implements IAppsService {
             where: { organizationId: user.organizationId, isDefault: true },
           });
           branchId = defaultBranch?.id;
+        }
+      }
+
+      // Reject app creation on the default branch when branching is enabled.
+      // Apps must be authored on feature branches and merged in; creating
+      // directly on main would bypass the git-sync review flow entirely.
+      if (type !== APP_TYPES.WORKFLOW && branchId) {
+        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+        if (orgGit?.isBranchingEnabled) {
+          const targetBranch = await manager.findOne(WorkspaceBranch, {
+            where: { id: branchId, organizationId: user.organizationId },
+            select: ['id', 'isDefault'],
+          });
+          if (targetBranch?.isDefault) {
+            throw new BadRequestException('Apps cannot be created on the default branch. Switch to a feature branch.');
+          }
         }
       }
 
@@ -790,19 +804,6 @@ export class AppsService implements IAppsService {
       response['should_freeze_editor'] = shouldFreezeEditor;
       // Check if editing version is a draft
       const editingVersion = response['editing_version'];
-      const isDraft = editingVersion?.status === 'DRAFT';
-
-      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
-      // AppGitSync may be keyed by app.id (legacy) or co_relation_id (platform git sync).
-      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
-      }
-      if (appGit && !isDraft) {
-        // Only apply git-based freezing for non-draft versions
-        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
-      }
 
       // Modules also freeze when the editing version is non-draft, regardless of git state
       if (app.type === APP_TYPES.MODULE && editingVersion?.status && editingVersion.status !== AppVersionStatus.DRAFT) {

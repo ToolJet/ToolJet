@@ -8,7 +8,6 @@ import { PluginsModule } from '@modules/plugins/module';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
 
@@ -62,7 +61,6 @@ export class GitSyncModule extends SubModule {
       providers: [
         OrganizationGitSyncRepository,
         VersionRepository,
-        AppGitRepository,
         BaseGitUtilService,
         BaseGitSyncService,
         GitSyncService,

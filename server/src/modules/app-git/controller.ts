@@ -5,7 +5,6 @@ import {
   AppGitPullDto,
   AppGitPullUpdateDto,
   AppGitPushDto,
-  AppGitUpdateDto,
   RenameAppOrVersionDto,
 } from '@modules/app-git/dto';
 import { MODULES } from '@modules/app/constants/modules';
@@ -27,10 +26,10 @@ export class AppGitController {
 
   @InitFeature(FEATURE_KEY.GIT_SYNC_APP)
   @UseGuards(JwtAuthGuard)
-  @Post('gitpush/:appGitId/:versionId')
+  @Post('gitpush/:appId/:versionId')
   async gitSyncApp(
     @User() user,
-    @Param('appGitId') appGitId: string,
+    @Param('appId') appId: string,
     @Body() appGitPushBody: AppGitPushDto
   ): Promise<any> {
     throw new NotFoundException();
@@ -74,16 +73,6 @@ export class AppGitController {
     @User() user: UserEntity,
     @Param('appId') appId: string,
     @Body() renameAppOrVersionDto: RenameAppOrVersionDto
-  ) {
-    throw new NotFoundException();
-  }
-
-  @InitFeature(FEATURE_KEY.GIT_APP_CONFIGS_UPDATE)
-  @Put(':appId/configs')
-  async updateAppGitConfigs(
-    @User() user: UserEntity,
-    @Param('appId') appId: string,
-    @Body() updateAppGitDto: AppGitUpdateDto
   ) {
     throw new NotFoundException();
   }

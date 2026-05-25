@@ -11,7 +11,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
   const { moduleId } = useModuleContext();
-  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, appGit] = useStore(
+  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
@@ -19,7 +19,6 @@ function EditAppName() {
       state.appStore.modules[moduleId].app.creationMode,
       state.selectedVersion,
       state.orgGit,
-      state.appGit,
     ],
     shallow
   );
@@ -29,20 +28,18 @@ function EditAppName() {
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-  const isAppCommittedToGit = !!appGit?.id;
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType !== 'branch';
-  const isRenameDisabled = !isGitSyncEnabled
-    ? false
-    : !isAppCommittedToGit
-    ? !isDraftVersion
-    : !isDraftVersion || isOnDefaultBranch;
+  // Workspace-level git sync: every app in a git-enabled org participates in git.
+  // Default branch is read-only (rename must happen on a feature branch); rename also
+  // requires a draft version regardless of git state.
+  const isRenameDisabled = !isGitSyncEnabled ? false : !isDraftVersion || isOnDefaultBranch;
 
   const getDisabledTooltipMessage = () => {
-    if (isGitSyncEnabled && isAppCommittedToGit && isOnDefaultBranch) {
+    if (isGitSyncEnabled && isOnDefaultBranch) {
       return "Renaming isn't allowed on default branch. Switch branch to update name.";
     }
     if (!isDraftVersion && isGitSyncEnabled) {
