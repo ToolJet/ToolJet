@@ -114,7 +114,7 @@ describe("MySQL", () => {
         verifyDSConnection("failed", "Access denied for user");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidPort);
-        verifyDSConnection("failed", "connect ETIMEDOUT");
+        verifyDSConnection("failed", "Connection test failed: connect ECONNREFUSED");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidDatabase);
         verifyDSConnection("failed", "Unknown database 'nonexistent_database'");

@@ -14,6 +14,9 @@ export default class AnthropicService implements QueryService {
         case Operation.Chat:
           result = await getChatCompletion(anthropicClient, queryOptions);
           break;
+        case Operation.ChatV2:
+          result = await getChatCompletion(anthropicClient, queryOptions);
+          break;
 
         /*case Operation.Vision:
           result = await getVisionCompletion(anthropicClient, queryOptions);

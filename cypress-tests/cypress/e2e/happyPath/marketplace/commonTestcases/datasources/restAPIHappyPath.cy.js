@@ -42,7 +42,7 @@ describe("Data source Rest API", () => {
       "have.text",
       Cypress.env("marketplace_action")
         ? "All data sources (48)"
-        : "All data sources (47)"
+        : "All data sources (48)"
     );
     cy.get('[data-cy="commonlyused-datasource-button"]').should(
       "have.text",
@@ -820,7 +820,7 @@ describe("Data source Rest API", () => {
  *   - Pre-condition: Data source created via API with auth_type "none"
  *   - Steps: Navigate to global data sources page → Verify data source category counts → Click on REST API data source → Verify form sections and fields → Cycle through authentication types (None, Basic, Bearer, OAuth 2.0) → Verify authorization code grant type fields → Verify client credentials grant type fields → Verify SSL and general settings → Save data source
  *   - Expected:
- *     - Data source list header shows correct count (e.g., "All data sources (47)")
+ *     - Data source list header shows correct count (e.g., "All data sources (48)")
  *     - Category buttons show correct counts: Commonly used (5), Databases (18/20), APIs (23), Cloud Storages (4)
  *     - Credentials section, Base URL, Headers, URL Parameters, Body, Cookies sections are visible with key/value inputs, delete buttons, and add more buttons
  *     - Basic auth: Username and Password fields visible with Edit button

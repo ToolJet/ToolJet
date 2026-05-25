@@ -25,6 +25,7 @@ describe("Instance login", () => {
         resetInstanceDomain(false);
         cy.reload();
         openInstanceSettings();
+        cy.wait(1000);
         cy.get(ssoSelector.instanceLoginListItem).click();
 
         cy.get(commonSelectors.breadcrumbHeaderTitle("settings")).should(($el) => {
