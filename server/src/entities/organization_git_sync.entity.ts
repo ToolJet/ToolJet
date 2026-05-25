@@ -5,12 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
-  JoinTable,
-  OneToMany,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { AppGitSync } from './app_git_sync.entity';
 import { Organization } from './organization.entity';
 import { OrganizationGitSsh } from './gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from './gitsync_entities/organization_git_https.entity';
@@ -49,18 +46,6 @@ export class OrganizationGitSync extends BaseEntity {
 
   // Not persisted — populated at runtime from OrganizationEnvRegistryService
   envGitProvider: GITConnectionType | null;
-
-  @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
-  @JoinTable({
-    name: 'app_git_sync',
-    joinColumn: {
-      name: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'organization_git_id',
-    },
-  })
-  appGitSync: AppGitSync[];
 
   @OneToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })

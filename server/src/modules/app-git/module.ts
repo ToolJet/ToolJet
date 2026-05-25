@@ -8,7 +8,6 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { VersionModule } from '@modules/versions/module';
 import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { AppGitRepository } from './repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
@@ -65,7 +64,6 @@ export class AppGitModule extends SubModule {
       controllers: isMainImport ? [AppGitController] : [],
       providers: [
         OrganizationGitSyncRepository,
-        AppGitRepository,
         AppsRepository,
         AppGitService,
         SourceControlProviderService,
