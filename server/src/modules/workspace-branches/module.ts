@@ -16,10 +16,10 @@ export class WorkspaceBranchesModule extends SubModule {
       ['controller', 'service']
     );
 
-    const { PlatformGitPullService, PlatformGitPushService } = await this.getProviders(
+    const { PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService } = await this.getProviders(
       configs,
       'platform-git-sync',
-      ['pull.service', 'push.service']
+      ['pull.service', 'push.service', 'pull-conflict-detection.service']
     );
 
     return {
@@ -33,8 +33,8 @@ export class WorkspaceBranchesModule extends SubModule {
         await BackgroundProcessorModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
-      providers: [WorkspaceBranchService, FeatureAbilityFactory, PlatformGitPullService, PlatformGitPushService],
-      exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService],
+      providers: [WorkspaceBranchService, FeatureAbilityFactory, PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService],
+      exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService],
     };
   }
 }
