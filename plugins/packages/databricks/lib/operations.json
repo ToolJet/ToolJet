@@ -348,6 +348,18 @@
           "height": "150px",
           "editorType": "extendedSingleLine",
           "placeholder": "{{ [ ] }}"
+        },
+        "allow_multiple_updates": {
+          "label": "Allow this query to update multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, a single record entry can update more than one row"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that updates zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a record entry that matches no rows is still treated as successful"
         }
       },
       "bulk_upsert_pkey": {
@@ -383,6 +395,18 @@
           "height": "150px",
           "editorType": "extendedSingleLine",
           "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        },
+        "allow_multiple_updates": {
+          "label": "Allow this query to upsert multiple rows",
+          "key": "allow_multiple_updates",
+          "type": "toggle",
+          "description": "When enabled, a single record entry can affect more than one row"
+        },
+        "zero_records_as_success": {
+          "label": "Consider query that upserts zero records as success",
+          "key": "zero_records_as_success",
+          "type": "toggle",
+          "description": "When enabled, a record entry that matches no rows is still treated as successful"
         }
       }
     }

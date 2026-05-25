@@ -671,25 +671,25 @@ export default class Databricks implements QueryService {
     try {
       const safeSearch = search.replace(/'/g, "''");
       const safeCatalog = sourceOptions.default_catalog?.replace(/`/g, '``');
-      const infoSchema = safeCatalog ? `\`${safeCatalog}\`.information_schema` : 'information_schema';
+      const catalogPrefix = safeCatalog ? `\`${safeCatalog}\`.` : '';
       const schemaFilter = sourceOptions.default_schema
         ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
         : '';
       const searchFilter = safeSearch ? `AND table_name LIKE '%${safeSearch}%' ` : '';
-      const baseWhere = `table_type = 'BASE TABLE' ${schemaFilter}${searchFilter}`;
+      const baseWhere = `table_type NOT IN ('VIEW', 'MATERIALIZED_VIEW') ${schemaFilter}${searchFilter}`;
 
       if (limit) {
         const offset = ((page || 1) - 1) * limit;
 
         const countOp: IOperation = await session.executeStatement(
-          `SELECT COUNT(*) AS cnt FROM ${infoSchema}.tables WHERE ${baseWhere}`,
+          `SELECT COUNT(*) AS cnt FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere}`,
           { runAsync: true, queryTimeout: new Int64(10000) }
         );
         const countRows = await countOp.fetchAll();
         const totalCount = Number((countRows as any[])?.[0]?.cnt ?? (countRows as any[])?.[0]?.CNT ?? 0);
 
         const dataOp: IOperation = await session.executeStatement(
-          `SELECT table_name FROM ${infoSchema}.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
+          `SELECT table_name FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere} ORDER BY table_name LIMIT ${limit} OFFSET ${offset}`,
           { runAsync: true, queryTimeout: new Int64(10000) }
         );
         const dataRows = (await dataOp.fetchAll()) as any[];
@@ -702,7 +702,7 @@ export default class Databricks implements QueryService {
       }
 
       const op: IOperation = await session.executeStatement(
-        `SELECT table_name FROM ${infoSchema}.tables WHERE ${baseWhere} ORDER BY table_name`,
+        `SELECT table_name FROM ${catalogPrefix}information_schema.tables WHERE ${baseWhere} ORDER BY table_name`,
         { runAsync: true, queryTimeout: new Int64(10000) }
       );
       const rows = (await op.fetchAll()) as any[];
@@ -742,13 +742,13 @@ export default class Databricks implements QueryService {
     try {
       const safeTable = table.replace(/'/g, "''");
       const safeCatalog = sourceOptions.default_catalog?.replace(/`/g, '``');
-      const infoSchema = safeCatalog ? `\`${safeCatalog}\`.information_schema` : 'information_schema';
+      const catalogPrefix = safeCatalog ? `\`${safeCatalog}\`.` : '';
       const schemaFilter = sourceOptions.default_schema
         ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
         : '';
 
       const op: IOperation = await session.executeStatement(
-        `SELECT column_name FROM ${infoSchema}.columns WHERE table_name = '${safeTable}' ${schemaFilter} ORDER BY ordinal_position`,
+        `SELECT column_name FROM ${catalogPrefix}information_schema.columns WHERE table_name = '${safeTable}' ${schemaFilter} ORDER BY ordinal_position`,
         { runAsync: true, queryTimeout: new Int64(10000) }
       );
       const rows = (await op.fetchAll()) as any[];
@@ -997,13 +997,44 @@ export default class Databricks implements QueryService {
   }
 
   // Split backtick-quoted dotted identifiers: `a.b.c` → `a`.`b`.`c`
+  // Only matches whitespace-free content to avoid false positives on SQL tokens
+  // like `id` = source.`id` where the gap between two identifiers contains a dot.
   private _fixDottedIdentifiers(sql: string): string {
-    return sql.replace(/`([^`]*\.[^`]*)`/g, (_, inner) =>
+    return sql.replace(/`([^`\s]+\.[^`\s]+)`/g, (_, inner) =>
       inner
         .split('.')
         .map((p: string) => `\`${p.replace(/`/g, '``')}\``)
         .join('.')
     );
+  }
+
+  // Build a Databricks MERGE INTO query from column-value pairs.
+  // Databricks does not support MySQL's INSERT ... ON DUPLICATE KEY UPDATE syntax.
+  private _buildDatabricksMergeQuery(
+    table: string,
+    primaryKeys: string[],
+    colPairs: { column: string; value: unknown }[]
+  ): { query: string; params: unknown[] } {
+    const nonPkCols = colPairs.filter((c) => !primaryKeys.includes(c.column));
+    const params = colPairs.map((c) => c.value);
+
+    const selectParts = colPairs.map((c) => `? AS \`${c.column}\``);
+    const onParts = primaryKeys.map((pk) => `target.\`${pk}\` = source.\`${pk}\``);
+    const insertCols = colPairs.map((c) => `\`${c.column}\``).join(', ');
+    const insertVals = colPairs.map((c) => `source.\`${c.column}\``).join(', ');
+
+    let sql = `MERGE INTO \`${table}\` AS target`;
+    sql += ` USING (SELECT ${selectParts.join(', ')}) AS source`;
+    sql += ` ON (${onParts.join(' AND ')})`;
+
+    if (nonPkCols.length > 0) {
+      const updateSet = nonPkCols.map((c) => `target.\`${c.column}\` = source.\`${c.column}\``).join(', ');
+      sql += ` WHEN MATCHED THEN UPDATE SET ${updateSet}`;
+    }
+
+    sql += ` WHEN NOT MATCHED THEN INSERT (${insertCols}) VALUES (${insertVals})`;
+
+    return { query: sql, params };
   }
 
   // Execute a built SQL string (with params substituted) using the appropriate auth path.
@@ -1094,40 +1125,25 @@ export default class Databricks implements QueryService {
     const authType = sourceOptions['authentication_type'] || 'personal_access_token';
 
     if (authType === 'oauth_u2m') {
-      await this._executeGuiSql(sourceOptions, 'BEGIN', [], userId, isAppPublic);
-      try {
-        let totalRowsAffected = 0;
-        for (const { query, params } of queries) {
-          const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
-          const rowsAffected = this._getRowsAffected(rows);
-          if (!options.allow_multiple_updates && rowsAffected > 1) {
-            throw new QueryError(
-              'Multiple rows affected',
-              `Query ${options.operationLabel} more than one row. Enable "Allow this Query to modify multiple rows" to permit this.`,
-              {}
-            );
-          }
-          if (!options.zero_records_as_success && rowsAffected === 0) {
-            throw new QueryError('No rows affected', `No rows were ${options.operationLabel}.`, {});
-          }
-          totalRowsAffected += rowsAffected;
+      // The Statement API creates a new session per call — transaction state cannot persist
+      // across requests. Queries are executed sequentially; per-row guards are still enforced.
+      let totalRowsAffected = 0;
+      for (const { query, params } of queries) {
+        const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+        const rowsAffected = this._getRowsAffected(rows);
+        if (!options.allow_multiple_updates && rowsAffected > 1) {
+          throw new QueryError(
+            'Multiple rows affected',
+            `Query ${options.operationLabel} more than one row. Enable "Allow this Query to modify multiple rows" to permit this.`,
+            {}
+          );
         }
-        await this._executeGuiSql(sourceOptions, 'COMMIT', [], userId, isAppPublic);
-        return { status: 'ok', data: { rowsAffected: totalRowsAffected } };
-      } catch (err) {
-        try {
-          await this._executeGuiSql(sourceOptions, 'ROLLBACK', [], userId, isAppPublic);
-        } catch (_) {}
-        if (err instanceof QueryError || err instanceof OAuthUnauthorizedClientError) throw err;
-        const errorMessage = err.message || 'An unknown error occurred';
-        const errorDetails: any = {};
-        if (err) {
-          errorDetails.code = err.code ?? null;
-          errorDetails.sqlState = err.sqlState ?? null;
-          errorDetails.data = err.data ?? null;
+        if (!options.zero_records_as_success && rowsAffected === 0) {
+          throw new QueryError('No rows affected', `No rows were ${options.operationLabel}.`, {});
         }
-        throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+        totalRowsAffected += rowsAffected;
       }
+      return { status: 'ok', data: { rowsAffected: totalRowsAffected } };
     }
 
     // PAT — use DBSQLClient session to guarantee atomicity
@@ -1135,7 +1151,7 @@ export default class Databricks implements QueryService {
     const session: IDBSQLSession = await client.openSession();
     let txStarted = false;
     try {
-      const beginOp: IOperation = await session.executeStatement('BEGIN', {
+      const beginOp: IOperation = await session.executeStatement('BEGIN TRANSACTION', {
         runAsync: true,
         queryTimeout: new Int64(10000),
       });
@@ -1239,6 +1255,15 @@ export default class Databricks implements QueryService {
       case 'list_rows': {
         const { list_rows, limit, offset } = queryOptions;
         const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
+
+        // Databricks SQL (ANSI strict) requires every SELECT expression to be either in
+        // GROUP BY or wrapped in an aggregate. MySQL allows SELECT * with GROUP BY; Databricks
+        // does not. Derive fields from group_by columns so the SELECT is limited to only
+        // grouped + aggregated expressions.
+        const groupByColumns = group_by ? ((Object.values(group_by) as any[]).flat().filter(Boolean) as string[]) : [];
+        const fields =
+          groupByColumns.length > 0 ? groupByColumns.map((col) => ({ name: String(col), table: '' })) : undefined;
+
         const { query, params } = qb.listRows(table, {
           where_filters,
           order_filters,
@@ -1246,6 +1271,7 @@ export default class Databricks implements QueryService {
           group_by,
           limit,
           offset,
+          fields,
         }) as { query: string; params: unknown[] };
         const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
         return { status: 'ok', data: rows };
@@ -1286,10 +1312,16 @@ export default class Databricks implements QueryService {
       case 'upsert_rows': {
         const { primary_key_columns, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { columns } = queryOptions.upsert_rows || {};
-        const { query, params } = qb.upsertRows(table, { primary_key_columns, columns }) as {
-          query: string;
-          params: unknown[];
-        };
+        const pkeyArr = Array.isArray(primary_key_columns)
+          ? primary_key_columns
+          : [String(primary_key_columns || '')].filter(Boolean);
+        const colPairs = Object.values(columns || {})
+          .filter((c: any) => c?.column?.trim())
+          .map((c: any) => ({ column: String(c.column).trim(), value: c.value }));
+        if (colPairs.length === 0) {
+          throw new QueryError('Columns required', 'At least one column must be specified for upsert', {});
+        }
+        const { query, params } = this._buildDatabricksMergeQuery(table, pkeyArr, colPairs);
         return this._executeGuiWriteQuery(
           sourceOptions,
           query,
@@ -1383,10 +1415,13 @@ export default class Databricks implements QueryService {
         if (!records || records.length === 0) {
           throw new QueryError('Records required', 'No records provided for bulk upsert', {});
         }
-        const { queries } = qb.bulkUpsertWithPrimaryKey(table, {
-          primary_key: primary_key_columns,
-          row_upsert: records,
-        }) as { queries: { query: string; params: unknown[] }[] };
+        const pkeyArr = Array.isArray(primary_key_columns)
+          ? primary_key_columns
+          : [String(primary_key_columns || '')].filter(Boolean);
+        const queries = records.map((record) => {
+          const colPairs = Object.entries(record).map(([col, val]) => ({ column: col, value: val }));
+          return this._buildDatabricksMergeQuery(table, pkeyArr, colPairs);
+        });
         return this._executeBulkQueriesInTransaction(
           sourceOptions,
           queries,
