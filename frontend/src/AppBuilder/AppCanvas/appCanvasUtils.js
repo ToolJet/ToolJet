@@ -42,13 +42,14 @@ export const addNewWidgetToTheEditor = (
   const defaultWidth = componentData.defaultSize.width;
   const defaultHeight = componentData.defaultSize.height;
 
-  const { e } = useGridStore.getState().getGhostDragPosition();
+  const { e, frozenTargetRect } = useGridStore.getState().getGhostDragPosition();
   const subContainerWidth = canvasBoundingRect?.width;
 
   const { left: _left, top: _top } = getMouseDistanceFromParentDiv(
     e,
     parentId === 'canvas' ? 'real-canvas' : parentId,
-    parentCanvasType
+    parentCanvasType,
+    frozenTargetRect
   );
   const scrollTop = realCanvasRef?.scrollTop;
   let [left, top] = snapToGrid(subContainerWidth, _left, _top + scrollTop);
