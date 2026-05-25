@@ -27,6 +27,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
   const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const enabledSort = useTableStore((state) => state.getTableProperties(id)?.enabledSort ?? true, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -50,7 +51,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
       },
     });
     fireEvent('onHeaderClick');
-    if (header.column.getCanSort()) {
+    if (enabledSort && header.column.getCanSort()) {
       header.column.toggleSorting();
     }
   };
@@ -108,7 +109,7 @@ const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVar
           'd-flex justify-content-center w-100': header.column.columnDef.type === 'selector',
         })}
         onClick={isDataColumn ? handleHeaderClick : undefined}
-        style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
+        style={{ cursor: isDataColumn ? 'pointer' : 'default', width: '100%' }}
       >
         <div
           className={`d-flex thead-editable-icon-header-text-wrapper ${
