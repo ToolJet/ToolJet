@@ -58,13 +58,9 @@ Run this opetation to get the database schema.
         "indexPropertyLength": true,
         "indexTimestamps": true,
         "stopwords": {
-          "additions": [
-            "custom1"
-          ],
+          "additions": ["custom1"],
           "preset": "en",
-          "removals": [
-            "the"
-          ]
+          "removals": ["the"]
         }
       },
       "moduleConfig": {
@@ -79,9 +75,7 @@ Run this opetation to get the database schema.
       },
       "properties": [
         {
-          "dataType": [
-            "text"
-          ],
+          "dataType": ["text"],
           "description": "Main text field",
           "indexFilterable": true,
           "indexRangeFilters": false,
@@ -165,26 +159,88 @@ Run this opetation to get the database schema.
 <summary>**Response Example**</summary>
 
 ```json
-class:"Test_TJ"
-description:"overview of a project"
-invertedIndexConfig : {} 4 keys
-    bm25 : {} 2 keys
-    stopwords : {} 3 keys
-        usingBlockMaxWAND:true
-multiTenancyConfig : {} 3 keys
-    autoTenantActivation:false
-    autoTenantCreation:false
-    enabled:false
-shardingConfig : {} 8 keys
-    actualCount:1
-    actualVirtualCount:128
-    desiredCount:1
-    desiredVirtualCount:128
-    function:"murmur3"
-    key:"_id"
-    strategy:"hash"
-    virtualPerPhysical:128
+{
+  "class": "Project_Collection",
+  "description": "This collection contains objectives and overview of a project",
+  "invertedIndexConfig": {
+    "bm25": {
+      "b": 0.75,
+      "k1": 1.2
+    },
+    "cleanupIntervalSeconds": 60,
+    "stopwords": {
+      "additions": null,
+      "preset": "en",
+      "removals": null
+    },
+    "usingBlockMaxWAND": true
+  },
+  "moduleConfig": {},
+  "multiTenancyConfig": {
+    "autoTenantActivation": false,
+    "autoTenantCreation": false,
+    "enabled": false
+  },
+  "properties": [
+    {
+      "dataType": ["int"],
+      "indexFilterable": true,
+      "indexRangeFilters": false,
+      "indexSearchable": false,
+      "moduleConfig": {
+        "multi2multivec-weaviate": {
+          "skip": false,
+          "vectorizePropertyName": true
+        }
+      },
+      "name": "pageNumber"
+    },
+    {
+      "dataType": ["blob"],
+      "indexFilterable": false,
+      "indexRangeFilters": false,
+      "indexSearchable": false,
+      "moduleConfig": {
+        "multi2multivec-weaviate": {
+          "skip": false,
+          "vectorizePropertyName": true
+        }
+      },
+      "name": "page"
+    }
+  ],
+  "replicationConfig": {
+    "asyncEnabled": false,
+    "deletionStrategy": "TimeBasedResolution",
+    "factor": 1
+  },
+  "shardingConfig": {
+    "actualCount": 1,
+    "actualVirtualCount": 128,
+    "desiredCount": 1,
+    "desiredVirtualCount": 128,
+    "function": "murmur3",
+    "key": "_id",
+    "strategy": "hash",
+    "virtualPerPhysical": 128
+  },
+  "vectorConfig": {
+    "multi2multivec_weaviate": {
+      "vectorIndexConfig": {},
+      "vectorIndexType": "hnsw",
+      "vectorizer": {
+        "multi2multivec-weaviate": {
+          "baseURL": "https://api.embedding.weaviate.io",
+          "imageFields": ["page"],
+          "model": "ModernBERT/colmodernbert",
+          "vectorizeClassName": false
+        }
+      }
+    }
+  }
+}
 ```
+
 </details>
 
 ### Create Collection
@@ -223,102 +279,97 @@ Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/conf
 
 ```json
 {
-  "class":"users_data",
-  "description":"Stores user profile and interaction statistics for app analytics",
-  "invertedIndexConfig":{
-    "bm25":{
-      "b":0.75,
-      "k1":1.2
+  "class": "users_data",
+  "description": "Stores user profile and interaction statistics for app analytics",
+  "invertedIndexConfig": {
+    "bm25": {
+      "b": 0.75,
+      "k1": 1.2
     },
-    "cleanupIntervalSeconds":300,
-    "indexNullState":true,
-    "indexPropertyLength":true,
-    "indexTimestamps":true,
-    "stopwords":{
-      "additions":[
-        "custom1"
-      ],
-      "preset":"en",
-      "removals":[
-        "the"
-      ]
+    "cleanupIntervalSeconds": 300,
+    "indexNullState": true,
+    "indexPropertyLength": true,
+    "indexTimestamps": true,
+    "stopwords": {
+      "additions": ["custom1"],
+      "preset": "en",
+      "removals": ["the"]
     }
   },
-  "moduleConfig":{
-    "text2vec-contextionary":{
-      "vectorizeClassName":true
+  "moduleConfig": {
+    "text2vec-contextionary": {
+      "vectorizeClassName": true
     }
   },
-  "multiTenancyConfig":{
-    "autoTenantActivation":false,
-    "autoTenantCreation":false,
-    "enabled":false
+  "multiTenancyConfig": {
+    "autoTenantActivation": false,
+    "autoTenantCreation": false,
+    "enabled": false
   },
-  "properties":[
+  "properties": [
     {
-      "dataType":[
-        "text"
-      ],
-      "description":"Main text field",
-      "indexFilterable":true,
-      "indexRangeFilters":false,
-      "indexSearchable":true,
-      "name":"content",
-      "tokenization":"word"
+      "dataType": ["text"],
+      "description": "Main text field",
+      "indexFilterable": true,
+      "indexRangeFilters": false,
+      "indexSearchable": true,
+      "name": "content",
+      "tokenization": "word"
     }
   ],
-  "replicationConfig":{
-    "asyncEnabled":true,
-    "deletionStrategy":"NoAutomatedResolution",
-    "factor":1
+  "replicationConfig": {
+    "asyncEnabled": true,
+    "deletionStrategy": "NoAutomatedResolution",
+    "factor": 1
   },
-  "shardingConfig":{
-    "virtualPerPhysical":128,
-    "desiredCount":1,
-    "actualCount":1,
-    "desiredVirtualCount":128,
-    "actualVirtualCount":128,
-    "key":"_id",
-    "strategy":"hash",
-    "function":"murmur3"
+  "shardingConfig": {
+    "virtualPerPhysical": 128,
+    "desiredCount": 1,
+    "actualCount": 1,
+    "desiredVirtualCount": 128,
+    "actualVirtualCount": 128,
+    "key": "_id",
+    "strategy": "hash",
+    "function": "murmur3"
   },
-  "vectorIndexConfig":{
-    "skip":false,
-    "cleanupIntervalSeconds":300,
-    "maxConnections":64,
-    "efConstruction":128,
-    "ef":-1,
-    "dynamicEfMin":100,
-    "dynamicEfMax":500,
-    "dynamicEfFactor":8,
-    "vectorCacheMaxObjects":1000000000000,
-    "flatSearchCutoff":40000,
-    "distance":"cosine",
-    "pq":{
-      "enabled":false,
-      "bitCompression":false,
-      "segments":0,
-      "centroids":256,
-      "trainingLimit":100000,
-      "encoder":{
-        "type":"kmeans",
-        "distribution":"log-normal"
+  "vectorIndexConfig": {
+    "skip": false,
+    "cleanupIntervalSeconds": 300,
+    "maxConnections": 64,
+    "efConstruction": 128,
+    "ef": -1,
+    "dynamicEfMin": 100,
+    "dynamicEfMax": 500,
+    "dynamicEfFactor": 8,
+    "vectorCacheMaxObjects": 1000000000000,
+    "flatSearchCutoff": 40000,
+    "distance": "cosine",
+    "pq": {
+      "enabled": false,
+      "bitCompression": false,
+      "segments": 0,
+      "centroids": 256,
+      "trainingLimit": 100000,
+      "encoder": {
+        "type": "kmeans",
+        "distribution": "log-normal"
       }
     },
-    "bq":{
-      "enabled":false
+    "bq": {
+      "enabled": false
     },
-    "sq":{
-      "enabled":false,
-      "trainingLimit":100000,
-      "rescoreLimit":20
+    "sq": {
+      "enabled": false,
+      "trainingLimit": 100000,
+      "rescoreLimit": 20
     },
-    "filterStrategy":"sweeping"
+    "filterStrategy": "sweeping"
   },
-  "vectorIndexType":"hnsw",
-  "vectorizer":"none"
+  "vectorIndexType": "hnsw",
+  "vectorizer": "none"
 }
 ```
+
 </details>
 
 ### Delete Collection
@@ -346,7 +397,7 @@ Use this operation to list all the objects of a collection.
 - **Include vectors**: Specify names of the vectors to include.
 - **After**: A threshold UUID of the objects to retrieve after.
 - **Offset**: The starting index of the result window.
-- **Limit**: The maximum number of items to be returned per page. 
+- **Limit**: The maximum number of items to be returned per page.
 - **Include**: Include additional information, such as classification infos. Allowed values include: classification, vector, interpretation.
 - **Sort**: Name(s) of the property to sort by.
 - **Order**: Determines sorting direction (asc or desc).
@@ -359,21 +410,33 @@ Use this operation to list all the objects of a collection.
 
 ```json
 {
-    "deprecations":[],
-    "objects":[{
-        "class":"Test_TJ",
-        "creationTimeUnix":1739009190787,
-        "id":"296f9f17-628a-463a-b273-6ae369a3bb59",
-        "lastUpdateTimeUnix":1739009190787,
-        "properties":{
-            "content":"This is a test document stored in Weaviate.",
-            "title":"New Sample Document"
-        },
-        "vectorWeights":null
+  "deprecations": [],
+  "objects": [
+    {
+      "class": "Project_Collection",
+      "creationTimeUnix": 1779704339474,
+      "id": "91dbd10e-c88f-4371-859a-d69a292a0d30",
+      "lastUpdateTimeUnix": 1779704339474,
+      "properties": {
+        "pageNumber": 1
+      },
+      "vectorWeights": null
+    },
+    {
+      "class": "Document_Archive",
+      "creationTimeUnix": 1779704339474,
+      "id": "9af96d29-4a2b-a04a-bbcf-16cca94797cc",
+      "lastUpdateTimeUnix": 1779704339474,
+      "properties": {
+        "pageNumber": 2
+      },
+      "vectorWeights": null
     }
-    "totalResults": 2
+  ],
+  "totalResults": 2
 }
 ```
+
 </details>
 
 ### Create Object
@@ -408,6 +471,7 @@ Use this operation to create a new object within the selected collection.
     "vector":[0.12345,0.12345,.......,0.12345,0.12345]
 }
 ```
+
 </details>
 
 ### Get Object By Id
@@ -426,13 +490,14 @@ Use this operation to fetch an object using it's ID.
 
 ```json
 {
-    "class":"Test_Collection",
-    "creationTimeUnix":1738941448311,
-    "id":"550e8400-e29b-41d4-a716-446655440000",
-    "lastUpdateTimeUnix":1738941448311,
-    "vectorWeights":null
+  "class": "Test_Collection",
+  "creationTimeUnix": 1738941448311,
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "lastUpdateTimeUnix": 1738941448311,
+  "vectorWeights": null
 }
 ```
+
 </details>
 
 ### Delete Object By Id
