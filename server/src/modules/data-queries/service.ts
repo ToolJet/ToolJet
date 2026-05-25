@@ -286,7 +286,6 @@ export class DataQueriesService implements IDataQueriesService {
 
     const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
       dataSource: true,
-      appVersion: true,
     });
 
     return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
