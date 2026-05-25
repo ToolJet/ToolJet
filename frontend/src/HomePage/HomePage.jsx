@@ -1837,18 +1837,18 @@ class HomePageComponent extends React.Component {
           )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
+            title={(() => {
+              const branchState = useWorkspaceBranchesStore.getState();
+              const isBranchingEnabled =
+                branchState.orgGitConfig?.is_branching_enabled || branchState.orgGitConfig?.isBranchingEnabled;
+              const isOnDefaultBranch = branchState.currentBranch?.is_default || branchState.currentBranch?.isDefault;
+              if (isBranchingEnabled && !isOnDefaultBranch) {
+                return `Delete ${(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()}`;
+              }
+              return undefined;
+            })()}
             message={
               <>
-                {this.props.t(
-                  this.props.appType === 'workflow'
-                    ? 'homePage.deleteWorkflowAndData'
-                    : this.props.appType === 'front-end'
-                    ? 'homePage.deleteAppAndData'
-                    : deleteModuleText,
-                  {
-                    appName: appToBeDeleted?.name,
-                  }
-                )}
                 {(() => {
                   const branchState = useWorkspaceBranchesStore.getState();
                   const isBranchingEnabled =
@@ -1857,21 +1857,46 @@ class HomePageComponent extends React.Component {
                     branchState.currentBranch?.is_default || branchState.currentBranch?.isDefault;
                   if (isBranchingEnabled && !isOnDefaultBranch) {
                     return (
-                      <div className="tw-flex tw-items-start tw-gap-2 tw-mt-3">
-                        <input type="checkbox" checked disabled className="tw-mt-0.5" />
-                        <div>
-                          <span className="tw-text-sm tw-font-medium tw-text-default">Commit changes</span>
-                          <p className="tw-text-xs tw-text-tertiary tw-mt-0.5 tw-mb-0">
-                            Deletion will be committed to git automatically
-                          </p>
+                      <>
+                        <p className="tw-mb-3">
+                          The {(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()} &apos;
+                          <strong>{appToBeDeleted?.name}</strong>&apos; will be deleted from this branch. On merge to
+                          main, <strong>the app and all its associated versions</strong> will be deleted from git and
+                          cannot be retrieved. Are you sure you want to continue?
+                        </p>
+                        <div className="tw-flex tw-items-start tw-gap-2">
+                          <input type="checkbox" checked disabled className="tw-mt-0.5" />
+                          <div>
+                            <span className="tw-text-sm tw-font-medium tw-text-default">Commit changes</span>
+                            <p className="tw-text-xs tw-text-tertiary tw-mt-0.5 tw-mb-0">
+                              Delete will always be committed in git to ensure sync with ToolJet
+                            </p>
+                          </div>
                         </div>
-                      </div>
+                      </>
                     );
                   }
-                  return null;
+                  return this.props.t(
+                    this.props.appType === 'workflow'
+                      ? 'homePage.deleteWorkflowAndData'
+                      : this.props.appType === 'front-end'
+                      ? 'homePage.deleteAppAndData'
+                      : deleteModuleText,
+                    {
+                      appName: appToBeDeleted?.name,
+                    }
+                  );
                 })()}
               </>
             }
+            confirmButtonText={(() => {
+              const branchState = useWorkspaceBranchesStore.getState();
+              const isBranchingEnabled =
+                branchState.orgGitConfig?.is_branching_enabled || branchState.orgGitConfig?.isBranchingEnabled;
+              const isOnDefaultBranch = branchState.currentBranch?.is_default || branchState.currentBranch?.isDefault;
+              if (isBranchingEnabled && !isOnDefaultBranch) return 'Delete and commit';
+              return undefined;
+            })()}
             confirmButtonLoading={isDeletingApp}
             onConfirm={() => this.executeAppDeletion()}
             onCancel={() => this.cancelDeleteAppDialog()}
