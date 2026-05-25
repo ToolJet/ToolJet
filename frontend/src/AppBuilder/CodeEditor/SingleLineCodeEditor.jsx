@@ -517,13 +517,14 @@ const EditorInput = ({
           isQueryManager={isInsideQueryPane}
         />
       )}
-      <CodeHinter.Portal
-        isCopilotEnabled={false}
-        isOpen={isOpen}
-        callback={setIsOpen}
-        componentName={componentName}
-        key={componentName}
-        customComponent={renderPreview}
+        <CodeHinter.Portal
+          isCopilotEnabled={false}
+          isOpen={isOpen}
+          callback={setIsOpen}
+          componentName={componentName}
+          portalTitle={paramLabel || componentName}
+          key={componentName}
+          customComponent={renderPreview}
         forceUpdate={forceUpdate}
         optionalProps={{ styles: { height: 300 }, cls: '' }}
         darkMode={darkMode}
