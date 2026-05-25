@@ -49,14 +49,12 @@ export function WorkspaceGitCTA() {
 
   return (
     <>
-      {isOnDefaultBranch && (
-        <div className="lifecycle-cta-button">
-          <Button variant="secondary" onClick={handlePullClick} data-cy="workspace-git-pull-button">
-            <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
-            <span>Pull</span>
-          </Button>
-        </div>
-      )}
+      <div className="lifecycle-cta-button">
+        <Button variant="secondary" onClick={handlePullClick} data-cy="workspace-git-pull-button">
+          <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
+          <span>Pull</span>
+        </Button>
+      </div>
 
       {!isOnDefaultBranch && (
         <div className="lifecycle-cta-button">
