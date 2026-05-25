@@ -11,7 +11,7 @@ import {
 } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { SignupForm, SignupSuccessInfo } from './components';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 import * as envConfigs from 'config';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
@@ -166,7 +166,7 @@ const SignupPage = ({ configs, organizationId }) => {
           initialData={signingUserInfo}
         />
       )}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };

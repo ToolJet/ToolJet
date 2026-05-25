@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { OnboardingBackgroundWrapper } from '@/modules/onboarding/components';
 import { ResetPasswordForm } from '../ResetPasswordPage/components';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
@@ -31,7 +31,7 @@ const AppResetPasswordPage = () => {
   return (
     <OnboardingBackgroundWrapper
       LeftSideComponent={() => <ResetPasswordForm token={token} onResetSuccess={handleResetSuccess} />}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };
