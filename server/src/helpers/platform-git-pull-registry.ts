@@ -37,7 +37,7 @@ export interface IPlatformGitPullService {
     branchId: string,
     force?: boolean,
     coRelationIdFilter?: Set<string>
-  ): Promise<{ imported: number; skipped: number; stale: number }>;
+  ): Promise<{ imported: number; skipped: number; stale: number; outdated: number }>;
 }
 
 let _pullService: IPlatformGitPullService | null = null;

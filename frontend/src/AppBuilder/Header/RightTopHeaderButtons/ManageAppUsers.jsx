@@ -271,7 +271,7 @@ class ManageAppUsersComponent extends React.Component {
                           message={(() => {
                             const { currentBranch } = useWorkspaceBranchesStore.getState();
                             return currentBranch?.is_default || currentBranch?.isDefault
-                              ? TOOLTIP_MESSAGES.DEFAULT_BRANCH_LOCKED
+                              ? 'Master branch is locked. Switch branch to make the application public.'
                               : TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE;
                           })()}
                           placement={'top'}
