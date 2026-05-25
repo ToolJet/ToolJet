@@ -24,8 +24,8 @@
       ]
     },
     "sql": {
-      "query": {
-        "key": "query",
+      "sql_query": {
+        "key": "sql_query",
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",

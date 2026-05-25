@@ -17,8 +17,6 @@ import got, { Headers } from 'got';
 import Int64 from 'node-int64';
 
 export default class Databricks implements QueryService {
-  private static readonly PARAM_THRESHOLD = 16384;
-
   private getSourceOptionValue(source_options: any, key: string): string {
     const option = Array.isArray(source_options)
       ? source_options.find((item: any) => item.key === key)
@@ -41,14 +39,7 @@ export default class Databricks implements QueryService {
   // ──────────────────────────────────────────────────────────────────────────
 
   authUrl(source_options: SourceOptions): string {
-    const authType = this.getSourceOptionValue(source_options as any, 'authentication_type') || 'personal_access_token';
-
-    if (authType === 'oauth_u2m') {
-      return this.authUrlForOauthU2M(source_options);
-    }
-
-    // Legacy oauth2 path (backward compatibility)
-    return this.authUrlForOauth2(source_options);
+    return this.authUrlForOauthU2M(source_options);
   }
 
   private authUrlForOauthU2M(source_options: SourceOptions): string {
@@ -74,25 +65,6 @@ export default class Databricks implements QueryService {
     );
   }
 
-  private authUrlForOauth2(source_options: SourceOptions): string {
-    const workspaceHost = this.getSourceOptionValue(source_options as any, 'host');
-    const clientId = this.getSourceOptionValue(source_options as any, 'client_id');
-
-    if (!workspaceHost) throw new Error('Databricks workspace host is required for OAuth');
-    if (!clientId) throw new Error('Databricks OAuth Client ID is required');
-
-    const tooljetHost = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${tooljetHost}${subpath ? subpath : '/'}`;
-
-    return (
-      `https://${workspaceHost}/oidc/v1/authorize` +
-      `?response_type=code&client_id=${encodeURIComponent(clientId)}` +
-      `&redirect_uri=${fullUrl}oauth2/authorize` +
-      `&scope=${encodeURIComponent('all-apis offline_access')}`
-    );
-  }
-
   // ──────────────────────────────────────────────────────────────────────────
   //  accessDetailsFrom — exchanges auth code for access + refresh tokens
   // ──────────────────────────────────────────────────────────────────────────
@@ -105,13 +77,7 @@ export default class Databricks implements QueryService {
       ];
     }
 
-    const authType = this.getSourceOptionValue(source_options, 'authentication_type') || 'personal_access_token';
-
-    if (authType === 'oauth_u2m') {
-      return this.accessDetailsFromOauthU2M(authCode, source_options);
-    }
-
-    return this.accessDetailsFromOauth2(authCode, source_options);
+    return this.accessDetailsFromOauthU2M(authCode, source_options);
   }
 
   private async accessDetailsFromOauthU2M(authCode: string, source_options: any): Promise<object> {
@@ -152,6 +118,7 @@ export default class Databricks implements QueryService {
       const response = await got(tokenUrl, {
         method: 'POST',
         form: data,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
       const result = JSON.parse(response.body);
@@ -167,61 +134,15 @@ export default class Databricks implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      console.log('OAuth U2M token exchange error:', error.response?.body);
-      throw new Error('could not connect to Databricks');
-    }
-
-    return authDetails;
-  }
-
-  private async accessDetailsFromOauth2(authCode: string, source_options: any): Promise<object> {
-    const workspaceHost = this.getSourceOptionValue(source_options, 'host');
-    const clientId = this.getSourceOptionValue(source_options, 'client_id');
-    const clientSecret = this.getSourceOptionValue(source_options, 'client_secret');
-
-    if (!clientId || !clientSecret) {
-      throw new Error(`Missing OAuth credentials. ClientId: ${!!clientId}, ClientSecret: ${!!clientSecret}`);
-    }
-
-    const tokenUrl = `https://${workspaceHost}/oidc/v1/token`;
-    const host = process.env.TOOLJET_HOST;
-    const subpath = process.env.SUB_PATH;
-    const fullUrl = `${host}${subpath ? subpath : '/'}`;
-    const redirectUri = `${fullUrl}oauth2/authorize`;
-
-    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-
-    const data = {
-      code: authCode,
-      grant_type: 'authorization_code',
-      redirect_uri: redirectUri,
-      scope: 'all-apis offline_access',
-    };
-
-    const authDetails: [string, string][] = [];
-
-    try {
-      const response = await got(tokenUrl, {
-        method: 'POST',
-        form: data,
-        headers: { Authorization: `Basic ${basicAuth}` },
-      });
-
-      const result = JSON.parse(response.body);
-
-      if (response.statusCode !== 200) {
-        throw new Error('could not connect to Databricks');
+      if (error instanceof QueryError) throw error;
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (error) {
+        errorDetails.code = error.code ?? null;
+        errorDetails.sqlState = error.sqlState ?? null;
+        errorDetails.data = error.data ?? null;
       }
-
-      if (result['access_token']) {
-        authDetails.push(['access_token', result['access_token']]);
-      }
-      if (result['refresh_token']) {
-        authDetails.push(['refresh_token', result['refresh_token']]);
-      }
-    } catch (error) {
-      console.log('OAuth error response:', error.response?.body);
-      throw new Error('could not connect to Databricks');
+      throw new QueryError('could not connect to Databricks', errorMessage, errorDetails);
     }
 
     return authDetails;
@@ -239,13 +160,7 @@ export default class Databricks implements QueryService {
   // ──────────────────────────────────────────────────────────────────────────
 
   async refreshToken(sourceOptions: any, _dataSourceId: string, userId: string, isAppPublic: boolean) {
-    const authType = sourceOptions['authentication_type'] || 'personal_access_token';
-
-    if (authType === 'oauth_u2m') {
-      return this.refreshTokenForOauthU2M(sourceOptions, userId, isAppPublic);
-    }
-
-    return this.refreshTokenForOauth2(sourceOptions, userId, isAppPublic);
+    return this.refreshTokenForOauthU2M(sourceOptions, userId, isAppPublic);
   }
 
   private async refreshTokenForOauthU2M(sourceOptions: any, userId: string, isAppPublic: boolean) {
@@ -283,6 +198,7 @@ export default class Databricks implements QueryService {
       const response = await got(tokenUrl, {
         method: 'POST',
         form: data,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
       const result = JSON.parse(response.body);
@@ -311,94 +227,19 @@ export default class Databricks implements QueryService {
         );
       }
     } catch (error) {
-      console.error(
-        `Error while Databricks oauth_u2m refresh. Status: ${error.response?.statusCode}, Message: ${error.response?.body}`
-      );
+      if (error instanceof OAuthUnauthorizedClientError) throw error;
       if (error.response?.statusCode === 401 || error.response?.statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', error, { ...error });
+        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {});
       }
-      throw new QueryError(
-        'could not connect to Databricks',
-        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-        {}
-      );
-    }
-
-    return accessTokenDetails;
-  }
-
-  private async refreshTokenForOauth2(sourceOptions: any, userId: string, isAppPublic: boolean) {
-    let refreshToken: string;
-
-    const currentUserToken = sourceOptions['refresh_token']
-      ? sourceOptions
-      : getCurrentToken(sourceOptions['multiple_auth_enabled'], sourceOptions['tokenData'], userId, isAppPublic);
-
-    if (currentUserToken && currentUserToken['refresh_token']) {
-      refreshToken = currentUserToken['refresh_token'];
-    } else {
-      throw new OAuthUnauthorizedClientError(
-        'could not connect to Databricks',
-        'Refresh token not found. Please re-authenticate to continue.',
-        {}
-      );
-    }
-
-    const workspaceHost = sourceOptions['host'];
-    const clientId = sourceOptions['client_id'];
-    const clientSecret = sourceOptions['client_secret'];
-    const tokenUrl = `https://${workspaceHost}/oidc/v1/token`;
-    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-
-    const data = {
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      scope: 'all-apis offline_access',
-    };
-
-    const accessTokenDetails: Record<string, string> = {};
-
-    try {
-      const response = await got(tokenUrl, {
-        method: 'POST',
-        form: data,
-        headers: { Authorization: `Basic ${basicAuth}` },
-      });
-
-      const result = JSON.parse(response.body);
-
-      if (!(response.statusCode >= 200 && response.statusCode < 300)) {
-        throw new QueryError(
-          'could not connect to Databricks',
-          JSON.stringify({ statusCode: response?.statusCode, message: response?.body }),
-          {}
-        );
+      if (error instanceof QueryError) throw error;
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (error) {
+        errorDetails.code = error.code ?? null;
+        errorDetails.sqlState = error.sqlState ?? null;
+        errorDetails.data = error.data ?? null;
       }
-
-      if (result['access_token']) {
-        accessTokenDetails['access_token'] = result['access_token'];
-      } else {
-        throw new QueryError(
-          'access_token not found in the response',
-          {},
-          {
-            responseObject: { statusCode: response.statusCode, responseBody: response.body },
-            responseHeaders: response.headers,
-          }
-        );
-      }
-    } catch (error) {
-      console.error(
-        `Error while Databricks refresh token. Status: ${error.response?.statusCode}, Message: ${error.response?.body}`
-      );
-      if (error.response?.statusCode === 401 || error.response?.statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', error, { ...error });
-      }
-      throw new QueryError(
-        'could not connect to Databricks',
-        JSON.stringify({ statusCode: error.response?.statusCode, message: error.response?.body }),
-        {}
-      );
+      throw new QueryError('could not connect to Databricks', errorMessage, errorDetails);
     }
 
     return accessTokenDetails;
@@ -433,25 +274,6 @@ export default class Databricks implements QueryService {
       return { status: 'ok' };
     }
 
-    if (authType === 'oauth2') {
-      const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-      let accessToken: string;
-      if (isMultiAuthEnabled) {
-        const tokenData = sourceOptions['tokenData'];
-        const firstToken = Array.isArray(tokenData) ? tokenData[0] : null;
-        accessToken = firstToken?.access_token;
-      } else {
-        accessToken = sourceOptions['access_token'] as string;
-      }
-      if (!accessToken) {
-        throw new QueryError(
-          'Connection could not be established',
-          'Access token not found. Please authenticate via OAuth first.',
-          {}
-        );
-      }
-    }
-
     let result: any[];
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
@@ -462,7 +284,15 @@ export default class Databricks implements QueryService {
       });
       result = await queryOperation.fetchAll();
     } catch (error) {
-      throw new Error('Error in connection: ' + error.message);
+      if (error instanceof QueryError) throw error;
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (error) {
+        errorDetails.code = error.code ?? null;
+        errorDetails.sqlState = error.sqlState ?? null;
+        errorDetails.data = error.data ?? null;
+      }
+      throw new QueryError('Connection could not be established', errorMessage, errorDetails);
     } finally {
       await session.close();
       await client.close();
@@ -475,41 +305,14 @@ export default class Databricks implements QueryService {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  getConnection — DBSQLClient for PAT and legacy oauth2 paths
+  //  getConnection — DBSQLClient for PAT
   // ──────────────────────────────────────────────────────────────────────────
 
-  async getConnection(sourceOptions: SourceOptions, userId?: string, isAppPublic?: boolean): Promise<DBSQLClient> {
-    const authType = sourceOptions['authentication_type'] || 'personal_access_token';
-    let token: string;
-
-    if (authType === 'oauth2') {
-      const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
-      let currentUserToken: any;
-
-      if (isMultiAuthEnabled) {
-        currentUserToken = getCurrentToken(isMultiAuthEnabled, sourceOptions['tokenData'], userId, isAppPublic);
-      } else {
-        currentUserToken = sourceOptions;
-      }
-
-      const accessToken = currentUserToken?.['access_token'] || sourceOptions['access_token'];
-
-      if (!accessToken) {
-        throw new OAuthUnauthorizedClientError(
-          'Authentication required',
-          'Databricks access token not found. Please authenticate via OAuth first.',
-          {}
-        );
-      }
-      token = accessToken;
-    } else {
-      token = sourceOptions.personal_access_token;
-    }
-
+  async getConnection(sourceOptions: SourceOptions): Promise<DBSQLClient> {
     const credentials: any = {
       host: sourceOptions.host,
       path: sourceOptions.http_path,
-      token,
+      token: sourceOptions.personal_access_token,
       socketTimeout: 60 * 1000,
     };
 
@@ -521,7 +324,15 @@ export default class Databricks implements QueryService {
       });
       return client;
     } catch (error) {
-      throw new Error('Error in connection: ' + error.message);
+      if (error instanceof QueryError) throw error;
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (error) {
+        errorDetails.code = error.code ?? null;
+        errorDetails.sqlState = error.sqlState ?? null;
+        errorDetails.data = error.data ?? null;
+      }
+      throw new QueryError('Connection could not be established', errorMessage, errorDetails);
     }
   }
 
@@ -548,7 +359,7 @@ export default class Databricks implements QueryService {
       return this.runWithOauthU2M(sourceOptions, queryOptions, userId, isAppPublic);
     }
 
-    // PAT and legacy oauth2 — use DBSQLClient
+    // PAT — use DBSQLClient
     const sqlText = queryOptions.query || queryOptions.sql_query;
     const finalSql = this.isSqlParametersUsed(queryOptions)
       ? this._substituteNamedParams(
@@ -558,7 +369,7 @@ export default class Databricks implements QueryService {
       : sqlText;
 
     let result: any[];
-    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
+    const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
       const queryOperation: IOperation = await session.executeStatement(finalSql, {
@@ -567,11 +378,20 @@ export default class Databricks implements QueryService {
       });
       result = await queryOperation.fetchAll();
     } catch (error) {
+      if (error instanceof OAuthUnauthorizedClientError) throw error;
       const statusCode = error.response?.statusCode || error.code || error.statusCode;
-      if (authType === 'oauth2' && (statusCode === 401 || statusCode === 403)) {
+      if (statusCode === 401 || statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {});
       }
-      throw new QueryError('Error fetching query result', error.message, {});
+      if (error instanceof QueryError) throw error;
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (error) {
+        errorDetails.code = error.code ?? null;
+        errorDetails.sqlState = error.sqlState ?? null;
+        errorDetails.data = error.data ?? null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
       await session.close();
       await client.close();
@@ -665,12 +485,20 @@ export default class Databricks implements QueryService {
 
       return { status: 'ok', data: this.formatStatementResult(result) };
     } catch (error) {
+      if (error instanceof OAuthUnauthorizedClientError) throw error;
       const statusCode = error.response?.statusCode || error.statusCode;
       if (statusCode === 401 || statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Query could not be completed', error.message || '', {});
       }
-      if (error instanceof QueryError || error instanceof OAuthUnauthorizedClientError) throw error;
-      throw new QueryError('Error executing SQL statement', error.message, {});
+      if (error instanceof QueryError) throw error;
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (error) {
+        errorDetails.code = error.code ?? null;
+        errorDetails.sqlState = error.sqlState ?? null;
+        errorDetails.data = error.data ?? null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
@@ -757,13 +585,29 @@ export default class Databricks implements QueryService {
           );
         } catch (err) {
           if (err instanceof OAuthUnauthorizedClientError) throw err;
-          throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
+          if (err instanceof QueryError) throw err;
+          const errorMessage = err.message || 'An unknown error occurred';
+          const errorDetails: any = {};
+          if (err) {
+            errorDetails.code = err.code ?? null;
+            errorDetails.sqlState = err.sqlState ?? null;
+            errorDetails.data = err.data ?? null;
+          }
+          throw new QueryError('Could not fetch tables', errorMessage, errorDetails);
         }
       }
       try {
         return await this._fetchTables(sourceOptions, args?.search, args?.page, args?.limit, userId, isAppPublic);
       } catch (err) {
-        throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
+        if (err instanceof QueryError) throw err;
+        const errorMessage = err.message || 'An unknown error occurred';
+        const errorDetails: any = {};
+        if (err) {
+          errorDetails.code = err.code ?? null;
+          errorDetails.sqlState = err.sqlState ?? null;
+          errorDetails.data = err.data ?? null;
+        }
+        throw new QueryError('Could not fetch tables', errorMessage, errorDetails);
       }
     }
 
@@ -779,13 +623,29 @@ export default class Databricks implements QueryService {
           return await this._fetchColumnsViaRest(sourceOptions.host, accessToken, httpPath, table);
         } catch (err) {
           if (err instanceof OAuthUnauthorizedClientError) throw err;
-          throw new QueryError('Could not fetch columns', err.message || 'Unknown error', {});
+          if (err instanceof QueryError) throw err;
+          const errorMessage = err.message || 'An unknown error occurred';
+          const errorDetails: any = {};
+          if (err) {
+            errorDetails.code = err.code ?? null;
+            errorDetails.sqlState = err.sqlState ?? null;
+            errorDetails.data = err.data ?? null;
+          }
+          throw new QueryError('Could not fetch columns', errorMessage, errorDetails);
         }
       }
       try {
         return await this._fetchColumns(sourceOptions, table, userId, isAppPublic);
       } catch (err) {
-        throw new QueryError('Could not fetch columns', err.message || 'Unknown error', {});
+        if (err instanceof QueryError) throw err;
+        const errorMessage = err.message || 'An unknown error occurred';
+        const errorDetails: any = {};
+        if (err) {
+          errorDetails.code = err.code ?? null;
+          errorDetails.sqlState = err.sqlState ?? null;
+          errorDetails.data = err.data ?? null;
+        }
+        throw new QueryError('Could not fetch columns', errorMessage, errorDetails);
       }
     }
 
@@ -793,7 +653,7 @@ export default class Databricks implements QueryService {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  _fetchTables — list tables via information_schema (PAT / oauth2 only)
+  //  _fetchTables — list tables via information_schema (PAT only)
   // ──────────────────────────────────────────────────────────────────────────
 
   private async _fetchTables(
@@ -801,12 +661,12 @@ export default class Databricks implements QueryService {
     search = '',
     page?: number,
     limit?: number,
-    userId?: string,
-    isAppPublic?: boolean
+    _userId?: string,
+    _isAppPublic?: boolean
   ): Promise<
     { items: Array<{ value: string; label: string }>; totalCount: number } | Array<{ value: string; label: string }>
   > {
-    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
+    const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
       const safeSearch = search.replace(/'/g, "''");
@@ -852,8 +712,15 @@ export default class Databricks implements QueryService {
         return { value: qualified, label: qualified };
       });
     } catch (err) {
-      console.log(err, 'sus');
-      throw new QueryError('Could not fetch tables', err.message || 'Unknown error', {});
+      if (err instanceof QueryError) throw err;
+      const errorMessage = err.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (err) {
+        errorDetails.code = err.code ?? null;
+        errorDetails.sqlState = err.sqlState ?? null;
+        errorDetails.data = err.data ?? null;
+      }
+      throw new QueryError('Could not fetch tables', errorMessage, errorDetails);
     } finally {
       await session.close();
       await client.close();
@@ -861,16 +728,16 @@ export default class Databricks implements QueryService {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  //  _fetchColumns — list columns via information_schema (PAT / oauth2 only)
+  //  _fetchColumns — list columns via information_schema (PAT only)
   // ──────────────────────────────────────────────────────────────────────────
 
   private async _fetchColumns(
     sourceOptions: SourceOptions,
     table: string,
-    userId?: string,
-    isAppPublic?: boolean
+    _userId?: string,
+    _isAppPublic?: boolean
   ): Promise<Array<{ value: string; label: string }>> {
-    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
+    const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
       const safeTable = table.replace(/'/g, "''");
@@ -1123,23 +990,6 @@ export default class Databricks implements QueryService {
     return rows.length;
   }
 
-  private _computeBatchSize(records: Record<string, unknown>[]): number {
-    if (!records || records.length === 0) return 1000;
-    const sample = records.slice(0, Math.min(records.length, 100));
-    const totalParams = sample.reduce((acc, row) => acc + Object.keys(row).length, 0);
-    const avgParams = totalParams / sample.length;
-    if (avgParams === 0) return 1000;
-    return Math.max(1, Math.floor(Databricks.PARAM_THRESHOLD / avgParams));
-  }
-
-  private _splitIntoBatches<T>(records: T[], batchSize: number): T[][] {
-    const batches: T[][] = [];
-    for (let i = 0; i < records.length; i += batchSize) {
-      batches.push(records.slice(i, i + batchSize));
-    }
-    return batches;
-  }
-
   private _qualifyTableName(table: string, catalog?: string, schema?: string): string {
     if (catalog && schema) return `${catalog}.${schema}.${table}`;
     if (schema) return `${schema}.${table}`;
@@ -1215,7 +1065,7 @@ export default class Databricks implements QueryService {
     }
 
     // PAT / oauth2 — use DBSQLClient
-    const client = await this.getConnection(sourceOptions, userId, isAppPublic);
+    const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
       const op: IOperation = await session.executeStatement(finalSql, {
@@ -1224,6 +1074,121 @@ export default class Databricks implements QueryService {
       });
       const rows = await op.fetchAll();
       return Array.isArray(rows) ? (rows as any[]) : [];
+    } finally {
+      await session.close();
+      await client.close();
+    }
+  }
+
+  // Execute multiple DML queries inside a single transaction, validating per-row guards.
+  // PAT: uses DBSQLClient session for proper atomic transaction support.
+  // oauth_u2m: sends BEGIN/COMMIT/ROLLBACK as separate Statement API calls — requires
+  // the warehouse to maintain session state across requests.
+  private async _executeBulkQueriesInTransaction(
+    sourceOptions: SourceOptions,
+    queries: { query: string; params: unknown[] }[],
+    options: { allow_multiple_updates: boolean; zero_records_as_success: boolean; operationLabel: string },
+    userId?: string,
+    isAppPublic?: boolean
+  ): Promise<QueryResult> {
+    const authType = sourceOptions['authentication_type'] || 'personal_access_token';
+
+    if (authType === 'oauth_u2m') {
+      await this._executeGuiSql(sourceOptions, 'BEGIN', [], userId, isAppPublic);
+      try {
+        let totalRowsAffected = 0;
+        for (const { query, params } of queries) {
+          const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+          const rowsAffected = this._getRowsAffected(rows);
+          if (!options.allow_multiple_updates && rowsAffected > 1) {
+            throw new QueryError(
+              'Multiple rows affected',
+              `Query ${options.operationLabel} more than one row. Enable "Allow this Query to modify multiple rows" to permit this.`,
+              {}
+            );
+          }
+          if (!options.zero_records_as_success && rowsAffected === 0) {
+            throw new QueryError('No rows affected', `No rows were ${options.operationLabel}.`, {});
+          }
+          totalRowsAffected += rowsAffected;
+        }
+        await this._executeGuiSql(sourceOptions, 'COMMIT', [], userId, isAppPublic);
+        return { status: 'ok', data: { rowsAffected: totalRowsAffected } };
+      } catch (err) {
+        try {
+          await this._executeGuiSql(sourceOptions, 'ROLLBACK', [], userId, isAppPublic);
+        } catch (_) {}
+        if (err instanceof QueryError || err instanceof OAuthUnauthorizedClientError) throw err;
+        const errorMessage = err.message || 'An unknown error occurred';
+        const errorDetails: any = {};
+        if (err) {
+          errorDetails.code = err.code ?? null;
+          errorDetails.sqlState = err.sqlState ?? null;
+          errorDetails.data = err.data ?? null;
+        }
+        throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+      }
+    }
+
+    // PAT — use DBSQLClient session to guarantee atomicity
+    const client = await this.getConnection(sourceOptions);
+    const session: IDBSQLSession = await client.openSession();
+    let txStarted = false;
+    try {
+      const beginOp: IOperation = await session.executeStatement('BEGIN', {
+        runAsync: true,
+        queryTimeout: new Int64(10000),
+      });
+      await beginOp.fetchAll();
+      txStarted = true;
+
+      let totalRowsAffected = 0;
+      for (const { query, params } of queries) {
+        const finalSql = this._fixDottedIdentifiers(this._substituteParams(query, params));
+        const op: IOperation = await session.executeStatement(finalSql, {
+          runAsync: true,
+          queryTimeout: new Int64(10000),
+        });
+        const rows = (await op.fetchAll()) as any[];
+        const rowsAffected = this._getRowsAffected(rows);
+        if (!options.allow_multiple_updates && rowsAffected > 1) {
+          throw new QueryError(
+            'Multiple rows affected',
+            `Query ${options.operationLabel} more than one row. Enable "Allow this Query to modify multiple rows" to permit this.`,
+            {}
+          );
+        }
+        if (!options.zero_records_as_success && rowsAffected === 0) {
+          throw new QueryError('No rows affected', `No rows were ${options.operationLabel}.`, {});
+        }
+        totalRowsAffected += rowsAffected;
+      }
+
+      const commitOp: IOperation = await session.executeStatement('COMMIT', {
+        runAsync: true,
+        queryTimeout: new Int64(10000),
+      });
+      await commitOp.fetchAll();
+      return { status: 'ok', data: { rowsAffected: totalRowsAffected } };
+    } catch (err) {
+      if (txStarted) {
+        try {
+          const rollbackOp: IOperation = await session.executeStatement('ROLLBACK', {
+            runAsync: true,
+            queryTimeout: new Int64(10000),
+          });
+          await rollbackOp.fetchAll();
+        } catch (_) {}
+      }
+      if (err instanceof QueryError || err instanceof OAuthUnauthorizedClientError) throw err;
+      const errorMessage = err.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (err) {
+        errorDetails.code = err.code ?? null;
+        errorDetails.sqlState = err.sqlState ?? null;
+        errorDetails.data = err.data ?? null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
       await session.close();
       await client.close();
@@ -1373,60 +1338,66 @@ export default class Databricks implements QueryService {
         if (!records || records.length === 0) {
           throw new QueryError('Records required', 'No records provided for bulk insert', {});
         }
-        const batchSize = this._computeBatchSize(records);
-        const batches = this._splitIntoBatches(records, batchSize);
-        let totalRows = 0;
-        for (const batch of batches) {
-          const { query, params } = qb.bulkInsert(table, { rows_insert: batch }) as {
-            query: string;
-            params: unknown[];
-          };
-          const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
-          totalRows += this._getRowsAffected(rows);
-        }
-        return { status: 'ok', data: { rowsAffected: totalRows } };
+        const { query, params } = qb.bulkInsert(table, { rows_insert: records }) as {
+          query: string;
+          params: unknown[];
+        };
+        const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
+        return { status: 'ok', data: { rowsAffected: this._getRowsAffected(rows) } };
       }
 
       case 'bulk_update_pkey': {
-        const { primary_key_columns, records } = queryOptions;
+        const {
+          primary_key_columns,
+          records,
+          allow_multiple_updates = false,
+          zero_records_as_success = false,
+        } = queryOptions;
         if (!records || records.length === 0) {
           throw new QueryError('Records required', 'No records provided for bulk update', {});
         }
-        const batchSize = this._computeBatchSize(records);
-        const batches = this._splitIntoBatches(records, batchSize);
-        let totalRows = 0;
-        for (const batch of batches) {
-          const { queries } = qb.bulkUpdateWithPrimaryKey(table, {
-            primary_key: primary_key_columns,
-            rows_update: batch,
-          }) as { queries: { query: string; params: unknown[] }[] };
-          for (const { query, params } of queries) {
-            const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
-            totalRows += this._getRowsAffected(rows);
-          }
-        }
-        return { status: 'ok', data: { rowsAffected: totalRows } };
+        const { queries } = qb.bulkUpdateWithPrimaryKey(table, {
+          primary_key: primary_key_columns,
+          rows_update: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        return this._executeBulkQueriesInTransaction(
+          sourceOptions,
+          queries,
+          {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'updated',
+          },
+          userId,
+          isAppPublic
+        );
       }
 
       case 'bulk_upsert_pkey': {
-        const { primary_key_columns, records } = queryOptions;
+        const {
+          primary_key_columns,
+          records,
+          allow_multiple_updates = false,
+          zero_records_as_success = false,
+        } = queryOptions;
         if (!records || records.length === 0) {
           throw new QueryError('Records required', 'No records provided for bulk upsert', {});
         }
-        const batchSize = this._computeBatchSize(records);
-        const batches = this._splitIntoBatches(records, batchSize);
-        let totalRows = 0;
-        for (const batch of batches) {
-          const { queries } = qb.bulkUpsertWithPrimaryKey(table, {
-            primary_key: primary_key_columns,
-            row_upsert: batch,
-          }) as { queries: { query: string; params: unknown[] }[] };
-          for (const { query, params } of queries) {
-            const rows = await this._executeGuiSql(sourceOptions, query, params, userId, isAppPublic);
-            totalRows += this._getRowsAffected(rows);
-          }
-        }
-        return { status: 'ok', data: { rowsAffected: totalRows } };
+        const { queries } = qb.bulkUpsertWithPrimaryKey(table, {
+          primary_key: primary_key_columns,
+          row_upsert: records,
+        }) as { queries: { query: string; params: unknown[] }[] };
+        return this._executeBulkQueriesInTransaction(
+          sourceOptions,
+          queries,
+          {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'upserted',
+          },
+          userId,
+          isAppPublic
+        );
       }
 
       default:
