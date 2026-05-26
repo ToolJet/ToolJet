@@ -740,12 +740,26 @@ export default class Databricks implements QueryService {
     const client = await this.getConnection(sourceOptions);
     const session: IDBSQLSession = await client.openSession();
     try {
-      const safeTable = table.replace(/'/g, "''");
-      const safeCatalog = sourceOptions.default_catalog?.replace(/`/g, '``');
+      // table may be a qualified name: catalog.schema.table, schema.table, or just table
+      const parts = table.split('.');
+      let tableName: string;
+      let schemaName: string | undefined;
+      let catalogName: string | undefined;
+
+      if (parts.length >= 3) {
+        [catalogName, schemaName, tableName] = parts;
+      } else if (parts.length === 2) {
+        [schemaName, tableName] = parts;
+      } else {
+        tableName = parts[0];
+      }
+
+      const safeTable = tableName.replace(/'/g, "''");
+      const effectiveCatalog = catalogName || sourceOptions.default_catalog;
+      const effectiveSchema = schemaName || sourceOptions.default_schema;
+      const safeCatalog = effectiveCatalog?.replace(/`/g, '``');
       const catalogPrefix = safeCatalog ? `\`${safeCatalog}\`.` : '';
-      const schemaFilter = sourceOptions.default_schema
-        ? `AND table_schema = '${sourceOptions.default_schema.replace(/'/g, "''")}' `
-        : '';
+      const schemaFilter = effectiveSchema ? `AND table_schema = '${effectiveSchema.replace(/'/g, "''")}' ` : '';
 
       const op: IOperation = await session.executeStatement(
         `SELECT column_name FROM ${catalogPrefix}information_schema.columns WHERE table_name = '${safeTable}' ${schemaFilter} ORDER BY ordinal_position`,
