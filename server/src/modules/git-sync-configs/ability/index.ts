@@ -22,11 +22,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
   ): void {
     const { superAdmin, isAdmin } = UserAllPermissions;
     if (isAdmin || superAdmin) {
-      // Strategy-only surface (DB-only abilities moved to git-sync-configs module's
-      // FeatureAbilityFactory).
-      can(FEATURE_KEY.SAVE_PROVIDER_CONFIGS, OrganizationGitSync);
-      can(FEATURE_KEY.FINALIZE_CONFIGS, OrganizationGitSync);
-      can(FEATURE_KEY.SAVE_ENV_PROVIDER_CONFIGS, OrganizationGitSync);
+      can(FEATURE_KEY.GET_ORGANIZATION_GIT, OrganizationGitSync);
+      can(FEATURE_KEY.GET_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
+      can(FEATURE_KEY.CREATE_ORGANIZATION_GIT, OrganizationGitSync);
+      can(FEATURE_KEY.UPDATE_PROVIDER_CONFIGS, OrganizationGitSync);
+      can(FEATURE_KEY.UPDATE_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
+      can(FEATURE_KEY.DELETE_ORGANIZATION_GIT_CONFIGS, OrganizationGitSync);
+      return;
     }
+    // Non-admin baseline mirrors the legacy GitSync ability: read-only access to status.
+    can(FEATURE_KEY.GET_ORGANIZATION_GIT_STATUS, OrganizationGitSync);
   }
 }
