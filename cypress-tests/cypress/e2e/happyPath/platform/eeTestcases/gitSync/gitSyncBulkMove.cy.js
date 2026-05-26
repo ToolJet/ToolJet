@@ -1,6 +1,7 @@
 import { commonSelectors, commonText } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { dashboardText } from "Texts/dashboard";
+import { gitSyncSelectors as GS } from "Selectors/platform/gitsync";
 import { viewAppCardOptions } from "Support/utils/common";
 import {
   openAddToFolderModal,
@@ -372,5 +373,180 @@ describe("Git Sync — Bulk Move Apps: Folder Guard Cases", { retries: 0 }, () =
     cy.get(commonSelectors.deleteFolderOption(folderName)).click();
     cy.get(commonSelectors.modalComponent).should("be.visible");
     cy.get(commonSelectors.cancelButton).click();
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Part 3 — Branch Isolation
+// Verifies that folder-app assignments are scoped to their feature branch and
+// only become visible on master after a PR is merged and pulled.
+// Each test gets its own isolated workspace with git sync enabled.
+// ──────────────────────────────────────────────────────────────────────────────
+describe("Git Sync — Bulk Move Apps: Branch Isolation", { retries: 0 }, () => {
+  const testId = Date.now() + 2;
+  const appNameA = `GS-Iso-App-${testId}`;
+  const folderName = `gs-iso-folder-${testId}`;
+
+  let workspaceId, featureBranchName;
+
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.viewport(1440, 1200);
+    featureBranchName = `gs-iso-${Date.now()}`;
+    const wsName = `gs-isolation-${Date.now()}`;
+    cy.apiCreateWorkspace(wsName, wsName).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env("workspaceId", workspaceId);
+      Cypress.env("workspaceSlug", wsName);
+    });
+    cy.gitSyncCheckAndConfigure();
+    cy.apiCreateApp(appNameA);
+    cy.apiCreateFolder(folderName, "front-end");
+  });
+
+  afterEach(() => {
+    cy.gitHubDeleteBranch(featureBranchName);
+    cy.apiLogin();
+    cy.apiArchiveWorkspace(workspaceId);
+  });
+
+  it("should hide 'Add to folder' on master and show it on a feature branch (TC-GS-06, TC-GS-06b)", () => {
+    cy.gitSyncGoToDashboard();
+
+    // On master: lock banner visible and 'Add to folder' option absent
+    cy.get(GS.masterLockBanner).should("be.visible");
+    viewAppCardOptions(appNameA);
+    cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should("not.exist");
+    cy.get("body").type("{esc}");
+
+    // Create feature branch — lock banner disappears
+    cy.gitSyncCreateBranchViaUI(featureBranchName);
+    cy.get(GS.masterLockBanner).should("not.exist");
+
+    // On feature branch: 'Add to folder' option is now present
+    viewAppCardOptions(appNameA);
+    cy.get(commonSelectors.appCardOptions(commonText.addToFolderOption)).should("be.visible");
+    cy.get("body").type("{esc}");
+  });
+
+  it("should isolate folder assignment to the feature branch before merge (TC-GS-07, TC-GS-11, TC-GS-12)", () => {
+    cy.gitSyncGoToDashboard();
+    cy.gitSyncCreateBranchViaUI(featureBranchName);
+
+    openAddToFolderModal(appNameA);
+    selectDestinationFolder(folderName);
+    cy.get(dashboardSelector.addToFolderButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      dashboardText.bulkMoveSuccessToast(folderName),
+      false
+    );
+
+    // Feature branch: folder count shows (1), app card visible inside folder
+    cy.get(dashboardSelector.folderName(folderName)).should("contain.text", "(1)");
+    cy.get(dashboardSelector.folderName(folderName)).click();
+    cy.get(commonSelectors.appCard(appNameA)).should("be.visible");
+
+    // Switch to master: folder has no count, contents are empty
+    cy.gitSyncGoToDashboard();
+    cy.gitSyncSwitchBranch("master");
+    cy.get(dashboardSelector.folderName(folderName)).should("be.visible").and("not.contain.text", "(1)");
+    cy.get(dashboardSelector.folderName(folderName)).click();
+    cy.get(commonSelectors.emptyFolderText).verifyVisibleElement(
+      "have.text",
+      commonText.emptyFolderText
+    );
+  });
+
+  it("should show folder assignment on master after feature branch is merged and pulled (TC-GS-10, TC-GS-16, TC-GS-17)", () => {
+    cy.gitSyncGoToDashboard();
+    cy.gitSyncCreateBranchViaUI(featureBranchName);
+
+    openAddToFolderModal(appNameA);
+    selectDestinationFolder(folderName);
+    cy.get(dashboardSelector.addToFolderButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      dashboardText.bulkMoveSuccessToast(folderName),
+      false
+    );
+
+    // Commit the folder assignment on the feature branch
+    cy.gitSyncDashboardPush(`feat: move ${appNameA} to folder [${testId}]`);
+    cy.gitHubWaitForCommitsAhead(featureBranchName, "master");
+    cy.gitHubCreatePR(featureBranchName, `PR: folder move ${testId}`, "master").then((pr) =>
+      cy.gitHubMergePR(pr)
+    );
+
+    // Switch to master and pull the merged changes
+    cy.gitSyncGoToDashboard();
+    cy.gitSyncSwitchBranch("master");
+    cy.get(GS.wsGitPullBtn).click();
+    cy.get(GS.modalTitle).should("be.visible");
+    cy.get(GS.checkForUpdatesLabel).click();
+    cy.get(GS.pullModalPullChangesBtn, { timeout: 30000 }).should("be.enabled").click();
+    cy.get(GS.modalTitle, { timeout: 45000 }).should("not.exist");
+
+    // After pull: folder count shows (1) on master, app card visible inside folder
+    cy.gitSyncGoToDashboard();
+    cy.get(dashboardSelector.folderName(folderName)).should("contain.text", "(1)");
+    cy.get(dashboardSelector.folderName(folderName)).click();
+    cy.get(commonSelectors.appCard(appNameA)).should("be.visible");
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Part 4 — Workflow Folders
+// Verifies that workflow folder assignments are always instance-wide and never
+// branch-scoped, even when git sync is enabled.
+// ──────────────────────────────────────────────────────────────────────────────
+describe("Git Sync — Bulk Move Apps: Workflow Folders", { retries: 0 }, () => {
+  const testId = Date.now() + 3;
+  const wfName = `GS-Wf-${testId}`;
+  const wfFolderName = `gs-wf-folder-${testId}`;
+  const featureBranchName = `gs-wf-branch-${testId}`;
+
+  let workspaceId, wfFolderId;
+
+  beforeEach(() => {
+    cy.apiLogin();
+    cy.viewport(1440, 1200);
+    const wsName = `gs-wf-${Date.now()}`;
+    cy.apiCreateWorkspace(wsName, wsName).then((res) => {
+      workspaceId = res.body.organization_id;
+      Cypress.env("workspaceId", workspaceId);
+      Cypress.env("workspaceSlug", wsName);
+    });
+    cy.gitSyncCheckAndConfigure();
+    cy.apiCreateWorkflow(wfName);
+    cy.apiCreateFolder(wfFolderName, "workflow");
+    cy.then(() => { wfFolderId = Cypress.env("createdFolderId"); });
+    cy.then(() => { cy.apiAddAppToFolder(wfFolderId, Cypress.env("workflowId")); });
+  });
+
+  afterEach(() => {
+    cy.gitHubDeleteBranch(featureBranchName);
+    cy.apiLogin();
+    cy.apiArchiveWorkspace(workspaceId);
+  });
+
+  it("should keep workflow folder assignment instance-wide regardless of git branch (TC-WF-01, TC-WF-02)", () => {
+    // On master: workflow folder count shows (1) — instance-wide assignment
+    cy.visit(`/${Cypress.env("workspaceSlug")}/workflows`);
+    cy.get(dashboardSelector.folderName(wfFolderName)).should("contain.text", "(1)");
+
+    // Create a feature branch from the dashboard
+    cy.gitSyncGoToDashboard();
+    cy.gitSyncCreateBranchViaUI(featureBranchName);
+
+    // Feature branch: workflow folder count still shows (1) — not branch-scoped
+    cy.visit(`/${Cypress.env("workspaceSlug")}/workflows`);
+    cy.get(dashboardSelector.folderName(wfFolderName)).should("contain.text", "(1)");
+
+    // Switch back to master: count remains (1) — no isolation
+    cy.gitSyncGoToDashboard();
+    cy.gitSyncSwitchBranch("master");
+    cy.visit(`/${Cypress.env("workspaceSlug")}/workflows`);
+    cy.get(dashboardSelector.folderName(wfFolderName)).should("contain.text", "(1)");
   });
 });
