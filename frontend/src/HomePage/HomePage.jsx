@@ -927,7 +927,7 @@ class HomePageComponent extends React.Component {
         if (this.isOnFeatureBranch()) {
           const appName = this.state.appToBeDeleted?.name || 'app';
           const branchState = useWorkspaceBranchesStore.getState();
-          branchState.actions.pushWorkspace(`Delete ${appName}`).catch((err) => {
+          branchState.actions.pushWorkspace(`Delete ${appName}`, null, { deletionOnly: true }).catch((err) => {
             toast.error(err?.message || 'Failed to push deletion to git.');
           });
         }
