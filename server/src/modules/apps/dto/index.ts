@@ -129,6 +129,11 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  // Optional page size; defaults to 9 server-side. Editor module picker passes 50.
+  @IsString()
+  @IsOptional()
+  perPage?: string;
 }
 
 export class VersionReleaseDto {

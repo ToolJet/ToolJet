@@ -131,7 +131,9 @@ const useAppData = (
     let totalPages = 1;
 
     while (currentPage <= totalPages) {
-      const data = await appsService.getAll(currentPage, '', '', 'module');
+      // Use the same page size as ModuleManager so total_pages in the response
+      // matches what the editor uses, and so this loop completes in fewer round-trips.
+      const data = await appsService.getAll(currentPage, '', '', 'module', 50);
       const pageModules = data?.apps || [];
 
       allModules.push(...pageModules);
@@ -814,7 +816,9 @@ const useAppData = (
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          appsService.getAll(1, '', '', 'module').then((data) => {
+          // Match ModuleManager's page size (50) so the meta returned here drives
+          // the editor's infinite-scroll logic with consistent total_pages.
+          appsService.getAll(1, '', '', 'module', 50).then((data) => {
             setModulesIsLoading(false);
             setModulesList(data.apps);
             if (data.meta) setModulesMeta(data.meta);
