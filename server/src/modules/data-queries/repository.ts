@@ -54,7 +54,7 @@ export class DataQueryRepository extends Repository<DataQuery> {
       .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
       .andWhere('module_version.app_id != app.id')
       .andWhere('app.organization_id = module_app.organization_id')
-      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleAppId", {
+      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleAppId::text", {
         moduleAppId,
       })
       .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = data_query.app_version_id::text")
