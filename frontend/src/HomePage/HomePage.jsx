@@ -1986,7 +1986,9 @@ class HomePageComponent extends React.Component {
                       {/* INFO ALERT */}
                       <div className="import-dependent-info-alert" data-cy="import-info-alert">
                         <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
-                        <span>This app with its dependent modules &amp; data sources will be pulled</span>
+                        <span>
+                          This app with its <strong>dependent modules &amp; data sources</strong> will be pulled
+                        </span>
                       </div>
 
                       {/* EDITABLE CHECKBOX */}
