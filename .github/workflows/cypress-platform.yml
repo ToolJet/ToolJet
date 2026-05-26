@@ -24,8 +24,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
       fail-fast: false
@@ -35,11 +34,8 @@ jobs:
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'ee' || ''
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || ''
             }}
-        label:
-          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'gitsync' || 'default' }}
         exclude:
           - edition: ""
 
@@ -398,7 +394,7 @@ jobs:
           browser: chrome
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000"
-          config-file: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+          config-file: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
         env:
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
