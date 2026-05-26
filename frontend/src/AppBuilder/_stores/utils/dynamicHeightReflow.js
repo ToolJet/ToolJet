@@ -2,10 +2,15 @@ import {
   BOX_PADDING,
   CONTAINER_FORM_CANVAS_PADDING,
   HIDDEN_COMPONENT_HEIGHT,
+  MODAL_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  TAB_CANVAS_PADDING,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
+
+// Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
+const TABS_TAB_BAR_HEIGHT = 50;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Dynamic-Height Reflow — max-over-all-blockers layout engine.
@@ -294,6 +299,7 @@ const getExtraContainerHeight = ({
   getResolvedValue,
   getComponentDefinition,
   isAccordionExpanded,
+  hideTabs,
 }) => {
   let extraHeight = 0;
   let nextCurrentMax = currentMax;
@@ -325,18 +331,44 @@ const getExtraContainerHeight = ({
         nextCurrentMax = lastFieldset.offsetHeight;
       }
     } else {
+      // FormUtils.getBodyHeight subtracts (headerHeight + 10) and
+      // (footerHeight + 14) plus a 20px floor. To make body fit `currentMax`
+      // tightly without overflow, add the same back here.
+      extraHeight += 20;
       if (showHeader && isProperNumber(headerHeight)) {
-        extraHeight += headerHeight;
+        extraHeight += headerHeight + 10;
       }
       if (showFooter && isProperNumber(footerHeight)) {
-        extraHeight += footerHeight;
+        extraHeight += footerHeight + 14;
       }
-      extraHeight += 20;
     }
   } else if (componentType === 'Tabs') {
-    extraHeight = 40;
+    // Tab pane chrome: TAB_CANVAS_PADDING (8) top + bottom around the
+    // SubContainer canvas, plus the tab strip (50) unless `hideTabs` is on
+    // (strip becomes `display:none`). +16 covers the .real-canvas
+    // `calc(100% + 3.5px)` extension plus the ~7px scrollHeight overshoot
+    // that growing leaf widgets (e.g. TextArea labels) report past their
+    // moveable-box height.
+    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT);
+  } else if (componentType === 'ModalV2') {
+    // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
+    // SubContainer canvas (stylesFactory.js modalBody) + safety for the
+    // `.real-canvas` `calc(100% + 1px)` extension. Plus 12px per shown
+    // header/footer slot — Modal.jsx composes totalHeight from the
+    // *configured* header/footer heights, but each slot actually renders
+    // ~10px taller (HorizontalSlot pad + 1px border), so that gap has to be
+    // padded into the body content height or the body clips.
+    const { properties = {} } = getResolvedComponent(componentId, contextIndices) || {};
+    extraHeight = MODAL_CANVAS_PADDING * 2 + 8;
+    if (properties.showHeader) extraHeight += 12;
+    if (properties.showFooter) extraHeight += 12;
   } else if (componentType === 'Listview' && normalizeLayoutContext(contextIndices)) {
-    extraHeight -= 40;
+    // Listview row context: previously `-= 40` to cancel the historical +50
+    // buffer (net +10 chrome per row). Buffer is gone, so set the row's
+    // chrome directly: +15 covers each row's small internal padding plus
+    // a sub-pixel/safety margin against children that report `scrollHeight`
+    // a few px past their `offsetHeight` (e.g. label-bumped TextArea).
+    extraHeight = 15;
   }
 
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
@@ -397,10 +429,11 @@ export const resolveListviewHeightFromRows = ({
       : rowHeights.reduce((totalHeight, rowHeight) => totalHeight + rowHeight, 0);
 
   // Fixed allowances: per-row bottom border (list mode only), pagination bar,
-  // outer padding.
+  // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
+  // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
   const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 14;
+  const outerPaddingAllowance = 18;
 
   return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
 };
@@ -635,6 +668,7 @@ export const resolveContainerHeight = ({
     getResolvedValue,
     getComponentDefinition,
     isAccordionExpanded,
+    hideTabs: component?.properties?.hideTabs === true,
   });
 
   currentMax = nextCurrentMax;
@@ -643,13 +677,11 @@ export const resolveContainerHeight = ({
     return containerHeight;
   }
 
-  // Container/Accordion floor on canonical height; other types add a 50px
-  // breathing buffer on top of content (Tabs/Form/etc.).
-  if (['Container', 'Accordion'].includes(componentType)) {
-    return Math.max(currentMax + extraHeight, containerHeight);
-  }
-
-  return Math.max(currentMax + 50 + extraHeight, containerHeight);
+  // Every container type's `extraHeight` now accounts for its own chrome
+  // (Container/Accordion: padding+border+header; Form: header/footer/body
+  // gutter; Tabs: strip + pane padding; ModalV2: body padding + borders).
+  // Floor at canonical so the container never drops below its authored size.
+  return Math.max(currentMax + extraHeight, containerHeight);
 };
 
 // The changed widget's target height:
