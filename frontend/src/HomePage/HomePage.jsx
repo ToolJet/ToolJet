@@ -1890,7 +1890,7 @@ class HomePageComponent extends React.Component {
             <>
               {/* IMPORT IN */}
               <div className="import-in-row">
-                <span className="tj-text-sm font-weight-500 tj-text">Import in </span>
+                <span className="tj-text-xsm font-weight-500 tj-text">Import in </span>
                 <span className="branch-name-badge">
                   <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
                   {useWorkspaceBranchesStore.getState().currentBranch?.name || 'main'}
@@ -1900,13 +1900,13 @@ class HomePageComponent extends React.Component {
               {/* IMPORT FROM — locked to current branch */}
               <div className="form-group">
                 <label
-                  className="mb-1 tj-text-sm font-weight-500"
+                  className="mb-1 tj-text-xsm font-weight-500"
                   style={{ color: 'var(--slate8)' }}
                   data-cy="import-from-label"
                 >
                   Import from
                 </label>
-                <div className="tj-app-input" data-cy="import-from-select">
+                <div className="tj-app-input import-from-disabled-select" data-cy="import-from-select">
                   <Select
                     options={[
                       {
@@ -1952,52 +1952,62 @@ class HomePageComponent extends React.Component {
 
               {selectedAppRepo && (
                 <>
-                  {/* VERSION SELECT — default/main branch only */}
-                  {(useWorkspaceBranchesStore.getState().currentBranch?.is_default ||
-                    useWorkspaceBranchesStore.getState().currentBranch?.isDefault) && (
-                    <div className="form-group">
-                      <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
-                        Version
-                      </label>
-                      <div className="tj-app-input" data-cy="version-select">
-                        <Select
-                          options={this.generateVersionOptions()}
-                          disabled={importingApp || fetchingLatestCommitData}
-                          onChange={this.handleVersionOptionChange}
-                          width={'100%'}
-                          value={this.state.selectedVersionOption}
-                          placeholder={fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'}
-                          closeMenuOnSelect={true}
-                          customWrap={true}
-                          customOption={this.renderVersionOption}
+                  {fetchingLatestCommitData ? (
+                    <div className="d-flex flex-column" style={{ gap: '8px', padding: '4px 0' }}>
+                      <div style={{ height: '12px', borderRadius: '4px', background: 'var(--slate4)', width: '40%' }} />
+                      <div style={{ height: '12px', borderRadius: '4px', background: 'var(--slate4)', width: '65%' }} />
+                      <div style={{ height: '12px', borderRadius: '4px', background: 'var(--slate4)', width: '55%' }} />
+                    </div>
+                  ) : (
+                    <>
+                      {/* VERSION SELECT — default/main branch only */}
+                      {(useWorkspaceBranchesStore.getState().currentBranch?.is_default ||
+                        useWorkspaceBranchesStore.getState().currentBranch?.isDefault) && (
+                        <div className="form-group">
+                          <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
+                            Version
+                          </label>
+                          <div className="tj-app-input" data-cy="version-select">
+                            <Select
+                              options={this.generateVersionOptions()}
+                              disabled={importingApp}
+                              onChange={this.handleVersionOptionChange}
+                              width={'100%'}
+                              value={this.state.selectedVersionOption}
+                              placeholder="Select version or tag..."
+                              closeMenuOnSelect={true}
+                              customWrap={true}
+                              customOption={this.renderVersionOption}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* INFO ALERT */}
+                      <div className="import-dependent-info-alert" data-cy="import-info-alert">
+                        <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
+                        <span>This app with its dependent modules &amp; data sources will be pulled</span>
+                      </div>
+
+                      {/* EDITABLE CHECKBOX */}
+                      <div className="application-editable-checkbox-container">
+                        <input
+                          className="form-check-input"
+                          checked={this.state.isAppImportEditable}
+                          type="checkbox"
+                          onChange={() =>
+                            this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                          }
                         />
+                        Make application editable
+                        <div className="helper-text">
+                          <div className="tj-text-xxsm">
+                            Enabling this allows editing and git sync push/pull access in development.
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
-
-                  {/* INFO ALERT */}
-                  <div className="import-dependent-info-alert" data-cy="import-info-alert">
-                    <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
-                    <span>This app with its dependent modules &amp; data sources will be pulled</span>
-                  </div>
-
-                  {/* EDITABLE CHECKBOX */}
-                  <div className="application-editable-checkbox-container">
-                    <input
-                      className="form-check-input"
-                      checked={this.state.isAppImportEditable}
-                      type="checkbox"
-                      onChange={() =>
-                        this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
-                      }
-                    />
-                    Make application editable
-                    <div className="helper-text">
-                      <div className="tj-text-xxsm">
-                        Enabling this allows editing and git sync push/pull access in development.
-                      </div>
-                    </div>
-                  </div>
                 </>
               )}
             </>

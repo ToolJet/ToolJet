@@ -17801,6 +17801,16 @@ section.ai-message-prompt-input-wrapper {
   color: var(--slate11);
 }
 
+.import-from-disabled-select {
+  .react-select__control--is-disabled {
+    background-color: rgba(204, 209, 213, 0.3) !important;
+    border-color: transparent !important;
+  }
+  .react-select__dropdown-indicator {
+    color: var(--slate8) !important;
+  }
+}
+
 .import-dependent-info-alert {
   display: flex;
   align-items: flex-start;

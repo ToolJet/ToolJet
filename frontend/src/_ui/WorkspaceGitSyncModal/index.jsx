@@ -310,7 +310,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
           <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
             {/* PULL INTO */}
             <div className="import-in-row">
-              <span className="tj-text-sm font-weight-500 tj-text">Pull into</span>
+              <span className="tj-text-xsm font-weight-500 tj-text">Pull into</span>
               <span className="branch-name-badge">
                 <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
                 {currentBranchName}
@@ -320,7 +320,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             {/* PULL FROM */}
             <div className="form-group mb-0">
               <label
-                className="mb-1 tj-text-sm font-weight-500"
+                className="mb-1 tj-text-xsm font-weight-500"
                 style={{ color: 'var(--slate8)' }}
                 data-cy="pull-from-label"
               >
