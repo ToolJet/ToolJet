@@ -122,7 +122,7 @@ export class AppsController implements IAppsController {
       type: query.type ?? 'front-end',
       branchId: query.branch_id || headerBranchId,
     };
-    return this.appsService.getAllApps(user, AppListDto, false);
+    return this.appsService.getAllApps(user, AppListDto, query.all === 'true');
   }
 
   @InitFeature(FEATURE_KEY.GET)

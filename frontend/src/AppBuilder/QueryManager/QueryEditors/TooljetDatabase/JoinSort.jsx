@@ -63,7 +63,7 @@ export default function JoinSort({ darkMode }) {
         joinOrderByOptions.map((options, i) => {
           const tableDetails = options?.table ? findTableDetails(options?.table) : '';
           const isColumnJsonbType =
-            tableInfo[tableDetails?.table_name]?.find((col) => col.accessor === options?.columnName).dataType ===
+            tableInfo[tableDetails?.table_name]?.find((col) => col.accessor === options?.columnName)?.dataType ===
             'jsonb';
           return (
             <Row className="mb-2 mx-0 " key={i}>

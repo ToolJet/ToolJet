@@ -1067,22 +1067,23 @@ class HomePageComponent extends React.Component {
 
     const folderName = this.state.folders.find((f) => f.id === appOperations.selectedFolder)?.name || 'folder';
 
-    Promise.allSettled(
-      selectedApps.map((app) => folderService.addToFolder(app.value, appOperations.selectedFolder))
-    ).then((results) => {
-      toast.success(`Apps moved to "${folderName}" folder successfully!`);
-      this.foldersChanged();
-      this.setState({ appOperations: {}, showAddToFolderModal: false });
-      results.forEach((result, i) => {
-        if (result.status === 'fulfilled') {
-          posthogHelper.captureEvent('click_add_to_folder_button', {
-            workspace_id: workspaceId,
-            app_id: selectedApps[i].value,
-            folder_id: appOperations?.selectedFolder,
-          });
-        }
+    const appIds = selectedApps.map((app) => app.value);
+    folderService
+      .bulkAddToFolder(appIds, appOperations.selectedFolder, this.props.appType)
+      .then(() => {
+        toast.success(`Apps moved to "${folderName}" folder successfully!`);
+        this.foldersChanged();
+        this.setState({ appOperations: {}, showAddToFolderModal: false });
+        posthogHelper.captureEvent('click_add_to_folder_button', {
+          workspace_id: workspaceId,
+          app_ids: appIds,
+          folder_id: appOperations?.selectedFolder,
+        });
+      })
+      .catch(() => {
+        toast.error('Failed to move apps to folder');
+        this.setState({ appOperations: { ...appOperations, isAdding: false } });
       });
-    });
   };
 
   removeAppFromFolder = () => {
@@ -1093,7 +1094,7 @@ class HomePageComponent extends React.Component {
     this.setState({ isDeletingAppFromFolder: true });
 
     folderService
-      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
+      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id, this.props.appType)
       .then(() => {
         toast.success('Application removed from folder successfully!');
 
@@ -1114,27 +1115,10 @@ class HomePageComponent extends React.Component {
 
   fetchAddToFolderApps = async () => {
     const folderId = this.state.currentFolder?.id;
-
-    // Fetch all pages for both default and folder views so the full list appears in the dropdown
-    const folderId_param = folderId || '';
     try {
-      const firstPage = await appsService.getAll(1, folderId_param, '', this.props.appType);
-      const allApps = [...(firstPage.apps || [])];
-      const total = folderId
-        ? this.state.currentFolder?.count || allApps.length
-        : firstPage.meta?.total_count || allApps.length;
-      const totalPages = Math.ceil(total / MAX_APPS_PER_PAGE);
-
-      if (totalPages > 1) {
-        const remaining = await Promise.all(
-          Array.from({ length: totalPages - 1 }, (_, i) =>
-            appsService.getAll(i + 2, folderId_param, '', this.props.appType)
-          )
-        );
-        remaining.forEach((r) => allApps.push(...(r.apps || [])));
-      }
-
-      this.setState({ addToFolderApps: allApps });
+      // page=0 triggers all=true backend param — returns all apps in one call, no pagination
+      const result = await appsService.getAll(0, folderId || '', '', this.props.appType);
+      this.setState({ addToFolderApps: result.apps || [] });
     } catch {
       this.setState({ addToFolderApps: [] });
     }
@@ -1150,6 +1134,7 @@ class HomePageComponent extends React.Component {
             ...appOperations,
             selectedApp: app,
             selectedApps: [{ label: app.name, name: app.name, value: app.id }],
+            selectedFolder: folder?.id || null,
           },
           showAddToFolderModal: true,
           addToFolderApps: [],
@@ -2157,7 +2142,7 @@ class HomePageComponent extends React.Component {
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
                   isLoading={appOperations?.isAdding}
-                  disabled={!appOperations?.selectedFolder}
+                  disabled={!appOperations?.selectedFolder || !appOperations?.selectedApps?.length}
                 >
                   {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
                 </ButtonSolid>
@@ -2300,7 +2285,7 @@ class HomePageComponent extends React.Component {
                 currentFolder={currentFolder}
                 folderChanged={this.folderChanged}
                 foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
+                canCreateFolder={this.canCreateFolder()}
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
                 isGitSyncEnabled={this.isGitEnabled()}

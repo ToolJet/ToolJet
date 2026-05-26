@@ -134,10 +134,11 @@ const WidgetWrapper = memo(
     const height = calculateMoveableBoxHeightWithId(id, currentLayout, stylesDefinition, moduleId);
 
     // Calculate the final height based on visibility and temporary layouts.
-    // Hidden widgets in edit mode keep a small placeholder height so designers
-    // can still see/select them; in view mode they collapse to 0 (and
-    // display:none is set below).
-    const finalHeight = visibility ? temporaryLayouts?.height ?? height : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
+    // Hidden widgets collapse to 0 in both edit and view modes — in edit mode
+    // a 1px dashed top border (set below) marks the widget's authored position
+    // so designers can still locate it; the floating ConfigHandle stays
+    // clickable above the collapsed slot. In view mode display:none is set.
+    const finalHeight = visibility ? temporaryLayouts?.height ?? height : HIDDEN_COMPONENT_HEIGHT;
     const layoutContext = indices ?? subContainerIndex;
     const serializedLayoutContext = serializeLayoutContext(layoutContext);
 
@@ -151,7 +152,7 @@ const WidgetWrapper = memo(
           : finalHeight + 'px',
       transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
-      border: !visibility && mode === 'edit' ? `1px solid var(--border-default)` : 'none',
+      borderTop: !visibility && mode === 'edit' ? `1px dashed var(--border-accent-strong)` : 'none',
       boxSizing: 'content-box',
       display: !visibility && mode === 'view' ? 'none' : 'block',
     };

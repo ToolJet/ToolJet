@@ -283,44 +283,42 @@ export const Folders = function Folders({
             </div>
             <div className="d-flex folder-header-icons-wrap">
               {canCreateFolder && (
-                <>
-                  <Button
-                    size="medium"
-                    variant="ghost"
-                    iconOnly
-                    ariaLabel="Create new folder"
-                    onClick={() => {
-                      posthogHelper.captureEvent('create_new_folder', {
-                        workspace_id:
-                          authenticationService?.currentUserValue?.organization_id ||
-                          authenticationService?.currentSessionValue?.current_organization_id,
-                      });
-                      setNewFolderName('');
-                      setShowForm(true);
-                    }}
-                    data-cy="create-new-folder-button"
-                  >
-                    <SolidIcon name="plus" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
-                  </Button>
-                  <Button
-                    size="medium"
-                    variant="ghost"
-                    iconOnly
-                    ariaLabel="Search for folders"
-                    onClick={() => {
-                      setShowInput(true);
-                    }}
-                    data-cy="folder-search-icon"
-                  >
-                    <SolidIcon
-                      name="search"
-                      width="14"
-                      fill={darkMode ? '#CFD3D8E6' : '#6A727C'}
-                      className="tw-relative tw-top-[2px]"
-                    />
-                  </Button>
-                </>
+                <Button
+                  size="medium"
+                  variant="ghost"
+                  iconOnly
+                  ariaLabel="Create new folder"
+                  onClick={() => {
+                    posthogHelper.captureEvent('create_new_folder', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                    });
+                    setNewFolderName('');
+                    setShowForm(true);
+                  }}
+                  data-cy="create-new-folder-button"
+                >
+                  <SolidIcon name="plus" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+                </Button>
               )}
+              <Button
+                size="medium"
+                variant="ghost"
+                iconOnly
+                ariaLabel="Search for folders"
+                onClick={() => {
+                  setShowInput(true);
+                }}
+                data-cy="folder-search-icon"
+              >
+                <SolidIcon
+                  name="search"
+                  width="14"
+                  fill={darkMode ? '#CFD3D8E6' : '#6A727C'}
+                  className="tw-relative tw-top-[2px]"
+                />
+              </Button>
             </div>
           </>
         ) : (

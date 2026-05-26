@@ -7,29 +7,28 @@ import _ from 'lodash';
 import { eraseCookie, getCookie } from '.';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
-export const getPrivateRoute = (page, params = {}) => {
-  const routes = {
-    dashboard: '/',
-    editor: '/apps/:slug/:pageHandle',
-    preview: '/applications/:slug/versions/:versionId/:pageHandle',
-    launch: '/applications/:slug/:pageHandle',
-    workspace_settings: '/workspace-settings/users',
-    workspace_settings_groups: '/workspace-settings/groups',
-    workspace_settings_builder: '/workspace-settings/themes',
-    settings: '/settings',
-    database: '/database',
-    integrations: '/integrations/marketplace',
-    data_sources: '/data-sources',
-    audit_logs: '/audit-logs',
-    home: '/home',
-    workflows: '/workflows',
-    workspace_constants: '/workspace-constants',
-    profile_settings: '/profile-settings',
-    modules: '/modules',
-    subscription: '/settings/subscription',
-    license: '/settings/license',
-  };
+export const routes = {
+  dashboard: '/',
+  editor: '/apps/:slug/:pageHandle',
+  preview: '/applications/:slug/versions/:versionId/:pageHandle',
+  launch: '/applications/:slug/:pageHandle',
+  workspace_settings: '/workspace-settings/users',
+  workspace_settings_builder: '/workspace-settings/themes',
+  settings: '/settings',
+  database: '/database',
+  integrations: '/integrations/marketplace',
+  data_sources: '/data-sources',
+  audit_logs: '/audit-logs',
+  home: '/home',
+  workflows: '/workflows',
+  workspace_constants: '/workspace-constants',
+  profile_settings: '/profile-settings',
+  modules: '/modules',
+  subscription: '/settings/subscription',
+  license: '/settings/license',
+};
 
+export const getPrivateRoute = (page, params = {}) => {
   let url = routes[page];
   const urlParams = url?.split('/').map((path) => {
     if (path.startsWith(':')) {
@@ -289,11 +288,6 @@ export const eraseRedirectUrl = () => {
   const redirectPath = getCookie('redirectPath');
   redirectPath && eraseCookie('redirectPath');
   return redirectPath;
-};
-
-export const redirectToWorkflows = (data, redirectTo, relativePath = null) => {
-  const workflowUrl = `${dashboardUrl(data, redirectTo, relativePath)}/workflows`;
-  window.location = workflowUrl;
 };
 
 /** Detects whether the app is loaded on a custom domain by comparing
