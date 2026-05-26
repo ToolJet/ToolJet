@@ -29,6 +29,12 @@ export const codeEditorConfig = {
       },
       section: 'additionalActions',
     },
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     mode: {
       type: 'code',
       displayName: 'Mode',
@@ -57,6 +63,7 @@ export const codeEditorConfig = {
       },
       accordian: 'container',
     },
+
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
@@ -111,6 +118,7 @@ export const codeEditorConfig = {
     },
     properties: {
       dynamicHeight: { value: '{{false}}' },
+      collapseWhenHidden: { value: '{{false}}' },
       enableLineNumber: { value: '{{true}}' },
       mode: { value: 'javascript' },
       placeholder: { value: '' },

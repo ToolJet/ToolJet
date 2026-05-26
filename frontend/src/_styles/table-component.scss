@@ -208,6 +208,7 @@
       .table-row.selected {
         --tblr-table-accent-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
         background: var(--cc-table-selected-row-bg, var(--cc-surface2-surface)) !important;
+        --cc-table-pinned-column-bg: var(--cc-table-selected-row-bg, var(--cc-surface2-surface));
       }
 
       td {
@@ -395,6 +396,30 @@
       .th {
         white-space: normal;
       }
+
+      .pinned-column {
+        background-clip: padding-box;
+      }
+
+      td.pinned-column {
+        background-color: var(--cc-table-pinned-column-bg, var(--cc-surface1-surface));
+      }
+
+      .th.pinned-column {
+        z-index: 3;
+      }
+
+      td.pinned-column {
+        z-index: 2;
+      }
+
+      .pinned-column-boundary-left {
+        border-right: 1px solid var(--cc-weak-border);
+      }
+
+      .pinned-column-boundary-right {
+        border-left: 1px solid var(--cc-weak-border);
+      }
     }
 
     .jet-data-table>table:not(.table-resizing) {
@@ -402,12 +427,14 @@
       .table-row:hover,
       .table-row:focus {
         background: var(--cc-table-row-hover, #ECEEF0) !important;
+        --cc-table-pinned-column-bg: var(--cc-table-row-hover, #ECEEF0);
       }
 
       &.table-striped {
         .table-row[data-index]:nth-child(even) {
           &:hover, &:focus {
             background: var(--cc-table-striped-row-hover, #ECEEF0) !important;
+            --cc-table-pinned-column-bg: var(--cc-table-striped-row-hover, #ECEEF0);
           }
         }
       }
@@ -625,6 +652,12 @@
           border: 0;
           padding: 0 !important;
           overflow: visible !important;
+        }
+
+        &:has(.table-expansion-toggle) {
+          border: none;
+          background-color: transparent !important;
+          box-shadow: none;
         }
       }
 
@@ -975,18 +1008,18 @@
         background: var(--cc-table-header-hover) !important;
       }
 
-      &:focus-within {
+      &:has(:focus-visible) {
         outline: 0;
         background: var(--cc-table-header-active, --slate4, #ECEEF0) !important;
         z-index: 999;
       }
 
-      &:first-child:focus-within {
+      &:first-child:has(:focus-visible) {
         outline: 0;
         border-left: 4px solid var(--slate6);
       }
 
-      &:last-child:focus-within {
+      &:last-child:has(:focus-visible) {
         outline: 0;
         border-right: 4px solid var(--slate6);
       }
@@ -1239,6 +1272,10 @@
 
     .ToggleGroupItem {
       flex: 1 1 0;
+    }
+
+    .pin-column-control .ToggleGroupItem[data-state='on'] .toggle-item svg path {
+      fill: none !important;
     }
 
     .table-column-date-picker-accordion {
@@ -1663,6 +1700,7 @@
       tr[data-index]:nth-child(even) {
         background-color: var(--cc-table-striped-row-bg-color);
         --tblr-table-accent-bg: none;
+        --cc-table-pinned-column-bg: var(--cc-table-striped-row-bg-color);
         color: inherit !important;
       }
     }

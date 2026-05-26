@@ -88,8 +88,8 @@ export const listViewComponentSlice = (set, get) => ({
       }
     );
     // Fire property-level dependency updates for each changed key (same mechanism as above).
-    Object.entries(values).forEach(([key, value]) => {
-      if (typeof value !== 'function' && !skipKeys.has(key)) {
+    Object.entries(values).forEach(([key]) => {
+      if (!skipKeys.has(key)) {
         get().updateDependencyValues(`components.${componentId}.${key}`, moduleId, []);
       }
     });
@@ -182,17 +182,36 @@ export const listViewComponentSlice = (set, get) => ({
   // Called ONCE before the row loop. Collects descendant IDs and creates the
   // prototype overlay. Returns null if the ListView has no descendants.
   prepareRowScope: (components, listviewId, moduleId = 'canvas') => {
-    const { getContainerChildrenMapping } = get();
+    const { getContainerChildrenMapping, containerChildrenMapping } = get();
+
+    // Pre-build a map from base UUID → children that are stored under slot IDs.
+    // Some containers (e.g. Tabs) render their SubContainer with a slot suffix:
+    //   <SubContainer id={`${id}-${tab.id}`} />
+    // so their children have parent="tabs-uuid-tab0" and are stored in
+    // containerChildrenMapping["tabs-uuid-tab0"], NOT under "tabs-uuid".
+    // This map lets collectDescendants find those children when traversing down.
+    const slotChildrenByBase = {};
+    for (const key of Object.keys(containerChildrenMapping)) {
+      const match = key.match(/([a-fA-F0-9-]{36})-.+/);
+      if (match) {
+        const baseId = match[1];
+        if (!slotChildrenByBase[baseId]) slotChildrenByBase[baseId] = [];
+        slotChildrenByBase[baseId].push(...(containerChildrenMapping[key] || []));
+      }
+    }
 
     // Recursively collect ALL descendant component IDs of this ListView.
-    // This includes components nested inside sub-containers (Form, Container, etc.).
+    // This includes components nested inside sub-containers (Form, Container, Tabs, etc.).
     // Example: ListView → [Checkbox, Button, Form → [TextInput, Dropdown]]
     //   → allDescendants = [Checkbox, Button, Form, TextInput, Dropdown]
     const allDescendants = [];
     const collectDescendants = (containerId) => {
       const children = getContainerChildrenMapping(containerId, moduleId);
-      if (!children) return;
-      for (const childId of children) {
+      const slotChildren = slotChildrenByBase[containerId] || [];
+      // Combine direct children (base ID) and slot-keyed children (e.g. Tabs).
+      // A child can only have one parent so there is no overlap between the two arrays.
+      const allChildren = children.length > 0 ? children : slotChildren;
+      for (const childId of allChildren) {
         allDescendants.push(childId);
         collectDescendants(childId);
       }
@@ -327,12 +346,18 @@ export const listViewComponentSlice = (set, get) => ({
     let currentIndices = [...indices];
 
     while (currentLV && currentIndices.length > 0) {
+      const lvDef = getComponentDefinition(currentLV, moduleId);
+      const componentType = lvDef?.component?.component;
       const rowIndex = currentIndices[currentIndices.length - 1];
       const outerIndices = currentIndices.slice(0, -1);
-      deriveListviewExposedData(currentLV, rowIndex, outerIndices, moduleId);
 
-      // Move up to outer ListView
-      const lvDef = getComponentDefinition(currentLV, moduleId);
+      // Table acts as a subcontainer for expandable rows but should not expose
+      // ListView-style children/data variables on the table itself.
+      if (componentType !== 'Table') {
+        deriveListviewExposedData(currentLV, rowIndex, outerIndices, moduleId);
+      }
+
+      // Move up to outer ListView/Kanban (Table may itself be nested inside one)
       const lvParent = lvDef?.component?.parent;
       currentLV = lvParent ? findNearestSubcontainerAncestor(lvParent, moduleId) : null;
       currentIndices = outerIndices;

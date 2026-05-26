@@ -198,7 +198,8 @@ export class AppsUtilService implements IAppsUtilService {
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-    if (environmentName && !isMultiEnvironmentEnabled) {
+    const isDevelopmentEnv = environmentName?.toLowerCase() === 'development';
+    if (environmentName && !isDevelopmentEnv && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
 
@@ -597,6 +598,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'TagsInput',
                 'TreeSelect',
                 'Navigation',
+                'ButtonGroupV2',
               ].includes(currentComponentData?.component?.component) &&
               isArray(objValue)
             ) {

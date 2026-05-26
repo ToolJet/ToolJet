@@ -8,6 +8,7 @@ import {
     releaseApp,
 } from "Support/utils/platform/multiEnv";
 import { groupsSelector } from "Selectors/manageGroups";
+import { cleanAllUsers } from "Support/utils/manageUsers";
 import { navigateToManageGroups } from "Support/utils/common";
 import {
     createGroupsAndAddUserInGroup,
@@ -268,11 +269,9 @@ const verifyBuilderAccessAsPerTheConfig = ({
         cy.get(
             dataSourceSelector.dataSourceNameButton(datasourceName2.toLowerCase()),
         ).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get(dataSourceSelector.dsNameInputField).should("be.disabled");
 
         cy.get(dataSourceSelector.commonDsLabelAndCount).click();
-        cy.get('[data-cy="yes-button"]').click();
         cy.get('[data-cy="rest-api-add-button"]').should("be.disabled");
     });
     //Verify the released app
@@ -302,6 +301,7 @@ describe("Custom Group Granular Access", () => {
         };
 
         cy.defaultWorkspaceLogin();
+        cleanAllUsers();
         cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
         cy.viewport(2400, 2000);
@@ -462,8 +462,7 @@ describe("Custom Group Granular Access", () => {
         const groupName1 = fake.firstName.replace(/[^A-Za-z]/g, "");
         let appId1, appId2, groupId1;
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
-
+        cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
         loginAsAdmin();
         createAndReleaseApp(data.appName, {
             componentValue: `{{globals.environment.name}}`,
@@ -574,6 +573,7 @@ describe("Custom Group Granular Access", () => {
             cy.visit(`/applications/${appId1}`);
             expectRestrictedModal();
         });
+        });
     });
 
     it("Should verify builder own app dev access and invalid environment preview handling", () => {
@@ -589,7 +589,7 @@ describe("Custom Group Granular Access", () => {
             appId1 = appId;
         });
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "builder");
+        cy.apiFullUserOnboarding(data.firstName, data.email, "builder").then(()=>{
 
         loginAsAdmin();
         cy.apiDeleteGranularPermission("builder", ["app", "folder"]);
@@ -680,6 +680,7 @@ describe("Custom Group Granular Access", () => {
             cy.visit(previewUrl);
             cy.url().should("match", /\/error\/invalid-link?/);
         });
+        });
     });
 
     it("Should verify preview and released app access for End-user", () => {
@@ -707,7 +708,7 @@ describe("Custom Group Granular Access", () => {
                 appId1 = appId;
             })
             .then(() => {
-                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user");
+                cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
 
                 //Scenario A : Can acces only released app and Preview button not visible
                 verifyEnvironmentAccess(
@@ -759,8 +760,7 @@ describe("Custom Group Granular Access", () => {
                     "production",
                 );
             });
-
-            
+        });
     });
 
     it("Should verify preview and released app access for custom group End-user", () => {
@@ -781,7 +781,7 @@ describe("Custom Group Granular Access", () => {
             appId2 = appId;
         });
 
-        cy.apiFullUserOnboarding(data.firstName, data.email, "end-user");
+        cy.apiFullUserOnboarding(data.firstName, data.email, "end-user").then(()=>{
 
         loginAsAdmin();
         cy.apiDeleteGranularPermission("end-user", ["app", "folder"]);
@@ -886,6 +886,7 @@ describe("Custom Group Granular Access", () => {
             cy.visit(previewUrl);
             cy.url().should("match", /\/error\/invalid-link?/);
         });
+        });
     });
 
     it("Should verify preview and released app access for Signed-up End-user", () => {
@@ -919,6 +920,8 @@ describe("Custom Group Granular Access", () => {
                 const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=development&version=v1`;
                 cy.visit(previewUrl);
                 signup(data.firstName, data.email);
+                cy.wait(1500);
+                cy.get(commonSelectors.previewSettings).should('be.visible');
                 cy.get(commonWidgetSelector.draggableWidget("text1")).should(
                     "contain",
                     "development",
@@ -932,8 +935,9 @@ describe("Custom Group Granular Access", () => {
                 cy.apiLogout();
                 cy.visit(previewUrl);
                 signup(user1, email1);
+                cy.wait(1000);
                 cy.url().should("match", /\/error\/restricted(-preview)?/);
-            });
+        });
     });
 });
 

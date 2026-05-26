@@ -8,6 +8,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
@@ -167,9 +168,21 @@ const RenderWidget = ({
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables?.[effectiveSubContainerIndex] ?? {},
         componentType,
+        nearestListviewId,
+        rowIndex: effectiveSubContainerIndex,
+        moduleId,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validateWidget, customResolvables, effectiveSubContainerIndex, unResolvedValidation, resolvedValidation, moduleId]
+    [
+      validateWidget,
+      customResolvables,
+      effectiveSubContainerIndex,
+      unResolvedValidation,
+      resolvedValidation,
+      moduleId,
+      nearestListviewId,
+      componentType,
+    ]
   );
 
   const resetComponent = useCallback(() => {
@@ -244,6 +257,25 @@ const RenderWidget = ({
   useEffect(() => {
     setExposedVariable('id', id);
   }, []);
+
+  const collapseWhenHidden = resolvedProperties?.collapseWhenHidden ?? false;
+  const resolvedWidgetVisibility = useStore((state) => {
+    const resolved = state.getResolvedComponent(id, resolveIndex, moduleId);
+    const exposed = getExposedPropertyForAdditionalActions(id, resolveIndex, 'isVisible', moduleId);
+    if (exposed !== undefined) return exposed;
+    return resolved?.properties?.visibility ?? resolved?.styles?.visibility ?? true;
+  }, shallow);
+  useEffect(() => {
+    if (currentMode !== 'view') return;
+    if (!collapseWhenHidden) return;
+    const contextIndices = normalizeLayoutContext(resolveIndex);
+    const handle = requestAnimationFrame(() => {
+      adjustComponentPositions(id, currentLayout, false, contextIndices, moduleId);
+    });
+    return () => cancelAnimationFrame(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedWidgetVisibility, collapseWhenHidden, currentMode]);
+
   if (!component) return null;
 
   return (

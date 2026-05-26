@@ -14,7 +14,7 @@ import {
   startCompletion,
 } from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
-import { keymap, tooltips } from '@codemirror/view';
+import { keymap, tooltips, EditorView } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import cx from 'classnames';
 import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
@@ -48,10 +48,36 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, modu
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const validationFn = restProps?.validationFn;
-  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId, moduleId), shallow);
-  const parentId = componentDefinition?.component?.parent;
-  const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
-  const customVariables = customResolvables?.[parentId]?.[0] || {};
+  const baseCustomVariables = useStore((state) => {
+    if (!componentId) return {};
+    const componentDef = state.getComponentDefinition(componentId, moduleId);
+    const parentId = componentDef?.component?.parent;
+    if (!parentId) return {};
+    // Walk up the ancestor chain to find the nearest ListView/Kanban, since
+    // customResolvables is keyed by the subcontainer's UUID — not by intermediate
+    // containers (e.g., text → Container → ListView needs to find the ListView).
+    const nearestAncestorId = state.findNearestSubcontainerAncestor(parentId, moduleId);
+    if (!nearestAncestorId) return {};
+    const customResolvables = state.resolvedStore.modules[moduleId]?.customResolvables || {};
+    return customResolvables[nearestAncestorId]?.[0] || {};
+  }, shallow);
+
+  // Table column context: inject cellValue/rowData for preview resolution
+  const tableColumnContext = useContext(TableColumnContext);
+  const tableCurrentData = useStore((state) => {
+    if (!tableColumnContext?.tableId) return null;
+    return state.resolvedStore.modules[moduleId]?.exposedValues?.components?.[tableColumnContext.tableId]?.currentData;
+  }, shallow);
+
+  const customVariables = useMemo(() => {
+    if (!Array.isArray(tableCurrentData) || tableCurrentData.length === 0) return baseCustomVariables;
+    const firstRow = tableCurrentData[0];
+    return {
+      ...baseCustomVariables,
+      rowData: firstRow,
+      cellValue: tableColumnContext?.columnKey != null ? firstRow?.[tableColumnContext.columnKey] : undefined,
+    };
+  }, [baseCustomVariables, tableCurrentData, tableColumnContext?.columnKey]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -257,7 +283,8 @@ const EditorInput = ({
   const codeHinterContext = useContext(CodeHinterContext);
   // TableColumnContext provides the table component ID for rowData/cellValue hints.
   // Set once at ColumnPopover level, consumed automatically by all nested CodeHinters.
-  const tableColumnComponentId = useContext(TableColumnContext);
+  const tableColumnContext = useContext(TableColumnContext);
+  const tableColumnComponentId = tableColumnContext?.tableId;
   const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
 
@@ -539,12 +566,22 @@ const EditorInput = ({
                       tooltips({
                         parent: document.body,
                       }),
+                      // CSS forces visual wrapping for long values (e.g.
+                      // REST URL with `{{...}}` interpolations). Without
+                      // `lineWrapping`, CM6 still treats the doc as one
+                      // unwrapped row and `drawSelection` paints a single
+                      // rect for the logical line -- so selection rects
+                      // miss the right-edge area on intermediate visual
+                      // rows. Enable wrapping so per-row selection rects
+                      // are generated.
+                      EditorView.lineWrapping,
                     ]
                   : [
                       javascript({ jsx: lang === 'jsx' }),
                       tooltips({
                         parent: document.body,
                       }),
+                      EditorView.lineWrapping,
                     ]
               }
               onChange={(val) => {

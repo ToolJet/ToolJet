@@ -1,13 +1,18 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { LoadingState } from './_components/LoadingState';
 import { EmptyState } from './_components/EmptyState';
 import { TableHeader } from './_components/TableHeader';
 import { TableRow } from './_components/TableRow';
+import { ExpandedRowContainer } from './_components/ExpandedRowContainer';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
 import useTableStore from '../../_stores/tableStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { DEFAULT_EXPANSION_HEIGHT } from '../../_utils/helper';
+
+const CONDENSED_ROW_HEIGHT = 40;
+const DEFAULT_ROW_HEIGHT = 46;
 
 export const TableData = ({
   id,
@@ -22,6 +27,10 @@ export const TableData = ({
   lastClickedRowRef,
   componentName,
   loadingState,
+  enableExpandableRows,
+  expandedRows,
+  expansionHeight = DEFAULT_EXPANSION_HEIGHT,
+  canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
 
@@ -63,18 +72,58 @@ export const TableData = ({
       cellMaxHeight = isMaxRowHeightAuto ? 'fit-content' : maxRowHeightValue + 'px';
       styles.maxHeight = cellMaxHeight;
     } else {
-      calculatedCellHeight = cellHeight === 'condensed' ? 40 : 46;
+      calculatedCellHeight = cellHeight === 'condensed' ? CONDENSED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT;
       styles.maxHeight = `${calculatedCellHeight}px`;
       styles.height = `${calculatedCellHeight}px`;
     }
     return styles;
   }, [cellHeight, contentWrap, isMaxRowHeightAuto, maxRowHeightValue, containerBackgroundColor]);
 
-  // Setup virtualizer
+  // Build an interleaved list of virtual items: data rows + expansion panels.
+  // Use `row.id in expandedRows` (not truthy check) — rowIndex 0 is falsy.
+  const rows = table.getRowModel().rows;
+  const virtualItemList = useMemo(() => {
+    if (!enableExpandableRows) {
+      return rows.map((row) => ({ type: 'data', row, rowIndex: row.index }));
+    }
+    const items = [];
+    rows.forEach((row) => {
+      items.push({ type: 'data', row, rowIndex: row.index });
+      if (row.id in (expandedRows ?? {})) {
+        items.push({ type: 'expansion', row, rowIndex: row.index });
+      }
+    });
+    return items;
+  }, [rows, enableExpandableRows, expandedRows]);
+
+  const estimateSize = useCallback(
+    (i) => {
+      const item = virtualItemList[i];
+      if (item?.type === 'expansion') {
+        return expansionHeight;
+      }
+      return cellHeight === 'condensed' ? CONDENSED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT;
+    },
+    [virtualItemList, cellHeight, expansionHeight]
+  );
+
+  // Each item gets a stable cache key that does not change when rows above are inserted or removed.
+  // Without stable keys, TanStack keys items by virtual index, so expanding row N shifts every subsequent index and reuses the wrong cached sizes.
+  // With stable keys the itemSizeCache survives expand/collapse reorderings, which also removes the need for measure() entirely.
+  const getItemKey = useCallback(
+    (i) => {
+      const item = virtualItemList[i];
+      if (!item) return i;
+      return item.type === 'expansion' ? `expansion-${item.rowIndex}` : item.row.id;
+    },
+    [virtualItemList]
+  );
+
   const rowVirtualizer = useVirtualizer({
-    count: table.getRowModel().rows.length,
+    count: virtualItemList.length,
     getScrollElement: () => tableBodyRef.current,
-    estimateSize: () => (cellHeight === 'condensed' ? 40 : 46),
+    estimateSize,
+    getItemKey,
     overscan: 5,
     scrollMargin: 0,
   });
@@ -104,6 +153,8 @@ export const TableData = ({
         darkMode={darkMode}
         columnOrder={columnOrder}
         setColumnOrder={setColumnOrder}
+        fireEvent={fireEvent}
+        setExposedVariables={setExposedVariables}
       />
     );
   };
@@ -141,12 +192,30 @@ export const TableData = ({
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const row = table.getRowModel().rows[virtualRow.index];
+            const item = virtualItemList[virtualRow.index];
+            if (!item) return null;
+
+            if (item.type === 'expansion') {
+              return (
+                <ExpandedRowContainer
+                  key={`${item.row.id}-expansion`}
+                  tableId={id}
+                  rowIndex={item.rowIndex}
+                  top={virtualRow.start}
+                  darkMode={darkMode}
+                  canvasWidth={canvasWidth}
+                  expansionHeight={expansionHeight}
+                  virtualizer={rowVirtualizer}
+                  virtualItemIndex={virtualRow.index}
+                />
+              );
+            }
+
             return (
               <TableRow
                 id={id}
-                key={row.id}
-                row={row}
+                key={item.row.id}
+                row={item.row}
                 virtualRow={virtualRow}
                 cellHeight={cellHeight}
                 getResolvedValue={getResolvedValue}
@@ -159,6 +228,7 @@ export const TableData = ({
                 rowStyles={rowStyles}
                 measureElement={rowVirtualizer.measureElement}
                 componentName={componentName}
+                table={table}
               />
             );
           })}

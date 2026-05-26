@@ -1,0 +1,1370 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Microsoft Graph API - Users",
+    "version": "1.0",
+    "description": "Microsoft Graph API specification for /users and /users/{user-id} endpoints including all basic operations"
+  },
+  "servers": [
+    {
+      "url": "https://graph.microsoft.com/v1.0",
+      "description": "Microsoft Graph API v1.0"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "List users",
+        "description": "Retrieve a list of user objects from Azure AD",
+        "operationId": "listUsers",
+        "parameters": [
+          {
+            "name": "$filter",
+            "in": "query",
+            "description": "Filter results using OData query options",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "startswith(displayName,'A')"
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "displayName,mail,userPrincipalName"
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "manager"
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "description": "Order results",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "displayName"
+          },
+          {
+            "name": "$top",
+            "in": "query",
+            "description": "Number of items to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "$skip",
+            "in": "query",
+            "description": "Number of items to skip",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "$count",
+            "in": "query",
+            "description": "Include count of items",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "$search",
+            "in": "query",
+            "description": "Search for items",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ConsistencyLevel",
+            "in": "header",
+            "description": "Consistency level for advanced queries",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["eventual"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.Read.All", "User.ReadWrite.All", "Directory.Read.All", "Directory.ReadWrite.All"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create user",
+        "description": "Create a new user in Azure AD",
+        "operationId": "createUser",
+        "requestBody": {
+          "description": "User object to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.ReadWrite.All", "Directory.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/users/{user-id}": {
+      "get": {
+        "summary": "Get user",
+        "description": "Retrieve the properties and relationships of a user object",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "user-id",
+            "in": "path",
+            "description": "The unique identifier of the user. Can be the id property or userPrincipalName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "displayName,mail,userPrincipalName"
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "manager,directReports"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.Read", "User.Read.All", "User.ReadWrite", "User.ReadWrite.All", "Directory.Read.All", "Directory.ReadWrite.All"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update user",
+        "description": "Update the properties of a user object",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "user-id",
+            "in": "path",
+            "description": "The unique identifier of the user. Can be the id property or userPrincipalName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "User properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "User updated successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.ReadWrite", "User.ReadWrite.All", "Directory.ReadWrite.All"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete user",
+        "description": "Delete a user. Deleted users are moved to a temporary container and can be restored within 30 days",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "user-id",
+            "in": "path",
+            "description": "The unique identifier of the user. Can be the id property or userPrincipalName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.ReadWrite.All", "Directory.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Get current user",
+        "description": "Retrieve the properties and relationships of the signed-in user",
+        "operationId": "getCurrentUser",
+        "parameters": [
+          {
+            "name": "$select",
+            "in": "query",
+            "description": "Select properties to return",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$expand",
+            "in": "query",
+            "description": "Expand related entities",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.Read", "User.ReadWrite"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update current user",
+        "description": "Update the properties of the signed-in user",
+        "operationId": "updateCurrentUser",
+        "requestBody": {
+          "description": "User properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "User updated successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["User.ReadWrite"]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the user",
+            "readOnly": true
+          },
+          "deletedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "The date and time the user was deleted"
+          },
+          "accountEnabled": {
+            "type": "boolean",
+            "description": "true if the account is enabled; otherwise, false"
+          },
+          "ageGroup": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["null", "Minor", "NotAdult", "Adult"],
+            "description": "Sets the age group of the user"
+          },
+          "assignedLicenses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedLicense"
+            },
+            "description": "The licenses that are assigned to the user"
+          },
+          "assignedPlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedPlan"
+            },
+            "description": "The plans that are assigned to the user",
+            "readOnly": true
+          },
+          "businessPhones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The telephone numbers for the user"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "description": "The city in which the user is located"
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The company name which the user is associated"
+          },
+          "consentProvidedForMinor": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["null", "Granted", "Denied", "NotRequired"],
+            "description": "Sets whether consent was obtained for minors"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "description": "The country/region in which the user is located"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time the user was created",
+            "readOnly": true
+          },
+          "creationType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Indicates if the user account was created through regular sign up or invitation",
+            "readOnly": true
+          },
+          "department": {
+            "type": "string",
+            "nullable": true,
+            "description": "The name for the department in which the user works"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name displayed in the address book for the user"
+          },
+          "employeeHireDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "The date and time when the user was hired"
+          },
+          "employeeId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The employee identifier assigned to the user by the organization"
+          },
+          "employeeOrgData": {
+            "$ref": "#/components/schemas/EmployeeOrgData"
+          },
+          "employeeType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Captures enterprise worker type"
+          },
+          "externalUserState": {
+            "type": "string",
+            "nullable": true,
+            "description": "For external users, the state of the user's invitation",
+            "readOnly": true
+          },
+          "externalUserStateChangeDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the external user state changed",
+            "readOnly": true
+          },
+          "faxNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "The fax number of the user"
+          },
+          "givenName": {
+            "type": "string",
+            "nullable": true,
+            "description": "The given name (first name) of the user"
+          },
+          "identities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectIdentity"
+            },
+            "description": "Represents the identities that can be used to sign in to this user account"
+          },
+          "imAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The instant message voice over IP (VOIP) session initiation protocol (SIP) addresses"
+          },
+          "isResourceAccount": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Do not use – reserved for future use"
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true,
+            "description": "The user's job title"
+          },
+          "lastPasswordChangeDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time when the user last changed their password",
+            "readOnly": true
+          },
+          "legalAgeGroupClassification": {
+            "type": "string",
+            "nullable": true,
+            "description": "Used by enterprise apps to determine the legal age group",
+            "readOnly": true
+          },
+          "licenseAssignmentStates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LicenseAssignmentState"
+            },
+            "description": "State of license assignments for this user"
+          },
+          "mail": {
+            "type": "string",
+            "nullable": true,
+            "description": "The SMTP address for the user"
+          },
+          "mailNickname": {
+            "type": "string",
+            "description": "The mail alias for the user"
+          },
+          "mobilePhone": {
+            "type": "string",
+            "nullable": true,
+            "description": "The primary cellular telephone number for the user"
+          },
+          "officeLocation": {
+            "type": "string",
+            "nullable": true,
+            "description": "The office location in the user's place of business"
+          },
+          "onPremisesDistinguishedName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Distinguished Name of the on-premises AD user",
+            "readOnly": true
+          },
+          "onPremisesDomainName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Domain name of the on-premises AD",
+            "readOnly": true
+          },
+          "onPremisesExtensionAttributes": {
+            "$ref": "#/components/schemas/OnPremisesExtensionAttributes"
+          },
+          "onPremisesImmutableId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Used to map on-premises AD user to Azure AD user",
+            "readOnly": true
+          },
+          "onPremisesLastSyncDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last time the user was synced from on-premises AD",
+            "readOnly": true
+          },
+          "onPremisesProvisioningErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OnPremisesProvisioningError"
+            },
+            "description": "Errors during provisioning",
+            "readOnly": true
+          },
+          "onPremisesSamAccountName": {
+            "type": "string",
+            "nullable": true,
+            "description": "SAM account name from on-premises AD",
+            "readOnly": true
+          },
+          "onPremisesSecurityIdentifier": {
+            "type": "string",
+            "nullable": true,
+            "description": "Security identifier from on-premises AD",
+            "readOnly": true
+          },
+          "onPremisesSyncEnabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "true if synced from on-premises AD",
+            "readOnly": true
+          },
+          "onPremisesUserPrincipalName": {
+            "type": "string",
+            "nullable": true,
+            "description": "UPN from on-premises AD",
+            "readOnly": true
+          },
+          "otherMails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Additional email addresses for the user"
+          },
+          "passwordPolicies": {
+            "type": "string",
+            "nullable": true,
+            "description": "Specifies password policies for the user"
+          },
+          "passwordProfile": {
+            "$ref": "#/components/schemas/PasswordProfile"
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "The postal code for the user's postal address"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true,
+            "description": "The preferred language for the user"
+          },
+          "provisionedPlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvisionedPlan"
+            },
+            "description": "The plans that are provisioned for the user",
+            "readOnly": true
+          },
+          "proxyAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Proxy addresses for the user",
+            "readOnly": true
+          },
+          "showInAddressList": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Do not use - reserved for future use"
+          },
+          "signInSessionsValidFromDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Sign-in sessions valid from this time",
+            "readOnly": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true,
+            "description": "The state or province in the user's address"
+          },
+          "streetAddress": {
+            "type": "string",
+            "nullable": true,
+            "description": "The street address of the user's place of business"
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true,
+            "description": "The user's surname (family name or last name)"
+          },
+          "usageLocation": {
+            "type": "string",
+            "nullable": true,
+            "description": "A two letter country code (ISO 3166)"
+          },
+          "userPrincipalName": {
+            "type": "string",
+            "description": "The user principal name (UPN) of the user"
+          },
+          "userType": {
+            "type": "string",
+            "nullable": true,
+            "description": "A string value that can be used to classify user types"
+          }
+        }
+      },
+      "UserCreateRequest": {
+        "type": "object",
+        "required": ["accountEnabled", "displayName", "mailNickname", "userPrincipalName", "passwordProfile"],
+        "properties": {
+          "accountEnabled": {
+            "type": "boolean",
+            "description": "true if the account is enabled; otherwise, false"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name to display in the address book for the user"
+          },
+          "mailNickname": {
+            "type": "string",
+            "description": "The mail alias for the user"
+          },
+          "userPrincipalName": {
+            "type": "string",
+            "description": "The user principal name (UPN) of the user"
+          },
+          "passwordProfile": {
+            "$ref": "#/components/schemas/PasswordProfile"
+          },
+          "ageGroup": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["null", "Minor", "NotAdult", "Adult"]
+          },
+          "businessPhones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "consentProvidedForMinor": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["null", "Granted", "Denied", "NotRequired"]
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "department": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeHireDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "faxNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "givenName": {
+            "type": "string",
+            "nullable": true
+          },
+          "identities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectIdentity"
+            }
+          },
+          "imAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "mail": {
+            "type": "string",
+            "nullable": true
+          },
+          "mobilePhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "officeLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "otherMails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "passwordPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "streetAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          },
+          "usageLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "userType": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "accountEnabled": {
+            "type": "boolean"
+          },
+          "ageGroup": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["null", "Minor", "NotAdult", "Adult"]
+          },
+          "businessPhones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "consentProvidedForMinor": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["null", "Granted", "Denied", "NotRequired"]
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "department": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "employeeHireDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "faxNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "givenName": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "mail": {
+            "type": "string",
+            "nullable": true
+          },
+          "mailNickname": {
+            "type": "string"
+          },
+          "mobilePhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "officeLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "otherMails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "passwordPolicies": {
+            "type": "string",
+            "nullable": true
+          },
+          "passwordProfile": {
+            "$ref": "#/components/schemas/PasswordProfile"
+          },
+          "postalCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "streetAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "surname": {
+            "type": "string",
+            "nullable": true
+          },
+          "usageLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "userPrincipalName": {
+            "type": "string"
+          }
+        }
+      },
+      "UserCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": {
+            "type": "string",
+            "description": "The OData context URL"
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to get the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true is used)"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "description": "Collection of users"
+          }
+        }
+      },
+      "PasswordProfile": {
+        "type": "object",
+        "properties": {
+          "forceChangePasswordNextSignIn": {
+            "type": "boolean",
+            "description": "true if the user must change their password on next sign-in"
+          },
+          "forceChangePasswordNextSignInWithMfa": {
+            "type": "boolean",
+            "description": "true if the user must perform MFA on password change"
+          },
+          "password": {
+            "type": "string",
+            "description": "The password for the user"
+          }
+        },
+        "required": ["password"]
+      },
+      "AssignedLicense": {
+        "type": "object",
+        "properties": {
+          "disabledPlans": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Disabled service plans"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier for the SKU"
+          }
+        }
+      },
+      "AssignedPlan": {
+        "type": "object",
+        "properties": {
+          "assignedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Assignment date"
+          },
+          "capabilityStatus": {
+            "type": "string",
+            "description": "Capability status"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service name"
+          },
+          "servicePlanId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Service plan identifier"
+          }
+        }
+      },
+      "EmployeeOrgData": {
+        "type": "object",
+        "properties": {
+          "costCenter": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cost center"
+          },
+          "division": {
+            "type": "string",
+            "nullable": true,
+            "description": "Division"
+          }
+        }
+      },
+      "ObjectIdentity": {
+        "type": "object",
+        "properties": {
+          "signInType": {
+            "type": "string",
+            "description": "Type of sign-in (e.g., userName, emailAddress, federated)"
+          },
+          "issuer": {
+            "type": "string",
+            "description": "Issuer of the identity"
+          },
+          "issuerAssignedId": {
+            "type": "string",
+            "description": "Unique identifier assigned by the issuer"
+          }
+        }
+      },
+      "LicenseAssignmentState": {
+        "type": "object",
+        "properties": {
+          "assignedByGroup": {
+            "type": "string",
+            "nullable": true,
+            "description": "Group that assigned this license"
+          },
+          "disabledPlans": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastUpdatedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "skuId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
+      "OnPremisesExtensionAttributes": {
+        "type": "object",
+        "properties": {
+          "extensionAttribute1": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute2": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute3": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute4": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute5": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute6": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute7": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute8": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute9": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute10": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute11": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute12": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute13": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute14": {
+            "type": "string",
+            "nullable": true
+          },
+          "extensionAttribute15": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "OnPremisesProvisioningError": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "occurredDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "propertyCausingError": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ProvisionedPlan": {
+        "type": "object",
+        "properties": {
+          "capabilityStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "provisioningStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "service": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "innerError": {
+                "type": "object",
+                "properties": {
+                  "request-id": {
+                    "type": "string",
+                    "description": "Request identifier"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date of the error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "User.Read": "Read user profile",
+              "User.ReadWrite": "Read and write user profile",
+              "User.Read.All": "Read all users' profiles",
+              "User.ReadWrite.All": "Read and write all users' profiles",
+              "Directory.Read.All": "Read directory data",
+              "Directory.ReadWrite.All": "Read and write directory data",
+              "Directory.AccessAsUser.All": "Access directory as the signed-in user"
+            }
+          },
+          "clientCredentials": {
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "User.Read.All": "Read all users' profiles",
+              "User.ReadWrite.All": "Read and write all users' profiles",
+              "Directory.Read.All": "Read directory data",
+              "Directory.ReadWrite.All": "Read and write directory data"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth2": []
+    }
+  ]
+}

@@ -29,28 +29,43 @@ import useThemeAccess from './useThemeAccess';
 import toast from 'react-hot-toast';
 import { initializeLibraries, executePreloadedJS } from '@/AppBuilder/_helpers/libraryLoader';
 
-/**
- * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
- * This will get redundanted once api response for appdata is made uniform across all the endpoints.
- **/
-export const normalizeQueryTransformationOptions = (query) => {
-  if (query?.options) {
-    if (query.options.enable_transformation) {
-      const enableTransformation = query.options.enable_transformation;
-      delete query.options.enable_transformation;
-      if (!query.options.enableTransformation) {
-        query.options.enableTransformation = enableTransformation;
-      }
-    }
+/* 
+Whitelist of cross-cutting query option keys that need snake→camel normalization.
+Editor (data-queries API) returns these as camelCase, but public/released/preview-for-version
+paths return them as snake_case. We only normalize keys here — REST/TooljetDB/gRPC editors
+rely on snake_case for their own option keys (query_timeout, retry_network_errors,
+where_filters, proto_files, etc.) and must NOT be touched.
+*/
 
-    if (query.options.transformation_language) {
-      const transformationLanguage = query.options.transformation_language;
-      delete query.options.transformation_language;
-      if (!query.options.transformationLanguage) {
-        query.options.transformationLanguage = transformationLanguage;
+const QUERY_OPTION_KEYS_TO_NORMALIZE = [
+  'enableTransformation',
+  'transformationLanguage',
+  'runOnPageLoad',
+  'runOnDependencyChange',
+  'requestConfirmation',
+  'requestConfirmationFx',
+  'confirmationMessage',
+  'showSuccessNotification',
+  'successMessage',
+  'notificationDuration',
+  'disableQuery',
+  'disabledMessage',
+];
+
+const snakeCase = (camel) => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
+
+export const normalizeQueryTransformationOptions = (query) => {
+  if (!query?.options) return query;
+  QUERY_OPTION_KEYS_TO_NORMALIZE.forEach((camelKey) => {
+    const snakeKey = snakeCase(camelKey);
+    if (query.options[snakeKey] !== undefined) {
+      const value = query.options[snakeKey];
+      delete query.options[snakeKey];
+      if (query.options[camelKey] === undefined) {
+        query.options[camelKey] = value;
       }
     }
-  }
+  });
   return query;
 };
 
@@ -117,6 +132,7 @@ const useAppData = (
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
+  const isLicenseFetched = useStore((state) => state.isLicenseFetched);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -270,7 +286,7 @@ const useAppData = (
     if (moduleMode) {
       const moduleDefinition = getModuleDefinition(appId);
       if (moduleDefinition) {
-        appDataPromise = Promise.resolve(moduleDefinition);
+        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
       } else {
         appDataPromise = appService.fetchApp(appId);
       }
@@ -336,10 +352,12 @@ const useAppData = (
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-          constantsResp?.constants,
-          editorEnvironment?.name
-        );
+        if (constantsResp) {
+          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+            constantsResp?.constants,
+            editorEnvironment?.name
+          );
+        }
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -350,7 +368,7 @@ const useAppData = (
         });
         const conversation = appData.ai_conversation;
         const docsConversation = appData.ai_conversation_learn;
-        if (setConversation && setDocsConversation) {
+        if (!moduleMode && setConversation && setDocsConversation) {
           setConversation(conversation);
           setDocsConversation(docsConversation);
           // important to control ai inputs
@@ -395,16 +413,17 @@ const useAppData = (
           moduleId
         );
 
+        const liveMessages = useStore.getState().ai?.conversation?.aiConversationMessages;
         if (
-          !moduleMode &&
           state?.prompt &&
           !promptSentRef.current &&
-          (conversation?.aiConversationMessages || []).length === 0
+          (conversation?.aiConversationMessages || []).length === 0 &&
+          (liveMessages || []).length === 0
         ) {
           promptSentRef.current = true;
           setSelectedSidebarItem('tooljetai');
           toggleLeftSidebar(true);
-          sendMessage(state.prompt);
+          sendMessage(state.prompt, {}, {}, moduleId);
           setIsQueryPaneExpanded(false);
           // Clear prompt from navigation state so it doesn't re-trigger on page refresh
           const { prompt: _prompt, ...restUsrState } = window.history.state?.usr || {};
@@ -599,18 +618,18 @@ const useAppData = (
   }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
-    if (isComponentLayoutReady) {
+    if (isComponentLayoutReady && isLicenseFetched) {
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
-        // Load JS libraries and preloaded JS from globalSettings before running queries
+        // Load JS libraries and preloaded JS from globalSettings before running queries.
+        // The BE strips libraries from globalSettings when the org is not licensed, so
+        // no feature-access check is needed here.
         const globalSettings = useStore.getState().globalSettings;
         const jsLibraries = globalSettings?.libraries?.javascript || [];
         const preloadedJS = globalSettings?.preloadedScript?.javascript || '';
 
-        const hasJSLibrariesAccess = useStore.getState().license?.featureAccess?.appJsLibraries;
-
-        if (hasJSLibrariesAccess && (jsLibraries.length > 0 || preloadedJS)) {
+        if (jsLibraries.length > 0 || preloadedJS) {
           setJsLibraryLoading(true);
           try {
             const registry = jsLibraries.length > 0 ? await initializeLibraries(jsLibraries) : {};
@@ -621,7 +640,7 @@ const useAppData = (
 
             setJsLibraryRegistry(fullRegistry);
           } catch (error) {
-            console.error('Failed to initialize JS libraries:', error);
+            toast.error(`Failed to load JS libraries: ${error?.message ?? String(error)}`);
           } finally {
             setJsLibraryLoading(false);
           }
@@ -634,7 +653,7 @@ const useAppData = (
 
       loadLibrariesAndRun();
     }
-  }, [isComponentLayoutReady, moduleId, mode]);
+  }, [isComponentLayoutReady, isLicenseFetched, moduleId, mode]);
 
   useEffect(() => {
     if (moduleId !== 'canvas') return;

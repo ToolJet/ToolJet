@@ -35,6 +35,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
   const isTagsInput = component?.component?.component === 'TagsInput';
   const isRadioButton = component?.component?.component === 'RadioButtonV2';
+  const isDropdownV2 = component?.component?.component === 'DropdownV2';
+  const isCaptionEnabled = isDropdownV2 || isMultiSelect;
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
   const sort = component?.component?.definition?.properties?.sort?.value;
@@ -124,6 +126,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     return {
       value,
       label,
+      ...(isCaptionEnabled ? { caption: null } : {}),
       visible: { value: '{{true}}' },
       disable: { value: '{{false}}' },
       default: { value: '{{false}}' },
@@ -162,6 +165,19 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         return {
           ...option,
           value,
+        };
+      }
+      return option;
+    });
+    updateOptions(_options);
+  };
+
+  const handleCaptionChange = (caption, index) => {
+    const _options = options.map((option, i) => {
+      if (i === index) {
+        return {
+          ...option,
+          caption: caption === '' ? null : caption,
         };
       }
       return option;
@@ -320,6 +336,20 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => handleValueChange(value, index)}
             />
           </div>
+          {isCaptionEnabled && (
+            <div className="field mb-3" data-cy={`input-and-label-option-caption`}>
+              <label className="font-weight-500 mb-1 font-size-12">{'Option caption'}</label>
+              <CodeHinter
+                type={'basic'}
+                initialValue={item?.caption ?? ''}
+                theme={darkMode ? 'monokai' : 'default'}
+                mode="javascript"
+                lineNumbers={false}
+                placeholder={'Optional description'}
+                onChange={(value) => handleCaptionChange(value, index)}
+              />
+            </div>
+          )}
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
               initialValue={
@@ -560,6 +590,19 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             'properties',
             currentState,
             allComponents
+          )}
+        {isMultiSelect &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'maxLimit',
+            'properties',
+            currentState,
+            allComponents,
+            darkMode,
+            componentMeta.properties?.maxLimit?.placeholder
           )}
         {isSortingEnabled &&
           renderElement(

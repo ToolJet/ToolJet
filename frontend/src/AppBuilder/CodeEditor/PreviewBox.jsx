@@ -134,7 +134,7 @@ export const PreviewBox = ({
   const globalServerConstantsRegex = /\{\{.*globals\.server.*\}\}/;
 
   const getPreviewContent = (content, type) => {
-    if (content === undefined || content === null) return currentValue;
+    if (content === undefined) return currentValue;
     try {
       switch (type) {
         case 'Object':
@@ -617,6 +617,7 @@ const PreviewContainer = ({
   );
 
   const initialPlacement = isInsideQueryManager ? 'bottom-start' : previewPlacement || 'left';
+  const hasValue = currentValue !== '' && currentValue !== undefined && currentValue !== null;
 
   return (
     <>
@@ -625,7 +626,7 @@ const PreviewContainer = ({
           key={overlayKey}
           placement={initialPlacement}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
-          show={showPreview}
+          show={showPreview && hasValue}
           rootClose
           shouldUpdatePosition={true}
           container={document.body}
@@ -741,7 +742,7 @@ const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
 
     const typeOfValue = typeof prettyPrintedJson;
 
-    if (typeOfValue === 'object' || typeOfValue === 'array') {
+    if (prettyPrintedJson !== null && (typeOfValue === 'object' || typeOfValue === 'array')) {
       showJSONTree = true;
     } else {
       prettyPrintedJson = preview;

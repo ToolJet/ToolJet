@@ -132,7 +132,16 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.pluginId) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
+      const manifestData = dataSource?.plugin?.manifestFile?.data;
+
+      // Handle new tj:version schema format
+      if (manifestData?.['tj:version']) {
+        const dsm = new DataSourceSchemaManager(manifestData);
+        return dsm.getSourceMetadata();
+      }
+
+      // // Old schema format
+      let dataSourceMeta = camelizeKeys(manifestData?.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
@@ -413,6 +422,9 @@ class DataSourceManagerComponent extends React.Component {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
       case 'googlesheetsv2': {
+        return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'bigquery': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
       default:
@@ -958,10 +970,20 @@ class DataSourceManagerComponent extends React.Component {
       ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
+    // For old-schema datasources (restapi, grpcv, etc.), DynamicForm.useLayoutEffect fills
+    // missing defaults into state.options but not into selectedDataSource.options (DB value).
+    // Normalize the baseline so those auto-filled defaults don't register as unsaved changes.
+    const dsDefaults = dataSourceMeta?.defaults ?? {};
+    const normalizedSavedOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...(selectedDataSource?.options ?? {}) }
+    );
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-          selectedDataSource?.name === datasourceName) ||
-        !isEmpty(validationMessages)
+      ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        selectedDataSource?.name === datasourceName
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
@@ -1180,8 +1202,8 @@ class DataSourceManagerComponent extends React.Component {
                       )}
 
                       {connectionTestError && (
-                        <div className="row w-100">
-                          <div className="alert alert-danger" role="alert">
+                        <div className="w-100">
+                          <div className="alert alert-danger datasource-error-alert" role="alert">
                             <div className="text-muted" data-cy="connection-alert-text">
                               {connectionTestError.message}
                             </div>

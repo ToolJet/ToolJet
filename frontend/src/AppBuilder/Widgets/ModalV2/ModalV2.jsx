@@ -4,7 +4,6 @@ import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
 import { useResetZIndex } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalZIndex';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
-import { useEventListener } from '@/_hooks/use-event-listener';
 import { ModalWidget } from '@/AppBuilder/Widgets/ModalV2/Components/Modal';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
@@ -17,6 +16,7 @@ import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/Modal
 import '@/AppBuilder/Widgets/ModalV2/style.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 
 export const ModalV2 = function Modal({
   id,
@@ -37,6 +37,7 @@ export const ModalV2 = function Modal({
   componentType,
 }) {
   const { moduleId } = useModuleContext();
+  const { contextPath } = useSubcontainerContext();
   const [showModal, setShowModal] = useState(false);
   const {
     closeOnClickingOutside = false,
@@ -100,20 +101,6 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  useDynamicHeight({
-    isDynamicHeightEnabled,
-    id,
-    height,
-    adjustComponentPositions,
-    currentLayout,
-    isContainer: true,
-    componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
-    visibility: isVisible,
-    subContainerIndex,
-    componentType,
-  });
-
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
@@ -150,6 +137,11 @@ export const ModalV2 = function Modal({
     clearSelectedComponents();
   };
 
+  const showModalRef = useRef(false);
+  useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
+
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -166,6 +158,18 @@ export const ModalV2 = function Modal({
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  // If modal is unmounted while open (e.g. parent page switches via an action
+  // fired from inside the modal), onHide never runs and canvas-content keeps
+  // the inline `overflow: hidden !important` set by onShowSideEffects, leaving
+  // the next page unscrollable.
+  useEffect(() => {
+    return () => {
+      if (showModalRef.current) {
+        onHideSideEffects();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
@@ -191,6 +195,24 @@ export const ModalV2 = function Modal({
     setExposedVariable,
     onHideModal,
     onShowModal,
+  });
+  const contextIndices = contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex;
+
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    // Includes footerHeight + showFooter so resizing/toggling the footer
+    // also triggers a reflow (configured slot heights feed into the modal's
+    // computed body height).
+    value: JSON.stringify({ headerHeight, footerHeight, showHeader, showFooter, showModal }),
+    visibility: isVisible,
+    subContainerIndex: contextIndices,
+    componentType,
   });
 
   const customStyles = createModalStyles({
@@ -324,7 +346,7 @@ export const ModalV2 = function Modal({
           onSelectModal: setSelectedComponentAsModal,
           isFullScreen,
           darkMode,
-          subContainerIndex,
+          subContainerIndex: contextIndices,
           isDynamicHeightEnabled,
         }}
       />

@@ -25,6 +25,7 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import FormValidationContext from './FormValidationContext';
 
 const FormComponent = (props) => {
   const {
@@ -155,7 +156,9 @@ const FormComponent = (props) => {
     currentLayout,
     isContainer: true,
     componentCount,
-    value: isJSONSchema,
+    // Refire reflow when slot visibility/heights change — resizing the form's
+    // header or footer must recompute the container's dynamic height.
+    value: `${isJSONSchema}|${showHeader ? 1 : 0}|${showFooter ? 1 : 0}|${headerHeight}|${footerHeight}`,
     visibility: isVisible,
     subContainerIndex,
     componentType,
@@ -237,21 +240,27 @@ const FormComponent = (props) => {
   const effectiveChildrenData = advanced ? jsonSchemaChildrenData : childrenData;
 
   const [isValid, setValidation] = useState(true);
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
   useEffect(() => {
     const exposedVariables = {
       resetForm: async function () {
+        setSubmitAttemptCount(0);
         resetComponent();
       },
       submitForm: async function () {
         if (validateOnSubmit) {
           if (!isValid) {
+            setSubmitAttemptCount((n) => n + 1);
             return fireEvent('onInvalid');
           }
         }
-        fireEvent('onSubmit').then(() => resetOnSubmit && resetComponent());
+        fireEvent('onSubmit').then(() => {
+          setSubmitAttemptCount(0);
+          if (resetOnSubmit) resetComponent();
+        });
       },
     };
 
@@ -280,7 +289,10 @@ const FormComponent = (props) => {
   };
 
   useEffect(() => {
-    if (mounted) resetComponent();
+    if (mounted) {
+      setSubmitAttemptCount(0);
+      resetComponent();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
 
@@ -372,10 +384,12 @@ const FormComponent = (props) => {
   const fireSubmissionEvent = () => {
     if (validateOnSubmit) {
       if (!isValid) {
+        setSubmitAttemptCount((n) => n + 1);
         return fireEvent('onInvalid');
       }
     }
     fireEvent('onSubmit').then(() => {
+      setSubmitAttemptCount(0);
       if (resetOnSubmit) {
         debounce(() => resetComponent(), 100)();
       }
@@ -458,54 +472,61 @@ const FormComponent = (props) => {
           </div>
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
-            {!advanced && (
-              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
-                <SubContainer
-                  id={id}
-                  canvasHeight={parseInt(computedFormBodyHeight, 10)}
-                  canvasWidth={width}
-                  styles={{
-                    backgroundColor: computedStyles.backgroundColor,
-                    height: '100%',
-                  }}
-                  darkMode={darkMode}
-                  componentType="Form"
-                />
-              </div>
-            )}
-            {advanced &&
-              uiComponents?.map((item, index) => {
-                return (
-                  <div
-                    //check to avoid labels for these widgets as label is already present for them
-                    className={
-                      ![
-                        'Checkbox',
-                        'StarRating',
-                        'Multiselect',
-                        'DropDown',
-                        'RadioButton',
-                        'ToggleSwitch',
-                        'ToggleSwitchV2',
-                      ].includes(uiComponents?.[index + 1]?.component)
-                        ? `json-form-wrapper json-form-wrapper-disabled`
-                        : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
-                    }
-                    key={index}
-                  >
-                    <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
-                      <RenderSchema
-                        component={item}
-                        parent={id}
-                        id={index}
-                        darkMode={darkMode}
-                        onOptionChange={onComponentOptionChangedForSubcontainer}
-                        onOptionsChange={onComponentOptionsChangedForSubcontainer}
-                      />
+            <FormValidationContext.Provider value={submitAttemptCount}>
+              {!advanced && (
+                <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
+                  <SubContainer
+                    id={id}
+                    canvasHeight={parseInt(computedFormBodyHeight, 10)}
+                    canvasWidth={width}
+                    styles={{
+                      backgroundColor: computedStyles.backgroundColor,
+                      height: '100%',
+                      // Suppress the transient scrollbar that flashes for a
+                      // frame while children grow ahead of the parent reflow.
+                      // Dynamic mode is view-only, so static-height authoring
+                      // still gets the default scroll behavior.
+                      overflowY: isDynamicHeightEnabled ? 'hidden' : undefined,
+                    }}
+                    darkMode={darkMode}
+                    componentType="Form"
+                  />
+                </div>
+              )}
+              {advanced &&
+                uiComponents?.map((item, index) => {
+                  return (
+                    <div
+                      //check to avoid labels for these widgets as label is already present for them
+                      className={
+                        ![
+                          'Checkbox',
+                          'StarRating',
+                          'Multiselect',
+                          'DropDown',
+                          'RadioButton',
+                          'ToggleSwitch',
+                          'ToggleSwitchV2',
+                        ].includes(uiComponents?.[index + 1]?.component)
+                          ? `json-form-wrapper json-form-wrapper-disabled`
+                          : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
+                      }
+                      key={index}
+                    >
+                      <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
+                        <RenderSchema
+                          component={item}
+                          parent={id}
+                          id={index}
+                          darkMode={darkMode}
+                          onOptionChange={onComponentOptionChangedForSubcontainer}
+                          onOptionsChange={onComponentOptionsChangedForSubcontainer}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+            </FormValidationContext.Provider>
           </fieldset>
         )}
       </div>

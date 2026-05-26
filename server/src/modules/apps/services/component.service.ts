@@ -270,19 +270,26 @@ export class ComponentsService implements IComponentsService {
     const { id, name, properties, styles, generalStyles, validation, parent, displayPreferences, general } =
       componentData;
 
-    const layouts: Record<string, { top: number; left: number; width: number; height: number }> = {};
+    const layouts: Record<
+      string,
+      { top: number; left: number; width: number; height: number; updatedAt: Date | null }
+    > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height } = layout;
+        const { type, top, left, width, height, updatedAt } = layout;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
+        // `updatedAt` is exposed so the frontend can use it as a stack-order
+        // tiebreaker for widgets sharing the same (top, left) — most recently
+        // positioned widget renders at the bottom of the stack.
         layouts[type] = {
           top: top ?? 0,
           left: left ?? 0, // Use the already adjusted 'left' value
           width: width ?? 0,
           height: height ?? 0,
+          updatedAt: updatedAt ?? null,
         };
       }
     });
@@ -476,6 +483,7 @@ export class ComponentsService implements IComponentsService {
                   'TagsInput',
                   'Navigation',
                   'TreeSelect',
+                  'ButtonGroupV2',
                 ].includes(componentData.type) &&
                 _.isArray(objValue)
               ) {

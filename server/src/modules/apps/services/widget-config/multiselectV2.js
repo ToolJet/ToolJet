@@ -121,6 +121,15 @@ export const multiselectV2Config = {
       },
       accordian: 'Options',
     },
+    maxLimit: {
+      type: 'code',
+      displayName: 'Max selection limit',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+      },
+      accordian: 'Options',
+      placeholder: '{{2}}',
+    },
     showAllSelectedLabel: {
       type: 'toggle',
       displayName: 'Show "All items are selected"',
@@ -170,6 +179,13 @@ export const multiselectV2Config = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'additionalActions',
     },
     disabledState: {
@@ -370,6 +386,7 @@ export const multiselectV2Config = {
       values: { value: ['1', '2'] },
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
+      maxLimit: { value: '' },
       optionsLoadingState: { value: '{{false}}' },
       sort: { value: 'none' },
       placeholder: { value: 'Select the options' },
@@ -377,17 +394,20 @@ export const multiselectV2Config = {
       showClearBtn: { value: '{{true}}' },
       showSearchInput: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       schema: {
         value:
-          "{{[\t{label: 'option1',value: 1,disable: false,visible: true,default: true},{label: 'option2',value: 2,disable: false,visible: true},{label: 'option3',value: 3,disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: 1,caption: null,disable: false,visible: true,default: true},{label: 'option2',value: 2,caption: null,disable: false,visible: true},{label: 'option3',value: 3,caption: null,disable: false,visible: true}\t]}}",
       },
       options: {
         value: [
           {
             label: 'option1',
             value: '1',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
@@ -395,6 +415,7 @@ export const multiselectV2Config = {
           {
             label: 'option2',
             value: '2',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: true },
@@ -402,6 +423,7 @@ export const multiselectV2Config = {
           {
             label: 'option3',
             value: '3',
+            caption: null,
             disable: { value: false },
             visible: { value: true },
             default: { value: false },
