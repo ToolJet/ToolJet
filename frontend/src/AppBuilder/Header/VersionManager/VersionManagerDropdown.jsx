@@ -227,7 +227,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         const isLocal = versions.some(
           (v) => v.name === versionName && (v.versionType || v.version_type) === 'version' && v.status !== 'DRAFT'
         );
-        console.log('Git tag found:', versionName, 'isLocal:', isLocal);
         newStatus.set(versionName, {
           isInGit: true,
           isLocal,
