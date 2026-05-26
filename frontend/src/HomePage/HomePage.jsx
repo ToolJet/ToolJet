@@ -1899,7 +1899,11 @@ class HomePageComponent extends React.Component {
 
               {/* IMPORT FROM — locked to current branch */}
               <div className="form-group">
-                <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="import-from-label">
+                <label
+                  className="mb-1 tj-text-sm font-weight-500"
+                  style={{ color: 'var(--slate8)' }}
+                  data-cy="import-from-label"
+                >
                   Import from
                 </label>
                 <div className="tj-app-input" data-cy="import-from-select">

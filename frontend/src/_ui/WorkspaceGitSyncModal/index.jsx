@@ -319,20 +319,21 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
             {/* PULL FROM */}
             <div className="form-group mb-0">
-              <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="pull-from-label">
+              <label
+                className="mb-1 tj-text-sm font-weight-500"
+                style={{ color: 'var(--slate8)' }}
+                data-cy="pull-from-label"
+              >
                 Pull from
               </label>
               <Dropdown
                 data-cy="branch-select"
-                options={dropdownBranches.reduce((acc, branch) => {
-                  acc[branch.name] = { value: branch.name, label: branch.name };
-                  return acc;
-                }, {})}
-                value={selectedBranch}
-                onChange={handleBranchChange}
+                options={{ [currentBranchName]: { value: currentBranchName, label: currentBranchName } }}
+                value={currentBranchName}
+                onChange={() => {}}
                 width="100%"
                 theme={darkMode ? 'dark' : 'light'}
-                showItemOverflowTooltip
+                disabled={true}
               />
               <div className="tj-text-xxsm import-from-helper-text">Apps can only be imported from the same branch</div>
             </div>
