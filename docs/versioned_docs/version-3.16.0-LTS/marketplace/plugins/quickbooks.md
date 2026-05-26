@@ -3,10 +3,7 @@ id: marketplace-plugin-quickbooks
 title: QuickBooks
 ---
 
-The QuickBooks plugin in ToolJet enables applications to connect with QuickBooks APIs directly from ToolJet. It allows users to manage resources such as customers, invoices, payments, vendors, and reports without building custom backend integrations.
-
-
-QuickBooks exposes REST APIs that allow external applications to securely access and manage accounting data programmatically.
+The QuickBooks plugin in ToolJet enables applications to connect with QuickBooks APIs directly from ToolJet. It allows users to manage resources such as customers, invoices, payments, vendors, and reports without building custom backend integrations. QuickBooks exposes REST APIs that allow external applications to securely access and manage accounting data programmatically.
 
 ## Connection
 
@@ -16,15 +13,13 @@ To connect to QuickBooks, the following credentials are required:
 
  - **Client Secret**: Enter your Client Secret. This secret will be stored in the encrypted form.
 
- - **Scope(s)**: Scope defines the permissions your ToolJet app will have in QuickBooks. 
+ - **Scope(s)**: Scope defines the permissions your ToolJet app will have in QuickBooks. You can modify the scopes based on your use case.
 
-You can modify the scopes based on your use case.
+:::note
+Ensure the scopes entered in the ToolJet data source configuration exactly match the scopes configured in your QuickBooks application settings. Any mismatch between the configured scopes and the requested scopes may cause the OAuth authentication flow to fail or restrict access to certain QuickBooks resources.
+:::
 
-**Note** : Ensure the scopes entered here exactly match the scopes configured in your QuickBooks app.
-
-- **Redirect URI**: ToolJet automatically generates a Redirect URI.
-
-This redirect URI is required for completing the OAuth authentication flow.
+- **Redirect URI**: ToolJet automatically generates a Redirect URI. This redirect URI is required for completing the OAuth authentication flow.
 
 - **Username**: QuickBooks account username used for authentication, if required by the configured flow or environment. 
 
@@ -33,6 +28,10 @@ This redirect URI is required for completing the OAuth authentication flow.
 - **Compay ID**: Unique identifier of the QuickBooks company account whose resources and financial data will be accessed.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/quickbooks/connection.png" alt="Quickbooks connection page" />
+
+:::info
+For detailed steps to generate the **Client ID** and **Client Secret**, refer to the **[QuickBooks documentation](https://developer.intuit.com/app/developer/qbo/docs/get-started/get-client-id-and-client-secret)**.
+:::
 
 ## Supported Operations
 
@@ -133,9 +132,10 @@ ToolJet supports multiple QuickBooks operations through REST API calls, enabling
 
 ## Example Queries
 
-Operation : **GET /`v3/company/{companyid}/account/1`**
+Operation : GET `/v3/company/{companyid}/account/1`
 
-Get the account which has accountId as 1.
+This query retrieves the account details for the account with `accountId` set to `1`. It can be used to fetch information such as account type, balance, classification, and other account-related metadata from QuickBooks.
+
 
 **Required Parameter:** 
 - companyid
@@ -177,9 +177,9 @@ Get the account which has accountId as 1.
 ```
 </details>
 
-Operation : **POST /`v3/company/{companyid}/account`**
+Operation : POST `/v3/company/{companyid}/account`
 
-This query updates an account.
+This query creates or updates an account in QuickBooks. It can be used to modify existing account information such as account name, account type, classification, or other account properties.
 
 **Required Parameter:** 
 - companyid
