@@ -87,13 +87,14 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 /**
  * Resolve a ModuleViewer reference to an actual AppVersion row.
  *
- *   moduleReferenceId is a valid UUID + matches → pinned. Prefer the consumer-branch
- *                                                copy (post git pull); fall back to
- *                                                the default-branch copy.
- *   moduleReferenceId absent / not a UUID       → unpinned. Latest non-stub on the
- *                                                consumer's branch (or default).
- *   moduleReferenceId is a UUID, no match       → orphaned. Fall back to latest saved
- *                                                on the default branch.
+ *   ref is a non-UUID string (versionName)  → Tier 0: look by name on consumer branch
+ *                                              then default. Cross-workspace stable
+ *                                              because versionName is backed by a git tag.
+ *   ref is a valid UUID (moduleReferenceId) → Tier 1: look by module_reference_id on
+ *                                              consumer branch then default. Same-workspace
+ *                                              fast path.
+ *   ref absent / no match                   → unpinned/orphaned fallback: latest non-stub
+ *                                              on the consumer's branch (or default).
  *
  * The UUID guard prevents `where: { moduleReferenceId: <non-uuid> }` from crashing
  * the postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
@@ -105,6 +106,40 @@ export async function resolveModuleRef(
   consumerBranchId: string | undefined,
   organizationId: string
 ): Promise<AppVersion | null> {
+  // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
+  // The frontend sends ref=<versionName> when the bridge field is populated.
+  // Consumer branch is checked first so post-pull hydrated versions take priority.
+  if (moduleReferenceId && !UUID_RE.test(moduleReferenceId)) {
+    const versionName = moduleReferenceId;
+    if (consumerBranchId) {
+      const onConsumer = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          name: versionName,
+          branchId: consumerBranchId,
+          versionType: AppVersionType.VERSION,
+          isStub: false,
+        },
+      });
+      if (onConsumer) return onConsumer;
+    }
+    const defaultBranchForName = await findDefaultBranch(manager, organizationId);
+    if (defaultBranchForName) {
+      const onDefault = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          name: versionName,
+          branchId: defaultBranchForName.id,
+          versionType: AppVersionType.VERSION,
+          isStub: false,
+        },
+      });
+      if (onDefault) return onDefault;
+    }
+    // Name not found on either branch — fall through to latest non-stub.
+  }
+
+  // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
   if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
     if (consumerBranchId) {
       const local = await manager.findOne(AppVersion, {
