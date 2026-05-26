@@ -228,17 +228,18 @@ describe("dashboard", () => {
       dashboardText.addToFolderButton,
       dashboardSelector.selectFolder
     );
-    cy.get(dashboardSelector.moveAppText).verifyVisibleElement(
-      "have.text",
-      dashboardText.moveAppText(data.appName)
-    );
+    cy.get(dashboardSelector.moveAppText).should("be.visible");
+    cy.get(dashboardSelector.moveAppText).within(() => {
+      cy.get("label").first().should("have.text", "Move selected apps");
+      cy.get(".react-select__multi-value__label").should("contain.text", data.appName);
+    });
 
     cy.get(dashboardSelector.selectFolder).click();
     cy.get(commonSelectors.folderList).contains(data.folderName).click();
     cy.get(dashboardSelector.addToFolderButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      commonText.AddedToFolderToast,
+      dashboardText.bulkMoveSuccessToast(data.folderName),
       false
     );
 
