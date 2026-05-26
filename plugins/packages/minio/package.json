@@ -15,10 +15,12 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "minio": "^7.0.32",
+    "minio": "7.0.32",
     "react": "^17.0.2"
   },
   "overrides": {
-    "minimist": "^1.2.6"
+    "minimist": "^1.2.6",
+    "fast-xml-parser": ">=5.7.0",
+    "xml2js": "0.6.2"
   }
 }
