@@ -157,24 +157,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
       const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
       this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
-
-      if (branchId) {
-        viewableAppsInFolder.andWhere(
-          `(
-            NOT EXISTS (
-              SELECT 1 FROM app_versions av
-              WHERE av.app_id = apps.id
-              AND av.branch_id IS NOT NULL
-            )
-            OR EXISTS (
-              SELECT 1 FROM app_versions av
-              WHERE av.app_id = apps.id
-              AND av.branch_id = :folderAppsBranchId
-            )
-          )`,
-          { folderAppsBranchId: branchId }
-        );
-      }
+      // Branch scope already enforced by INNER JOIN in getBaseAppsQuery — do not re-add NOT EXISTS predicate.
 
       const [viewableApps, totalCount] = await Promise.all([
         viewableAppsInFolder
