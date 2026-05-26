@@ -1238,25 +1238,40 @@ class HomePageComponent extends React.Component {
         }
       }
 
-      // Show modal immediately, then fetch branches in the background
+      // OLD: fetch remote branches for branch picker
+      // this.setState({
+      //   showGitRepositoryImportModal: true,
+      //   fetchingRemoteBranches: true,
+      //   selectedImportBranch: null,
+      //   appsFromRepos: {},
+      //   selectedAppRepo: null,
+      //   importingGitAppOperations: {},
+      //   latestCommitData: null,
+      //   selectedVersionOption: null,
+      // });
+      // useWorkspaceBranchesStore
+      //   .getState()
+      //   .actions.fetchRemoteBranches()
+      //   .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
+      //   .catch(() => {
+      //     toast.error('Failed to fetch remote branches');
+      //     this.setState({ fetchingRemoteBranches: false });
+      //   });
+
+      // Auto-set branch to current workspace branch and immediately fetch apps
+      const branchName = currentBranch?.name || null;
       this.setState({
         showGitRepositoryImportModal: true,
-        fetchingRemoteBranches: true,
-        selectedImportBranch: null,
+        selectedImportBranch: branchName,
         appsFromRepos: {},
         selectedAppRepo: null,
         importingGitAppOperations: {},
         latestCommitData: null,
         selectedVersionOption: null,
       });
-      useWorkspaceBranchesStore
-        .getState()
-        .actions.fetchRemoteBranches()
-        .then((branches) => this.setState({ remoteBranches: branches || [], fetchingRemoteBranches: false }))
-        .catch(() => {
-          toast.error('Failed to fetch remote branches');
-          this.setState({ fetchingRemoteBranches: false });
-        });
+      if (branchName) {
+        this.fetchRepoApps(branchName);
+      }
     } else {
       this.setState({ showGitRepositoryImportModal: false });
     }
@@ -1871,168 +1886,133 @@ class HomePageComponent extends React.Component {
             }}
             darkMode={this.props.darkMode}
           >
-            {fetchingRemoteBranches ? (
-              <div className="loader-container">
-                <div className="primary-spin-loader"></div>
+            {/* NEW MODAL CONTENT */}
+            <>
+              {/* IMPORT IN */}
+              <div className="import-in-row">
+                <span className="tj-text-xsm font-weight-500 tj-text">Import in </span>
+                <span className="branch-name-badge">
+                  <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
+                  {useWorkspaceBranchesStore.getState().currentBranch?.name || 'main'}
+                </span>
               </div>
-            ) : (
-              <>
-                {/* BRANCH SELECT */}
-                <div className="form-group">
-                  <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="select-branch-label">
-                    Select branch
-                  </label>
-                  <div className="tj-app-input" data-cy="branch-select">
-                    <Select
-                      options={(remoteBranches || []).map((b) => ({
-                        name: b.name || b,
-                        value: b.name || b,
-                      }))}
-                      disabled={importingApp}
-                      onChange={this.handleImportBranchChange}
-                      width={'100%'}
-                      value={selectedImportBranch}
-                      placeholder={'Select branch...'}
-                      closeMenuOnSelect={true}
-                      customWrap={true}
-                    />
-                  </div>
+
+              {/* IMPORT FROM — locked to current branch */}
+              <div className="form-group">
+                <label
+                  className="mb-1 tj-text-xsm font-weight-500"
+                  style={{ color: 'var(--slate8)' }}
+                  data-cy="import-from-label"
+                >
+                  Import from
+                </label>
+                <div className="tj-app-input import-from-disabled-select" data-cy="import-from-select">
+                  <Select
+                    options={[
+                      {
+                        name: useWorkspaceBranchesStore.getState().currentBranch?.name || 'main',
+                        value: useWorkspaceBranchesStore.getState().currentBranch?.name || 'main',
+                      },
+                    ]}
+                    isDisabled={true}
+                    value={useWorkspaceBranchesStore.getState().currentBranch?.name || 'main'}
+                    width={'100%'}
+                    closeMenuOnSelect={true}
+                    customWrap={true}
+                  />
                 </div>
+                <div className="tj-text-xxsm import-from-helper-text" data-cy="import-from-helper">
+                  Apps can only be imported from the same branch
+                </div>
+              </div>
 
-                {/* APP SELECT - shown after branch is selected */}
-                {selectedImportBranch && (
-                  <>
-                    <div className="form-group">
-                      <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
-                        Create app from
-                      </label>
-                      <div className="tj-app-input" data-cy="app-select">
-                        {fetchingAppsFromRepos ? (
-                          <div style={{ padding: '8px 0' }}>
-                            <div className="primary-spin-loader" style={{ width: '20px', height: '20px' }}></div>
-                          </div>
-                        ) : (
-                          <Select
-                            options={this.generateOptionsForRepository()}
-                            disabled={importingApp}
-                            onChange={this.handleAppRepoChange}
-                            width={'100%'}
-                            value={selectedAppRepo}
-                            placeholder={'Select app...'}
-                            closeMenuOnSelect={true}
-                            customWrap={true}
-                          />
-                        )}
-                      </div>
+              {/* APP SELECT */}
+              <div className="form-group">
+                <label className="mb-1 tj-text-sm tj-text font-weight-500" data-cy="create-app-from-label">
+                  App
+                </label>
+                <div className="tj-app-input" data-cy="app-select">
+                  <Select
+                    options={this.generateOptionsForRepository()}
+                    disabled={importingApp || fetchingAppsFromRepos}
+                    onChange={this.handleAppRepoChange}
+                    width={'100%'}
+                    value={selectedAppRepo}
+                    placeholder={fetchingAppsFromRepos ? 'Loading apps...' : 'Select app...'}
+                    closeMenuOnSelect={true}
+                    customWrap={true}
+                  />
+                </div>
+                {importingGitAppOperations?.message && (
+                  <div className={cx('tj-input-error', 'tj-text-xxsm info-text')} data-cy="app-name-helper-text">
+                    {importingGitAppOperations.message}
+                  </div>
+                )}
+              </div>
+
+              {selectedAppRepo && (
+                <>
+                  {fetchingLatestCommitData ? (
+                    <div className="d-flex flex-column" style={{ gap: '8px', padding: '4px 0' }}>
+                      <div style={{ height: '12px', borderRadius: '4px', background: 'var(--slate4)', width: '40%' }} />
+                      <div style={{ height: '12px', borderRadius: '4px', background: 'var(--slate4)', width: '65%' }} />
+                      <div style={{ height: '12px', borderRadius: '4px', background: 'var(--slate4)', width: '55%' }} />
                     </div>
-
-                    {selectedAppRepo && (
-                      <div className="commit-info">
-                        {/* APP NAME */}
-                        <div className="form-group">
-                          <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="app-name-label">
-                            App name
-                          </label>
-                          <div className="tj-app-input">
-                            <input
-                              type="text"
-                              value={this.state.importedAppName}
-                              className={cx('form-control font-weight-400', {
-                                'tj-input-error-state': importingGitAppOperations?.message,
-                              })}
-                              onChange={this.handleAppNameChange}
-                            />
-                          </div>
-                          <div>
-                            <div
-                              className={cx(
-                                { 'tj-input-error': importingGitAppOperations?.message },
-                                'tj-text-xxsm info-text'
-                              )}
-                              data-cy="app-name-helper-text"
-                            >
-                              {importingGitAppOperations?.message}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* EDITABLE CHECKBOX */}
-                        <div className="application-editable-checkbox-container">
-                          <input
-                            className="form-check-input"
-                            checked={this.state.isAppImportEditable}
-                            type="checkbox"
-                            onChange={() =>
-                              this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
-                            }
-                          />
-                          Make application editable
-                          <div className="helper-text">
-                            <div className="tj-text tj-text-xsm"></div>
-                            <div className="tj-text-xxsm">
-                              Enabling this allows editing and git sync push/pull access in development.
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* VERSION/TAG SELECT */}
+                  ) : (
+                    <>
+                      {/* VERSION SELECT — default/main branch only */}
+                      {(useWorkspaceBranchesStore.getState().currentBranch?.is_default ||
+                        useWorkspaceBranchesStore.getState().currentBranch?.isDefault) && (
                         <div className="form-group">
                           <label className="mb-1 info-label tj-text-xsm font-weight-500" data-cy="version-select-label">
-                            Select version to pull from
+                            Version
                           </label>
                           <div className="tj-app-input" data-cy="version-select">
                             <Select
                               options={this.generateVersionOptions()}
-                              disabled={importingApp || fetchingLatestCommitData}
+                              disabled={importingApp}
                               onChange={this.handleVersionOptionChange}
                               width={'100%'}
                               value={this.state.selectedVersionOption}
-                              placeholder={
-                                fetchingLatestCommitData ? 'Loading versions...' : 'Select version or tag...'
-                              }
+                              placeholder="Select version or tag..."
                               closeMenuOnSelect={true}
                               customWrap={true}
                               customOption={this.renderVersionOption}
                             />
                           </div>
                         </div>
+                      )}
 
-                        {/* LAST COMMIT */}
-                        <div className="form-group">
-                          <label className="mb-1 tj-text-xsm font-weight-500" data-cy="last-commit-label">
-                            Last commit
-                          </label>
-                          <div className="last-commit-info form-control">
-                            {fetchingLatestCommitData ? (
-                              <div className="message-info">Loading...</div>
-                            ) : (
-                              <>
-                                <div className="message-info">
-                                  <div data-cy="last-commit-message">
-                                    {this.getSelectedVersionCommitInfo().message || 'No commits yet'}
-                                  </div>
-                                  <div data-cy="last-commit-version">
-                                    {this.getSelectedVersionCommitInfo().gitVersionName}
-                                  </div>
-                                </div>
-                                {this.getSelectedVersionCommitInfo().author &&
-                                  this.getSelectedVersionCommitInfo().date && (
-                                    <div className="author-info" data-cy="author-info">
-                                      {`Done by ${this.getSelectedVersionCommitInfo().author} at ${moment(
-                                        new Date(this.getSelectedVersionCommitInfo().date)
-                                      ).format('DD MMM YYYY, h:mm a')}`}
-                                    </div>
-                                  )}
-                              </>
-                            )}
+                      {/* INFO ALERT */}
+                      <div className="import-dependent-info-alert" data-cy="import-info-alert">
+                        <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
+                        <span>
+                          This app with its <strong>dependent modules &amp; data sources</strong> will be pulled
+                        </span>
+                      </div>
+
+                      {/* EDITABLE CHECKBOX */}
+                      <div className="application-editable-checkbox-container">
+                        <input
+                          className="form-check-input"
+                          checked={this.state.isAppImportEditable}
+                          type="checkbox"
+                          onChange={() =>
+                            this.setState((prevState) => ({ isAppImportEditable: !prevState.isAppImportEditable }))
+                          }
+                        />
+                        Make application editable
+                        <div className="helper-text">
+                          <div className="tj-text-xxsm">
+                            Enabling this allows editing and git sync push/pull access in development.
                           </div>
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+                    </>
+                  )}
+                </>
+              )}
+            </>
           </ModalBase>
           <Modal
             show={showAddToFolderModal && !!appOperations.selectedApp}

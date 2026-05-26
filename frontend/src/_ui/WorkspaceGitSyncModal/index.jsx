@@ -305,30 +305,41 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
           </div>
         )}
 
-        {/* Updates available: branch dropdown + commit info */}
+        {/* Updates available: new design */}
         {checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && (
-          <div className="d-flex flex-column align-items-center justify-content-center w-100">
-            <div className="form-group mb-3 w-100">
-              <Dropdown
-                label="Select branch to pull from"
-                data-cy="branch-select"
-                options={dropdownBranches.reduce((acc, branch) => {
-                  acc[branch.name] = {
-                    value: branch.name,
-                    label: branch.name,
-                  };
-                  return acc;
-                }, {})}
-                value={selectedBranch}
-                onChange={handleBranchChange}
-                width="100%"
-                theme={darkMode ? 'dark' : 'light'}
-                showItemOverflowTooltip
-              />
+          <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
+            {/* PULL INTO */}
+            <div className="import-in-row">
+              <span className="tj-text-xsm font-weight-500 tj-text">Pull into</span>
+              <span className="branch-name-badge">
+                <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
+                {currentBranchName}
+              </span>
             </div>
 
-            {/* Latest commit info or up-to-date message */}
-            {latestCommitData ? (
+            {/* PULL FROM */}
+            <div className="form-group mb-0">
+              <label
+                className="mb-1 tj-text-xsm font-weight-500"
+                style={{ color: 'var(--slate8)' }}
+                data-cy="pull-from-label"
+              >
+                Pull from
+              </label>
+              <Dropdown
+                data-cy="branch-select"
+                options={{ [currentBranchName]: { value: currentBranchName, label: currentBranchName } }}
+                value={currentBranchName}
+                onChange={() => {}}
+                width="100%"
+                theme={darkMode ? 'dark' : 'light'}
+                disabled={true}
+              />
+              <div className="tj-text-xxsm import-from-helper-text">Apps can only be imported from the same branch</div>
+            </div>
+
+            {/* LATEST COMMIT */}
+            {latestCommitData && (
               <div className="w-100">
                 <div className="selected-commit-header">LATEST COMMIT</div>
                 <div className="d-flex w-100">
@@ -356,17 +367,15 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="no-commits-empty-state w-100">
-                <SolidIcon name="tick" />
-                <div className="empty-state-content">
-                  <div className="empty-state-title">Up to date</div>
-                  <div className="empty-state-description">
-                    Workspace is up to date with the latest changes on this branch
-                  </div>
-                </div>
-              </div>
             )}
+
+            {/* INFO ALERT */}
+            <div className="import-dependent-info-alert">
+              <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
+              <span>
+                The latest commit across <strong>all resources</strong> in this branch will be pulled
+              </span>
+            </div>
           </div>
         )}
       </form>
@@ -542,7 +551,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             isLoading={isPulling}
             data-cy="pull-button"
           >
-            Pull changes
+            Pull commit
           </ButtonSolid>
         </Modal.Footer>
       );
@@ -588,6 +597,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       centered={true}
       contentClassName={cx('git-sync-modal', {
         'theme-dark dark-theme': darkMode,
+        'pull-commit-expanded': checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE,
       })}
     >
       <Modal.Header>
