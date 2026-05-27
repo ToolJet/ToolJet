@@ -430,27 +430,29 @@ curl -X GET https://{your-domain}/api/health
     ```
 
   <details id="tj-dropdown">
-  <summary>**Request Body Example**</summary>
+  <summary>**Sample Response**</summary>
 ```json
 {
-  "name": "Alice Johnson",
-  "email": "alice@example.com",
-  "password": "qwy@4xt123",
-  "status": "active",
+  "id": "user-uuid",
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "status": "invited",
   "workspaces": [
     {
-      "name": "team-spac",
+      "id": "workspace-uuid",
+      "name": "Acme Corp",
       "status": "active",
-      "groups": [
-        {
-          "name": "all_users"
-        }
-      ]
+      "inviteUrl": "https:./app.corp.com/invitations/<userToken>/workspaces/<orgToken>?oid=<orgId>",
+      "userPermission": { }
     }
+  ],
+  "userGroups": [
+    { "name": "end-user" }
   ]
 }
 ```
 </details>
+
     - **Response:** `201 Created`
 
 ### Update User
