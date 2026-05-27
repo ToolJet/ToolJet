@@ -890,6 +890,17 @@ class HomePageComponent extends React.Component {
     return !!(isBranchingEnabled && isDefault);
   };
 
+  isOnFeatureBranch = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled =
+      this.props.appType === 'front-end' || this.props.appType === 'module'
+        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
+        : false;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && !isDefault);
+  };
+
   cancelDeleteAppDialog = () => {
     this.setState({
       isDeletingApp: false,
@@ -918,6 +929,15 @@ class HomePageComponent extends React.Component {
           this.fetchWorkflowsWorkspaceLimit();
         } else {
           this.fetchAppsLimit();
+        }
+
+        // Auto-commit deletion to git when on a feature branch
+        if (this.isOnFeatureBranch()) {
+          const appName = this.state.appToBeDeleted?.name || 'app';
+          const branchState = useWorkspaceBranchesStore.getState();
+          branchState.actions.pushWorkspace(`Delete ${appName}`).catch(() => {
+            // Silent fail — deletion already succeeded
+          });
         }
       })
       .catch((error) => {
@@ -1860,16 +1880,53 @@ class HomePageComponent extends React.Component {
           )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
-            message={this.props.t(
-              this.props.appType === 'workflow'
-                ? 'homePage.deleteWorkflowAndData'
-                : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
-              {
-                appName: appToBeDeleted?.name,
-              }
-            )}
+            title={
+              this.isOnFeatureBranch()
+                ? `Delete ${(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()}`
+                : undefined
+            }
+            message={
+              this.isOnFeatureBranch() ? (
+                <>
+                  <p className="tw-mb-4">
+                    The {(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()} &apos;
+                    <strong>{appToBeDeleted?.name}</strong>&apos; will be deleted from this branch. On merge to main,{' '}
+                    <strong>the app and all its associated versions</strong> will be deleted from git and cannot be
+                    retrieved. Are you sure you want to continue?
+                  </p>
+                  <div className="tw-flex tw-items-start tw-gap-2">
+                    <input
+                      type="checkbox"
+                      checked
+                      disabled
+                      className="form-check-input tw-mt-0.5"
+                      style={{ width: '16px', height: '16px', minWidth: '16px' }}
+                    />
+                    <div>
+                      <span className="tw-text-xs tw-font-normal" style={{ color: '#1b1f24' }}>
+                        Commit changes
+                      </span>
+                      <p
+                        className="tw-font-normal tw-mt-0.5 tw-mb-0"
+                        style={{ fontSize: '11px', lineHeight: '16px', color: '#6a727c' }}
+                      >
+                        Delete will always be committed in git to ensure sync with ToolJet
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                this.props.t(
+                  this.props.appType === 'workflow'
+                    ? 'homePage.deleteWorkflowAndData'
+                    : this.props.appType === 'front-end'
+                    ? 'homePage.deleteAppAndData'
+                    : deleteModuleText,
+                  { appName: appToBeDeleted?.name }
+                )
+              )
+            }
+            confirmButtonText={this.isOnFeatureBranch() ? 'Delete and commit' : undefined}
             confirmButtonLoading={isDeletingApp}
             onConfirm={() => this.executeAppDeletion()}
             onCancel={() => this.cancelDeleteAppDialog()}
