@@ -7,7 +7,7 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppBase } from '@entities/app_base.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { User } from '@entities/user.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { RESOURCE_TO_APP_TYPE_MAP } from './constants';
 import { RolesRepository } from '@modules/roles/repository';
@@ -286,7 +286,9 @@ export class AbilityUtilService {
     // Resolve folder-level permissions (owned folders + granular folder permissions) into app IDs.
     // folderDerivedAppIds tracks only apps that arrived via a folder the user actually has access to,
     // so we can grant them full environment access without leaking to unrelated folders in the org.
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    // Read-only block — uses getConnectionInstance().manager directly (no tx required).
+    {
+      const manager = getConnectionInstance().manager;
       const folderDerivedAppIds = new Set<string>();
 
       // 1. Apps in folders owned (created) by this user → always editable
@@ -403,7 +405,7 @@ export class AbilityUtilService {
           released: true,
         };
       }
-    }, manager);
+    }
 
     return userAppsPermissions;
   }
