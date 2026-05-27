@@ -511,10 +511,7 @@ export class AppsUtilService implements IAppsUtilService {
   ): Promise<AppBase[]> {
     const qb = await this.buildViewableAppsQuery(user, type, searchKey, isGetAll, branchId, this.appRepository.manager);
     if (isGetAll) return qb.getMany();
-    return qb
-      .take(APPS_PAGE_SIZE)
-      .skip(APPS_PAGE_SIZE * (page - 1))
-      .getMany();
+    return qb.take(APPS_PAGE_SIZE).skip(APPS_PAGE_SIZE * (page - 1)).getMany();
   }
 
   async allWithCount(
@@ -788,64 +785,77 @@ export class AppsUtilService implements IAppsUtilService {
 
     if (!versionToLoadId && !allVersions) return [];
 
-    const manager = this.appRepository.manager;
+    const modules = await dbTransactionWrap(async (manager) => {
+      const moduleComponents = await manager
+        .createQueryBuilder(Component, 'component')
+        .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
+        .leftJoinAndSelect(AppVersion, 'app_version', 'app_version.id = page.app_version_id')
+        .leftJoinAndSelect(App, 'app', 'app.id = app_version.app_id')
+        .andWhere(
+          `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
+          {
+            module: 'ModuleViewer',
+            appVersionId: versionToLoadId,
+            appId: app.id,
+          }
+        )
+        .getMany();
 
-    const moduleComponents = await manager
-      .createQueryBuilder(Component, 'component')
-      .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
-      .leftJoinAndSelect(AppVersion, 'app_version', 'app_version.id = page.app_version_id')
-      .leftJoinAndSelect(App, 'app', 'app.id = app_version.app_id')
-      .andWhere(
-        `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
-        {
-          module: 'ModuleViewer',
-          appVersionId: versionToLoadId,
-          appId: app.id,
-        }
-      )
-      .getMany();
+      const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
 
-    const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      const modules =
+        moduleAppIds.length > 0
+          ? await manager
+              .createQueryBuilder(App, 'app')
+              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+              .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
+              .distinct(true)
+              .getMany()
+          : [];
 
-    if (moduleAppIds.length === 0) return [];
-
-    // Branch-scope each module's editingVersion to match the parent app's branch.
-    // The App subscriber sets editingVersion to the VERSION-type (default-branch) version
-    // because it has no branch context. When the parent app is being viewed on a feature
-    // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
-    // stale default-branch content leaks through unless we override here.
-    const parentBranchId = (app as any).editingVersion?.branchId;
-
-    const modulesQb = manager
-      .createQueryBuilder(App, 'app')
-      .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
-      .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
-      .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE });
-
-    if (parentBranchId) {
-      modulesQb.leftJoinAndSelect('app.appVersions', 'av', 'av.branchId = :parentBranchId AND av.isStub = false', {
-        parentBranchId,
-      });
-    } else {
-      modulesQb
-        .leftJoinAndSelect('app.appVersions', 'av', 'av.versionType != :branchType AND av.isStub = false', {
-          branchType: AppVersionType.BRANCH,
-        })
-        .addOrderBy('av.updatedAt', 'DESC');
-    }
-
-    const modules: any[] = await modulesQb.getMany();
-
-    // Guarantee editingVersion and appVersions are set so prepareResponse uses findVersion
-    // (fast path) instead of findVersionsFromApp (loads ALL versions).
-    for (const moduleApp of modules) {
-      const version = moduleApp.appVersions?.[0] ?? moduleApp.editingVersion;
-      if (version) {
-        moduleApp.editingVersion = version;
-        moduleApp.appVersions = [version];
+      // Branch-scope each module's editingVersion to match the parent app's branch.
+      // The App subscriber sets editingVersion to the VERSION-type (default-branch) version
+      // because it has no branch context. When the parent app is being viewed on a feature
+      // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
+      // stale default-branch content leaks through unless we override here.
+      const parentBranchId = (app as any).editingVersion?.branchId;
+      if (modules.length > 0) {
+        await Promise.all(
+          modules.map(async (moduleApp: any) => {
+            if (parentBranchId) {
+              const branchVersion = await manager.findOne(AppVersion, {
+                where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
+                order: { updatedAt: 'DESC' },
+              });
+              if (branchVersion) {
+                moduleApp.editingVersion = branchVersion;
+                moduleApp.appVersions = [branchVersion];
+                return;
+              }
+            }
+            // Fallback: TypeORM's async afterLoad is not reliably awaited in all query
+            // paths, so editingVersion may not be populated by the subscriber. Query
+            // explicitly to guarantee it is always set before returning.
+            if (!moduleApp.editingVersion) {
+              const fallbackVersion = await manager.findOne(AppVersion, {
+                where: { appId: moduleApp.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
+                order: { updatedAt: 'DESC' },
+              });
+              if (fallbackVersion) moduleApp.editingVersion = fallbackVersion;
+            }
+            // Populate appVersions so downstream callers (prepareResponse) can resolve
+            // the version by ID (fast path) instead of loading all versions via
+            // findVersionsFromApp.
+            if (moduleApp.editingVersion) {
+              moduleApp.appVersions = [moduleApp.editingVersion];
+            }
+          })
+        );
       }
-    }
 
+      return modules;
+    });
     return modules;
   }
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
@@ -972,7 +982,11 @@ export class AppsUtilService implements IAppsUtilService {
     }
   }
 
-  async checkModulesReleasedInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
+  async checkModulesReleasedInApp(
+    versionId: string,
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
     try {
       // Every ModuleViewer's resolved row must be the module's released version.
       // Modules not consumed by this version may stay in draft — only the in-use set
@@ -986,7 +1000,11 @@ export class AppsUtilService implements IAppsUtilService {
       //   pin-hit + pin != module's current_version_id
       const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
       const offenders = resolved.filter((v) => {
-        if (v.matchKind === 'no-row' || v.matchKind === 'orphan-fallback' || v.matchKind === 'unpinned-fallback') {
+        if (
+          v.matchKind === 'no-row' ||
+          v.matchKind === 'orphan-fallback' ||
+          v.matchKind === 'unpinned-fallback'
+        ) {
           return true;
         }
         if (!v.resolved) return true;
