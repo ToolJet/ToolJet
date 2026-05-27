@@ -1,7 +1,8 @@
 import { App } from '@entities/app.entity';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
@@ -1116,13 +1117,14 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
-    // Only the version ID is needed to filter ModuleViewer components; avoid calling
-    // findVersion (which loads the full AppVersion with all relations) just for the UUID.
-    const versionToLoadId = versionId || app.currentVersionId || (app as any).editingVersion?.id;
+    // Read-only — skip txn wrap and per-App afterLoad. Bulk-hydrate editingVersion once below.
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const versionToLoadId =
+        versionId || app.currentVersionId || (app as any).editingVersion?.id;
+      if (!versionToLoadId && !allVersions) return [];
 
-    if (!versionToLoadId && !allVersions) return [];
+      const manager = getConnectionInstance().manager;
 
-    const modules = await dbTransactionWrap(async (manager) => {
       const moduleComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
@@ -1139,69 +1141,60 @@ export class AppsUtilService implements IAppsUtilService {
         .getMany();
 
       const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      if (moduleAppIds.length === 0) return [];
 
-      const modules =
-        moduleAppIds.length > 0
-          ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
-              .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
-              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-              .distinct(true)
-              .getMany()
-          : [];
+      const modules = await manager
+        .createQueryBuilder(App, 'app')
+        .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+        .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+        .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
+        .distinct(true)
+        .getMany();
+      if (modules.length === 0) return [];
 
-      // For each module: (a) branch-scope its editingVersion to the parent app's
-      // branch so downstream callers render the right pages/queries/events, and
-      // (b) project the branch-specific name/slug/icon/isPublic onto the App entity.
-      //
-      // (a) — The App subscriber sets editingVersion to the VERSION-type (default-
-      //       branch) version because it has no branch context. When the parent is
-      //       being viewed on a feature branch, that's wrong for the module too.
-      // (b) — apps.name / slug / icon / is_public are NULL for modules post-migration
-      //       (metadata moved to app_versions). Without the overlay, AppBuilder gets
-      //       NULL/placeholder values for module labels, icons, and visibility flags.
-      //       overlayAppMetadata routes by branchId (sub-branch row), then default
-      //       branch (git enabled), then any version row (git off).
-      if (modules.length > 0) {
-        const parentBranchId = app.editingVersion?.branchId;
-        await Promise.all(
-          modules.map(async (moduleApp: any) => {
-            if (parentBranchId) {
-              const branchVersion = await manager.findOne(AppVersion, {
-                where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
-                order: { updatedAt: 'DESC' },
-              });
-              if (branchVersion) {
-                moduleApp.editingVersion = branchVersion;
-                moduleApp.appVersions = [branchVersion];
-                return;
-              }
-            }
-            // Fallback: TypeORM's async afterLoad is not reliably awaited in all query
-            // paths, so editingVersion may not be populated by the subscriber. Query
-            // explicitly to guarantee it is always set before returning.
-            if (!moduleApp.editingVersion) {
-              const fallbackVersion = await manager.findOne(AppVersion, {
-                where: { appId: moduleApp.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
-                order: { updatedAt: 'DESC' },
-              });
-              if (fallbackVersion) moduleApp.editingVersion = fallbackVersion;
-            }
-            // Populate appVersions so downstream callers (prepareResponse) can resolve
-            // the version by ID (fast path) instead of loading all versions via
-            // findVersionsFromApp.
-            if (moduleApp.editingVersion) {
-              moduleApp.appVersions = [moduleApp.editingVersion];
-            }
-            await this.overlayAppMetadata(moduleApp, parentBranchId);
+      // Single DISTINCT ON pick: branch-match preferred, fallback to latest non-branch.
+      // Replaces N per-module findOne + N per-App afterLoad SELECTs (subscriber skipped above).
+      const moduleIds = modules.map((m) => m.id);
+      const parentBranchId = app.editingVersion?.branchId ?? null;
+
+      const versionsQb = manager
+        .createQueryBuilder(AppVersion, 'av')
+        .distinctOn(['av.appId'])
+        .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .andWhere('av.isStub = false')
+        .orderBy('av.appId', 'ASC');
+
+      if (parentBranchId) {
+        versionsQb
+          .andWhere('(av.branchId = :branchId OR av.versionType != :branchType)', {
+            branchId: parentBranchId,
+            branchType: AppVersionType.BRANCH,
           })
-        );
+          // Prefer the branch-matched row when both are present.
+          .addOrderBy(`CASE WHEN av.branch_id = :branchOrder THEN 0 ELSE 1 END`, 'ASC')
+          .setParameter('branchOrder', parentBranchId);
+      } else {
+        versionsQb.andWhere('av.versionType != :branchType', { branchType: AppVersionType.BRANCH });
+      }
+      versionsQb.addOrderBy('av.updatedAt', 'DESC');
+
+      const moduleVersions = await versionsQb.getMany();
+      const versionByAppId = new Map(moduleVersions.map((v) => [v.appId, v]));
+      for (const moduleApp of modules as any[]) {
+        const v = versionByAppId.get(moduleApp.id);
+        if (v) {
+          moduleApp.editingVersion = v;
+          moduleApp.appVersions = [v];
+          // apps.name/slug/icon/isPublic are NULL for modules (metadata on app_versions).
+          if (v.appName != null) moduleApp.name = v.appName;
+          if (v.slug != null) moduleApp.slug = v.slug;
+          if (v.icon != null) moduleApp.icon = v.icon;
+          if (v.isPublic != null) moduleApp.isPublic = v.isPublic;
+        }
       }
 
       return modules;
     });
-    return modules;
   }
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
     return await this.appRepository.findAllOrganizationApps(organizationId);
