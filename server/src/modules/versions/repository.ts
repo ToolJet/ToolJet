@@ -10,6 +10,9 @@ import { decode } from 'js-base64';
 import { App } from '@entities/app.entity';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
+import { RequestContext } from '@modules/request-context/service';
+
+const FIND_VERSION_MEMO_KEY = 'tj_find_version_memo';
 
 @Injectable()
 export class VersionRepository extends Repository<AppVersion> {
@@ -123,6 +126,14 @@ export class VersionRepository extends Repository<AppVersion> {
   }
 
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
+    // Memo within request — show path resolves the same versionId 3x.
+    // Skip memo when a tx-bound manager is passed (caller owns isolation).
+    if (!manager) {
+      const ctx = RequestContext.currentContext;
+      const memo = ctx?.res?.locals?.[FIND_VERSION_MEMO_KEY] as Record<string, AppVersion> | undefined;
+      if (memo?.[id]) return memo[id];
+    }
+
     const m = manager ?? this.manager;
     const appVersion = await m.findOneOrFail(AppVersion, {
       where: { id },
@@ -140,6 +151,15 @@ export class VersionRepository extends Repository<AppVersion> {
         if (query?.plugin) {
           query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
         }
+      }
+    }
+
+    if (!manager) {
+      const ctx = RequestContext.currentContext;
+      if (ctx) {
+        const memo = (ctx.res?.locals?.[FIND_VERSION_MEMO_KEY] as Record<string, AppVersion>) ?? {};
+        memo[id] = appVersion;
+        RequestContext.setLocals(FIND_VERSION_MEMO_KEY, memo);
       }
     }
     return appVersion;

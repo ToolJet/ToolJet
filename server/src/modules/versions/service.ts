@@ -221,11 +221,7 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
-      }
+      const appGit = await this.appGitRepository.findAppGitByAppOrCoRelationId(app.id, app.co_relation_id);
       // Modules are branch-scoped like apps — same git-sync freeze applies.
       if (appGit) {
         shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
