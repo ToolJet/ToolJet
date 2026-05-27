@@ -862,20 +862,8 @@ export class AppsUtilService implements IAppsUtilService {
     return qb;
   }
 
-  // Eagerly load appVersions for modules, branch-filtered like apps.
-  // We intentionally DO NOT filter out stub versions at this outer join —
-  // after a branch-create or workspace pull a net-new module has only a stub
-  // version on the branch; filtering it out would hide the module entirely.
-  // The UUID-name-leak concern is handled by the inner `versions`-aliased join
-  // in viewableAppsQueryUsingPermissions (read by ModuleManager).
-  //
-  // The default branch carries multiple VERSION-type rows per app (DRAFT +
-  // RELEASED + PROMOTED) sharing branch_id. A naive `branch_id = :branchId`
-  // join fans those rows out and TypeORM's `take()` LIMITs the joined rows,
-  // not distinct apps — so apps with extra versions on the branch crowd out
-  // others and the page returns fewer apps than APPS_PAGE_SIZE. The
-  // correlated subquery pins the join to one row per app (the same row the
-  // listing already orders by: non-stub first, most recently edited).
+  // Stub versions retained — net-new branch modules have only a stub.
+  // UUID-name-leak handled by inner `versions`-aliased join in viewableAppsQueryUsingPermissions.
   private applyAppVersionsJoin(
     qb: SelectQueryBuilder<AppBase>,
     type: string,

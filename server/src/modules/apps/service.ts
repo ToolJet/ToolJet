@@ -668,15 +668,29 @@ export class AppsService implements IAppsService {
     }
   }
 
-  // Caller must wrap in `skipAppEditingVersionHydration.run(true, ...)` so the per-entity
-  // afterLoad does not fire while apps are being loaded; this re-attaches the same fields in one query.
+  // Caller wraps in skipAppEditingVersionHydration.run(true, ...) — bulk replaces per-entity afterLoad N+1.
   private async hydrateEditingVersionInBulk(apps: AppListItem[], manager: EntityManager): Promise<void> {
     if (apps.length === 0) return;
     const appIds = apps.map((a) => a.id).filter(Boolean);
     if (appIds.length === 0) return;
 
+    // Whitelist — skip heavy JSONB (definition, globalSettings, pageSettings).
     const editingVersions = await manager
       .createQueryBuilder(AppVersion, 'av')
+      .select([
+        'av.id',
+        'av.name',
+        'av.appId',
+        'av.branchId',
+        'av.versionType',
+        'av.isStub',
+        'av.currentEnvironmentId',
+        'av.homePageId',
+        'av.moduleReferenceId',
+        'av.co_relation_id',
+        'av.createdAt',
+        'av.updatedAt',
+      ])
       .distinctOn(['av.appId'])
       .where('av.appId IN (:...appIds)', { appIds })
       .andWhere('av.versionType != :branch', { branch: AppVersionType.BRANCH })
