@@ -10,6 +10,14 @@ title: SCIM
 
 ToolJet supports **SCIM 2.0** (System for Cross-domain Identity Management) for automated user and group provisioning. Connect your Identity Provider (Okta, Azure AD, OneLogin, etc.) to automatically sync users and groups with ToolJet.
 
+## Use Cases
+
+- Automatically provision new users in ToolJet when they are added in the IdP.
+- Update user attributes (name, email, role mapping) in real time based on IdP changes.
+- Archive users in ToolJet instantly when access is revoked in the IdP.
+- Maintain a centralized, secure identity workflow across large teams and enterprises.
+- Reduce manual user management and minimize access control errors.
+
 ## Setup
 
 SCIM is configured entirely via server-side environment variables. Set these on your ToolJet deployment before connecting an Identity Provider:
@@ -20,6 +28,10 @@ SCIM is configured entirely via server-side environment variables. Set these on 
 | `SCIM_HEADER_AUTH_TOKEN` | Yes | Bearer token — any secret string you generate (e.g. a UUID) |
 | `SCIM_BASIC_AUTH_USER` | Yes | Username for Basic auth |
 | `SCIM_BASIC_AUTH_PASS` | Yes | Password for Basic auth |
+
+:::warning
+Make sure `SCIM_ENABLED` is set to `"true"` — otherwise all SCIM endpoints will return errors.
+:::
 
 Once the server restarts with these variables set, copy the token value into your Identity Provider's SCIM connector configuration. Both Bearer and Basic auth are supported simultaneously.
 
@@ -43,6 +55,50 @@ Authorization: Basic <base64(SCIM_BASIC_AUTH_USER:SCIM_BASIC_AUTH_PASS)>
 https://{your-domain}/api/scim/v2
 ```
 
+## Verify the Connection
+
+Once setup is complete, test the SCIM connection from your IdP by sending a `GET` request to `/Users`:
+
+```
+GET https://{your-domain}/api/scim/v2/Users
+```
+
+A successful response returns a list of existing ToolJet users. If it succeeds, your SCIM integration is ready.
+
+## Behavioral Notes
+
+### Default Workspace
+
+All SCIM operations — user and group creation, updates, and deletions — are performed against the **Default Workspace** of your ToolJet instance.
+
+### Roles vs Groups
+
+- ToolJet only manages **Custom Groups** via SCIM.
+- **User roles** (`admin`, `builder`, `end-user`) must be passed as part of the user's attributes — not through group membership.
+- If no role is provided during provisioning, the user defaults to **end-user**. This may cause permission mismatches if the user belongs to a builder or admin custom group.
+
+### User Management
+
+- Users must be **assigned to the ToolJet SCIM application** in your IdP before any provisioning events (create, update, deactivate, delete) are synchronized with ToolJet.
+
+### Group Management
+
+- Only **Custom Groups** are supported via SCIM — built-in ToolJet roles cannot be managed through group sync.
+- Any group created in your IdP and pushed to ToolJet is treated as a Custom Group.
+- To sync a group, assign it to your SCIM application in the IdP, or push it manually (e.g., Okta's **Push Groups** feature).
+
+### Editable User Attributes
+
+ToolJet accepts SCIM updates for the following user attributes:
+
+| Attribute | Description |
+|:----------|:------------|
+| `name.givenName` | First name |
+| `name.familyName` | Last name |
+| `emails[].value` | Email address |
+| `active` | Account active / archived status |
+| `groups` | Group memberships |
+
 ## Supported Resources
 
 | Resource | Operations |
@@ -52,7 +108,7 @@ https://{your-domain}/api/scim/v2
 
 ## ToolJet SCIM Extension
 
-ToolJet supports a custom SCIM extension schema `urn:ietf:params:scim:schemas:extension:tooljet:User:2.0` that allows setting the user's ToolJet role on provisioning:
+ToolJet supports a custom SCIM extension schema `urn:ietf:params:scim:schemas:extension:tooljet:User:2.0` that allows setting the user's ToolJet role (`admin`, `builder`, or `end-user`) during provisioning.
 
 ```json
 {
@@ -61,3 +117,27 @@ ToolJet supports a custom SCIM extension schema `urn:ietf:params:scim:schemas:ex
   }
 }
 ```
+
+### Attribute Mapping in Okta
+
+To configure this in Okta:
+
+1. Go to **Directory → Profile Editor** and select your ToolJet SCIM app.
+2. Click **Add Attribute** and fill in the form:
+   - **Display Name**: Anything descriptive (e.g., `ToolJet Role`)
+   - **External Name**: `role` (must be exactly `role`)
+   - **External Namespace**: `urn:ietf:params:scim:schemas:extension:tooljet:User:2.0`
+
+:::warning
+The External Namespace must match exactly — do not modify the string.
+:::
+
+Once configured, Okta will include the user's role in every provisioning and update request sent to ToolJet.
+
+## SCIM Standards Support
+
+ToolJet exposes all standard SCIM discovery endpoints, ensuring compatibility with any spec-compliant IdP:
+
+- `GET /Schemas`
+- `GET /ResourceTypes`
+- `GET /ServiceProviderConfig`

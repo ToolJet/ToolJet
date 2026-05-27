@@ -932,20 +932,9 @@
               ]
             },
             {
-              "type": "category",
+              "type": "link",
               "label": "SCIM",
-              "link": {
-                "type": "doc",
-                "id": "user-management/sso/scim/overview"
-              },
-              "items": [
-                "user-management/sso/scim/overview",
-                {
-                  "type": "link",
-                  "label": "API References",
-                  "href": "/api/scim"
-                }
-              ]
+              "href": "/api/scim/"
             }
           ]
         },
@@ -1141,9 +1130,17 @@
       "collapsible": false,
       "collapsed": true,
       "items": [
-        "tooljet-api",
+        {
+          "type": "link",
+          "label": "ToolJet API",
+          "href": "/api"
+        },
         "user-management/authentication/self-hosted/pat",
-        "development-lifecycle/cicd/gitsync-api"
+        {
+          "type": "link",
+          "label": "GitSync API",
+          "href": "/api/gitsync-api"
+        }
       ]
     },
     {
