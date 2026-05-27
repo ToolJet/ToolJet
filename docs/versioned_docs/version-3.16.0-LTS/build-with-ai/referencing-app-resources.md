@@ -1,6 +1,6 @@
 ---
 id: referencing-app-resources
-title: Referencing App Resources
+title: "@mention in AI Chat"
 ---
 
 When working with the AI chat in ToolJet, you can use `@` to reference specific components and queries in your app. This lets the AI precisely target what you want to create or modify, instead of inferring it from context alone.

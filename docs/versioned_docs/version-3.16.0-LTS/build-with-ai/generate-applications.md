@@ -59,7 +59,7 @@ ToolJet AI supports generating queries for the following data sources:
 
 ## Generating Code
 
-ToolJet lets you generate JavaScript, Python, or SQL code snippets directly using AI. For generating complete database queries wired to a data source, see [Generate Query](#generate-query) above.
+ToolJet lets you generate JavaScript and Python code snippets directly using AI. For generating complete database queries wired to a data source, see [Generate Query](#generate-query) above.
 
 1. Click the AI icon in the query panel to open the AI code generator. <br/>
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/gen-code/icon.png" alt="tooljet generate apps" />

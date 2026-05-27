@@ -33,7 +33,7 @@ Folder names can only contain letters, numbers, and spaces - special characters 
 
 ### Adding Queries to a Folder
 
-There are three ways to add queries to a folder:
+There are three ways to add queries to a folder. You can also use ToolJet AI's [Auto-sort Queries](/docs/build-with-ai/generate-applications#auto-sort-queries) feature to add queries inside the folder using AI.
 
 - **Create directly inside a folder**: Click the three-dot menu on a folder and select **Add new query**. The new query will be created inside that folder.
     <img className="screenshot-full img-m" src="/img/app-builder/connecting-with-datasouces/query-folder-add-query.png" alt="App Builder: Add query to folder"/>
