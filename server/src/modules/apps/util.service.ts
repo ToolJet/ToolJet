@@ -1,7 +1,8 @@
 import { App } from '@entities/app.entity';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
@@ -783,13 +784,14 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
-    const versionToLoad = versionId
-      ? await this.versionRepository.findVersion(versionId)
-      : app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+    // Read-only — skip txn wrap and per-App afterLoad. Bulk-hydrate editingVersion once below.
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const versionToLoadId =
+        versionId || app.currentVersionId || (app as any).editingVersion?.id;
+      if (!versionToLoadId && !allVersions) return [];
 
-    const modules = await dbTransactionWrap(async (manager) => {
+      const manager = getConnectionInstance().manager;
+
       const moduleComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
@@ -799,48 +801,62 @@ export class AppsUtilService implements IAppsUtilService {
           `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
           {
             module: 'ModuleViewer',
-            appVersionId: versionToLoad.id,
+            appVersionId: versionToLoadId,
             appId: app.id,
           }
         )
         .getMany();
 
       const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      if (moduleAppIds.length === 0) return [];
 
-      const modules =
-        moduleAppIds.length > 0
-          ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
-              .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
-              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-              .distinct(true)
-              .getMany()
-          : [];
+      const modules = await manager
+        .createQueryBuilder(App, 'app')
+        .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+        .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+        .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
+        .distinct(true)
+        .getMany();
+      if (modules.length === 0) return [];
 
-      // Branch-scope each module's editingVersion to match the parent app's branch.
-      // The App subscriber sets editingVersion to the VERSION-type (default-branch) version
-      // because it has no branch context. When the parent app is being viewed on a feature
-      // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
-      // stale default-branch content leaks through unless we override here.
-      const parentBranchId = app.editingVersion?.branchId;
-      if (parentBranchId && modules.length > 0) {
-        await Promise.all(
-          modules.map(async (moduleApp: any) => {
-            const branchVersion = await manager.findOne(AppVersion, {
-              where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
-              order: { updatedAt: 'DESC' },
-            });
-            if (branchVersion) {
-              moduleApp.editingVersion = branchVersion;
-            }
+      // Single DISTINCT ON pick: branch-match preferred, fallback to latest non-branch.
+      // Replaces N per-module findOne + N per-App afterLoad SELECTs (subscriber skipped above).
+      const moduleIds = modules.map((m) => m.id);
+      const parentBranchId = app.editingVersion?.branchId ?? null;
+
+      const versionsQb = manager
+        .createQueryBuilder(AppVersion, 'av')
+        .distinctOn(['av.appId'])
+        .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .andWhere('av.isStub = false')
+        .orderBy('av.appId', 'ASC');
+
+      if (parentBranchId) {
+        versionsQb
+          .andWhere('(av.branchId = :branchId OR av.versionType != :branchType)', {
+            branchId: parentBranchId,
+            branchType: AppVersionType.BRANCH,
           })
-        );
+          // Prefer the branch-matched row when both are present.
+          .addOrderBy(`CASE WHEN av.branch_id = :branchOrder THEN 0 ELSE 1 END`, 'ASC')
+          .setParameter('branchOrder', parentBranchId);
+      } else {
+        versionsQb.andWhere('av.versionType != :branchType', { branchType: AppVersionType.BRANCH });
+      }
+      versionsQb.addOrderBy('av.updatedAt', 'DESC');
+
+      const moduleVersions = await versionsQb.getMany();
+      const versionByAppId = new Map(moduleVersions.map((v) => [v.appId, v]));
+      for (const moduleApp of modules as any[]) {
+        const v = versionByAppId.get(moduleApp.id);
+        if (v) {
+          moduleApp.editingVersion = v;
+          moduleApp.appVersions = [v];
+        }
       }
 
       return modules;
     });
-    return modules;
   }
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
     return await this.appRepository.findAllOrganizationApps(organizationId);
