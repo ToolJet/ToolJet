@@ -21,18 +21,49 @@ This means:
 2. **Visibility**: You can monitor usage and set spending limits through your LLM provider's dashboard.
 3. **Compatibility**: BYOK works on both ToolJet Cloud and Self-hosted deployments; no infrastructure changes are required on your end.
 
-## Configuring Your API Key
+## Prerequisites
+
+### Anthropic
+
+To use Anthropic as your LLM provider, an Anthropic API key is required. You can follow the [official Anthropic documentation](https://platform.claude.com/docs/en/api/overview#getting-api-keys) to generate the API key.
+
+### Google Gemini
+
+To use Google Gemini as your LLM provider, Vertex AI service account credentials are required. You can follow the [official documentation](https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/general/custom-service-account) to generate the credentials.
+
+#### Configuring via UI
+
+While configuring the Google Gemini via ToolJet UI, you can directly use the service account JSON in the UI field.
+
+#### Configuring via Environment Variables
+
+To configure the Google Gemini via environment variables, you will need to generate a base64 string for your JSON.
+
+
+## Configuring Your API Key via UI
 
 1. Navigate to **Workspace Settings → LLM Key** in your ToolJet workspace.
-    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/llm-key.png" alt="llm key" />
-2. Enter your API key from your LLM provider (e.g., your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)).
-3. Click **Save changes**.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/llm-key-v2.png" alt="llm key" />
+2. Select the provider you want to use. By default "ToolJet managed" will be selected which utilizes the ToolJet AI Credits.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/select.png" alt="llm key" />
+3. After that, enter your API key from your LLM provider (e.g., your Anthropic API key from [console.anthropic.com](https://console.anthropic.com)).
+4. Click **Save changes**.
 
-ToolJet will securely forward the key to your server when making AI requests.
+ToolJet will use your key to authenticate requests sent to your LLM provider.
+
+## Configuring Your API Key via Environment Variables
+
+1. Configure the following environment variables:
+    1. `LLM_PROVIDER`: You can set your LLM Provider using this variable. Use `anthropic` to use Anthropic API Key, and use `gemini` to use Gemini API Key.
+    2. Set the following variable according to which LLM Provider you are using:
+        - `ANTHROPIC_API_KEY=<your-api-key>`: If you are using Anthropic.
+        - `GEMINI_API_KEY=<base64-string-of-your-JSON>`: If you are using Gemini.
+2. Once you have configured the above variables, navigate to **Workspace Settings → LLM Key** in your ToolJet workspace and turn on the "Apply configuration from environment variable" toggle.
+    <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/tooljet-ai/byok/env-var-v2.png" alt="llm key" />
 
 ## Supported Providers
 
-**Currently, only Anthropic is supported.** Support for additional LLM providers is planned for future releases.
+**Currently, only Anthropic and Google Gemini (Vertex AI) are supported.** Support for additional LLM providers is planned for future releases.
 
 ## Frequently Asked Questions
 
