@@ -911,7 +911,6 @@ class HomePageComponent extends React.Component {
 
   executeAppDeletion = () => {
     const appId = this.state.appToBeDeleted.id;
-    const appName = this.state.appToBeDeleted?.name || 'app';
 
     this.setState((prevState) => {
       const deletingAppIds = new Set(prevState.deletingAppIds);
@@ -946,22 +945,8 @@ class HomePageComponent extends React.Component {
           this.fetchAppsLimit();
         }
 
-        if (this.isOnFeatureBranch()) {
-          const branchState = useWorkspaceBranchesStore.getState();
-          branchState.actions
-            .pushWorkspace(`Delete ${appName}`, null, { deletionOnly: true })
-            .then(() => {
-              toast.success(`${this.getAppType()} deleted successfully.`);
-              finish();
-            })
-            .catch((err) => {
-              toast.error(err?.message || 'Failed to push deletion to git.');
-              finish();
-            });
-        } else {
-          toast.success(`${this.getAppType()} deleted successfully.`);
-          finish();
-        }
+        toast.success(`${this.getAppType()} deleted successfully.`);
+        finish();
       })
       .catch((error) => {
         toast.error(error?.error || error?.message || 'Could not delete the app.');
