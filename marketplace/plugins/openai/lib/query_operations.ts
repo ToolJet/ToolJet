@@ -1,50 +1,55 @@
 import OpenAI from 'openai'; // Updated SDK version
 import { QueryOptions } from './types';
 
-const GPT_IMAGE_MODELS = new Set(['gpt-image-1', 'gpt-image-1-mini', 'gpt-image-1.5']);
+// All GPT image family models — always return b64_json, never a URL
+const GPT_IMAGE_MODELS = new Set([
+  'gpt-image-1',
+  'gpt-image-1-mini',
+  'gpt-image-1.5',
+  'gpt-image-2',
+  'gpt-image-2-2026-04-21',
+]);
 
-const getSizeEnum = (
-  model: string | undefined,
-  size: string | undefined
-): '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792' | '1536x1024' | '1024x1536' | 'auto' => {
+// gpt-image-2 supports arbitrary WIDTHxHEIGHT strings up to 3840x2160;
+// the standard fixed-size switch used by the other GPT image models does not apply
+const GPT_IMAGE_2_MODELS = new Set(['gpt-image-2', 'gpt-image-2-2026-04-21']);
+
+const GPT_IMAGE_2_SIZE_RE = /^\d+x\d+$/;
+
+const getSizeEnum = (model: string | undefined, size: string | undefined): string => {
+  // gpt-image-2: pass through any valid WIDTHxHEIGHT string or 'auto'; default 1024x1024
+  if (GPT_IMAGE_2_MODELS.has(model ?? '')) {
+    const s = size?.trim() ?? '';
+    if (s === 'auto' || GPT_IMAGE_2_SIZE_RE.test(s)) return s;
+    return '1024x1024';
+  }
+
+  // Standard GPT image models: fixed size set + auto
   if (GPT_IMAGE_MODELS.has(model ?? '')) {
     switch (size) {
-      case '1024x1024':
-        return '1024x1024';
-      case '1536x1024':
-        return '1536x1024';
-      case '1024x1536':
-        return '1024x1536';
-      case 'auto':
-        return 'auto';
-      default:
-        return '1024x1024';
+      case '1024x1024': return '1024x1024';
+      case '1536x1024': return '1536x1024';
+      case '1024x1536': return '1024x1536';
+      case 'auto':      return 'auto';
+      default:          return '1024x1024';
     }
   }
 
   if (model === 'dall-e-3') {
     switch (size) {
-      case '1024x1024':
-        return '1024x1024';
-      case '1792x1024':
-        return '1792x1024';
-      case '1024x1792':
-        return '1024x1792';
-      default:
-        return '1024x1024';
+      case '1024x1024': return '1024x1024';
+      case '1792x1024': return '1792x1024';
+      case '1024x1792': return '1024x1792';
+      default:          return '1024x1024';
     }
   }
 
   if (model === 'dall-e-2') {
     switch (size) {
-      case '1024x1024':
-        return '1024x1024';
-      case '512x512':
-        return '512x512';
-      case '256x256':
-        return '256x256';
-      default:
-        return '1024x1024';
+      case '1024x1024': return '1024x1024';
+      case '512x512':   return '512x512';
+      case '256x256':   return '256x256';
+      default:          return '1024x1024';
     }
   }
 
