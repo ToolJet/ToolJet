@@ -71,6 +71,12 @@ export const datetimePickerV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: false },
       section: 'Data',
     },
+    enableUtcFormat: {
+      type: 'toggle',
+      displayName: 'UTC Designator',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'Data',
+    },
     placeholder: {
       type: 'code',
       displayName: 'Placeholder',
@@ -426,6 +432,7 @@ export const datetimePickerV2Config = {
       dateFormat: { value: 'DD/MM/YYYY' },
       timeFormat: { value: 'HH:mm' },
       isTimezoneEnabled: { value: '{{false}}' },
+      enableUtcFormat: { value: '{{false}}' },
       displayTimezone: { value: 'UTC' },
       storeTimezone: { value: 'UTC' },
       loadingState: { value: '{{false}}' },
