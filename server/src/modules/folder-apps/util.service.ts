@@ -16,25 +16,28 @@ export function applyAppPermissionFilter(
   query: SelectQueryBuilder<FolderApp>,
   userAppPermissions: UserAppsPermissions
 ): void {
-  const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+  // No resolved app permissions → user can see nothing.
+  if (!userAppPermissions) {
+    query.andWhere('1=0');
+    return;
+  }
+  const {
+    isAllEditable,
+    isAllViewable,
+    hideAll,
+    hiddenAppsId = [],
+    editableAppsId = [],
+    viewableAppsId = [],
+  } = userAppPermissions;
   if (isAllEditable) return;
 
-  const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
-    (id) => !userAppPermissions.editableAppsId.includes(id)
-  );
-  const explicitVisibleApps = Array.from(
-    new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
-  );
+  const hiddenNonEditable = hiddenAppsId.filter((id) => !editableAppsId.includes(id));
+  const explicitVisibleApps = Array.from(new Set([...editableAppsId, ...viewableAppsId]));
   const viewableApps = hideAll
     ? [null, ...explicitVisibleApps]
     : [
         null,
-        ...Array.from(
-          new Set([
-            ...userAppPermissions.editableAppsId,
-            ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-          ])
-        ),
+        ...Array.from(new Set([...editableAppsId, ...viewableAppsId.filter((id) => !hiddenNonEditable.includes(id))])),
       ];
 
   if (!isAllViewable) {
@@ -260,16 +263,14 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       viewableAppsInFolder.orderBy('app.updatedAt', 'DESC').addOrderBy('app.createdAt', 'DESC');
     }
 
-    const [viewableApps, totalCount] = await Promise.all([
-      (page === 0
-        ? viewableAppsInFolder.orderBy('app.createdAt', 'DESC')
-        : viewableAppsInFolder
-            .take(9)
-            .skip(9 * (page - 1))
-            .orderBy('app.createdAt', 'DESC')
-      ).getMany(),
-      viewableAppsInFolder.getCount(),
-    ]);
+    // Clone before paginating so the paginated getMany and the full-count getCount
+    // operate on independent builders. The clone inherits the ordering set above.
+    const paginatedQuery = viewableAppsInFolder.clone();
+    if (page !== 0) {
+      paginatedQuery.take(9).skip(9 * (page - 1));
+    }
+
+    const [viewableApps, totalCount] = await Promise.all([paginatedQuery.getMany(), viewableAppsInFolder.getCount()]);
 
     return {
       viewableApps,
@@ -326,15 +327,23 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     folderAppIds: string[],
     userAppPermissions: UserAppsPermissions
   ): SelectQueryBuilder<AppBase> {
-    const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+    // No resolved app permissions → user can see nothing.
+    if (!userAppPermissions) {
+      query.andWhere('1=0');
+      return query;
+    }
+    const {
+      isAllEditable,
+      isAllViewable,
+      hideAll,
+      hiddenAppsId = [],
+      editableAppsId = [],
+      viewableAppsId = [],
+    } = userAppPermissions;
 
-    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
-      (id) => !userAppPermissions.editableAppsId.includes(id)
-    );
+    const hiddenNonEditable = hiddenAppsId.filter((id) => !editableAppsId.includes(id));
 
-    const explicitVisibleApps = Array.from(
-      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
-    );
+    const explicitVisibleApps = Array.from(new Set([...editableAppsId, ...viewableAppsId]));
 
     const viewableAppsTotal = isAllEditable
       ? [null, ...folderAppIds]
@@ -345,10 +354,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
           : [
               null,
               ...Array.from(
-                new Set([
-                  ...userAppPermissions.editableAppsId,
-                  ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-                ])
+                new Set([...editableAppsId, ...viewableAppsId.filter((id) => !hiddenNonEditable.includes(id))])
               ),
             ];
 
