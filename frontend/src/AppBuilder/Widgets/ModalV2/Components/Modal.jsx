@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
@@ -44,6 +44,7 @@ export const ModalWidget = ({ ...restProps }) => {
   const temporaryLayouts = useStore((state) => {
     return state.temporaryLayouts?.[getDynamicLayoutKey(id, subContainerIndex, '-body')];
   }, shallow);
+  const [needsBodyScroll, setNeedsBodyScroll] = useState(false);
   const _modalHeight = isFullScreen ? '100vh' : `${modalHeight}px`;
 
   const headerMaxHeight = isFullScreen
@@ -109,9 +110,12 @@ export const ModalWidget = ({ ...restProps }) => {
             modalContent.style.setProperty('height', `${totalHeight}px`, 'important');
             modalContent.style.setProperty('min-height', isFullScreen ? '100%' : `${modalHeight}px`, 'important');
             modalContent.style.setProperty('max-height', isFullScreen ? '100%' : `85vh`, 'important');
+            const maxModalHeightPx = isFullScreen ? window.innerHeight : window.innerHeight * 0.85;
+            setNeedsBodyScroll(totalHeight > maxModalHeightPx);
           } else {
             modalContent.style.setProperty('height', _modalHeight, 'important');
             modalContent.style.setProperty('max-height', isFullScreen ? '100%' : modalHeight, 'important');
+            setNeedsBodyScroll(false);
           }
         } else {
           modalContent.style.setProperty('height', '5px', 'important');
@@ -143,7 +147,8 @@ export const ModalWidget = ({ ...restProps }) => {
       }}
       contentClassName={classNames(
         `modal-component tj-modal--container tj-modal-widget-content tj-modal-content-${id}`,
-        isDynamicHeightEnabled && `dynamic-${id}`
+        isDynamicHeightEnabled && `dynamic-${id}`,
+        isDynamicHeightEnabled && needsBodyScroll && 'tj-modal-allow-body-scroll'
       )}
       animation={true}
       onEscapeKeyDown={(e) => {
@@ -201,7 +206,7 @@ export const ModalWidget = ({ ...restProps }) => {
               canvasHeight={modalBodyHeight}
               styles={{
                 backgroundColor: customStyles.modalBody.backgroundColor,
-                overflowY: isDisabled ? 'hidden' : 'auto',
+                overflowY: isDisabled || (isDynamicHeightEnabled && !needsBodyScroll) ? 'hidden' : 'auto',
               }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
