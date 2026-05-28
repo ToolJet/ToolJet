@@ -18,7 +18,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 
-const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery', 'mysql', 'mssql'];
+const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery', 'mysql', 'mssql', 'snowflake'];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId, isModuleEditor } = useModuleContext();

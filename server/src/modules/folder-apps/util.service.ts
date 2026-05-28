@@ -1,7 +1,7 @@
 import { Folder } from '@entities/folder.entity';
 import { User } from '@entities/user.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { EntityManager, SelectQueryBuilder } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { EntityManager, In, IsNull, SelectQueryBuilder } from 'typeorm';
 import { IFolderAppsUtilService } from './interfaces/IUtilService';
 import { AppBase } from '@entities/app_base.entity';
 import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
@@ -10,6 +10,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { APP_TYPES } from '@modules/apps/constants';
+import { AppVersionType } from '@entities/app_version.entity';
 
 export function applyAppPermissionFilter(
   query: SelectQueryBuilder<FolderApp>,
@@ -63,11 +64,11 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     manager: EntityManager,
     _type: APP_TYPES = APP_TYPES.FRONT_END,
     searchKey?: string,
-    _branchId?: string
+    branchId?: string
   ): Promise<FolderApp[]> {
     if (folderIds.length === 0) return [];
 
-    const query = this.buildFolderAppsQuery(manager, folderIds, searchKey, _branchId);
+    const query = this.buildFolderAppsQuery(manager, folderIds, searchKey, branchId);
     applyAppPermissionFilter(query, userAppPermissions as UserAppsPermissions);
     return query.getMany();
   }
@@ -80,22 +81,32 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
   ): SelectQueryBuilder<FolderApp> {
     const query = manager
       .createQueryBuilder(FolderApp, 'folder_apps')
-      .leftJoin('folder_apps.app', 'app')
-      .where('folder_apps.folderId IN (:...folderIds)', { folderIds });
+      .leftJoin('apps', 'app_search', 'folder_apps.app_id = app_search.id')
+      .where('folder_apps.folderId IN (:...folderIds) AND folder_apps.branchId = :branchId', {
+        folderIds,
+        branchId: branchId ?? null,
+      });
 
     if (branchId) {
       query.leftJoin(
         'app_versions',
         'av_search',
-        'av_search.app_id = app.id AND av_search.branch_id = :searchBranchId',
+        'av_search.app_id = app_search.id AND av_search.branch_id = :searchBranchId',
         { searchBranchId: branchId }
+      );
+    } else {
+      query.leftJoin(
+        'app_versions',
+        'av_search',
+        'av_search.app_id = app_search.id AND av_search.branch_id IS NULL AND av_search.version_type = :versionType',
+        { versionType: AppVersionType.VERSION }
       );
     }
 
     if (searchKey) {
       if (branchId) {
         query.andWhere(
-          '(LOWER(av_search.app_name) LIKE :searchKey OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))',
+          '(LOWER(av_search.app_name) LIKE :searchKey OR (app_search.type = :workflowType AND LOWER(app_search.name) LIKE :searchKey))',
           {
             searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
             workflowType: APP_TYPES.WORKFLOW,
@@ -103,7 +114,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         );
       } else {
         query.andWhere(
-          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (app.type = :workflowType AND LOWER(app.name) LIKE :searchKey))`,
+          `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = app_search.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (app_search.type = :workflowType AND LOWER(app_search.name) LIKE :searchKey))`,
           {
             searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
             workflowType: APP_TYPES.WORKFLOW,
@@ -116,7 +127,6 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
 
   protected getBaseAppsQuery(
     manager: EntityManager,
-    folderAppIds: string[],
     searchKey?: string,
     branchId?: string
   ): SelectQueryBuilder<AppBase> {
@@ -137,7 +147,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
         // (un-backfilled stubs, pull-created rows, etc.). Workflows keep their
         // name on apps.* and match against apps.name explicitly.
         query.andWhere(
-          '(LOWER(COALESCE(appVersions.app_name, apps.name)) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
+          '(LOWER(appVersions.app_name) LIKE :searchKey OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))',
           {
             searchKey: `%${searchKey.toLowerCase()}%`,
             workflowType: APP_TYPES.WORKFLOW,
@@ -172,16 +182,17 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
   }> {
     // Read-only — no txn needed.
     const manager = getConnectionInstance().manager;
-    const folderAppsQb = manager
+    const folderAppsQuery = manager
       .createQueryBuilder(FolderApp, 'folderApp')
-      .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
+      .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id AND folderApp.branch_id = :branchId', {
         id: folder.id,
+        branchId: branchId || null,
       });
 
     if (branchId) {
       // INNER JOIN — folder apps are kept only if they have an app_versions row on
       // this branch. Apps not present on the branch are dropped here.
-      folderAppsQb.innerJoin(
+      folderAppsQuery.innerJoin(
         'app_versions',
         'av_folder',
         'av_folder.app_id = app.id AND av_folder.branch_id = :folderBranchId',
@@ -194,12 +205,11 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     // against rows where av_folder.app_name IS NULL and drops them.
     const hasSearch = !!(searchKey && searchKey.trim());
     if (hasSearch) {
-      folderAppsQb.where(
+      folderAppsQuery.where(
         branchId
           ? // Non-workflows match against the branched app_versions.app_name,
-            // falling back to app.name when the version row's app_name is NULL
             // (un-backfilled or pull-created rows). Workflows keep name on apps.*.
-            '(LOWER(COALESCE(av_folder.app_name, app.name)) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
+            '(LOWER(av_folder.app_name) LIKE :name OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))'
           : // gitsync off: non-workflows match any app_version's name;
             // workflows match app.name.
             `(EXISTS (SELECT 1 FROM app_versions av_n WHERE av_n.app_id = app.id AND LOWER(av_n.app_name) LIKE :name) OR (app.type = :workflowType AND LOWER(app.name) LIKE :name))`,
@@ -207,7 +217,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       );
     }
 
-    const folderApps = await folderAppsQb.getMany();
+    const folderApps = await folderAppsQuery.getMany();
 
     const userPermission = await this.abilityService.resourceActionsPermission(user, {
       resources: [{ resource: MODULES.APP }],
@@ -229,7 +239,7 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       };
     }
 
-    const viewableAppsInFolder = this.getBaseAppsQuery(manager, folderAppIds, searchKey, branchId);
+    const viewableAppsInFolder = this.getBaseAppsQuery(manager, searchKey, branchId);
     this.addViewableFrontendFilter(viewableAppsInFolder, folderAppIds, effectiveAppPermissions);
 
     // Branch presence is already enforced by the INNER JOIN in getBaseAppsQuery
@@ -245,16 +255,19 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       viewableAppsInFolder
         .orderBy('appVersions.isStub', 'ASC')
         .addOrderBy('appVersions.updatedAt', 'DESC')
-        .addOrderBy('apps.createdAt', 'DESC');
+        .addOrderBy('app.createdAt', 'DESC');
     } else {
-      viewableAppsInFolder.orderBy('apps.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
+      viewableAppsInFolder.orderBy('app.updatedAt', 'DESC').addOrderBy('app.createdAt', 'DESC');
     }
 
     const [viewableApps, totalCount] = await Promise.all([
-      viewableAppsInFolder
-        .take(9)
-        .skip(9 * (page - 1))
-        .getMany(),
+      (page === 0
+        ? viewableAppsInFolder.orderBy('app.createdAt', 'DESC')
+        : viewableAppsInFolder
+            .take(9)
+            .skip(9 * (page - 1))
+            .orderBy('app.createdAt', 'DESC')
+      ).getMany(),
       viewableAppsInFolder.getCount(),
     ]);
 
@@ -264,29 +277,46 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     };
   }
 
-  async create(folderId: string, appId: string, skipGitSyncCheck = false): Promise<FolderApp> {
+  async bulkCreate(folderId: string, appIds: string[], branchId?: string): Promise<FolderApp[]> {
     return dbTransactionWrap(async (manager: EntityManager) => {
+      const branchFilter = branchId ? { branchId } : { branchId: IsNull() };
+      const existing = await manager.find(FolderApp, { where: { appId: In(appIds), ...branchFilter } });
+      const alreadyInFolder = new Set(existing.filter((fa) => fa.folderId === folderId).map((fa) => fa.appId));
+      const toRemove = existing.filter((fa) => fa.folderId !== folderId);
+
+      if (toRemove.length > 0) {
+        await manager.delete(FolderApp, { id: In(toRemove.map((fa) => fa.id)) });
+      }
+
+      const toCreate = appIds.filter((id) => !alreadyInFolder.has(id));
+      if (toCreate.length === 0) return [];
+
+      const newFolderApps = toCreate.map((appId) =>
+        manager.create(FolderApp, { folderId, appId, branchId: branchId || null })
+      );
+      return manager.save(FolderApp, newFolderApps);
+    });
+  }
+
+  async create(folderId: string, appId: string, branchId?: string): Promise<FolderApp> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const branchFilter = branchId ? { branchId } : { branchId: IsNull() };
       const existingFolderApp = await manager.findOne(FolderApp, {
-        where: { appId },
+        where: { appId, ...branchFilter },
       });
 
-      // If app is already in a folder, remove it first (apps can only be in one folder)
-      if (existingFolderApp) {
-        if (existingFolderApp.folderId === folderId && !skipGitSyncCheck) {
-          throw new BadRequestException('App has already been added to the folder');
-        }
-        await manager.delete(FolderApp, { id: existingFolderApp.id });
-      }
+      // idempotent: git-sync pull paths call create() repeatedly on re-pull
+      if (existingFolderApp?.folderId === folderId) return existingFolderApp;
+      // app is in a different folder on this branch — move it
+      if (existingFolderApp) await manager.delete(FolderApp, { id: existingFolderApp.id });
 
       // TODO: check if folder under user.organizationId and user has edit permission on app
 
       const newFolderApp = manager.create(FolderApp, {
         folderId,
         appId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        branchId: branchId || null,
       });
-
       return await manager.save(FolderApp, newFolderApp);
     });
   }
