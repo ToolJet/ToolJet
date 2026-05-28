@@ -75,8 +75,7 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
   z-index: 1050;
 
   .popover-body {
-    overflow: auto;
-    overscroll-behavior: contain;
+    overflow: visible !important;
   }
 
   // Ensure proper z-index layering

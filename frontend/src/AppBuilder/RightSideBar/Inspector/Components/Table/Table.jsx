@@ -116,6 +116,7 @@ export const Table = (props) => {
     if (isQueryPaneExpanded && activeColumnPopoverIndex !== null) {
       closeColumnPopover();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isQueryPaneExpanded]);
 
   // Event handlers
