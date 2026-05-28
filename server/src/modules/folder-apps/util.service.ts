@@ -258,9 +258,9 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
       viewableAppsInFolder
         .orderBy('appVersions.isStub', 'ASC')
         .addOrderBy('appVersions.updatedAt', 'DESC')
-        .addOrderBy('app.createdAt', 'DESC');
+        .addOrderBy('apps.createdAt', 'DESC');
     } else {
-      viewableAppsInFolder.orderBy('app.updatedAt', 'DESC').addOrderBy('app.createdAt', 'DESC');
+      viewableAppsInFolder.orderBy('apps.updatedAt', 'DESC').addOrderBy('apps.createdAt', 'DESC');
     }
 
     // Clone before paginating so the paginated getMany and the full-count getCount
