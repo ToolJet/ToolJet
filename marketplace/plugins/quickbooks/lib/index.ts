@@ -51,7 +51,6 @@ export default class QuickBooks implements QueryService {
     const clientSecret = getOption('client_secret');
     const redirectUri = `${process.env.TOOLJET_HOST}${process.env.SUB_PATH || '/'}oauth2/authorize`;
 
-    console.log('[QuickBooks] Token exchange — redirectUri:', redirectUri);
 
     const data = new URLSearchParams({
       code: authCode,
@@ -71,7 +70,6 @@ export default class QuickBooks implements QueryService {
       });
 
       const tokenResponse = response.body as { access_token: string; refresh_token: string };
-      console.log('[QuickBooks] Token exchange successful, access_token present:', !!tokenResponse.access_token);
 
       return [
         ['access_token', tokenResponse.access_token],
@@ -178,18 +176,31 @@ export default class QuickBooks implements QueryService {
 
     // Add body for non-GET/DELETE operations
     if (operation && !['get', 'delete'].includes(operation) && bodyParams && Object.keys(bodyParams).length > 0) {
-      const bodyKeys = Object.keys(bodyParams);
-      // When the spec defines body as type:string, the UI stores user input under a single "body" key.
-      // Parse that string as JSON so the QB API receives a proper object.
-      if (bodyKeys.length === 1 && bodyKeys[0] === 'body' && typeof bodyParams['body'] === 'string') {
-        try {
-          requestOptions.json = JSON.parse(bodyParams['body']);
-        } catch {
-          requestOptions.body = bodyParams['body'];
-          requestOptions.headers['Content-Type'] = 'application/json';
-        }
+      // QuickBooks /query endpoint expects a raw SQL string as text/plain, not JSON
+      if (path?.endsWith('/query')) {
+        const queryString = bodyParams['body'] ?? Object.values(bodyParams)[0];
+        requestOptions.body = String(queryString);
+        requestOptions.headers['Content-Type'] = 'text/plain';
       } else {
-        requestOptions.json = bodyParams;
+        const parsedBody: Record<string, any> = {};
+        for (const [key, value] of Object.entries(bodyParams)) {
+          if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (
+              (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+              (trimmed.startsWith('[') && trimmed.endsWith(']'))
+            ) {
+              try {
+                parsedBody[key] = JSON.parse(trimmed);
+                continue;
+              } catch {
+                // not valid JSON, fall through
+              }
+            }
+          }
+          parsedBody[key] = value;
+        }
+        requestOptions.json = parsedBody;
       }
     }
 
