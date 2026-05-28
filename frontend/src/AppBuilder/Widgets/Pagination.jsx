@@ -77,8 +77,10 @@ export const Pagination = ({
   // CSA: setPage
   useEffect(() => {
     setExposedVariable('setPage', async function (pageIndex) {
-      const total = properties.numberOfPages;
-      const target = pageIndex <= 0 ? 1 : pageIndex > total ? total : pageIndex;
+      const total = Number(properties.numberOfPages);
+      const n = Number(pageIndex);
+      if (!Number.isFinite(n) || !Number.isFinite(total) || total < 1) return;
+      const target = Math.min(Math.max(1, Math.floor(n)), total);
       pageChanged(target);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +93,7 @@ export const Pagination = ({
       setExposedVariable('isVisible', !!state);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
+  }, []);
 
   // CSA: setDisable
   useEffect(() => {
@@ -100,7 +102,7 @@ export const Pagination = ({
       setExposedVariable('isDisabled', !!value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
+  }, []);
 
   // CSA: setLoading
   useEffect(() => {
