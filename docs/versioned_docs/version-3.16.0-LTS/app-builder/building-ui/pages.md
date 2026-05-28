@@ -10,9 +10,10 @@ You can add the following items to the navigation menu in ToolJet:
 1. **New Page**: Create new pages to support multi-page applications and organize functionalities more effectively.
 2. **Web Pages**: Add external URLs to the navigation menu to redirect users to specific webpages.
 3. **ToolJet Application**: Link to other ToolJet applications directly from the nav menu. Note: The application must be a released app within the same workspace.
-4. **Nav Group**: Group related navigation items together to simplify navigation in complex applications. For example, all admin-related items can go under one group, and user-related items under another.
+4. **Custom Navigation**: Add any custom navigation using the OnClick event and available actions. Items of this type cannot be set as the home page or disabled.
+5. **Nav Group**: Group related navigation items together to simplify navigation in complex applications. For example, all admin-related items can go under one group, and user-related items under another.
 
-This guide discusses how pages and navigation menu work, how to create new navigation items manage them.
+This guide discusses how pages and the navigation menu work, how to create new navigation items, and manage them.
 
 ## Page Properties
 
@@ -22,17 +23,17 @@ Each page in ToolJet comes with properties that define its identity and behavior
 
 ### Name
 
-A display name for the page, shown in the application's navigation menu. It is also used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to identify in the menu. The page name and icon can be updated using the kebab menu (three dots) next to the page name and then going to edit page details.
+A display name for the page, shown in the application's navigation menu. It is also used to reference the page within the ToolJet application. You can optionally add an icon to make the page easier to identify in the menu. The page name and icon can be updated using the kebab menu (three dots) next to the page name and then selecting **Edit Page Details**.
 
 <img className="screenshot-full img-m" src="/img/app-builder/multi-page/page-name.png" alt="App Builder: Canvas"/>
 
 ### Handle
 
-The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name. You can change it manually from edit page details option.
+The page handle is a unique identifier used to generate a shareable URL for the page. It is appended as a slug to the end of your application URL. By default, it's auto-generated from the page name. You can change it manually from the **Edit Page Details** option.
 
 ### Home Page
 
-The home page is the default landing page when the app launches. Only one page can be designated as the home page in your application. It cannot be deleted, disabled, or hidden from the page menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name or by going to edit page details option.
+The home page is the default landing page when the app launches. Only one page can be designated as the home page in your application. It cannot be deleted, disabled, or hidden from the page menu. A page can be marked as the home page using the kebab menu (three dots) next to the page name or by selecting the **Edit Page Details** option.
 
 ### Permissions
 
@@ -42,7 +43,7 @@ Page permissions control who can access a particular page. You can choose to:
 - Restrict access to selected users
 - Restrict access to selected [user groups](/docs/user-management/role-based-access/user-roles)
 
-To configure page permissions, click the kebab menu (three dots) next to the page name, select Page permission, and select a permission option from the popup.
+To configure page permissions, click the kebab menu (three dots) next to the page name, select **Page Permission**, and select a permission option from the popup.
 
 ### Disable Page
 
@@ -66,10 +67,10 @@ The app header section allows you to control what is displayed in the applicatio
 
 ### Navigation Menu
 
-The **Navigation Menu** lets users navigate between pages, external web pages and other ToolJet applications in your application. You can customize how it looks and works, or even hide certain pages from it.
+The **Navigation Menu** lets users navigate between pages, external web pages, and other ToolJet applications in your application. You can customize how it looks and works, or even hide certain pages from it.
 
 #### Show Navigation Menu
-Toggle this on to display the navigation menu. When disabled, no navigation menu will be displayed, but users will be still able to navigate using events and page urls.
+Toggle this on to display the navigation menu. When disabled, no navigation menu will be displayed, but users will still be able to navigate using events and page URLs.
 
 #### Position
 Choose whether to display the navigation menu at the top or on the side of the application.
@@ -131,6 +132,6 @@ Enter a name and select the application from the dropdown. Only the release appl
 
 ### Nav Group
 
-Related navigation item can be grouped together using the nav group. To add a new nav group, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav group**. Enter the group name and press enter to create the group. You can then drag items into the group folder. You can also add an icon to the group for better visual identification.
+Related navigation items can be grouped together using a nav group. To add a new nav group, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav group**. Enter the group name and press enter to create the group. You can then drag items into the group folder. You can also add an icon to the group for better visual identification.
 
 <img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-group.png" alt="App Builder: Canvas"/>
