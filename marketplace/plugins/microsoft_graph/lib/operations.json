@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Microsoft Graph datasource",
@@ -7,17 +6,17 @@
   "defaults": {},
   "properties": {
     "operation": {
-        "label": "",
-        "key": "ms_graph_operation",
-        "type": "react-component-api-endpoint",
-        "description": "Single select dropdown for operation",
-        "specUrl": {
-          "Outlook": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/outlook.json",
-          "Calendar": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/calendar.json",
-          "Users": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/users.json",
-          "Teams": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/teams.yaml",
-          "OneDrive": "https://raw.githubusercontent.com/adishM98/base-repo-testing/refs/heads/main/onedrive.json"
-        }
+      "label": "",
+      "key": "ms_graph_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": {
+        "Outlook": "@spec/microsoft_graph/outlook",
+        "Calendar": "@spec/microsoft_graph/calendar",
+        "Users": "@spec/microsoft_graph/users",
+        "Teams": "@spec/microsoft_graph/teams",
+        "OneDrive": "@spec/microsoft_graph/onedrive"
       }
+    }
   }
 }

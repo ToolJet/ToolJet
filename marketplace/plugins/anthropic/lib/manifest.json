@@ -2,33 +2,33 @@
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
   "title": "Anthropic datasource",
   "description": "A schema defining Anthropic datasource",
-  "type": "api",
-  "source": {
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
     "name": "Anthropic",
     "kind": "anthropic",
-    "exposedVariables": {
-      "isLoading": false,
-      "data": {},
-      "rawData": {}
-    },
-    "options": {
-      "apiKey": {
-        "type": "string",
-        "encrypted": true
-      }
-    }
+    "type": "api"
   },
-  "defaults": {},
   "properties": {
     "apiKey": {
-      "label": "API key",
-      "key": "apiKey",
-      "type": "password",
-      "description": "Enter your Anthropic API Key",
-      "encrypted": true
+      "type": "string",
+      "title": "API Key",
+      "description": "Enter your Anthropic API Key"
     }
   },
+  "tj:encrypted": [
+    "apiKey"
+  ],
   "required": [
     "apiKey"
-  ]
+  ],
+  "tj:ui:properties": {
+    "apiKey": {
+      "order": 10,
+      "$ref": "#/properties/apiKey",
+      "key": "apiKey",
+      "label": "API Key",
+      "widget": "password-v3"
+    }
+  }
 }

@@ -18,7 +18,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 
-const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery'];
+const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery', 'mysql', 'mssql', 'snowflake'];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId } = useModuleContext();
@@ -309,8 +309,8 @@ const GenerateQueryButton = () => {
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   const isActive = isLoading || isPreviewQueryLoading;
 
-  // if (featureAccess?.aiEnabled === false) return null;
-  // if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+  if (!featureAccess?.ai) return null;
+  if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
   if (isActive) return null;
 
   const isPressed = buttonPressedForQuery === queryName && isQueryMentioned;

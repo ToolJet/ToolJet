@@ -168,9 +168,21 @@ const RenderWidget = ({
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables?.[effectiveSubContainerIndex] ?? {},
         componentType,
+        nearestListviewId,
+        rowIndex: effectiveSubContainerIndex,
+        moduleId,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [validateWidget, customResolvables, effectiveSubContainerIndex, unResolvedValidation, resolvedValidation, moduleId]
+    [
+      validateWidget,
+      customResolvables,
+      effectiveSubContainerIndex,
+      unResolvedValidation,
+      resolvedValidation,
+      moduleId,
+      nearestListviewId,
+      componentType,
+    ]
   );
 
   const resetComponent = useCallback(() => {
@@ -258,7 +270,7 @@ const RenderWidget = ({
     if (!collapseWhenHidden) return;
     const contextIndices = normalizeLayoutContext(resolveIndex);
     const handle = requestAnimationFrame(() => {
-      adjustComponentPositions(id, currentLayout, false, contextIndices);
+      adjustComponentPositions(id, currentLayout, false, contextIndices, moduleId);
     });
     return () => cancelAnimationFrame(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps

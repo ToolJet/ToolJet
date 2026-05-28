@@ -44,7 +44,7 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
       return prevComponentsOrder.current;
     }
 
-    const currentPageComponents = getCurrentPageComponents();
+    const currentPageComponents = getCurrentPageComponents(moduleId);
 
     const newComponentsOrder = [...components].sort((a, b) => {
       const aTop = currentPageComponents?.[a]?.layouts?.[currentLayout]?.top;

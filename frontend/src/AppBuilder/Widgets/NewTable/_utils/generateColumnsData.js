@@ -102,7 +102,9 @@ export default function generateColumnsData({
     .map((column) => {
       if (!column) return null;
 
-      const columnSize = column.columnSize || columnSizes[column?.id] || columnSizes[column?.name];
+      const columnSize = useDynamicColumn
+        ? column.columnSize || columnSizes[column?.id] || columnSizes[column?.name]
+        : columnSizes[column?.id] ?? columnSizes[column?.name] ?? column.columnSize;
       const columnType = column?.columnType;
 
       // Process column options for select types
@@ -122,6 +124,7 @@ export default function generateColumnsData({
       const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
+      // const disableSort = getResolvedValue(column.disableSort);
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
       let pinPosition = column.pinPosition ?? 'unpinned';
       if (useDynamicColumn && column.freezeColumn !== undefined && column.freezeColumn !== null) {
@@ -139,7 +142,7 @@ export default function generateColumnsData({
         id: column.id || uuidv4(),
         accessorKey: column.key || column.name,
         header: getResolvedValue(column.name) ?? '',
-        enableSorting: true,
+        // enableSorting: !disableSort,
         enableResizing: true,
         enableHiding: true,
         enableColumnFilter: true,
@@ -164,9 +167,11 @@ export default function generateColumnsData({
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedFieldsOnIndex(id, row.index);
-          let cellValue = changeSet
-            ? changeSet[cell.column.columnDef?.accessorKey] ?? cell.getValue()
-            : cell.getValue();
+          const accessorKey = cell.column.columnDef?.accessorKey;
+          let cellValue =
+            changeSet && Object.prototype.hasOwnProperty.call(changeSet, accessorKey)
+              ? changeSet[accessorKey]
+              : cell.getValue();
           cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
           const isEditable = getResolvedValue(column.isEditable, { cellValue, rowData });

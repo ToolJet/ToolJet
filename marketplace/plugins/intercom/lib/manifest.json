@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Intercom Datasource",
+  "description": "Integrate with Intercom API to manage contacts, support tickets, and conversations etc",
+  "type": "api",
+  "source": {
+    "name": "Intercom",
+    "kind": "intercom",
+    "exposedVariables": { "isLoading": false, "data": {}, "rawData": {} },
+    "options": {
+      "access_token": { "type": "string", "encrypted": true }
+    },
+    "customTesting": false
+  },
+  "defaults": {},
+  "properties": {
+    "access_token": {
+      "label": "Access Token",
+      "key": "access_token",
+      "type": "password",
+      "description": "Enter your Intercom Access Token"
+    }
+  },
+  "required": ["access_token"]
+}
