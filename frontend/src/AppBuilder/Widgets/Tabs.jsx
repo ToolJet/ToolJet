@@ -153,7 +153,7 @@ export const Tabs = function Tabs({
     adjustComponentPositions,
     currentLayout,
     isContainer: true,
-    value: currentTab,
+    value: `${currentTab}|${parsedHideTabs ? 1 : 0}`,
     componentCount,
     visibility: widgetVisibility,
     subContainerIndex,
