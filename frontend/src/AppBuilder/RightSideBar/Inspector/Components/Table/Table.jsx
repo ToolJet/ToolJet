@@ -152,7 +152,7 @@ export const Table = (props) => {
   const renderColumnPopover = useCallback(
     (column, index) => (
       <Popover
-        id="popover-basic-2"
+        id="table-column-popover-basic"
         className={`${darkMode && 'dark-theme'} shadow table-column-popover`}
         style={{
           width: '280px',

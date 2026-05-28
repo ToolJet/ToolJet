@@ -1228,26 +1228,17 @@
 }
 
 
-.table-column-popover#popover-basic-2 {
+.table-column-popover#popover-basic-2,
+.table-column-popover#table-column-popover-basic {
   z-index: 11 !important;
   min-width: 280px;
-  display: flex !important;
-  flex-direction: column !important;
-  height: calc(100vh - 88px) !important;
-  max-height: calc(100vh - 88px) !important;
   background-color: var(--cc-surface1-surface);
-
-  .popover-header {
-    flex-shrink: 0;
-  }
 
   .cm-scroller {
     overscroll-behavior: unset !important;
   }
 
   .popover-body {
-    flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: column;
     padding: 16px 0px 16px !important;
@@ -1322,6 +1313,23 @@
       gap: 4px;
       flex: 1 0 0;
     }
+  }
+}
+
+// Table-only: force popover to full editor viewport height
+.table-column-popover#table-column-popover-basic {
+  display: flex !important;
+  flex-direction: column !important;
+  height: calc(100vh - 88px) !important;
+  max-height: calc(100vh - 88px) !important;
+
+  .popover-header {
+    flex-shrink: 0;
+  }
+
+  .popover-body {
+    flex: 1;
+    min-height: 0;
   }
 }
 
