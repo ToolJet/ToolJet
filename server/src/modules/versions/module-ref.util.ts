@@ -1,4 +1,4 @@
-import { EntityManager } from 'typeorm';
+import { EntityManager, IsNull } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -46,7 +46,13 @@ async function listSavedVersionsOnDefaultBranch(
   organizationId: string
 ): Promise<AppVersion[]> {
   const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (!defaultBranch) return [];
+  if (!defaultBranch) {
+    // Non-git-sync workspace: versions have branch_id = NULL.
+    return manager.find(AppVersion, {
+      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
+      order: { createdAt: 'DESC' },
+    });
+  }
   return manager.find(AppVersion, {
     where: {
       appId: moduleApp.id,
@@ -128,14 +134,26 @@ export async function resolveModuleRef(
         },
       });
       if (onDefault) return onDefault;
+    } else if (!consumerBranchId) {
+      // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
+      const noGitSync = await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, moduleReferenceId, branchId: IsNull(), isStub: false },
+      });
+      if (noGitSync) return noGitSync;
     }
-    // id present but neither branch had a match — orphan fallback below.
+    // id present but no branch had a match — orphan fallback below.
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
   const targetBranchId =
     consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
-  if (!targetBranchId) return null;
+  if (!targetBranchId) {
+    // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
+    return manager.findOne(AppVersion, {
+      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
+      order: { createdAt: 'DESC' },
+    });
+  }
   return manager.findOne(AppVersion, {
     where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
     order: { createdAt: 'DESC' },
@@ -450,6 +468,12 @@ export async function resolveAllModuleViewersForVersion(
             r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
+      } else if (!parent.branchId) {
+        // Non-git-sync: no workspace branches, versions have branch_id = NULL.
+        const onNullBranch = candidates.find(
+          (r) => r.moduleReferenceId === pin && r.branchId === null && r.isStub === false
+        );
+        if (onNullBranch) return pickKind(onNullBranch, 'pin-hit');
       }
     } else if (pin) {
       // Clause 2: version name on a version_type='version' row in this module's app
@@ -465,10 +489,11 @@ export async function resolveAllModuleViewersForVersion(
       }
     }
 
-    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default.
+    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default, else null-branch (non-git-sync).
     const fallback =
       (parent.branchId && candidates.find((r) => r.branchId === parent.branchId && r.isStub === false)) ||
       (defaultBranch && candidates.find((r) => r.branchId === defaultBranch.id && r.isStub === false)) ||
+      (!parent.branchId && !defaultBranch && candidates.find((r) => r.branchId === null && r.isStub === false)) ||
       undefined;
     if (fallback) {
       return pickKind(fallback, pin ? 'orphan-fallback' : 'unpinned-fallback');

@@ -4,6 +4,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { shallow } from 'zustand/shallow';
 
 const AppCanvasBanner = ({ appId = '' }) => {
@@ -16,6 +17,8 @@ const AppCanvasBanner = ({ appId = '' }) => {
     }),
     shallow
   );
+  const { isGitSyncEnabled } = useGitSyncConfig();
+
   useEffect(() => {
     fetchDevelopmentVersions(appId);
   }, [appId, environments]);
@@ -23,7 +26,10 @@ const AppCanvasBanner = ({ appId = '' }) => {
   const renderBanner = () => {
     if (currentMode !== 'edit') return null;
     if (isModuleEditor) {
-      return <WorkspaceLockedBanner pageContext="modules" />;
+      if (isGitSyncEnabled) {
+        return <WorkspaceLockedBanner pageContext="modules" />;
+      }
+      return <FreezeVersionInfo info="This version is locked. To make edits, create a draft version." hide={false} />;
     }
     return <FreezeVersionInfo hide={false} />;
   };
