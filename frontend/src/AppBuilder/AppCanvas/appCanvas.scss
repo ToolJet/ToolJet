@@ -135,6 +135,10 @@
     }
 }
 
+.real-canvas.flex-container-canvas:not(.has-no-scroll) {
+    overflow: auto;
+}
+
 #main-editor-canvas.disable-moveable-line #real-canvas {
     transform: none !important;
     position: relative;

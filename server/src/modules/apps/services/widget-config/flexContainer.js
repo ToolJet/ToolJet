@@ -18,8 +18,8 @@ export const flexContainerConfig = {
       isIcon: true,
       isFxNotRequired: true,
       options: [
-        { displayName: 'row', value: 'row', lucideIconName: 'rows-2' },
-        { displayName: 'column', value: 'column', lucideIconName: 'columns-2' },
+        { displayName: 'row', value: 'row', lucideIconName: 'move-horizontal' },
+        { displayName: 'column', value: 'column', lucideIconName: 'move-vertical' },
       ],
       validation: {
         schema: { type: 'string' },

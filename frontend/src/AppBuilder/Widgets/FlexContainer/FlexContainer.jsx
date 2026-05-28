@@ -6,6 +6,7 @@ import { useShouldStackFlexRealCanvas } from './useFlexStackBelow';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import Spinner from '@/_ui/Spinner';
 
 export const FlexContainer = ({
   id,
@@ -125,16 +126,20 @@ export const FlexContainer = ({
       className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}
       onClick={() => fireEvent('onClick')}
     >
-      <ContainerCanvas
-        id={id}
-        styles={flexCanvasStyles}
-        canvasHeight={height}
-        canvasWidth={width}
-        darkMode={darkMode}
-        componentType="FlexContainer"
-        flexEffectiveDirection={effectiveDirection}
-        flexShouldStack={shouldStack}
-      />
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <ContainerCanvas
+          id={id}
+          styles={flexCanvasStyles}
+          canvasHeight={height}
+          canvasWidth={width}
+          darkMode={darkMode}
+          componentType="FlexContainer"
+          flexEffectiveDirection={effectiveDirection}
+          flexShouldStack={shouldStack}
+        />
+      )}
     </div>
   );
 };

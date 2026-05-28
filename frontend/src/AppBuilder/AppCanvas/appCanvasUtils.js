@@ -52,14 +52,17 @@ export const addNewWidgetToTheEditor = (
     parentCanvasType
   );
   const scrollTop = realCanvasRef?.scrollTop;
-  let [left, top] = snapToGrid(subContainerWidth, _left, _top + scrollTop);
+  const subContainerWidths = useGridStore.getState().subContainerWidths;
+  const targetCanvasId = parentId && parentId !== 'canvas' ? parentId : 'canvas';
+  const fallbackGridWidth = subContainerWidth ? subContainerWidth / NO_OF_GRIDS : subContainerWidths.canvas || 1;
+  const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
+  let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
 
   // Adjust widget width based on the dropping canvas width
-  const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;
+  let width = Math.round((defaultWidth * mainCanvasGridWidth) / gridWidth);
 
   let customLayouts = undefined;
 
