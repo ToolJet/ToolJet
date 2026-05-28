@@ -10,7 +10,9 @@ import {
   getModalBodyHeight,
   getModalHeaderHeight,
   getModalFooterHeight,
+  isCustomModalWidth,
   getCustomModalWidth,
+  getBootstrapModalSize,
 } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFactory';
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
@@ -53,7 +55,6 @@ export const ModalV2 = function Modal({
     headerHeight,
     footerHeight,
     dynamicHeight,
-    modalWidth,
   } = properties;
   const {
     iconColor,
@@ -99,9 +100,9 @@ export const ModalV2 = function Modal({
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const isFullScreen = properties.size === 'fullscreen';
-  const isCustomWidth = size === 'custom';
-  const customModalWidth = isCustomWidth ? getCustomModalWidth(modalWidth) : undefined;
-  const bootstrapModalSize = isCustomWidth ? undefined : size;
+  const isCustomWidth = isCustomModalWidth(size);
+  const customModalWidth = isCustomWidth ? getCustomModalWidth(size) : undefined;
+  const bootstrapModalSize = isCustomWidth ? undefined : getBootstrapModalSize(size);
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;

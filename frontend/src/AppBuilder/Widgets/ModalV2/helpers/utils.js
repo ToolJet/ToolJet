@@ -6,7 +6,25 @@ const MODAL_HEADER = {
 const MODAL_FOOTER = {
   HEIGHT: 80,
 };
-const DEFAULT_MODAL_WIDTH = 600;
+const DEFAULT_CUSTOM_MODAL_WIDTH = 600;
+const BOOTSTRAP_MODAL_SIZES = ['sm', 'lg', 'xl', 'fullscreen'];
+
+const parseModalWidthNumber = (value) => {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return NaN;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue || !/^\d+(?:\.\d+)?$/.test(trimmedValue)) {
+    return NaN;
+  }
+
+  return Number(trimmedValue);
+};
 
 export const getCanvasHeight = (height) => {
   const parsedHeight = height.includes('px') ? parseInt(height, 10) : height;
@@ -46,15 +64,23 @@ export const getModalFooterHeight = (showFooter, footerHeight = MODAL_FOOTER.HEI
   return `${parsedHeight}px`;
 };
 
+export const isCustomModalWidth = (value) => {
+  const parsedValue = parseModalWidthNumber(value);
+  return Number.isFinite(parsedValue) && parsedValue > 0;
+};
+
 export const getCustomModalWidth = (value) => {
-  const trimmedValue = String(value ?? '').trim();
-  const parsedValue = typeof value === 'number' ? value : trimmedValue === '' ? NaN : Number(trimmedValue);
+  const parsedValue = parseModalWidthNumber(value);
 
   if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
-    return `${DEFAULT_MODAL_WIDTH}px`;
+    return `${DEFAULT_CUSTOM_MODAL_WIDTH}px`;
   }
 
   return `${parsedValue}px`;
+};
+
+export const getBootstrapModalSize = (value) => {
+  return BOOTSTRAP_MODAL_SIZES.includes(value) ? value : 'lg';
 };
 
 export function isFalsyOrMultipleZeros(value) {
