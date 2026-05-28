@@ -53,11 +53,21 @@ Allows you to add options to the radio button field. You can click on **Add new 
 }
 ```
 
+### Layout
+
+Controls how the radio button options are arranged within the component.
+
+| <div style={{ width:"100px"}}> Value </div> | <div style={{ width:"250px"}}> Description </div> |
+| :------------------------------------------ | :------------------------------------------------ |
+| Row | Options are arranged horizontally in a single row. |
+| Column | Options are stacked vertically in a single column. |
+| Wrap | Options are arranged horizontally and wrap to the next line when they exceed the available width. |
+
 ### Options loading state
 
 Allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
-## Component specific actions (CSA)
+## Component Specific Actions (CSA)
 
 The following actions of the component can be controlled using the component-specific actions (CSA), you can trigger it using an event or use a RunJS query.
 
@@ -103,10 +113,11 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div>                                                       | <div style={{ width:"250px"}}> Configuration Options </div>                                                                  |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| Loading state                                | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility                                   | Controls component visibility. Toggle or set dynamically.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable                                      | Enables or disables the component. Toggle or set dynamically.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip                                      | Provides additional information on hover. Set a string value for display.                               | String (e.g., `Select an option.` ).                                                                                         |
+| Loading state        | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility           | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's space when hidden, so surrounding components fill the space. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable              | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip              | Displays an informational tooltip when the user hovers over the component.   | String (e.g., `Select an option`).                                                                                          |
 
 <div style={{paddingTop:'24px'}}>
 
@@ -123,21 +134,22 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 
 ### Label
 
-| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>                                                                                                       |
-| :--------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Color                                                | Sets the color of the component's label.          | Select the color or click on **fx** and input code that programmatically returns a Hex color code.                                                                |
-| Alignment | Sets the position of the label and input field.   | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - **side** or **top**. |
-| Width | Sets the width of the input field. | Enable **Auto width** to use the standard width automatically. Disable it to manually adjust the width using the slider or by entering a numeric value via **fx**. You can also choose whether the width is calculated relative to the **Container** or relative to the **Field**. |
+| <div style={{ width:"130px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :---------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Color | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Alignment | Sets the position of the label relative to the options. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value — `side` or `top`. |
+| Direction | When alignment is set to `side`, controls whether the label appears to the left or right of the options. | Select **Left** or **Right** using the icon toggles. |
+| Width | Sets the width of the label. Available when alignment is `side`. | Enable **Auto** to use the standard width automatically, or disable it to manually set the width using the slider or **fx**. You can also choose whether the width is calculated relative to the **Container** or the **Field**. |
 
 ### Switch
 
-| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>                                        |
-| :--------------------------------------------------- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------- |
-| Border                                               | Sets the border color of the checkboxes.          | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Checked background                                   | Sets the color of the selected checkbox.          | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Unchecked background                                 | Sets the color of the unselected checkboxes.      | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Handle color                                         | Sets the fill color of the selected checkbox.     | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
-| Text                                                 | Sets the colors of the option labels.             | Enable the icon visibility, select icon and icon color                                             |
+| <div style={{ width:"130px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div> |
+| :---------------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
+| Border | Sets the border color of the radio buttons. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Checked background | Sets the background color of the selected radio button. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Unchecked background | Sets the background color of unselected radio buttons. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Handle color | Sets the fill color of the selected radio button's indicator dot. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Text | Sets the color of the option labels. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
 ### Container
 
