@@ -202,6 +202,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     />
   );
 
+  const gridContent =
+    currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
+      <Suspense fallback={null}>
+        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+      </Suspense>
+    );
+
   return (
     <div>
       <div
@@ -288,6 +295,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           canvasMaxWidth={canvasMaxWidth}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
                         />
                       ) : (
@@ -312,16 +320,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           currentMode={currentMode}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
                         />
                       )}
                     </SuspenseCountProvider>
-                  )}
-
-                  {currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
-                    <Suspense fallback={null}>
-                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                    </Suspense>
                   )}
                 </HotkeyProvider>
               </div>
