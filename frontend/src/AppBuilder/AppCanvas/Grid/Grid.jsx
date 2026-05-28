@@ -229,7 +229,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           top: y,
           left: Math.round(x / gw),
         };
-        console.log('batchedLayouts', batchedLayouts);
       });
 
       // Call setComponentLayout once with all updates

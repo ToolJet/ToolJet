@@ -2,6 +2,8 @@ import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import Dropdown from '@/components/ui/Dropdown/Index';
+import { useGridStore } from '@/_stores/gridStore';
+import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 
 const SIZE_OPTIONS = {
   'fill-parent': { label: 'Fill parent', value: 'fill-parent' },
@@ -33,6 +35,7 @@ const inputStyle = {
 export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => {
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
+  const { subContainerWidths } = useGridStore((state) => ({ subContainerWidths: state.subContainerWidths }), shallow);
 
   const parentId = allComponents?.[selectedComponentId]?.component?.parent;
   const parentType = parentId ? allComponents?.[parentId]?.component?.component : null;
@@ -41,7 +44,9 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
 
   const layoutData = allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {};
 
-  const fallbackWidthPx = (layoutData.width ?? 10) * 10;
+  const containerWidthPx = (parentId && subContainerWidths?.[parentId]) || subContainerWidths?.canvas;
+  const gridCellWidthPx = containerWidthPx / NO_OF_GRIDS;
+  const fallbackWidthPx = gridCellWidthPx;
   const fillWidth = layoutData.fillWidth ?? true;
   const widthPx = layoutData.widthPx ?? fallbackWidthPx;
 

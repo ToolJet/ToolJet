@@ -49,14 +49,19 @@ export const useFlexContainerDropTarget = ({ boxList, moduleId }) => {
           getComponentTypeFromId,
         });
 
+        const currentTarget = useStore.getState().flexContainerDropTarget;
+
         if (!flexContainerId) {
-          setFlexContainerDropTarget(null);
+          // Avoid no-op store writes during non-flex drags (can fire ~60fps)
+          if (currentTarget !== null) setFlexContainerDropTarget(null);
           return;
         }
 
         const direction = getEffectiveFlexDirectionForFlexContainer(getResolvedComponent, flexContainerId, moduleId);
         const index = computeFlexInsertIndex(flexContainerId, clientX, clientY, direction, excludeId);
-        setFlexContainerDropTarget({ flexContainerId, index });
+        if (currentTarget?.flexContainerId !== flexContainerId || currentTarget?.index !== index) {
+          setFlexContainerDropTarget({ flexContainerId, index });
+        }
       });
     },
     [boxList, getComponentTypeFromId, getResolvedComponent, moduleId, setFlexContainerDropTarget]

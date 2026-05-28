@@ -285,7 +285,7 @@ export class ComponentsService implements IComponentsService {
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, widthPx, fillWidth, updatedAt } = layout as any;
+        const { type, top, left, width, height, widthPx, fillWidth, updatedAt } = layout;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.

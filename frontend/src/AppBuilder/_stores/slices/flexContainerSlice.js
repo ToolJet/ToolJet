@@ -160,7 +160,6 @@ export const createFlexContainerSlice = (set, get) => ({
           delete child.layouts[state.currentLayout].top;
           delete child.layouts[state.currentLayout].left;
           delete child.layouts[state.currentLayout].width;
-          delete child.layouts[state.currentLayout].height;
         }
       }, skipUndoRedo),
       false,
