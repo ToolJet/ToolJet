@@ -783,7 +783,9 @@ export const createQueryPanelSlice = (set, get) => ({
             resolve({ status: 'failed', message: errorMessage });
           })
           .finally(() => {
-            queryAbortControllers.delete(queryId);
+            if (queryAbortControllers.get(queryId) === abortController) {
+              queryAbortControllers.delete(queryId);
+            }
           });
       });
     },
@@ -1144,7 +1146,9 @@ export const createQueryPanelSlice = (set, get) => ({
             reject({ error, data });
           })
           .finally(() => {
-            queryAbortControllers.delete(query?.id);
+            if (queryAbortControllers.get(query?.id) === abortController) {
+              queryAbortControllers.delete(query?.id);
+            }
           });
       });
     },

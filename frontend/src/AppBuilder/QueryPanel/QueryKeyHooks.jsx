@@ -27,7 +27,7 @@ const QueryKeyHooks = ({ children, isExpanded }) => {
         } else runQueryOnShortcut();
       }
     },
-    { enabled: isExpanded, enableOnFormTags: ['input'] }
+    { enabled: isExpanded && !isQueryActive, enableOnFormTags: ['input'] }
   );
 
   useHotkeys('mod+period', () => abortQueryOnShortcut(moduleId), {

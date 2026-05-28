@@ -261,6 +261,8 @@ const RunButton = ({ buttonLoadingState }) => {
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
   const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+Enter';
@@ -273,7 +275,7 @@ const RunButton = ({ buttonLoadingState }) => {
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
-          disabled={isInDraft}
+          disabled={isInDraft || isActive}
           isLoading={isLoading}
           className={isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
           data-cy="query-run-button"
@@ -372,6 +374,12 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  // Disable Preview while either run or preview is in flight — Abort first, then re-preview.
+  // Also closes the queryAbortControllers race window for rapid re-clicks.
+  const isActive = isLoading || isPreviewQueryLoading;
   const { t } = useTranslation();
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
@@ -383,7 +391,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         variant="outline"
         onClick={onClick}
         // className="!tw-w-[100px]"
-        disabled={!hasPermissions}
+        disabled={!hasPermissions || isActive}
         isLoading={isPreviewQueryLoading}
         data-cy={'query-preview-button'}
       >
