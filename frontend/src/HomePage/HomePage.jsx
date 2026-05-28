@@ -13,6 +13,7 @@ import {
 } from '@/_services';
 import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
 import Select from '@/_ui/Select';
+import { AppsMultiSelect } from '@/_ui/Modal/AppsMultiSelect';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
@@ -93,6 +94,7 @@ class HomePageComponent extends React.Component {
       showAppDeletionConfirmation: false,
       showRemoveAppFromFolderConfirmation: false,
       showAddToFolderModal: false,
+      addToFolderApps: [],
       apps: [],
       folders: [],
       meta: {
@@ -868,6 +870,12 @@ class HomePageComponent extends React.Component {
     return authenticationService.currentSessionValue?.user_permissions?.folder_create;
   };
 
+  isGitEnabled = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return this.props.appType === 'front-end' || this.props.appType === 'module';
+  };
+
   isWorkspaceBranchLocked = () => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
@@ -880,6 +888,17 @@ class HomePageComponent extends React.Component {
         : false;
     const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
     return !!(isBranchingEnabled && isDefault);
+  };
+
+  isOnFeatureBranch = () => {
+    const state = useWorkspaceBranchesStore.getState();
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    const isBranchingEnabled =
+      this.props.appType === 'front-end' || this.props.appType === 'module'
+        ? state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled
+        : false;
+    const isDefault = state.currentBranch?.is_default || state.currentBranch?.isDefault;
+    return !!(isBranchingEnabled && !isDefault);
   };
 
   cancelDeleteAppDialog = () => {
@@ -910,6 +929,15 @@ class HomePageComponent extends React.Component {
           this.fetchWorkflowsWorkspaceLimit();
         } else {
           this.fetchAppsLimit();
+        }
+
+        // Auto-commit deletion to git when on a feature branch
+        if (this.isOnFeatureBranch()) {
+          const appName = this.state.appToBeDeleted?.name || 'app';
+          const branchState = useWorkspaceBranchesStore.getState();
+          branchState.actions.pushWorkspace(`Delete ${appName}`).catch(() => {
+            // Silent fail — deletion already succeeded
+          });
         }
       })
       .catch((error) => {
@@ -1047,28 +1075,34 @@ class HomePageComponent extends React.Component {
 
   addAppToFolder = () => {
     const { appOperations } = this.state;
-    if (!appOperations?.selectedFolder || !appOperations?.selectedApp) {
+    const selectedApps = (appOperations?.selectedApps || []).filter((app) => !app?.isAllField);
+    if (!appOperations?.selectedFolder || selectedApps.length === 0) {
       return toast.error('Select a folder');
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
+    const workspaceId =
+      authenticationService?.currentUserValue?.organization_id ||
+      authenticationService?.currentSessionValue?.current_organization_id;
+
+    const folderName = this.state.folders.find((f) => f.id === appOperations.selectedFolder)?.name || 'folder';
+
+    const appIds = selectedApps.map((app) => app.value);
     folderService
-      .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
+      .bulkAddToFolder(appIds, appOperations.selectedFolder, this.props.appType)
       .then(() => {
-        toast.success('Application added to folder successfully!');
+        toast.success(`Apps moved to "${folderName}" folder successfully!`);
         this.foldersChanged();
         this.setState({ appOperations: {}, showAddToFolderModal: false });
         posthogHelper.captureEvent('click_add_to_folder_button', {
-          workspace_id:
-            authenticationService?.currentUserValue?.organization_id ||
-            authenticationService?.currentSessionValue?.current_organization_id,
-          app_id: appOperations?.selectedApp?.id,
+          workspace_id: workspaceId,
+          app_ids: appIds,
           folder_id: appOperations?.selectedFolder,
         });
       })
-      .catch(({ error }) => {
+      .catch(() => {
+        toast.error('Failed to move apps to folder');
         this.setState({ appOperations: { ...appOperations, isAdding: false } });
-        toast.error(error);
       });
   };
 
@@ -1080,7 +1114,7 @@ class HomePageComponent extends React.Component {
     this.setState({ isDeletingAppFromFolder: true });
 
     folderService
-      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id)
+      .removeAppFromFolder(appOperations.selectedApp.id, appOperations.selectedFolder.id, this.props.appType)
       .then(() => {
         toast.success('Application removed from folder successfully!');
 
@@ -1099,12 +1133,33 @@ class HomePageComponent extends React.Component {
       });
   };
 
+  fetchAddToFolderApps = async () => {
+    const folderId = this.state.currentFolder?.id;
+    try {
+      // page=0 triggers all=true backend param — returns all apps in one call, no pagination
+      const result = await appsService.getAll(0, folderId || '', '', this.props.appType);
+      this.setState({ addToFolderApps: result.apps || [] });
+    } catch {
+      this.setState({ addToFolderApps: [] });
+    }
+  };
+
   appActionModal = (app, folder, action) => {
     const { appOperations } = this.state;
 
     switch (action) {
       case 'add-to-folder':
-        this.setState({ appOperations: { ...appOperations, selectedApp: app }, showAddToFolderModal: true });
+        this.setState({
+          appOperations: {
+            ...appOperations,
+            selectedApp: app,
+            selectedApps: [{ label: app.name, name: app.name, value: app.id }],
+            selectedFolder: folder?.id || null,
+          },
+          showAddToFolderModal: true,
+          addToFolderApps: [],
+        });
+        this.fetchAddToFolderApps();
         break;
       case 'change-icon':
         this.setState({
@@ -1825,16 +1880,53 @@ class HomePageComponent extends React.Component {
           )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
-            message={this.props.t(
-              this.props.appType === 'workflow'
-                ? 'homePage.deleteWorkflowAndData'
-                : this.props.appType === 'front-end'
-                ? 'homePage.deleteAppAndData'
-                : deleteModuleText,
-              {
-                appName: appToBeDeleted?.name,
-              }
-            )}
+            title={
+              this.isOnFeatureBranch()
+                ? `Delete ${(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()}`
+                : undefined
+            }
+            message={
+              this.isOnFeatureBranch() ? (
+                <>
+                  <p className="tw-mb-4">
+                    The {(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()} &apos;
+                    <strong>{appToBeDeleted?.name}</strong>&apos; will be deleted from this branch. On merge to main,{' '}
+                    <strong>the app and all its associated versions</strong> will be deleted from git and cannot be
+                    retrieved. Are you sure you want to continue?
+                  </p>
+                  <div className="tw-flex tw-items-start tw-gap-2">
+                    <input
+                      type="checkbox"
+                      checked
+                      disabled
+                      className="form-check-input tw-mt-0.5"
+                      style={{ width: '16px', height: '16px', minWidth: '16px' }}
+                    />
+                    <div>
+                      <span className="tw-text-xs tw-font-normal" style={{ color: '#1b1f24' }}>
+                        Commit changes
+                      </span>
+                      <p
+                        className="tw-font-normal tw-mt-0.5 tw-mb-0"
+                        style={{ fontSize: '11px', lineHeight: '16px', color: '#6a727c' }}
+                      >
+                        Delete will always be committed in git to ensure sync with ToolJet
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                this.props.t(
+                  this.props.appType === 'workflow'
+                    ? 'homePage.deleteWorkflowAndData'
+                    : this.props.appType === 'front-end'
+                    ? 'homePage.deleteAppAndData'
+                    : deleteModuleText,
+                  { appName: appToBeDeleted?.name }
+                )
+              )
+            }
+            confirmButtonText={this.isOnFeatureBranch() ? 'Delete and commit' : undefined}
             confirmButtonLoading={isDeletingApp}
             onConfirm={() => this.executeAppDeletion()}
             onCancel={() => this.cancelDeleteAppDialog()}
@@ -2042,15 +2134,27 @@ class HomePageComponent extends React.Component {
             <div className="row">
               <div className="col modal-main">
                 <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
-                  <p>
-                    {this.props.t('homePage.appCard.update', 'Update')}{' '}
-                    <span>{`${appOperations?.selectedApp?.name}'s`}</span>{' '}
-                    {this.props.t('homePage.appCard.folder', 'folder')}
-                  </p>
-
+                  <label className="form-label">
+                    {this.props.t('homePage.appCard.moveSelectedApps', 'Move selected apps')}
+                  </label>
+                  <AppsMultiSelect
+                    options={this.state.addToFolderApps.map((app) => ({
+                      label: app.name,
+                      name: app.name,
+                      value: app.id,
+                    }))}
+                    value={appOperations?.selectedApps || []}
+                    onChange={(selectedApps) => this.setState({ appOperations: { ...appOperations, selectedApps } })}
+                    isDisabled={!!appOperations?.isAdding}
+                    placeholder={this.props.t('homePage.appCard.selectApps', 'Select apps...')}
+                    inFolder={!!this.state.currentFolder?.id}
+                  />
+                </div>
+                <div className="mb-3">
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
                 <div data-cy="select-folder" className="select-folder-container">
+                  <label className="form-label">{this.props.t('homePage.appCard.folderName', 'Folder name')}</label>
                   <Select
                     options={this.state.folders
                       .filter((folder) => {
@@ -2095,6 +2199,7 @@ class HomePageComponent extends React.Component {
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
                   isLoading={appOperations?.isAdding}
+                  disabled={!appOperations?.selectedFolder || !appOperations?.selectedApps?.length}
                 >
                   {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
                 </ButtonSolid>
@@ -2237,9 +2342,10 @@ class HomePageComponent extends React.Component {
                 currentFolder={currentFolder}
                 folderChanged={this.folderChanged}
                 foldersChanged={this.foldersChanged}
-                canCreateFolder={this.canCreateFolder() && !this.isWorkspaceBranchLocked()}
-                canDeleteFolder={this.canDeleteFolder() && !this.isWorkspaceBranchLocked()}
-                canUpdateFolder={this.canUpdateFolder() && !this.isWorkspaceBranchLocked()}
+                canCreateFolder={this.canCreateFolder()}
+                canDeleteFolder={this.canDeleteFolder()}
+                canUpdateFolder={this.canUpdateFolder()}
+                isGitSyncEnabled={this.isGitEnabled()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
                 appType={this.props.appType}
