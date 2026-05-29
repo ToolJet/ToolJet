@@ -82,13 +82,17 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
     searchKey?: string,
     branchId?: string
   ): SelectQueryBuilder<FolderApp> {
+    // Non-git orgs (and workflows) store folder_apps with branch_id = NULL. SQL `col = NULL`
+    // is never true, so the null case must use `IS NULL` or the rows silently disappear.
     const query = manager
       .createQueryBuilder(FolderApp, 'folder_apps')
       .leftJoin('apps', 'app_search', 'folder_apps.app_id = app_search.id')
-      .where('folder_apps.folderId IN (:...folderIds) AND folder_apps.branchId = :branchId', {
-        folderIds,
-        branchId: branchId ?? null,
-      });
+      .where(
+        branchId
+          ? 'folder_apps.folderId IN (:...folderIds) AND folder_apps.branchId = :branchId'
+          : 'folder_apps.folderId IN (:...folderIds) AND folder_apps.branchId IS NULL',
+        branchId ? { folderIds, branchId } : { folderIds }
+      );
 
     if (branchId) {
       query.leftJoin(
@@ -185,12 +189,18 @@ export class FolderAppsUtilService implements IFolderAppsUtilService {
   }> {
     // Read-only — no txn needed.
     const manager = getConnectionInstance().manager;
+    // Non-git orgs store folder_apps with branch_id = NULL; `branch_id = NULL` never matches,
+    // so the null case must use `IS NULL` or the folder appears empty.
     const folderAppsQuery = manager
       .createQueryBuilder(FolderApp, 'folderApp')
-      .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id AND folderApp.branch_id = :branchId', {
-        id: folder.id,
-        branchId: branchId || null,
-      });
+      .innerJoin(
+        'folderApp.app',
+        'app',
+        branchId
+          ? 'folderApp.folderId = :id AND folderApp.branch_id = :branchId'
+          : 'folderApp.folderId = :id AND folderApp.branch_id IS NULL',
+        branchId ? { id: folder.id, branchId } : { id: folder.id }
+      );
 
     if (branchId) {
       // INNER JOIN — folder apps are kept only if they have an app_versions row on
