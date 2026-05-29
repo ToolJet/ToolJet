@@ -8,15 +8,10 @@ import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
+import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
-
-// Module-level map of queryId -> AbortController for in-flight runs and previews.
-// Kept outside Zustand state because AbortController is a class instance and
-// Immer's structural cloning would break it.
-const queryAbortControllers = new Map();
-const isAbortError = (e) => e?.name === 'AbortError' || e?.error?.name === 'AbortError';
 
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
