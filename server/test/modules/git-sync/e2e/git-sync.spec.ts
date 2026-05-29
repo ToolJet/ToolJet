@@ -1160,10 +1160,7 @@ describe('GitSyncController', () => {
           slug: 'testing-app-2-slug',
         });
 
-        await request
-          .agent(app.getHttpServer())
-          .get('/api/apps/slugs/testing-app-2-slug')
-          .expect(200);
+        await request.agent(app.getHttpServer()).get('/api/apps/slugs/testing-app-2-slug').expect(200);
 
         step(36, 'feat-e2e-3: duplicate app name (testing-app-2) → 400');
         // 36. Create another feature branch. Posting an app with a name that
@@ -1306,7 +1303,225 @@ describe('GitSyncController', () => {
           .expect(200);
         expect(app3DraftDetail.body.name).toBe('testing-app-3');
         expect(app3DraftDetail.body.slug).toBe('testing-app-3-slug');
-      });
+
+        step(39, 'create feat-e2e-4 branch off main; create testing-app-4 & testing-app-5');
+        // 39. Fresh feature branch + two apps to exercise folder membership.
+        const createBranch4Resp = await request(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-4', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat4BranchId: string = createBranch4Resp.body.id;
+        expect(feat4BranchId).toBeDefined();
+
+        const createApp4Resp = await request(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .send({ icon: 'home', name: 'testing-app-4', type: 'front-end', branchId: feat4BranchId })
+          .expect(201);
+        const app4Id: string = createApp4Resp.body.id;
+        expect(app4Id).toBeDefined();
+
+        const createApp5Resp = await request(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .send({ icon: 'home', name: 'testing-app-5', type: 'front-end', branchId: feat4BranchId })
+          .expect(201);
+        const app5Id: string = createApp5Resp.body.id;
+        expect(app5Id).toBeDefined();
+
+        step(40, 'create folder test-folder-1');
+        // 40. Folders are org-scoped (not branch-scoped) — no x-branch-id needed.
+        const createFolderResp = await request(app.getHttpServer())
+          .post('/api/folders')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .send({ name: 'test-folder-1', type: 'front-end' })
+          .expect(201);
+        expect(createFolderResp.body).toMatchObject({
+          name: 'test-folder-1',
+          type: 'front-end',
+          organization_id: orgId,
+        });
+        const folderId: string = createFolderResp.body.id;
+        expect(folderId).toBeDefined();
+
+        step(41, 'list folders on feat-e2e-4 → test-folder-1 present with 0 apps');
+        // 41. The folder is visible on the branch but has no folder_apps rows yet.
+        const foldersInitial = await request(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .expect(200);
+        const newFolderInitial = foldersInitial.body.folders.find((f: any) => f.id === folderId);
+        expect(newFolderInitial).toBeDefined();
+        expect(newFolderInitial.count).toBe(0);
+        expect(newFolderInitial.folder_apps).toEqual([]);
+
+        step(42, 'add testing-app-4 to test-folder-1');
+        // 42. Single-app add → folder_apps row scoped to feat-e2e-4.
+        await request(app.getHttpServer())
+          .post('/api/folder-apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .send({ folder_id: folderId, app_id: app4Id })
+          .expect(201);
+
+        step(43, 'list folders → test-folder-1 count = 1 (branch-scoped folder_app)');
+        const foldersAfterAdd = await request(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .expect(200);
+        const folderWithOne = foldersAfterAdd.body.folders.find((f: any) => f.id === folderId);
+        expect(folderWithOne.count).toBe(1);
+        expect(folderWithOne.folder_apps).toHaveLength(1);
+        expect(folderWithOne.folder_apps[0]).toMatchObject({
+          folder_id: folderId,
+          app_id: app4Id,
+          branch_id: feat4BranchId,
+        });
+
+        step(44, 'bulk add testing-app-4 & testing-app-5 to test-folder-1 (single request)');
+        // 44. Bulk add — app4 already present (idempotent), app5 newly added.
+        await request(app.getHttpServer())
+          .post('/api/folder-apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .send({ app_ids: [app4Id, app5Id], folder_id: folderId })
+          .expect(201);
+
+        step(45, 'list folders → test-folder-1 count = 2');
+        const foldersAfterBulk = await request(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .expect(200);
+        const folderWithTwo = foldersAfterBulk.body.folders.find((f: any) => f.id === folderId);
+        expect(folderWithTwo.count).toBe(2);
+        expect(folderWithTwo.folder_apps).toHaveLength(2);
+        const appIdsInFolder = folderWithTwo.folder_apps.map((fa: any) => fa.app_id).sort();
+        expect(appIdsInFolder).toEqual([app4Id, app5Id].sort());
+        folderWithTwo.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(feat4BranchId));
+
+        step(46, 'commit app4 & app5, merge feat-e2e-4 → main, pull, validate folder mapping on main');
+        // 46. Folder membership rides through git: foldered apps serialize under
+        //     apps/<folder>/<app>/, so after merge+pull the mapping is recreated
+        //     on main (as NEW App rows sharing co_relation_id, scoped to main's branch_id).
+
+        // Resolve each app's editing version id on feat-e2e-4 for the gitpush.
+        const app4Detail = await request(app.getHttpServer())
+          .get(`/api/apps/${app4Id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .expect(200);
+        const app4VersionId: string = (app4Detail.body?.editing_version || app4Detail.body?.editingVersion).id;
+
+        const app5Detail = await request(app.getHttpServer())
+          .get(`/api/apps/${app5Id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .expect(200);
+        const app5VersionId: string = (app5Detail.body?.editing_version || app5Detail.body?.editingVersion).id;
+
+        // Commit both foldered apps to feat-e2e-4.
+        await request(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${app4Id}/${app4VersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .send({
+            gitAppName: 'testing-app-4',
+            versionId: app4VersionId,
+            lastCommitMessage: 'added testing-app-4 in test-folder-1',
+            gitVersionName: 'feat-e2e-4',
+            sourceBranch: 'feat-e2e-4',
+          })
+          .expect(201);
+
+        await request(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${app5Id}/${app5VersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat4BranchId)
+          .send({
+            gitAppName: 'testing-app-5',
+            versionId: app5VersionId,
+            lastCommitMessage: 'added testing-app-5 in test-folder-1',
+            gitVersionName: 'feat-e2e-4',
+            sourceBranch: 'feat-e2e-4',
+          })
+          .expect(201);
+
+        // Merge feat-e2e-4 → main on Gitea.
+        const merge4Resp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-4',
+            target: 'main',
+            message: 'Land feat-e2e-4',
+          }),
+        });
+        const merge4Body = await merge4Resp.json().catch(() => ({}));
+        expect(merge4Body.ok).toBe(true);
+
+        // Pull main → recreates the two apps (as stubs) and their folder mapping.
+        await request(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Resolve the main-branch app ids by name (new App rows, different ids).
+        const appsOnMainAfterFeat4 = await request(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const mainApp4 = appsOnMainAfterFeat4.body.apps.find((a: any) => a.name === 'testing-app-4');
+        const mainApp5 = appsOnMainAfterFeat4.body.apps.find((a: any) => a.name === 'testing-app-5');
+        expect(mainApp4).toBeDefined();
+        expect(mainApp5).toBeDefined();
+
+        // Folder mapping on main must now contain both apps, scoped to main's branch_id.
+        const foldersOnMain = await request(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const folderOnMain = foldersOnMain.body.folders.find((f: any) => f.id === folderId);
+        expect(folderOnMain).toBeDefined();
+        expect(folderOnMain.count).toBe(2);
+        expect(folderOnMain.folder_apps).toHaveLength(2);
+        const mainFolderAppIds = folderOnMain.folder_apps.map((fa: any) => fa.app_id).sort();
+        expect(mainFolderAppIds).toEqual([mainApp4.id, mainApp5.id].sort());
+        folderOnMain.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
+      }, 180000);
     });
   });
 });
