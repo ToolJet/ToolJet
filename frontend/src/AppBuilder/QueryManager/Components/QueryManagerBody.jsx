@@ -20,6 +20,8 @@ import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
@@ -159,13 +161,15 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     )
       return;
     return (
-      <Transformation
-        renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-        changeOption={optionchanged}
-        options={options ?? {}}
-        darkMode={darkMode}
-        queryId={selectedQuery?.id}
-      />
+      <div className={cx({ 'disabled ': isFreezed })}>
+        <Transformation
+          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+          changeOption={optionchanged}
+          options={options ?? {}}
+          darkMode={darkMode}
+          queryId={selectedQuery?.id}
+        />
+      </div>
     );
   };
 
@@ -277,7 +281,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const renderTimeout = () => {
     return (
-      <div className="d-flex" data-cy="query-timeout-section" style={{ marginBottom: '16px' }}>
+      <div
+        className={cx('d-flex', { 'disabled ': isFreezed })}
+        data-cy="query-timeout-section"
+        style={{ marginBottom: '16px' }}
+      >
         <div className="form-label mt-2" data-cy="query-manager-timeout-label">
           {t('editor.queryManager.timeout', 'Timeout ( ms )')}
         </div>
@@ -340,7 +348,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const renderQueryOptions = () => {
     return (
-      <div>
+      <div className={cx({ 'disabled ': isFreezed })}>
         <div
           className={cx(`d-flex pb-1`, {
             'disabled ': isFreezed,
@@ -433,10 +441,18 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     );
   };
 
+  const handleEditDatasource = () => {
+    window.open(`/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`, '_blank');
+  };
+
   const renderChangeDataSource = () => {
     const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
       .filter(Boolean)
       .filter((ds) => ds.kind === selectedQuery?.kind && ds.type !== DATA_SOURCE_TYPE.STATIC);
+    const showEditDatasourceButton =
+      selectedDataSource?.scope === 'global' &&
+      selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE &&
+      canUpdateDataSource(selectedQuery?.data_source_id);
     if (isEmpty(selectableDataSources)) {
       return '';
     }
@@ -448,7 +464,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
       : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
-        <div className="" ref={paramListContainerRef}>
+        <div className={cx({ 'disabled ': isFreezed })} ref={paramListContainerRef}>
           {selectedQuery && !showLocalDataSourceDeprecationBanner && (
             <ParameterList
               parameters={options.parameters}
@@ -460,9 +476,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             />
           )}
         </div>
-        <div className={cx('d-flex', { 'disabled ': isFreezed })} style={{ marginBottom: '16px', marginTop: '12px' }}>
+        <div className="d-flex" style={{ marginBottom: '16px', marginTop: '12px' }}>
           <div
-            className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+            className={cx(
+              'd-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source',
+              { 'disabled ': isFreezed }
+            )}
             data-cy="query-manager-source-label"
           >
             Source
@@ -472,14 +491,32 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             style={{ width: '500px' }}
             data-cy="query-manager-change-data-source"
           >
-            <ChangeDataSource
-              dataSources={selectableDataSources}
-              value={selectedDataSource}
-              onChange={(newDataSource) => {
-                changeDataQuery(newDataSource);
-              }}
-            />
-            <div style={{ marginBottom: '2px' }} data-cy="query-manager-source-doc-link">
+            <div className="d-flex align-items-center" style={{ gap: '8px', width: '100%' }}>
+              <div className={cx('flex-grow-1', { 'disabled ': isFreezed })}>
+                <ChangeDataSource
+                  dataSources={selectableDataSources}
+                  value={selectedDataSource}
+                  onChange={(newDataSource) => {
+                    changeDataQuery(newDataSource);
+                  }}
+                />
+              </div>
+              {showEditDatasourceButton && (
+                <button
+                  onClick={handleEditDatasource}
+                  data-cy="edit-datasource-button"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 edit-datasource-btn"
+                >
+                  <SquarePen width={14} height={14} color="var(--icon-default, #ACB2B9)" />
+                  Edit datasource
+                </button>
+              )}
+            </div>
+            <div
+              className={cx({ 'disabled ': isFreezed })}
+              style={{ marginBottom: '2px' }}
+              data-cy="query-manager-source-doc-link"
+            >
               {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;
               <a
@@ -522,7 +559,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
-        !hasPermissions || isFreezed ? 'disabled' : ''
+        !hasPermissions ? 'disabled' : ''
       }`}
       style={{
         height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
