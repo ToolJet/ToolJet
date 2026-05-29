@@ -78,7 +78,10 @@ export const Listview = function Listview({
     boxShadow,
     padding: '7px',
     overflowX: 'hidden',
-    overflowY: isWidgetInContainerDragging ? 'hidden' : 'auto',
+    // Dynamic mode (view-only) hides the listview's own scroll to suppress
+    // the one-frame flash while rows grow ahead of the parent reflow. Static
+    // and edit modes keep the default auto-scroll.
+    overflowY: isWidgetInContainerDragging || isDynamicHeightEnabled ? 'hidden' : 'auto',
   };
 
   const computeCanvasBackgroundColor = useMemo(() => {

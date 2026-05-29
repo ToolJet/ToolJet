@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import Dropdown from '@/components/ui/Dropdown/Index.jsx';
 import './WorkspaceGitSyncModal.scss';
 
@@ -32,6 +33,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const [pushLatestCommitLoading, setPushLatestCommitLoading] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('');
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
+  const [pullConflictGroups, setPullConflictGroups] = useState(null);
 
   const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
     (state) => ({
@@ -243,7 +245,18 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       onClose();
       window.location.reload();
     } catch (error) {
-      toast.error(error?.message || 'Pull failed');
+      if (error?.statusCode === 409) {
+        try {
+          const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+          if (parsed?.conflictGroups?.length) {
+            setPullConflictGroups(parsed.conflictGroups);
+            return;
+          }
+        } catch {
+          /* fall through to generic toast */
+        }
+      }
+      toast.error(error?.error || error?.message || 'Pull failed');
     }
   };
 
@@ -580,50 +593,58 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   })();
 
   return (
-    <Modal
-      backdrop="static"
-      show={true}
-      onHide={onClose}
-      size="sm"
-      centered={true}
-      contentClassName={cx('git-sync-modal', {
-        'theme-dark dark-theme': darkMode,
-      })}
-    >
-      <Modal.Header>
-        <Modal.Title
-          className={cx('font-weight-500', { 'mt-3': !isOnDefaultBranch && !actionChoiceMode })}
-          data-cy="modal-title"
-        >
-          <div className="git-sync-title row align-items-center" style={{ width: '350px' }}>
-            <div className="col-9">{modalTitle}</div>
-            <div onClick={onClose} className="col-3 text-end cursor-pointer" data-cy="modal-close-button">
-              <SolidIcon name="remove" width="20" />
-            </div>
-            {gitSyncUrl && !actionChoiceMode && (
-              <div
-                className="col-12 d-flex align-items-center"
-                style={{
-                  color: 'var(--text-placeholder, #6A727C)',
-                  fontSize: 'var(--size-default, 12px)',
-                  fontWeight: 'var(--weight-regular, 400)',
-                }}
-              >
-                <span className="me-1" style={{ textDecoration: 'none' }}>
-                  in
-                </span>
-                <OverflowTooltip placement="bottom" style={{ maxWidth: '300px' }}>
-                  <span className="helper-text">{gitSyncUrl}</span>
-                </OverflowTooltip>
+    <>
+      <Modal
+        backdrop="static"
+        show={true}
+        onHide={onClose}
+        size="sm"
+        centered={true}
+        contentClassName={cx('git-sync-modal', {
+          'theme-dark dark-theme': darkMode,
+        })}
+      >
+        <Modal.Header>
+          <Modal.Title
+            className={cx('font-weight-500', { 'mt-3': !isOnDefaultBranch && !actionChoiceMode })}
+            data-cy="modal-title"
+          >
+            <div className="git-sync-title row align-items-center" style={{ width: '350px' }}>
+              <div className="col-9">{modalTitle}</div>
+              <div onClick={onClose} className="col-3 text-end cursor-pointer" data-cy="modal-close-button">
+                <SolidIcon name="remove" width="20" />
               </div>
-            )}
-          </div>
-          {/* {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()} */}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>{renderModalBody()}</Modal.Body>
-      {renderModalFooter()}
-    </Modal>
+              {gitSyncUrl && !actionChoiceMode && (
+                <div
+                  className="col-12 d-flex align-items-center"
+                  style={{
+                    color: 'var(--text-placeholder, #6A727C)',
+                    fontSize: 'var(--size-default, 12px)',
+                    fontWeight: 'var(--weight-regular, 400)',
+                  }}
+                >
+                  <span className="me-1" style={{ textDecoration: 'none' }}>
+                    in
+                  </span>
+                  <OverflowTooltip placement="bottom" style={{ maxWidth: '300px' }}>
+                    <span className="helper-text">{gitSyncUrl}</span>
+                  </OverflowTooltip>
+                </div>
+              )}
+            </div>
+            {/* {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()} */}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{renderModalBody()}</Modal.Body>
+        {renderModalFooter()}
+      </Modal>
+
+      <PullConflictModal
+        show={!!pullConflictGroups}
+        conflictGroups={pullConflictGroups || []}
+        onClose={() => setPullConflictGroups(null)}
+      />
+    </>
   );
 }
 

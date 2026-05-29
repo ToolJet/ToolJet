@@ -135,7 +135,7 @@ describe("LDAP SSO", () => {
 
         cy.get(ssoEeSelector.ldapSSOText)
             .verifyVisibleElement("have.text", ssoEeText.ldapSSOText)
-            .click();
+            .click({ force: true });
     });
 
     it("should show error when user does not exist in workspace", () => {
