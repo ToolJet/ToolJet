@@ -5,7 +5,7 @@ import { shallow } from 'zustand/shallow';
 import { ConfigHandle } from './ConfigHandle/ConfigHandle';
 import cx from 'classnames';
 import RenderWidget from './RenderWidget';
-import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT } from './appCanvasConstants';
+import { NO_OF_GRIDS, HIDDEN_COMPONENT_HEIGHT, SUBCONTAINER_WIDGETS } from './appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -89,6 +89,7 @@ const WidgetWrapper = memo(
       (state) => state.getComponentDefinition(id, moduleId)?.component?.component,
       shallow
     );
+    const isFlexSubcontainer = isFlexLayout && SUBCONTAINER_WIDGETS.includes(componentType);
     const isDynamicHeightEnabled = useStore(
       (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.properties?.dynamicHeight,
       shallow
@@ -137,6 +138,7 @@ const WidgetWrapper = memo(
       mode,
       isWidgetActive,
       enabled: isFlexLayout,
+      measureWidth: isFlexSubcontainer,
     });
 
     if (!canShowInCurrentLayout || !layoutData) {
@@ -177,7 +179,11 @@ const WidgetWrapper = memo(
     };
 
     const outerStyle = isFlexLayout ? flexLayout.outerStyle : gridOuterStyle;
-    const renderWidgetWidth = isFlexLayout ? flexLayout.widgetWidth : gridWidthPx;
+    const renderWidgetWidth = isFlexLayout
+      ? isFlexSubcontainer && flexLayout.measuredWidth != null
+        ? flexLayout.measuredWidth
+        : flexLayout.widgetWidth
+      : gridWidthPx;
     const renderWidgetHeight = isFlexLayout
       ? flexLayout.widgetHeight
       : !visibility && mode === 'edit'

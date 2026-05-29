@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HIDDEN_COMPONENT_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { resolveFlexChildSizing } from './flexContainer.utils';
 
@@ -14,9 +14,11 @@ export const useFlexWidgetLayout = ({
   mode,
   isWidgetActive,
   enabled = true,
+  measureWidth = false,
 }) => {
   const wrapperRef = useRef(null);
   const [configWidgetTop, setConfigWidgetTop] = useState(0);
+  const [measuredWidth, setMeasuredWidth] = useState(null);
   const flexLayoutData = layoutData ?? {};
   const gridDerivedWidthPx = gridWidth * (flexLayoutData?.width ?? 1);
   const isFlexRow = flexDirection === 'row';
@@ -62,6 +64,22 @@ export const useFlexWidgetLayout = ({
     mode,
   ]);
 
+  useLayoutEffect(() => {
+    if (!enabled || !measureWidth) return undefined;
+    const element = wrapperRef.current;
+    if (!element) return undefined;
+    const apply = () => {
+      const nextWidth = wrapperRef.current?.clientWidth ?? 0;
+      if (nextWidth > 0) {
+        setMeasuredWidth((current) => (current === nextWidth ? current : nextWidth));
+      }
+    };
+    apply(); // synchronous initial read — avoids a one-frame mis-scale on mount/drop
+    const resizeObserver = new ResizeObserver(apply);
+    resizeObserver.observe(element);
+    return () => resizeObserver.disconnect();
+  }, [enabled, measureWidth]);
+
   const outerStyle = {
     ...(flexShouldStack && !isFlexRow
       ? {
@@ -93,6 +111,7 @@ export const useFlexWidgetLayout = ({
   return {
     outerStyle,
     widgetWidth,
+    measuredWidth,
     widgetHeight,
     wrapperRef,
     configWidgetTop,

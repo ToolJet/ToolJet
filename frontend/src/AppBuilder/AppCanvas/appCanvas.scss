@@ -137,6 +137,28 @@
 
 .real-canvas.flex-container-canvas:not(.has-no-scroll) {
     overflow: auto;
+    // Flex children reflow when scrollbar width changes, so keep the gutter stable and only reveal colors on hover.
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+        scrollbar-width: thin;
+        scrollbar-color: auto    
+    }
+
+    // &::-webkit-scrollbar-thumb,
+    // &::-webkit-scrollbar-track {
+    //     background: transparent;
+    // }
+
+    // &:hover::-webkit-scrollbar-thumb {
+    //     background: #a0a6ae;
+    // }
+
+    // &:hover::-webkit-scrollbar-track {
+    //     background: #e7eaef;
+    // }
 }
 
 #main-editor-canvas.disable-moveable-line #real-canvas {

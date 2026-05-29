@@ -118,7 +118,7 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
   const isGroupResizingRef = useRef(false);
   const isGroupDraggingRef = useRef(false);
   const { scheduleFlexContainerDropTargetUpdate, cancelFlexContainerDropTargetUpdate, clearFlexContainerDropTarget } =
-    useFlexContainerDropTarget({ boxList, moduleId });
+    useFlexContainerDropTarget({ moduleId });
   const isWidgetResizable = useMemo(() => {
     if (virtualTarget) {
       return false;

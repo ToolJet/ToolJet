@@ -3,24 +3,16 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { computeFlexInsertIndex, getEffectiveFlexDirectionForFlexContainer } from './flexContainer.utils';
 
-const getFlexContainerDropTargetId = ({ candidateId, boxList, getComponentTypeFromId }) => {
+// Resolve the flex drop-target id from the candidate (always the innermost real-canvas
+// parentId under the cursor). Only the innermost canvas counts: if the cursor is inside a
+// descendant subcontainer, that subcontainer — not its flex parent — is the candidate, so
+// the parent flex indicator is suppressed. A nested FlexContainer still resolves to itself.
+const getFlexContainerDropTargetId = ({ candidateId, getComponentTypeFromId }) => {
   if (!candidateId) return null;
-
-  if (getComponentTypeFromId(candidateId) === 'FlexContainer') {
-    return candidateId;
-  }
-
-  const hoveredWidget = boxList.find((box) => box.id === candidateId);
-  const hoveredParentId = hoveredWidget?.component?.parent ?? null;
-
-  if (hoveredParentId && getComponentTypeFromId(hoveredParentId) === 'FlexContainer') {
-    return hoveredParentId;
-  }
-
-  return null;
+  return getComponentTypeFromId(candidateId) === 'FlexContainer' ? candidateId : null;
 };
 
-export const useFlexContainerDropTarget = ({ boxList, moduleId }) => {
+export const useFlexContainerDropTarget = ({ moduleId }) => {
   const rafRef = useRef(null);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
@@ -45,7 +37,6 @@ export const useFlexContainerDropTarget = ({ boxList, moduleId }) => {
 
         const flexContainerId = getFlexContainerDropTargetId({
           candidateId,
-          boxList,
           getComponentTypeFromId,
         });
 
@@ -64,7 +55,7 @@ export const useFlexContainerDropTarget = ({ boxList, moduleId }) => {
         }
       });
     },
-    [boxList, getComponentTypeFromId, getResolvedComponent, moduleId, setFlexContainerDropTarget]
+    [getComponentTypeFromId, getResolvedComponent, moduleId, setFlexContainerDropTarget]
   );
 
   useEffect(() => cancelFlexContainerDropTargetUpdate, [cancelFlexContainerDropTargetUpdate]);

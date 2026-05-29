@@ -386,7 +386,12 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Form' || componentType === 'Accordion') {
+  if (
+    componentType === 'Container' ||
+    componentType === 'Form' ||
+    componentType === 'Accordion' ||
+    componentType === 'FlexContainer'
+  ) {
     padding =
       2 * CONTAINER_FORM_CANVAS_PADDING +
       2 * SUBCONTAINER_CANVAS_BORDER_WIDTH +
