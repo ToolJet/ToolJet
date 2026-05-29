@@ -53,7 +53,10 @@ function extractSpecNamesFromOperations(operationsContent: string): string[] {
 
 @Injectable()
 export class PluginsUtilService implements IPluginsUtilService {
-  constructor(protected readonly filesRepository: FilesRepository, protected readonly configService: ConfigService) {}
+  constructor(
+    protected readonly filesRepository: FilesRepository,
+    protected readonly configService: ConfigService
+  ) {}
 
   async create(
     createPluginDto: CreatePluginDto,
@@ -118,10 +121,12 @@ export class PluginsUtilService implements IPluginsUtilService {
   }
 
   fetchPluginFiles(id: string, repo: string) {
-    if (repo && repo.length > 0) {
-      return this.fetchPluginFilesFromRepo(repo);
-    }
+    //Don't fetch from any repo due to security concerns ty.
+    // if (repo && repo.length > 0) {
+    //   return this.fetchPluginFilesFromRepo(repo);
+    // }
 
+    //Plugins will only be fetched from S3
     return this.fetchPluginFilesFromS3(id);
   }
 

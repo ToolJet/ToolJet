@@ -149,7 +149,7 @@ const DynamicFormV2 = ({
 
   const validateOptions = React.useCallback(async () => {
     try {
-      const { valid, errors } = await dsm.validateData(options);
+      const { valid, errors } = await dsm.validateData(options, selectedDataSource?.id, currentAppEnvironmentId);
 
       const conditionallyRequiredFields = processAllOfConditions(schema, options);
       setConditionallyRequiredProperties(conditionallyRequiredFields);

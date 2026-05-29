@@ -2,6 +2,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
+import Ajv from 'ajv';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, ILike } from 'typeorm';
@@ -288,19 +289,37 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async decrypt(options: Record<string, any>) {
-    const decryptedOptions = { ...options };
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ): Promise<{ valid: boolean; errors: any[] }> {
+    const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
+    const storedOptions: Record<string, any> = dataSource.options || {};
 
+    // Convert options to plain data, decrypting only credential_ids that
+    // belong to this datasource (prevents cross-datasource credential reads).
+    const data: Record<string, any> = {};
     for (const [key, value] of Object.entries(options)) {
       if (value?.credential_id) {
-        decryptedOptions[key] = {
-          ...value,
-          value: await this.credentialService.getValue(value.credential_id),
-        };
+        const stored = storedOptions[key];
+        if (stored?.credential_id === value.credential_id) {
+          const decrypted = await this.credentialService.getValue(value.credential_id);
+          if (decrypted !== undefined && decrypted !== null && decrypted !== '') {
+            data[key] = decrypted;
+          }
+        }
+      } else if (value?.value !== undefined && value?.value !== null && value?.value !== '') {
+        data[key] = value.value;
       }
     }
 
-    return decryptedOptions;
+    const ajv = new Ajv({ strict: false, allErrors: true, coerceTypes: true });
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
+    return { valid: !!valid, errors: validate.errors || [] };
   }
 
   async parseOptionsForUpdate(
