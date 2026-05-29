@@ -17,7 +17,16 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 
-const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery', 'mysql', 'mssql', 'snowflake'];
+const GENERATE_QUERY_SUPPORTED_KINDS = [
+  'postgresql',
+  'openapi',
+  'mongodb',
+  'bigquery',
+  'mysql',
+  'mssql',
+  'snowflake',
+  'openai',
+];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId } = useModuleContext();
