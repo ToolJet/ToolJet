@@ -293,16 +293,19 @@ export class AbilityUtilService {
 
       // 1. Apps in folders owned (created) by this user → always editable
       if (!userAppsPermissions.isAllEditable) {
+        // DISTINCT in SQL — folder_apps replicated per branch (133k rows / 553 apps on
+        // git-sync orgs). getMany would hydrate every branch row then JS-dedupe.
         const ownedFolderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .innerJoin('folderApp.folder', 'folder')
           .where('folder.createdBy = :userId', { userId: user.id })
           .andWhere('folder.organizationId = :orgId', { orgId: user.organizationId })
           .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
-          .select('folderApp.appId')
-          .getMany();
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
 
-        const ownedFolderAppIds = ownedFolderApps.map((fa) => fa.appId);
+        const ownedFolderAppIds = ownedFolderApps.map((row) => row.appId);
         userAppsPermissions.editableAppsId = Array.from(
           new Set([...userAppsPermissions.editableAppsId, ...ownedFolderAppIds])
         );
@@ -344,9 +347,10 @@ export class AbilityUtilService {
           .innerJoin('folderApp.folder', 'folder')
           .where('folder.organizationId = :orgId', { orgId: user.organizationId })
           .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
-          .select('folderApp.appId')
-          .getMany();
-        const allFolderAppIds = allFolderApps.map((fa) => fa.appId);
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
+        const allFolderAppIds = allFolderApps.map((row) => row.appId);
 
         if (allFoldersEditable && !userAppsPermissions.isAllEditable) {
           userAppsPermissions.editableAppsId = Array.from(
@@ -369,9 +373,10 @@ export class AbilityUtilService {
         const folderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .where('folderApp.folderId IN (:...folderIds)', { folderIds: editableFolderIds })
-          .select('folderApp.appId')
-          .getMany();
-        const folderAppIds = folderApps.map((fa) => fa.appId);
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
+        const folderAppIds = folderApps.map((row) => row.appId);
 
         userAppsPermissions.editableAppsId = Array.from(
           new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
@@ -385,9 +390,10 @@ export class AbilityUtilService {
         const folderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .where('folderApp.folderId IN (:...folderIds)', { folderIds: viewableFolderIds })
-          .select('folderApp.appId')
-          .getMany();
-        const folderAppIds = folderApps.map((fa) => fa.appId);
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
+        const folderAppIds = folderApps.map((row) => row.appId);
 
         userAppsPermissions.viewableAppsId = Array.from(
           new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
