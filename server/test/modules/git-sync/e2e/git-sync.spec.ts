@@ -1,4 +1,6 @@
 import { INestApplication } from '@nestjs/common';
+import { getDataSourceToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { createUser, initTestApp, logout, login, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import * as request from 'supertest';
 
@@ -714,12 +716,30 @@ describe('GitSyncController', () => {
         // 18. Hydrate the stub app by fetching its details — server-side this
         //     materialises the pulled snapshot from git into a full version
         //     (definition, pages, settings) and flips is_stub to false.
-        await request(app.getHttpServer())
+        //     Because the version is still a stub (git content available to pull
+        //     in), hydration is attempted on this open: is_hydration_tried=true
+        //     and hydration_status='success'.
+        const hydrateResp = await request(app.getHttpServer())
           .get(`/api/apps/${mainApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
           .set('x-branch-id', mainBranchId)
           .expect(200);
+        expect(hydrateResp.body.is_hydration_tried).toBe(true);
+        expect(hydrateResp.body.hydration_status).toBe('success');
+        expect(hydrateResp.body.not_hydrated_reason).toBeUndefined();
+
+        // Second open — the stub is now hydrated and nothing newer exists on the
+        // remote, so hydration is skipped: is_hydration_tried=false and
+        // not_hydrated_reason explains why (already-up-to-date).
+        const reopenResp = await request(app.getHttpServer())
+          .get(`/api/apps/${mainApp.id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(reopenResp.body.is_hydration_tried).toBe(false);
+        expect(reopenResp.body.not_hydrated_reason).toBe('already-up-to-date');
 
         step(18, 're-list apps on main → hydrated (is_stub:false)');
         // 19. Re-list apps on main — same app, now hydrated. is_stub is false
@@ -1521,6 +1541,87 @@ describe('GitSyncController', () => {
         const mainFolderAppIds = folderOnMain.folder_apps.map((fa: any) => fa.app_id).sort();
         expect(mainFolderAppIds).toEqual([mainApp4.id, mainApp5.id].sort());
         folderOnMain.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
+
+        step(47, 'hydration failure: invalid repo URL surfaces hydration_error on GET /apps/:id');
+        // 47. Force the lazy re-hydration path (a non-stub draft whose
+        //     remote_updated_at is newer than pulled_at), repoint the workspace
+        //     git config at a non-existent repo, and confirm GET /apps/:id stays
+        //     200 while surfacing is_hydration_tried=true, hydration_status='failed'
+        //     and a client-safe hydration_error. DB state is restored afterwards.
+        //     NOTE: the invalid URL reuses the reachable test host with a bad repo
+        //     path so the clone fails fast instead of hanging the 60s git timeout.
+        const dataSource = app.get<DataSource>(getDataSourceToken('default'));
+
+        // Hydrate testing-app-4 on main so it has a non-stub draft to re-hydrate.
+        const app4HydrateResp = await request(app.getHttpServer())
+          .get(`/api/apps/${mainApp4.id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(app4HydrateResp.body.is_hydration_tried).toBe(true);
+        expect(app4HydrateResp.body.hydration_status).toBe('success');
+
+        // Trigger the lazy re-hydration check: remote_updated_at strictly after pulled_at.
+        await dataSource.query(
+          `UPDATE app_versions
+             SET remote_updated_at = now() + interval '1 day'
+           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
+          [mainApp4.id, mainBranchId]
+        );
+
+        // Repoint the git config at a non-existent repo (reachable host, bad path).
+        const INVALID_GIT_URL = `${GIT_BASE_URL}/invalid/repo.git`;
+        const [{ https_url: originalHttpsUrl }] = await dataSource.query(
+          `SELECT https_url FROM organization_git_https
+           WHERE config_id IN (SELECT id FROM organization_git_sync WHERE organization_id = $1)`,
+          [orgId]
+        );
+        await dataSource.query(
+          `UPDATE organization_git_https
+             SET https_url = $1
+           WHERE config_id IN (SELECT id FROM organization_git_sync WHERE organization_id = $2)`,
+          [INVALID_GIT_URL, orgId]
+        );
+
+        // GET the app — hydration is attempted and fails, but the existing non-stub
+        // draft keeps the response a 200 carrying the failure diagnostics.
+        const failResp = await request(app.getHttpServer())
+          .get(`/api/apps/${mainApp4.id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(failResp.body.is_hydration_tried).toBe(true);
+        expect(failResp.body.hydration_status).toBe('failed');
+        expect(failResp.body.hydration_error).toBeDefined();
+        expect(failResp.body.hydration_error.code).toBe('github-error');
+        expect(typeof failResp.body.hydration_error.message).toBe('string');
+        expect(failResp.body.hydration_error.message.length).toBeGreaterThan(0);
+
+        // Revert DB changes: restore the real repo URL and clear the forced timestamp.
+        await dataSource.query(
+          `UPDATE organization_git_https
+             SET https_url = $1
+           WHERE config_id IN (SELECT id FROM organization_git_sync WHERE organization_id = $2)`,
+          [originalHttpsUrl, orgId]
+        );
+        await dataSource.query(
+          `UPDATE app_versions
+             SET remote_updated_at = NULL
+           WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
+          [mainApp4.id, mainBranchId]
+        );
+
+        // Sanity: with state restored, the next open skips hydration cleanly.
+        const healthyResp = await request(app.getHttpServer())
+          .get(`/api/apps/${mainApp4.id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(healthyResp.body.is_hydration_tried).toBe(false);
+        expect(healthyResp.body.not_hydrated_reason).toBe('already-up-to-date');
       }, 180000);
     });
   });
