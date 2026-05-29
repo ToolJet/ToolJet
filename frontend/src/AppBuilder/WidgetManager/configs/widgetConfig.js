@@ -79,7 +79,7 @@ import {
   navigationConfig,
   fileButtonConfig,
   buttonGroupV2Config,
-} from '../widgets';
+} from '@tooljet/widget-definitions';
 
 export const widgets = [
   // Buttons

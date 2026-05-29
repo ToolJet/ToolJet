@@ -100,6 +100,7 @@
     "@temporalio/worker": "^1.11.6",
     "@temporalio/workflow": "^1.11.6",
     "@tooljet/plugins": "../plugins",
+    "@tooljet/widget-definitions": "../packages/widget-definitions",
     "acorn": "^8.13.0",
     "acorn-walk": "^8.3.4",
     "ai": "^4.3.19",

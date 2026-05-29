@@ -48,6 +48,7 @@
     "@tanstack/react-virtual": "^3.10.8",
     "@textea/json-viewer": "^3.3.2",
     "@tooljet/plugins": "../plugins",
+    "@tooljet/widget-definitions": "../packages/widget-definitions",
     "@uiw/codemirror-theme-github": "^4.21.21",
     "@uiw/codemirror-theme-okaidia": "^4.21.21",
     "@uiw/codemirror-themes-all": "^4.25.4",
@@ -312,7 +313,8 @@
       "node_modules/(?!(react|mpx-error-boundary)/)"
     ],
     "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/src/$1"
+      "@/(.*)": "<rootDir>/src/$1",
+      "@tooljet/widget-definitions": "<rootDir>/../packages/widget-definitions/src/index.ts"
     },
     "testEnvironment": "jest-environment-jsdom",
     "moduleDirectories": [

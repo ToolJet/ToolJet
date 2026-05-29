@@ -255,6 +255,12 @@ module.exports = {
       '@cloud': path.resolve(__dirname, 'cloud/'),
       '@assets': path.resolve(__dirname, 'assets/'),
       '@white-label': path.resolve(__dirname, 'src/_helpers/white-label'),
+      // Ensures @babel/runtime helpers are always resolved from frontend/node_modules,
+      // regardless of where the file being transformed lives (e.g. packages/widget-definitions).
+      // Without this, transform-runtime resolves @babel/runtime relative to the source file
+      // and fails to find it when transforming files outside the frontend directory.
+      '@babel/runtime': path.resolve(__dirname, 'node_modules/@babel/runtime'),
+      '@tooljet/widget-definitions': path.resolve(__dirname, '../packages/widget-definitions/src'), // This alias is serving 2 purposes: path resolution + watch for any file changes.
     },
     fallback: {
       process: require.resolve('process/browser.js'),
