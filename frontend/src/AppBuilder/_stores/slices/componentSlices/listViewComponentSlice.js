@@ -11,7 +11,7 @@ export const listViewComponentSlice = (set, get) => {
   let _deriveChainScheduled = false;
 
   const scheduleDeriveChain = (nearestListviewId, indices, moduleId) => {
-    const key = `${nearestListviewId}|${moduleId}`;
+    const key = `${nearestListviewId}|${indices.join(',')}|${moduleId}`;
     _pendingDeriveChain.set(key, { nearestListviewId, indices, moduleId });
     if (!_deriveChainScheduled) {
       _deriveChainScheduled = true;
