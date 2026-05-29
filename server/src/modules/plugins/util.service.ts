@@ -181,7 +181,7 @@ export class PluginsUtilService implements IPluginsUtilService {
     return [index, operations, iconFile, manifestFile, version, specFiles];
   }
 
-  private async fetchPluginFilesFromS3(id: string) {
+  private async fetchPluginFilesFromS3(id: string): Promise<any> {
     if (process.env.NODE_ENV === 'production') {
       const host = this.configService.get<string>(
         'TOOLJET_MARKETPLACE_URL',

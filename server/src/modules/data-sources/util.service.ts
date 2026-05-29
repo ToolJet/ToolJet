@@ -2,7 +2,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
-import Ajv from 'ajv';
+import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, ILike } from 'typeorm';
@@ -316,7 +316,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
     }
 
-    const ajv = new Ajv({ strict: false, allErrors: true, coerceTypes: true });
+    const ajv = new Ajv2020({
+      strict: false,
+      allErrors: true,
+      removeAdditional: false,
+      validateSchema: false,
+      coerceTypes: true,
+    });
     const validate = ajv.compile(schema);
     const valid = validate(data);
     return { valid: !!valid, errors: validate.errors || [] };

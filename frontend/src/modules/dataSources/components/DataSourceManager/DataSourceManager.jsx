@@ -448,16 +448,14 @@ class DataSourceManagerComponent extends React.Component {
       }
       return acc;
     }, {});
-    this.setState({ validationMessages: errorMap });
-    const filteredValidationBanner = interactedFields
-      ? Object.keys(this.state.validationMessages)
-          .filter((key) => interactedFields.has(key))
-          .reduce((result, key) => {
-            result.push(this.state.validationMessages[key]);
-            return result;
-          }, [])
-      : Object.values(this.state.validationMessages);
-    this.setState({ validationError: filteredValidationBanner });
+    this.setState({ validationMessages: errorMap }, () => {
+      const filteredValidationBanner = interactedFields
+        ? Object.keys(this.state.validationMessages)
+            .filter((key) => interactedFields.has(key))
+            .map((key) => this.state.validationMessages[key])
+        : Object.values(this.state.validationMessages);
+      this.setState({ validationError: filteredValidationBanner });
+    });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {
