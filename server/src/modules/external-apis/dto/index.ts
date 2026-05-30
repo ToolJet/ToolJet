@@ -24,6 +24,7 @@ import { ValidateTooljetDatabaseImportSchema } from '@dto/validators/tooljet-dat
 export enum Status {
   ACTIVE = 'active',
   ARCHIVED = 'archived',
+  INVITED = 'invited',
 }
 
 export class GroupDto {
@@ -55,7 +56,7 @@ export class WorkspaceDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.ARCHIVED;
+  status?: Status;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -99,7 +100,7 @@ export class CreateUserDto {
 
   @IsEnum(Status)
   @IsOptional()
-  status?: Status = Status.ARCHIVED;
+  status?: Status = Status.INVITED;
 
   @IsString()
   @IsOptional()
@@ -129,6 +130,10 @@ export class UpdateUserDto {
   @IsEnum(Status)
   @IsOptional()
   status?: Status;
+
+  @IsString()
+  @IsOptional()
+  defaultOrganizationId?: string;
 }
 
 export class UpdateUserWorkspaceDto {

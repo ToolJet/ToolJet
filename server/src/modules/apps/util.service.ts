@@ -310,7 +310,8 @@ export class AppsUtilService implements IAppsUtilService {
       LICENSE_FIELD.MULTI_ENVIRONMENT,
       organizationId
     );
-    if (environmentName && !isMultiEnvironmentEnabled) {
+    const isDevelopmentEnv = environmentName?.toLowerCase() === 'development';
+    if (environmentName && !isDevelopmentEnv && !isMultiEnvironmentEnabled) {
       throw new ForbiddenException('URL is not accessible. Multi-environment is not enabled');
     }
 
@@ -778,11 +779,11 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
-    const versionToLoad = versionId
-      ? await this.versionRepository.findVersion(versionId)
-      : app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+    // Only the version ID is needed to filter ModuleViewer components; avoid calling
+    // findVersion (which loads the full AppVersion with all relations) just for the UUID.
+    const versionToLoadId = versionId || app.currentVersionId || (app as any).editingVersion?.id;
+
+    if (!versionToLoadId && !allVersions) return [];
 
     const modules = await dbTransactionWrap(async (manager) => {
       const moduleComponents = await manager
@@ -794,7 +795,7 @@ export class AppsUtilService implements IAppsUtilService {
           `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
           {
             module: 'ModuleViewer',
-            appVersionId: versionToLoad.id,
+            appVersionId: versionToLoadId,
             appId: app.id,
           }
         )
@@ -818,16 +819,36 @@ export class AppsUtilService implements IAppsUtilService {
       // because it has no branch context. When the parent app is being viewed on a feature
       // branch, callers rely on module.editingVersion downstream (pages/queries/events), so
       // stale default-branch content leaks through unless we override here.
-      const parentBranchId = app.editingVersion?.branchId;
-      if (parentBranchId && modules.length > 0) {
+      const parentBranchId = (app as any).editingVersion?.branchId;
+      if (modules.length > 0) {
         await Promise.all(
           modules.map(async (moduleApp: any) => {
-            const branchVersion = await manager.findOne(AppVersion, {
-              where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
-              order: { updatedAt: 'DESC' },
-            });
-            if (branchVersion) {
-              moduleApp.editingVersion = branchVersion;
+            if (parentBranchId) {
+              const branchVersion = await manager.findOne(AppVersion, {
+                where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
+                order: { updatedAt: 'DESC' },
+              });
+              if (branchVersion) {
+                moduleApp.editingVersion = branchVersion;
+                moduleApp.appVersions = [branchVersion];
+                return;
+              }
+            }
+            // Fallback: TypeORM's async afterLoad is not reliably awaited in all query
+            // paths, so editingVersion may not be populated by the subscriber. Query
+            // explicitly to guarantee it is always set before returning.
+            if (!moduleApp.editingVersion) {
+              const fallbackVersion = await manager.findOne(AppVersion, {
+                where: { appId: moduleApp.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
+                order: { updatedAt: 'DESC' },
+              });
+              if (fallbackVersion) moduleApp.editingVersion = fallbackVersion;
+            }
+            // Populate appVersions so downstream callers (prepareResponse) can resolve
+            // the version by ID (fast path) instead of loading all versions via
+            // findVersionsFromApp.
+            if (moduleApp.editingVersion) {
+              moduleApp.appVersions = [moduleApp.editingVersion];
             }
           })
         );

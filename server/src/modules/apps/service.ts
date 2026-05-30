@@ -492,8 +492,10 @@ export class AppsService implements IAppsService {
   ): Promise<{ apps: AppListItem[]; totalCount: number; folderCount: number }> {
     if (folderId) {
       const folder = await this.foldersUtilService.findOne(folderId, manager);
+      // page=0 signals "return all" — used when isGetAll=true to skip pagination
+      const pageArg = isGetAll ? 0 : page;
       const [{ viewableApps, totalCount: folderCount }, totalCount] = await Promise.all([
-        this.folderAppsUtilService.getAppsFor(user, folder, page, searchKey, type as APP_TYPES, branchId),
+        this.folderAppsUtilService.getAppsFor(user, folder, pageArg, searchKey, type as APP_TYPES, branchId),
         this.appsUtilService.count(user, searchKey, type as APP_TYPES, branchId),
       ]);
       return { apps: viewableApps, totalCount, folderCount };
@@ -656,6 +658,17 @@ export class AppsService implements IAppsService {
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
       response['editing_version']['global_settings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete response['editing_version']['global_settings']['libraries'];
+        delete response['editing_version']['global_settings']['preloadedScript'];
+      }
     }
     return response;
   }
@@ -683,6 +696,18 @@ export class AppsService implements IAppsService {
         });
       }
 
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      const globalSettings = { ...versionToLoad.globalSettings, theme: appTheme };
+      if (!hasJsLibrariesAccess) {
+        delete globalSettings.libraries;
+        delete globalSettings.preloadedScript;
+      }
+
       // serialize
       return {
         id: app.id,
@@ -696,7 +721,7 @@ export class AppsService implements IAppsService {
         events: eventsForVersion,
         pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
         homePageId: versionToLoad.homePageId,
-        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        globalSettings,
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
         appId: app.id,

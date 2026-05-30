@@ -34,4 +34,16 @@ export class LicenseInitService extends ILicenseInitService {
   getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: LicenseBase): Promise<any> {
     return getLicenseFieldValue(type, licenseInstance);
   }
+
+  isEnvConfigured(): boolean {
+    return false;
+  }
+
+  isUsingEnvLicense(): boolean {
+    return false;
+  }
+
+  setUseEnvLicense(_value: boolean): void {
+    return;
+  }
 }

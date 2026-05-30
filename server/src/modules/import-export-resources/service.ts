@@ -42,7 +42,7 @@ export class ImportExportResourcesService {
           tjdb,
           exportResourcesDto.tooljet_database
         );
-        exportedDbs.push(exportedDb);
+        if (exportedDb) exportedDbs.push(exportedDb);
       }
 
       if (exportedDbs.length > 0) resourcesExport.tooljet_database = exportedDbs;

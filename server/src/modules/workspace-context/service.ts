@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { In } from 'typeorm';
 import { User as UserEntity } from '@entities/user.entity';
 import { Organization } from '@entities/organization.entity';
@@ -12,8 +12,11 @@ import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constant
 import { RESOURCE } from './constants';
 
 type OrganizationSummary = { id: string; name: string; slug: string };
-type AppVersionSummary = { id: string; name: string; createdAt: Date };
-type AppWithVersions = { id: string; name: string; slug: string; versions: AppVersionSummary[] };
+type ComponentSummary = { id: string; name: string; type: string; co_relation_id: string | null; pageId: string };
+type AppSummary = { id: string; name: string; slug: string; co_relation_id: string | null };
+type AppVersionSummary = { id: string; name: string; createdAt: Date; co_relation_id: string | null };
+type AppVersionWithComponents = AppVersionSummary & { components: ComponentSummary[] };
+type AppDetail = { id: string; name: string; slug: string; co_relation_id: string | null; versions: AppVersionWithComponents[] };
 type QueryGroup = {
   appId: string;
   appName: string;
@@ -33,6 +36,7 @@ type DataSourceSummary = {
   kind: string;
   pluginId: string;
   scope: string;
+  co_relation_id: string | null;
   versions: DataSourceVersionSummary[];
 };
 
@@ -74,46 +78,113 @@ export class WorkspaceContextService {
     return organizations.map(({ id, name, slug }) => ({ id, name, slug }));
   }
 
-  private async fetchApps(organizationId: string): Promise<AppWithVersions[]> {
+  private async fetchApps(organizationId: string): Promise<AppSummary[]> {
+    const rows: Array<{ appId: string; appName: string; appSlug: string; appCoRelationId: string | null }> =
+      await this.appsRepository
+        .createQueryBuilder('app')
+        .where('app.organization_id = :organizationId', { organizationId })
+        .select([
+          'app.id AS "appId"',
+          'app.name AS "appName"',
+          'app.slug AS "appSlug"',
+          'app.co_relation_id AS "appCoRelationId"',
+        ])
+        .orderBy('app.created_at', 'ASC')
+        .getRawMany();
+
+    return rows.map((r) => ({ id: r.appId, name: r.appName, slug: r.appSlug, co_relation_id: r.appCoRelationId ?? null }));
+  }
+
+  async fetchAppById(appId: string, organizationId: string): Promise<AppDetail> {
     const rows: Array<{
       appId: string;
       appName: string;
       appSlug: string;
+      appCoRelationId: string | null;
       versionId: string | null;
       versionName: string | null;
       versionCreatedAt: Date | null;
+      versionCoRelationId: string | null;
     }> = await this.appsRepository
       .createQueryBuilder('app')
       .leftJoin('app_versions', 'version', 'version.app_id = app.id')
-      .where('app.organization_id = :organizationId', { organizationId })
+      .where('app.id = :appId', { appId })
+      .andWhere('app.organization_id = :organizationId', { organizationId })
       .select([
         'app.id AS "appId"',
         'app.name AS "appName"',
         'app.slug AS "appSlug"',
+        'app.co_relation_id AS "appCoRelationId"',
         'version.id AS "versionId"',
         'version.name AS "versionName"',
         'version.created_at AS "versionCreatedAt"',
+        'version.co_relation_id AS "versionCoRelationId"',
       ])
-      .orderBy('app.created_at', 'ASC')
-      .addOrderBy('version.created_at', 'ASC')
+      .orderBy('version.created_at', 'ASC')
       .getRawMany();
 
-    const byApp = new Map<string, AppWithVersions>();
+    if (rows.length === 0) throw new NotFoundException(`App ${appId} not found in this workspace`);
 
+    const first = rows[0];
+    const app: AppDetail = {
+      id: first.appId,
+      name: first.appName,
+      slug: first.appSlug,
+      co_relation_id: first.appCoRelationId ?? null,
+      versions: [],
+    };
+
+    const versionMap = new Map<string, AppVersionWithComponents>();
     for (const row of rows) {
-      if (!byApp.has(row.appId)) {
-        byApp.set(row.appId, { id: row.appId, name: row.appName, slug: row.appSlug, versions: [] });
-      }
-      if (row.versionId) {
-        byApp.get(row.appId).versions.push({
+      if (row.versionId && !versionMap.has(row.versionId)) {
+        const v: AppVersionWithComponents = {
           id: row.versionId,
           name: row.versionName,
           createdAt: row.versionCreatedAt,
+          co_relation_id: row.versionCoRelationId ?? null,
+          components: [],
+        };
+        versionMap.set(row.versionId, v);
+        app.versions.push(v);
+      }
+    }
+
+    if (versionMap.size > 0) {
+      const versionIds = [...versionMap.keys()];
+      const compRows: Array<{
+        componentId: string;
+        componentName: string;
+        componentType: string;
+        componentCoRelationId: string | null;
+        componentPageId: string;
+        versionId: string;
+      }> = await this.appsRepository.manager
+        .createQueryBuilder()
+        .select([
+          'c.id AS "componentId"',
+          'c.name AS "componentName"',
+          'c.type AS "componentType"',
+          'c.co_relation_id AS "componentCoRelationId"',
+          'c.page_id AS "componentPageId"',
+          'p.app_version_id AS "versionId"',
+        ])
+        .from('components', 'c')
+        .innerJoin('pages', 'p', 'p.id = c.page_id')
+        .where('p.app_version_id IN (:...versionIds)', { versionIds })
+        .getRawMany();
+
+      for (const row of compRows) {
+        versionMap.get(row.versionId)?.components.push({
+          id: row.componentId,
+          name: row.componentName,
+          type: row.componentType,
+          co_relation_id: row.componentCoRelationId ?? null,
+          pageId: row.componentPageId,
         });
       }
     }
 
-    return [...byApp.values()];
+    return app;
   }
 
   private async fetchQueriesGroupedByApp(organizationId: string): Promise<QueryGroup[]> {
@@ -165,7 +236,7 @@ export class WorkspaceContextService {
   private async fetchGlobalDataSources(organizationId: string): Promise<DataSourceSummary[]> {
     const dataSources = await this.dataSourcesRepository.find({
       where: { organizationId, scope: DataSourceScopes.GLOBAL },
-      select: ['id', 'name', 'kind', 'pluginId', 'scope'],
+      select: ['id', 'name', 'kind', 'pluginId', 'scope', 'co_relation_id'],
       order: { name: 'ASC' },
     });
 
@@ -191,12 +262,13 @@ export class WorkspaceContextService {
       versionsByDs.set(v.dataSourceId, list);
     }
 
-    return dataSources.map(({ id, name, kind, pluginId, scope }) => ({
+    return dataSources.map(({ id, name, kind, pluginId, scope, co_relation_id }) => ({
       id,
       name,
       kind,
       pluginId,
       scope,
+      co_relation_id: co_relation_id ?? null,
       versions: versionsByDs.get(id) ?? [],
     }));
   }
