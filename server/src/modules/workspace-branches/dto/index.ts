@@ -66,6 +66,24 @@ export class PullAppDto {
   tagDescription?: string;
 }
 
+export class PullModuleDto {
+  @IsNotEmpty()
+  @IsUUID()
+  moduleId: string;
+
+  @IsOptional()
+  @IsString()
+  tagSha?: string;
+
+  @IsOptional()
+  @IsString()
+  tagName?: string;
+
+  @IsOptional()
+  @IsString()
+  tagDescription?: string;
+}
+
 export class EnsureDraftDto {
   @IsNotEmpty()
   @IsUUID()

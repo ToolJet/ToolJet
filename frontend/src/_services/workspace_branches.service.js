@@ -9,6 +9,7 @@ export const workspaceBranchesService = {
   pushWorkspace,
   pullWorkspace,
   pullApp,
+  pullModule,
   ensureAppDraft,
   checkForUpdates,
   listRemoteBranches,
@@ -88,6 +89,22 @@ function pullApp(appId, branchId, tagSha, tagName, tagDescription) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/workspace-branches/pull-app`, requestOptions).then(handleResponse);
+}
+
+function pullModule(moduleId, tagSha, tagName, tagDescription) {
+  const body = {
+    moduleId,
+    ...(tagSha && { tagSha }),
+    ...(tagName && { tagName }),
+    ...(tagDescription && { tagDescription }),
+  };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/workspace-branches/pull-module`, requestOptions).then(handleResponse);
 }
 
 function ensureAppDraft(appId, branchId, tagSha, tagName) {

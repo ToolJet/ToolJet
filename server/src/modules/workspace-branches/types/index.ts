@@ -14,6 +14,7 @@ interface Features {
   [FEATURE_KEY.FETCH_PULL_REQUESTS]: FeatureConfig;
   [FEATURE_KEY.ENSURE_DRAFT]: FeatureConfig;
   [FEATURE_KEY.PULL_APP]: FeatureConfig;
+  [FEATURE_KEY.PULL_MODULE]: FeatureConfig;
 }
 
 export interface FeaturesConfig {
