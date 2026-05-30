@@ -99,6 +99,17 @@ export const createParamUpdatedInterceptor = ({
       return;
     }
 
+    // Handle newJsonSchema parameter
+    if (param.name === 'newJsonSchema') {
+      if (attr === 'value') {
+        if (source.value === 'jsonSchema') {
+          shouldInvokeBlurEvent.current = true;
+        }
+        setJSONData({ value });
+      }
+      return;
+    }
+
     // Default parameter update
     paramUpdated(param, attr, value, paramType, ...restArgs);
   };

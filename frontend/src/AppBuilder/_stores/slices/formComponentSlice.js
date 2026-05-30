@@ -26,8 +26,8 @@ export const createFormComponentSlice = (set, get) => ({
     const { getComponentDefinition } = get();
     const componentDefinition = getComponentDefinition(componentId, moduleId);
     if (!componentDefinition) return null;
-    const { generateFormFrom = null, JSONData = null } = componentDefinition.component.definition.properties || {};
-    return { generateFormFrom, JSONData };
+    const { generateFormFrom = null, JSONData = null, newJsonSchema = null } = componentDefinition.component.definition.properties || {};
+    return { generateFormFrom, JSONData, newJsonSchema };
   },
   saveFormDataSectionData: (componentId, data, fields, moduleId = 'canvas') => {
     const { getComponentDefinition, updateContainerAutoHeight, getCurrentPageIndex, saveComponentPropertyChanges } =
@@ -41,6 +41,9 @@ export const createFormComponentSlice = (set, get) => ({
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
         lodashSet(pageComponent, ['definition', 'properties', 'generateFormFrom'], data.generateFormFrom);
         lodashSet(pageComponent, ['definition', 'properties', 'JSONData'], data.JSONData);
+        if (data.newJsonSchema !== undefined) {
+          lodashSet(pageComponent, ['definition', 'properties', 'newJsonSchema'], data.newJsonSchema);
+        }
         lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(fields));
       },
       false,
@@ -72,6 +75,9 @@ export const createFormComponentSlice = (set, get) => ({
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
         lodashSet(pageComponent, ['definition', 'properties', 'generateFormFrom'], data.generateFormFrom);
         lodashSet(pageComponent, ['definition', 'properties', 'JSONData'], data.JSONData);
+        if (data.newJsonSchema !== undefined) {
+          lodashSet(pageComponent, ['definition', 'properties', 'newJsonSchema'], data.newJsonSchema);
+        }
         lodashSet(pageComponent, ['definition', 'properties', 'fields', 'value'], cleanupFormFields(fields));
       },
       false,

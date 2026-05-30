@@ -3,7 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useFormState } from './useFormState';
 import { useFormData } from './useFormData';
-import { createParamUpdatedInterceptor, createColumnMappingHandler, createJSONDataBlurHandler } from '../handlers';
+import { createParamUpdatedInterceptor, createColumnMappingHandler, createJSONDataBlurHandler, createJSONSchemaBlurHandler } from '../handlers';
 
 export const useFormLogic = (component, paramUpdated) => {
   // Store selectors
@@ -37,7 +37,9 @@ export const useFormLogic = (component, paramUpdated) => {
       component?.id,
       {
         generateFormFrom: formState.source,
-        JSONData: formState.JSONData,
+        ...(formState.source.value === 'jsonSchema' 
+          ? { newJsonSchema: newJsonData } 
+          : { JSONData: newJsonData }),
       },
       fields
     );
@@ -61,7 +63,9 @@ export const useFormLogic = (component, paramUpdated) => {
       component?.id,
       {
         generateFormFrom: formState.source,
-        JSONData: newJsonData,
+        ...(formState.source.value === 'jsonSchema' 
+          ? { newJsonSchema: newJsonData } 
+          : { JSONData: newJsonData }),
       },
       fields
     );
@@ -72,7 +76,9 @@ export const useFormLogic = (component, paramUpdated) => {
         definition: {
           properties: {
             generateFormFrom: formState.source,
-            JSONData: newJsonData,
+            ...(formState.source.value === 'jsonSchema' 
+              ? { newJsonSchema: newJsonData } 
+              : { JSONData: newJsonData }),
             fields: { value: fields },
           },
         },
@@ -111,6 +117,20 @@ export const useFormLogic = (component, paramUpdated) => {
     codeEditorView: formState.codeEditorView,
   });
 
+  // Create JSON schema blur handler
+  const handleJSONSchemaBlur = createJSONSchemaBlurHandler({
+    component,
+    currentStatusRef: formState.currentStatusRef,
+    resolveReferences,
+    savedSourceValue: formState.savedSourceValue,
+    source: formState.source,
+    getFormDataSectionData,
+    performBatchComponentOperations,
+    saveDataSection,
+    codeEditorView: formState.codeEditorView,
+    getChildComponents,
+  });
+
   // Create parameter updated interceptor
   const paramUpdatedInterceptor = createParamUpdatedInterceptor({
     component,
@@ -131,13 +151,17 @@ export const useFormLogic = (component, paramUpdated) => {
     setLoading: formState.setLoading,
   });
 
-  // Effect for handling JSON data blur
+  // Effect for handling JSON data/schema blur
   useEffect(() => {
     if (formState.shouldInvokeBlurEvent.current) {
       formState.shouldInvokeBlurEvent.current = false;
-      handleJSONDataBlur(formState.JSONData.value);
+      if (formState.source.value === 'jsonSchema') {
+        handleJSONSchemaBlur(formState.JSONData.value);
+      } else {
+        handleJSONDataBlur(formState.JSONData.value);
+      }
     }
-  }, [formState.shouldInvokeBlurEvent, formState.JSONData, handleJSONDataBlur]);
+  }, [formState.shouldInvokeBlurEvent, formState.JSONData, handleJSONDataBlur, handleJSONSchemaBlur, formState.source.value]);
 
   return {
     ...formState,
@@ -145,6 +169,7 @@ export const useFormLogic = (component, paramUpdated) => {
     paramUpdatedInterceptor,
     performColumnMapping,
     handleJSONDataBlur,
+    handleJSONSchemaBlur,
     saveDataSection,
     closeModal: () => {
       formState.setOpenModal(false);

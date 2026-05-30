@@ -50,23 +50,21 @@ export const DataSection = ({
             focusCodeEditor
           );
         })}
-      {source.value !== 'jsonSchema' && (
-        <DataSectionWrapper
-          currentStatusRef={currentStatusRef}
-          source={source}
-          JSONData={JSONData}
-          component={component}
-          darkMode={darkMode}
-          saveDataSection={saveDataSection}
-          openModalFromParent={openModal}
-          setParentModalState={setParentModalState}
-          performColumnMapping={performColumnMapping}
-          newResolvedJsonData={resolveReferences('canvas', JSONData.value)}
-          existingResolvedJsonData={existingResolvedJsonData}
-          savedSourceValue={savedSourceValue}
-          isLoading={isLoading}
-        />
-      )}
+      <DataSectionWrapper
+        currentStatusRef={currentStatusRef}
+        source={source}
+        JSONData={JSONData}
+        component={component}
+        darkMode={darkMode}
+        saveDataSection={saveDataSection}
+        openModalFromParent={openModal}
+        setParentModalState={setParentModalState}
+        performColumnMapping={performColumnMapping}
+        newResolvedJsonData={resolveReferences('canvas', JSONData.value)}
+        existingResolvedJsonData={existingResolvedJsonData}
+        savedSourceValue={savedSourceValue}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

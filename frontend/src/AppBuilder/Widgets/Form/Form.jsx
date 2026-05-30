@@ -78,7 +78,7 @@ const FormComponent = (props) => {
   } = properties;
 
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  const advanced = _deprecatedAdvanced || isJSONSchema;
+  const advanced = _deprecatedAdvanced; // Deprecated advanced mode for legacy json schema
   const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
