@@ -22,6 +22,12 @@ export class WorkspaceBranchesModule extends SubModule {
       ['pull.service', 'push.service', 'pull-conflict-detection.service']
     );
 
+    const { DeletionCommitListener } = await this.getProviders(
+      configs,
+      'workspace-branches',
+      ['deletion-commit.listener']
+    );
+
     return {
       module: WorkspaceBranchesModule,
       imports: [
@@ -33,7 +39,14 @@ export class WorkspaceBranchesModule extends SubModule {
         await BackgroundProcessorModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
-      providers: [WorkspaceBranchService, FeatureAbilityFactory, PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService],
+      providers: [
+        WorkspaceBranchService,
+        FeatureAbilityFactory,
+        PlatformGitPullService,
+        PlatformGitPushService,
+        PullConflictDetectionService,
+        ...(isMainImport ? [DeletionCommitListener] : []),
+      ],
       exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService],
     };
   }
