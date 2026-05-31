@@ -112,7 +112,8 @@ describe('GitSyncController', () => {
       });
 
       it('should return the organization git config for a valid session', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .get(`/api/git-sync/${orgId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -130,7 +131,8 @@ describe('GitSyncController', () => {
       });
 
       it('should return the organization git status for a valid session', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .get(`/api/git-sync/${orgId}/status`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -149,7 +151,8 @@ describe('GitSyncController', () => {
       });
 
       it('should return 400 when gitType is missing in the body', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/git-sync')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -158,7 +161,8 @@ describe('GitSyncController', () => {
       });
 
       it('should create an organization git record for github_https', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/git-sync')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -189,7 +193,8 @@ describe('GitSyncController', () => {
       });
 
       it('should return 400 when gitType is missing in the body', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/git-sync/status/${orgId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -219,7 +224,8 @@ describe('GitSyncController', () => {
       });
 
       it('should return 400 when the provider is not a valid GITConnectionType', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .patch('/api/git-sync/env-configs')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -244,7 +250,8 @@ describe('GitSyncController', () => {
       });
 
       it('POST /api/git-sync/test-connection | should pass for a valid payload', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/git-sync/test-connection')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -262,14 +269,16 @@ describe('GitSyncController', () => {
       });
 
       it('POST /api/git-sync/configs then GET /api/git-sync/:id | should persist the config and not expose the private key', async () => {
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/git-sync/configs')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
           .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
           .expect(201);
 
-        const response = await request(app.getHttpServer())
+        const response = await request
+          .agent(app.getHttpServer())
           .get(`/api/git-sync/${orgId}`)
           .query({ gitType: 'github_https' })
           .set('Cookie', tokenCookie)
@@ -301,7 +310,8 @@ describe('GitSyncController', () => {
         // Saving provider configs auto-seeds the workspace branch table with
         // the configured branch (main) as the default. GET /api/workspace-branches
         // should return that single branch and surface its id as activeBranchId.
-        const branchesResp = await request(app.getHttpServer())
+        const branchesResp = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -319,7 +329,8 @@ describe('GitSyncController', () => {
         // Once the config is enabled + finalized, GET /api/git-sync/:id/status
         // surfaces the active provider details. Active branch is now tracked
         // client-side, so the server reports null for active_branch_id/name.
-        const statusResp = await request(app.getHttpServer())
+        const statusResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/git-sync/${orgId}/status`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -337,7 +348,8 @@ describe('GitSyncController', () => {
 
         // Fresh workspace — no apps yet on the main branch. The list endpoint
         // should return an empty apps array and zero-valued meta counts.
-        const appsResp = await request(app.getHttpServer())
+        const appsResp = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -385,14 +397,16 @@ describe('GitSyncController', () => {
         step(1, 'save provider configs & load main branch');
         // 1. Save provider configs — bootstraps the org_git_sync row and
         //    auto-seeds the main branch.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/git-sync/configs')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
           .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false })
           .expect(201);
 
-        const initialBranches = await request(app.getHttpServer())
+        const initialBranches = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -402,7 +416,8 @@ describe('GitSyncController', () => {
 
         step(2, 'list remote branches → only main exists');
         // 2. List remote branches → only main exists after reset.
-        const remoteAfterReset = await request(app.getHttpServer())
+        const remoteAfterReset = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches/remote')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -413,7 +428,8 @@ describe('GitSyncController', () => {
         step(3, 'check-updates on main → hasUpdates');
         // 3. Check for updates on main — initial commit is fresher than the
         //    seeded workspace state, so hasUpdates is true with commit info.
-        const checkUpdatesResp = await request(app.getHttpServer())
+        const checkUpdatesResp = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches/check-updates')
           .query({ branch: 'main' })
           .set('Cookie', tokenCookie)
@@ -430,7 +446,8 @@ describe('GitSyncController', () => {
 
         step(4, 'pull main');
         // 4. Pull main → 201.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -440,7 +457,8 @@ describe('GitSyncController', () => {
 
         step(5, 'create feat-e2e branch off main');
         // 5. Create a feature branch off main.
-        const createBranchResp = await request(app.getHttpServer())
+        const createBranchResp = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -461,7 +479,8 @@ describe('GitSyncController', () => {
 
         step(6, 'list workspace branches → main + feat-e2e');
         // 6. List branches → main + feat-e2e; active is still main.
-        const twoBranchesResp = await request(app.getHttpServer())
+        const twoBranchesResp = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -474,7 +493,8 @@ describe('GitSyncController', () => {
 
         step(7, 'GET apps on feat-e2e → empty');
         // 7. GET apps on the brand-new feature branch → still empty.
-        const appsOnFeat = await request(app.getHttpServer())
+        const appsOnFeat = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: featBranchId })
           .set('Cookie', tokenCookie)
@@ -486,7 +506,8 @@ describe('GitSyncController', () => {
 
         step(8, 'list remote branches → main + feat-e2e');
         // 8. Remote branches now include the freshly created feat-e2e too.
-        const remoteAfterCreate = await request(app.getHttpServer())
+        const remoteAfterCreate = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches/remote')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -500,7 +521,8 @@ describe('GitSyncController', () => {
         // 9a. Negative case: creating an app directly on the default branch
         //     must be rejected — branching enabled means apps are only
         //     authored on feature branches.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -510,7 +532,8 @@ describe('GitSyncController', () => {
 
         // 9b. Happy path on the feature branch.
 
-        const createAppResp = await request(app.getHttpServer())
+        const createAppResp = await request
+          .agent(app.getHttpServer())
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -526,7 +549,8 @@ describe('GitSyncController', () => {
 
         step(10, 'app-git branches → feat-e2e + main');
         // 10. App-git branches → feat-e2e (from git) + main (from workspace).
-        const appGitBranchesResp = await request(app.getHttpServer())
+        const appGitBranchesResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/app-git/${orgId}/app/${appId}/branches`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -540,7 +564,8 @@ describe('GitSyncController', () => {
         // 11. Fetch app details to discover the editing version + its env +
         //     home page id (used for the env-versions check below and the
         //     component-add call afterwards).
-        const appDetail = await request(app.getHttpServer())
+        const appDetail = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${appId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -561,7 +586,8 @@ describe('GitSyncController', () => {
 
         // List versions for this app on the editing env — there should be
         // exactly one draft version backing the feature branch.
-        const versionsResp = await request(app.getHttpServer())
+        const versionsResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/app-environments/${envId}/versions`)
           .query({ app_id: appId })
           .set('Cookie', tokenCookie)
@@ -627,7 +653,8 @@ describe('GitSyncController', () => {
             parent: null,
           },
         };
-        const componentResp = await request(app.getHttpServer())
+        const componentResp = await request
+          .agent(app.getHttpServer())
           .post(`/api/v2/apps/${appId}/versions/${versionId}/components`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -643,7 +670,8 @@ describe('GitSyncController', () => {
 
         step(13, 'gitpush commit feat-e2e');
         // 14. Commit + push the change to the feat-e2e branch.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post(`/api/app-git/gitpush/${appId}/${versionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -676,7 +704,8 @@ describe('GitSyncController', () => {
 
         step(15, 'pull main (picks up merged commit)');
         // 16. Pull main into the workspace — picks up the merged commit.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -687,7 +716,8 @@ describe('GitSyncController', () => {
         step(16, 'GET apps on main → stub version visible');
         // 17. GET apps on main → the testing-app-1 from feature branch is
         //     now visible on main as a stub version.
-        const appsOnMain = await request(app.getHttpServer())
+        const appsOnMain = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -719,7 +749,8 @@ describe('GitSyncController', () => {
         //     Because the version is still a stub (git content available to pull
         //     in), hydration is attempted on this open: is_hydration_tried=true
         //     and hydration_status='success'.
-        const hydrateResp = await request(app.getHttpServer())
+        const hydrateResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${mainApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -732,7 +763,8 @@ describe('GitSyncController', () => {
         // Second open — the stub is now hydrated and nothing newer exists on the
         // remote, so hydration is skipped: is_hydration_tried=false and
         // not_hydrated_reason explains why (already-up-to-date).
-        const reopenResp = await request(app.getHttpServer())
+        const reopenResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${mainApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -745,7 +777,8 @@ describe('GitSyncController', () => {
         // 19. Re-list apps on main — same app, now hydrated. is_stub is false
         //     at both app and version level; the version carries a name, a
         //     home_page_id and an editing_version block.
-        const appsAfterHydrate = await request(app.getHttpServer())
+        const appsAfterHydrate = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -786,7 +819,8 @@ describe('GitSyncController', () => {
         const mainEnvId: string =
           hydratedApp.editing_version.current_environment_id || hydratedApp.editing_version.currentEnvironmentId;
         expect(mainEnvId).toBeDefined();
-        const mainVersionsResp = await request(app.getHttpServer())
+        const mainVersionsResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/app-environments/${mainEnvId}/versions`)
           .query({ app_id: hydratedApp.id })
           .set('Cookie', tokenCookie)
@@ -810,7 +844,8 @@ describe('GitSyncController', () => {
         //     draft (PUT version with status PUBLISHED), then create the git
         //     tag. The check-tag endpoint constructs the tag name from the
         //     app's co_relation_id and the version name being published.
-        const checkTagResp = await request(app.getHttpServer())
+        const checkTagResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/app-git/${hydratedApp.id}/check-tag`)
           .query({ versionName: 'v1' })
           .set('Cookie', tokenCookie)
@@ -820,7 +855,8 @@ describe('GitSyncController', () => {
         expect(checkTagResp.body.exists).toBe(false);
         expect(checkTagResp.body.tagName).toBe(`${hydratedApp.co_relation_id}/v1`);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/v2/apps/${hydratedApp.id}/versions/${hydratedVersion.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -833,7 +869,8 @@ describe('GitSyncController', () => {
           })
           .expect(200);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post(`/api/app-git/${hydratedApp.id}/versions/${hydratedVersion.id}/tag`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -849,7 +886,8 @@ describe('GitSyncController', () => {
         //       - a fresh DRAFT seeded on main by handleDefaultBranchPublish,
         //         whose name must be a random UUID (server fix in
         //         versions/util.service.ts).
-        const versionsAfterPublish = await request(app.getHttpServer())
+        const versionsAfterPublish = await request
+          .agent(app.getHttpServer())
           .get(`/api/app-environments/${mainEnvId}/versions`)
           .query({ app_id: hydratedApp.id })
           .set('Cookie', tokenCookie)
@@ -877,7 +915,8 @@ describe('GitSyncController', () => {
         step(22, 'create feat-e2e-2 branch off main');
         // 22. Spin up another feature branch off main. This branch is where
         //     we'll rename the app and change its slug.
-        const createBranch2Resp = await request(app.getHttpServer())
+        const createBranch2Resp = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -888,7 +927,8 @@ describe('GitSyncController', () => {
 
         // Fetch the app on feat-e2e-2 to get its editing version id (a fresh
         // branch-type draft pulled in from the source branch).
-        const appOnFeat2 = await request(app.getHttpServer())
+        const appOnFeat2 = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${hydratedApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -899,7 +939,8 @@ describe('GitSyncController', () => {
         const feat2VersionId: string = feat2EditingVersion.id;
 
         step(23, 'rename app to testing-app-2 on feat-e2e-2');
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -914,7 +955,8 @@ describe('GitSyncController', () => {
           .expect(200);
 
         step(24, 'change slug to testing-app-2-slug on feat-e2e-2');
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -928,7 +970,8 @@ describe('GitSyncController', () => {
           .expect(200);
 
         step(24, 'change icon to sentfast on feat-e2e-2');
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}/icons`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -937,7 +980,8 @@ describe('GitSyncController', () => {
           .expect(200);
 
         step(24, 'flip is_public=true on feat-e2e-2');
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}/public`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -946,7 +990,8 @@ describe('GitSyncController', () => {
           .expect(200);
 
         step(25, 'gitpush commit feat-e2e-2 (name + slug + icon + is_public)');
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post(`/api/app-git/gitpush/${hydratedApp.id}/${feat2VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -978,7 +1023,8 @@ describe('GitSyncController', () => {
         step(27, 'switch to main & list apps → still pre-pull name testing-app-1');
         // 27. Before pulling, main's local snapshot still reflects the
         //     previous merge (name=testing-app-1).
-        const appsBeforePull = await request(app.getHttpServer())
+        const appsBeforePull = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -989,7 +1035,8 @@ describe('GitSyncController', () => {
         expect(appsBeforePull.body.apps[0].name).toBe('testing-app-1');
 
         step(28, 'check-updates on main → hasUpdates true (merge commit ahead)');
-        const checkUpdatesAfterMerge = await request(app.getHttpServer())
+        const checkUpdatesAfterMerge = await request
+          .agent(app.getHttpServer())
           .get('/api/workspace-branches/check-updates')
           .query({ branch: 'main' })
           .set('Cookie', tokenCookie)
@@ -1000,7 +1047,8 @@ describe('GitSyncController', () => {
         expect(checkUpdatesAfterMerge.body.latestCommit.sha).toEqual(expect.any(String));
 
         step(29, 'pull main');
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1009,7 +1057,8 @@ describe('GitSyncController', () => {
           .expect(201);
 
         step(30, 'list apps on main → name testing-app-2 (slug still stub uuid)');
-        const appsAfterPull = await request(app.getHttpServer())
+        const appsAfterPull = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -1021,7 +1070,8 @@ describe('GitSyncController', () => {
         expect(renamedApp.name).toBe('testing-app-2');
 
         step(31, 'pull-from-builder + ensure-draft → new draft version id');
-        const builderPull = await request(app.getHttpServer())
+        const builderPull = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1030,7 +1080,8 @@ describe('GitSyncController', () => {
           .expect(201);
         expect(builderPull.body?.success ?? true).toBeTruthy();
 
-        const ensureDraftResp = await request(app.getHttpServer())
+        const ensureDraftResp = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/ensure-draft')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1041,7 +1092,8 @@ describe('GitSyncController', () => {
         expect(draftVersionId).toBeDefined();
 
         step(32, 'GET draft version → name + slug + icon + is_public propagated');
-        const draftDetail = await request(app.getHttpServer())
+        const draftDetail = await request
+          .agent(app.getHttpServer())
           .get(`/api/v2/apps/${hydratedApp.id}/versions/${draftVersionId}`)
           .query({ mode: 'edit' })
           .set('Cookie', tokenCookie)
@@ -1058,7 +1110,8 @@ describe('GitSyncController', () => {
         //     published, but the app-level name+slug come from the latest
         //     main-branch draft — both versions on the same branch share
         //     metadata.
-        const savedDetail = await request(app.getHttpServer())
+        const savedDetail = await request
+          .agent(app.getHttpServer())
           .get(`/api/v2/apps/${hydratedApp.id}/versions/${publishedV1Id}`)
           .query({ mode: 'edit' })
           .set('Cookie', tokenCookie)
@@ -1101,7 +1154,8 @@ describe('GitSyncController', () => {
         //     next env in priority order. Two promotes cover dev → staging →
         //     production. Final release call marks the version as the live
         //     release.
-        const envListResp = await request(app.getHttpServer())
+        const envListResp = await request
+          .agent(app.getHttpServer())
           .get('/api/app-environments')
           .query({ app_id: hydratedApp.id })
           .set('Cookie', tokenCookie)
@@ -1112,7 +1166,8 @@ describe('GitSyncController', () => {
         expect(envs.length).toBeGreaterThanOrEqual(3);
         const [devEnv, stagingEnv, prodEnv] = envs;
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/v2/apps/${hydratedApp.id}/versions/${publishedV1Id}/promote`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1120,7 +1175,8 @@ describe('GitSyncController', () => {
           .send({ currentEnvironmentId: devEnv.id })
           .expect(200);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/v2/apps/${hydratedApp.id}/versions/${publishedV1Id}/promote`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1128,7 +1184,8 @@ describe('GitSyncController', () => {
           .send({ currentEnvironmentId: stagingEnv.id })
           .expect(200);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}/release`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1137,7 +1194,8 @@ describe('GitSyncController', () => {
           .expect(200);
 
         step(35, 'released-app access + slug lookup + default env (production)');
-        const validateAccess = await request(app.getHttpServer())
+        const validateAccess = await request
+          .agent(app.getHttpServer())
           .get('/api/apps/validate-released-app-access/testing-app-2-slug')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1148,14 +1206,16 @@ describe('GitSyncController', () => {
           slug: 'testing-app-2-slug',
         });
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .get('/api/apps/slugs/testing-app-2-slug')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
           .set('x-branch-id', mainBranchId)
           .expect(200);
 
-        const defaultEnvResp = await request(app.getHttpServer())
+        const defaultEnvResp = await request
+          .agent(app.getHttpServer())
           .get('/api/app-environments/default')
           .query({ slug: 'testing-app-2-slug' })
           .set('Cookie', tokenCookie)
@@ -1185,7 +1245,8 @@ describe('GitSyncController', () => {
         step(36, 'feat-e2e-3: duplicate app name (testing-app-2) → 400');
         // 36. Create another feature branch. Posting an app with a name that
         //     already exists in the workspace must be rejected.
-        const createBranch3Resp = await request(app.getHttpServer())
+        const createBranch3Resp = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1194,7 +1255,8 @@ describe('GitSyncController', () => {
           .expect(201);
         const feat3BranchId: string = createBranch3Resp.body.id;
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1210,7 +1272,8 @@ describe('GitSyncController', () => {
         step(37, 'feat-e2e-3: unique name OK; duplicate slug 4xx; unique slug OK');
         // 37. Same branch, fresh name → create succeeds. PUTting the existing
         //     slug must fail; a unique slug must succeed.
-        const createApp3Resp = await request(app.getHttpServer())
+        const createApp3Resp = await request
+          .agent(app.getHttpServer())
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1224,7 +1287,8 @@ describe('GitSyncController', () => {
           .expect(201);
         const app3Id: string = createApp3Resp.body.id;
 
-        const app3Detail = await request(app.getHttpServer())
+        const app3Detail = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${app3Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1233,7 +1297,8 @@ describe('GitSyncController', () => {
         const app3EditingVersion = app3Detail.body?.editing_version || app3Detail.body?.editingVersion;
         const app3VersionId: string = app3EditingVersion.id;
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${app3Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1241,7 +1306,8 @@ describe('GitSyncController', () => {
           .send({ app: { slug: 'testing-app-2-slug', branch_id: feat3BranchId } })
           .expect(400);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .put(`/api/apps/${app3Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1253,7 +1319,8 @@ describe('GitSyncController', () => {
         // 38. Push the third feature branch, merge into main, pull, and
         //     confirm both testing-app-2 and testing-app-3 surface with
         //     their slugs after a builder-pull + ensure-draft.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post(`/api/app-git/gitpush/${app3Id}/${app3VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1281,7 +1348,8 @@ describe('GitSyncController', () => {
         const merge3Body = await merge3Resp.json().catch(() => ({}));
         expect(merge3Body.ok).toBe(true);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1289,7 +1357,8 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
-        const appsAfterFeat3Merge = await request(app.getHttpServer())
+        const appsAfterFeat3Merge = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -1305,7 +1374,8 @@ describe('GitSyncController', () => {
 
         // Hydrate the new app3 stub via ensure-draft so its slug is materialised
         // (stubs carry the app id as slug until a real draft is created).
-        const ensureApp3Draft = await request(app.getHttpServer())
+        const ensureApp3Draft = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/ensure-draft')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1314,7 +1384,8 @@ describe('GitSyncController', () => {
           .expect(201);
         const app3DraftVersionId: string = ensureApp3Draft.body.draftVersionId;
 
-        const app3DraftDetail = await request(app.getHttpServer())
+        const app3DraftDetail = await request
+          .agent(app.getHttpServer())
           .get(`/api/v2/apps/${app3OnMain.id}/versions/${app3DraftVersionId}`)
           .query({ mode: 'edit' })
           .set('Cookie', tokenCookie)
@@ -1326,7 +1397,8 @@ describe('GitSyncController', () => {
 
         step(39, 'create feat-e2e-4 branch off main; create testing-app-4 & testing-app-5');
         // 39. Fresh feature branch + two apps to exercise folder membership.
-        const createBranch4Resp = await request(app.getHttpServer())
+        const createBranch4Resp = await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1336,7 +1408,8 @@ describe('GitSyncController', () => {
         const feat4BranchId: string = createBranch4Resp.body.id;
         expect(feat4BranchId).toBeDefined();
 
-        const createApp4Resp = await request(app.getHttpServer())
+        const createApp4Resp = await request
+          .agent(app.getHttpServer())
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1346,7 +1419,8 @@ describe('GitSyncController', () => {
         const app4Id: string = createApp4Resp.body.id;
         expect(app4Id).toBeDefined();
 
-        const createApp5Resp = await request(app.getHttpServer())
+        const createApp5Resp = await request
+          .agent(app.getHttpServer())
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1358,7 +1432,8 @@ describe('GitSyncController', () => {
 
         step(40, 'create folder test-folder-1');
         // 40. Folders are org-scoped (not branch-scoped) — no x-branch-id needed.
-        const createFolderResp = await request(app.getHttpServer())
+        const createFolderResp = await request
+          .agent(app.getHttpServer())
           .post('/api/folders')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1374,7 +1449,8 @@ describe('GitSyncController', () => {
 
         step(41, 'list folders on feat-e2e-4 → test-folder-1 present with 0 apps');
         // 41. The folder is visible on the branch but has no folder_apps rows yet.
-        const foldersInitial = await request(app.getHttpServer())
+        const foldersInitial = await request
+          .agent(app.getHttpServer())
           .get('/api/folder-apps')
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
@@ -1388,7 +1464,8 @@ describe('GitSyncController', () => {
 
         step(42, 'add testing-app-4 to test-folder-1');
         // 42. Single-app add → folder_apps row scoped to feat-e2e-4.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/folder-apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1397,7 +1474,8 @@ describe('GitSyncController', () => {
           .expect(201);
 
         step(43, 'list folders → test-folder-1 count = 1 (branch-scoped folder_app)');
-        const foldersAfterAdd = await request(app.getHttpServer())
+        const foldersAfterAdd = await request
+          .agent(app.getHttpServer())
           .get('/api/folder-apps')
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
@@ -1415,7 +1493,8 @@ describe('GitSyncController', () => {
 
         step(44, 'bulk add testing-app-4 & testing-app-5 to test-folder-1 (single request)');
         // 44. Bulk add — app4 already present (idempotent), app5 newly added.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/folder-apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1424,7 +1503,8 @@ describe('GitSyncController', () => {
           .expect(201);
 
         step(45, 'list folders → test-folder-1 count = 2');
-        const foldersAfterBulk = await request(app.getHttpServer())
+        const foldersAfterBulk = await request
+          .agent(app.getHttpServer())
           .get('/api/folder-apps')
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
@@ -1444,7 +1524,8 @@ describe('GitSyncController', () => {
         //     on main (as NEW App rows sharing co_relation_id, scoped to main's branch_id).
 
         // Resolve each app's editing version id on feat-e2e-4 for the gitpush.
-        const app4Detail = await request(app.getHttpServer())
+        const app4Detail = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${app4Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1452,7 +1533,8 @@ describe('GitSyncController', () => {
           .expect(200);
         const app4VersionId: string = (app4Detail.body?.editing_version || app4Detail.body?.editingVersion).id;
 
-        const app5Detail = await request(app.getHttpServer())
+        const app5Detail = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${app5Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1461,7 +1543,8 @@ describe('GitSyncController', () => {
         const app5VersionId: string = (app5Detail.body?.editing_version || app5Detail.body?.editingVersion).id;
 
         // Commit both foldered apps to feat-e2e-4.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post(`/api/app-git/gitpush/${app4Id}/${app4VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1475,7 +1558,8 @@ describe('GitSyncController', () => {
           })
           .expect(201);
 
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post(`/api/app-git/gitpush/${app5Id}/${app5VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1505,7 +1589,8 @@ describe('GitSyncController', () => {
         expect(merge4Body.ok).toBe(true);
 
         // Pull main → recreates the two apps (as stubs) and their folder mapping.
-        await request(app.getHttpServer())
+        await request
+          .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1514,7 +1599,8 @@ describe('GitSyncController', () => {
           .expect(201);
 
         // Resolve the main-branch app ids by name (new App rows, different ids).
-        const appsOnMainAfterFeat4 = await request(app.getHttpServer())
+        const appsOnMainAfterFeat4 = await request
+          .agent(app.getHttpServer())
           .get('/api/apps')
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
@@ -1527,7 +1613,8 @@ describe('GitSyncController', () => {
         expect(mainApp5).toBeDefined();
 
         // Folder mapping on main must now contain both apps, scoped to main's branch_id.
-        const foldersOnMain = await request(app.getHttpServer())
+        const foldersOnMain = await request
+          .agent(app.getHttpServer())
           .get('/api/folder-apps')
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
@@ -1553,7 +1640,8 @@ describe('GitSyncController', () => {
         const dataSource = app.get<DataSource>(getDataSourceToken('default'));
 
         // Hydrate testing-app-4 on main so it has a non-stub draft to re-hydrate.
-        const app4HydrateResp = await request(app.getHttpServer())
+        const app4HydrateResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${mainApp4.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1586,7 +1674,8 @@ describe('GitSyncController', () => {
 
         // GET the app — hydration is attempted and fails, but the existing non-stub
         // draft keeps the response a 200 carrying the failure diagnostics.
-        const failResp = await request(app.getHttpServer())
+        const failResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${mainApp4.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1614,7 +1703,8 @@ describe('GitSyncController', () => {
         );
 
         // Sanity: with state restored, the next open skips hydration cleanly.
-        const healthyResp = await request(app.getHttpServer())
+        const healthyResp = await request
+          .agent(app.getHttpServer())
           .get(`/api/apps/${mainApp4.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
@@ -1622,7 +1712,237 @@ describe('GitSyncController', () => {
           .expect(200);
         expect(healthyResp.body.is_hydration_tried).toBe(false);
         expect(healthyResp.body.not_hydrated_reason).toBe('already-up-to-date');
-      }, 180000);
+
+        step(48, 'per-app pull via ensure-draft preserves folder mapping (sibling check to step 46)');
+        // 48. Step 46 verified folder propagation through a workspace pull. Here we
+        //     exercise the per-app pull endpoint (POST /api/workspace-branches/ensure-draft):
+        //     push two more foldered apps from a new feature branch, merge, do the
+        //     workspace pull (which seeds stubs + folder_apps on main), then call
+        //     ensure-draft once per app. After each per-app pull the app is hydrated
+        //     (is_stub flips to false) and the folder mapping stays intact.
+
+        // Fresh feature branch off main.
+        const createBranch5Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-5', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat5BranchId: string = createBranch5Resp.body.id;
+        expect(feat5BranchId).toBeDefined();
+
+        // Two more apps on feat-e2e-5.
+        const createApp6Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .send({ icon: 'home', name: 'testing-app-6', type: 'front-end', branchId: feat5BranchId })
+          .expect(201);
+        const app6Id: string = createApp6Resp.body.id;
+
+        const createApp7Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .send({ icon: 'home', name: 'testing-app-7', type: 'front-end', branchId: feat5BranchId })
+          .expect(201);
+        const app7Id: string = createApp7Resp.body.id;
+
+        // Bulk-add both to test-folder-1 on feat-e2e-5.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/folder-apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .send({ app_ids: [app6Id, app7Id], folder_id: folderId })
+          .expect(201);
+
+        // Resolve editing version ids on feat-e2e-5 for the gitpush.
+        const app6Detail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${app6Id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .expect(200);
+        const app6VersionId: string = (app6Detail.body?.editing_version || app6Detail.body?.editingVersion).id;
+
+        const app7Detail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${app7Id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .expect(200);
+        const app7VersionId: string = (app7Detail.body?.editing_version || app7Detail.body?.editingVersion).id;
+
+        // Push both foldered apps.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${app6Id}/${app6VersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .send({
+            gitAppName: 'testing-app-6',
+            versionId: app6VersionId,
+            lastCommitMessage: 'added testing-app-6 in test-folder-1',
+            gitVersionName: 'feat-e2e-5',
+            sourceBranch: 'feat-e2e-5',
+          })
+          .expect(201);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${app7Id}/${app7VersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat5BranchId)
+          .send({
+            gitAppName: 'testing-app-7',
+            versionId: app7VersionId,
+            lastCommitMessage: 'added testing-app-7 in test-folder-1',
+            gitVersionName: 'feat-e2e-5',
+            sourceBranch: 'feat-e2e-5',
+          })
+          .expect(201);
+
+        // Merge feat-e2e-5 → main on Gitea.
+        const merge5Resp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-5',
+            target: 'main',
+            message: 'Land feat-e2e-5',
+          }),
+        });
+        const merge5Body = await merge5Resp.json().catch(() => ({}));
+        expect(merge5Body.ok).toBe(true);
+
+        // Workspace pull main — required prerequisite: ensure-draft expects the App
+        // row to already exist on main. Pull seeds stubs and propagates folder mapping.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Resolve the new main-branch App ids by name; both should still be stubs.
+        const appsOnMainBeforeEnsure = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const mainApp6 = appsOnMainBeforeEnsure.body.apps.find((a: any) => a.name === 'testing-app-6');
+        const mainApp7 = appsOnMainBeforeEnsure.body.apps.find((a: any) => a.name === 'testing-app-7');
+        expect(mainApp6).toBeDefined();
+        expect(mainApp7).toBeDefined();
+        expect(mainApp6.is_stub).toBe(true);
+        expect(mainApp7.is_stub).toBe(true);
+
+        // Folder count on main should now be 4: existing app4/app5 + new app6/app7 stubs.
+        const expectedAllFolderAppIds = [mainApp4.id, mainApp5.id, mainApp6.id, mainApp7.id].sort();
+        const foldersAfterPull = await request
+          .agent(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const folderAfterPull = foldersAfterPull.body.folders.find((f: any) => f.id === folderId);
+        expect(folderAfterPull.count).toBe(4);
+        expect(folderAfterPull.folder_apps).toHaveLength(4);
+        expect(folderAfterPull.folder_apps.map((fa: any) => fa.app_id).sort()).toEqual(expectedAllFolderAppIds);
+        folderAfterPull.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
+
+        // Per-app pull #1: ensure-draft for testing-app-6.
+        const ensureApp6Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/ensure-draft')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ appId: mainApp6.id, branchId: mainBranchId })
+          .expect(201);
+        expect(ensureApp6Resp.body.draftVersionId).toBeDefined();
+
+        // app6 hydrated, folder mapping intact.
+        const appsAfterEnsure6 = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const hydratedApp6 = appsAfterEnsure6.body.apps.find((a: any) => a.id === mainApp6.id);
+        expect(hydratedApp6.is_stub).toBe(false);
+
+        const foldersAfterEnsure6 = await request
+          .agent(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const folderAfterEnsure6 = foldersAfterEnsure6.body.folders.find((f: any) => f.id === folderId);
+        expect(folderAfterEnsure6.count).toBe(4);
+        expect(folderAfterEnsure6.folder_apps.map((fa: any) => fa.app_id).sort()).toEqual(expectedAllFolderAppIds);
+        folderAfterEnsure6.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
+
+        // Per-app pull #2: ensure-draft for testing-app-7.
+        const ensureApp7Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/ensure-draft')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ appId: mainApp7.id, branchId: mainBranchId })
+          .expect(201);
+        expect(ensureApp7Resp.body.draftVersionId).toBeDefined();
+
+        const appsAfterEnsure7 = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const hydratedApp7 = appsAfterEnsure7.body.apps.find((a: any) => a.id === mainApp7.id);
+        expect(hydratedApp7.is_stub).toBe(false);
+
+        const foldersAfterEnsure7 = await request
+          .agent(app.getHttpServer())
+          .get('/api/folder-apps')
+          .query({ searchKey: '', type: 'front-end' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const folderAfterEnsure7 = foldersAfterEnsure7.body.folders.find((f: any) => f.id === folderId);
+        expect(folderAfterEnsure7.count).toBe(4);
+        expect(folderAfterEnsure7.folder_apps.map((fa: any) => fa.app_id).sort()).toEqual(expectedAllFolderAppIds);
+        folderAfterEnsure7.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
+      }, 240000);
     });
   });
 });
