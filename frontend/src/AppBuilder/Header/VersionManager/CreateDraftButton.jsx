@@ -22,6 +22,7 @@ const CreateDraftButton = ({
           variant="outline"
           size="default"
           leadingIcon="plus"
+          fill="var(--icon-brand)"
           disabled={disabled}
           onClick={onClick}
           className="tw-w-full"
