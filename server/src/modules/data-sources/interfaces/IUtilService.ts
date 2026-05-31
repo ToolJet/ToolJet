@@ -13,12 +13,16 @@ export interface IDataSourcesUtilService {
    * Used in: 1639734070615-BackfillDataSourcesAndQueriesForAppVersions.ts
    */
   parseOptionsForCreate(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
+  parseOptionsForCreateLegacy(options: Array<object>, resetSecureData?: boolean, manager?: EntityManager): Promise<any>;
 
   parseOptionsForUpdate(
     dataSource: DataSource,
     options: Array<object>,
     manager: EntityManager,
-    userId: string
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string,
+    dataSourceOptionId?: string
   ): Promise<any>;
 
   testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object>;
@@ -39,8 +43,12 @@ export interface IDataSourcesUtilService {
 
   parseOptionsForOauthDataSource(
     options: Array<object>,
+    manager: EntityManager,
     resetSecureData?: boolean,
-    userId?: string
+    userId?: string,
+    organizationId?: string,
+    environmentId?: string,
+    dataSourceOptionId?: string
   ): Promise<Array<object>>;
 
   resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;

@@ -106,7 +106,7 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
 
       await Promise.all(
         allEnvs?.map(async (env) => {
-          const parsedOptions = await dataSourceService.parseOptionsForCreate(options);
+          const parsedOptions = await dataSourceService.parseOptionsForCreateLegacy(options);
           const insertQuery = `INSERT INTO "data_source_options" ( environment_id , data_source_id, options ) VALUES ( $1 , $2 , $3)`;
           const values = [env.id, dataSource.id, parsedOptions];
           await entityManager.query(insertQuery, values);

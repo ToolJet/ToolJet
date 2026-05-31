@@ -148,7 +148,7 @@ export class SampleDataSourceService {
 
       await Promise.all(
         allEnvs?.map(async (env) => {
-          const parsedOptions = await this.dataSourceUtilService.parseOptionsForCreate(options);
+          const parsedOptions = await this.dataSourceUtilService.parseOptionsForCreate(options, false, manager);
           await manager.save(
             manager.create(DataSourceVersionOptions, {
               dataSourceVersionId: savedDsv.id,

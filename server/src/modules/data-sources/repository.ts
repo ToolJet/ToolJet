@@ -191,7 +191,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       const dataSourceList = [...result, ...sampleDataSource];
 
-      //remove tokenData from restapi datasources
+      // Token data is now stored in datasource_user_token_data, not in options
       const dataSources = dataSourceList?.map((ds) => {
         if (useBranchPath || branchId) {
           // Find the matching raw row to get dsv/dsvo columns
