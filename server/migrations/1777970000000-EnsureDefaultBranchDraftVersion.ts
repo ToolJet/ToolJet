@@ -32,6 +32,13 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class EnsureDefaultBranchDraftVersion1777970000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Step 1 loops over every app in a git-enabled workspace doing per-app lookups
+    // and an INSERT; on an instance with many apps the whole block can run past the
+    // connection's statement_timeout (57014). Disable it for this transaction;
+    // SET LOCAL reverts on commit/rollback. (Per-app probes are scoped by app_id, an
+    // indexed FK, so no temp index is needed — only the timeout guard.)
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // Step 1: Minimal DRAFT row per app missing one on the default branch.
     //
     // Inherits only what's strictly needed:

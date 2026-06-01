@@ -28,6 +28,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class AddDefaultBranchDraftUniquePerApp1779200000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // The set-based dedupe UPDATE and the two partial-index builds below each scan
+    // the whole app_versions table — slow enough to trip statement_timeout (57014)
+    // on a large instance. Disable it for this transaction; SET LOCAL reverts on
+    // commit/rollback.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // Step 1: Convert legacy duplicate DRAFTs to PUBLISHED snapshots.
     //
     // For each (app_id, branch_id) partition with multiple DRAFT VERSION-type
