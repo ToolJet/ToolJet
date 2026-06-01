@@ -6,29 +6,33 @@ RUN mkdir -p /app
 
 WORKDIR /app
 
-# Scripts for building
-COPY ./package.json ./package.json
+# Accept a custom repo URL so fork PRs can supply their own clone source.
+# Defaults to the canonical ToolJet CE repo (public — no token required).
+ARG REPO_URL=https://github.com/ToolJet/ToolJet.git
+ARG BRANCH_NAME
+
+RUN git config --global http.version HTTP/1.1 && \
+    git config --global http.postBuffer 524288000
+
+RUN git clone ${REPO_URL} . && \
+    if [ -n "${BRANCH_NAME}" ]; then \
+      git checkout ${BRANCH_NAME} 2>/dev/null || echo "Branch ${BRANCH_NAME} not found, using default branch"; \
+    fi
 
 # Build plugins
-COPY ./plugins/package.json ./plugins/package-lock.json ./plugins/
 RUN npm --prefix plugins install
-COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
 # Build frontend
-COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
-COPY ./frontend/ ./frontend/
 RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
 
 # Build server
-COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
-COPY ./server/ ./server/
 RUN npm install -g @nestjs/cli
 RUN npm install -g copyfiles
 RUN npm --prefix server run build

@@ -45,22 +45,16 @@ jobs:
             echo "✅ User '${{ github.actor }}' is authorized to deploy to production."
           fi
 
-      - name: Sync repo
-        uses: actions/checkout@v3
-
-      - name: Check if PR is from the same repo
+      - name: Block fork PRs
         if: github.event_name == 'pull_request_target'
-        id: check_repo
-        run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
-
-      - name: Fetch the remote branch if it's a forked PR
-        if: github.event_name == 'pull_request_target' && steps.check_repo.outputs.is_fork == 'true'
         run: |
-          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
-          git checkout ${{ env.BRANCH_NAME }}
+          if [[ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.event.pull_request.base.repo.full_name }}" ]]; then
+            echo "Fork PRs cannot trigger production marketplace plugin deploys."
+            exit 1
+          fi
 
       - name: Checkout PR branch
-        if: github.event_name == 'pull_request_target' && steps.check_repo.outputs.is_fork == 'false'
+        if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
@@ -100,10 +94,13 @@ jobs:
           done
 
       - name: Build marketplace plugins and capture summary
+        env:
+          PLUGIN_NAME: ${{ github.event.inputs.plugin_name }}
+          S3_BUCKET_PRODUCTION: ${{ secrets.S3_BUCKET_PRODUCTION }}
         run: |
           cd marketplace
           echo "🚀 Uploading to S3 Production"
-          AWS_BUCKET=${{ secrets.S3_BUCKET_PRODUCTION }} bash scripts/upload-to-s3.sh ${{ github.event.inputs.plugin_name }} | tee upload_summary.log
+          AWS_BUCKET="$S3_BUCKET_PRODUCTION" bash scripts/upload-to-s3.sh "$PLUGIN_NAME" | tee upload_summary.log
 
       - name: Extract upload summary
         id: upload_summary

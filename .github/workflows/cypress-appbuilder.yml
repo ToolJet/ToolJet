@@ -1,7 +1,7 @@
 name: Cypress App-Builder
 
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled]
   workflow_dispatch:
 
@@ -35,21 +35,19 @@ jobs:
         with:
           node-version: 22.15.1
 
-      - name: Set up Git authentication for private submodules
-        run: |
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
       - name: Checkout with Submodules
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 
       - name: Checking out the correct branch for submodules EE
         if: matrix.edition == 'ee'
+        env:
+          TARGET_BRANCH: ${{ env.BRANCH_NAME }}
         run: |
           git submodule update --init --recursive
-          git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
+          git submodule foreach --recursive "git checkout \"$TARGET_BRANCH\" 2>/dev/null || git checkout main"
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
