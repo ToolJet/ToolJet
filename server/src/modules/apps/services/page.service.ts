@@ -23,13 +23,15 @@ import {
   DeletePageOptions,
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class PageService implements IPageService {
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
-    protected eventHandlerService: EventsService
+    protected eventHandlerService: EventsService,
+    protected readonly transactionLogger: TransactionLogger
   ) { }
 
   /**
@@ -294,7 +296,7 @@ export class PageService implements IPageService {
       // ID remap and the new page is born corrupt.
       const { repairedIds } = repairParentCycles(pageComponents);
       if (repairedIds.length > 0) {
-        console.warn(
+        this.transactionLogger.warn(
           `[page-clone] Repaired ${repairedIds.length} parent-child cycle(s) on source page ${pageId}. ` +
             `Components bubbled to canvas root: ${repairedIds.join(', ')}`
         );

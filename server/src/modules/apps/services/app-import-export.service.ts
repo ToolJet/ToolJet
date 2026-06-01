@@ -17,6 +17,7 @@ import {
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
+import { TransactionLogger } from '@modules/logging/service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -259,7 +260,8 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
-    protected entityManager: EntityManager
+    protected entityManager: EntityManager,
+    protected readonly transactionLogger: TransactionLogger
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -1313,7 +1315,7 @@ export class AppImportExportService {
         // component.parent in place on the deterministically-chosen node.
         const { repairedIds } = repairParentCycles(pageComponents);
         if (repairedIds.length > 0) {
-          console.warn(
+          this.transactionLogger.warn(
             `[app-import] Repaired ${repairedIds.length} parent-child cycle(s) on page ${page.id}. ` +
               `Components bubbled to canvas root: ${repairedIds.join(', ')}`
           );
