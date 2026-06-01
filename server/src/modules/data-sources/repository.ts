@@ -191,11 +191,15 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       const dataSourceList = [...result, ...sampleDataSource];
 
+      const rawById = new Map<string, any>();
+      for (const r of rawResults) {
+        if (!rawById.has(r.data_source_id)) rawById.set(r.data_source_id, r);
+      }
+
       //remove tokenData from restapi datasources
       const dataSources = dataSourceList?.map((ds) => {
         if (useBranchPath || branchId) {
-          // Find the matching raw row to get dsv/dsvo columns
-          const rawRow = rawResults.find((r) => r.data_source_id === ds.id);
+          const rawRow = rawById.get(ds.id);
           if (rawRow) {
             // Overlay version-specific name from data_source_versions
             if (rawRow.dsv_name) {
@@ -223,7 +227,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
           }
         } else if (environmentId) {
           // Non-branch with environmentId: use version options
-          const rawRow = rawResults.find((r) => r.data_source_id === ds.id);
+          const rawRow = rawById.get(ds.id);
           const rawOptions = rawRow?.dsvo_options;
           if (rawOptions) {
             const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
