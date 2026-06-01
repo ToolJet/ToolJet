@@ -15,15 +15,12 @@ export type SourceOptions = {
   wallet_file?: string;
   wallet_file_path:string;
   wallet_password?: string; 
-  allow_dynamic_connection_parameters: boolean;
 };
 export type QueryOptions = {
   operation: string;
   query: string;
   mode: string;
   query_params: string[][];
-  host?: string;
-  database?: string;
   table: string;
   primary_key_column: string;
   primary_key_columns?: string[];

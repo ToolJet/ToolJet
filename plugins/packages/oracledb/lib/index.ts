@@ -97,13 +97,7 @@ export default class OracledbQueryService implements QueryService {
     let checkCache = true;
 
     try {
-      if (sourceOptions['allow_dynamic_connection_parameters']) {
-        const qo = queryOptions as any;
-        sourceOptions.host = qo.host || sourceOptions.host;
-        sourceOptions.database = qo.database || sourceOptions.database;
-      }
-
-      checkCache = sourceOptions['allow_dynamic_connection_parameters'] ? false : true;
+      checkCache = true;
 
       knexInstance = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
 
@@ -606,11 +600,7 @@ export default class OracledbQueryService implements QueryService {
         await (conn as any).close();
       }
     } else {
-       if (sourceOptions.allow_dynamic_connection_parameters) {
-        sourceOptions.host = (queryOptions as any).host || sourceOptions.host;
-        sourceOptions.database = (queryOptions as any).database || sourceOptions.database;
-      }
-      const checkCache = !sourceOptions.allow_dynamic_connection_parameters;
+      const checkCache = true;
       const conn = await this.getConnection(sourceOptions, {}, checkCache, dataSourceId, dataSourceUpdatedAt);
       try {
         return await this.dispatchGuiOperation(conn, queryOptions, false);
@@ -756,13 +746,33 @@ export default class OracledbQueryService implements QueryService {
     });
     return { clause: parts.join(', '), binds };
   }
+  
+  private _buildSelectClause(aggregates?: Record<string, any>, group_by?: Record<string, any>): string {
+    const parts: string[] = [];
+    if (aggregates && Object.keys(aggregates).length) {
+      for (const agg of Object.values(aggregates)) {
+
+        const fn = String((agg as any).aggFx).toLowerCase();
+        const col = (agg as any).column;
+
+        const expr =
+          fn === 'count_distinct'
+            ? `COUNT(DISTINCT ${col})`
+            : `${fn.toUpperCase()}(${col})`;
+
+        parts.push(expr);
+      }
+    }
+    const result = parts.length ? parts.join(', ') : '*';
+    return result;
+  }
 
   private async guiListRows(conn: any, q: QueryOptions, isThin: boolean): Promise<QueryResult> {
     const { table, schema, limit, offset } = q as any;
-    const { where_filters, order_filters } = q.list_rows || {};
-
+    const { where_filters, order_filters, aggregates, group_by } = q.list_rows || {};
     const tableRef = this.buildTableRef(table, schema);
-    let sql = `SELECT * FROM ${tableRef}`;
+    const selectExpr = this._buildSelectClause(aggregates, group_by);
+    let sql = `SELECT ${selectExpr} FROM ${tableRef}`;
     const binds: any[] = [];
 
     if (where_filters && Object.keys(where_filters).length) {
@@ -770,21 +780,42 @@ export default class OracledbQueryService implements QueryService {
       sql += ` ${where.clause}`;
       binds.push(...where.binds);
     }
+    if (group_by && Object.keys(group_by).length) {
+      const cols = Object.values(group_by)
+        .flat()
+        .map((c: any) => String(c));
+      sql += ` GROUP BY ${cols.join(', ')}`;
+    }
 
     if (order_filters && Object.keys(order_filters).length) {
-      const orderParts = Object.values(order_filters).map(
-        (f: any) => `${f.column} ${f.direction ?? 'ASC'}`
-      );
-      sql += ` ORDER BY ${orderParts.join(', ')}`;
+      const orderParts = Object.values(order_filters)
+        .filter((f: any) => !!(f.column && String(f.column).trim()))
+        .map((f: any) => {
+          const order = String(f.order ?? 'ASC')
+            .trim()
+            .toUpperCase();
+          const normalizedOrder =
+            order === 'DESC'
+              ? 'DESC'
+              : 'ASC';
+          return `${f.column} ${normalizedOrder}`;
+        });
+      if (orderParts.length > 0) {
+        sql += ` ORDER BY ${orderParts.join(', ')}`;
+      }
     }
 
     const parsedOffset = offset ? parseInt(String(offset)) : 0;
-    const parsedLimit  = limit  ? parseInt(String(limit))  : 0;
+    const parsedLimit = limit ? parseInt(String(limit)) : 0;
 
     if (parsedOffset > 0 || parsedLimit > 0) {
       const inner = sql;
       if (parsedOffset > 0) {
-        sql = `SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (${inner}) a WHERE ROWNUM <= ${parsedOffset + parsedLimit}) WHERE rnum > ${parsedOffset}`;
+        sql = `SELECT * FROM (
+          SELECT a.*, ROWNUM rnum
+          FROM (${inner}) a
+          WHERE ROWNUM <= ${parsedOffset + parsedLimit}
+        ) WHERE rnum > ${parsedOffset}`;
       } else {
         sql = `SELECT * FROM (${inner}) WHERE ROWNUM <= ${parsedLimit}`;
       }

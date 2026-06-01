@@ -80,12 +80,6 @@
       "type": "string",
       "title": "Client Key"
     },
-    "allow_dynamic_connection_parameters": {
-      "type": "boolean",
-      "title": "Allow dynamic connection parameters",
-      "description": "Turning this on will allow dynamically setting host name and database from application",
-      "default": false
-    },
     "client_path_type": {
       "type": "string",
       "title": "Client library location",
@@ -280,15 +274,6 @@
         "description": "Connect using SSL",
         "widget": "toggle-v2",
         "help_text": "Enable encrypted connections to Oracle server"
-      },
-      "allow_dynamic_connection_parameters": {
-        "order": 90,
-        "$ref": "#/properties/allow_dynamic_connection_parameters",
-        "key": "allow_dynamic_connection_parameters",
-        "label": "Allow dynamic connection parameters",
-        "description": "Turning this on will allow dynamically setting host name and database from application",
-        "widget": "toggle-v2",
-        "help_text": "Enable this to override the default host and database at query runtime"
       }
     },
     "thick": {

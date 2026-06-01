@@ -15,29 +15,7 @@
       "list": [
         { "name": "SQL mode", "value": "sql" },
         { "name": "GUI mode", "value": "gui" }
-      ],
-      "commonFields": {
-        "host": {
-          "label": "Host",
-          "placeholder": "Leave empty to use default",
-          "key": "host",
-          "type": "codehinter",
-          "description": "Enter Oracle host",
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
-        },
-        "database": {
-          "label": "Database / SID",
-          "placeholder": "Leave empty to use default",
-          "key": "database",
-          "type": "codehinter",
-          "description": "Enter SID or Service Name",
-          "height": "36px",
-          "className": "codehinter-plugins",
-          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
-        }
-      }
+      ]
     },
     "sql": {
       "query": {
