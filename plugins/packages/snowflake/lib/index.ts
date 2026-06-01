@@ -102,6 +102,12 @@ export default class Snowflake implements QueryService {
         ? `${datasourceId}-${dataSourceOptionsEnvironmentId}`
         : datasourceId;
 
+    if (sourceOptions.allow_dynamic_connection_parameters) {
+      if (args?.database != null && args?.database !== '') sourceOptions.database = args.database;
+      if (args?.warehouse != null && args?.warehouse !== '') sourceOptions.warehouse = args.warehouse;
+      if (args?.role != null && args?.role !== '') sourceOptions.role = args.role;
+    }
+
     if (methodName === 'listTables') {
       return await this._fetchTables(
         sourceOptions,
@@ -182,10 +188,11 @@ export default class Snowflake implements QueryService {
     Array<{ value: string; label: string }> | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     try {
+      const checkCache = !sourceOptions.allow_dynamic_connection_parameters;
       const connection: any = await this.getConnection(
         sourceOptions,
         {},
-        true,
+        checkCache,
         dataSourceId,
         dataSourceUpdatedAt,
         context
@@ -233,10 +240,11 @@ export default class Snowflake implements QueryService {
     dataSourceUpdatedAt?: string
   ): Promise<Array<{ value: string; label: string }>> {
     try {
+      const checkCache = !sourceOptions.allow_dynamic_connection_parameters;
       const connection: any = await this.getConnection(
         sourceOptions,
         {},
-        true,
+        checkCache,
         dataSourceId,
         dataSourceUpdatedAt,
         context
