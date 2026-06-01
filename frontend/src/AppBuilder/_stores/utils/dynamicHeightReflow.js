@@ -756,7 +756,21 @@ export const resolveWidgetMeasuredHeight = ({
     return existingHeight ?? fallbackHeight();
   }
 
-  return element?.offsetHeight ?? existingHeight ?? fallbackHeight();
+  // Same anti-poisoning guard for the show transition: when a widget with
+  // an inner `height:100%` child (e.g., NewTable) flips from hidden to
+  // visible, the outer wrapper is briefly set to `height:auto` by
+  // useDynamicHeight before this measurement runs. With inner `100%`
+  // resolving against an auto parent, the layout pass returns ~0px for one
+  // frame. Trusting that 0 would propagate as delta = 0 − priorHeight, e.g.,
+  // -350, collapsing every downstream sibling above its canonical top.
+  // Treat 0 as "not yet measurable" and prefer the last known / canonical
+  // height instead — no visible widget legitimately renders at 0.
+  const measuredHeight = element?.offsetHeight;
+  if (measuredHeight === 0) {
+    return existingHeight ?? fallbackHeight();
+  }
+
+  return measuredHeight ?? existingHeight ?? fallbackHeight();
 };
 
 // Blocker enumeration — returns every widget canonically above `targetId`

@@ -69,7 +69,7 @@ export function useTable({
   const table = useReactTable({
     data: newData,
     columns,
-    enableSorting,
+    enableSorting: true,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

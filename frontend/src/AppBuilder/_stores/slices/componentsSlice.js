@@ -2721,7 +2721,8 @@ export const createComponentsSlice = (set, get) => ({
     if (![...INPUT_COMPONENTS_FOR_FORM].includes(componentType)) {
       return layoutData?.height;
     }
-    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+    const { alignment = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+    const width = stylesDefinition?.width ?? stylesDefinition?.labelWidth ?? { value: null };
     let resolvedLabel = label?.value?.length ?? 0;
     const resolvedWidth = resolveDynamicValues(width?.value + '', getAllExposedValues(moduleId)) ?? 0;
     const resolvedAuto = resolveDynamicValues(auto?.value + '', getAllExposedValues(moduleId)) ?? false;
