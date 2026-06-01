@@ -88,6 +88,7 @@ class HomePageComponent extends React.Component {
       isExportingApp: false,
       isImportingApp: false,
       isDeletingAppFromFolder: false,
+      deletingAppIds: new Set(),
       currentFolder: {},
       currentPage: 1,
       appSearchKey: '',
@@ -906,18 +907,31 @@ class HomePageComponent extends React.Component {
 
   cancelDeleteAppDialog = () => {
     this.setState({
-      isDeletingApp: false,
       appToBeDeleted: null,
       showAppDeletionConfirmation: false,
     });
   };
 
   executeAppDeletion = () => {
-    this.setState({ isDeletingApp: true });
+    const appId = this.state.appToBeDeleted.id;
+
+    this.setState((prevState) => {
+      const deletingAppIds = new Set(prevState.deletingAppIds);
+      deletingAppIds.add(appId);
+      return { isDeletingApp: true, deletingAppIds };
+    });
+
+    const finish = () => {
+      this.setState((prevState) => {
+        const deletingAppIds = new Set(prevState.deletingAppIds);
+        deletingAppIds.delete(appId);
+        return { deletingAppIds, isDeletingApp: false, appToBeDeleted: null, showAppDeletionConfirmation: false };
+      });
+    };
+
     appsService
-      .deleteApp(this.state.appToBeDeleted.id, this.props.appType)
-      .then((data) => {
-        toast.success(`${this.getAppType()} deleted successfully.`);
+      .deleteApp(appId, this.props.appType)
+      .then((_data) => {
         this.fetchApps(
           this.state.currentPage
             ? this.state.apps?.length === 1
@@ -934,28 +948,12 @@ class HomePageComponent extends React.Component {
           this.fetchAppsLimit();
         }
 
-        // Auto-commit deletion to git when on a feature branch
-        if (this.isOnFeatureBranch()) {
-          const appName = this.state.appToBeDeleted?.name || 'app';
-          const branchState = useWorkspaceBranchesStore.getState();
-          branchState.actions.pushWorkspace(`Delete ${appName}`).catch(() => {
-            // Silent fail — deletion already succeeded
-          });
-        }
+        toast.success(`${this.getAppType()} deleted successfully.`);
+        finish();
       })
       .catch((error) => {
-        const msg = error?.error || error?.message || '';
-        if (
-          this.props.appType === 'module' &&
-          (msg.includes('Cannot delete this module') || msg.includes('Cannot delete module'))
-        ) {
-          this.setState({ showDependentAppsModal: true });
-        } else {
-          toast.error(msg || 'Could not delete the app.');
-        }
-      })
-      .finally(() => {
-        this.cancelDeleteAppDialog();
+        toast.error(error?.error || error?.message || 'Could not delete the app.');
+        finish();
       });
   };
 
@@ -1965,6 +1963,9 @@ class HomePageComponent extends React.Component {
             }
             confirmButtonText={this.isOnFeatureBranch() ? 'Delete and commit' : undefined}
             confirmButtonLoading={isDeletingApp}
+            cancelButtonDisabled={isDeletingApp}
+            staticBackdrop={true}
+            hideCloseIcon={true}
             onConfirm={() => this.executeAppDeletion()}
             onCancel={() => this.cancelDeleteAppDialog()}
             darkMode={this.props.darkMode}
@@ -2648,6 +2649,7 @@ class HomePageComponent extends React.Component {
                     basicPlan={shouldExcludeEnvParam}
                     moduleEnabled={moduleEnabled}
                     appSearchKey={this.state.appSearchKey}
+                    deletingAppIds={this.state.deletingAppIds}
                     ownedFolders={this.state.folders.filter(
                       (folder) => folder.created_by === authenticationService.currentSessionValue?.current_user?.id
                     )}

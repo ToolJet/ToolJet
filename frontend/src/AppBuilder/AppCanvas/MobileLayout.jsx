@@ -24,6 +24,7 @@ export const MobileLayout = ({
   canvasMaxWidth,
   isAppDarkMode,
   mainCanvasContainer,
+  gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
 }) => {
   const mobileCanvasFrameRef = useRef(null);
@@ -33,8 +34,8 @@ export const MobileLayout = ({
       key={pageKey}
       ref={mobileCanvasFrameRef}
       data-cy="mobile-canvas-frame"
-      style={{ position: 'relative' }}
-      className={cx('!tw-w-[450px] tw-mx-auto')}
+      style={{ position: 'relative', transform: 'translateZ(0)' }}
+      className={cx('tj-canvas-area !tw-w-[450px] tw-mx-auto')}
     >
       <div
         ref={mobileNavSheetContainerRef}
@@ -79,6 +80,7 @@ export const MobileLayout = ({
           currentMode={currentMode}
         />
       </Suspense>
+      {gridContent}
     </div>
   );
 };

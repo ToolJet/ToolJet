@@ -15,10 +15,10 @@ export class WorkspaceBranchesModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { WorkspaceBranchController, WorkspaceBranchService } = await this.getProviders(
+    const { DeletionCommitListener, WorkspaceBranchController, WorkspaceBranchService } = await this.getProviders(
       configs,
       'workspace-branches',
-      ['controller', 'service']
+      ['controller', 'service', 'deletion-commit.listener']
     );
 
     const { PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService } = await this.getProviders(
@@ -45,6 +45,7 @@ export class WorkspaceBranchesModule extends SubModule {
         PlatformGitPullService,
         PlatformGitPushService,
         PullConflictDetectionService,
+        ...(isMainImport ? [DeletionCommitListener] : []),
       ],
       exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService],
     });
