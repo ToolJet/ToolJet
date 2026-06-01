@@ -11,6 +11,14 @@ export class TightenDataSourceVersionConstraints1778700000000 implements Migrati
     // unique index already existed at that point the UPDATE could abort with
     // 23505. Running demotions first means the dedupes see the real final set.
 
+    // This is a one-shot data migration over the whole data_source_versions table;
+    // the dedupe passes can run longer than the connection's statement_timeout on a
+    // large dataset. Disable it for this transaction so the migration isn't cancelled
+    // mid-way (57014). SET LOCAL is scoped to the migration's transaction and reverts
+    // automatically on commit/rollback. The temp indexes created in Phase B keep the
+    // actual runtime small; this is a safety net, not a licence to be slow.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // ── Phase A: demotions ──────────────────────────────────────────────
 
     // Misleadingly named — it was keyed on (data_source_id) and fully subsumed by
@@ -43,6 +51,27 @@ export class TightenDataSourceVersionConstraints1778700000000 implements Migrati
     `);
 
     // ── Phase B: dedupes (on the settled data) ──────────────────────────
+
+    // Temp indexes: each dedupe loop probes data_source_versions by LOWER(name)
+    // inside its inner loop. Without a matching index those probes are sequential
+    // scans, which is what blew the statement_timeout on large tables. These
+    // partial expression indexes mirror the probe predicates exactly so each probe
+    // is an index lookup. They're dropped at the end of Phase B (the real unique
+    // index is created in Phase C); a failed run rolls the whole transaction back,
+    // so they never leak.
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS tmp_idx_dsv_dedupe_nondefault
+        ON data_source_versions (
+          LOWER(name),
+          COALESCE(branch_id, '00000000-0000-0000-0000-000000000000')
+        )
+        WHERE is_active = true AND is_default = false
+    `);
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS tmp_idx_dsv_dedupe_default
+        ON data_source_versions (LOWER(name))
+        WHERE is_active = true AND is_default = true
+    `);
 
     // Collapse pre-existing (LOWER(name), COALESCE(branch_id, '00…')) duplicates
     // among active non-default DSVs. Without this, the non-default index in Phase C
@@ -140,6 +169,11 @@ export class TightenDataSourceVersionConstraints1778700000000 implements Migrati
         END LOOP;
       END $$;
     `);
+
+    // Dedupe probes are done — drop the temp indexes before Phase C builds the
+    // real (unique) ones.
+    await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_dsv_dedupe_nondefault`);
+    await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_dsv_dedupe_default`);
 
     // ── Phase C: constraints ────────────────────────────────────────────
 
