@@ -41,6 +41,22 @@ import { generateCypressDataCy } from '../../../common/helpers/cypressHelpers';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import SampleDataSourceBody from './SampleDataSourceBody';
 
+// Normalize options to comparable values (handles both { key: { value } } and { key: value } formats)
+const getOptionValues = (options) => {
+  if (!options || typeof options !== 'object') return {};
+  return Object.keys(options).reduce((acc, key) => {
+    const opt = options[key];
+    acc[key] = opt && typeof opt === 'object' && 'value' in opt ? opt.value : opt;
+    return acc;
+  }, {});
+};
+
+const haveOptionValuesChanged = (currentOptions, originalOptions) => {
+  const current = getOptionValues(currentOptions);
+  const original = getOptionValues(originalOptions);
+  return !deepEqual(current, original);
+};
+
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -952,10 +968,11 @@ class DataSourceManagerComponent extends React.Component {
       ? { padding: '56px 32px 64px 32px', borderBottom: '1px solid #E6E8EB' }
       : {};
     const sampleDBmodalFooterStyle = isSampleDb ? { paddingTop: '8px' } : {};
+    const hasOptionChanges = selectedDataSource && haveOptionValuesChanged(options, selectedDataSource?.options);
+    const hasNameChange = selectedDataSource && selectedDataSource?.name !== datasourceName;
+    const hasChanges = hasOptionChanges || hasNameChange;
     const isSaveDisabled = selectedDataSource
-      ? (deepEqual(options, selectedDataSource?.options, ['encrypted']) &&
-        selectedDataSource?.name === datasourceName) ||
-      !isEmpty(validationMessages)
+      ? (!hasChanges || !isEmpty(validationMessages))
       : true;
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     const docLink = isSampleDb
