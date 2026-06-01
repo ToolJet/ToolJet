@@ -212,7 +212,7 @@
     transition: all 0.2s ease;
     outline: none !important;
     padding: 0px !important;
-    border: none;
+    border: 1px solid var(--border-accent-weak) !important;
     box-shadow: none;
 
     &:hover:not(:disabled) {

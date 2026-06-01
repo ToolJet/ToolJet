@@ -10,7 +10,7 @@ import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
-import { IconRefresh } from '@tabler/icons-react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Button } from '@/components/ui/Button/Button';
 import { gitSyncService } from '@/_services/git_sync.service';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -428,23 +428,24 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           <div
             style={{
               display: 'flex',
-              alignItems: 'flex-end',
+              alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '12px 16px 2px',
+              padding: '12px 16px 12px',
             }}
           >
             <span className="tj-text-sm" style={{ fontWeight: 500, color: 'var(--text-default)' }}>
               Versions
             </span>
             <Button
-              variant="secondary"
+              variant="outline"
               size="small"
-              leftIcon={<IconRefresh size={12} />}
+              leadingIcon="refresh"
+              fill="var(--icon-strong)"
               onClick={handleRefreshFromGit}
               disabled={isRefreshing}
               loading={isRefreshing}
               className={cx({ 'dark-theme theme-dark': darkMode })}
-              style={{ padding: '2px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+              style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               Refresh
             </Button>

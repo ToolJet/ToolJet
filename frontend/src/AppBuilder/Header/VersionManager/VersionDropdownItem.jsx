@@ -290,22 +290,32 @@ const VersionDropdownItem = ({
               >
                 {((isDisabled && isHoveringItem) || isPulling) && (
                   <Button
-                    variant="secondary"
+                    variant="outline"
                     size="small"
                     disabled={isPulling}
-                    className={cx('version-pull-btn', { 'dark-theme theme-dark': darkMode })}
+                    className={cx(
+                      'version-pull-btn',
+                      { 'dark-theme theme-dark': darkMode },
+                      'hover:tw-bg-button-secondary'
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!isPulling) onPull?.(version, gitStatus);
                     }}
                     data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-pull-version-button`}
-                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: '12px',
+                      height: 'auto',
+                      color: 'var(--text-strong)',
+                      fontWeight: 500,
+                    }}
                   >
                     {isPulling ? (
                       'Pulling...'
                     ) : (
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <IconArrowBarToDown size={12} />
+                        <IconArrowBarToDown size={16} stroke={2} color="var(--text-default)" />
                         Pull
                       </span>
                     )}

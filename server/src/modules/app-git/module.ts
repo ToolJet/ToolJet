@@ -1,4 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
+import { GitTagInterface } from '@ee/app-git/interfaces/git-tag.interface';
 import { AppsRepository } from '@modules/apps/repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { GitSyncModule } from '@modules/git-sync/module';
@@ -64,6 +65,7 @@ export class AppGitModule extends SubModule {
         AppGitRepository,
         AppsRepository,
         AppGitService,
+        { provide: GitTagInterface, useExisting: AppGitService },
         SourceControlProviderService,
         SSHAppGitService,
         HTTPSAppGitService,
@@ -81,6 +83,7 @@ export class AppGitModule extends SubModule {
         ...(isMainImport ? [AppVersionRenameListener] : []),
       ],
       exports: [
+        GitTagInterface,
         SourceControlProviderService,
         SSHAppGitUtilityService,
         HTTPSAppGitUtilityService,
