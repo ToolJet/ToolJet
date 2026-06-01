@@ -69,7 +69,7 @@
 
   .resize-handle {
     position: absolute;
-    bottom: -4px;
+    bottom: -3px;
     left: 50%;
     /* Center horizontally */
     transform: translateX(-50%);
@@ -99,6 +99,15 @@
 .jet-form-body {
   min-height: 100px;
   background-color: inherit;
+}
+
+/* Dynamic-height mode (view-only): suppress the transient scrollbar that
+ * flashes for a frame while child widgets grow ahead of the form's reflow.
+ * `dynamic-{id}` class is only applied to .jet-form-body when
+ * isDynamicHeightEnabled is true (properties.dynamicHeight && view mode).
+ */
+.jet-form-body[class*="dynamic-"] .real-canvas {
+  overflow-y: hidden !important;
 }
 
 .jet-form-footer {

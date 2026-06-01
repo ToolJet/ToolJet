@@ -4,6 +4,7 @@ import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
 import { hasBuilderRole } from '@/_helpers/utils';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 export const AppMenu = function AppMenu({
   appId,
@@ -26,6 +27,14 @@ export const AppMenu = function AppMenu({
 
   const currentSession = authenticationService.currentSessionValue;
   const currentUserId = currentSession?.current_user?.id;
+
+  const { orgGitConfig, currentBranch, isInitialized } = useWorkspaceBranchesStore();
+  const isBranchingEnabled =
+    isInitialized && orgGitConfig && (appType === 'front-end' || appType === 'module')
+      ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
+      : false;
+  const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
+  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch);
 
   // ─── Ownership ────────────────────────────────────────────────────────────────
   const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
@@ -52,6 +61,7 @@ export const AppMenu = function AppMenu({
   const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
 
   const canAddAppToFolder =
+    !isWorkspaceBranchLocked &&
     (canModifyApp || isModuleBuilder) &&
     (currentSession?.admin ||
       currentSession?.super_admin ||
@@ -61,6 +71,7 @@ export const AppMenu = function AppMenu({
 
   // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
   const canRemoveFromFolder =
+    !isWorkspaceBranchLocked &&
     !!currentFolder?.id &&
     (canModifyApp || isModuleBuilder) &&
     (currentSession?.admin ||
