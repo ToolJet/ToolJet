@@ -105,7 +105,10 @@ jobs:
         uses: azure/setup-kubectl@v3
 
       - name: Set AKS Context
-        run: ${{ secrets.CONNECT_TO_AKS_STAGE }}
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP_STAGE }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME_STAGE }}
 
       - name: Set Image in AKS Deployment
         run: |
