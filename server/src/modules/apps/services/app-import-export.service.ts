@@ -481,8 +481,10 @@ export class AppImportExportService {
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
-        // moduleVersionId.value holds the version's module_reference_id (uuid),
-        // stable across instances. Empty string signals an unpinned ref.
+        // moduleVersionId.value holds the version's co_relation_id (portable git identity).
+        // The git-sync adapter writes co_relation_id as the version `id` in exported JSON,
+        // so pulled/imported data and locally-created refs both use co_relation_id.
+        // Empty string signals an unpinned ref.
         versionIdentifier: moduleComponent.properties?.moduleVersionId?.value,
       }));
 
@@ -520,11 +522,20 @@ export class AppImportExportService {
 
           let versionDbId: string | undefined;
           if (moduleAppId.versionIdentifier && resolvedId) {
-            // PINNED: explicit module_reference_id from the ModuleViewer.
-            const byRefId = await manager.findOne(AppVersion, {
-              where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
+            // PINNED: moduleVersionId.value stores the version's co_relation_id
+            // (portable git identity) after the git-sync adapter rewrites ids.
+            // Try co_relation_id first; fall back to module_reference_id for legacy data.
+            const byCoRelId = await manager.findOne(AppVersion, {
+              where: { co_relation_id: moduleAppId.versionIdentifier, appId: resolvedId },
             });
-            versionDbId = byRefId?.id;
+            versionDbId = byCoRelId?.id;
+
+            if (!versionDbId) {
+              const byRefId = await manager.findOne(AppVersion, {
+                where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
+              });
+              versionDbId = byRefId?.id;
+            }
           }
 
           // Fall through to branch-local resolution when:
