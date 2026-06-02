@@ -176,7 +176,6 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
       paddingTop: currentMode === 'edit' && (isCurrentVersionLocked ? '38px' : '8px'),
-      // overflowX: 'hidden',
     };
   }, [
     currentMode,
@@ -249,7 +248,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             <div
               id="app-canvas-container"
               className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
-                '!tw-w-[450px] tw-mx-auto': isMobileLayout,
+                'tw-w-full tw-mx-auto': isMobileLayout,
               })}
               style={{ minWidth: minCanvasWidth }}
             >
