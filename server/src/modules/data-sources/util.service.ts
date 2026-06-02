@@ -502,7 +502,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
         await manager.save(DataSource, updatableParams);
 
-        if (!isGitEnabled && name) {
+        if (shouldUpdateDefault && name) {
           await manager.update(DataSourceVersion, { dataSourceId, isDefault: true }, { name, updatedAt: new Date() });
         }
       });
