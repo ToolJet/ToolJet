@@ -28,37 +28,33 @@ const extractSchemaProperties = (schema) => {
     return schema.properties;
   }
 
-  // Handle allOf - merge all properties
   if (schema.allOf) {
     return schema.allOf.reduce((acc, subSchema) => {
-      const props = extractSchemaProperties(subSchema);
-      return { ...acc, ...props };
+      return { ...acc, ...extractSchemaProperties(subSchema) };
     }, {});
   }
 
   if (schema.oneOf) {
     return schema.oneOf.reduce((acc, subSchema) => {
-      const props = extractSchemaProperties(subSchema);
-      return { ...acc, ...props };
+      return { ...acc, ...extractSchemaProperties(subSchema) };
     }, {});
   }
 
-  // Handle anyOf - similar to oneOf
   if (schema.anyOf) {
     return schema.anyOf.reduce((acc, subSchema) => {
-      const props = extractSchemaProperties(subSchema);
-      return { ...acc, ...props };
+      return { ...acc, ...extractSchemaProperties(subSchema) };
     }, {});
   }
 
-  if (schema.$ref) {
-    console.warn('$ref found in schema, which may need to be resolved:', schema.$ref);
-    return {};
-  }
-
-  // Primitive body (e.g. type: string) — expose a single "body" field for raw JSON input
-  if (schema.type && schema.type !== 'object' && schema.type !== 'array') {
-    return { body: { type: schema.type, description: 'Request body (JSON)' } };
+  // Fallback: infer properties from example
+  if (schema.example && typeof schema.example === 'object') {
+    return Object.entries(schema.example).reduce((acc, [key, value]) => {
+      acc[key] = {
+        type: Array.isArray(value) ? 'array' : typeof value,
+        example: value,
+      };
+      return acc;
+    }, {});
   }
 
   return {};
@@ -105,7 +101,7 @@ const ApiEndpointInput = (props) => {
 
             // Validate if the current operation/path exists in the new spec
             if (newPath && newOperation && data?.paths?.[newPath]?.[newOperation]) {
-              newSelectedOperation = data.paths[newPath][newOperation];
+              newSelectedOperation = buildSelectedOperation(data, newPath, newOperation);
             } else {
               // Only clear if the operation/path doesn't exist in the new spec
               newOperation = null;
@@ -132,6 +128,20 @@ const ApiEndpointInput = (props) => {
 
   const getOperationKey = (operation, path) => {
     return `${operation}_${path}`;
+  };
+
+  // Merge path-level parameters (shared across all operations on a path) with
+  // operation-level parameters, so path params like {companyid} are always visible.
+  const buildSelectedOperation = (spec, path, operation) => {
+    const operationObj = spec?.paths?.[path]?.[operation];
+    if (!operationObj) return operationObj;
+    const pathLevelParams = spec.paths[path]?.parameters || [];
+    const operationLevelParams = operationObj.parameters || [];
+    const merged = [
+      ...pathLevelParams.filter((p) => !operationLevelParams.some((op) => op.name === p.name && op.in === p.in)),
+      ...operationLevelParams,
+    ];
+    return { ...operationObj, parameters: merged };
   };
 
   const changeOperation = (value) => {
@@ -173,7 +183,7 @@ const ApiEndpointInput = (props) => {
       ...options,
       path,
       operation,
-      selectedOperation: mergedOperation,
+      selectedOperation: buildSelectedOperation(specJson, path, operation),
       params: savedParams,
       ...(isMultiSpec && { specType: selectedSpecType }), // Include specType if multiSpec
     };
@@ -292,14 +302,44 @@ const ApiEndpointInput = (props) => {
     }
 
     const contentTypes = Object.keys(options.selectedOperation.requestBody.content);
-    if (contentTypes.length === 0) {
-      return {};
-    }
+    if (contentTypes.length === 0) return {};
 
     const contentType = contentTypes.includes('application/json') ? 'application/json' : contentTypes[0];
+    const contentData = options.selectedOperation.requestBody.content[contentType];
+    const schema = contentData?.schema;
 
-    const schema = options.selectedOperation.requestBody.content[contentType]?.schema;
-    return extractSchemaProperties(schema);
+    // If there's no schema at all (e.g. text/plain with only examples),
+    // expose a single "body" field and try to pull a default from examples
+    if (!schema) {
+      let exampleValue = '';
+      if (contentData?.examples) {
+        const firstExampleKey = Object.keys(contentData.examples)[0];
+        exampleValue = contentData.examples[firstExampleKey]?.value ?? '';
+      } else if (contentData?.example) {
+        exampleValue = contentData.example;
+      }
+      return {
+        body: {
+          type: 'string',
+          example: exampleValue ?? '',
+          description: 'Request body',
+        },
+      };
+    }
+
+    const properties = extractSchemaProperties(schema);
+
+    if (Object.keys(properties).length === 0 && schema) {
+      return {
+        body: {
+          type: schema.type || 'string',
+          description: 'Request body',
+          example: schema.example ?? '',
+        },
+      };
+    }
+
+    return properties;
   };
 
   useEffect(() => {
