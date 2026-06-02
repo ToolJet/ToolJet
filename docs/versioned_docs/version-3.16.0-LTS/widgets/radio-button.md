@@ -15,7 +15,7 @@ The **Radio button** component can be used to collect user input from a list of 
 
 Allows you to add options to the radio button field. You can click on **Add new option** button and add options manually or enable `Dynamic options` and enter the options using code.
 
-### Example Code for Dynamic Columns
+### Example Code for Dynamic Options
 
 1. Passing an array of objects and specifying each value:
 
@@ -119,16 +119,12 @@ Check [Action Reference](/docs/actions/run-query) docs to get detailed informati
 | Disable              | Enables or disables the component.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip              | Displays an informational tooltip when the user hovers over the component.   | String (e.g., `Select an option`).                                                                                          |
 
-<div style={{paddingTop:'24px'}}>
-
 ## Devices
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>                                                                              |
 | :--------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
 | Show on desktop                                | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile                                 | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-</div>
 
 ## Styles
 
