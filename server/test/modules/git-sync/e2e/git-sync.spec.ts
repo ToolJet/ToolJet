@@ -1942,7 +1942,904 @@ describe('GitSyncController', () => {
         expect(folderAfterEnsure7.count).toBe(4);
         expect(folderAfterEnsure7.folder_apps.map((fa: any) => fa.app_id).sort()).toEqual(expectedAllFolderAppIds);
         folderAfterEnsure7.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
-      }, 240000);
+
+        step(49, 'orphan delete on default branch: mutated app row gets removed on main pull');
+        // 49. Workspace pull on the DEFAULT branch must remove "orphaned" apps —
+        //     rows whose AppVersion lives on main but whose co_relation_id is
+        //     absent from the incoming git appMeta. Setup: create a feature
+        //     branch + app, then SQL-mutate the AppVersion to look like a
+        //     regular main-branch version. Since the repo never saw this
+        //     co_relation_id, main's pull should drop both the AppVersion and
+        //     the App row (no other branch holds it).
+        const createBranch6Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-6', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat6BranchId: string = createBranch6Resp.body.id;
+        expect(feat6BranchId).toBeDefined();
+
+        const orphanAppResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat6BranchId)
+          .send({ icon: 'home', name: 'orphan-on-main', type: 'front-end', branchId: feat6BranchId })
+          .expect(201);
+        const orphanAppId: string = orphanAppResp.body.id;
+        expect(orphanAppId).toBeDefined();
+
+        // Move the AppVersion to main as a regular version. The co_relation_id
+        // is unchanged and was never pushed, so it isn't in main's appMeta —
+        // the orphan sweep should pick it up on pull.
+        await dataSource.query(
+          `UPDATE app_versions
+             SET version_type = 'version', branch_id = $1
+           WHERE app_id = $2`,
+          [mainBranchId, orphanAppId]
+        );
+
+        // Sanity: row was moved to main, exactly one AppVersion exists.
+        const orphanBeforePull = await dataSource.query(
+          `SELECT branch_id, version_type FROM app_versions WHERE app_id = $1`,
+          [orphanAppId]
+        );
+        expect(orphanBeforePull).toHaveLength(1);
+        expect(orphanBeforePull[0].branch_id).toBe(mainBranchId);
+        expect(orphanBeforePull[0].version_type).toBe('version');
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Orphan AppVersion gone. App row gone too — main was the last (and only)
+        // branch holding it after the mutation, so the cascade in
+        // removeOrphanedResources drops the App entity as well.
+        const orphanAvAfterPull = await dataSource.query(`SELECT id FROM app_versions WHERE app_id = $1`, [
+          orphanAppId,
+        ]);
+        expect(orphanAvAfterPull).toHaveLength(0);
+
+        const orphanAppAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanAppId]);
+        expect(orphanAppAfterPull).toHaveLength(0);
+
+        step(50, 'feature-branch pull preserves local-only app (orphan sweep gated to default)');
+        // 50. The orphan sweep is gated to the default branch — pulling a
+        //     feature branch must NOT delete a locally-created, never-pushed
+        //     app. Otherwise a user's in-progress work on a feature branch
+        //     would be silently destroyed on every sync.
+        const createBranch7Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-7', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat7BranchId: string = createBranch7Resp.body.id;
+        expect(feat7BranchId).toBeDefined();
+
+        const localOnlyAppResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat7BranchId)
+          .send({ icon: 'home', name: 'local-only-app', type: 'front-end', branchId: feat7BranchId })
+          .expect(201);
+        const localOnlyAppId: string = localOnlyAppResp.body.id;
+        expect(localOnlyAppId).toBeDefined();
+
+        // Sanity: app + branch-scoped version exist before the pull.
+        const localBeforePull = await dataSource.query(
+          `SELECT branch_id, version_type FROM app_versions WHERE app_id = $1`,
+          [localOnlyAppId]
+        );
+        expect(localBeforePull).toHaveLength(1);
+        expect(localBeforePull[0].branch_id).toBe(feat7BranchId);
+        expect(localBeforePull[0].version_type).toBe('branch');
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat7BranchId)
+          .send({ branchId: feat7BranchId })
+          .expect(201);
+
+        // App + AppVersion must still be present after a feature-branch pull.
+        const localAvAfterPull = await dataSource.query(
+          `SELECT branch_id, version_type FROM app_versions WHERE app_id = $1`,
+          [localOnlyAppId]
+        );
+        expect(localAvAfterPull).toHaveLength(1);
+        expect(localAvAfterPull[0].branch_id).toBe(feat7BranchId);
+        expect(localAvAfterPull[0].version_type).toBe('branch');
+
+        const localAppAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [localOnlyAppId]);
+        expect(localAppAfterPull).toHaveLength(1);
+
+        step(51, 'orphan delete frees name slot for incoming git app with same name');
+        // 51. Exercises the delete-orphans-BEFORE-upsert ordering. Plant an orphan
+        //     "collide-app" on main (corid1). Then create a different "collide-app"
+        //     (corid2) on a separate feature branch, push it, and merge into main.
+        //     Now main's git appMeta carries corid2 with name "collide-app" while
+        //     the DB still has the corid1 orphan with the same name. Pull main:
+        //     the orphan must be deleted first so the corid2 upsert doesn't trip
+        //     the (branch_id, app_name) uniqueness check.
+        const createBranch8Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-8', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat8BranchId: string = createBranch8Resp.body.id;
+        expect(feat8BranchId).toBeDefined();
+
+        const orphanCollideResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat8BranchId)
+          .send({ icon: 'home', name: 'collide-app', type: 'front-end', branchId: feat8BranchId })
+          .expect(201);
+        const orphanCollideAppId: string = orphanCollideResp.body.id;
+        expect(orphanCollideAppId).toBeDefined();
+
+        // SQL-mutate the AppVersion onto main as a regular 'version' row so
+        // the orphan sweep sees it (matches the step 49 setup).
+        await dataSource.query(
+          `UPDATE app_versions
+             SET version_type = 'version', branch_id = $1
+           WHERE app_id = $2`,
+          [mainBranchId, orphanCollideAppId]
+        );
+
+        // Sanity: orphan now lives on main with the colliding name.
+        const orphanCollideRows = await dataSource.query(
+          `SELECT branch_id, version_type, app_name FROM app_versions WHERE app_id = $1`,
+          [orphanCollideAppId]
+        );
+        expect(orphanCollideRows).toHaveLength(1);
+        expect(orphanCollideRows[0].branch_id).toBe(mainBranchId);
+        expect(orphanCollideRows[0].version_type).toBe('version');
+        expect(orphanCollideRows[0].app_name).toBe('collide-app');
+
+        // Create same-named app on a fresh feature branch — name check is scoped
+        // per (branchId, version_type='branch'), so this is allowed.
+        const createBranch9Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-9', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat9BranchId: string = createBranch9Resp.body.id;
+        expect(feat9BranchId).toBeDefined();
+
+        const newCollideResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat9BranchId)
+          .send({ icon: 'home', name: 'collide-app', type: 'front-end', branchId: feat9BranchId })
+          .expect(201);
+        const newCollideAppId: string = newCollideResp.body.id;
+        expect(newCollideAppId).toBeDefined();
+        expect(newCollideAppId).not.toBe(orphanCollideAppId);
+
+        // Fetch the editing version so we can push it.
+        const newCollideDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${newCollideAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat9BranchId)
+          .expect(200);
+        const newCollideEditingVersion =
+          newCollideDetail.body?.editing_version ||
+          newCollideDetail.body?.editingVersion ||
+          newCollideDetail.body?.app?.editing_version;
+        expect(newCollideEditingVersion).toBeDefined();
+        const newCollideVersionId: string = newCollideEditingVersion.id;
+
+        // Push corid2 to feat-e2e-9 so its appMeta carries collide-app.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${newCollideAppId}/${newCollideVersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat9BranchId)
+          .send({
+            gitAppName: 'collide-app',
+            versionId: newCollideVersionId,
+            lastCommitMessage: 'collide-app on feat-e2e-9',
+            gitVersionName: 'feat-e2e-9',
+            sourceBranch: 'feat-e2e-9',
+          })
+          .expect(201);
+
+        // Server-side merge feat-e2e-9 → main so main's git appMeta picks up corid2.
+        const collideMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-9',
+            target: 'main',
+            message: 'Land collide-app',
+          }),
+        });
+        const collideMergeBody = await collideMergeResp.json().catch(() => ({}));
+        expect(collideMergeBody.ok).toBe(true);
+
+        // Pull main → orphan corid1 must be deleted first so the corid2 stub
+        // upsert can land without hitting the (branch_id, app_name) constraint.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Orphan App row is gone (main was its only branch after the mutation).
+        const orphanCollideAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [
+          orphanCollideAppId,
+        ]);
+        expect(orphanCollideAfterPull).toHaveLength(0);
+
+        // Exactly one "collide-app" sits on main now, and it's NOT the orphan id.
+        const collideOnMainAfterPull = await dataSource.query(
+          `SELECT app.id
+             FROM apps app
+             INNER JOIN app_versions av ON av.app_id = app.id
+            WHERE app.organization_id = $1
+              AND app.type = 'front-end'
+              AND av.branch_id = $2
+              AND av.app_name = 'collide-app'`,
+          [orgId, mainBranchId]
+        );
+        expect(collideOnMainAfterPull).toHaveLength(1);
+        expect(collideOnMainAfterPull[0].id).not.toBe(orphanCollideAppId);
+
+        step(52, 'data-source workspace push → merge → pull main: DS appears with per-env options');
+        // 52. Data-source git-sync lifecycle: create a restapi DS on a feature
+        //     branch, set distinct URLs per environment, workspace-push the
+        //     branch, merge into main on Gitea, and pull main. After the pull
+        //     the DS must be listed on main and its dev/staging/prod options
+        //     must carry the URLs we set on the feature branch.
+        const envListForDsResp = await request
+          .agent(app.getHttpServer())
+          .get('/api/app-environments')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const dsEnvs = (envListForDsResp.body.environments as any[]).sort((a: any, b: any) => a.priority - b.priority);
+        expect(dsEnvs.length).toBeGreaterThanOrEqual(3);
+        const [dsDevEnv, dsStagingEnv, dsProdEnv] = dsEnvs;
+
+        const createBranch10Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-10', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat10BranchId: string = createBranch10Resp.body.id;
+        expect(feat10BranchId).toBeDefined();
+
+        // Minimal restapi options — same shape the UI sends, trimmed for the test.
+        const restapiCreateOptions = [
+          { key: 'url', value: '' },
+          { key: 'auth_type', value: 'none' },
+          { key: 'grant_type', value: 'authorization_code' },
+          { key: 'add_token_to', value: 'header' },
+          { key: 'header_prefix', value: 'Bearer ' },
+          { key: 'access_token_url', value: '' },
+          { key: 'client_id', value: '' },
+          { key: 'client_secret', value: '', encrypted: true },
+          { key: 'scopes', value: 'read, write' },
+          { key: 'username', value: '', encrypted: false },
+          { key: 'password', value: '', encrypted: true },
+          { key: 'bearer_token', value: '', encrypted: true },
+          { key: 'auth_url', value: '' },
+          { key: 'client_auth', value: 'body' },
+          { key: 'headers', value: [['', '']] },
+          { key: 'custom_query_params', value: [['', '']], encrypted: false },
+          { key: 'custom_auth_params', value: [['', '']] },
+          { key: 'access_token_custom_headers', value: [['', '']], encrypted: false },
+          { key: 'multiple_auth_enabled', value: false, encrypted: false },
+          { key: 'ssl_certificate', value: 'none', encrypted: false },
+          { key: 'retry_network_errors', value: true, encrypted: false },
+        ];
+
+        const createDsResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat10BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat10BranchId)
+          .send({
+            name: 'restapi-e2e',
+            kind: 'restapi',
+            options: restapiCreateOptions,
+            scope: 'global',
+          })
+          .expect(201);
+        const newDsId: string = createDsResp.body.id;
+        expect(newDsId).toBeDefined();
+        expect(createDsResp.body).toMatchObject({ name: 'restapi-e2e', kind: 'restapi' });
+
+        // Sanity: the DS is listed on the feature branch.
+        const dsListOnFeatResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/data-sources/${orgId}?branch_id=${feat10BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat10BranchId)
+          .expect(200);
+        const featDsList = dsListOnFeatResp.body.data_sources || dsListOnFeatResp.body.dataSources || [];
+        expect(featDsList.find((ds: any) => ds.id === newDsId)).toBeDefined();
+
+        // Per-env updates — distinct URLs so we can later verify that pull
+        // hydrated each env's DSVO from git separately.
+        const buildUpdateOptions = (url: string) => [
+          { key: 'url', value: url },
+          { key: 'scopes', value: 'read, write' },
+          { key: 'headers', value: [['', '']] },
+          { key: 'audience', value: '' },
+          { key: 'auth_url', value: '' },
+          { key: 'username', value: '', encrypted: false },
+          { key: 'auth_type', value: 'none' },
+          { key: 'client_id', value: '' },
+          { key: 'grant_type', value: 'authorization_code' },
+          { key: 'client_auth', value: 'body' },
+          { key: 'add_token_to', value: 'header' },
+          { key: 'header_prefix', value: 'Bearer ' },
+          { key: 'ssl_certificate', value: 'none', encrypted: false },
+          { key: 'access_token_url', value: '' },
+          { key: 'custom_auth_params', value: [['', '']] },
+          { key: 'custom_query_params', value: [['', '']], encrypted: false },
+          { key: 'retry_network_errors', value: true, encrypted: false },
+          { key: 'multiple_auth_enabled', value: false, encrypted: false },
+          { key: 'access_token_custom_headers', value: [['', '']], encrypted: false },
+        ];
+
+        const devUrl = 'http://dev.url.com';
+        const stagingUrl = 'http://stage.url.com';
+        const prodUrl = 'http://prod.url.com';
+
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/data-sources/${newDsId}?environment_id=${dsDevEnv.id}&branch_id=${feat10BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat10BranchId)
+          .send({ name: 'restapi-e2e', options: buildUpdateOptions(devUrl) })
+          .expect(200);
+
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/data-sources/${newDsId}?environment_id=${dsStagingEnv.id}&branch_id=${feat10BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat10BranchId)
+          .send({ name: 'restapi-e2e', options: buildUpdateOptions(stagingUrl) })
+          .expect(200);
+
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/data-sources/${newDsId}?environment_id=${dsProdEnv.id}&branch_id=${feat10BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat10BranchId)
+          .send({ name: 'restapi-e2e', options: buildUpdateOptions(prodUrl) })
+          .expect(200);
+
+        // Workspace push the feature branch — serializes DS + DSVOs into git.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/push')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat10BranchId)
+          .send({ commitMessage: 'data-source-commit', branchId: feat10BranchId })
+          .expect(201);
+
+        // Merge feat-e2e-10 → main on Gitea.
+        const dsMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-10',
+            target: 'main',
+            message: 'Land restapi-e2e DS',
+          }),
+        });
+        const dsMergeBody = await dsMergeResp.json().catch(() => ({}));
+        expect(dsMergeBody.ok).toBe(true);
+
+        // Pull main → DS deserializer should create/refresh the DSV + DSVOs on main.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // DS appears in the main-branch listing.
+        const dsListOnMainResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/data-sources/${orgId}?branch_id=${mainBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const mainDsList = dsListOnMainResp.body.data_sources || dsListOnMainResp.body.dataSources || [];
+        const mainDs = mainDsList.find((ds: any) => ds.name === 'restapi-e2e');
+        expect(mainDs).toBeDefined();
+        expect(mainDs.kind).toBe('restapi');
+
+        // Per-env URLs must match what we set on the feature branch.
+        // PUT/POST send options as an array of {key, value}, but the GET response
+        // stores them as an object keyed by option name: `{ url: { value: ... } }`.
+        const extractUrl = (resp: any) => {
+          const opts = resp.body?.options;
+          if (!opts) return undefined;
+          if (Array.isArray(opts)) return opts.find((o: any) => o.key === 'url')?.value;
+          return opts.url?.value;
+        };
+
+        const dsOnDevResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/data-sources/${mainDs.id}/environment/${dsDevEnv.id}?branch_id=${mainBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(extractUrl(dsOnDevResp)).toBe(devUrl);
+
+        const dsOnStagingResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/data-sources/${mainDs.id}/environment/${dsStagingEnv.id}?branch_id=${mainBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(extractUrl(dsOnStagingResp)).toBe(stagingUrl);
+
+        const dsOnProdResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/data-sources/${mainDs.id}/environment/${dsProdEnv.id}?branch_id=${mainBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(extractUrl(dsOnProdResp)).toBe(prodUrl);
+
+        step(53, 'module + ModuleViewer linking: app GET surfaces module via co_relation_id');
+        // 53. Create a module on a feature branch, push it to git, then create an
+        //     app on the same branch that references the module via ModuleViewer.
+        //     The app GET response must (a) include the module in its `modules`
+        //     key and (b) carry the module's co_relation_id as
+        //     editing_version.pages[].components[].properties.moduleAppId.value.
+        const createBranch11Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-11', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat11BranchId: string = createBranch11Resp.body.id;
+        expect(feat11BranchId).toBeDefined();
+
+        // Create module — endpoint reuses the same appsService.create path as apps.
+        const createModuleResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/modules')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .send({ icon: 'folderupload', name: 'e2e-test-module', type: 'module', branchId: feat11BranchId })
+          .expect(201);
+        const moduleAppId: string = createModuleResp.body.id;
+        expect(moduleAppId).toBeDefined();
+
+        // Resolve module identifiers: versionId + pageId + the auto-created
+        // ModuleContainer (Button must be parented to it, otherwise the
+        // component subtree won't render inside the module).
+        const moduleDetailResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${moduleAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .expect(200);
+        const moduleEditingVersion =
+          moduleDetailResp.body?.editing_version ||
+          moduleDetailResp.body?.editingVersion ||
+          moduleDetailResp.body?.app?.editing_version;
+        expect(moduleEditingVersion).toBeDefined();
+        const moduleVersionId: string = moduleEditingVersion.id;
+        const modulePageId: string =
+          moduleEditingVersion.home_page_id ||
+          moduleEditingVersion.homePageId ||
+          moduleEditingVersion.pages?.[0]?.id ||
+          moduleDetailResp.body?.pages?.[0]?.id;
+        expect(moduleVersionId).toBeDefined();
+        expect(modulePageId).toBeDefined();
+
+        const modulePages = moduleEditingVersion.pages || moduleDetailResp.body?.pages || [];
+        const moduleHomePage = modulePages.find((p: any) => p.id === modulePageId) || modulePages[0];
+        // The GET response normalizes each page's components into a record
+        // keyed by componentId; type lives at component.component (see
+        // createComponentWithLayout in component.service.ts).
+        const moduleComponents: Record<string, any> = moduleHomePage?.components || {};
+        const moduleContainerId: string | undefined = Object.keys(moduleComponents).find(
+          (id) => moduleComponents[id]?.component?.component === 'ModuleContainer'
+        );
+        expect(moduleContainerId).toBeDefined();
+
+        // Add a Button inside the ModuleContainer.
+        const moduleButtonId = randomUUID();
+        const moduleButtonDiff = {
+          [moduleButtonId]: {
+            name: 'button1',
+            layouts: {
+              desktop: { top: 40, left: 15, width: 5, height: 40 },
+              mobile: { top: 40, left: 15, width: 5, height: 40 },
+            },
+            type: 'Button',
+            general: {},
+            generalStyles: {},
+            others: {
+              showOnDesktop: { value: '{{true}}' },
+              showOnMobile: { value: '{{false}}' },
+            },
+            properties: {
+              text: { value: 'Button' },
+              visibility: { value: '{{true}}' },
+              collapseWhenHidden: { value: '{{false}}' },
+              disabledState: { value: '{{false}}' },
+              loadingState: { value: '{{false}}' },
+              tooltip: { value: '' },
+            },
+            styles: {
+              textSize: { value: '{{14}}' },
+              fontWeight: { value: 'normal' },
+              textColor: { value: '#FFFFFF' },
+              borderColor: { value: 'var(--cc-primary-brand)' },
+              loaderColor: { value: 'var(--cc-surface1-surface)' },
+              contentAlignment: { value: 'center' },
+              borderRadius: { value: '{{6}}' },
+              backgroundColor: { value: 'var(--cc-primary-brand)' },
+              hoverBackgroundMode: { value: 'auto' },
+              hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
+              iconColor: { value: 'var(--cc-default-icon)' },
+              direction: { value: 'left' },
+              padding: { value: 'default' },
+              boxShadow: { value: '0px 0px 0px 0px #00000090' },
+              icon: { value: 'IconAlignBoxBottomLeft' },
+              iconVisibility: { value: false },
+              type: { value: 'primary' },
+            },
+            parent: moduleContainerId,
+          },
+        };
+        const moduleButtonResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/v2/apps/${moduleAppId}/versions/${moduleVersionId}/components`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .send({
+            is_user_switched_version: false,
+            pageId: modulePageId,
+            diff: moduleButtonDiff,
+          });
+        if (moduleButtonResp.status !== 201) {
+          throw new Error(
+            `POST module components failed: ${moduleButtonResp.status} ${JSON.stringify(moduleButtonResp.body)}`
+          );
+        }
+
+        // gitpush the module to feat-e2e-11.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${moduleAppId}/${moduleVersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .send({
+            gitAppName: 'e2e-test-module',
+            versionId: moduleVersionId,
+            lastCommitMessage: 'commit-module',
+            gitVersionName: 'feat-e2e-11',
+            sourceBranch: 'feat-e2e-11',
+          })
+          .expect(201);
+
+        // Create a host app on the same feature branch.
+        const hostAppResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .send({ icon: 'home', name: 'e2e-app-with-module', type: 'front-end', branchId: feat11BranchId })
+          .expect(201);
+        const hostAppId: string = hostAppResp.body.id;
+        expect(hostAppId).toBeDefined();
+
+        // List modules on the feature branch — capture the module's co_relation_id
+        // (this is the value the ModuleViewer's moduleAppId.value must carry).
+        const moduleListResp = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: feat11BranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .expect(200);
+        const moduleInList = (moduleListResp.body.apps || []).find((m: any) => m.id === moduleAppId);
+        expect(moduleInList).toBeDefined();
+        const moduleCoRelationId: string = moduleInList.co_relation_id || moduleInList.coRelationId;
+        expect(moduleCoRelationId).toBeDefined();
+
+        // Resolve host app's editing version + home page.
+        const hostAppDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${hostAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .expect(200);
+        const hostEditingVersion =
+          hostAppDetail.body?.editing_version ||
+          hostAppDetail.body?.editingVersion ||
+          hostAppDetail.body?.app?.editing_version;
+        expect(hostEditingVersion).toBeDefined();
+        const hostVersionId: string = hostEditingVersion.id;
+        const hostPageId: string =
+          hostEditingVersion.home_page_id ||
+          hostEditingVersion.homePageId ||
+          hostEditingVersion.pages?.[0]?.id ||
+          hostAppDetail.body?.pages?.[0]?.id;
+        expect(hostPageId).toBeDefined();
+
+        // Add ModuleViewer component on host app — moduleAppId.value = module's co_relation_id.
+        const moduleViewerId = randomUUID();
+        const moduleViewerDiff = {
+          [moduleViewerId]: {
+            name: 'moduleviewer1',
+            layouts: {
+              desktop: { top: 70, left: 5, width: 38, height: 400 },
+              mobile: { top: 70, left: 5, width: 38, height: 400 },
+            },
+            type: 'ModuleViewer',
+            general: {},
+            generalStyles: { boxShadow: { value: '0px 0px 0px 0px #00000040' } },
+            others: {
+              showOnDesktop: { value: '{{true}}' },
+              showOnMobile: { value: '{{false}}' },
+            },
+            properties: {
+              moduleAppId: { value: moduleCoRelationId },
+              moduleVersionId: { value: '' },
+              visibility: { value: true },
+            },
+            styles: {
+              backgroundColor: { value: '#fff' },
+              padding: { value: 'default' },
+            },
+            parent: null,
+          },
+        };
+        const moduleViewerResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/v2/apps/${hostAppId}/versions/${hostVersionId}/components`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .send({
+            is_user_switched_version: false,
+            pageId: hostPageId,
+            diff: moduleViewerDiff,
+          });
+        if (moduleViewerResp.status !== 201) {
+          throw new Error(
+            `POST host components failed: ${moduleViewerResp.status} ${JSON.stringify(moduleViewerResp.body)}`
+          );
+        }
+
+        // GET host app → response.modules must include the referenced module,
+        // and the ModuleViewer component must carry the module's co_relation_id.
+        const hostAfterLinkResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${hostAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .expect(200);
+
+        const linkedModules = hostAfterLinkResp.body?.modules || [];
+        const linkedModule = linkedModules.find(
+          (m: any) => (m.co_relation_id || m.coRelationId) === moduleCoRelationId
+        );
+        expect(linkedModule).toBeDefined();
+        expect(linkedModule.id).toBe(moduleAppId);
+
+        const hostEditingAfterLink =
+          hostAfterLinkResp.body?.editing_version ||
+          hostAfterLinkResp.body?.editingVersion ||
+          hostAfterLinkResp.body?.app?.editing_version;
+        const hostPagesAfterLink = hostEditingAfterLink?.pages || hostAfterLinkResp.body?.pages || [];
+        // Components is a record keyed by componentId, not an array.
+        let moduleViewerEntry: any = null;
+        for (const page of hostPagesAfterLink) {
+          const comps: Record<string, any> = page.components || {};
+          for (const id of Object.keys(comps)) {
+            if (comps[id]?.component?.component === 'ModuleViewer') {
+              moduleViewerEntry = comps[id];
+              break;
+            }
+          }
+          if (moduleViewerEntry) break;
+        }
+        expect(moduleViewerEntry).toBeDefined();
+        expect(moduleViewerEntry.component?.definition?.properties?.moduleAppId?.value).toBe(moduleCoRelationId);
+
+        step(54, 'merge feat-e2e-11 → main, pull, hydrate host app → module cascades hydrated');
+        // 54. Push the host app (so main has both the module AND the host with
+        //     ModuleViewer wired), merge feat-e2e-11 → main, pull main, then
+        //     verify the dependency-cascade hydration: opening the host app
+        //     materialises its referenced module too, so a subsequent direct
+        //     GET on the module is a no-op (`already-up-to-date`).
+
+        // gitpush the host app — main needs the ModuleViewer in git to recreate
+        // the link after the merge.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${hostAppId}/${hostVersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat11BranchId)
+          .send({
+            gitAppName: 'e2e-app-with-module',
+            versionId: hostVersionId,
+            lastCommitMessage: 'commit-host-app',
+            gitVersionName: 'feat-e2e-11',
+            sourceBranch: 'feat-e2e-11',
+          })
+          .expect(201);
+
+        // Server-side merge feat-e2e-11 → main on Gitea.
+        const moduleMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-11',
+            target: 'main',
+            message: 'Land module + host app',
+          }),
+        });
+        const moduleMergeBody = await moduleMergeResp.json().catch(() => ({}));
+        expect(moduleMergeBody.ok).toBe(true);
+
+        // Pull main → stubs for both the module and the host app land here.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // App list on main → host app is there as a stub.
+        const appsOnMainAfterModulePull = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const mainHostApp = (appsOnMainAfterModulePull.body.apps || []).find(
+          (a: any) => a.name === 'e2e-app-with-module'
+        );
+        expect(mainHostApp).toBeDefined();
+        expect(mainHostApp.is_stub).toBe(true);
+
+        // Module list on main → module is there as a stub.
+        const modulesOnMainAfterPull = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const mainModule = (modulesOnMainAfterPull.body.apps || []).find((m: any) => m.name === 'e2e-test-module');
+        expect(mainModule).toBeDefined();
+        expect(mainModule.is_stub).toBe(true);
+        const mainModuleCoRel: string = mainModule.co_relation_id || mainModule.coRelationId;
+        expect(mainModuleCoRel).toBe(moduleCoRelationId);
+
+        // Hydrate host app via GET — server materializes the pulled snapshot
+        // AND cascades hydration to the referenced module.
+        const hydrateHostResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${mainHostApp.id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(hydrateHostResp.body.is_hydration_tried).toBe(true);
+        expect(hydrateHostResp.body.hydration_status).toBe('success');
+        expect(hydrateHostResp.body.not_hydrated_reason).toBeUndefined();
+
+        // The hydrated host app exposes the module in its `modules` key.
+        const hydratedModules = hydrateHostResp.body?.modules || [];
+        const hydratedLinkedModule = hydratedModules.find(
+          (m: any) => (m.co_relation_id || m.coRelationId) === moduleCoRelationId
+        );
+        expect(hydratedLinkedModule).toBeDefined();
+        expect(hydratedLinkedModule.id).toBe(mainModule.id);
+
+        // Direct GET on the module — it was cascade-hydrated during the host
+        // app's open, so this call is a no-op: is_hydration_tried=false and
+        // not_hydrated_reason='already-up-to-date'.
+        const moduleAfterCascadeResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${mainModule.id}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(moduleAfterCascadeResp.body.is_hydration_tried).toBe(false);
+        expect(moduleAfterCascadeResp.body.not_hydrated_reason).toBe('already-up-to-date');
+
+        // Sanity: module list on main now reports the module as hydrated too.
+        const modulesAfterHydrationResp = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const hydratedMainModule = (modulesAfterHydrationResp.body.apps || []).find((m: any) => m.id === mainModule.id);
+        expect(hydratedMainModule).toBeDefined();
+        expect(hydratedMainModule.is_stub).toBe(false);
+      }, 360000);
     });
   });
 });
