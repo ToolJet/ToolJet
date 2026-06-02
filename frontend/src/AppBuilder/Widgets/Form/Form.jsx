@@ -147,6 +147,7 @@ const FormComponent = (props) => {
     borderTopRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+    overflow: 'hidden',
   };
   useDynamicHeight({
     isDynamicHeightEnabled,

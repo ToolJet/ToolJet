@@ -29,13 +29,19 @@ export const DesktopLayout = ({
   currentMode,
   isAppDarkMode,
   mainCanvasContainer,
+  gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
   pageLoader = false,
 }) => (
   <div
     key={pageKey}
-    className={cx({ 'h-100': isModuleMode })}
-    style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}
+    className={cx('tj-canvas-area', { 'h-100': isModuleMode })}
+    style={{
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      transform: 'translateZ(0)',
+    }}
   >
     <Suspense fallback={null}>
       <PageCanvasHeader showCanvasHeader={showCanvasHeader} isMobileLayout={isMobileLayout} currentMode={currentMode} />
@@ -82,5 +88,6 @@ export const DesktopLayout = ({
     <Suspense fallback={null}>
       <PageCanvasFooter showCanvasFooter={showCanvasFooter} isMobileLayout={isMobileLayout} currentMode={currentMode} />
     </Suspense>
+    {gridContent}
   </div>
 );

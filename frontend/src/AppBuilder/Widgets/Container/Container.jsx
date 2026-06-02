@@ -95,6 +95,7 @@ export const Container = ({
     maxHeight: `${headerMaxHeight}px`,
     borderTopLeftRadius: `${borderRadius}px`,
     borderTopRightRadius: `${borderRadius}px`,
+    overflow: 'hidden',
     ...headerBgColor,
   };
   const containerContentStyles = {

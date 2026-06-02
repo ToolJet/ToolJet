@@ -403,19 +403,6 @@ export const createAppSlice = (set, get) => ({
       state.appPermission.selectedUsers = users;
     }),
 
-  updateAppGenerationMetadata: (dataToUpdate, moduleId = 'canvas') => {
-    set((state) => {
-      if (isEmpty(dataToUpdate) || !state.appStore.modules[moduleId].app?.aiGenerationMetadata) return;
-
-      // Any value at the top level of aiGenerationMetadata can be updated using this, for nested keys either send complete data or need to add separate logic to handle it
-      Object.keys(dataToUpdate).forEach((key) => {
-        if (dataToUpdate[key] !== undefined) {
-          state.appStore.modules[moduleId].app.aiGenerationMetadata[key] = dataToUpdate[key];
-        }
-      });
-    });
-  },
-
   checkIfLicenseNotValid: () => {
     const { featureAccess } = get().license;
     const licenseStatus = featureAccess?.licenseStatus;
