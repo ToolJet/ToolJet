@@ -121,17 +121,25 @@ You can add a new page to organize the application navigation or to separate dif
 To link an external web page to the navigation menu, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav item with URL**.
 Enter a name and provide the URL. You can also choose whether to open the web page in a new tab or in the same tab, and optionally select an icon for the navigation item.
 
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/webpage.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/webpage-v2.png" alt="App Builder: Canvas"/>
 
 ### ToolJet App
 
 To add a ToolJet application to the navigation menu, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav item ToolJet app**.
 Enter a name and select the application from the dropdown. Only the release application from the same workspace will appear in the dropdown. You can also choose whether to open the application in a new tab or in the same tab, and optionally select an icon for the navigation item.
 
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/tooljet-app.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/tooljet-app-v2.png" alt="App Builder: Canvas"/>
+
+### Custom Navigation
+
+To add a custom navigation item to the navigation menu, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add custom nav item**. Enter a name and optionally select an icon for the navigation item. You can then configure the **On Click** event handler to trigger any available action when the item is clicked.
+
+Items of this type cannot be set as the home page or disabled.
+
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/custom-nav-v2.png" alt="App Builder: Canvas"/>
 
 ### Nav Group
 
 Related navigation items can be grouped together using a nav group. To add a new nav group, click the kebab menu (three dots) next to the **+ New Page** button, then select **Add nav group**. Enter the group name and press enter to create the group. You can then drag items into the group folder. You can also add an icon to the group for better visual identification.
 
-<img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-group.png" alt="App Builder: Canvas"/>
+<img className="screenshot-full img-s" src="/img/app-builder/multi-page/new-group-v2.png" alt="App Builder: Canvas"/>
