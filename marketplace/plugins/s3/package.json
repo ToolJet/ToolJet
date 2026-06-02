@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.282.0",
+    "@aws-sdk/client-s3": "^3.1058.0",
     "@aws-sdk/s3-request-presigner": "^3.282.0",
     "@tooljet-marketplace/common": "^1.0.0"
   },
