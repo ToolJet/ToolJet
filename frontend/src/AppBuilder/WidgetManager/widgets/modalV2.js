@@ -408,7 +408,7 @@ export const modalV2Config = {
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonHoverBackgroundMode: { value: 'auto' },
       triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
-      triggerButtonTextColor: { value: '#ffffffff' },
+      triggerButtonTextColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonTextSize: { value: '{{14}}' },
       triggerButtonFontWeight: { value: 'normal' },
       triggerButtonContentAlignment: { value: 'center' },

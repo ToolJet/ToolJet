@@ -292,7 +292,8 @@ export const buttonConfig = {
     styles: {
       textSize: { value: '{{14}}' },
       fontWeight: { value: 'normal' },
-      textColor: { value: '#FFFFFF' },
+      // textColor: { value: '#FFFFFF' },
+      textColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-primary-brand)' },
       loaderColor: { value: 'var(--cc-surface1-surface)' },
       contentAlignment: { value: 'center' },
