@@ -1,1 +1,61 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ── 1. Lint staged files ─────────────────────────────────────────────────────
 npx lint-staged
+
+# ── 2. Secret detection ───────────────────────────────────────────────────────
+# Use Gitleaks if installed (recommended: brew install gitleaks).
+# Falls back to a grep-based pattern scan when Gitleaks is not available.
+
+if command -v gitleaks &> /dev/null; then
+  echo "🔍 Running Gitleaks secret scan..."
+  gitleaks protect --staged --redact --verbose
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Gitleaks found potential secrets in your staged files."
+    echo "   Review the output above and remove any credentials before committing."
+    echo "   If this is a false positive, add an inline comment: # gitleaks:allow"
+    exit 1
+  fi
+  echo "✅ No secrets detected by Gitleaks."
+else
+  # Fallback: grep for high-confidence secret patterns in staged diff
+  echo "🔍 Running grep-based secret scan (install gitleaks for better coverage)..."
+
+  STAGED_DIFF=$(git diff --cached --unified=0 2>/dev/null)
+
+  # Patterns that almost never appear in non-secret contexts
+  SECRET_PATTERNS=(
+    'AKIA[A-Z0-9]{16}'
+    'ASIA[A-Z0-9]{16}'
+    'sk_live_[0-9a-zA-Z]{24,}'
+    'rk_live_[0-9a-zA-Z]{24,}'
+    'ghp_[0-9a-zA-Z]{36}'
+    'ghs_[0-9a-zA-Z]{36}'
+    'xoxb-[0-9]+-[0-9]+-[a-zA-Z0-9]+'
+    'xoxp-[0-9]+-[0-9]+-[0-9]+-[a-zA-Z0-9]+'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.'
+    '-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'
+  )
+
+  FOUND=0
+  for PATTERN in "${SECRET_PATTERNS[@]}"; do
+    if echo "$STAGED_DIFF" | grep -qE "^\\+.*${PATTERN}"; then
+      if [ $FOUND -eq 0 ]; then
+        echo ""
+        echo "❌ Potential secrets detected in staged changes:"
+      fi
+      echo "   Pattern matched: ${PATTERN}"
+      FOUND=1
+    fi
+  done
+
+  if [ $FOUND -ne 0 ]; then
+    echo ""
+    echo "   Review the staged diff with: git diff --cached"
+    echo "   Remove any credentials before committing."
+    exit 1
+  fi
+  echo "✅ No obvious secrets detected."
+fi

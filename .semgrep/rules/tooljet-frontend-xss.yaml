@@ -1,0 +1,121 @@
+rules:
+  # ──────────────────────────────────────────────────────────────────────────
+  # XSS: dangerouslySetInnerHTML with non-static content
+  #
+  # dangerouslySetInnerHTML bypasses React's XSS protections. It is safe only
+  # when the __html value is a compile-time constant (no variables). Any use
+  # with a variable or expression should be reviewed carefully.
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-dangerous-inner-html-variable
+    severity: ERROR
+    languages: [javascript, typescript, jsx, tsx]
+    message: >
+      XSS risk: dangerouslySetInnerHTML used with a variable/expression.
+      User-controlled content rendered this way can execute arbitrary JavaScript.
+      Use DOMPurify.sanitize() before setting, or replace with a safe rendering
+      alternative. Suppress with {/* nosemgrep */} only if the value is
+      guaranteed server-sanitized.
+    metadata:
+      category: security
+      cwe: CWE-79
+      confidence: HIGH
+    patterns:
+      - pattern: dangerouslySetInnerHTML={{__html: $EXPR}}
+      - pattern-not: dangerouslySetInnerHTML={{__html: "..."}}
+      - pattern-not: dangerouslySetInnerHTML={{__html: '...'}}
+    paths:
+      include:
+        - 'frontend/src/**/*.jsx'
+        - 'frontend/src/**/*.tsx'
+        - 'frontend/src/**/*.js'
+        - 'frontend/src/**/*.ts'
+      exclude:
+        - '**/*.test.*'
+        - '**/*.spec.*'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # XSS: eval() and equivalent patterns
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-eval-usage
+    severity: ERROR
+    languages: [javascript, typescript]
+    message: >
+      eval() executes arbitrary code and is a critical XSS/RCE vector.
+      Use a safe alternative: JSON.parse() for JSON, or a sandboxed evaluator
+      for dynamic expression evaluation.
+    metadata:
+      category: security
+      cwe: CWE-95
+      confidence: HIGH
+    pattern: eval($X)
+    paths:
+      include:
+        - 'frontend/src/**'
+        - 'server/src/**'
+        - 'plugins/packages/**'
+      exclude:
+        - '**/*.test.*'
+        - '**/*.spec.*'
+        - '**/node_modules/**'
+
+  - id: tooljet-new-function
+    severity: ERROR
+    languages: [javascript, typescript]
+    message: >
+      new Function() is equivalent to eval() — it executes arbitrary code.
+      Replace with a safe expression evaluator or static function definition.
+    metadata:
+      category: security
+      cwe: CWE-95
+      confidence: HIGH
+    pattern: new Function($...ARGS)
+    paths:
+      include:
+        - 'frontend/src/**'
+        - 'server/src/**'
+      exclude:
+        - '**/*.test.*'
+        - '**/*.spec.*'
+
+  - id: tooljet-settimeout-string
+    severity: ERROR
+    languages: [javascript, typescript]
+    message: >
+      setTimeout/setInterval with a string argument is equivalent to eval().
+      Pass a function reference instead: setTimeout(() => fn(), delay)
+    metadata:
+      category: security
+      cwe: CWE-95
+      confidence: HIGH
+    patterns:
+      - pattern: setTimeout("...", $DELAY)
+      - pattern: setInterval("...", $DELAY)
+    paths:
+      include:
+        - 'frontend/src/**'
+        - 'server/src/**'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # XSS: direct DOM manipulation with user data
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-innerhtml-assignment
+    severity: ERROR
+    languages: [javascript, typescript]
+    message: >
+      Direct innerHTML assignment with a variable is an XSS sink.
+      Use textContent for plain text, or sanitize with DOMPurify before
+      setting innerHTML.
+    metadata:
+      category: security
+      cwe: CWE-79
+      confidence: MEDIUM
+    patterns:
+      - pattern: $EL.innerHTML = $VAR
+      - pattern-not: $EL.innerHTML = "..."
+      - pattern-not: $EL.innerHTML = '...'
+    paths:
+      include:
+        - 'frontend/src/**'

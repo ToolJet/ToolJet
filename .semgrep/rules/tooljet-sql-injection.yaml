@@ -1,0 +1,111 @@
+rules:
+  # ──────────────────────────────────────────────────────────────────────────
+  # SQL Injection via TypeORM QueryBuilder template literals
+  #
+  # TypeORM's QueryBuilder accepts raw SQL strings. Interpolating variables
+  # directly into the string bypasses TypeORM's parameterization and opens
+  # a SQL injection vector.
+  #
+  # Unsafe: qb.where(`column = ${userInput}`)
+  # Safe:   qb.where('column = :val', { val: userInput })
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-querybuilder-template-literal-where
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      SQL injection risk: template literal used in QueryBuilder.where().
+      Interpolating variables into SQL strings bypasses parameterization.
+      Use the parameterized form instead:
+        .where('column = :val', { val: variable })
+    metadata:
+      category: security
+      cwe: CWE-89
+      confidence: HIGH
+    pattern: $QB.where(`$...TEMPLATE`)
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+
+  - id: tooljet-querybuilder-template-literal-andwhere
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      SQL injection risk: template literal used in QueryBuilder.andWhere().
+      Use the parameterized form: .andWhere('col = :val', { val: variable })
+    metadata:
+      category: security
+      cwe: CWE-89
+      confidence: HIGH
+    pattern: $QB.andWhere(`$...TEMPLATE`)
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+
+  - id: tooljet-querybuilder-template-literal-orwhere
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      SQL injection risk: template literal used in QueryBuilder.orWhere().
+      Use the parameterized form: .orWhere('col = :val', { val: variable })
+    metadata:
+      category: security
+      cwe: CWE-89
+      confidence: HIGH
+    pattern: $QB.orWhere(`$...TEMPLATE`)
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+
+  - id: tooljet-querybuilder-template-literal-having
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      SQL injection risk: template literal used in QueryBuilder.having().
+      Use the parameterized form: .having('col = :val', { val: variable })
+    metadata:
+      category: security
+      cwe: CWE-89
+      confidence: HIGH
+    pattern: $QB.having(`$...TEMPLATE`)
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+
+  - id: tooljet-raw-query-interpolation
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      SQL injection risk: variable interpolated into a raw query string passed
+      to DataSource.query() or EntityManager.query().
+      Use parameterized queries: manager.query('SELECT ... WHERE id = $1', [id])
+    metadata:
+      category: security
+      cwe: CWE-89
+      confidence: HIGH
+    patterns:
+      - pattern: $DS.query(`$...TEMPLATE`)
+      - pattern-not: $DS.query($STATIC_STRING, ...)
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'

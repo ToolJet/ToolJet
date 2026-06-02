@@ -1,0 +1,19 @@
+# Semgrep configuration for ToolJet security scanning.
+# Run locally: semgrep --config .semgrep/rules/ server/src frontend/src plugins/packages
+
+rules_config:
+  paths:
+    include:
+      - server/src
+      - server/ee
+      - frontend/src
+      - plugins/packages
+    exclude:
+      - node_modules
+      - '**/*.test.ts'
+      - '**/*.spec.ts'
+      - '**/__mocks__/**'
+      - '**/migrations/**'
+      - '**/seeds/**'
+      - frontend/build
+      - server/dist

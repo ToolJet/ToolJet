@@ -7,8 +7,11 @@
     "npm": "10.9.2"
   },
   "lint-staged": {
-    "./frontend/src/**/*.{js,jsx}": [
+    "./frontend/src/**/*.{js,jsx,ts,tsx}": [
       "eslint --fix"
+    ],
+    "./server/src/**/*.ts": [
+      "eslint"
     ]
   },
   "devDependencies": {
@@ -59,6 +62,9 @@
     "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
+    "security:audit": "npm audit --audit-level=high --omit=dev --prefix server && npm audit --audit-level=high --omit=dev --prefix frontend && npm audit --audit-level=high --omit=dev --prefix plugins",
+    "security:scan": "semgrep --config .semgrep/rules/ --severity ERROR server/src frontend/src plugins/packages",
+    "security:secrets": "gitleaks detect --source . --redact --verbose",
     "update-version": "node update-version.js"
   },
   "dependencies": {}

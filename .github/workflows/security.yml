@@ -1,0 +1,207 @@
+name: Security Gates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop, lts-3.16, main]
+  push:
+    branches: [develop, lts-3.16, main]
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: read
+
+# Cancel in-progress runs for the same branch/PR
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────
+  # 1. Secret Scanning — Gitleaks
+  #    Blocks if secrets/tokens are detected in the diff.
+  # ─────────────────────────────────────────────────────────
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE is only required for private repos.
+          # The public ToolJet repo works without it.
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  # ─────────────────────────────────────────────────────────
+  # 2. Dependency Audit — npm audit
+  #    Fails on HIGH or CRITICAL CVEs in production deps.
+  #    Does NOT require npm install (reads package-lock.json).
+  # ─────────────────────────────────────────────────────────
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.1
+
+      - name: Audit server (high+critical, production only)
+        working-directory: server
+        run: |
+          set +e
+          npm audit --audit-level=high --omit=dev --json > /tmp/audit-server.json
+          EXIT_CODE=$?
+          set -e
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/audit-server.json', 'utf8'));
+            const vulns = Object.values(report.vulnerabilities || {})
+              .filter(v => v.severity === 'high' || v.severity === 'critical');
+            if (vulns.length === 0) {
+              console.log('✅ No high/critical server vulnerabilities.');
+              process.exit(0);
+            }
+            console.error('❌ High/Critical server vulnerabilities:');
+            vulns.forEach(v => {
+              const via = Array.isArray(v.via) ? v.via[0] : v.via;
+              const url = typeof via === 'object' ? via.url : '';
+              console.error('  ' + v.severity.toUpperCase() + ' | ' + v.name + (url ? ' — ' + url : ''));
+            });
+            process.exit(1);
+          "
+
+      - name: Audit frontend (high+critical, production only)
+        working-directory: frontend
+        run: |
+          set +e
+          npm audit --audit-level=high --omit=dev --json > /tmp/audit-frontend.json
+          EXIT_CODE=$?
+          set -e
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/audit-frontend.json', 'utf8'));
+            const vulns = Object.values(report.vulnerabilities || {})
+              .filter(v => v.severity === 'high' || v.severity === 'critical');
+            if (vulns.length === 0) {
+              console.log('✅ No high/critical frontend vulnerabilities.');
+              process.exit(0);
+            }
+            console.error('❌ High/Critical frontend vulnerabilities:');
+            vulns.forEach(v => {
+              const via = Array.isArray(v.via) ? v.via[0] : v.via;
+              const url = typeof via === 'object' ? via.url : '';
+              console.error('  ' + v.severity.toUpperCase() + ' | ' + v.name + (url ? ' — ' + url : ''));
+            });
+            process.exit(1);
+          "
+
+      - name: Audit plugins (high+critical, production only)
+        working-directory: plugins
+        run: |
+          set +e
+          npm audit --audit-level=high --omit=dev --json > /tmp/audit-plugins.json
+          EXIT_CODE=$?
+          set -e
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/audit-plugins.json', 'utf8'));
+            const vulns = Object.values(report.vulnerabilities || {})
+              .filter(v => v.severity === 'high' || v.severity === 'critical');
+            if (vulns.length === 0) {
+              console.log('✅ No high/critical plugin vulnerabilities.');
+              process.exit(0);
+            }
+            console.error('❌ High/Critical plugin vulnerabilities:');
+            vulns.forEach(v => {
+              console.error('  ' + v.severity.toUpperCase() + ' | ' + v.name);
+            });
+            process.exit(1);
+          "
+
+  # ─────────────────────────────────────────────────────────
+  # 3. SAST — Semgrep with ToolJet-specific rules
+  #    Catches: SQL injection, missing org isolation,
+  #    XSS patterns, eval usage, sensitive logging, secrets.
+  # ─────────────────────────────────────────────────────────
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run ToolJet security rules
+        run: |
+          semgrep \
+            --config .semgrep/rules/ \
+            --error \
+            --severity ERROR \
+            --json \
+            --output /tmp/semgrep-results.json \
+            server/src frontend/src plugins/packages \
+            || (cat /tmp/semgrep-results.json | python3 -c "
+          import sys, json
+          r = json.load(sys.stdin)
+          findings = r.get('results', [])
+          if not findings:
+              print('✅ No SAST findings.')
+              sys.exit(0)
+          print(f'❌ {len(findings)} SAST finding(s):')
+          for f in findings:
+              path = f['path']
+              line = f['start']['line']
+              rule = f['check_id'].split('.')[-1]
+              msg = f['extra']['message']
+              print(f'  [{rule}] {path}:{line} — {msg}')
+          sys.exit(1)
+          ")
+
+      - name: Upload SAST results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: /tmp/semgrep-results.json
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # ─────────────────────────────────────────────────────────
+  # 4. Docker Image Scan — Grype (on PRs, not just weekly)
+  #    Only runs when Dockerfile or deps are changed.
+  # ─────────────────────────────────────────────────────────
+  image-scan:
+    name: Docker Image Scan
+    runs-on: ubuntu-latest
+    # Only scan when files that affect the image change
+    if: |
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.changed_files, 'Dockerfile') ||
+      github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image for scanning
+        run: docker build -t tooljet-pr-scan:${{ github.sha }} . --target base 2>/dev/null || docker build -t tooljet-pr-scan:${{ github.sha }} . --quiet
+
+      - name: Grype scan
+        uses: anchore/scan-action@v7
+        with:
+          image: tooljet-pr-scan:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: critical
+          output-format: table
+          only-fixed: true

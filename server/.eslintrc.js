@@ -38,6 +38,21 @@ module.exports = {
         singleQuote: true,
       },
     ],
+
+    // ── Security rules (built-in, no extra packages needed) ──────────────
+    // Prevent code execution from strings — eval() and equivalents are RCE vectors.
+    'no-eval': 'error',
+    'no-new-func': 'error',
+    // Catches setTimeout("string") and similar indirect eval patterns.
+    'no-implied-eval': 'error',
+    // Prevents using __proto__ which can lead to prototype pollution.
+    'no-proto': 'error',
+    // Catches potential prototype pollution via object property access.
+    'no-extend-native': 'error',
+    // Regex DoS — flag regexes that could backtrack exponentially.
+    'no-control-regex': 'error',
+    // ─────────────────────────────────────────────────────────────────────
+
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',

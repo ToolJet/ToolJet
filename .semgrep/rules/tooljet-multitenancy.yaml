@@ -1,0 +1,191 @@
+rules:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Tenant isolation: TypeORM findOne/find without organizationId filter
+  #
+  # ToolJet is multi-tenant. Every query on a tenant-scoped resource MUST
+  # filter by organizationId (or organization) to prevent cross-org data leaks.
+  #
+  # Safe:    repo.findOne({ where: { id, organizationId } })
+  # Unsafe:  repo.findOne({ where: { id } })           ← flagged
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-findone-missing-org-id
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      TypeORM findOne() is missing an organizationId (or organization) filter.
+      Without this, the query may return resources from a different tenant.
+      Add `organizationId` to the where clause, or suppress with // nosemgrep
+      if this query intentionally crosses org boundaries (e.g. super-admin routes).
+    metadata:
+      category: security
+      cwe: CWE-284
+      confidence: MEDIUM
+    patterns:
+      - pattern: $REPO.findOne({where: {$...OPTS}})
+      - pattern-not: $REPO.findOne({where: {$...OPTS, organizationId: $ORG}})
+      - pattern-not: $REPO.findOne({where: {$...OPTS, organization: $ORG}})
+      - pattern-not: $REPO.findOne({where: {$...OPTS, organizationId: $A, $...REST}})
+      # Exclude files that are clearly super-admin or cross-org by design
+      - pattern-not-inside: |
+          // nosemgrep
+          $REPO.findOne(...)
+    paths:
+      include:
+        - 'server/src/modules/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - '**/migrations/**'
+        - '**/seeds/**'
+
+  - id: tooljet-find-missing-org-id
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      TypeORM find()/findAndCount() is missing an organizationId filter.
+      This may return resources from all tenants. Add `organizationId` to
+      the where clause, or suppress with // nosemgrep for intentional cross-org queries.
+    metadata:
+      category: security
+      cwe: CWE-284
+      confidence: MEDIUM
+    patterns:
+      - pattern: $REPO.find({where: {$...OPTS}})
+      - pattern-not: $REPO.find({where: {$...OPTS, organizationId: $ORG}})
+      - pattern-not: $REPO.find({where: {$...OPTS, organization: $ORG}})
+    paths:
+      include:
+        - 'server/src/modules/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - '**/migrations/**'
+        - '**/seeds/**'
+
+  - id: tooljet-findandcount-missing-org-id
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      TypeORM findAndCount() is missing an organizationId filter.
+      This may return resources from all tenants.
+    metadata:
+      category: security
+      cwe: CWE-284
+      confidence: MEDIUM
+    patterns:
+      - pattern: $REPO.findAndCount({where: {$...OPTS}})
+      - pattern-not: $REPO.findAndCount({where: {$...OPTS, organizationId: $ORG}})
+      - pattern-not: $REPO.findAndCount({where: {$...OPTS, organization: $ORG}})
+    paths:
+      include:
+        - 'server/src/modules/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - '**/migrations/**'
+        - '**/seeds/**'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # EntityManager two-argument form: manager.findOne(Entity, { where: {id} })
+  #
+  # TypeORM's EntityManager.findOne() takes the entity CLASS as the first arg
+  # and options as the second. The single-repo rules above don't match this
+  # form — this rule covers it.
+  #
+  # Real example that triggered this rule:
+  #   credentials.service.ts: manager.findOne(Credential, { where: { id: credentialId } })
+  #   This is called from POST /api/data-sources/decrypt which has no org guard,
+  #   allowing any authenticated user to decrypt any org's credentials (IDOR).
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-manager-findone-missing-org-id
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      EntityManager.findOne(Entity, {where: {id}}) is missing an organizationId filter.
+      Any authenticated user can fetch this record by id alone — a cross-tenant IDOR.
+      Add organizationId to the where clause, or ensure the call site validates
+      org ownership before calling this method.
+      See: POST /api/data-sources/decrypt IDOR (reported 2026-06).
+    metadata:
+      category: security
+      cwe: CWE-639
+      confidence: HIGH
+    patterns:
+      - pattern: $MANAGER.findOne($ENTITY, {where: {id: $ID}})
+      - pattern-not: $MANAGER.findOne($ENTITY, {where: {id: $ID, organizationId: $ORG}})
+      - pattern-not: $MANAGER.findOne($ENTITY, {where: {id: $ID, organization: $ORG}})
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - '**/migrations/**'
+        - '**/seeds/**'
+
+  - id: tooljet-manager-find-missing-org-id
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      EntityManager.find(Entity, {where: ...}) is missing an organizationId filter.
+      This may expose records from all tenants.
+    metadata:
+      category: security
+      cwe: CWE-284
+      confidence: MEDIUM
+    patterns:
+      - pattern: $MANAGER.find($ENTITY, {where: {$...OPTS}})
+      - pattern-not: $MANAGER.find($ENTITY, {where: {$...OPTS, organizationId: $ORG}})
+      - pattern-not: $MANAGER.find($ENTITY, {where: {$...OPTS, organization: $ORG}})
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - '**/migrations/**'
+        - '**/seeds/**'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Credential decryption without org scope
+  #
+  # CredentialsService.getValue(credentialId) decrypts a stored secret by ID
+  # only — it has no org check. Any call site that doesn't first validate that
+  # the credential belongs to the caller's org is an IDOR.
+  #
+  # Safe call sites: those that already loaded the credential through an
+  # org-scoped DataSource (e.g. after ValidateDataSourceGuard ran).
+  # Unsafe call site: POST /api/data-sources/decrypt (no ValidateDataSourceGuard).
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-credential-getvalue-unscoped
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      credentialService.getValue(credentialId) has no built-in org scope —
+      it decrypts any credential by ID. The caller MUST validate that
+      credentialId belongs to the current user's organization before calling this.
+      If this call site is inside a method that already received its data source
+      through ValidateDataSourceGuard (or equivalent org check), suppress with
+      // nosemgrep and add a comment explaining the trust chain.
+    metadata:
+      category: security
+      cwe: CWE-639
+      confidence: MEDIUM
+    pattern: $SVC.getValue($CREDENTIAL_ID)
+    paths:
+      include:
+        - 'server/src/modules/data-sources/**/*.ts'
+        - 'server/src/helpers/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - 'server/src/modules/encryption/**'

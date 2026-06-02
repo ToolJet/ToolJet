@@ -1,0 +1,78 @@
+rules:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Sensitive data in logs
+  #
+  # Logging passwords, tokens, or secrets can expose them in log aggregators
+  # (Datadog, CloudWatch, etc.) and to anyone with log access.
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-log-password
+    severity: ERROR
+    languages: [typescript, javascript]
+    message: >
+      Sensitive value logged: variable name suggests this contains a password,
+      token, or secret. Remove the log or redact the value before logging.
+    metadata:
+      category: security
+      cwe: CWE-532
+      confidence: MEDIUM
+    patterns:
+      - pattern: console.log($...ARGS)
+      - metavariable-regex:
+          metavariable: $...ARGS
+          regex: '.*(password|passwd|secret|token|apikey|api_key|auth_token|access_token|private_key|credential).*'
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+        - 'frontend/src/**/*.{js,jsx,ts,tsx}'
+      exclude:
+        - '**/*.test.*'
+        - '**/*.spec.*'
+
+  - id: tooljet-nestjs-logger-password
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      NestJS Logger called with a value that may contain credentials.
+      Redact sensitive fields before logging.
+    metadata:
+      category: security
+      cwe: CWE-532
+      confidence: MEDIUM
+    patterns:
+      - pattern: $LOGGER.log($...ARGS)
+      - metavariable-regex:
+          metavariable: $...ARGS
+          regex: '.*(password|passwd|secret|token|apikey|api_key|credential).*'
+    paths:
+      include:
+        - 'server/src/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.test.*'
+        - '**/*.spec.*'
+
+  - id: tooljet-log-options-object
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      Logging a full `options` or `sourceOptions` object that may contain
+      decrypted credentials. Log only safe fields, never the full options blob.
+    metadata:
+      category: security
+      cwe: CWE-532
+      confidence: LOW
+    patterns:
+      - pattern: console.log($OPTIONS)
+      - metavariable-regex:
+          metavariable: $OPTIONS
+          regex: '.*(options|sourceOptions|credentials).*'
+    paths:
+      include:
+        - 'server/src/modules/data-queries/**/*.ts'
+        - 'server/src/modules/data-sources/**/*.ts'
+        - 'plugins/packages/**/*.ts'
+      exclude:
+        - '**/*.test.*'
+        - '**/*.spec.*'

@@ -1,0 +1,128 @@
+rules:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Auth guard enforcement for NestJS controllers
+  #
+  # Every HTTP endpoint in ToolJet must be protected by at least JwtAuthGuard
+  # (or explicitly marked public via @IsPublic() / featureConfig.isPublic).
+  #
+  # This rule flags @Controller classes that have no @UseGuards decorator
+  # anywhere on the class. Method-level guards are not checked here — use the
+  # PR checklist for route-level review.
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-controller-no-auth-guard
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      Controller class has no @UseGuards() decorator at the class level.
+      All ToolJet controllers must use JwtAuthGuard (directly or via the
+      @InitModule decorator chain). Add @UseGuards(JwtAuthGuard) to the class
+      or ensure @InitModule handles authentication for this controller.
+      Suppress with // nosemgrep if this controller is intentionally public
+      (e.g. health checks, ACME challenge endpoints).
+    metadata:
+      category: security
+      cwe: CWE-306
+      confidence: LOW
+    patterns:
+      - pattern: |
+          @Controller(...)
+          class $CTRL {
+            $...BODY
+          }
+      - pattern-not: |
+          @UseGuards(...)
+          @Controller(...)
+          class $CTRL {
+            $...BODY
+          }
+      - pattern-not: |
+          @InitModule(...)
+          @Controller(...)
+          class $CTRL {
+            $...BODY
+          }
+    paths:
+      include:
+        - 'server/src/modules/**/*.controller.ts'
+        - 'server/ee/**/*.controller.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Insecure direct object reference — TypeORM findOne by id only
+  #
+  # Fetching a resource by id alone (without validating organizationId or
+  # checking ownership) is an IDOR vulnerability.
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-idor-getone-by-id-only
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      Possible IDOR: resource fetched by id only, without an organizationId
+      or ownership check. Verify that the calling code validates the user has
+      access to this resource's organization, or add organizationId to the query.
+    metadata:
+      category: security
+      cwe: CWE-639
+      confidence: LOW
+    patterns:
+      - pattern: $REPO.findOne({where: {id: $ID}})
+      - pattern-not: $REPO.findOne({where: {id: $ID, organizationId: $ORG}})
+      - pattern-not: $REPO.findOne({where: {id: $ID, organization: $ORG}})
+    paths:
+      include:
+        - 'server/src/modules/**/*.ts'
+        - 'server/ee/**/*.ts'
+      exclude:
+        - '**/*.spec.ts'
+        - '**/*.test.ts'
+        - '**/migrations/**'
+        - '**/seeds/**'
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Data-source routes missing ValidateDataSourceGuard
+  #
+  # All @Post/:id and @Get/:id routes in the data-sources controller MUST have
+  # ValidateDataSourceGuard to ensure the data source belongs to the caller's
+  # org before any operation. Routes that receive a credential_id in the body
+  # (not a :id path param) need equivalent org-scoping logic.
+  #
+  # This catches the class of bug where a new route is added to the controller
+  # alongside ValidateDataSourceGuard routes but forgets to add the guard,
+  # like the POST /decrypt IDOR (2026-06).
+  # ──────────────────────────────────────────────────────────────────────────
+
+  - id: tooljet-datasource-route-missing-validate-guard
+    severity: ERROR
+    languages: [typescript]
+    message: >
+      A @Post or @Put route in the data-sources controller is missing
+      ValidateDataSourceGuard. All write routes that operate on a data source
+      resource must include this guard to enforce org-level ownership.
+      If this route does not take a data source :id param (e.g. it uses
+      credential_id in the body), add equivalent org-scoping logic in the
+      service layer instead and suppress with // nosemgrep + comment.
+    metadata:
+      category: security
+      cwe: CWE-306
+      confidence: MEDIUM
+    patterns:
+      - pattern: |
+          @UseGuards($GUARD)
+          @Post(...)
+          async $METHOD(@Body() $BODY) { ... }
+      - pattern-not: |
+          @UseGuards(ValidateDataSourceGuard, ...)
+          @Post(...)
+          async $METHOD(...) { ... }
+      - pattern-not: |
+          @UseGuards(..., ValidateDataSourceGuard, ...)
+          @Post(...)
+          async $METHOD(...) { ... }
+    paths:
+      include:
+        - 'server/src/modules/data-sources/controller.ts'
+        - 'server/ee/**/data-sources/controller.ts'

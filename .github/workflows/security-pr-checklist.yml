@@ -1,0 +1,55 @@
+name: Security PR Checklist
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches: [develop, lts-3.16, main]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  post-checklist:
+    name: Post Security Checklist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post security checklist comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `## 🔐 Security Review Checklist
+
+            Please verify each item before marking this PR ready for review.
+            Check the boxes that apply — leave unchecked items with a comment explaining why they don't apply.
+
+            ### Backend (NestJS / TypeORM)
+            - [ ] Every new TypeORM query on tenant-scoped resources (apps, data-sources, queries, components) includes \`organizationId\` in the \`where\` clause
+            - [ ] New controller routes have \`@UseGuards(JwtAuthGuard)\` at the class or method level
+            - [ ] New controller routes have \`@UseGuards(AbilityGuard)\` + \`@InitFeature\` for permission-gated resources
+            - [ ] TypeORM QueryBuilder \`.where()\` calls use parameterised form \`.where('col = :val', { val })\` — not template literals
+            - [ ] User-supplied data hitting plugins is validated at the API boundary (DTO + class-validator), not just on the frontend
+            - [ ] New endpoints that accept file uploads or external URLs are documented in the threat model
+
+            ### Frontend (React)
+            - [ ] No use of \`dangerouslySetInnerHTML\` with user-controlled content
+            - [ ] No use of \`eval()\`, \`new Function()\`, or \`setTimeout(string)\`
+            - [ ] Widget props that render user content are HTML-escaped or use safe rendering
+
+            ### Dependencies & Secrets
+            - [ ] New npm packages have been reviewed (\`npm audit\` passes — CI will verify)
+            - [ ] No credentials, API keys, tokens, or secrets committed in code or config files
+            - [ ] Environment-specific values use \`.env\` / environment variables, not hardcoded strings
+
+            ### Migrations
+            - [ ] New DB migrations include \`down()\` that is safe to run
+            - [ ] Migrations adding NOT NULL columns have a default or backfill step
+
+            ---
+            > This checklist is posted automatically. The [Security Gates](../actions/workflows/security.yml) workflow enforces secret scanning, dependency audit, and SAST on every commit to this PR.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

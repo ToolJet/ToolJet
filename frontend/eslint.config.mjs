@@ -128,6 +128,16 @@ export default [
         },
       ],
 
+      // ── Security rules (built-in, no extra packages needed) ──────────────
+      'no-eval': 'error',
+      'no-new-func': 'error',
+      'no-implied-eval': 'error',
+      'no-proto': 'error',
+      'no-extend-native': 'error',
+      // Prevents javascript: URLs — an XSS sink in href/src attributes.
+      'no-script-url': 'error',
+      // ─────────────────────────────────────────────────────────────────────
+
       // Project rules (preserved from .eslintrc.js)
       'react/prop-types': 0,
       'react/display-name': 'off',
@@ -247,6 +257,15 @@ export default [
           proseWrap: 'preserve',
         },
       ],
+
+      // ── Security rules ────────────────────────────────────────────────────
+      'no-eval': 'error',
+      'no-new-func': 'error',
+      'no-implied-eval': 'error',
+      'no-proto': 'error',
+      'no-extend-native': 'error',
+      'no-script-url': 'error',
+      // ─────────────────────────────────────────────────────────────────────
 
       // Project rules
       'react/prop-types': 'off',
