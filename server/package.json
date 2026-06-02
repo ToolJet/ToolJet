@@ -217,7 +217,7 @@
     "copyfiles": "^2.4.1",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-cypress": "^5.1.0",
+    "eslint-plugin-cypress": "^6.4.1",
     "eslint-plugin-jest": "^28.13.3",
     "eslint-plugin-prettier": "^5.4.1",
     "globals": "^16.2.0",
