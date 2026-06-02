@@ -482,7 +482,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
-        if (!branchId && name) {
+        const isGitEnabled = !!(await manager.findOne(WorkspaceBranch, {
+          where: { organizationId, isDefault: true },
+          select: ['id'],
+        }));
+
+        if (!isGitEnabled && name) {
           await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
         }
 
@@ -497,7 +502,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
         await manager.save(DataSource, updatableParams);
 
-        if (!branchId && name) {
+        if (!isGitEnabled && name) {
           await manager.update(DataSourceVersion, { dataSourceId, isDefault: true }, { name, updatedAt: new Date() });
         }
       });
