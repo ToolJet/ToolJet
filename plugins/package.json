@@ -84,7 +84,7 @@
     "@typescript-eslint/parser": "^4.33.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.6.0",
-    "eslint-plugin-jest": "^24.7.0",
+    "eslint-plugin-jest": "^29.15.2",
     "eslint-plugin-prettier": "^3.4.1",
     "jest": "^27.5.1",
     "lerna": "^9.0.3",
