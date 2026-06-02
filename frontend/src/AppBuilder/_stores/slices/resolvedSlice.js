@@ -149,25 +149,25 @@ export const createResolvedSlice = (set, get) => {
       });
     },
 
-    setVariables: (variables = {}, moduleId = 'canvas') => {
-      if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+    // setVariables: (variables = {}, moduleId = 'canvas') => {
+    //   if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
 
-      const keys = Object.keys(variables);
-      if (keys.length === 0) return;
+    //   const keys = Object.keys(variables);
+    //   if (keys.length === 0) return;
 
-      set(
-        (state) => {
-          Object.assign(state.resolvedStore.modules[moduleId].exposedValues.variables, variables);
-        },
-        false,
-        'setVariablesBatch'
-      );
+    //   set(
+    //     (state) => {
+    //       Object.assign(state.resolvedStore.modules[moduleId].exposedValues.variables, variables);
+    //     },
+    //     false,
+    //     'setVariablesBatch'
+    //   );
 
-      // Route all dep paths through scheduleDependencyUpdate so they coalesce with
-      // any concurrent setVariable / setExposedVariable calls in the same microtask batch.
-      keys.forEach((key) => scheduleDependencyUpdate(`variables.${key}`, moduleId));
-      get().rebuildVariableHints(moduleId);
-    },
+    //   // Route all dep paths through scheduleDependencyUpdate so they coalesce with
+    //   // any concurrent setVariable / setExposedVariable calls in the same microtask batch.
+    //   keys.forEach((key) => scheduleDependencyUpdate(`variables.${key}`, moduleId));
+    //   get().rebuildVariableHints(moduleId);
+    // },
 
     setResolvedPageConstants: (constants = {}, moduleId = 'canvas') => {
       set(

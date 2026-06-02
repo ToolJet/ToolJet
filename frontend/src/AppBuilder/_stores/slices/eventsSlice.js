@@ -761,16 +761,16 @@ export const createEventsSlice = (set, get) => ({
             // return resp;
           }
 
-          case 'set-custom-variables': {
-            const { setVariables } = get();
-            const variables = getResolvedValue(event.variables, customVariables, moduleId);
+          // case 'set-custom-variables': {
+          //   const { setVariables } = get();
+          //   const variables = getResolvedValue(event.variables, customVariables, moduleId);
 
-            if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
-              setVariables(variables, moduleId);
-            }
+          //   if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
+          //     setVariables(variables, moduleId);
+          //   }
 
-            return Promise.resolve();
-          }
+          //   return Promise.resolve();
+          // }
 
           case 'get-custom-variable': {
             const { getVariable } = get();
@@ -1115,15 +1115,15 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
-      const setVariables = (variables = {}) => {
-        if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+      // const setVariables = (variables = {}) => {
+      //   if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
 
-        const event = {
-          actionId: 'set-custom-variables',
-          variables,
-        };
-        return executeAction(event, mode, {}, moduleId);
-      };
+      //   const event = {
+      //     actionId: 'set-custom-variables',
+      //     variables,
+      //   };
+      //   return executeAction(event, mode, {}, moduleId);
+      // };
 
       const getVariable = (key = '') => {
         if (key) {
@@ -1383,7 +1383,7 @@ export const createEventsSlice = (set, get) => ({
       return {
         runQuery,
         setVariable,
-        setVariables,
+        // setVariables,
         getVariable,
         unsetAllVariables,
         unSetVariable,

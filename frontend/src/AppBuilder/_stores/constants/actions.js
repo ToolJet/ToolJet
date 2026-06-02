@@ -3,7 +3,7 @@ export const ACTIONS = [
   'runQuery',
   'resetQuery',
   'setVariable',
-  'setVariables',
+  // 'setVariables',
   'unsetAllVariables',
   'unSetVariable',
   'showAlert',
