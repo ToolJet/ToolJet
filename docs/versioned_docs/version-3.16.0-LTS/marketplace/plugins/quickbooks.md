@@ -27,7 +27,7 @@ Ensure the scopes entered in the ToolJet data source configuration exactly match
 
 - **Compay ID**: Unique identifier of the QuickBooks company account whose resources and financial data will be accessed.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/quickbooks/connection.png" alt="Quickbooks connection page" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/quickbooks/connection.png" alt="Quickbooks Connection page" />
 
 :::info
 For detailed steps to generate the **Client ID** and **Client Secret**, refer to the **[QuickBooks documentation](https://developer.intuit.com/app/developer/qbo/docs/get-started/get-client-id-and-client-secret)**.
