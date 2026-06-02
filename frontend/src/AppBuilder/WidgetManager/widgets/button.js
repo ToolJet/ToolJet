@@ -300,7 +300,7 @@ export const buttonConfig = {
       backgroundColor: { value: 'var(--cc-primary-brand)' },
       hoverBackgroundMode: { value: 'auto' },
       hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
-      iconColor: { value: 'var(--cc-default-icon)' },
+      iconColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
