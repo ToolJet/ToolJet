@@ -39,7 +39,7 @@ Query results can be transformed using transformations. Read our transformations
 
 ### Create a Collection
 
-With this operation you can easily create `Collections` in your TypeSense cluster. In the schema field, you'll need to define the schema for creating a new collection. Check out TypeSense docs to know more about collections **[here](https://typesense.org/docs/0.22.2/api/collections.html#create-a-collection)**
+With this operation you can easily create `Collections` in your TypeSense cluster. In the schema field, you'll need to define the schema for creating a new collection. Check out TypeSense docs to know more about collections **[here](https://typesense.org/docs/30.2/api/collections.html#create-a-collection)**
 
 #### Required Parameter
 
