@@ -316,19 +316,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         //   - branchId is the default (main) branch
         // Skip for feature branches — their edits shouldn't alter the main fallback.
         let shouldUpdateDefault = true;
-        let isGitEnabled = false;
         if (branchId) {
           const branch = await manager.findOne(WorkspaceBranch, {
             where: { id: branchId },
             select: ['id', 'isDefault'],
           });
           shouldUpdateDefault = !!branch?.isDefault;
-          isGitEnabled = true; // branchId present → git is enabled by definition
-        } else {
-          isGitEnabled = !!(await manager.findOne(WorkspaceBranch, {
-            where: { organizationId, isDefault: true },
-            select: ['id'],
-          }));
         }
 
         if (isMultiEnvEnabled) {
@@ -489,6 +482,11 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
+        const isGitEnabled = !!(await manager.findOne(WorkspaceBranch, {
+          where: { organizationId, isDefault: true },
+          select: ['id'],
+        }));
+
         if (!isGitEnabled && name) {
           await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
         }
