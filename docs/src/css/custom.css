@@ -1092,6 +1092,52 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   border-color: #7c2d12;
 }
 
+/* ─── API sidebar — "Back to Docs" pinned button ─────────────────── */
+.sidebar-back-to-docs .menu__link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.sidebar-back-to-docs .menu__link:hover {
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-900);
+}
+
+[data-theme='dark'] .sidebar-back-to-docs .menu__link {
+  color: var(--ifm-color-emphasis-600);
+}
+
+[data-theme='dark'] .sidebar-back-to-docs .menu__link:hover {
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* ─── API sidebar — tighten gap between Overview and first section ─ */
+.sidebar-back-to-docs + .menu__list-item + .category-as-header > .menu__list-item-collapsible:first-child a {
+  margin-top: 4px;
+}
+
+/* ─── API sidebar — Overview item (immediately follows back-to-docs) */
+.sidebar-back-to-docs + .menu__list-item > .menu__link {
+  font-size: 15px;
+  font-weight: 600 !important;
+  line-height: 20px;
+  color: #1B1F24;
+}
+
+.sidebar-back-to-docs + .menu__list-item > .menu__link:hover {
+  background-color: var(--ifm-menu-color-background-hover);
+}
+
+.sidebar-back-to-docs + .menu__list-item > .menu__link.menu__link--active {
+  background-color: var(--ifm-menu-color-background-active);
+}
+
+[data-theme='dark'] .sidebar-back-to-docs + .menu__list-item > .menu__link {
+  color: white;
+}
+
 .dropdown__link[href*="2.50.0-LTS"] {
   position: relative;
 }

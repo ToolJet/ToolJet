@@ -4,6 +4,13 @@
 const sidebars = {
   api: [
     {
+      type: 'link',
+      label: '← Back to Docs',
+      href: '/docs',
+      className: 'sidebar-back-to-docs',
+    },
+    { type: 'doc', id: 'index', label: 'Overview' },
+    {
       type: 'category',
       label: 'ToolJet API',
       className: 'category-as-header no-icon',
