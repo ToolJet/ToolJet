@@ -12,7 +12,7 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@tooljet/widget-definitions": ["../packages/widget-definitions/src/index.ts"],
+      "@tooljet/widget-definitions": ["../packages/widget-definitions/src/index.js"],
       "@tooljet/widget-definitions/*": ["../packages/widget-definitions/src/*"]
     },
     "skipLibCheck": true,

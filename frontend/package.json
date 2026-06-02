@@ -314,7 +314,7 @@
     ],
     "moduleNameMapper": {
       "@/(.*)": "<rootDir>/src/$1",
-      "@tooljet/widget-definitions": "<rootDir>/../packages/widget-definitions/src/index.ts"
+      "@tooljet/widget-definitions": "<rootDir>/../packages/widget-definitions/src/index.js"
     },
     "testEnvironment": "jest-environment-jsdom",
     "moduleDirectories": [
