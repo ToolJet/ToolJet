@@ -27,14 +27,15 @@ const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
+
 import useCanvasResizing from './Hooks/useCanvasResizing';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
-
   useEnableMainCanvasScroll({ canvasContentRef, enabled: !isModuleMode });
+
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -175,6 +176,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       borderRight: currentMode === 'edit' && isRightSidebarOpen && `300px solid ${canvasBgColor}`,
       padding: currentMode === 'edit' && '8px',
       paddingTop: currentMode === 'edit' && (isCurrentVersionLocked ? '38px' : '8px'),
+      // overflowX: 'hidden',
     };
   }, [
     currentMode,
@@ -260,6 +262,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 )}
                 style={{
                   overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                  ...(isMobileLayout && currentMode === 'view' ? { overflowX: 'hidden' } : {}),
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
