@@ -40,8 +40,8 @@ interface SSRFProtectionOptions {
 }
 
 export function getSSRFConfig(): SSRFProtectionOptions {
-  const enabled = process.env.SSRF_PROTECTION_ENABLED === 'true'; // Disabled by default (opt-in)
-  const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK === 'true'; // Disabled by default
+  const enabled = process.env.SSRF_PROTECTION_ENABLED !== 'false'; // Enabled by default (opt-out via SSRF_PROTECTION_ENABLED=false)
+  const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK !== 'false'; // Enabled by default (opt-out via SSRF_DNS_RESOLUTION_CHECK=false)
 
   // Parse blocked schemes from environment variable
   // If not set, allow all schemes by default (self-hosted flexibility)
@@ -326,7 +326,7 @@ export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
  * - URL scheme blocking (file://, ftp://, etc. if configured)
  * - Private IP address blocking (RFC1918, loopback, link-local, cloud metadata)
  * - URL credentials abuse prevention (e.g., http://169.254.169.254@example.com)
- * - DNS rebinding protection (if enabled via SSRF_DNS_RESOLUTION_CHECK)
+ * - DNS rebinding protection (disabled via SSRF_DNS_RESOLUTION_CHECK=false)
  *
  * @param urlString - The URL to validate
  * @param options - Optional SSRF protection configuration
