@@ -13,6 +13,7 @@ export class WhitelistPluginGuard implements CanActivate {
     'mongodb',
     'bigquery',
     'snowflake',
+    'databricks',
   ]); // Start with grpcv2, easily expandable
 
   canActivate(context: ExecutionContext): boolean {
