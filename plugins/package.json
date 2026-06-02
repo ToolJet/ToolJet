@@ -81,7 +81,7 @@
     "@types/nodemailer": "^6.4.7",
     "@types/oracledb": "^5.2.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
+    "@typescript-eslint/parser": "^8.60.1",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-jest": "^24.7.0",
