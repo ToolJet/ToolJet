@@ -31,14 +31,9 @@ To use Anthropic as your LLM provider, an Anthropic API key is required. You can
 
 To use Google Gemini as your LLM provider, Vertex AI service account credentials are required. You can follow the [official documentation](https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/general/custom-service-account) to generate the credentials.
 
-#### Configuring via UI
-
-While configuring the Google Gemini via ToolJet UI, you can directly use the service account JSON in the UI field.
-
-#### Configuring via Environment Variables
-
+:::info Configuring Google Gemini via Environment Variables
 To configure the Google Gemini via environment variables, you will need to generate a base64 string for your JSON.
-
+:::
 
 ## Configuring Your API Key via UI
 
@@ -54,7 +49,12 @@ ToolJet will use your key to authenticate requests sent to your LLM provider.
 ## Configuring Your API Key via Environment Variables
 
 1. Configure the following environment variables:
-    1. `LLM_PROVIDER`: You can set your LLM Provider using this variable. Use `anthropic` to use Anthropic API Key, and use `gemini` to use Gemini API Key.
+    1. `LLM_PROVIDER`: You can set your LLM Provider using this variable.
+        | Value | When to use |
+        |:------|:------------|
+        | `anthropic` | When you want to use Anthropic API Key |
+        | `gemini` | When you want to use Gemini API Key |
+        | `tooljet_managed` | When you want to use ToolJet Managed AI Credits. |
     2. Set the following variable according to which LLM Provider you are using:
         - `ANTHROPIC_API_KEY=<your-api-key>`: If you are using Anthropic.
         - `GEMINI_API_KEY=<base64-string-of-your-JSON>`: If you are using Gemini.
