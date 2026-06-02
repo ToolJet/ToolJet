@@ -66,6 +66,7 @@
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
     "@tooljet-plugins/zendesk": "file:packages/zendesk",
+    "minio": "^8.0.7",
     "snowflake-sdk": "^2.4.0"
   },
   "peerDependencies": {
