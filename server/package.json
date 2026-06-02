@@ -182,7 +182,7 @@
   },
   "optionalDependencies": {
     "html-minifier": "^5.0.0",
-    "mjml": "^4.15.3"
+    "mjml": "^5.3.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
