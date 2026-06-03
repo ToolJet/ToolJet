@@ -503,6 +503,18 @@ module.exports = {
           {
             from: '/docs/how-to/use-custom-parameters',
             to: '/docs/app-builder/connecting-with-data-sources/use-custom-parameters/',
+          },
+          {
+            from: '/docs/tooljet-api/',
+            to: '/api/',
+          },
+          {
+            from: '/docs/development-lifecycle/cicd/gitsync-api/',
+            to: '/api/gitsync-api/',
+          },
+          {
+            from: '/docs/user-management/sso/scim/overview/',
+            to: '/api/scim/',
           }
         ],
       },
