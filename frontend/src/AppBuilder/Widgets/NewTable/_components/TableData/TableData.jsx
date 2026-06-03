@@ -153,6 +153,8 @@ export const TableData = ({
         darkMode={darkMode}
         columnOrder={columnOrder}
         setColumnOrder={setColumnOrder}
+        fireEvent={fireEvent}
+        setExposedVariables={setExposedVariables}
       />
     );
   };
