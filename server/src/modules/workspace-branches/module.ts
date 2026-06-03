@@ -27,6 +27,8 @@ export class WorkspaceBranchesModule extends SubModule {
       ['pull.service', 'push.service', 'git-conflict-detection.service']
     );
 
+    const { GitObjectCacheService } = await this.getProviders(configs, 'git-sync', ['git-object-cache.service']);
+
     return this.cacheModule(cacheKey, {
       module: WorkspaceBranchesModule,
       imports: [
@@ -45,9 +47,16 @@ export class WorkspaceBranchesModule extends SubModule {
         PlatformGitPullService,
         PlatformGitPushService,
         GitConflictDetectionService,
+        GitObjectCacheService,
         ...(isMainImport ? [DeletionCommitListener] : []),
       ],
-      exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService, GitConflictDetectionService],
+      exports: [
+        WorkspaceBranchService,
+        PlatformGitPullService,
+        PlatformGitPushService,
+        GitConflictDetectionService,
+        GitObjectCacheService,
+      ],
     });
   }
 }
