@@ -29,6 +29,13 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
     return this.workspaceBranchService.checkForUpdates(user.organizationId, branch);
   }
 
+  @InitFeature(FEATURE_KEY.GET_ENTITY_TAGS)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('entity-tags')
+  async getEntityTags(@User() user, @Query('coRelationId') coRelationId: string) {
+    return this.workspaceBranchService.getEntityTags(user.organizationId, coRelationId);
+  }
+
   @InitFeature(FEATURE_KEY.CREATE_BRANCH)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post()

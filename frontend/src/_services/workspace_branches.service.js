@@ -14,6 +14,7 @@ export const workspaceBranchesService = {
   checkForUpdates,
   listRemoteBranches,
   fetchPullRequests,
+  getEntityTags,
 };
 
 function list() {
@@ -137,4 +138,12 @@ function listRemoteBranches() {
 function fetchPullRequests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/pull-requests`, requestOptions).then(handleResponse);
+}
+
+function getEntityTags(coRelationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workspace-branches/entity-tags?coRelationId=${encodeURIComponent(coRelationId)}`,
+    requestOptions
+  ).then(handleResponse);
 }

@@ -17,5 +17,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.ENSURE_DRAFT]: { license: LICENSE_FIELD.GIT_SYNC },
     [FEATURE_KEY.PULL_APP]: { license: LICENSE_FIELD.GIT_SYNC },
     [FEATURE_KEY.PULL_MODULE]: { license: LICENSE_FIELD.GIT_SYNC },
+    [FEATURE_KEY.GET_ENTITY_TAGS]: { license: LICENSE_FIELD.GIT_SYNC },
   },
 };

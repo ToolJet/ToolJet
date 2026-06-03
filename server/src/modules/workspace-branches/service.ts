@@ -88,4 +88,8 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
   async getPullRequests(organizationId: string): Promise<any> {
     throw new NotFoundException();
   }
+
+  async getEntityTags(organizationId: string, coRelationId: string): Promise<any[]> {
+    throw new NotFoundException();
+  }
 }

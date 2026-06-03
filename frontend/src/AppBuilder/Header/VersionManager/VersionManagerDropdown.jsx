@@ -12,8 +12,8 @@ import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.
 import { ConfirmDialog } from '@/_components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Button } from '@/components/ui/Button/Button';
-import { gitSyncService } from '@/_services/git_sync.service';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
@@ -76,6 +76,8 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     (state) => ({ currentBranch: state.currentBranch, pullApp: state.actions.pullApp }),
     shallow
   );
+
+  const appCoRelationId = useStore((state) => state.appStore.modules[moduleId]?.app?.co_relation_id, shallow);
 
   const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
@@ -213,11 +215,10 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   const handleRefreshFromGit = async () => {
     if (isRefreshing) return;
-    if (!appId || !isGitSyncEnabled) return;
+    if (!appCoRelationId || !isGitSyncEnabled) return;
     setIsRefreshing(true);
     try {
-      const data = await gitSyncService.checkForUpdates(appId, currentBranch?.name || '');
-      const tags = data?.meta_data?.tags ?? [];
+      const tags = await workspaceBranchesService.getEntityTags(appCoRelationId);
       const newStatus = new Map();
       tags.forEach((tag) => {
         const versionName = tag.name.split('/').slice(1).join('/');
@@ -232,9 +233,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           isLocal,
           tagSha: tag.commit?.sha,
           tagName: tag.name,
-          tagDescription: tag.message?.includes(' | ')
-            ? tag.message.split(' | ')[0].trim() || undefined
-            : tag.message?.trim() || undefined,
+          tagDescription: tag.message?.trim() || undefined,
         });
       });
       setGitVersionStatus(newStatus);
