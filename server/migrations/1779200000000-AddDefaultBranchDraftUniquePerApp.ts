@@ -83,7 +83,7 @@ export class AddDefaultBranchDraftUniquePerApp1779200000000 implements Migration
     // before the CHECK is added. Otherwise ALTER TABLE would fail validation.
     await queryRunner.query(`
       UPDATE app_versions
-      SET branch_id = NULL
+      SET branch_id = NULL, version_type = 'version'
       WHERE status = 'PUBLISHED' AND branch_id IS NOT NULL;
     `);
 
