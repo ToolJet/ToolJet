@@ -93,6 +93,7 @@ export class GitSyncModule extends SubModule {
         OrganizationGitSyncRepository,
         SourceControlProviderService,
         RemoteBranchCacheService,
+        GitObjectCacheService,
       ],
     });
   }
