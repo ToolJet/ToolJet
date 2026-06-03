@@ -18,8 +18,9 @@ module.exports = {
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
-  onBrokenLinks: 'ignore',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+  onBrokenMarkdownLinks: 'throw',
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
@@ -304,6 +305,7 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
           lastVersion: '3.16.0-LTS',
+          onlyIncludeVersions: process.env.linkCheck ? ['3.16.0-LTS'] : undefined,
           versions: {
             // Uncomment the following line to include the beta version in the sidebar
             // current: {
