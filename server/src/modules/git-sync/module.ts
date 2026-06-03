@@ -32,6 +32,7 @@ export class GitSyncModule extends SubModule {
       GitSyncAdapter,
       WorkspaceGitSyncAdapter,
       RemoteBranchCacheService,
+      GitObjectCacheService,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -47,6 +48,7 @@ export class GitSyncModule extends SubModule {
       'git-sync-adapter',
       'workspace-git-sync-adapter',
       'remote-branch-cache.service',
+      'git-object-cache.service',
     ]);
 
     return this.cacheModule(cacheKey, {
@@ -78,6 +80,7 @@ export class GitSyncModule extends SubModule {
         WorkspaceGitSyncAdapter,
         RemoteBranchCacheService,
         EncryptionService,
+        GitObjectCacheService,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
