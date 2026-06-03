@@ -13,12 +13,14 @@ ARG="${1:-}"
 # Read first line of root version file
 version=$(head -n 1 "$ROOT_VERSION_FILE")
 
-# Function to bump the version, preserving any suffix (e.g. -lts, -beta)
+# Function to bump the version, preserving any suffix (e.g. -lts, -beta, -beta-1)
 bump_version() {
   local v="$1"
+  local suffix base major minor patch
   if [[ "$v" == *"-"* ]]; then
-    suffix="${v##*-}"
-    base="${v%-*}"
+    # Split on the FIRST hyphen so multi-hyphen suffixes (e.g. -beta-1) stay intact
+    base="${v%%-*}"
+    suffix="${v#*-}"
     IFS='.' read -r major minor patch <<< "$base"
     patch=$((patch + 1))
     echo "${major}.${minor}.${patch}-${suffix}"
@@ -29,11 +31,16 @@ bump_version() {
 
 new_version=$(bump_version "$version")
 
-# Capture the branch we're bumping from (used as the PR base) before switching
-source_branch=$(git rev-parse --abbrev-ref HEAD)
+# Nothing to do if the version did not change (e.g. unrecognised/suffix-less version)
+if [[ "$new_version" == "$version" ]]; then
+  echo "Version unchanged ($version); nothing to bump."
+  exit 0
+fi
 
 # If "--create-branch" was passed, branch off the current branch before bumping
 if [[ "$ARG" == "$CREATE_BRANCH_FLAG" ]]; then
+  # Capture the branch we're bumping from (used as the PR base) before switching
+  source_branch=$(git rev-parse --abbrev-ref HEAD)
   branch_name="chore/bump-version-${new_version}"
   git checkout -b "$branch_name"
   echo "Created branch $branch_name"
