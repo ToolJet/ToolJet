@@ -109,7 +109,8 @@ type NewRevampedComponent =
   | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
-  | 'PopoverMenu';
+  | 'PopoverMenu'
+  | 'Pagination';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -160,6 +161,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
+  'Pagination',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -3200,6 +3202,13 @@ function migrateProperties(
       }
       if (properties.tooltip === undefined) {
         properties.tooltip = { value: '' };
+      }
+    }
+
+    // Pagination
+    if (componentType === 'Pagination') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
       }
     }
   }

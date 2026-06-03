@@ -13,11 +13,12 @@ export const Pagination = ({
   width,
 }) => {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow, alignment } = styles;
+  const { visibility, disabledState, loadingState } = properties;
+  const { boxShadow, alignment } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
   const [isVisible, setIsVisible] = useState(visibility);
   const [isDisabled, setIsDisabled] = useState(disabledState);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(loadingState);
 
   const pageChanged = (number) => {
     setCurrentPage(number);
@@ -73,6 +74,11 @@ export const Pagination = ({
     isDisabled !== disabledState && setIsDisabled(disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
+
+  useEffect(() => {
+    isLoading !== loadingState && setIsLoading(loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
   // CSA: setPage
   useEffect(() => {

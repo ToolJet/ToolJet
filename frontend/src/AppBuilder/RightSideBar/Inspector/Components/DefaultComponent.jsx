@@ -12,6 +12,7 @@ import { shallow } from 'zustand/shallow';
 
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
+  'Pagination',
   'Container',
   'TextInput',
   'TextArea',
@@ -169,6 +170,7 @@ export const baseComponentProperties = (
     ),
     General: [
       'Modal',
+      'Pagination',
       'TextInput',
       'PasswordInput',
       'TextArea',

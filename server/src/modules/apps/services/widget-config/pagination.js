@@ -28,28 +28,37 @@ export const paginationConfig = {
         defaultValue: '{{1}}',
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
   },
   validation: {},
   events: {
     onPageChange: { displayName: 'On Page Change' },
   },
   styles: {
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
     alignment: {
       type: 'alignButtons',
       displayName: 'Alignment',
@@ -57,6 +66,11 @@ export const paginationConfig = {
         schema: { type: 'string' },
         defaultValue: 'left',
       },
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
     },
   },
   exposedVariables: {
@@ -101,12 +115,14 @@ export const paginationConfig = {
       defaultPageIndex: {
         value: '{{1}}',
       },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       alignment: { value: 'left' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };
