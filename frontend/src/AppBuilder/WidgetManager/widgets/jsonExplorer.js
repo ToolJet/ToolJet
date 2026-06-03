@@ -199,6 +199,8 @@ export const jsonExplorerConfig = {
       collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {

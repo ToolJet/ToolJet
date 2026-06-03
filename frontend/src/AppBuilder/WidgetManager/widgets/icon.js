@@ -152,6 +152,8 @@ export const iconConfig = {
       loadingState: { value: `{{false}}` },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {

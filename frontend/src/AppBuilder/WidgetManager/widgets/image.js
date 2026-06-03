@@ -284,6 +284,8 @@ export const imageConfig = {
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       collapseWhenHidden: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
     },
     events: [],
     styles: {
