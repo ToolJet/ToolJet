@@ -177,6 +177,7 @@
     "zustand": "^4.3.6"
   },
   "devDependencies": {
+    "chokidar": "^3.6.0",
     "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-transform-runtime": "^7.19.6",
