@@ -66,11 +66,13 @@ export const paginationConfig = {
         schema: { type: 'string' },
         defaultValue: 'left',
       },
+      accordian: 'Pagination',
     },
     boxShadow: {
       type: 'boxShadow',
       displayName: 'Box shadow',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Pagination',
     },
   },
   exposedVariables: {
