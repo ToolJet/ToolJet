@@ -384,10 +384,10 @@
   gap: 6px;
   padding: 7px 12px;
   border-radius: 8px;
-  border: 1px solid var(--border-default, #ccd1d5);
-  background: var(--button-secondary, #fff);
-  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1);
-  color: var(--text-default, #1b1f24);
+  border: 1px solid var(--border-default);
+  background: var(--button-secondary);
+  box-shadow: var(--elevation-000-box-shadow);
+  color: var(--text-default);
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
@@ -395,6 +395,6 @@
   cursor: pointer;
 
   &:hover {
-    background: var(--slate3, #f1f3f5);
+    background: var(--slate3);
   }
 }

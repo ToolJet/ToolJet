@@ -21,6 +21,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { getSubpath } from '@/_helpers/routes';
 import { SquarePen } from 'lucide-react';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
@@ -442,7 +443,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   };
 
   const handleEditDatasource = () => {
-    window.open(`/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`, '_blank');
+    const url = `${getSubpath() ?? ''}/${getWorkspaceId()}/data-sources/${selectedDataSource.id}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const renderChangeDataSource = () => {
@@ -503,11 +505,12 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
               </div>
               {showEditDatasourceButton && (
                 <button
+                  type="button"
                   onClick={handleEditDatasource}
                   data-cy="edit-datasource-button"
                   className="d-flex align-items-center justify-content-center flex-shrink-0 edit-datasource-btn"
                 >
-                  <SquarePen width={14} height={14} color="var(--icon-default, #ACB2B9)" />
+                  <SquarePen width={14} height={14} color="var(--icon-default)" />
                   Edit datasource
                 </button>
               )}
