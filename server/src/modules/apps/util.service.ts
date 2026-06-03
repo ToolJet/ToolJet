@@ -562,17 +562,29 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Slug conflict check — query app_versions for non-workflows
+      // Slug conflict check — query app_versions for non-workflows.
+      // Mirrors findAppBySlug resolution: a slug is taken iff it would
+      // resolve to a different app via either (a) a default-branch row
+      // anywhere on the instance, or (b) a branchless row in a workspace
+      // that has no default branch (git-sync off for that org). Sub-branch
+      // rows aren't slug-addressable until they merge to the default branch,
+      // so they're intentionally excluded here.
       if (versionParams.slug && !isWorkflow) {
-        const conflictingVersion = await manager.findOne(AppVersion, {
-          where: {
-            slug: versionParams.slug,
-            branchId: branchId || undefined,
-            appId: Not(appId),
-          },
-        });
-        if (conflictingVersion) {
-          throw new BadRequestException('This slug is already taken on this branch.');
+        // Same-branch collision (git-sync sub-branch path only). Without a
+        // branchId we skip this — a non-git-sync update has no branch scope
+        // and would otherwise scan unaddressable sub-branch rows on other
+        // workspaces. The two addressable-slug checks below cover non-git.
+        if (branchId) {
+          const conflictingVersion = await manager.findOne(AppVersion, {
+            where: {
+              slug: versionParams.slug,
+              branchId,
+              appId: Not(appId),
+            },
+          });
+          if (conflictingVersion) {
+            throw new BadRequestException('This slug is already taken on this branch.');
+          }
         }
 
         // Instance-wide default-branch slug uniqueness, scoped by apps.type.
@@ -595,6 +607,33 @@ export class AppsUtilService implements IAppsUtilService {
           .limit(1)
           .getOne();
         if (defaultBranchSlugCollision) {
+          throw new BadRequestException('This slug is already taken.');
+        }
+
+        // Branchless-row uniqueness for workspaces with no default branch
+        // (git-sync off). Those branchless rows are the canonical slug
+        // holders for their orgs — findAppBySlug's step-2 fallback resolves
+        // to them — so the incoming slug must not collide with one,
+        // regardless of which workspace is writing. Restricted to rows
+        // whose owning org has no default branch so we don't flag stale
+        // branchless rows in orgs that have since enabled git-sync (their
+        // canonical row is already covered by the default-branch check
+        // above).
+        const branchlessSlugCollision = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .innerJoin(App, 'a', 'a.id = av.app_id')
+          .where('LOWER(av.slug) = LOWER(:slug)', { slug: versionParams.slug })
+          .andWhere('av.branch_id IS NULL')
+          .andWhere('a.type = :appType', { appType: app.type })
+          .andWhere('av.app_id <> :appId', { appId })
+          .andWhere(
+            'NOT EXISTS (SELECT 1 FROM organization_git_sync_branches wb2 ' +
+              'WHERE wb2.organization_id = a.organization_id AND wb2.is_default = true)'
+          )
+          .select('av.id')
+          .limit(1)
+          .getOne();
+        if (branchlessSlugCollision) {
           throw new BadRequestException('This slug is already taken.');
         }
       } else if (isWorkflow && appParams.slug) {
