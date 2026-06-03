@@ -2,6 +2,5 @@
   "name": "@tooljet/widget-definitions",
   "version": "1.0.0",
   "description": "Shared widget configuration definitions for ToolJet",
-  "main": "src/index.js",
-  "license": "AGPL-3.0"
+  "main": "src/index.js"
 }
