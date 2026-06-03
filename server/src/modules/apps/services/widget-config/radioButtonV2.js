@@ -347,6 +347,8 @@ export const radiobuttonV2Config = {
         value:
           "{{[\t{label: 'option1',value: '1',disable: false,visible: true,default: true},{label: 'option2',value: '2',disable: false,visible: true},{label: 'option3',value: '3',disable: false,visible: true}\t]}}",
       },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {

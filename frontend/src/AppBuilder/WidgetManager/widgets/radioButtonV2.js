@@ -94,9 +94,6 @@ export const radiobuttonV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
-    // Renders first in the Additional Actions section. Its displayName is the
-    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
-    // hides its own label via showLabel:false so we don't get a duplicate.
     tooltipFormat: {
       type: 'switch',
       displayName: 'Tooltip',
@@ -108,7 +105,7 @@ export const radiobuttonV2Config = {
       isFxNotRequired: true,
       defaultValue: { value: 'plainText' },
       fullWidth: true,
-      newLine: true, // render the switch on its own line below the "Tooltip" label
+      newLine: true,
       section: 'additionalActions',
     },
     tooltip: {
@@ -347,6 +344,8 @@ export const radiobuttonV2Config = {
         value:
           "{{[\t{label: 'option1',value: '1',disable: false,visible: true,default: true},{label: 'option2',value: '2',disable: false,visible: true},{label: 'option3',value: '3',disable: false,visible: true}\t]}}",
       },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
