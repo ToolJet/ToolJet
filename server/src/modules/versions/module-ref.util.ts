@@ -134,8 +134,8 @@ export async function resolveModuleRef(
         },
       });
       if (onDefault) return onDefault;
-    } else if (!consumerBranchId) {
-      // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
+    } else {
+      // Non-git-sync workspace: defaultBranch === null means no WorkspaceBranch rows exist.
       const noGitSync = await manager.findOne(AppVersion, {
         where: { appId: moduleApp.id, moduleReferenceId, branchId: IsNull(), isStub: false },
       });
@@ -149,10 +149,18 @@ export async function resolveModuleRef(
     consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
   if (!targetBranchId) {
     // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
-    return manager.findOne(AppVersion, {
-      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
-      order: { createdAt: 'DESC' },
+    // Prefer the active draft — saved versions have a newer createdAt (they are created from
+    // the draft), so a plain DESC sort would return a released version instead of the draft.
+    const draft = await manager.findOne(AppVersion, {
+      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false, status: AppVersionStatus.DRAFT },
     });
+    return (
+      draft ??
+      manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
+        order: { createdAt: 'DESC' },
+      })
+    );
   }
   return manager.findOne(AppVersion, {
     where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
@@ -311,6 +319,7 @@ export async function resolveAllModuleViewersForVersion(
   if (!parent) return [];
 
   const defaultBranch = await findDefaultBranch(manager, organizationId);
+  const isGitSyncEnabled = !!defaultBranch;
 
   type ViewerRaw = { componentId: string; moduleAppCoRel: string | null; pinnedValue: string };
   const viewers: ViewerRaw[] = await manager.query(
@@ -468,8 +477,8 @@ export async function resolveAllModuleViewersForVersion(
             r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
-      } else if (!parent.branchId) {
-        // Non-git-sync: no workspace branches, versions have branch_id = NULL.
+      } else if (!isGitSyncEnabled) {
+        // Non-git-sync: defaultBranch === null means no WorkspaceBranch rows exist.
         const onNullBranch = candidates.find(
           (r) => r.moduleReferenceId === pin && r.branchId === null && r.isStub === false
         );
@@ -489,11 +498,15 @@ export async function resolveAllModuleViewersForVersion(
       }
     }
 
-    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default, else null-branch (non-git-sync).
+    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default, else null-branch when !isGitSyncEnabled.
     const fallback =
       (parent.branchId && candidates.find((r) => r.branchId === parent.branchId && r.isStub === false)) ||
       (defaultBranch && candidates.find((r) => r.branchId === defaultBranch.id && r.isStub === false)) ||
-      (!parent.branchId && !defaultBranch && candidates.find((r) => r.branchId === null && r.isStub === false)) ||
+      // Non-git-sync: prefer active draft over latest-by-date (saved versions have newer
+      // createdAt than the draft they were forked from, so DESC sort would pick the wrong row).
+      (!isGitSyncEnabled &&
+        (candidates.find((r) => r.branchId === null && r.isStub === false && r.status === AppVersionStatus.DRAFT) ||
+          candidates.find((r) => r.branchId === null && r.isStub === false))) ||
       undefined;
     if (fallback) {
       return pickKind(fallback, pin ? 'orphan-fallback' : 'unpinned-fallback');
