@@ -28,6 +28,7 @@ export class GitSyncModule extends SubModule {
       BaseGitSyncService,
       GitSyncAdapter,
       WorkspaceGitSyncAdapter,
+      GitObjectCacheService,
     } = await this.getProviders(configs, 'git-sync', [
       'controller',
       'service',
@@ -42,6 +43,7 @@ export class GitSyncModule extends SubModule {
       'base-git.service',
       'git-sync-adapter',
       'workspace-git-sync-adapter',
+      'git-object-cache.service',
     ]);
 
     return {
@@ -73,6 +75,7 @@ export class GitSyncModule extends SubModule {
         GitSyncAdapter,
         WorkspaceGitSyncAdapter,
         EncryptionService,
+        GitObjectCacheService,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
