@@ -501,6 +501,10 @@ module.exports = {
           {
             from: '/docs/how-to/use-custom-parameters',
             to: '/docs/app-builder/connecting-with-data-sources/use-custom-parameters/',
+          },
+          {
+            from: '/docs/development-lifecycle/branching-and-pr',
+            to: '/docs/beta/branching-and-pr',
           }
         ],
       },
