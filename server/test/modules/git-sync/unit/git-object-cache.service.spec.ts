@@ -41,3 +41,48 @@ describe('GitObjectCacheService.authConfigArgs', () => {
     expect(Buffer.from(b64, 'base64').toString()).toBe('x-access-token:ghs_TOKEN123');
   });
 });
+
+describe('GitObjectCacheService eviction', () => {
+  const fs = require('fs'); const os = require('os'); const path = require('path');
+  let root: string; let svc: GitObjectCacheService;
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-test-'));
+    svc = new GitObjectCacheService({} as any);
+    (GitObjectCacheService as any).ROOT = root;
+  });
+  afterEach(() => {
+    delete (GitObjectCacheService as any).ROOT;       // restore default ROOT — no cross-test leak
+    delete process.env.GIT_OBJECT_CACHE_TTL_DAYS;
+    delete process.env.GIT_OBJECT_CACHE_MAX_GB;
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const mk = (name: string, ageDays: number, bytes = 10) => {
+    const d = path.join(root, name + '.git'); fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, 'HEAD'), 'x'.repeat(bytes));
+    const t = Date.now() - ageDays * 86400_000; fs.utimesSync(d, t / 1000, t / 1000);
+    return d;
+  };
+
+  it('pruneIdle removes mirrors older than TTL', async () => {
+    const fresh = mk('fresh', 1); const stale = mk('stale', 30);
+    process.env.GIT_OBJECT_CACHE_TTL_DAYS = '14';
+    await svc.pruneIdle();
+    expect(fs.existsSync(fresh)).toBe(true);
+    expect(fs.existsSync(stale)).toBe(false);
+  });
+
+  it('enforceSizeCap evicts least-recently-used until under cap', async () => {
+    const old = mk('old', 5, 1_000_000); const recent = mk('recent', 0, 1_000_000);
+    process.env.GIT_OBJECT_CACHE_MAX_GB = '0.00143'; // ~1.5MB cap -> must drop one, keep one
+    await svc.enforceSizeCap();
+    expect(fs.existsSync(old)).toBe(false);
+    expect(fs.existsSync(recent)).toBe(true);
+  });
+
+  it('evict removes the specific (org,repo) mirror', async () => {
+    const p = svc.mirrorPathFor('orgX', 'https://github.com/a/b.git');
+    fs.mkdirSync(p, { recursive: true }); fs.writeFileSync(path.join(p, 'HEAD'), 'x');
+    await svc.evict('orgX', 'https://github.com/a/b.git');
+    expect(fs.existsSync(p)).toBe(false);
+  });
+});
