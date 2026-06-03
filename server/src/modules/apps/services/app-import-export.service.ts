@@ -549,7 +549,9 @@ export class AppImportExportService {
         const importedIsModule = importedModule?.appV2?.type === APP_TYPES.MODULE;
         const existingHasUsableVersion =
           !!existingModule?.editingVersion?.id && !!existingModule?.editingVersion?.currentEnvironmentId;
-        const canReuse = !!existingModule && importedIsModule && existingHasUsableVersion;
+        const importedHasUsableVersion =
+          !!importedModule?.appV2?.editingVersion?.id && !!importedModule?.appV2?.editingVersion?.currentEnvironmentId;
+        const canReuse = !!existingModule && importedIsModule && existingHasUsableVersion && importedHasUsableVersion;
 
         if (canReuse) {
           // Module exists - map old IDs to existing module's IDs
