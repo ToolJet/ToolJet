@@ -42,6 +42,27 @@ describe('GitObjectCacheService.authConfigArgs', () => {
   });
 });
 
+describe('GitObjectCacheService root dir resolution', () => {
+  afterEach(() => {
+    delete process.env.GIT_OBJECT_CACHE_DIR;
+    delete (GitObjectCacheService as any).ROOT;
+  });
+
+  it('uses GIT_OBJECT_CACHE_DIR/tj-git-cache when env set and no ROOT override', () => {
+    process.env.GIT_OBJECT_CACHE_DIR = '/some/base';
+    const svc = new GitObjectCacheService({} as any);
+    const p = svc.mirrorPathFor('org1', 'https://github.com/acme/repo.git');
+    expect(p).toMatch(/^\/some\/base\/tj-git-cache\/[a-f0-9]{64}\.git$/);
+  });
+
+  it('falls back to tmpdir/tj-git-cache when GIT_OBJECT_CACHE_DIR unset', () => {
+    const os = require('os'); const path = require('path');
+    const svc = new GitObjectCacheService({} as any);
+    const p = svc.mirrorPathFor('org1', 'https://github.com/acme/repo.git');
+    expect(p.startsWith(path.join(os.tmpdir(), 'tj-git-cache'))).toBe(true);
+  });
+});
+
 describe('GitObjectCacheService eviction', () => {
   const fs = require('fs'); const os = require('os'); const path = require('path');
   let root: string; let svc: GitObjectCacheService;
