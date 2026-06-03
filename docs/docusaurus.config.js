@@ -18,7 +18,8 @@ module.exports = {
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
-  onBrokenLinks: 'ignore',
+  onBrokenLinks: 'warn',
+  onBrokenAnchors: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
@@ -501,6 +502,18 @@ module.exports = {
           {
             from: '/docs/how-to/use-custom-parameters',
             to: '/docs/app-builder/connecting-with-data-sources/use-custom-parameters/',
+          },
+          {
+            from: '/docs/tooljet-api/',
+            to: '/api/',
+          },
+          {
+            from: '/docs/development-lifecycle/cicd/gitsync-api/',
+            to: '/api/gitsync-api/',
+          },
+          {
+            from: '/docs/user-management/sso/scim/overview/',
+            to: '/api/scim/',
           }
         ],
       },

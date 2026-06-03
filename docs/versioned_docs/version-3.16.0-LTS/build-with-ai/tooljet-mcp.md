@@ -41,7 +41,7 @@ Before you begin, you'll need:
 
 ### Step 1: Get an Access Token
 
-Get an access token from your ToolJet instance. You'll need this token to authenticate the MCP server. Refer to the [ToolJet API](https://docs.tooljet.com/docs/tooljet-api#enabling-tooljet-api) documentation for more details on how to generate an API token.
+Get an access token from your ToolJet instance. You'll need this token to authenticate the MCP server. Refer to the [ToolJet API](/api/#enabling-tooljet-api) documentation for more details on how to generate an API token.
 
 ### Step 2: Configure Your AI Tool
 
