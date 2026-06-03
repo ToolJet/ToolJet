@@ -1,13 +1,34 @@
 import React, { useMemo } from 'react';
-import ModalBase from '@/_ui/Modal';
+import ModalBaseRaw from '@/_ui/Modal';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { buildErrorReport } from './errorReport';
 import './FallbackBoundary.scss';
 
+// ModalBase is an untyped JS component; relax its props to avoid spurious type errors.
+const ModalBase = ModalBaseRaw as React.FC<any>;
+
+interface ErrorReportModalProps {
+  show: boolean;
+  onClose: () => void;
+  error?: (Error & { message?: string }) | null;
+  errorInfo?: React.ErrorInfo | null;
+  eventId?: string | null;
+  label?: string;
+  darkMode?: boolean;
+}
+
 // User-triggered modal that surfaces a copy-pasteable error report.
 // Opened only when the user clicks "Report error" on a boundary fallback,
 // so it never auto-interrupts and never stacks across multiple boundaries.
-const ErrorReportModal = ({ show, onClose, error, errorInfo, eventId, label, darkMode }) => {
+const ErrorReportModal: React.FC<ErrorReportModalProps> = ({
+  show,
+  onClose,
+  error,
+  errorInfo,
+  eventId,
+  label,
+  darkMode,
+}) => {
   const report = useMemo(
     () => buildErrorReport({ error, errorInfo, label, eventId }),
     [error, errorInfo, label, eventId]

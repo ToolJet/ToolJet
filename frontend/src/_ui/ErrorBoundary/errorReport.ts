@@ -1,11 +1,20 @@
 import useStore from '@/AppBuilder/_stores/store';
 
+interface ErrorReportInput {
+  error?: (Error & { stack?: string }) | null;
+  errorInfo?: { componentStack?: string | null } | null;
+  label?: string;
+  eventId?: string | null;
+}
+
 // Builds a copy-pasteable, support-friendly error report from a caught error.
 // Pulls app/version/page context straight from the store (works outside React).
-export function buildErrorReport({ error, errorInfo, label, eventId } = {}) {
-  let appId, versionId, pageId;
+export function buildErrorReport({ error, errorInfo, label, eventId }: ErrorReportInput = {}): string {
+  let appId: string | undefined;
+  let versionId: string | undefined;
+  let pageId: string | undefined;
   try {
-    const state = useStore.getState();
+    const state = useStore.getState() as any;
     appId = state?.getAppId?.('canvas');
     pageId = state?.getCurrentPageId?.('canvas');
     versionId = state?.currentVersionId;
@@ -13,7 +22,7 @@ export function buildErrorReport({ error, errorInfo, label, eventId } = {}) {
     // store may not be ready; context fields fall back to n/a
   }
 
-  const tjVersion = window?.public_config?.RELEASE_VERSION || 'unknown';
+  const tjVersion = (window as any)?.public_config?.RELEASE_VERSION || 'unknown';
 
   const lines = [
     `Area:        ${label || 'Unknown'}`,
