@@ -49,6 +49,7 @@ export const getResourceTypeConfig = (resourceType) => {
 };
 
 export function AppsSelect(props) {
+  const { customComponents, ...rest } = props;
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -217,8 +218,8 @@ export function AppsSelect(props) {
       closeMenuOnSelect={false}
       hideSelectedOptions={false}
       className={darkMode && 'theme-dark dark-theme'}
-      components={{ Option: InputOption, MultiValue, IndicatorSeparator: null }}
-      {...props}
+      {...rest}
+      components={{ Option: InputOption, MultiValue, IndicatorSeparator: null, ...(customComponents || {}) }}
       onChange={(selected) => {
         const isCurrentSelectAll = props.value.find((app) => app?.isAllField)?.isAllField;
         const isSelectAllPresentInSelection = selected.find((app) => app?.isAllField)?.isAllField;

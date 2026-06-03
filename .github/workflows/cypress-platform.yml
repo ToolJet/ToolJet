@@ -957,7 +957,7 @@ jobs:
           echo "ENABLE_AI_FEATURES=true" >> .env
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
           echo "TJ_AI_GATEWAY_URL=${{ secrets.TJ_AI_GATEWAY_URL }}" >> .env
-          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env         
+          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env
 
       - name: clean up old docker containers
         run: |

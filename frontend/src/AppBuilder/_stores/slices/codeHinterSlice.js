@@ -94,6 +94,9 @@ function buildQueryHints(storeState, moduleId) {
     hints.push({ hint: `queries.${name}`, type: 'Object' });
     hints.push({ hint: `queries.${name}.run()`, type: 'Function' });
     hints.push({ hint: `queries.${name}.reset()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.getData()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.getRawData()`, type: 'Function' });
+    hints.push({ hint: `queries.${name}.getloadingState()`, type: 'Function' });
 
     if (queryData && typeof queryData === 'object') {
       hints.push(...traverseObjectToHints(queryData, `queries.${name}`, 3));
