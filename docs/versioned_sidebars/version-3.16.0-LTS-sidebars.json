@@ -314,7 +314,7 @@
                 "widgets/accordion",
                 "widgets/bounded-box",
                 "widgets/button",
-                "widgets/button-group",
+                "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
                 {
@@ -357,7 +357,6 @@
                 "widgets/date-range-picker",
                 "widgets/date-picker-v2",
                 "widgets/datetime-picker-v2",
-                "widgets/datepicker",
                 "widgets/divider",
                 "widgets/dropdown",
                 "widgets/email-input",
@@ -483,7 +482,40 @@
                 "widgets/time-picker",
                 "widgets/toggle-switch-v2",
                 "widgets/tree-select",
-                "widgets/vertical-divider"
+                "widgets/vertical-divider",
+                 {
+                  "type": "category",
+                  "label": "Legacy Components",
+                  "items": [
+                    {
+                      "type": "link",
+                      "label": "Modal",
+                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal"
+                    },
+                    "widgets/datepicker",
+                    {
+                      "type": "link",
+                      "label": "Radio Button",
+                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Dropdown",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Multiselect",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-lts/widgets/multiselect/"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Range Slider",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
+                    },
+                    "widgets/button-group"
+                  ]
+                }
               ]
             },
             {
