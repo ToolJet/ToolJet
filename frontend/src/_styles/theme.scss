@@ -12387,6 +12387,18 @@ tbody {
   color: var(--indigo9);
 }
 
+.marketplace-search-holder {
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.marketplace-empty-state {
+  display: block;
+  text-align: center;
+  margin-top: 48px;
+}
+
 .popover {
   .popover-arrow {
     display: none;
