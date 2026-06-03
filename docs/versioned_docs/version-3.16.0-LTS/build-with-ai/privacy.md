@@ -1,6 +1,6 @@
 ---
 id: privacy
-title: Privacy Policy
+title: AI Privacy Policy
 ---
 
 <br/>
