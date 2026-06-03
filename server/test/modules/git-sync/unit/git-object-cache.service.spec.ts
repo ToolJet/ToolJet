@@ -28,3 +28,16 @@ describe('GitObjectCacheService.mirrorPathFor', () => {
     expect(svc.isEnabled()).toBe(true);
   });
 });
+
+describe('GitObjectCacheService.authConfigArgs', () => {
+  const svc = new GitObjectCacheService({} as any);
+  it('returns ephemeral http.extraHeader with base64 basic creds, no token in plain text', () => {
+    const args = svc.authConfigArgs('ghs_TOKEN123');
+    expect(args[0]).toBe('-c');
+    const header = args[1];
+    expect(header).toMatch(/^http\.extraHeader=Authorization: Basic /);
+    expect(header).not.toContain('ghs_TOKEN123');                 // raw token not present
+    const b64 = header.split('Basic ')[1];
+    expect(Buffer.from(b64, 'base64').toString()).toBe('x-access-token:ghs_TOKEN123');
+  });
+});
