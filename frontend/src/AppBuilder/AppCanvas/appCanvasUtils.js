@@ -228,9 +228,24 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
 export function computeComponentName(componentType, currentComponents, moduleName) {
   const widgetConfigName = componentTypes.find((component) => component?.component === componentType)?.name;
   const rawBase = moduleName || widgetConfigName || '';
-  const sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+  let sanitizedBase = rawBase.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+
+  // Fallback: if sanitization stripped everything (e.g., moduleName is "📊", "中文", or all symbols),
+  // fall back to the widget config name so we don't produce uninformative names like "1", "2".
+  if (!sanitizedBase) {
+    sanitizedBase = (widgetConfigName || 'component').toLowerCase();
+  }
+
+  // Smart starting count: skip past existing components whose name starts with our prefix.
+  // Without this, dropping the N-th widget of the same prefix would walk N candidate names,
+  // making each drop O(N^2) overall. Over-counting is safe — the find-loop below still
+  // verifies the final name is collision-free.
+  const matchingCount = Object.values(currentComponents).filter((component) =>
+    component?.component?.name?.startsWith(sanitizedBase)
+  ).length;
+  let currentNumber = matchingCount + 1;
+
   let found = false;
-  let currentNumber = 1;
   let _componentName = '';
   while (!found) {
     _componentName = `${sanitizedBase}${currentNumber}`;
