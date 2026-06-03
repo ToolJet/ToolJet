@@ -9,6 +9,7 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
+import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -628,9 +629,14 @@ export const createQueryPanelSlice = (set, get) => ({
           moduleId
         );
 
-        // Create AbortController for this run so abortQuery can cancel the in-flight fetch
-        const abortController = new AbortController();
-        queryAbortControllers.set(queryId, abortController);
+        // Create AbortController only for fetch-based kinds. For runjs/runpy/workflows,
+        // controller.abort() has no effect on the underlying execution, so registering one
+        // would leave a misleading "aborted-but-still-running" state.
+        const isAbortable = !ABORT_UNSUPPORTED_KINDS.has(query.kind);
+        const abortController = isAbortable ? new AbortController() : null;
+        if (abortController) {
+          queryAbortControllers.set(queryId, abortController);
+        }
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
@@ -667,7 +673,7 @@ export const createQueryPanelSlice = (set, get) => ({
               return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
             })(),
             modeStore.modules.canvas.currentMode,
-            abortController.signal
+            abortController?.signal
           );
         }
 
@@ -809,7 +815,7 @@ export const createQueryPanelSlice = (set, get) => ({
             resolve({ status: 'failed', message: errorMessage });
           })
           .finally(() => {
-            if (queryAbortControllers.get(queryId) === abortController) {
+            if (abortController && queryAbortControllers.get(queryId) === abortController) {
               queryAbortControllers.delete(queryId);
             }
           });
@@ -905,9 +911,12 @@ export const createQueryPanelSlice = (set, get) => ({
       });
 
       return new Promise(function (resolve, reject) {
-        // Create AbortController for this preview so abortQuery can cancel the in-flight fetch
-        const abortController = new AbortController();
-        queryAbortControllers.set(query?.id, abortController);
+        // Create AbortController only for fetch-based preview kinds. See runQuery for rationale.
+        const isAbortable = !ABORT_UNSUPPORTED_KINDS.has(query.kind);
+        const abortController = isAbortable ? new AbortController() : null;
+        if (abortController) {
+          queryAbortControllers.set(query?.id, abortController);
+        }
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
@@ -930,7 +939,7 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             currentVersionId,
             currentAppEnvironmentId,
-            abortController.signal
+            abortController?.signal
           );
         }
 
@@ -1163,7 +1172,7 @@ export const createQueryPanelSlice = (set, get) => ({
             reject({ error, data });
           })
           .finally(() => {
-            if (queryAbortControllers.get(query?.id) === abortController) {
+            if (abortController && queryAbortControllers.get(query?.id) === abortController) {
               queryAbortControllers.delete(query?.id);
             }
           });
