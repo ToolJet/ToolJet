@@ -7,7 +7,7 @@
     gap: 32px;
     flex: 1 0 0;
     border-radius: var(--3, 6px);
-    background: var(--background-warning-weak, #FAEFE7);
+    background: var(--background-warning-weak, #FAEFE7) !important;
     border: none !important;
     outline: none !important;
 
@@ -23,7 +23,7 @@
 
 
     /* Webpack is showing error for this: please fix it */
-        &>div {
+        & > div {
             justify-content: center !important;
         }
     }
@@ -47,10 +47,15 @@
 .highlighted-text {
     font-weight: 600 !important;
     font-style: bold;
+    color: var(--text-warning, #BF4F03);
 }
 
 .documentation-link {
     font-weight: 400 !important;
     color: var(--primary, #3E63DD) !important;
     text-decoration-line: underline !important;
+
+    .dark-theme &, .theme-dark &, .dark & {
+        color: var(--text-warning, #BA5722) !important;
+    }
 }

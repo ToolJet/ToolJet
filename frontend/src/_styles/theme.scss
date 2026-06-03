@@ -9031,6 +9031,11 @@ tbody {
 
 .react-tooltip {
   font-size: 0.765625rem !important;
+  --rt-color-background: var(--background-surface-layer-02, #2a394a) !important;
+  --rt-color-text: var(--text-default, #fff) !important;
+  --rt-border-color: var(--border-weak, #2B3036) !important;
+  border: 1px solid var(--rt-border-color) !important;
+  z-index: 10000 !important;
 }
 
 .tooltip {
