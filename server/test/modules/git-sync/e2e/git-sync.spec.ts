@@ -2839,7 +2839,440 @@ describe('GitSyncController', () => {
         const hydratedMainModule = (modulesAfterHydrationResp.body.apps || []).find((m: any) => m.id === mainModule.id);
         expect(hydratedMainModule).toBeDefined();
         expect(hydratedMainModule.is_stub).toBe(false);
-      }, 360000);
+
+        // ─── Helpers for steps 55-60 ──────────────────────────────────────
+        // Capture-then-mutate-then-restore pattern: we manipulate main's meta
+        // files via the Gitea admin endpoint to drive detectAndThrowConflicts
+        // through specific scenarios, restoring each file after the assertion
+        // so the repo isn't corrupted for subsequent steps.
+        const FILES_URL = `${GIT_BASE_URL}/admin/repos/${GIT_REPO_PATH}.git/files`;
+
+        const captureGitMeta = async (metaFileName: string): Promise<string> => {
+          // The Gitea simulator at this host doesn't serve raw/contents APIs,
+          // so we shallow-clone main and read the file off disk.
+          const simpleGit = (await import('simple-git')).default;
+          const fs = await import('fs');
+          const path = await import('path');
+          const os = await import('os');
+          const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-meta-capture-'));
+          try {
+            const git = simpleGit({ baseDir: tmpDir, timeout: { block: 30000 } });
+            await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
+              '--branch',
+              'main',
+              '--depth',
+              '1',
+              '--single-branch',
+            ]);
+            return fs.readFileSync(path.join(tmpDir, '.meta', metaFileName), 'utf-8');
+          } finally {
+            await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+          }
+        };
+
+        const writeGitMeta = async (metaFileName: string, content: string, message: string): Promise<void> => {
+          const resp = await fetch(FILES_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ref: 'main',
+              path: `.meta/${metaFileName}`,
+              content,
+              message,
+            }),
+          });
+          if (!resp.ok) {
+            const text = await resp.text().catch(() => '');
+            throw new Error(`writeGitMeta(${metaFileName}) ${resp.status} ${text}`);
+          }
+        };
+
+        const parseConflictGroups = (body: any): any[] | null => {
+          if (typeof body?.message !== 'string') return null;
+          try {
+            const parsed = JSON.parse(body.message);
+            return Array.isArray(parsed?.conflictGroups) ? parsed.conflictGroups : null;
+          } catch {
+            return null;
+          }
+        };
+
+        step(55, 'pull main with conflicting appMeta (intra-incoming same name) → 409 with conflict details');
+        // 55. Inject a fake corid that shares an appPath with an existing entry.
+        //     detectAndThrowConflicts must raise a 409 with the colliding
+        //     entries enumerated under conflictGroups.
+        const originalAppMeta = await captureGitMeta('appMeta.json');
+        const appMetaObj = JSON.parse(originalAppMeta);
+        // Skip non-entry keys (e.g. lastUpdatedAt) by requiring an
+        // `appPath` field on the entry itself.
+        const realAppKeys = Object.keys(appMetaObj).filter(
+          (k) => appMetaObj[k] && typeof appMetaObj[k] === 'object' && (appMetaObj[k] as any).appPath
+        );
+        expect(realAppKeys.length).toBeGreaterThan(0);
+        const sampleAppEntry = appMetaObj[realAppKeys[0]];
+
+        const { randomUUID: randomUUIDForMeta } = await import('crypto');
+        const fakeAppCorid = randomUUIDForMeta();
+        const conflictAppMeta = {
+          ...appMetaObj,
+          [fakeAppCorid]: {
+            appPath: sampleAppEntry.appPath,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        await writeGitMeta('appMeta.json', JSON.stringify(conflictAppMeta, null, 2), 'inject app meta conflict');
+
+        const appConflictPullResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(409);
+        const appConflictGroups = parseConflictGroups(appConflictPullResp.body);
+        expect(appConflictGroups).not.toBeNull();
+        const appConflictGroup = appConflictGroups!.find((g: any) => g.type === 'app');
+        expect(appConflictGroup).toBeDefined();
+        expect(appConflictGroup.conflictField).toBe('name');
+        expect(appConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
+        expect(appConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeAppCorid);
+
+        await writeGitMeta('appMeta.json', originalAppMeta, 'restore app meta');
+
+        step(56, 'pull main with conflicting moduleMeta (intra-incoming same name) → 409 with conflict details');
+        // 56. Same shape as step 55 for modules.
+        const originalModuleMeta = await captureGitMeta('moduleMeta.json');
+        const moduleMetaObj = JSON.parse(originalModuleMeta);
+        const realModuleKeys = Object.keys(moduleMetaObj).filter(
+          (k) => moduleMetaObj[k] && typeof moduleMetaObj[k] === 'object' && (moduleMetaObj[k] as any).appPath
+        );
+        expect(realModuleKeys.length).toBeGreaterThan(0);
+        const sampleModuleEntry = moduleMetaObj[realModuleKeys[0]];
+
+        const fakeModuleCorid = randomUUIDForMeta();
+        const conflictModuleMeta = {
+          ...moduleMetaObj,
+          [fakeModuleCorid]: {
+            appPath: sampleModuleEntry.appPath,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        await writeGitMeta(
+          'moduleMeta.json',
+          JSON.stringify(conflictModuleMeta, null, 2),
+          'inject module meta conflict'
+        );
+
+        const moduleConflictPullResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(409);
+        const moduleConflictGroups = parseConflictGroups(moduleConflictPullResp.body);
+        expect(moduleConflictGroups).not.toBeNull();
+        const moduleConflictGroup = moduleConflictGroups!.find((g: any) => g.type === 'module');
+        expect(moduleConflictGroup).toBeDefined();
+        expect(moduleConflictGroup.conflictField).toBe('name');
+        expect(moduleConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
+        expect(moduleConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeModuleCorid);
+
+        await writeGitMeta('moduleMeta.json', originalModuleMeta, 'restore module meta');
+
+        step(57, 'pull main with conflicting dataSourceMeta (intra-incoming same name) → 409 with conflict details');
+        // 57. Same shape as step 55 for data sources. The DS conflict
+        //     detector keys on the `name` field of the meta entry.
+        const originalDsMeta = await captureGitMeta('dataSourceMeta.json');
+        const dsMetaObj = JSON.parse(originalDsMeta);
+        const realDsKeys = Object.keys(dsMetaObj).filter(
+          (k) => dsMetaObj[k] && typeof dsMetaObj[k] === 'object' && (dsMetaObj[k] as any).name
+        );
+        expect(realDsKeys.length).toBeGreaterThan(0);
+        const sampleDsEntry = dsMetaObj[realDsKeys[0]];
+
+        const fakeDsCorid = randomUUIDForMeta();
+        const conflictDsMeta = {
+          ...dsMetaObj,
+          [fakeDsCorid]: {
+            ...sampleDsEntry,
+            name: sampleDsEntry.name,
+          },
+        };
+        await writeGitMeta('dataSourceMeta.json', JSON.stringify(conflictDsMeta, null, 2), 'inject ds meta conflict');
+
+        const dsConflictPullResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(409);
+        const dsConflictGroups = parseConflictGroups(dsConflictPullResp.body);
+        expect(dsConflictGroups).not.toBeNull();
+        const dsConflictGroup = dsConflictGroups!.find((g: any) => g.type === 'datasource');
+        expect(dsConflictGroup).toBeDefined();
+        expect(dsConflictGroup.conflictField).toBe('name');
+        expect(dsConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
+        expect(dsConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeDsCorid);
+
+        await writeGitMeta('dataSourceMeta.json', originalDsMeta, 'restore ds meta');
+
+        step(58, 'orphan module + same-name incoming on default → pull succeeds (orphan filter)');
+        // 58. Module variant of step 51: a local orphan module on main shares
+        //     its name with an incoming git module (different corid). The
+        //     orphan-aware conflict detector must exclude the orphan from the
+        //     scan so the pull does not raise 409, after which the orphan
+        //     sweep deletes the orphan and the incoming module is imported.
+        const createBranch12Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-12', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat12BranchId: string = createBranch12Resp.body.id;
+
+        // Orphan module: create on feat-e2e-12, then SQL-mutate its AppVersion
+        // onto main as a 'version' row (mirrors the pattern from steps 49/51).
+        const orphanModResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/modules')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat12BranchId)
+          .send({ icon: 'folderupload', name: 'orphan-mod-collide', type: 'module', branchId: feat12BranchId })
+          .expect(201);
+        const orphanModId: string = orphanModResp.body.id;
+        await dataSource.query(`UPDATE app_versions SET version_type = 'version', branch_id = $1 WHERE app_id = $2`, [
+          mainBranchId,
+          orphanModId,
+        ]);
+
+        // Same-named module on a separate feature branch, push + merge to main.
+        const createBranch13Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-13', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat13BranchId: string = createBranch13Resp.body.id;
+
+        const newModResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/modules')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat13BranchId)
+          .send({ icon: 'folderupload', name: 'orphan-mod-collide', type: 'module', branchId: feat13BranchId })
+          .expect(201);
+        const newModId: string = newModResp.body.id;
+        const newModDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${newModId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat13BranchId)
+          .expect(200);
+        const newModEditing =
+          newModDetail.body?.editing_version ||
+          newModDetail.body?.editingVersion ||
+          newModDetail.body?.app?.editing_version;
+        const newModVersionId: string = newModEditing.id;
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${newModId}/${newModVersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat13BranchId)
+          .send({
+            gitAppName: 'orphan-mod-collide',
+            versionId: newModVersionId,
+            lastCommitMessage: 'collide-mod on feat-e2e-13',
+            gitVersionName: 'feat-e2e-13',
+            sourceBranch: 'feat-e2e-13',
+          })
+          .expect(201);
+
+        const orphanModMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-13',
+            target: 'main',
+            message: 'Land orphan-mod-collide module',
+          }),
+        });
+        expect((await orphanModMergeResp.json().catch(() => ({}))).ok).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Orphan App row gone (main was its only branch after mutation).
+        const orphanModAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanModId]);
+        expect(orphanModAfterPull).toHaveLength(0);
+
+        // Exactly one 'orphan-mod-collide' module sits on main now.
+        const modOnMainAfterPull = await dataSource.query(
+          `SELECT app.id
+             FROM apps app
+             INNER JOIN app_versions av ON av.app_id = app.id
+            WHERE app.organization_id = $1
+              AND app.type = $2
+              AND av.branch_id = $3
+              AND av.app_name = 'orphan-mod-collide'`,
+          [orgId, 'module', mainBranchId]
+        );
+        expect(modOnMainAfterPull).toHaveLength(1);
+        expect(modOnMainAfterPull[0].id).not.toBe(orphanModId);
+
+        step(59, 'orphan data source + same-name incoming on default → pull succeeds (orphan filter)');
+        // 59. Data-source variant: create a DS on a feature branch, SQL-move
+        //     its DSV onto main as an "orphan" (no matching file in main's
+        //     data-sources/), then create+push a same-named DS on another
+        //     feature branch and merge to main. The orphan-aware detector
+        //     must exclude the orphan DS so the pull succeeds.
+        //
+        // Note on branch ordering: feat15 must be created BEFORE the orphan is
+        // moved onto main. cloneDataSourceVersions runs at branch-create time
+        // and clones every active main-branch DSV into the new branch — if the
+        // orphan already lived on main, feat15 would inherit a DSV for it, the
+        // push from feat15 would re-serialize the orphan into git, and after
+        // merge main would no longer treat it as an orphan. Creating feat15
+        // first keeps the orphan exclusive to main.
+        const createBranch14Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-14', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat14BranchId: string = createBranch14Resp.body.id;
+
+        const createBranch15Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-15', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat15BranchId: string = createBranch15Resp.body.id;
+
+        const orphanDsResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat14BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat14BranchId)
+          .send({
+            name: 'orphan-ds-collide',
+            kind: 'restapi',
+            options: restapiCreateOptions,
+            scope: 'global',
+          })
+          .expect(201);
+        const orphanDsId: string = orphanDsResp.body.id;
+
+        // Move the orphan DSV onto main. feat15 doesn't yet have a DSV for
+        // this DS (we created feat15 before the orphan existed), so feat15's
+        // workspace push won't re-serialize the orphan into git — main will
+        // see no matching file in data-sources/ after the merge.
+        await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
+          mainBranchId,
+          orphanDsId,
+        ]);
+
+        const newDsResp_orphan = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat15BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat15BranchId)
+          .send({
+            name: 'orphan-ds-collide',
+            kind: 'restapi',
+            options: restapiCreateOptions,
+            scope: 'global',
+          })
+          .expect(201);
+        const newDsForOrphanTestId: string = newDsResp_orphan.body.id;
+        expect(newDsForOrphanTestId).not.toBe(orphanDsId);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/push')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat15BranchId)
+          .send({ commitMessage: 'collide-ds on feat-e2e-15', branchId: feat15BranchId })
+          .expect(201);
+
+        const orphanDsMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-15',
+            target: 'main',
+            message: 'Land orphan-ds-collide',
+          }),
+        });
+        expect((await orphanDsMergeResp.json().catch(() => ({}))).ok).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Orphan DSV on main is deactivated by the deserialize sweep — its
+        // corid is absent from main's data-sources/ after the merge.
+        const orphanDsvAfterPull = await dataSource.query(
+          `SELECT is_active FROM data_source_versions
+            WHERE data_source_id = $1 AND branch_id = $2`,
+          [orphanDsId, mainBranchId]
+        );
+        expect(orphanDsvAfterPull).toHaveLength(1);
+        expect(orphanDsvAfterPull[0].is_active).toBe(false);
+
+        // The new DS pushed from feat15 has its own active DSV on main.
+        // The DS API auto-renames on collision (generateUniqueName), so the
+        // new DS landed with a suffixed name like 'orphan-ds-collide_N'; the
+        // assertion just checks an additional active DSV exists.
+        const newDsvOnMain = await dataSource.query(
+          `SELECT dsv.id, ds.name
+             FROM data_source_versions dsv
+             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
+            WHERE ds.organization_id = $1
+              AND ds.name LIKE 'orphan-ds-collide%'
+              AND ds.id <> $2
+              AND dsv.branch_id = $3
+              AND dsv.is_active = true`,
+          [orgId, orphanDsId, mainBranchId]
+        );
+        expect(newDsvOnMain.length).toBeGreaterThanOrEqual(1);
+      }, 540000);
     });
   });
 });

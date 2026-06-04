@@ -13,7 +13,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, IsNull, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -719,13 +719,14 @@ export class AppsUtilService implements IAppsUtilService {
           ]);
         } else {
           // Non-git-sync flow: all version rows of this app share the same metadata.
-          // Update every VERSION-type row with branch_id IS NULL so every version stays
-          // in sync (the version picker can read any row and get current values).
-          await manager.update(
-            AppVersion,
-            { appId, versionType: AppVersionType.VERSION, branchId: IsNull() },
-            versionParams
-          );
+          // Update every app_versions row for this app — no version_type or
+          // branch_id filter — so slug/name/icon/is_public stay in sync across
+          // VERSION rows, BRANCH rows, and any stale non-null branch_id rows
+          // left behind by a previous git-sync session. findAppBySlug's
+          // branchless fallback resolves by app_id without caring which row
+          // back-ed the slug, so keeping all rows consistent is the safest
+          // invariant when git is off.
+          await manager.update(AppVersion, { appId }, versionParams);
         }
       }
 
