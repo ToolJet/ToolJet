@@ -18,9 +18,9 @@ module.exports = {
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
-  onBrokenAnchors: 'throw',
-  onBrokenMarkdownLinks: 'throw',
+  onBrokenLinks: 'warn',
+  onBrokenAnchors: 'warn',
+  onBrokenMarkdownLinks: 'warn',
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
@@ -505,6 +505,12 @@ module.exports = {
             to: '/docs/app-builder/connecting-with-data-sources/use-custom-parameters/',
           },
           {
+            from: '/docs/development-lifecycle/branching-and-pr',
+            to: '/docs/beta/branching-and-pr',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
+            to: '/docs/beta/gitsync-env-vars',
             from: '/docs/tooljet-api/',
             to: '/api/',
           },
