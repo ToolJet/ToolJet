@@ -18,7 +18,8 @@ module.exports = {
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
-  onBrokenLinks: 'ignore',
+  onBrokenLinks: 'warn',
+  onBrokenAnchors: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
@@ -304,6 +305,7 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
           lastVersion: '3.16.0-LTS',
+          onlyIncludeVersions: process.env.linkCheck ? ['3.16.0-LTS'] : undefined,
           versions: {
             // Uncomment the following line to include the beta version in the sidebar
             // current: {
@@ -509,6 +511,16 @@ module.exports = {
           {
             from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
             to: '/docs/beta/gitsync-env-vars',
+            from: '/docs/tooljet-api/',
+            to: '/api/',
+          },
+          {
+            from: '/docs/development-lifecycle/cicd/gitsync-api/',
+            to: '/api/gitsync-api/',
+          },
+          {
+            from: '/docs/user-management/sso/scim/overview/',
+            to: '/api/scim/',
           }
         ],
       },
