@@ -320,6 +320,13 @@ function isPrivateIPv6(ip: string): boolean {
  * This includes all RFC1918, link-local, loopback, and cloud metadata ranges
  */
 export async function resolvesToPrivateIP(hostname: string): Promise<boolean> {
+  // Raw IPs don't need DNS resolution — isPrivateIP() already checked them in the caller.
+  // dns.resolve4/resolve6 cannot handle raw IP addresses and would throw, causing
+  // the fail-closed path to incorrectly block legitimate public IPs like 130.131.160.149.
+  if (net.isIP(hostname)) {
+    return false;
+  }
+
   try {
     // Try to resolve as both IPv4 and IPv6
     const addresses: string[] = [];
@@ -499,6 +506,12 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
     dnsLookup(hostname, options, (err, address, family) => {
       if (err) {
         return callback(err);
+      }
+
+      // Respect the allowlist — if the hostname is explicitly allowed (e.g. localhost
+      // on self-hosted), skip the private IP check so the connection proceeds.
+      if (config.allowedHostnames?.has(hostname.toLowerCase())) {
+        return callback(null, address, family);
       }
 
       // Validate the resolved IP address
