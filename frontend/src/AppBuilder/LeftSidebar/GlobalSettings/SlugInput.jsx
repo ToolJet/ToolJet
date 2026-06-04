@@ -99,7 +99,9 @@ const SlugInput = () => {
 
     return (
       <div className="tw-flex tw-items-center tw-gap-1 tw-mb-1">
-        <label className="tw-text-xs tw-font-medium tw-text-default tw-m-0">Unique app slug</label>
+        <label className="tw-text-xs tw-font-medium tw-text-default tw-m-0" data-cy="unique-app-slug-label">
+          Unique app slug
+        </label>
         {isOnFeatureBranch && (
           <ToolTip
             message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."

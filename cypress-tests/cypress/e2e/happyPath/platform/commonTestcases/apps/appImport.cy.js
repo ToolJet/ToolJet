@@ -184,7 +184,7 @@ describe("App Import", () => {
 });
 
 const verifyCommonData = (values) => {
-  cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
+  cy.waitForElement(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
     "have.text",
     values.text2
   );
