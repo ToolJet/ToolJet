@@ -7,35 +7,41 @@ ToolJet can connect to Oracle databases to read and write data.
 
 ## Connection
 
-To establish a connection with the OracleDB datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Oracle DB Datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ### Basic Connection
 
-ToolJet requires the following to connect to an OracleDB datasource:
+ToolJet requires the following to connect to an Oracle DB datasource:
 
 - **Username**
 - **Password**
 - **Host**
 - **Port**
-- **SID / Service Name** (Database name must be a SID / Service Name)
+- **SID / Service Name**
 - **Database Name**
 - **Client Library Location**
 - **Instant Client Version**
 
+:::note
+Enter either a **SID** or a **Service Name** depending on your Oracle configuration. A SID identifies a specific database instance, while a Service Name identifies a database service and is commonly used in modern Oracle deployments.
+:::
+
 <img style={{marginBottom: '15px'}} className="screenshot-full img-full" src="/img/datasource-reference/oracledb/oracleauth-v4.png" alt="Data source-OracleDB-Connection"/>
 
+### Client Versions and Compatibility
+
+ToolJet uses Oracle DB connections in **thick mode** and includes the following Oracle Instant Client versions by default:
+
+- **Oracle Instant Client 21.10** – Supports Oracle Database 11.2 and later.
+- **Oracle Instant Client 11.2** – Supports Oracle Database 10.2 and later.
+
 :::info
-ToolJet includes Oracle Instant Client versions 21.10 and 11.2. If you need to use a different client library version:
-
-- For cloud deployments: You can add a custom client library to a directory of your choice or mount it as a volume in the container.
-- For local setups: You can specify the path to your custom Oracle Client Library.
-
-This allows ToolJet to locate and use the specific drivers for Oracle database connections.
+If your environment requires a different Oracle Instant Client version, you can configure ToolJet to use a custom client library by providing its path or mounting it into the deployment.
 :::
 
 ### Thick Mode ( TNS/Wallet File Path)
 
-The following are required to make a Thick Mode Connection with OracleDB.
+The following are required to make a Thick Mode Connection with Oracle DB.
 
 - **Username**
 - **Password**
@@ -48,7 +54,7 @@ The following are required to make a Thick Mode Connection with OracleDB.
 
 ### Thin Mode ( TNS/Wallet Zip Upload)
 
-The following are required to make a Thin Mode Connection with OracleDB.
+The following are required to make a Thin Mode Connection with Oracle DB.
 
 - **Username**
 - **Password**
@@ -58,31 +64,15 @@ The following are required to make a Thin Mode Connection with OracleDB.
 
 <img style={{marginBottom: '15px'}} className="screenshot-full img-l" src="/img/datasource-reference/oracledb/thin-mode-connection.png" alt="Data source-OracleDB-Connection" />
 
-### Client Versions and Compatibility
-
-ToolJet runs Oracle DB connections in thick mode. By default, ToolJet includes Oracle instant client versions 21.10 and 11.2. These client versions determine which Oracle Database versions you can connect to.
-
-#### Available Client Versions
-
-- Oracle Instant Client 21.10
-- Oracle Instant Client 11.2
-
-#### Compatibility
-
-The instant client version affects which Oracle Database versions you can connect to:
-
-- Oracle Instant Client 21.10 is compatible with Oracle Database 11.2 and later versions.
-- Oracle Instant Client 11.2 is compatible with Oracle Database 10.2 and later versions.
-
 ### Dynamic Connection
-ToolJet allows overriding Oracle DB  connection parameters such as host and database directly at **query runtime** when dynamic connection parameters are enabled in the data source configuration page. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
+ToolJet allows overriding Oracle DB  connection parameters such as host and database directly at **query runtime** when dynamic connection parameters are enabled in the Datasource configuration page. This enables a single data source to support multiple environments or tenants without requiring separate configurations.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/dynamic-connection.png" alt="oracledb dynamic connection"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/dynamic-connection.png" alt="Oracle DB dynamic connection"/>
 
 ## Querying Oracle DB
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the **OracleDB** datasource added in previous step.
+2. Select the **OracleDB** Datasource added in previous step.
 3. Select the desired query mode.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
@@ -91,7 +81,7 @@ ToolJet allows overriding Oracle DB  connection parameters such as host and data
 - **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
 - **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/listops.png" alt="OracleDB supported operations"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/oracledb/listops.png" alt="Oracle DB supported operations"/>
 
 ### SQL mode
 
@@ -110,7 +100,7 @@ ORDER BY last_name;
 
 GUI mode can be used to query Oracle database without writing queries.
 
-1. Create a new query and select the Oracle DB data source.
+1. Create a new query and select the Oracle DB Datasource.
 2. Select GUI mode from the dropdown.
 3. Choose the operation you want to perform.
 4. Fetch and select the **Table name**.
