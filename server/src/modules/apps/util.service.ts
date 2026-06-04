@@ -902,6 +902,7 @@ export class AppsUtilService implements IAppsUtilService {
     select?: Array<string>,
     type?: string,
     branchId?: string,
+    // consumed by the EE override (which applies addBranchFilter); unused in CE base
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _skipBranchScope?: boolean
   ): SelectQueryBuilder<AppBase> {
