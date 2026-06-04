@@ -790,7 +790,12 @@ export class AppsService implements IAppsService {
         user.organizationId,
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
-      response['editing_version']['global_settings']['theme'] = appTheme;
+      // null global_settings on branch DRAFT/legacy versions — guard before theme assignment
+      if (response['editing_version']['global_settings']) {
+        response['editing_version']['global_settings']['theme'] = appTheme;
+      } else {
+        response['editing_version']['global_settings'] = { theme: appTheme };
+      }
 
       if (app.editingVersion.definition) {
         response['editing_version'] = {
@@ -835,7 +840,12 @@ export class AppsService implements IAppsService {
         user.organizationId,
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
-      response['editing_version']['global_settings']['theme'] = appTheme;
+      // null global_settings on branch DRAFT/legacy versions — guard before theme assignment
+      if (response['editing_version']['global_settings']) {
+        response['editing_version']['global_settings']['theme'] = appTheme;
+      } else {
+        response['editing_version']['global_settings'] = { theme: appTheme };
+      }
 
       // Strip JS libraries from globalSettings when the org's license doesn't include
       // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
