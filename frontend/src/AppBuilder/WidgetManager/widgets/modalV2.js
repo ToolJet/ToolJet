@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const modalV2Config = {
   name: 'Modal',
   displayName: 'Modal',
@@ -112,6 +114,7 @@ export const modalV2Config = {
     closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
     hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
   },
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onOpen: { displayName: 'On open' },
     onClose: { displayName: 'On close' },
@@ -396,6 +399,7 @@ export const modalV2Config = {
       headerHeight: { value: 80 },
       footerHeight: { value: 80 },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       icon: { value: 'IconAlignBoxBottomLeft' },

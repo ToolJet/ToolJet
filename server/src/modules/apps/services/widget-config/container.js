@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const containerConfig = {
   name: 'Container',
   displayName: 'Container',
@@ -88,6 +90,7 @@ export const containerConfig = {
       },
     },
   ],
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     headerBackgroundColor: {
@@ -183,6 +186,7 @@ export const containerConfig = {
       dynamicHeight: { value: '{{false}}' },
       headerHeight: { value: `{{60}}` },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

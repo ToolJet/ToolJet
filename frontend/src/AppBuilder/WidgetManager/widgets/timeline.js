@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const timelineConfig = {
   name: 'Timeline',
   displayName: 'Timeline',
@@ -29,6 +31,7 @@ export const timelineConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     visibility: {
@@ -52,6 +55,7 @@ export const timelineConfig = {
       },
       hideDate: { value: '{{false}}' },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

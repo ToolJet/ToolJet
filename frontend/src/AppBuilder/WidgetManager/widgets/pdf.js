@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const pdfConfig = {
   name: 'PDF',
   displayName: 'PDF',
@@ -36,6 +38,7 @@ export const pdfConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     visibility: {
@@ -81,6 +84,7 @@ export const pdfConfig = {
         value: `{{true}}`,
       },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

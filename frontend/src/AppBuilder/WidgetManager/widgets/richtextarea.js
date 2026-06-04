@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const richtextareaConfig = {
   name: 'RichTextEditor',
   displayName: 'Text Editor',
@@ -53,6 +55,7 @@ export const richtextareaConfig = {
       section: 'additionalActions',
     },
   },
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     visibility: {
@@ -114,6 +117,7 @@ export const richtextareaConfig = {
       dynamicHeight: { value: '{{false}}' },
       collapseWhenHidden: { value: '{{false}}' },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

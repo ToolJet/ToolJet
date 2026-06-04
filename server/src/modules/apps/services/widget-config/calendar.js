@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const calendarConfig = {
   name: 'Calendar',
   displayName: 'Calendar',
@@ -33,6 +35,7 @@ export const calendarConfig = {
       displayName: 'Show popover when event is clicked',
     },
   },
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onCalendarEventSelect: { displayName: 'On Event Select' },
     onCalendarSlotSelect: { displayName: 'On Slot Select' },
@@ -117,6 +120,7 @@ export const calendarConfig = {
         value: false,
       },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

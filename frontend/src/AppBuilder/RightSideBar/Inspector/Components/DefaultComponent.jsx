@@ -282,6 +282,17 @@ export const baseComponentProperties = (
     isOpen: true,
     children: (
       <>
+        {componentMeta?.general?.tooltipFormat &&
+          renderElement(
+            component,
+            componentMeta,
+            layoutPropertyChanged,
+            dataQueries,
+            'tooltipFormat',
+            'general',
+            currentState,
+            allComponents
+          )}
         {renderElement(
           component,
           componentMeta,

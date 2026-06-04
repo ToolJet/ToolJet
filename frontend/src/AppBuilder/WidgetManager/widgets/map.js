@@ -1,3 +1,5 @@
+import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
+
 export const mapConfig = {
   name: 'Map',
   displayName: 'Map',
@@ -82,6 +84,7 @@ export const mapConfig = {
       },
     },
   },
+  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onBoundsChange: { displayName: 'On bounds change' },
     onCreateMarker: { displayName: 'On create marker' },
@@ -143,6 +146,7 @@ export const mapConfig = {
       },
       addNewMarkers: { value: `{{true}}` },
     },
+    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
