@@ -2,10 +2,15 @@ import {
   BOX_PADDING,
   CONTAINER_FORM_CANVAS_PADDING,
   HIDDEN_COMPONENT_HEIGHT,
+  MODAL_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  TAB_CANVAS_PADDING,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
+
+// Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
+const TABS_TAB_BAR_HEIGHT = 50;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Dynamic-Height Reflow — max-over-all-blockers layout engine.
@@ -183,6 +188,17 @@ export const sortByCanonicalPosition = (componentIds, currentLayout, currentPage
       return firstLeft - secondLeft;
     }
 
+    // updatedAt tiebreaker — for widgets sharing the exact same (top, left)
+    // (e.g. multiple collapseWhenHidden widgets dropped on top of each other),
+    // the most recently positioned widget renders at the bottom of the stack.
+    // Server's createComponentWithLayout response exposes layout.updatedAt.
+    const firstUpdatedAt = firstLayout?.updatedAt ? new Date(firstLayout.updatedAt).getTime() : null;
+    const secondUpdatedAt = secondLayout?.updatedAt ? new Date(secondLayout.updatedAt).getTime() : null;
+
+    if (firstUpdatedAt !== null && secondUpdatedAt !== null && firstUpdatedAt !== secondUpdatedAt) {
+      return firstUpdatedAt - secondUpdatedAt;
+    }
+
     return firstId.localeCompare(secondId);
   });
 };
@@ -283,6 +299,7 @@ const getExtraContainerHeight = ({
   getResolvedValue,
   getComponentDefinition,
   isAccordionExpanded,
+  hideTabs,
 }) => {
   let extraHeight = 0;
   let nextCurrentMax = currentMax;
@@ -314,18 +331,44 @@ const getExtraContainerHeight = ({
         nextCurrentMax = lastFieldset.offsetHeight;
       }
     } else {
+      // FormUtils.getBodyHeight subtracts (headerHeight + 10) and
+      // (footerHeight + 14) plus a 20px floor. To make body fit `currentMax`
+      // tightly without overflow, add the same back here.
+      extraHeight += 20;
       if (showHeader && isProperNumber(headerHeight)) {
-        extraHeight += headerHeight;
+        extraHeight += headerHeight + 10;
       }
       if (showFooter && isProperNumber(footerHeight)) {
-        extraHeight += footerHeight;
+        extraHeight += footerHeight + 14;
       }
-      extraHeight += 20;
     }
   } else if (componentType === 'Tabs') {
-    extraHeight = 40;
+    // Tab pane chrome: TAB_CANVAS_PADDING (8) top + bottom around the
+    // SubContainer canvas, plus the tab strip (50) unless `hideTabs` is on
+    // (strip becomes `display:none`). +16 covers the .real-canvas
+    // `calc(100% + 3.5px)` extension plus the ~7px scrollHeight overshoot
+    // that growing leaf widgets (e.g. TextArea labels) report past their
+    // moveable-box height.
+    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT);
+  } else if (componentType === 'ModalV2') {
+    // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
+    // SubContainer canvas (stylesFactory.js modalBody) + safety for the
+    // `.real-canvas` `calc(100% + 1px)` extension. Plus 12px per shown
+    // header/footer slot — Modal.jsx composes totalHeight from the
+    // *configured* header/footer heights, but each slot actually renders
+    // ~10px taller (HorizontalSlot pad + 1px border), so that gap has to be
+    // padded into the body content height or the body clips.
+    const { properties = {} } = getResolvedComponent(componentId, contextIndices) || {};
+    extraHeight = MODAL_CANVAS_PADDING * 2 + 8;
+    if (properties.showHeader) extraHeight += 12;
+    if (properties.showFooter) extraHeight += 12;
   } else if (componentType === 'Listview' && normalizeLayoutContext(contextIndices)) {
-    extraHeight -= 40;
+    // Listview row context: previously `-= 40` to cancel the historical +50
+    // buffer (net +10 chrome per row). Buffer is gone, so set the row's
+    // chrome directly: +15 covers each row's small internal padding plus
+    // a sub-pixel/safety margin against children that report `scrollHeight`
+    // a few px past their `offsetHeight` (e.g. label-bumped TextArea).
+    extraHeight = 15;
   }
 
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
@@ -386,10 +429,11 @@ export const resolveListviewHeightFromRows = ({
       : rowHeights.reduce((totalHeight, rowHeight) => totalHeight + rowHeight, 0);
 
   // Fixed allowances: per-row bottom border (list mode only), pagination bar,
-  // outer padding.
+  // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
+  // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
   const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 14;
+  const outerPaddingAllowance = 18;
 
   return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
 };
@@ -624,6 +668,7 @@ export const resolveContainerHeight = ({
     getResolvedValue,
     getComponentDefinition,
     isAccordionExpanded,
+    hideTabs: component?.properties?.hideTabs === true,
   });
 
   currentMax = nextCurrentMax;
@@ -632,13 +677,11 @@ export const resolveContainerHeight = ({
     return containerHeight;
   }
 
-  // Container/Accordion floor on canonical height; other types add a 50px
-  // breathing buffer on top of content (Tabs/Form/etc.).
-  if (['Container', 'Accordion'].includes(componentType)) {
-    return Math.max(currentMax + extraHeight, containerHeight);
-  }
-
-  return Math.max(currentMax + 50 + extraHeight, containerHeight);
+  // Every container type's `extraHeight` now accounts for its own chrome
+  // (Container/Accordion: padding+border+header; Form: header/footer/body
+  // gutter; Tabs: strip + pane padding; ModalV2: body padding + borders).
+  // Floor at canonical so the container never drops below its authored size.
+  return Math.max(currentMax + extraHeight, containerHeight);
 };
 
 // The changed widget's target height:
@@ -660,6 +703,7 @@ export const resolveWidgetMeasuredHeight = ({
   isContainer,
   visibility,
   containerHeight,
+  calculateMoveableBoxHeightWithId,
 }) => {
   if (isContainer && (componentType !== 'Listview' || normalizeLayoutContext(contextIndices))) {
     return containerHeight;
@@ -674,8 +718,30 @@ export const resolveWidgetMeasuredHeight = ({
     contextIndices
   )?.height;
 
+  // Fallback when the DOM can't be measured (invisible widget, hidden ancestor
+  // subtree, or missing element). Prefer the calc-bumped canonical so top-
+  // aligned input widgets don't get pinned at their raw authored height (40)
+  // — WidgetWrapper renders them at the bumped height (60) once visible, and
+  // a temp.height written here becomes the finalHeight on visibility flip.
+  const fallbackHeight = () => {
+    if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      const definition = currentPageComponents?.[componentId];
+      const stylesDefinition = definition?.component?.definition?.styles;
+      const calc = calculateMoveableBoxHeightWithId(componentId, currentLayout, stylesDefinition);
+      if (typeof calc === 'number') return calc;
+    }
+    return getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+  };
+
+  // Invisible widget: we can't measure it, so return what WidgetWrapper would
+  // render it at when visible — calc-bumped canonical. Floor any prior temp at
+  // this value too: a stale temp written before the bump (or under a previous
+  // alignment) must not pin the widget below its rendered visible height,
+  // because temp.height becomes finalHeight on the next visibility flip.
   if (!visibility) {
-    return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+    const bumped = fallbackHeight();
+    if (existingHeight != null) return Math.max(existingHeight, bumped);
+    return bumped;
   }
 
   // Hidden ancestor subtree (inactive tab pane, collapsed accordion, closed
@@ -684,18 +750,27 @@ export const resolveWidgetMeasuredHeight = ({
   // poison every subsequent reflow: gridSlice's resolvedHeights treats 0 as
   // a valid existing value (0 != null) and replays it for siblings, which
   // collapse to height:0 in WidgetWrapper. Fall through to the last known /
-  // canonical height so the widget keeps its slot until it's actually
-  // measurable.
+  // calc-bumped canonical height so the widget keeps its slot until it's
+  // actually measurable.
   if (element && element.offsetParent === null) {
-    return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+    return existingHeight ?? fallbackHeight();
   }
 
-  return (
-    element?.offsetHeight ??
-    existingHeight ??
-    getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ??
-    0
-  );
+  // Same anti-poisoning guard for the show transition: when a widget with
+  // an inner `height:100%` child (e.g., NewTable) flips from hidden to
+  // visible, the outer wrapper is briefly set to `height:auto` by
+  // useDynamicHeight before this measurement runs. With inner `100%`
+  // resolving against an auto parent, the layout pass returns ~0px for one
+  // frame. Trusting that 0 would propagate as delta = 0 − priorHeight, e.g.,
+  // -350, collapsing every downstream sibling above its canonical top.
+  // Treat 0 as "not yet measurable" and prefer the last known / canonical
+  // height instead — no visible widget legitimately renders at 0.
+  const measuredHeight = element?.offsetHeight;
+  if (measuredHeight === 0) {
+    return existingHeight ?? fallbackHeight();
+  }
+
+  return measuredHeight ?? existingHeight ?? fallbackHeight();
 };
 
 // Blocker enumeration — returns every widget canonically above `targetId`

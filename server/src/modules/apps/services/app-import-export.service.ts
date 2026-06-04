@@ -16,6 +16,8 @@ import {
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
+import { TransactionLogger } from '@modules/logging/service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -258,7 +260,8 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
-    protected entityManager: EntityManager
+    protected entityManager: EntityManager,
+    protected readonly transactionLogger: TransactionLogger
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -1304,6 +1307,19 @@ export class AppImportExportService {
         await this.createPagePermissionsForGroups(pageCreated, user.organizationId, manager);
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
+
+        // Heal any parent-child cycles in the imported tree BEFORE we begin ID
+        // remapping. A cycle reaching this point (corrupt source app / hand-
+        // edited JSON / git-merge artifact) would otherwise persist verbatim
+        // and freeze the canvas on first open. The helper mutates
+        // component.parent in place on the deterministically-chosen node.
+        const { repairedIds } = repairParentCycles(pageComponents);
+        if (repairedIds.length > 0) {
+          this.transactionLogger.warn(
+            `[app-import] Repaired ${repairedIds.length} parent-child cycle(s) on page ${page.id}. ` +
+              `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+          );
+        }
 
         const newComponentIdsMap = {};
         for (const component of pageComponents) {
@@ -2490,7 +2506,8 @@ export class AppImportExportService {
     // JOIN Section
     if (joinOptions?.joins && joinOptions.joins.length > 0) {
       const joinsTableIdUpdatedList = joinOptions.joins.map((joinCondition) => {
-        const updatedJoinCondition = { ...joinCondition };
+        const { join_type, ...restJoinCondition } = joinCondition;
+        const updatedJoinCondition = { ...restJoinCondition, joinType: restJoinCondition.joinType ?? join_type };
         // Updating Join tableId
         if (updatedJoinCondition.table)
           updatedJoinCondition.table =
@@ -2539,13 +2556,11 @@ export class AppImportExportService {
 
     // Sort Section
     if (joinOptions?.order_by) {
-      joinOptions.order_by = joinOptions.order_by.map((eachOrderBy) => {
-        if (eachOrderBy.table) {
-          eachOrderBy.table = tooljetDatabaseMapping[eachOrderBy.table]?.id ?? eachOrderBy.table;
-          return eachOrderBy;
-        }
-        return eachOrderBy;
-      });
+      joinOptions.order_by = joinOptions.order_by.map(({ column_name, columnName, table, ...rest }) => ({
+        ...rest,
+        ...(table && { table: tooljetDatabaseMapping[table]?.id ?? table }),
+        columnName: columnName ?? column_name,
+      }));
     }
 
     return {
@@ -2556,22 +2571,36 @@ export class AppImportExportService {
     };
   }
 
-  updateNewTableIdForFilter(joinConditions, tooljetDatabaseMapping) {
-    const { conditionsList = [] } = { ...joinConditions };
-    const updatedConditionList = conditionsList.map((condition) => {
+  private remapConditionField(field: Record<string, any>, tooljetDatabaseMapping: Record<string, any>) {
+    const rawField = field ?? {};
+    const columnName = rawField.columnName ?? rawField.column_name;
+    return {
+      type: rawField.type,
+      ...(rawField.table && { table: tooljetDatabaseMapping[rawField.table]?.id ?? rawField.table }),
+      ...(columnName !== undefined && { columnName }),
+      ...(rawField.value !== undefined && { value: rawField.value }),
+      ...(rawField.jsonpath !== undefined && { jsonpath: rawField.jsonpath }),
+    };
+  }
+
+  updateNewTableIdForFilter(joinConditions: Record<string, any>, tooljetDatabaseMapping: Record<string, any>) {
+    const rawConditionsList =
+      [joinConditions?.conditions_list, joinConditions?.conditionsList].find((list) => list?.length) ?? [];
+    const updatedConditionList = rawConditionsList.map((condition: Record<string, any>) => {
       if (condition.conditions) {
         return this.updateNewTableIdForFilter(condition.conditions, tooljetDatabaseMapping);
-      } else {
-        const { operator = '=', leftField = {}, rightField = {} } = { ...condition };
-        if (leftField?.table) leftField['table'] = tooljetDatabaseMapping[leftField.table]?.id ?? leftField.table;
-        if (rightField?.table) rightField['table'] = tooljetDatabaseMapping[rightField.table]?.id ?? rightField.table;
-        return { operator, leftField, rightField };
       }
+      const leftField = this.remapConditionField(condition.leftField ?? condition.left_field, tooljetDatabaseMapping);
+      const rightField = this.remapConditionField(
+        condition.rightField ?? condition.right_field,
+        tooljetDatabaseMapping
+      );
+      return { operator: condition.operator ?? '=', leftField, rightField };
     });
     return {
       conditions: {
-        ...joinConditions,
-        conditionsList: [...updatedConditionList],
+        operator: joinConditions?.operator,
+        conditionsList: updatedConditionList,
       },
     };
   }

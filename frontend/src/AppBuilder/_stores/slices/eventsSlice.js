@@ -401,6 +401,7 @@ export const createEventsSlice = (set, get) => ({
           'onRecordClicked',
           'onCancelChanges',
           'onSort',
+          'onHeaderClick',
           'onCellValueChanged',
           'onFilterChanged',
           'onRowHovered',

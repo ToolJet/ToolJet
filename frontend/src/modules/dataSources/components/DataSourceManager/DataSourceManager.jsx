@@ -132,7 +132,16 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.pluginId) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
+      const manifestData = dataSource?.plugin?.manifestFile?.data;
+
+      // Handle new tj:version schema format
+      if (manifestData?.['tj:version']) {
+        const dsm = new DataSourceSchemaManager(manifestData);
+        return dsm.getSourceMetadata();
+      }
+
+      // // Old schema format
+      let dataSourceMeta = camelizeKeys(manifestData?.source);
       dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
 
       return dataSourceMeta;
@@ -417,6 +426,12 @@ class DataSourceManagerComponent extends React.Component {
       }
       case 'bigquery': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'databricks': {
+        return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
+      }
+      case 'quickbooks': {
+        return false;
       }
       default:
         return true;
@@ -1193,8 +1208,8 @@ class DataSourceManagerComponent extends React.Component {
                       )}
 
                       {connectionTestError && (
-                        <div className="row w-100">
-                          <div className="alert alert-danger" role="alert">
+                        <div className="w-100">
+                          <div className="alert alert-danger datasource-error-alert" role="alert">
                             <div className="text-muted" data-cy="connection-alert-text">
                               {connectionTestError.message}
                             </div>

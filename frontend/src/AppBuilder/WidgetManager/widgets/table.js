@@ -359,6 +359,7 @@ export const tableConfig = {
     onNewRowsAdded: { displayName: 'Add new rows' },
     onTableDataDownload: { displayName: 'Download data' },
     onRefresh: { displayName: 'Refresh' },
+    onHeaderClick: { displayName: 'Header clicked' },
   },
   styles: {
     columnTitleColor: {
@@ -539,6 +540,7 @@ export const tableConfig = {
     filters: [],
     lastExpandedRow: null,
     currentExpandedRows: [],
+    selectedColumnHeader: {},
   },
   actions: [
     {
@@ -648,6 +650,24 @@ export const tableConfig = {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setSort',
+      displayName: 'Set sort',
+      params: [
+        { handle: 'columnKey', displayName: 'Column key' },
+        {
+          handle: 'direction',
+          displayName: 'Order',
+          options: [
+            { name: 'Ascending', value: 'asc' },
+            { name: 'Descending', value: 'desc' },
+            { name: 'Auto', value: 'auto' },
+          ],
+          defaultValue: '{{asc}}',
+          type: 'select',
+        },
+      ],
     },
   ],
   definition: {

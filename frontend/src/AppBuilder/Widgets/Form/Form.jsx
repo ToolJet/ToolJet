@@ -147,6 +147,7 @@ const FormComponent = (props) => {
     borderTopRightRadius: `${borderRadius}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+    overflow: 'hidden',
   };
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -156,7 +157,9 @@ const FormComponent = (props) => {
     currentLayout,
     isContainer: true,
     componentCount,
-    value: isJSONSchema,
+    // Refire reflow when slot visibility/heights change — resizing the form's
+    // header or footer must recompute the container's dynamic height.
+    value: `${isJSONSchema}|${showHeader ? 1 : 0}|${showFooter ? 1 : 0}|${headerHeight}|${footerHeight}`,
     visibility: isVisible,
     subContainerIndex,
     componentType,
@@ -480,6 +483,11 @@ const FormComponent = (props) => {
                     styles={{
                       backgroundColor: computedStyles.backgroundColor,
                       height: '100%',
+                      // Suppress the transient scrollbar that flashes for a
+                      // frame while children grow ahead of the parent reflow.
+                      // Dynamic mode is view-only, so static-height authoring
+                      // still gets the default scroll behavior.
+                      overflowY: isDynamicHeightEnabled ? 'hidden' : undefined,
                     }}
                     darkMode={darkMode}
                     componentType="Form"

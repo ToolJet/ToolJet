@@ -1011,18 +1011,18 @@
         background: var(--cc-table-header-hover) !important;
       }
 
-      &:focus-within {
+      &:has(:focus-visible) {
         outline: 0;
         background: var(--cc-table-header-active, --slate4, #ECEEF0) !important;
         z-index: 999;
       }
 
-      &:first-child:focus-within {
+      &:first-child:has(:focus-visible) {
         outline: 0;
         border-left: 4px solid var(--slate6);
       }
 
-      &:last-child:focus-within {
+      &:last-child:has(:focus-visible) {
         outline: 0;
         border-right: 4px solid var(--slate6);
       }

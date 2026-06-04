@@ -1,9 +1,9 @@
-FROM node:18.18.2-buster as builder
+FROM node:22.15.1-bookworm AS builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@9.8.1
+RUN npm i -g npm@10.9.2
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
@@ -25,19 +25,21 @@ RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
 RUN npm --prefix server run build
 
-FROM debian:11
+FROM debian:12-slim
 
 RUN apt-get update -yq \
+    && apt-get upgrade -y \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
-    && apt-get clean -y
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
-    && tar -xf node-v18.18.2-linux-x64.tar.xz \
-    && mv node-v18.18.2-linux-x64 /usr/local/lib/nodejs \
+RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
+    && tar -xf node-v22.15.1-linux-x64.tar.xz \
+    && mv node-v22.15.1-linux-x64 /usr/local/lib/nodejs \
     && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
     && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
-    && rm node-v18.18.2-linux-x64.tar.xz
+    && rm node-v22.15.1-linux-x64.tar.xz
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production

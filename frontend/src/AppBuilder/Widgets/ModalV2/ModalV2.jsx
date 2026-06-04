@@ -137,6 +137,11 @@ export const ModalV2 = function Modal({
     clearSelectedComponents();
   };
 
+  const showModalRef = useRef(false);
+  useEffect(() => {
+    showModalRef.current = showModal;
+  }, [showModal]);
+
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -153,6 +158,18 @@ export const ModalV2 = function Modal({
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  // If modal is unmounted while open (e.g. parent page switches via an action
+  // fired from inside the modal), onHide never runs and canvas-content keeps
+  // the inline `overflow: hidden !important` set by onShowSideEffects, leaving
+  // the next page unscrollable.
+  useEffect(() => {
+    return () => {
+      if (showModalRef.current) {
+        onHideSideEffects();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
@@ -189,7 +206,10 @@ export const ModalV2 = function Modal({
     currentLayout,
     isContainer: true,
     componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
+    // Includes footerHeight + showFooter so resizing/toggling the footer
+    // also triggers a reflow (configured slot heights feed into the modal's
+    // computed body height).
+    value: JSON.stringify({ headerHeight, footerHeight, showHeader, showFooter, showModal }),
     visibility: isVisible,
     subContainerIndex: contextIndices,
     componentType,
@@ -284,7 +304,9 @@ export const ModalV2 = function Modal({
       <ModalWidget
         show={showModal}
         contentClassName="modal-component"
-        container={document.getElementsByClassName('real-canvas')[0]}
+        container={
+          document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
+        }
         size={size}
         keyboard={true}
         enforceFocus={false}
