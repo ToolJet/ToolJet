@@ -114,18 +114,27 @@ function startPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
     }
     // Skip this tick if a previous run is still in flight (no overlap / pile-up).
     if (store.getAllExposedValues(moduleId)?.queries?.[queryId]?.isLoading) return;
+    // Run in the module's current mode so released/public apps don't toast errors on
+    // every failing tick (runQuery only toasts when mode !== 'view').
+    const mode = store.modeStore?.modules?.[moduleId]?.currentMode || 'edit';
     // confirmed=true so periodic ticks bypass the "request confirmation" modal.
-    store.queryPanel.runQuery(queryId, query.name, true, undefined, {}, undefined, undefined, false, false, moduleId);
+    store.queryPanel.runQuery(queryId, query.name, true, mode, {}, undefined, undefined, false, false, moduleId);
   }, intervalMs);
   queryPeriodicTimers.set(queryId, { intervalId, intervalMs, moduleId });
 }
 
-/** Stop and forget a single periodic timer (e.g., on delete / toggle-off). */
-export function clearPeriodicTimer(queryId) {
+/**
+ * Stop and forget a single periodic timer (e.g., on delete / toggle-off).
+ * `forgetPaused` also drops the query from the paused-set — pass it only from the
+ * delete path. Reconcile/toggle-off must NOT forget the pause (pause survives edits),
+ * and pauseQueryPeriodicRun relies on the default (it adds to the set then clears).
+ */
+export function clearPeriodicTimer(queryId, { forgetPaused = false } = {}) {
   if (queryPeriodicTimers.has(queryId)) {
     clearInterval(queryPeriodicTimers.get(queryId).intervalId);
     queryPeriodicTimers.delete(queryId);
   }
+  if (forgetPaused) pausedPeriodicQueries.delete(queryId);
 }
 
 /** Stop ALL periodic timers (full app teardown only — NOT page switch). */

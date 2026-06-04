@@ -280,7 +280,7 @@ export const createDataQuerySlice = (set, get) => ({
         .finally(() => setIsAppSaving(false));
 
       clearQueryRerunTimer(queryId);
-      clearPeriodicTimer(queryId);
+      clearPeriodicTimer(queryId, { forgetPaused: true });
       get().removeNode(`queries.${queryId}`, moduleId);
       get().updateDependencyValues(`queries.${queryId}`, moduleId);
     },
