@@ -1,4 +1,27 @@
+import Redis from 'ioredis';
 import { GitObjectCacheService } from '@ee/git-sync/git-object-cache.service';
+import { RedisService } from '@modules/redis/service';
+
+/**
+ * The narrow slice of a Redis pub/sub connection this service actually uses.
+ * The fakes below `implements` this so their method shapes are checked while
+ * authoring (and by `tsc`/IDE). NOTE: jest here runs ts-jest with
+ * `diagnostics: false`, so type errors do NOT fail `npm test` — that's why the
+ * `as any` injection is the repo convention. The contract is instead enforced
+ * at RUNTIME by the "real Redis surface" test at the bottom of this file, which
+ * fails if RedisService or ioredis drops a method the fake stands in for.
+ */
+interface RedisPubSubConnection {
+  subscribe(channel: string): Promise<unknown>;
+  on(event: 'message', handler: (channel: string, message: string) => void): unknown;
+  publish(channel: string, message: string): Promise<unknown>;
+  unsubscribe(channel: string): Promise<unknown>;
+  disconnect(): void;
+}
+interface RedisPubSubFactory {
+  createSubscriber(): RedisPubSubConnection;
+  createPublisher(): RedisPubSubConnection;
+}
 
 /**
  * WHAT IS THIS SERVICE?
@@ -24,7 +47,7 @@ import { GitObjectCacheService } from '@ee/git-sync/git-object-cache.service';
  * the service behaved correctly. `deliver()` lets a test pretend a message
  * arrived from another pod.
  */
-class FakeRedis {
+class FakeRedis implements RedisPubSubConnection {
   subscribed: string[] = []; // channels the service subscribed to
   published: { channel: string; message: string }[] = []; // messages the service sent
   unsubscribed: string[] = []; // channels the service left
@@ -71,7 +94,7 @@ class FakeRedis {
  * messages (subscriber) and one to SEND them (publisher). Our fake does the
  * same, so a test can inspect each side independently.
  */
-class FakeRedisService {
+class FakeRedisService implements RedisPubSubFactory {
   subscriber = new FakeRedis();
   publisher = new FakeRedis();
   createSubscriber() {
@@ -374,5 +397,26 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
     await svc.onModuleDestroy(); // NestJS calls this when the service shuts down
     expect(redis.subscriber.unsubscribed).toContain(CHANNEL);
     expect(redis.subscriber.disconnected).toBe(true);
+  });
+});
+
+/**
+ * The fakes above only help if they mirror the REAL Redis API. Because jest does
+ * not type-check this file (ts-jest diagnostics are off), these RUNTIME checks
+ * are what actually catch drift: if RedisService renames a factory method, or an
+ * ioredis upgrade renames a connection method the fake stubs, a test here fails.
+ * We assert against prototypes — no Redis server is contacted.
+ */
+describe('FakeRedis stays faithful to the real Redis API', () => {
+  it('RedisService still exposes the factory methods the service calls', () => {
+    expect(typeof RedisService.prototype.createSubscriber).toBe('function');
+    expect(typeof RedisService.prototype.createPublisher).toBe('function');
+  });
+
+  it('an ioredis connection exposes every method the fake stands in for', () => {
+    const used = ['subscribe', 'on', 'publish', 'unsubscribe', 'disconnect'];
+    for (const method of used) {
+      expect(typeof (Redis.prototype as any)[method]).toBe('function');
+    }
   });
 });
