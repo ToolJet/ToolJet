@@ -4,7 +4,6 @@ import './tagsInput.scss';
 import cx from 'classnames';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { ToolTip } from '@/_components/ToolTip';
 import { useEditorStore } from '@/_stores/editorStore';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
@@ -50,7 +49,6 @@ const TagsInput = ({
     optionsLoadingState,
     dynamicHeight,
     sort,
-    tooltip,
     enableSearch = true,
   } = properties;
 
@@ -784,131 +782,127 @@ const TagsInput = ({
 
   return (
     <>
-      <ToolTip message={tooltip} show={!!tooltip}>
+      <div
+        ref={tagsRef}
+        data-cy={`label-${String(componentName).toLowerCase()}`}
+        className={cx('tags-input-widget', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : 'align-items-start']: true,
+          'flex-row-reverse': direction === 'right' && alignment === 'side',
+          'text-right': direction === 'right' && alignment === 'top',
+          invisible: !visibility,
+          visibility: visibility,
+        })}
+        style={{
+          position: 'relative',
+          whiteSpace: 'nowrap',
+          width: '100%',
+        }}
+        onMouseDown={() => {
+          onComponentClick(id);
+          useEditorStore.getState().actions.setHoveredComponent('');
+        }}
+      >
+        <Label
+          label={label}
+          width={labelWidth}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={labelColor}
+          defaultAlignment={alignment}
+          direction={direction}
+          auto={auto}
+          isMandatory={isMandatory}
+          _width={_width}
+          top={alignment === 'side' ? '8px' : undefined}
+          widthType={widthType}
+          id={`${id}-label`}
+        />
         <div
-          ref={tagsRef}
-          data-cy={`label-${String(componentName).toLowerCase()}`}
-          className={cx('tags-input-widget', 'd-flex', {
-            [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
-              ? 'flex-column'
-              : 'align-items-start']: true,
-            'flex-row-reverse': direction === 'right' && alignment === 'side',
-            'text-right': direction === 'right' && alignment === 'top',
-            invisible: !visibility,
-            visibility: visibility,
-          })}
+          className={cx('px-0', { 'h-100': !isDynamicHeightEnabled })}
+          onClick={handleClickInside}
+          onTouchEnd={handleClickInside}
           style={{
-            position: 'relative',
-            whiteSpace: 'nowrap',
-            width: '100%',
-          }}
-          onMouseDown={() => {
-            onComponentClick(id);
-            useEditorStore.getState().actions.setHoveredComponent('');
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
+            ...(auto && {
+              flex: 1,
+              minWidth: 0,
+            }),
           }}
         >
-          <Label
-            label={label}
-            width={labelWidth}
-            labelRef={labelRef}
-            darkMode={darkMode}
-            color={labelColor}
-            defaultAlignment={alignment}
-            direction={direction}
-            auto={auto}
-            isMandatory={isMandatory}
-            _width={_width}
-            top={alignment === 'side' ? '8px' : undefined}
-            widthType={widthType}
-            id={`${id}-label`}
-          />
-          <div
-            className={cx('px-0', { 'h-100': !isDynamicHeightEnabled })}
-            onClick={handleClickInside}
-            onTouchEnd={handleClickInside}
-            style={{
-              ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
-              ...(auto && {
-                flex: 1,
-                minWidth: 0,
-              }),
+          <CreatableSelect
+            ref={selectRef}
+            menuId={id}
+            isDisabled={isTagsDisabled}
+            value={selected}
+            onChange={onChangeHandler}
+            onCreateOption={handleCreate}
+            options={filteredOptions}
+            styles={customStyles}
+            aria-hidden={!visibility}
+            aria-disabled={isTagsDisabled}
+            aria-busy={isTagsLoading}
+            aria-required={isMandatory}
+            aria-invalid={!isValid}
+            id={`component-${id}`}
+            aria-labelledby={`${id}-label`}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            isLoading={isTagsLoading}
+            inputValue={inputValue}
+            onInputChange={handleInputChange}
+            menuIsOpen={enableSearch && isMenuOpen}
+            placeholder={placeholder}
+            formatCreateLabel={(input) => `add "${input}"`}
+            isValidNewOption={(input) => {
+              if (!allowNewTags || !input.trim()) return false;
+              // Don't show create option if label already exists (case-sensitive)
+              const trimmedInput = input.trim();
+              const labelExists = allOptions.some((opt) => opt.label === trimmedInput);
+              return !labelExists;
             }}
-          >
-            <CreatableSelect
-              ref={selectRef}
-              menuId={id}
-              isDisabled={isTagsDisabled}
-              value={selected}
-              onChange={onChangeHandler}
-              onCreateOption={handleCreate}
-              options={filteredOptions}
-              styles={customStyles}
-              aria-hidden={!visibility}
-              aria-disabled={isTagsDisabled}
-              aria-busy={isTagsLoading}
-              aria-required={isMandatory}
-              aria-invalid={!isValid}
-              id={`component-${id}`}
-              aria-labelledby={`${id}-label`}
-              aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-              isLoading={isTagsLoading}
-              inputValue={inputValue}
-              onInputChange={handleInputChange}
-              menuIsOpen={enableSearch && isMenuOpen}
-              placeholder={placeholder}
-              formatCreateLabel={(input) => `add "${input}"`}
-              isValidNewOption={(input) => {
-                if (!allowNewTags || !input.trim()) return false;
-                // Don't show create option if label already exists (case-sensitive)
-                const trimmedInput = input.trim();
-                const labelExists = allOptions.some((opt) => opt.label === trimmedInput);
-                return !labelExists;
-              }}
-              components={{
-                MultiValue: TagsInputChip,
-                ValueContainer: TagsInputValueContainer,
-                MenuList: (props) => (
-                  <TagsInputMenuList
-                    {...props}
-                    allowNewTags={allowNewTags}
-                    inputValue={inputValue}
-                    optionsLoadingState={optionsLoadingState && advanced}
-                    darkMode={darkMode}
-                    tagBackgroundColor={tagBackgroundColor}
-                    selectedTextColor={selectedTextColor}
-                    allOptions={allOptions}
-                    onCreateTag={handleCreate}
-                    autoPickChipColor={autoPickChipColor}
-                  />
-                ),
-                Option: TagsInputOption,
-                LoadingIndicator: () => (
-                  <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />
-                ),
-                DropdownIndicator: () => null,
-              }}
-              isClearable={false}
-              isMulti
-              hideSelectedOptions={true}
-              filterOption={(option, inputValue) => option.label?.includes(inputValue)}
-              closeMenuOnSelect={false}
-              tabSelectsValue={false}
-              onKeyDown={handleKeyDown}
-              menuPlacement="auto"
-              menuPortalTarget={document.body}
-              minMenuHeight={300}
-              // Custom props
-              allowNewTags={allowNewTags}
-              tagBackgroundColor={tagBackgroundColor}
-              selectedTextColor={selectedTextColor}
-              focusedOptionIndex={focusedOptionIndex}
-              autoPickChipColor={autoPickChipColor}
-              getChipColor={getChipColor}
-            />
-          </div>
+            components={{
+              MultiValue: TagsInputChip,
+              ValueContainer: TagsInputValueContainer,
+              MenuList: (props) => (
+                <TagsInputMenuList
+                  {...props}
+                  allowNewTags={allowNewTags}
+                  inputValue={inputValue}
+                  optionsLoadingState={optionsLoadingState && advanced}
+                  darkMode={darkMode}
+                  tagBackgroundColor={tagBackgroundColor}
+                  selectedTextColor={selectedTextColor}
+                  allOptions={allOptions}
+                  onCreateTag={handleCreate}
+                  autoPickChipColor={autoPickChipColor}
+                />
+              ),
+              Option: TagsInputOption,
+              LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
+              DropdownIndicator: () => null,
+            }}
+            isClearable={false}
+            isMulti
+            hideSelectedOptions={true}
+            filterOption={(option, inputValue) => option.label?.includes(inputValue)}
+            closeMenuOnSelect={false}
+            tabSelectsValue={false}
+            onKeyDown={handleKeyDown}
+            menuPlacement="auto"
+            menuPortalTarget={document.body}
+            minMenuHeight={300}
+            // Custom props
+            allowNewTags={allowNewTags}
+            tagBackgroundColor={tagBackgroundColor}
+            selectedTextColor={selectedTextColor}
+            focusedOptionIndex={focusedOptionIndex}
+            autoPickChipColor={autoPickChipColor}
+            getChipColor={getChipColor}
+          />
         </div>
-      </ToolTip>
+      </div>
       {userInteracted && visibility && !isValid && (
         <div
           className="d-flex"

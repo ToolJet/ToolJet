@@ -60,6 +60,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'FileButton',
   'ButtonGroupV2',
   'Listview',
+  'TagsInput',
+  'TreeSelect',
 ];
 
 const RenderWidget = ({

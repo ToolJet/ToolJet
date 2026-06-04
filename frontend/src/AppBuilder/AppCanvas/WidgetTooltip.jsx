@@ -34,7 +34,7 @@ const TooltipBody = ({ content, format }) => {
       </div>
     );
   }
-  return content;
+  return <span className="tw-whitespace-pre-wrap">{content}</span>;
 };
 
 TooltipBody.propTypes = {
@@ -51,7 +51,7 @@ const WidgetTooltip = ({
   darkMode = false,
 }) => {
   const trimmed = typeof content === 'string' ? content.trim() : '';
-  if (!show || !trimmed) return children;
+  const shouldShowTooltip = show && !!trimmed;
 
   const resolvedFormat = TOOLTIP_FORMATS.includes(format) ? format : DEFAULT_FORMAT;
   const isHtml = resolvedFormat === 'html';
@@ -62,15 +62,17 @@ const WidgetTooltip = ({
     <TooltipProvider delayDuration={delayDuration}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent
-          side="top"
-          align="start"
-          sideOffset={2}
-          showArrow={false}
-          className={cx(isHtml ? UNSTYLED_CLASSES : THEMED_CLASSES, themeClass)}
-        >
-          <TooltipBody content={trimmed} format={resolvedFormat} />
-        </TooltipContent>
+        {shouldShowTooltip && (
+          <TooltipContent
+            side="top"
+            align="start"
+            sideOffset={2}
+            showArrow={false}
+            className={cx(isHtml ? UNSTYLED_CLASSES : THEMED_CLASSES, themeClass)}
+          >
+            <TooltipBody content={trimmed} format={resolvedFormat} />
+          </TooltipContent>
+        )}
       </Tooltip>
     </TooltipProvider>
   );
