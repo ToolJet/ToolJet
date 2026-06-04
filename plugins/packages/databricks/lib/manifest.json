@@ -7,7 +7,7 @@
   "tj:source": {
     "name": "Databricks",
     "kind": "databricks",
-    "type": "api"
+    "type": "database"
   },
   "properties": {
     "authentication_type": {
