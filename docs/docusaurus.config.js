@@ -505,6 +505,10 @@ module.exports = {
           {
             from: '/docs/development-lifecycle/branching-and-pr',
             to: '/docs/beta/branching-and-pr',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
+            to: '/docs/beta/gitsync-env-vars',
           }
         ],
       },
