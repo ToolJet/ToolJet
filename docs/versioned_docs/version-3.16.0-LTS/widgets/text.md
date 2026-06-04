@@ -3,8 +3,6 @@ id: text
 title: Text
 ---
 
-# Text
-
 The **Text** component can be used to create headers, sub-headers, add labels next to various input fields and more. In this document, we'll go through all the configuration options for the **Text** component.
 
 ## Data
