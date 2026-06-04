@@ -1,13 +1,15 @@
 ---
 id: unique-constraint
-title: Resolving Unique Constraint Errors
+title: Resolving Unique Constraint Errors in Git Branching
 ---
 
 :::warning BETA
 Branching and Pull Requests is currently in beta and not recommended for production use.
 :::
 
-Certain fields in ToolJet must be unique within a workspace. When two branches independently assign the same value to one of these fields and both get merged into main, pulling the latest commit from Git will fail with a unique constraint error.
+This page applies to workspaces using [Branching and Pull Requests](/docs/development-lifecycle/branching-pr).
+
+When working with branches, all changes are scoped to that branch only. However, certain fields in ToolJet must be unique within a branch. When two branches independently assign the same value to one of these fields and both get merged into main, pulling the latest commit from Git will fail with a unique constraint error.
 
 **Fields with unique constraints:**
 
@@ -59,11 +61,11 @@ If the branch that introduced the duplicate value still exists:
 
 ### Option 2: Branch Has Been Deleted
 
-If the branch was auto-deleted after the PR was merged, you cannot pull from main to fix it because pulling replaces your entire draft with the conflicting state from Git. Instead, use a temporary workspace to bring in just the affected application so you can rename it cleanly.
+If the branch was auto-deleted after the PR was merged, you cannot pull from main to fix it because pulling will try to bring the entire branch's state and due to the conflicting fields, it will fail. Instead, use a temporary workspace to bring in just the affected application so you can rename it cleanly.
 
 1. **Create a new temporary workspace** in ToolJet.
 2. **Connect it to the same Git repository** using your existing Git credentials.
-3. **Import the affected application** using the import-from-Git option — do not use Pull, as that would pull all of main (including both conflicting apps).
+3. **Import the affected application** using the import-from-Git option — do not use Pull, as that will try to bring the entire branch's state and will fail due to the conflicting fields.
 4. **Create a new branch** in the temporary workspace.
 5. **Rename the conflicting field** (e.g., update the app slug to something unique).
 6. **Commit, push, create a pull request**, and merge it into main.
