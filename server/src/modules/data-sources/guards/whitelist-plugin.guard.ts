@@ -15,6 +15,7 @@ export class WhitelistPluginGuard implements CanActivate {
     'snowflake',
     'oracledb',
     'databricks',
+    'dynamodb',
   ]); // Start with grpcv2, easily expandable
 
   canActivate(context: ExecutionContext): boolean {
