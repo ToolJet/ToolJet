@@ -188,6 +188,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   };
 
   const handleToggleDropdown = () => {
+    if (isPullingVersion) return;
     if (!isDropdownOpen) {
       setSearchQuery('');
       // Reset environment filter to global currentEnvironment when opening
@@ -259,7 +260,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       await refreshVersions(appId, environmentToRefresh?.id);
       toast.success(`Version "${version.name}" pulled successfully`);
       if (draftVersionId) {
-        closeDropdown();
         changeEditorVersionAction(
           appId,
           draftVersionId,
@@ -270,8 +270,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             toast.error(error?.message || 'Failed to switch to pulled version');
           }
         );
-      } else {
-        closeDropdown();
       }
       setGitVersionStatus((prev) => {
         const updated = new Map(prev);
@@ -546,7 +544,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         target={buttonRef.current}
         placement="bottom-end"
         rootClose
-        onHide={closeDropdown}
+        onHide={() => {
+          if (!isPullingVersion) closeDropdown();
+        }}
         popperConfig={{
           modifiers: [
             {
@@ -575,7 +575,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
           <div
             style={{
               position: 'absolute',
-              zIndex: 1050, // Ensure it's above other content
+              zIndex: 1061,
             }}
           >
             {renderPopover(props)}

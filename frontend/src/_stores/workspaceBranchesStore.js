@@ -18,6 +18,7 @@ const initialState = {
   orgGitConfig: null,
   isPushing: false,
   isPulling: false,
+  pullingModuleComponentId: null,
   remoteBranches: [],
   isDeletingBranch: false,
   deleteBranchError: null,
@@ -179,6 +180,10 @@ export const useWorkspaceBranchesStore = create(
             set({ isPulling: false });
             throw error;
           }
+        },
+
+        setPullingModuleComponentId(componentId) {
+          set({ pullingModuleComponentId: componentId ?? null });
         },
 
         async fetchRemoteBranches() {

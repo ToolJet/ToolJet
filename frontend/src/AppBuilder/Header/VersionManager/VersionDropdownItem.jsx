@@ -288,11 +288,12 @@ const VersionDropdownItem = ({
                 onMouseEnter={() => setIsHoveringActionButtons(true)}
                 onMouseLeave={() => setIsHoveringActionButtons(false)}
               >
-                {((isDisabled && isHoveringItem) || isPulling) && (
+                {isDisabled && (isHoveringItem || isPulling) && (
                   <Button
                     variant="outline"
                     size="small"
                     disabled={isPulling}
+                    isLoading={isPulling}
                     className={cx(
                       'version-pull-btn',
                       { 'dark-theme theme-dark': darkMode },
@@ -305,20 +306,17 @@ const VersionDropdownItem = ({
                     data-cy={`${version.name.toLowerCase().replace(/\s+/g, '-')}-pull-version-button`}
                     style={{
                       padding: '2px 8px',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       height: 'auto',
-                      color: 'var(--text-strong)',
+                      color: 'var(--text-default)',
                       fontWeight: 500,
+                      borderRadius: '4px',
                     }}
                   >
-                    {isPulling ? (
-                      'Pulling...'
-                    ) : (
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <IconArrowBarToDown size={16} stroke={2} color="var(--text-default)" />
-                        Pull
-                      </span>
-                    )}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <IconArrowBarToDown size={12} stroke={2} color="var(--text-default)" />
+                      Pull
+                    </span>
                   </Button>
                 )}
 
