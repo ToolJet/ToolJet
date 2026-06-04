@@ -850,6 +850,11 @@ export class AppsUtilService implements IAppsUtilService {
       resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
+    // INNER JOIN below enforces branch scope. Skip EE's NOT EXISTS predicate
+    // to avoid correlated subplans (~600x cost on prod-sized app_versions).
+    const willInnerJoinOnBranch =
+      !!branchId &&
+      ((type === APP_TYPES.MODULE && !isGetAll) || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -857,7 +862,8 @@ export class AppsUtilService implements IAppsUtilService {
       searchKey,
       isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
       type,
-      branchId
+      branchId,
+      willInnerJoinOnBranch
     );
     this.applyAppVersionsJoin(qb, type, branchId, isGetAll);
     return qb;
@@ -895,7 +901,9 @@ export class AppsUtilService implements IAppsUtilService {
     searchKey?: string,
     select?: Array<string>,
     type?: string,
-    branchId?: string
+    branchId?: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _skipBranchScope?: boolean
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
