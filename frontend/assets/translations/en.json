@@ -195,6 +195,8 @@
             "confirmBeforeQueryRun": "Request confirmation before running query",
             "notificationOnSuccess": "Show notification on success",
             "runOnDependencyChange": "Run this query on dependency change",
+            "runQueryPeriodically": "Run this query periodically",
+            "timeInterval": "Time interval ( ms )",
             "successMessage": "Success Message",
             "queryRanSuccessfully": "Query ran successfully",
             "notificationDuration": "Notification duration (s)",

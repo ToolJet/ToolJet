@@ -50,6 +50,14 @@ export const customToggles = {
     label: 'Run this query on dependency change',
     translatedLabel: 'editor.queryManager.runOnDependencyChange',
   },
+  runPeriodically: {
+    dataCy: 'run-query-periodically',
+    action: 'runPeriodically',
+    label: 'Run this query periodically',
+    translatedLabel: 'editor.queryManager.runQueryPeriodically',
+    fx: true,
+    fxKey: 'runPeriodicallyFx',
+  },
   requestConfirmation: {
     dataCy: 'confirmation-before-run',
     action: 'requestConfirmation',
