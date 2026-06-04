@@ -115,7 +115,7 @@ All QuickBooks API endpoints require a **Company ID**, which uniquely identifies
 | GET | `/v3/company/{companyId}/reports/VendorBalance` | Report Vendor Balance |
 | GET | `/v3/company/{companyId}/reports/VendorBalanceDetail` | Report Vendor Balance Detail |
 | GET | `/v3/company/{companyId}/reports/VendorExpenses` | Report Vendor Expenses |
-| POST | `/v3/company/{companyId}/salesrecipt` | Sales Recipt-Void |
+| POST | `/v3/company/{companyId}/salesreceipt` | Sales Receipt-Void |
 | GET | `/v3/company/{companyId}/salesreceipt/181` | Sales Receipt Read by Id |
 | POST | `/v3/company/{companyId}/taxagency` | Tax Agency Create |
 | GET | `/v3/company/{companyId}/taxagency/3` | Tax Agency Read by Id |
