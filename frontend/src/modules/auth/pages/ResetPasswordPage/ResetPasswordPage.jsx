@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { OnboardingBackgroundWrapper } from '@/modules/onboarding/components';
 import { ResetPasswordForm, ResetPasswordInfoScreen } from './components';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
 
@@ -29,7 +29,7 @@ const ResetPasswordPage = () => {
   return (
     <OnboardingBackgroundWrapper
       LeftSideComponent={() => <ResetPasswordForm token={token} onResetSuccess={handleResetSuccess} />}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };
