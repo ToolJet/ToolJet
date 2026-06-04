@@ -209,7 +209,7 @@
 }
 
 .codehinter-multi-line-input, .rest-api-tabpanes-body {
-    &.content-extra-right-padding {
+    &.has-overlay-controls {
         .cm-content {
             padding-right: 2.25rem !important;
         }

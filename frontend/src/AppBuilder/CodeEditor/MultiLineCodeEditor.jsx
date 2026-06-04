@@ -332,7 +332,7 @@ const MultiLineCodeEditor = (props) => {
                 }}
                 className={cx('codehinter-multi-line-input', {
                   'code-editor-query-panel': isInsideQueryPane,
-                  'content-extra-right-padding': !isSearchPanelOpen || Boolean(copilotBtnSlot),
+                  'has-overlay-controls': !isSearchPanelOpen || Boolean(copilotBtnSlot),
                 })}
                 indentWithTab={false}
                 readOnly={readOnly}
