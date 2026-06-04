@@ -17,24 +17,6 @@ export const getDefaultIconFillColor = (variant, iconOnly = false) => {
   }
 };
 
-export const getLucideIconClassName = (variant, iconOnly = false) => {
-  switch (variant) {
-    case 'primary':
-    case 'dangerPrimary':
-      return 'tw-text-icon-on-solid';
-    case 'secondary':
-    case 'ghostBrand':
-      return 'tw-text-icon-brand';
-    case 'outline':
-    case 'ghost':
-      return iconOnly ? 'tw-text-icon-strong' : 'tw-text-icon-default';
-    case 'dangerSecondary':
-    case 'dangerGhost':
-      return 'tw-text-icon-danger';
-    default:
-      return '';
-  }
-};
 export const defaultButtonFillColour = ['#FFFFFF', '#4368E3', '#ACB2B9', '#D72D39']; // all default fill colors
 
 export const getIconSize = (size) => {
