@@ -8,6 +8,7 @@ import { completionKeymap, acceptCompletion, autocompletion, completionStatus } 
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
 import _ from 'lodash';
+import cx from 'classnames';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -246,6 +247,8 @@ const MultiLineCodeEditor = (props) => {
     onChange(newValue);
   };
 
+  const copilotBtnSlot = renderCopilot?.({ darkMode, language: lang, editorRef, onAiSuggestionAccept });
+
   return (
     <div
       className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
@@ -253,18 +256,7 @@ const MultiLineCodeEditor = (props) => {
       ref={wrapperRef}
     >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
-        <CodeHinterBtns
-          view={editorView}
-          isPanelOpen={isSearchPanelOpen}
-          renderCopilot={() =>
-            renderCopilot?.({
-              darkMode,
-              language: lang,
-              editorRef,
-              onAiSuggestionAccept,
-            })
-          }
-        />
+        <CodeHinterBtns view={editorView} isPanelOpen={isSearchPanelOpen} copilotBtnSlot={copilotBtnSlot} />
 
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
@@ -338,7 +330,10 @@ const MultiLineCodeEditor = (props) => {
                 style={{
                   overflowY: 'auto',
                 }}
-                className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
+                className={cx('codehinter-multi-line-input', {
+                  'code-editor-query-panel': isInsideQueryPane,
+                  'content-extra-right-padding': !isSearchPanelOpen || Boolean(copilotBtnSlot),
+                })}
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager

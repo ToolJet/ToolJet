@@ -209,8 +209,14 @@
 }
 
 .codehinter-multi-line-input, .rest-api-tabpanes-body {
+    &.content-extra-right-padding {
+        .cm-content {
+            padding-right: 2.25rem !important;
+        }
+    }
+
     .cm-content {
-        padding: 8px 12px !important;
+        padding: 0.5rem 0.75rem !important;
     }
 }
 
