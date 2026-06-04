@@ -430,6 +430,9 @@ class DataSourceManagerComponent extends React.Component {
       case 'databricks': {
         return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
       }
+      case 'quickbooks': {
+        return false;
+      }
       default:
         return true;
     }
