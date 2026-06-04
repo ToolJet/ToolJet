@@ -32,6 +32,9 @@ export class WorkspacePushDto {
   @IsOptional()
   @IsUUID()
   branchId?: string;
+
+  @IsOptional()
+  deletionOnly?: boolean;
 }
 
 export class WorkspacePullDto {
