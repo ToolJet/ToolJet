@@ -159,6 +159,7 @@
       }
 
       .footer-control-btns {
+        // First button
         &> [data-index="0"]:not([data-last="true"]) {
           .tj-tertiary-btn {
             border-top-right-radius: 0 !important;
@@ -166,18 +167,20 @@
           }
         }
 
+        // Last button
         &> [data-last="true"]:not([data-index="0"]) {
           .tj-tertiary-btn {
             border-top-left-radius: 0 !important;
             border-bottom-left-radius: 0 !important;
+            border-left: none !important;
           }
         }
 
+        // Middle buttons
         &> [data-last="false"]:not([data-index="0"]) {
           .tj-tertiary-btn {
             border-radius: 0 !important;
             border-left: none !important;
-            border-right: none !important;
           }
         }
       }
