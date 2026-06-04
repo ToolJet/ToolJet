@@ -9,6 +9,11 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import {
+  reconcileQueryPeriodicRun,
+  pauseQueryPeriodicRun,
+  resumeQueryPeriodicRun,
+} from '@/AppBuilder/_stores/slices/componentsSlice';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
@@ -305,6 +310,15 @@ export const createQueryPanelSlice = (set, get) => ({
 
       return asyncHandler;
     },
+    // Stop a query's periodic re-run at runtime (pausePeriodicRun CSA). The pause is
+    // sticky: reconcile won't auto-restart it on the next manual run / option edit.
+    pausePeriodicRun: (queryId) => {
+      pauseQueryPeriodicRun(queryId);
+    },
+    // Resume a paused periodic re-run (resumePeriodicRun CSA).
+    resumePeriodicRun: (queryId, moduleId = 'canvas') => {
+      resumeQueryPeriodicRun(queryId, moduleId, get);
+    },
     resetQuery: (queryId, moduleId = 'canvas') => {
       const { setResolvedQuery } = get();
       setResolvedQuery(
@@ -482,6 +496,11 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
       }
+
+      // Query is committed to executing now — start/refresh its periodic timer if
+      // "Run this query periodically" is on. Idempotent: a tick re-running the query
+      // re-enters here and no-ops when the resolved interval is unchanged.
+      reconcileQueryPeriodicRun(queryId, moduleId, get);
 
       // Handler for transformation and completion of query results
       const processQueryResults = async (data, rawData = null) => {
@@ -1159,6 +1178,14 @@ export const createQueryPanelSlice = (set, get) => ({
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.resetQuery(query.name);
               },
+              pausePeriodicRun: () => {
+                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+                return actions.pausePeriodicRun(query.name);
+              },
+              resumePeriodicRun: () => {
+                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+                return actions.resumePeriodicRun(query.name);
+              },
               getData: () => {
                 const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].data;
@@ -1548,6 +1575,14 @@ export const createQueryPanelSlice = (set, get) => ({
           reset: () => {
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
+          },
+          pausePeriodicRun: () => {
+            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            return actions.pausePeriodicRun(query.name);
+          },
+          resumePeriodicRun: () => {
+            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            return actions.resumePeriodicRun(query.name);
           },
           getData: () => {
             const resolvedState = get().getResolvedState(moduleId);
