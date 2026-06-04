@@ -45,92 +45,92 @@ All QuickBooks API endpoints require a **Company ID**, which uniquely identifies
 
 | Method | API Endpoint            | Description                                                  |
 | ------ | ----------------------- | ------------------------------------------------------------ |
-| POST | `/v3/company/{companyId}/account` | Update an account |
-| GET | `/v3/company/{companyId}/account/1` | Get the Account which has accountId as 1 |
-| POST | `/v3/company/{companyId}/query` | Vendor Credit - Read All |
-| POST | `/v3/company/{companyId}/attachable` | Attachable Delete |
-| GET | `/v3/company/{companyId}/attachable/5000000000000028383` | Attachable Read by Id |
-| POST | `/v3/company/{companyId}/upload` | Upload Attachments |
-| POST | `/v3/company/{companyId}/batch` | Batch |
-| POST | `/v3/company/{companyId}/bill` | Bill Delete |
-| GET | `/v3/company/{companyId}/bill/1` | Bill- Get by Id |
-| POST | `/v3/company/{companyId}/billpayment` | Bill Payment Update |
-| GET | `/v3/company/{companyId}/billpayment/118` | Bill Payment Read by Id |
-| GET | `/v3/company/{companyId}/cdc` | CDC Read |
-| POST | `/v3/company/{companyId}/class` | Class Delete |
-| GET | `/v3/company/{companyId}/class/5000000000000018727` | Class Read by Id |
-| GET | `/v3/company/{companyId}/companyinfo/{companyId}` | Company Info Read by Id |
-| POST | `/v3/company/{companyId}/creditmemo` | Credit Memo Delete |
-| GET | `/v3/company/{companyId}/creditmemo/160` | Credit Memo Read by Id |
-| POST | `/v3/company/{companyId}/customer` | Customer Delete |
-| GET | `/v3/company/{companyId}/customer/63` | Customer Read by Id |
-| POST | `/v3/company/{companyId}/department` | Department Delete |
-| GET | `/v3/company/{companyId}/department/1` | Department Read by Id |
-| POST | `/v3/company/{companyId}/deposit` | Deposit Delete |
-| GET | `/v3/company/{companyId}/deposit/162` | Deposit Read by Id |
-| POST | `/v3/company/{companyId}/employee` | Employee Delete |
-| GET | `/v3/company/{companyId}/employee/68` | Employee Read by Id |
-| POST | `/v3/company/{companyId}/estimate` | Estimate Delete |
-| GET | `/v3/company/{companyId}/estimate/163` | Estimate Read by Id |
-| GET | `/v3/company/{companyId}/exchangerate` | Exchange Rate - Get Details|
-| POST | `/v3/company/{companyId}/inventoryadjustment` | Create Inventory Adjustment copy |
-| POST | `/v3/company/{companyId}/invoice` | Invoice Delete |
-| GET | `/v3/company/{companyId}/invoice/147` | Invoice Read by Id |
-| POST | `/v3/company/{companyId}/item` | Item Delete |
-| GET | `/v3/company/{companyId}/item/<id>` | Item Read by Id |
-| POST | `/v3/company/{companyId}/journalentry` | Journal Entry Delete |
-| GET | `/v3/company/{companyId}/journalentry/8` | Journal Entry Read by Id |
-| POST | `/v3/company/{companyId}/payment` | Payment Delete |
-| GET | `/v3/company/{companyId}/payment/174` | Payment Read by Id |
-| POST | `/v3/company/{companyId}/paymentmethod` | Payment Method Delete |
-| GET | `/v3/company/{companyId}/paymentmethod/8` | Payment Method Read by Id |
-| GET | `/v3/company/{companyId}/preferences` | Preferences Read |
-| POST | `/v3/company/{companyId}/preferences` | Preferences Update |
-| POST | `/v3/company/{companyId}/purchase` | Purchase Delete |
-| GET | `/v3/company/{companyId}/purchase/175` | Purchase Read by Id |
-| POST | `/v3/company/{companyId}/purchaseorder` | Purchase Order Delete |
-| GET | `/v3/company/{companyId}/purchaseorder/178` | Purchase Order Read by Id |
-| POST | `/v3/company/{companyId}/refundreceipt` | Refund Receipt Delete |
-| GET | `/v3/company/{companyId}/refundrecipt/66` | Refund Recipt- Read by Id |
-| GET | `/v3/company/{companyId}/reports/AccountList` | Report Account List |
-| GET | `/v3/company/{companyId}/reports/AgedPayablesDetail` | Report Aged Payables Detail |
-| GET | `/v3/company/{companyId}/reports/AgedPayables` | Report Aged Payables |
-| GET | `/v3/company/{companyId}/reports/AgedReceivableDetail` | Report Aged Receivable Detail |
-| GET | `/v3/company/{companyId}/reports/AgedReceivables` | Report Aged Receivables |
-| GET | `/v3/company/{companyId}/reports/BalanceSheet` | Report Balance Sheet |
-| GET | `/v3/company/{companyId}/reports/CashFlow` | Report Cash Flow |
-| GET | `/v3/company/{companyId}/reports/ClassSales` | Report Class Sales |
-| GET | `/v3/company/{companyId}/reports/CustomerBalance` | Report Customer Balance |
-| GET | `/v3/company/{companyId}/reports/CustomerBalanceDetail` | Report Customer Balance Detail |
-| GET | `/v3/company/{companyId}/reports/CustomerIncome` | Report Customer Income |
-| GET | `/v3/company/{companyId}/reports/CustomerSales` | Report Customer Sales |
-| GET | `/v3/company/{companyId}/reports/DepartmentSales` | Report Department Sales |
-| GET | `/v3/company/{companyId}/reports/GeneralLedger` | Report General Ledger |
-| GET | `/v3/company/{companyId}/reports/InventoryValuationSummary` | Report Inventory Valuation Summary |
-| GET | `/v3/company/{companyId}/reports/ItemSales` | Report Item Sales |
-| GET | `/v3/company/{companyId}/reports/ProfitAndLoss` | Report Profit And Loss |
-| GET | `/v3/company/{companyId}/reports/ProfitAndLossDetail` | Report Profit And Loss Detail |
-| GET | `/v3/company/{companyId}/reports/TrialBalance` | Report Trial Balance |
-| GET | `/v3/company/{companyId}/reports/TransactionList` | Report Transaction List |
-| GET | `/v3/company/{companyId}/reports/VendorBalance` | Report Vendor Balance |
-| GET | `/v3/company/{companyId}/reports/VendorBalanceDetail` | Report Vendor Balance Detail |
-| GET | `/v3/company/{companyId}/reports/VendorExpenses` | Report Vendor Expenses |
-| POST | `/v3/company/{companyId}/salesreceipt` | Sales Receipt-Void |
-| GET | `/v3/company/{companyId}/salesreceipt/181` | Sales Receipt Read by Id |
-| POST | `/v3/company/{companyId}/taxagency` | Tax Agency Create |
-| GET | `/v3/company/{companyId}/taxagency/3` | Tax Agency Read by Id |
-| GET | `/v3/company/{companyId}/taxcode/2` | Tax Code Read by Id |
-| GET | `/v3/company/{companyId}/taxrate/1` | Tax Rate Read by Id |
-| POST | `/v3/company/{companyId}/taxservice/taxcode` | Tax Service Create |
-| POST | `/v3/company/{companyId}/term` | Term Delete |
-| GET | `/v3/company/{companyId}/term/8` | Term Read by Id |
-| POST | `/v3/company/{companyId}/timeactivity` | Time Activity Delete |
-| POST | `/v3/company/{companyId}/transfer` | Transfer delete |
-| GET | `/v3/company/{companyId}/transfer/184` | Transfer Read by Id |
-| POST | `/v3/company/{companyId}/vendor` | Vendor Delete |
-| GET | `/v3/company/{companyId}/vendor/70` | Vendor Read by Id |
-| POST | `/v3/company/{companyId}/vendorcredit` | Vendor Credit Delete |
-| GET | `/v3/company/{companyId}/vendorcredit/185` | Vendor Credit Read by Id |
+| POST | `/v3/company/{companyid}/account` | Update an account |
+| GET | `/v3/company/{companyid}/account/1` | Get the Account which has accountId as 1 |
+| POST | `/v3/company/{companyid}/query` | Vendor Credit - Read All |
+| POST | `/v3/company/{companyid}/attachable` | Attachable Delete |
+| GET | `/v3/company/{companyid}/attachable/5000000000000028383` | Attachable Read by Id |
+| POST | `/v3/company/{companyid}/upload` | Upload Attachments |
+| POST | `/v3/company/{companyid}/batch` | Batch |
+| POST | `/v3/company/{companyid}/bill` | Bill Delete |
+| GET | `/v3/company/{companyid}/bill/1` | Bill- Get by Id |
+| POST | `/v3/company/{companyid}/billpayment` | Bill Payment Update |
+| GET | `/v3/company/{companyid}/billpayment/118` | Bill Payment Read by Id |
+| GET | `/v3/company/{companyid}/cdc` | CDC Read |
+| POST | `/v3/company/{companyid}/class` | Class Delete |
+| GET | `/v3/company/{companyid}/class/5000000000000018727` | Class Read by Id |
+| GET | `/v3/company/{companyid}/companyinfo/{companyid}` | Company Info Read by Id |
+| POST | `/v3/company/{companyid}/creditmemo` | Credit Memo Delete |
+| GET | `/v3/company/{companyid}/creditmemo/160` | Credit Memo Read by Id |
+| POST | `/v3/company/{companyid}/customer` | Customer Delete |
+| GET | `/v3/company/{companyid}/customer/63` | Customer Read by Id |
+| POST | `/v3/company/{companyid}/department` | Department Delete |
+| GET | `/v3/company/{companyid}/department/1` | Department Read by Id |
+| POST | `/v3/company/{companyid}/deposit` | Deposit Delete |
+| GET | `/v3/company/{companyid}/deposit/162` | Deposit Read by Id |
+| POST | `/v3/company/{companyid}/employee` | Employee Delete |
+| GET | `/v3/company/{companyid}/employee/68` | Employee Read by Id |
+| POST | `/v3/company/{companyid}/estimate` | Estimate Delete |
+| GET | `/v3/company/{companyid}/estimate/163` | Estimate Read by Id |
+| GET | `/v3/company/{companyid}/exchangerate` | Exchange Rate - Get Details|
+| POST | `v3/company/{companyid}/inventoryadjustment` | Create Inventory Adjustment Copy |
+| POST | `/v3/company/{companyid}/invoice` | Invoice Delete |
+| GET | `/v3/company/{companyid}/invoice/147` | Invoice Read by Id |
+| POST | `/v3/company/{companyid}/item` | Item Delete |
+| GET | `/v3/company/{companyid}/item/<id>` | Item Read by Id |
+| POST | `/v3/company/{companyid}/journalentry` | Journal Entry Delete |
+| GET | `/v3/company/{companyid}/journalentry/8` | Journal Entry Read by Id |
+| POST | `/v3/company/{companyid}/payment` | Payment Delete |
+| GET | `/v3/company/{companyid}/payment/174` | Payment Read by Id |
+| POST | `/v3/company/{companyid}/paymentmethod` | Payment Method Delete |
+| GET | `/v3/company/{companyid}/paymentmethod/8` | Payment Method Read by Id |
+| GET | `/v3/company/{companyid}/preferences` | Preferences Read |
+| POST | `/v3/company/{companyid}/preferences` | Preferences Update |
+| POST | `/v3/company/{companyid}/purchase` | Purchase Delete |
+| GET | `/v3/company/{companyid}/purchase/175` | Purchase Read by Id |
+| POST | `/v3/company/{companyid}/purchaseorder` | Purchase Order Delete |
+| GET | `/v3/company/{companyid}/purchaseorder/178` | Purchase Order Read by Id |
+| POST | `/v3/company/{companyid}/refundreceipt` | Refund Receipt Delete |
+| GET | `/v3/company/{companyid}/refundrecipt/66` | Refund Recipt- Read by Id |
+| GET | `/v3/company/{companyid}/reports/AccountList` | Report Account List |
+| GET | `/v3/company/{companyid}/reports/AgedPayablesDetail` | Report Aged Payables Detail |
+| GET | `/v3/company/{companyid}/reports/AgedPayables` | Report Aged Payables |
+| GET | `/v3/company/{companyid}/reports/AgedReceivableDetail` | Report Aged Receivable Detail |
+| GET | `/v3/company/{companyid}/reports/AgedReceivables` | Report Aged Receivables |
+| GET | `/v3/company/{companyid}/reports/BalanceSheet` | Report Balance Sheet |
+| GET | `/v3/company/{companyid}/reports/CashFlow` | Report Cash Flow |
+| GET | `/v3/company/{companyid}/reports/ClassSales` | Report Class Sales |
+| GET | `/v3/company/{companyid}/reports/CustomerBalance` | Report Customer Balance |
+| GET | `/v3/company/{companyid}/reports/CustomerBalanceDetail` | Report Customer Balance Detail |
+| GET | `/v3/company/{companyid}/reports/CustomerIncome` | Report Customer Income |
+| GET | `/v3/company/{companyid}/reports/CustomerSales` | Report Customer Sales |
+| GET | `/v3/company/{companyid}/reports/DepartmentSales` | Report Department Sales |
+| GET | `/v3/company/{companyid}/reports/GeneralLedger` | Report General Ledger |
+| GET | `/v3/company/{companyid}/reports/InventoryValuationSummary` | Report Inventory Valuation Summary |
+| GET | `/v3/company/{companyid}/reports/ItemSales` | Report Item Sales |
+| GET | `/v3/company/{companyid}/reports/ProfitAndLoss` | Report Profit And Loss |
+| GET | `/v3/company/{companyid}/reports/ProfitAndLossDetail` | Report Profit And Loss Detail |
+| GET | `/v3/company/{companyid}/reports/TrialBalance` | Report Trial Balance |
+| GET | `/v3/company/{companyid}/reports/TransactionList` | Report Transaction List |
+| GET | `/v3/company/{companyid}/reports/VendorBalance` | Report Vendor Balance |
+| GET | `/v3/company/{companyid}/reports/VendorBalanceDetail` | Report Vendor Balance Detail |
+| GET | `/v3/company/{companyid}/reports/VendorExpenses` | Report Vendor Expenses |
+| POST | `/v3/company/{companyid}/salesreceipt` | Sales Receipt-Void |
+| GET | `/v3/company/{companyid}/salesreceipt/181` | Sales Receipt Read by Id |
+| POST | `/v3/company/{companyid}/taxagency` | Tax Agency Create |
+| GET | `/v3/company/{companyid}/taxagency/3` | Tax Agency Read by Id |
+| GET | `/v3/company/{companyid}/taxcode/2` | Tax Code Read by Id |
+| GET | `/v3/company/{companyid}/taxrate/1` | Tax Rate Read by Id |
+| POST | `/v3/company/{companyid}/taxservice/taxcode` | Tax Service Create |
+| POST | `/v3/company/{companyid}/term` | Term Delete |
+| GET | `/v3/company/{companyid}/term/8` | Term Read by Id |
+| POST | `/v3/company/{companyid}/timeactivity` | Time Activity Delete |
+| POST | `/v3/company/{companyid}/transfer` | Transfer delete |
+| GET | `/v3/company/{companyid}/transfer/184` | Transfer Read by Id |
+| POST | `/v3/company/{companyid}/vendor` | Vendor Delete |
+| GET | `/v3/company/{companyid}/vendor/70` | Vendor Read by Id |
+| POST | `/v3/company/{companyid}/vendorcredit` | Vendor Credit Delete |
+| GET | `/v3/company/{companyid}/vendorcredit/185` | Vendor Credit Read by Id |
 
 ## Example Queries
 
