@@ -34,7 +34,6 @@ const DEFAULT_BLOCKED_SCHEMES = ['file', 'gopher', 'dict', 'ftp', 'jar', 'data',
 // Well-known hostnames that always resolve to loopback/private addresses.
 // Checked statically before DNS resolution as defense-in-depth.
 const BLOCKED_HOSTNAMES = new Set([
-  'localhost',
   'ip6-localhost',
   'ip6-loopback',
   '0.0.0.0',
@@ -54,24 +53,32 @@ interface SSRFProtectionOptions {
   enabled?: boolean;
   dnsResolutionCheck?: boolean;
   blockedSchemes?: string[];
+  allowedHostnames?: Set<string>;
 }
 
 export function getSSRFConfig(): SSRFProtectionOptions {
   const enabled = process.env.SSRF_PROTECTION_ENABLED !== 'false'; // Enabled by default (opt-out via SSRF_PROTECTION_ENABLED=false)
   const dnsResolutionCheck = process.env.SSRF_DNS_RESOLUTION_CHECK !== 'false'; // Enabled by default (opt-out via SSRF_DNS_RESOLUTION_CHECK=false)
 
-  // Parse blocked schemes from environment variable
-  // If not set, allow all schemes by default (self-hosted flexibility)
-  // If set, parse comma-separated list of schemes to block
   const blockedSchemesEnv = process.env.SSRF_BLOCKED_SCHEMES;
   const blockedSchemes = blockedSchemesEnv
     ? blockedSchemesEnv.split(',').map(s => s.trim().toLowerCase()).filter(s => s.length > 0)
     : DEFAULT_BLOCKED_SCHEMES;
 
+  const isCloud = process.env.TOOLJET_EDITION?.toLowerCase() === 'cloud';
+
+  // Cloud: nothing bypasses SSRF checks.
+  // Self-hosted: localhost and loopback are allowed by default — admins may
+  // legitimately run services on the same host as ToolJet.
+  const allowedHostnames = isCloud
+    ? new Set<string>()
+    : new Set(['localhost', 'ip6-localhost', 'ip6-loopback', '::1']);
+
   return {
     enabled,
     dnsResolutionCheck,
     blockedSchemes,
+    allowedHostnames,
   };
 }
 
@@ -393,6 +400,12 @@ export async function validateUrlForSSRF(
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
 
+  // Allowlist check — self-hosted instances can whitelist specific hostnames via
+  // SSRF_ALLOWED_HOSTNAMES env var. Bypasses all checks below for that hostname.
+  if (config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) {
+    return;
+  }
+
   // Check for @ symbol abuse (credentials in URL pointing to private IPs)
   // e.g., http://169.254.169.254@example.com - should parse as connecting to 169.254.169.254
   if (url.username || url.password) {
@@ -650,6 +663,10 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
 
   const hostname = url.hostname.toLowerCase();
   const scheme = url.protocol;
+
+  if (config.allowedHostnames?.size > 0 && config.allowedHostnames.has(hostname)) {
+    return;
+  }
 
   if (isBlockedHostname(hostname)) {
     throw new QueryError(
