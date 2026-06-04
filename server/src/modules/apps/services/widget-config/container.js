@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const containerConfig = {
   name: 'Container',
   displayName: 'Container',
@@ -65,6 +63,28 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   defaultChildren: [
     {
@@ -90,7 +110,6 @@ export const containerConfig = {
       },
     },
   ],
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     headerBackgroundColor: {
@@ -185,8 +204,9 @@ export const containerConfig = {
       disabledState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       headerHeight: { value: `{{60}}` },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

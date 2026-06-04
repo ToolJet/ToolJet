@@ -62,6 +62,8 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Listview',
   'TagsInput',
   'TreeSelect',
+  'ModalV2',
+  'Container',
 ];
 
 const RenderWidget = ({

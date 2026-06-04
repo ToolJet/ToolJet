@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const qrscannerConfig = {
   name: 'QrScanner',
   displayName: 'QR Scanner',
@@ -14,7 +12,6 @@ export const qrscannerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {},
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onDetect: { displayName: 'On detect' },
   },
@@ -45,7 +42,6 @@ export const qrscannerConfig = {
       showOnMobile: { value: '{{true}}' },
     },
     properties: {},
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

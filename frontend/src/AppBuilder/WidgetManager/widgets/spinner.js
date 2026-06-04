@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const spinnerConfig = {
   name: 'Spinner',
   displayName: 'Spinner',
@@ -14,7 +12,6 @@ export const spinnerConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {},
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     visibility: {
@@ -53,7 +50,6 @@ export const spinnerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {},
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

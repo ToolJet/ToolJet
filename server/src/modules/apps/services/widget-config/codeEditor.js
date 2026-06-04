@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const codeEditorConfig = {
   name: 'CodeEditor',
   displayName: 'Code Editor',
@@ -54,7 +52,6 @@ export const codeEditorConfig = {
       },
     },
   },
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     visibility: {
@@ -126,7 +123,6 @@ export const codeEditorConfig = {
       mode: { value: 'javascript' },
       placeholder: { value: '' },
     },
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

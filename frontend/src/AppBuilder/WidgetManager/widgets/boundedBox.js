@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const boundedBoxConfig = {
   name: 'BoundedBox',
   displayName: 'Bounded Box',
@@ -53,7 +51,6 @@ export const boundedBoxConfig = {
       },
     },
   },
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onChange: { displayName: 'On change' },
   },
@@ -114,7 +111,6 @@ export const boundedBoxConfig = {
       selector: { value: `RECTANGLE` },
       labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
     },
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

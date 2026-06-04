@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const paginationConfig = {
   name: 'Pagination',
   displayName: 'Pagination',
@@ -32,7 +30,6 @@ export const paginationConfig = {
     },
   },
   validation: {},
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onPageChange: { displayName: 'On Page Change' },
   },
@@ -80,7 +77,6 @@ export const paginationConfig = {
         value: '{{1}}',
       },
     },
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const modalConfig = {
   name: 'ModalLegacy',
   displayName: 'Modal (Legacy)',
@@ -77,7 +75,6 @@ export const modalConfig = {
       },
     },
   },
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onOpen: { displayName: 'On open' },
     onClose: { displayName: 'On close' },
@@ -171,7 +168,6 @@ export const modalConfig = {
       closeOnClickingOutside: { value: '{{false}}' },
       modalHeight: { value: '400px' },
     },
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },

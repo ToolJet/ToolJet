@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const timerConfig = {
   name: 'Timer',
   displayName: 'Timer',
@@ -36,7 +34,6 @@ export const timerConfig = {
     },
   },
   validation: {},
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {
     onStart: { displayName: 'On Start' },
     onResume: { displayName: 'On Resume' },
@@ -91,7 +88,6 @@ export const timerConfig = {
         paramName: 'value',
       },
     ],
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       visibility: { value: '{{true}}' },

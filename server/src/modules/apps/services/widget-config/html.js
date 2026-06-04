@@ -1,5 +1,3 @@
-import { GENERAL_TOOLTIP_FIELDS, GENERAL_TOOLTIP_DEFAULTS } from './_sharedGeneralTooltip';
-
 export const htmlConfig = {
   name: 'Html',
   displayName: 'HTML Viewer',
@@ -42,7 +40,6 @@ export const htmlConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  general: { ...GENERAL_TOOLTIP_FIELDS },
   events: {},
   styles: {
     boxShadow: {
@@ -94,7 +91,6 @@ export const htmlConfig = {
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
     },
-    general: { ...GENERAL_TOOLTIP_DEFAULTS },
     events: [],
     styles: {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
