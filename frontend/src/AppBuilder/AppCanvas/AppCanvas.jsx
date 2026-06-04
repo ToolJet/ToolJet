@@ -27,14 +27,15 @@ const EditorSelecto = React.lazy(() => import('./Selecto'));
 const Grid = React.lazy(() => import('./Grid'));
 import useCanvasMinWidth from './Hooks/useCanvasMinWidth';
 import useEnableMainCanvasScroll from './Hooks/useEnableMainCanvasScroll';
+
 import useCanvasResizing from './Hooks/useCanvasResizing';
 
 export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const { moduleId, isModuleMode, appType } = useModuleContext();
   const canvasContainerRef = useRef();
   const canvasContentRef = useRef(null);
+  useEnableMainCanvasScroll({ canvasContentRef, enabled: !isModuleMode });
 
-  useEnableMainCanvasScroll({ canvasContentRef });
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.appStore.modules[moduleId].canvasHeight);
   const environmentLoadingState = useStore(
@@ -131,6 +132,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     return () => setIsComponentLayoutReady(false, moduleId);
   }, [moduleId, setIsComponentLayoutReady]);
 
+  // canvas-content is the scroll container and is reused across page switches
+  // (only the inner layout is re-keyed by pageKey), so scrollTop carries over.
+  // Reset to top whenever the page changes so every page starts at the top
+  useEffect(() => {
+    canvasContentRef.current?.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [currentPageId]);
+
   useCanvasResizing({
     setCanvasWidth,
     moduleId,
@@ -154,7 +162,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
       return {
         borderLeft: 'none',
         height: '100%',
-        background: canvasBgColor,
+        background: 'transparent',
       };
     }
 
@@ -195,6 +203,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
     />
   );
 
+  const gridContent =
+    currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
+      <Suspense fallback={null}>
+        <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
+      </Suspense>
+    );
+
   return (
     <div>
       <div
@@ -233,7 +248,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
             <div
               id="app-canvas-container"
               className={cx('tw-h-full tw-flex tw-flex-col tw-relative', {
-                '!tw-w-[450px] tw-mx-auto': isMobileLayout,
+                'tw-w-full tw-mx-auto': isMobileLayout,
               })}
               style={{ minWidth: minCanvasWidth }}
             >
@@ -246,10 +261,13 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 )}
                 style={{
                   overflow: currentMode === 'view' ? 'auto' : 'hidden auto',
+                  ...(isMobileLayout && currentMode === 'view' ? { overflowX: 'hidden' } : {}),
                   width: '100%',
                   flex: 1,
                   minHeight: 0,
-                  ...(!isMobileLayout && appType === 'module' && isModuleMode ? { height: 'inherit' } : {}),
+                  ...(!isMobileLayout && appType === 'module' && isModuleMode
+                    ? { height: 'inherit', overflow: 'hidden' }
+                    : {}),
                 }}
               >
                 <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
@@ -279,6 +297,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           canvasMaxWidth={canvasMaxWidth}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
                         />
                       ) : (
@@ -303,16 +322,11 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           currentMode={currentMode}
                           isAppDarkMode={isAppDarkMode}
                           mainCanvasContainer={mainCanvasContainer}
+                          gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
                         />
                       )}
                     </SuspenseCountProvider>
-                  )}
-
-                  {currentMode === 'view' || (isMobileLayout && isAutoMobileLayout) ? null : (
-                    <Suspense fallback={null}>
-                      <Grid currentLayout={currentLayout} gridWidth={gridWidth} mainCanvasWidth={canvasWidth} />
-                    </Suspense>
                   )}
                 </HotkeyProvider>
               </div>

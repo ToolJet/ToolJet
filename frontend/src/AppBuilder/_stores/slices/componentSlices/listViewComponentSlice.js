@@ -88,8 +88,8 @@ export const listViewComponentSlice = (set, get) => ({
       }
     );
     // Fire property-level dependency updates for each changed key (same mechanism as above).
-    Object.entries(values).forEach(([key, value]) => {
-      if (typeof value !== 'function' && !skipKeys.has(key)) {
+    Object.entries(values).forEach(([key]) => {
+      if (!skipKeys.has(key)) {
         get().updateDependencyValues(`components.${componentId}.${key}`, moduleId, []);
       }
     });

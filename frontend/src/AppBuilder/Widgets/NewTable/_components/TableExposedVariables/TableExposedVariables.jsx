@@ -377,6 +377,36 @@ export const TableExposedVariables = ({
     setExposedVariables({ clearFilters, setFilters });
   }, [setColumnFilters, setExposedVariables, columns]);
 
+  // CSA to set sort programmatically
+  useEffect(() => {
+    function setSort(columnKey, direction) {
+      if (columnKey === undefined && direction === undefined) {
+        table.setSorting([]);
+        return;
+      }
+      if (direction !== 'asc' && direction !== 'desc' && direction !== 'auto') {
+        // eslint-disable-next-line no-console
+        console.warn(`setSort: invalid direction "${direction}" — expected 'asc', 'desc' or 'auto'`);
+        return;
+      }
+      const tanstackId = columns.find((col) => col.columnDef?.accessorKey === columnKey)?.id;
+      if (!tanstackId) {
+        // eslint-disable-next-line no-console
+        console.warn(`setSort: column key "${columnKey}" not found`);
+        return;
+      }
+      let desc;
+      if (direction === 'auto') {
+        const currentSort = table.getState().sorting?.find((s) => s.id === tanstackId);
+        desc = currentSort ? !currentSort.desc : false;
+      } else {
+        desc = direction === 'desc';
+      }
+      table.setSorting([{ id: tanstackId, desc }]);
+    }
+    setExposedVariables({ setSort });
+  }, [setExposedVariables, columns, table]);
+
   // CSA to download table data
   useEffect(() => {
     function downloadTableData(format) {

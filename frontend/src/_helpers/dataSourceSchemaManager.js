@@ -108,10 +108,11 @@ export default class DataSourceSchemaManager {
   _getOptionsMetadata() {
     const options = {};
     const properties = this.schema.properties || {};
+    const encryptedProperties = this.getEncryptedProperties();
 
     for (const [key, value] of Object.entries(properties)) {
       options[key] = { type: value.type };
-      if (value.encrypted) {
+      if (value.encrypted || encryptedProperties.includes(key)) {
         options[key].encrypted = true;
       }
     }

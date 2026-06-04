@@ -1,4 +1,5 @@
 import { CreatePluginDto, UpdatePluginDto } from '../dto';
+import { EntityManager } from 'typeorm';
 
 export interface IPluginsUtilService {
   create(
@@ -9,7 +10,8 @@ export interface IPluginsUtilService {
       operations: ArrayBuffer;
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
-    }
+    },
+    specFiles?: Record<string, string>
   ): Promise<any>;
 
   fetchPluginFiles(
@@ -28,6 +30,13 @@ export interface IPluginsUtilService {
       operations: ArrayBuffer;
       icon: ArrayBuffer;
       manifest: ArrayBuffer;
-    }
+    },
+    specFiles?: Record<string, string>
   ): Promise<any>;
+
+  updateSpecFilesForReload(
+    currentMap: Record<string, string> | null,
+    newSpecFiles: Record<string, string> | undefined,
+    manager: EntityManager
+  ): Promise<Record<string, string> | null>;
 }

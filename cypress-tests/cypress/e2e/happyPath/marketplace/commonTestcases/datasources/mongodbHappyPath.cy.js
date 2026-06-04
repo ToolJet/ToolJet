@@ -115,7 +115,7 @@ describe("MongoDB", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(mongodbFormConfig, mongodbFormConfig.invalidPort);
-        verifyDSConnection("failed", "connection timed out");
+        verifyDSConnection("failed", "connect ECONNREFUSED");
 
 
         // Note: need to get new creds

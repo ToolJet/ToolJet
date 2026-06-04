@@ -27,6 +27,9 @@ export class OrganizationAiKey extends BaseEntity {
   @Column({ name: 'encrypted_key', type: 'text' })
   encryptedKey: string;
 
+  @Column({ name: 'provider', type: 'varchar', length: 50, default: 'anthropic' })
+  provider: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 

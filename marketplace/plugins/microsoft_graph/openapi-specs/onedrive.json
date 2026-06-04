@@ -1,0 +1,1785 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Microsoft Graph OneDrive API",
+    "description": "Microsoft Graph API for OneDrive operations including file management, sharing, and collaboration",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Microsoft Graph",
+      "url": "https://developer.microsoft.com/graph"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://graph.microsoft.com/v1.0",
+      "description": "Microsoft Graph v1.0 endpoint"
+    }
+  ],
+  "security": [
+    {
+      "oauth2": ["Files.Read", "Files.ReadWrite", "Files.Read.All", "Files.ReadWrite.All"]
+    }
+  ],
+  "paths": {
+    "/me/drive/root/children": {
+      "get": {
+        "summary": "List root folder contents",
+        "description": "Retrieve the list of DriveItem objects in the root folder of the user's default drive",
+        "operationId": "listRootChildren",
+        "tags": ["DriveItem", "Children"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skipToken"
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved children items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItemCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create new item in root folder",
+        "description": "Create a new folder or upload a file to the root folder",
+        "operationId": "createRootItem",
+        "tags": ["DriveItem", "Create"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDriveItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/drive/recent": {
+      "get": {
+        "summary": "List recently accessed files",
+        "description": "Retrieve a list of DriveItem resources that have been recently used by the signed-in user",
+        "operationId": "listRecentFiles",
+        "tags": ["DriveItem", "Recent"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skipToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved recent items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItemCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/me/drive/sharedWithMe": {
+      "get": {
+        "summary": "List items shared with me",
+        "description": "Retrieve a collection of DriveItem resources that have been shared with the signed-in user",
+        "operationId": "listSharedWithMe",
+        "tags": ["DriveItem", "Sharing"],
+        "parameters": [
+          {
+            "name": "allowexternal",
+            "in": "query",
+            "description": "Include items shared from external tenants",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skipToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shared items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItemCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read.All", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/me/drive/root/search(q='{search-query}')": {
+      "get": {
+        "summary": "Search drive items",
+        "description": "Search the hierarchy of items for items matching a query",
+        "operationId": "searchDriveItems",
+        "tags": ["DriveItem", "Search"],
+        "parameters": [
+          {
+            "name": "search-query",
+            "in": "path",
+            "description": "The search query text",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skipToken"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite"]
+          }
+        ]
+      }
+    },
+    "/drives/{drive-id}/root/children": {
+      "get": {
+        "summary": "List drive root contents",
+        "description": "Retrieve the list of DriveItem objects in the root folder of a specific drive",
+        "operationId": "listDriveRootChildren",
+        "tags": ["DriveItem", "Children"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skipToken"
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved children items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItemCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite", "Files.Read.All", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/children": {
+      "get": {
+        "summary": "List folder contents",
+        "description": "Retrieve the list of DriveItem objects in a specific folder",
+        "operationId": "listFolderChildren",
+        "tags": ["DriveItem", "Children"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the folder item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          },
+          {
+            "$ref": "#/components/parameters/orderby"
+          },
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skipToken"
+          },
+          {
+            "$ref": "#/components/parameters/filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved children items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItemCollectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite", "Files.Read.All", "Files.ReadWrite.All"]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create item in folder",
+        "description": "Create a new folder or upload a file to a specific folder",
+        "operationId": "createFolderItem",
+        "tags": ["DriveItem", "Create"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the parent folder",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDriveItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.ReadWrite", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}": {
+      "get": {
+        "summary": "Get drive item metadata",
+        "description": "Retrieve the metadata for a DriveItem by ID",
+        "operationId": "getDriveItem",
+        "tags": ["DriveItem"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/select"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved item metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite", "Files.Read.All", "Files.ReadWrite.All"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update drive item",
+        "description": "Update the metadata for a DriveItem by ID",
+        "operationId": "updateDriveItem",
+        "tags": ["DriveItem"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDriveItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.ReadWrite", "Files.ReadWrite.All"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete drive item",
+        "description": "Delete a DriveItem by ID",
+        "operationId": "deleteDriveItem",
+        "tags": ["DriveItem"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Item deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.ReadWrite", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/content": {
+      "get": {
+        "summary": "Download file content",
+        "description": "Download the contents of a DriveItem",
+        "operationId": "downloadFile",
+        "tags": ["DriveItem", "Content"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content retrieved successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "302": {
+            "description": "Redirect to download URL",
+            "headers": {
+              "Location": {
+                "description": "URL to download the file content",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite", "Files.Read.All", "Files.ReadWrite.All"]
+          }
+        ]
+      },
+      "put": {
+        "summary": "Upload file content",
+        "description": "Upload content for a new file or replace content of existing file",
+        "operationId": "uploadFile",
+        "tags": ["DriveItem", "Content"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File content updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItem"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "File created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.ReadWrite", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/createLink": {
+      "post": {
+        "summary": "Create sharing link",
+        "description": "Create a sharing link for a DriveItem",
+        "operationId": "createSharingLink",
+        "tags": ["DriveItem", "Sharing"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sharing link created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Permission"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.ReadWrite", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/permissions": {
+      "get": {
+        "summary": "List item permissions",
+        "description": "List the permissions on a DriveItem",
+        "operationId": "listPermissions",
+        "tags": ["DriveItem", "Permissions"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permissions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Permission"
+                      }
+                    },
+                    "@odata.nextLink": {
+                      "type": "string",
+                      "description": "URL to next page of results"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite", "Files.Read.All", "Files.ReadWrite.All"]
+          }
+        ]
+      }
+    },
+    "/me/drive": {
+      "get": {
+        "summary": "Get user's default drive",
+        "description": "Retrieve the metadata for the user's default drive",
+        "operationId": "getDefaultDrive",
+        "tags": ["Drive"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/select"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive metadata retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Drive"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Files.Read", "Files.ReadWrite"]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DriveItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the item"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the item"
+          },
+          "description": {
+            "type": "string",
+            "description": "Provides a user-visible description of the item"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time of item creation"
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the item was last modified"
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL that displays the resource in the browser"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Size of the item in bytes"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "parentReference": {
+            "$ref": "#/components/schemas/ItemReference"
+          },
+          "file": {
+            "$ref": "#/components/schemas/File"
+          },
+          "folder": {
+            "$ref": "#/components/schemas/Folder"
+          },
+          "image": {
+            "$ref": "#/components/schemas/Image"
+          },
+          "photo": {
+            "$ref": "#/components/schemas/Photo"
+          },
+          "location": {
+            "$ref": "#/components/schemas/GeoCoordinates"
+          },
+          "remoteItem": {
+            "$ref": "#/components/schemas/RemoteItem"
+          },
+          "searchResult": {
+            "$ref": "#/components/schemas/SearchResult"
+          },
+          "shared": {
+            "$ref": "#/components/schemas/Shared"
+          },
+          "sharepointIds": {
+            "$ref": "#/components/schemas/SharepointIds"
+          },
+          "@microsoft.graph.downloadUrl": {
+            "type": "string",
+            "description": "A short-lived URL to download the file"
+          }
+        }
+      },
+      "Drive": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the drive"
+          },
+          "driveType": {
+            "type": "string",
+            "description": "The type of drive",
+            "enum": ["personal", "business", "documentLibrary"]
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the drive"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "quota": {
+            "$ref": "#/components/schemas/Quota"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string"
+          },
+          "webUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "DriveItemCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DriveItem"
+            }
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to retrieve the next page of results"
+          },
+          "@odata.count": {
+            "type": "integer",
+            "description": "Total count of items (when $count=true)"
+          }
+        }
+      },
+      "SearchResultsResponse": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DriveItem"
+            }
+          },
+          "@odata.nextLink": {
+            "type": "string",
+            "description": "URL to retrieve the next page of results"
+          }
+        }
+      },
+      "CreateDriveItemRequest": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the new item"
+          },
+          "folder": {
+            "type": "object",
+            "description": "Folder metadata if creating a folder"
+          },
+          "file": {
+            "$ref": "#/components/schemas/File"
+          },
+          "@microsoft.graph.conflictBehavior": {
+            "type": "string",
+            "description": "Conflict resolution behavior",
+            "enum": ["rename", "fail", "replace"]
+          },
+          "@microsoft.graph.sourceUrl": {
+            "type": "string",
+            "description": "URL to download content from (for file creation)"
+          },
+          "content": {
+            "type": "string",
+            "description": "The content of the file (for small file uploads)"
+          }
+        }
+      },
+      "UpdateDriveItemRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The new name of the item"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the item"
+          },
+          "parentReference": {
+            "$ref": "#/components/schemas/ItemReference"
+          },
+          "fileSystemInfo": {
+            "$ref": "#/components/schemas/FileSystemInfo"
+          }
+        }
+      },
+      "CreateLinkRequest": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of sharing link to create",
+            "enum": ["view", "edit", "embed"]
+          },
+          "scope": {
+            "type": "string",
+            "description": "The scope of the link",
+            "enum": ["anonymous", "organization"]
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for the sharing link"
+          },
+          "expirationDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expiration date and time for the link"
+          },
+          "retainInheritedPermissions": {
+            "type": "boolean",
+            "description": "Whether to retain inherited permissions"
+          }
+        }
+      },
+      "Permission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "link": {
+            "$ref": "#/components/schemas/SharingLink"
+          },
+          "grantedTo": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "grantedToIdentities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentitySet"
+            }
+          },
+          "invitation": {
+            "$ref": "#/components/schemas/SharingInvitation"
+          }
+        }
+      },
+      "SharingLink": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["view", "edit", "embed"]
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["anonymous", "organization", "users"]
+          },
+          "webUrl": {
+            "type": "string"
+          },
+          "application": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "preventsDownload": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SharingInvitation": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "invitedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "signInRequired": {
+            "type": "boolean"
+          }
+        }
+      },
+      "IdentitySet": {
+        "type": "object",
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "device": {
+            "$ref": "#/components/schemas/Identity"
+          },
+          "user": {
+            "$ref": "#/components/schemas/Identity"
+          }
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "ItemReference": {
+        "type": "object",
+        "properties": {
+          "driveId": {
+            "type": "string"
+          },
+          "driveType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "shareId": {
+            "type": "string"
+          },
+          "siteId": {
+            "type": "string"
+          }
+        }
+      },
+      "File": {
+        "type": "object",
+        "properties": {
+          "hashes": {
+            "$ref": "#/components/schemas/Hashes"
+          },
+          "mimeType": {
+            "type": "string"
+          }
+        }
+      },
+      "Folder": {
+        "type": "object",
+        "properties": {
+          "childCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "view": {
+            "$ref": "#/components/schemas/FolderView"
+          }
+        }
+      },
+      "FolderView": {
+        "type": "object",
+        "properties": {
+          "sortBy": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "string"
+          },
+          "viewType": {
+            "type": "string"
+          }
+        }
+      },
+      "Hashes": {
+        "type": "object",
+        "properties": {
+          "crc32Hash": {
+            "type": "string"
+          },
+          "quickXorHash": {
+            "type": "string"
+          },
+          "sha1Hash": {
+            "type": "string"
+          },
+          "sha256Hash": {
+            "type": "string"
+          }
+        }
+      },
+      "Image": {
+        "type": "object",
+        "properties": {
+          "height": {
+            "type": "integer"
+          },
+          "width": {
+            "type": "integer"
+          }
+        }
+      },
+      "Photo": {
+        "type": "object",
+        "properties": {
+          "cameraMake": {
+            "type": "string"
+          },
+          "cameraModel": {
+            "type": "string"
+          },
+          "exposureDenominator": {
+            "type": "number"
+          },
+          "exposureNumerator": {
+            "type": "number"
+          },
+          "fNumber": {
+            "type": "number"
+          },
+          "focalLength": {
+            "type": "number"
+          },
+          "iso": {
+            "type": "integer"
+          },
+          "takenDateTime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GeoCoordinates": {
+        "type": "object",
+        "properties": {
+          "altitude": {
+            "type": "number"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        }
+      },
+      "RemoteItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "file": {
+            "$ref": "#/components/schemas/File"
+          },
+          "folder": {
+            "$ref": "#/components/schemas/Folder"
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "parentReference": {
+            "$ref": "#/components/schemas/ItemReference"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "webUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "onClickTelemetryUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "Shared": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "sharedBy": {
+            "$ref": "#/components/schemas/IdentitySet"
+          },
+          "sharedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SharepointIds": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string"
+          },
+          "listItemId": {
+            "type": "string"
+          },
+          "listItemUniqueId": {
+            "type": "string"
+          },
+          "siteId": {
+            "type": "string"
+          },
+          "siteUrl": {
+            "type": "string"
+          },
+          "webId": {
+            "type": "string"
+          }
+        }
+      },
+      "FileSystemInfo": {
+        "type": "object",
+        "properties": {
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastAccessedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Quota": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["normal", "nearing", "critical", "exceeded"]
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "used": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "innererror": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "request-id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "expand": {
+        "name": "$expand",
+        "in": "query",
+        "description": "Expand related entities",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "children,thumbnails"
+      },
+      "select": {
+        "name": "$select",
+        "in": "query",
+        "description": "Select properties to be returned",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "id,name,size,webUrl"
+      },
+      "orderby": {
+        "name": "$orderby",
+        "in": "query",
+        "description": "Order items by property values",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "name desc"
+      },
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Number of items to return",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "skipToken": {
+        "name": "$skipToken",
+        "in": "query",
+        "description": "Paging token",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "filter": {
+        "name": "$filter",
+        "in": "query",
+        "description": "Filter items by property values",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Authentication credentials are missing or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "The authenticated user does not have permission to perform this operation",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "The requested resource was not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "The request is malformed or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "ConflictError": {
+        "description": "The request could not be completed due to a conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+            "scopes": {
+              "Files.Read": "Read user files",
+              "Files.Read.All": "Read all files that user can access",
+              "Files.ReadWrite": "Have full access to user files",
+              "Files.ReadWrite.All": "Have full access to all files user can access",
+              "Sites.Read.All": "Read items in all site collections",
+              "Sites.ReadWrite.All": "Edit or delete items in all site collections",
+              "offline_access": "Maintain access to data you have given it access to"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Drive",
+      "description": "Operations on drives"
+    },
+    {
+      "name": "DriveItem",
+      "description": "Operations on files and folders"
+    },
+    {
+      "name": "Children",
+      "description": "Operations on folder contents"
+    },
+    {
+      "name": "Content",
+      "description": "Operations on file content"
+    },
+    {
+      "name": "Sharing",
+      "description": "File sharing operations"
+    },
+    {
+      "name": "Permissions",
+      "description": "Permission management"
+    },
+    {
+      "name": "Search",
+      "description": "Search operations"
+    },
+    {
+      "name": "Recent",
+      "description": "Recently accessed files"
+    },
+    {
+      "name": "Create",
+      "description": "Create new items"
+    }
+  ]
+}
