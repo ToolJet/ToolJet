@@ -107,3 +107,38 @@ describe('GitObjectCacheService eviction', () => {
     expect(fs.existsSync(p)).toBe(false);
   });
 });
+
+describe('GitObjectCacheService.cachedSparseClone fallback', () => {
+  const fs = require('fs'); const os = require('os'); const path = require('path');
+  afterEach(() => {
+    delete process.env.GIT_OBJECT_CACHE;
+  });
+
+  // Invariant 4 safety net: ANY cache error must fall back to plainClone with the
+  // empty-temp-dir precondition restored (callers mkdtemp before cloning).
+  it('on cache error, restores an empty temp dir then runs plainClone', async () => {
+    process.env.GIT_OBJECT_CACHE = 'true';
+    const svc = new GitObjectCacheService({} as any);
+    // force the cache path to fail without touching the network
+    (svc as any).ensureMirror = async () => { throw new Error('boom'); };
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-fallback-'));
+    fs.writeFileSync(path.join(tmpDir, 'leftover'), 'partial-clone debris'); // dirty remnants
+
+    let plainCloneDir: string | undefined;
+    let dirEmptyAtCall = false;
+    const plainClone = async (d: string) => {
+      plainCloneDir = d;
+      dirEmptyAtCall = fs.readdirSync(d).length === 0; // precondition: clean dir
+    };
+
+    await svc.cachedSparseClone({
+      orgId: 'org1', cleanRepoUrl: 'https://github.com/a/b.git', token: 't',
+      branch: 'main', tmpDir, paths: ['x'], plainClone,
+    });
+
+    expect(plainCloneDir).toBe(tmpDir); // fallback ran
+    expect(dirEmptyAtCall).toBe(true);  // empty-dir precondition restored
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+});
