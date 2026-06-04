@@ -12,19 +12,7 @@ import { GitObjectCacheService } from '@ee/git-sync/git-object-cache.service';
  * mirror. When a repo is disconnected on one pod, it tells all the other pods
  * to delete their copy too — using Redis publish/subscribe (a message bus).
  *
- * WHAT DO THESE TESTS COVER?
- * --------------------------
- * Pure logic only — no real git, no real Redis, no database. We check:
- *   1. mirrorPathFor    -> where a repo's mirror lives on disk (and that the
- *                          path never leaks the auth token)
- *   2. authConfigArgs   -> how the auth token is passed to git safely
- *   3. root dir         -> which folder the cache uses
- *   4. eviction         -> deleting mirrors by age / size / on demand
- *   5. fallback         -> if the cache fails, fall back to a normal clone
- *   6. Redis eviction   -> the cross-pod "delete everywhere" message flow
- *
- * HOW TO READ A TEST: most follow Arrange (set things up) -> Act (call the
- * method) -> Assert (check what happened).
+ * These are pure unit tests — no real git, no real Redis, no database.
  */
 
 /**
