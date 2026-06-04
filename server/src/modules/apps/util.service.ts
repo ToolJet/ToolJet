@@ -1161,44 +1161,104 @@ export class AppsUtilService implements IAppsUtilService {
         .getMany();
       if (modules.length === 0) return [];
 
-      // Single DISTINCT ON pick: branch-match preferred, fallback to latest non-branch.
-      // Replaces N per-module findOne + N per-App afterLoad SELECTs (subscriber skipped above).
+      // Batched replacement for base's per-module (afterLoad + fallback findOne + overlayAppMetadata).
+      // Base resolves TWO independent rows per module — keep them SEPARATE:
+      //   (1) editingVersion: latest non-branch non-stub VERSION row (the row the editor loads).
+      //   (2) metadata source: git-on => latest DRAFT on target branch; git-off => latest any row.
+      // 1 defaultBranch lookup + 2 bulk DISTINCT ON queries replace ~3N per-module SELECTs.
       const moduleIds = modules.map((m) => m.id);
       const parentBranchId = app.editingVersion?.branchId ?? null;
 
-      const versionsQb = manager
+      // (0) Single defaultBranch lookup (not per module). Modules are never workflows here.
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId: app.organizationId, isDefault: true },
+        select: ['id'],
+      });
+      const gitEnabled = !!defaultBranch;
+
+      // (1a) Bulk branch-row preference: latest non-stub row on parentBranchId per module.
+      //      Mirrors base early-return — when set, module uses this row and SKIPS fallback+overlay+throw.
+      //      Only query when parentBranchId is set (else needless round-trip).
+      let branchMap = new Map<string, AppVersion>();
+      if (parentBranchId) {
+        const branchRows = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .distinctOn(['av.appId'])
+          .where('av.appId IN (:...moduleIds)', { moduleIds })
+          .andWhere('av.branchId = :parentBranchId', { parentBranchId })
+          .andWhere('av.isStub = false')
+          .orderBy('av.appId', 'ASC')
+          .addOrderBy('av.updatedAt', 'DESC')
+          .getMany();
+        branchMap = new Map(branchRows.map((v) => [v.appId, v]));
+      }
+
+      // (1b) Bulk editingVersion fallback: latest non-branch non-stub row per module.
+      //     Mirrors base afterLoad / fallback (versionType != BRANCH AND isStub = false, updatedAt DESC).
+      const editingRows = await manager
         .createQueryBuilder(AppVersion, 'av')
         .distinctOn(['av.appId'])
         .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .andWhere('av.versionType != :branchType', { branchType: AppVersionType.BRANCH })
         .andWhere('av.isStub = false')
-        .orderBy('av.appId', 'ASC');
+        .orderBy('av.appId', 'ASC')
+        .addOrderBy('av.updatedAt', 'DESC')
+        .getMany();
+      const editingMap = new Map(editingRows.map((v) => [v.appId, v]));
 
-      if (parentBranchId) {
-        versionsQb
-          .andWhere('(av.branchId = :branchId OR av.versionType != :branchType)', {
-            branchId: parentBranchId,
-            branchType: AppVersionType.BRANCH,
-          })
-          // Prefer the branch-matched row when both are present.
-          .addOrderBy(`CASE WHEN av.branch_id = :branchOrder THEN 0 ELSE 1 END`, 'ASC')
-          .setParameter('branchOrder', parentBranchId);
-      } else {
-        versionsQb.andWhere('av.versionType != :branchType', { branchType: AppVersionType.BRANCH });
+      // (2) Bulk metadata source — mirrors overlayAppMetadata.
+      const metaQb = manager
+        .createQueryBuilder(AppVersion, 'av')
+        .distinctOn(['av.appId'])
+        .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .orderBy('av.appId', 'ASC')
+        .addOrderBy('av.updatedAt', 'DESC');
+      if (gitEnabled) {
+        // git-on: latest DRAFT on target branch (parentBranchId ?? defaultBranch.id).
+        const targetBranchId = parentBranchId ?? defaultBranch.id;
+        metaQb
+          .andWhere('av.branchId = :targetBranchId', { targetBranchId })
+          .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
       }
-      versionsQb.addOrderBy('av.updatedAt', 'DESC');
+      // git-off: no extra filter — latest any row per module.
+      const metaRows = await metaQb.getMany();
+      const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
 
-      const moduleVersions = await versionsQb.getMany();
-      const versionByAppId = new Map(moduleVersions.map((v) => [v.appId, v]));
       for (const moduleApp of modules as any[]) {
-        const v = versionByAppId.get(moduleApp.id);
-        if (v) {
-          moduleApp.editingVersion = v;
-          moduleApp.appVersions = [v];
+        // (1) Branch-row preference + early return (base lines 1180-1189): when the parent is
+        //     viewed on a branch and the module has a branch row, use it and SKIP fallback,
+        //     overlay, and the no-DRAFT throw — exactly like base's `return`.
+        if (parentBranchId && branchMap.has(moduleApp.id)) {
+          const bv = branchMap.get(moduleApp.id);
+          moduleApp.editingVersion = bv;
+          moduleApp.appVersions = [bv];
+          continue;
+        }
+
+        // editingVersion (base: afterLoad + fallback findOne).
+        const ev = editingMap.get(moduleApp.id);
+        if (ev) {
+          moduleApp.editingVersion = ev;
+          moduleApp.appVersions = [ev];
+        } else if (!gitEnabled) {
+          // git-off afterLoad sets isStub when no non-branch non-stub row exists.
+          moduleApp.isStub = true;
+        }
+        // git-on with no editingVersion: leave as-is (base afterLoad returns early).
+
+        // metadata overlay (base: overlayAppMetadata).
+        const meta = metaMap.get(moduleApp.id);
+        if (gitEnabled && !meta && parentBranchId) {
+          throw new BadRequestException(
+            `No DRAFT version found for app ${moduleApp.id} on branch ${parentBranchId}.`
+          );
+        }
+        if (meta) {
           // apps.name/slug/icon/isPublic are NULL for modules (metadata on app_versions).
-          if (v.appName != null) moduleApp.name = v.appName;
-          if (v.slug != null) moduleApp.slug = v.slug;
-          if (v.icon != null) moduleApp.icon = v.icon;
-          if (v.isPublic != null) moduleApp.isPublic = v.isPublic;
+          if (meta.appName != null) moduleApp.name = meta.appName;
+          if (meta.slug != null) moduleApp.slug = meta.slug;
+          if (meta.icon != null) moduleApp.icon = meta.icon;
+          if (meta.isPublic != null) moduleApp.isPublic = meta.isPublic;
         }
       }
 
