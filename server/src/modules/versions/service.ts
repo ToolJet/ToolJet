@@ -227,7 +227,12 @@ export class VersionService implements IVersionService {
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
       }
-      editingVersion['globalSettings']['theme'] = appTheme;
+      // null globalSettings on branch DRAFT/legacy versions — guard before theme assignment
+      if (editingVersion['globalSettings']) {
+        editingVersion['globalSettings']['theme'] = appTheme;
+      } else {
+        editingVersion['globalSettings'] = { theme: appTheme };
+      }
 
       // Strip JS libraries from globalSettings when the org's license doesn't include
       // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
