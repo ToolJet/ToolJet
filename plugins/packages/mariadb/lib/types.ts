@@ -5,6 +5,7 @@ export type SourceOptions = {
   connectionLimit: string;
   port: string;
   database: string;
+  connection_options: string[][];
   ssl_certificate: string;
   ssl_enabled: boolean;
   ca: string;

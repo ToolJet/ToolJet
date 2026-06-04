@@ -7,6 +7,7 @@ import {
   cacheConnectionWithConfiguration,
   generateSourceOptionsHash,
   createQueryBuilder,
+  isEmpty,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { Client } from 'ssh2';
@@ -16,32 +17,9 @@ const mariadb = require('mariadb');
 
 function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client; stream: NodeJS.ReadWriteStream }> {
   return new Promise((resolve, reject) => {
-    console.log('\n========== SSH TUNNEL START ==========');
-    console.log(JSON.stringify({
-      ssh_enabled: sourceOptions.ssh_enabled,
-      ssh_host: sourceOptions.ssh_host,
-      ssh_port: sourceOptions.ssh_port,
-      ssh_username: sourceOptions.ssh_username,
-      ssh_auth_type: sourceOptions.ssh_auth_type,
-      target_host: sourceOptions.host,
-      target_port: sourceOptions.port,
-      privateKeyLength: sourceOptions.ssh_private_key?.length,
-      passphraseLength: sourceOptions.ssh_passphrase?.length,
-    }, null, 2));
-
     const sshClient = new Client();
 
     sshClient.on('ready', () => {
-      console.log('SSH READY');
-
-      console.log('Creating forwardOut tunnel...');
-      console.log({
-        srcHost: '127.0.0.1',
-        srcPort: 0,
-        dstHost: sourceOptions.host,
-        dstPort: Number(sourceOptions.port),
-      });
-
       sshClient.forwardOut(
         '127.0.0.1',
         0,
@@ -49,27 +27,20 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
         Number(sourceOptions.port),
         (err, stream) => {
           if (err) {
-            console.error('\n========== SSH FORWARD ERROR ==========');
-            console.error(err);
             sshClient.end();
             return reject(err);
           }
 
-          console.log('SSH FORWARD SUCCESS');
-
           stream.on('error', (streamErr) => {
-            console.error('\n========== SSH STREAM ERROR ==========');
-            console.error(streamErr);
+            console.error('SSH stream error (suppressed):', streamErr.message);
           });
 
           stream.on('close', () => {
-            console.log('SSH STREAM CLOSED');
-
             setImmediate(() => {
               try {
                 if (sshClient) sshClient.destroy();
               } catch (e) {
-                console.error('Error closing SSH client:', (e as Error).message);
+                console.error('Error closing SSH client (suppressed):', (e as Error).message);
               }
             });
           });
@@ -79,54 +50,31 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
       );
     });
 
-    sshClient.on('banner', (message) => {
-      console.log('SSH BANNER:', message);
-    });
-
     sshClient.on('error', (err) => {
-      console.error('\n========== SSH CLIENT ERROR ==========');
-      console.error(err);
       reject(err);
     });
 
     sshClient.on('end', () => {
-      console.log('SSH CONNECTION ENDED');
+      console.log('SSH connection ended');
     });
 
-    sshClient.on('close', (hadError) => {
-      console.log('SSH CONNECTION CLOSED. hadError=', hadError);
+    sshClient.on('close', () => {
+      console.log('SSH connection closed');
     });
 
-    const sshConfig = {
+    sshClient.connect({
       host: sourceOptions.ssh_host,
       port: sourceOptions.ssh_port || 22,
       username: sourceOptions.ssh_username,
       ...(sourceOptions.ssh_auth_type === 'password'
-        ? {
-            password: sourceOptions.ssh_password,
-          }
+        ? { password: sourceOptions.ssh_password }
         : {
             privateKey: sourceOptions.ssh_private_key,
             passphrase: sourceOptions.ssh_passphrase,
           }),
       readyTimeout: 20000,
       keepaliveInterval: 10000,
-    };
-
-    console.log('\n========== SSH CONFIG ==========');
-    console.log(JSON.stringify({
-      host: sshConfig.host,
-      port: sshConfig.port,
-      username: sshConfig.username,
-      authType: sourceOptions.ssh_auth_type,
-      hasPassword: !!sourceOptions.ssh_password,
-      privateKeyLength: sourceOptions.ssh_private_key?.length,
-      passphraseLength: sourceOptions.ssh_passphrase?.length,
-    }, null, 2));
-
-    console.log('Calling sshClient.connect()');
-
-    sshClient.connect(sshConfig);
+    });
   });
 }
 
@@ -173,6 +121,15 @@ export default class Mariadb implements QueryService {
     }
   }
 
+  private connectionOptions(sourceOptions: SourceOptions) {
+    const _connectionOptions = (sourceOptions?.connection_options || []).filter((o) => o.some((e) => !isEmpty(e)));
+    const connectionOptions = Object.fromEntries(_connectionOptions);
+    Object.keys(connectionOptions).forEach((key) =>
+      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
+    );
+    return connectionOptions;
+  }
+
   // ─── SQL mode ────────────────────────────────────────────────────────────────
 
   private async handleSqlQuery(conn: any, queryOptions: QueryOptions): Promise<QueryResult> {
@@ -184,11 +141,10 @@ export default class Mariadb implements QueryService {
 
   private async handleGuiQuery(conn: any, queryOptions: QueryOptions): Promise<QueryResult> {
     const { operation, table } = queryOptions;
-    const queryBuilder = createQueryBuilder('mysql');
+    const queryBuilder = createQueryBuilder('mariadb');
 
     switch (operation) {
 
-      // ── List rows ─────────────────────────────────────────────────────────────
       case 'list_rows': {
         const { list_rows, limit, offset } = queryOptions;
         const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
@@ -204,7 +160,6 @@ export default class Mariadb implements QueryService {
         return { status: 'ok', data: this.toJson(rows) };
       }
 
-      // ── Create row ────────────────────────────────────────────────────────────
       case 'create_row': {
         const { columns } = queryOptions.create_row || {};
         const { query, params } = queryBuilder.createRow(table, undefined, columns) as {
@@ -218,7 +173,6 @@ export default class Mariadb implements QueryService {
         };
       }
 
-      // ── Update rows ───────────────────────────────────────────────────────────
       case 'update_rows': {
         const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { columns, where_filters } = queryOptions.update_rows || {};
@@ -246,7 +200,6 @@ export default class Mariadb implements QueryService {
         return { status: 'ok', data: { affectedRows } };
       }
 
-      // ── Upsert rows ───────────────────────────────────────────────────────────
       case 'upsert_rows': {
         const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { primary_key_columns } = queryOptions;
@@ -267,7 +220,6 @@ export default class Mariadb implements QueryService {
         return { status: 'ok', data: { affectedRows: rawAffected } };
       }
 
-      // ── Delete rows ───────────────────────────────────────────────────────────
       case 'delete_rows': {
         const { limit, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
         const { where_filters } = queryOptions.delete_rows || {};
@@ -296,7 +248,6 @@ export default class Mariadb implements QueryService {
         return { status: 'ok', data: { affectedRows } };
       }
 
-      // ── Bulk insert ───────────────────────────────────────────────────────────
       case 'bulk_insert': {
         const { records } = queryOptions;
         const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
@@ -312,7 +263,6 @@ export default class Mariadb implements QueryService {
         return { status: 'ok', data: { affectedRows: totalAffected } };
       }
 
-      // ── Bulk update using primary key ─────────────────────────────────────────
       case 'bulk_update_pkey': {
         const { primary_key_columns, records } = queryOptions;
         const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
@@ -330,7 +280,6 @@ export default class Mariadb implements QueryService {
         return { status: 'ok', data: { affectedRows: totalAffected }, bulk_update_status: 'success' } as any;
       }
 
-      // ── Bulk upsert using primary key ─────────────────────────────────────────
       case 'bulk_upsert_pkey': {
         const { primary_key_columns, records } = queryOptions;
         const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
@@ -422,7 +371,6 @@ export default class Mariadb implements QueryService {
     }
   }
 
-  // ─── invokeMethod (dynamic selectors) ────────────────────────────────────────
 
   async invokeMethod(methodName: string, _context: unknown, sourceOptions: SourceOptions, args?: any): Promise<any> {
     if (methodName === 'listTables') {
@@ -442,7 +390,6 @@ export default class Mariadb implements QueryService {
     throw new QueryError('Method not found', `Method '${methodName}' is not supported by the MariaDB plugin`, {});
   }
 
-  // ─── Table / column introspection ─────────────────────────────────────────────
 
   private async _fetchTables(
     sourceOptions: SourceOptions,
@@ -517,47 +464,22 @@ export default class Mariadb implements QueryService {
     }
   }
 
-  // ─── testConnection ───────────────────────────────────────────────────────────
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-  let conn;
+    let conn;
 
-  console.log('\n========== TEST CONNECTION ==========');
-  console.log('SOURCE OPTIONS:', JSON.stringify(sourceOptions, null, 2));
-  console.log('HOST:', sourceOptions.host);
-  console.log('PORT:', sourceOptions.port);
-  console.log('USER:', sourceOptions.user);
-  console.log('DATABASE:', sourceOptions.database);
-  console.log('PASSWORD:', JSON.stringify(sourceOptions.password));
-  console.log('SSH ENABLED:', sourceOptions.ssh_enabled);
-  console.log('SSL ENABLED:', sourceOptions.ssl_enabled);
-
-  try {
-    conn = await this.buildTestConnection(sourceOptions);
-
-    console.log('buildTestConnection() succeeded');
-
-    const rows = await conn.query('SELECT 1 as val');
-
-    console.log('SELECT 1 result:', rows);
-
-    if (!rows) throw new Error('Connection test returned no results');
-
-    return { status: 'ok' };
-  } catch (error) {
-    console.error('\n========== TEST CONNECTION ERROR ==========');
-    console.error('FULL ERROR:', error);
-    console.error('ERROR MESSAGE:', error?.message);
-    console.error('ERROR SQL MESSAGE:', error?.sqlMessage);
-    console.error('ERROR STACK:', error?.stack);
-
-    throw new QueryError(`Connection test failed: ${error.sqlMessage}`, error.message, {});
-  } finally {
-    if (conn) conn.end();
+    try {
+      conn = await this.buildTestConnection(sourceOptions);
+      const rows = await conn.query('SELECT 1 as val');
+      if (!rows) throw new Error('Connection test returned no results');
+      return { status: 'ok' };
+    } catch (error) {
+      throw new QueryError(`Connection test failed: ${error.sqlMessage}`, error.message, {});
+    } finally {
+      if (conn) conn.end();
+    }
   }
-}
 
-  // ─── Connection helpers ───────────────────────────────────────────────────────
 
   private buildSSLObject(sourceOptions: SourceOptions): any | null {
     if (!sourceOptions.ssl_enabled) return null;
@@ -596,7 +518,10 @@ export default class Mariadb implements QueryService {
         ...(sslObject ? { ssl: sslObject } : {}),
       };
       try {
-        const pool = mariadb.createPool(poolConfig);
+        const pool = mariadb.createPool({
+          ...poolConfig,
+          ...this.connectionOptions(sourceOptions),
+        });
         pool.on('error', (error: any) => console.error(error));
         return pool;
       } catch (error) {
@@ -620,7 +545,10 @@ export default class Mariadb implements QueryService {
     };
 
     try {
-      const pool = mariadb.createPool(poolConfig);
+      const pool = mariadb.createPool({
+        ...poolConfig,
+        ...this.connectionOptions(sourceOptions), 
+      });
       pool.on('error', (error: any) => console.error(error));
       return pool;
     } catch (error) {
@@ -644,15 +572,6 @@ export default class Mariadb implements QueryService {
         ...(sslObject ? { ssl: sslObject } : {}),
       };
       try {
-        console.log('\n========== MARIADB CONNECTION CONFIG ==========');
-console.log(JSON.stringify({
-  host: connectionConfig.host,
-  port: connectionConfig.port,
-  user: connectionConfig.user,
-  database: connectionConfig.database,
-  passwordLength: connectionConfig.password?.length,
-  ssl: !!connectionConfig.ssl,
-}, null, 2));
         return await mariadb.createConnection(connectionConfig);
       } catch (error) {
         console.error('Error while establishing database connection:', error.message);
@@ -699,7 +618,6 @@ console.log(JSON.stringify({
     return this.buildConnectionPool(sourceOptions);
   }
 
-  // ─── Batch size helpers ───────────────────────────────────────────────────────
 
   private computeBatchSize(records: Record<string, unknown>[]): number {
     if (!records || records.length === 0) return 1000;
@@ -721,7 +639,6 @@ console.log(JSON.stringify({
     return batches;
   }
 
-  // ─── Utilities ────────────────────────────────────────────────────────────────
 
   private _normalizeBool(val: unknown): boolean | undefined {
     if (val === true || val === 'true') return true;
