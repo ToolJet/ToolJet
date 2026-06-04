@@ -116,7 +116,7 @@ const VersionDropdownItem = ({
     <Popover
       id={cx(`popover-positioned-bottom-end`, { 'dark-theme theme-dark': darkMode })}
       className={cx({ 'dark-theme theme-dark': darkMode })}
-      style={{ minWidth: '160px' }}
+      style={{ minWidth: '160px', zIndex: 1065 }}
     >
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
         {!isGitSyncEnabled && (

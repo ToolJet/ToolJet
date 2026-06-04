@@ -353,6 +353,45 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Delete version modal state
   const [deleteVersion, setDeleteVersion] = useState({ versionId: '', versionName: '', showModal: false });
 
+  const deleteModalMessage = isGitSyncEnabled ? (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <p className="tj-text-sm" style={{ lineHeight: '18px', color: 'var(--text-default)', margin: 0 }}>
+        {"The version '"}
+        <strong>{deleteVersion.versionName}</strong>
+        {"' will also be "}
+        <strong>deleted from Git</strong>
+        {' and cannot be recovered. Are you sure you want to continue?'}
+      </p>
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+        <div style={{ paddingTop: '2px', flexShrink: 0 }}>
+          <div
+            style={{
+              width: '16px',
+              height: '16px',
+              background: 'rgba(136,144,153,0.12)',
+              borderRadius: '5px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <SolidIcon name="tickv3" width="10" height="10" fill="var(--text-placeholder)" />
+          </div>
+        </div>
+        <div>
+          <div className="tj-text-sm" style={{ lineHeight: '18px', color: 'var(--text-default)', fontWeight: 400 }}>
+            Commit changes
+          </div>
+          <div className="tj-text-xsm" style={{ lineHeight: '16px', color: 'var(--text-placeholder)' }}>
+            Delete will always be committed in git to ensure sync with ToolJet
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : (
+    'This version will be permanently deleted and cannot be recovered. Are you sure you want to continue?'
+  );
+
   const openDeleteModal = (version) => {
     setDeleteVersion({ versionId: version.id, versionName: version.name, showModal: true });
   };
@@ -626,10 +665,10 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       <ConfirmDialog
         show={deleteVersion.showModal}
         title={'Delete version'}
-        message={`This version will be permanently deleted and cannot be recovered. Are you sure you want to continue?`}
+        message={deleteModalMessage}
         onConfirm={confirmDeleteVersion}
         onCancel={resetDeleteModal}
-        confirmButtonText={'Delete version'}
+        confirmButtonText={isGitSyncEnabled ? 'Delete and commit' : 'Delete version'}
         cancelButtonText={'Cancel'}
         cancelButtonType="tertiary"
       />
