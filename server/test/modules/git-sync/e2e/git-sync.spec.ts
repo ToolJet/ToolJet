@@ -2856,7 +2856,11 @@ describe('GitSyncController', () => {
           const os = await import('os');
           const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-meta-capture-'));
           try {
-            const git = simpleGit({ baseDir: tmpDir, timeout: { block: 30000 } });
+            const git = simpleGit({
+              baseDir: tmpDir,
+              timeout: { block: 30000 },
+              unsafe: { allowUnsafeCredentialHelper: true },
+            });
             await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
               '--branch',
               'main',
