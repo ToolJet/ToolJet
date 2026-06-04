@@ -1,0 +1,21 @@
+{
+  "name": "@tooljet-marketplace/seatable",
+  "version": "1.0.0",
+  "description": "ToolJet marketplace plugin for SeaTable – connect to any SeaTable base and perform CRUD operations.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch",
+    "test": "jest --verbose"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "@tooljet-marketplace/common": "file:/tmp/tooljet-mono/marketplace/plugins/common"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.0",
+    "typescript": "^5.4.0",
+    "jest": "^29.7.0"
+  }
+}

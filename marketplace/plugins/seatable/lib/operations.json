@@ -1,0 +1,80 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "SeaTable datasource operations",
+  "description": "Operations supported by the SeaTable datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "list_rows"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select the operation to perform",
+      "list": [
+        { "value": "list_rows", "name": "List Rows" },
+        { "value": "get_row", "name": "Get Row" },
+        { "value": "create_row", "name": "Create Row" },
+        { "value": "update_row", "name": "Update Row" },
+        { "value": "delete_row", "name": "Delete Row" },
+        { "value": "search_rows", "name": "Search Rows (SQL)" },
+        { "value": "get_metadata", "name": "Get Metadata" }
+      ]
+    },
+    "table_name": {
+      "label": "Table Name",
+      "key": "table_name",
+      "type": "codehinter",
+      "description": "Name of the table (e.g. Contacts, Tasks)",
+      "show_if": {
+        "operation": "list_rows, get_row, create_row, update_row, delete_row"
+      }
+    },
+    "row_id": {
+      "label": "Row ID",
+      "key": "row_id",
+      "type": "codehinter",
+      "description": "The unique row identifier (_id field)",
+      "show_if": {
+        "operation": "get_row, update_row, delete_row"
+      }
+    },
+    "row_data": {
+      "label": "Row Data (JSON)",
+      "key": "row_data",
+      "type": "codehinter",
+      "description": "JSON object with column name → value pairs, e.g. {\"Name\": \"Alice\", \"Email\": \"alice@example.com\"}",
+      "show_if": {
+        "operation": "create_row, update_row"
+      }
+    },
+    "page": {
+      "label": "Page",
+      "key": "page",
+      "type": "codehinter",
+      "description": "Page number (1-based, default: 1)",
+      "show_if": {
+        "operation": "list_rows"
+      }
+    },
+    "page_size": {
+      "label": "Page Size",
+      "key": "page_size",
+      "type": "codehinter",
+      "description": "Number of rows per page (max 1000, default: 100)",
+      "show_if": {
+        "operation": "list_rows"
+      }
+    },
+    "sql_query": {
+      "label": "SQL Query",
+      "key": "sql_query",
+      "type": "codehinter",
+      "description": "SQL query, e.g. SELECT * FROM Contacts WHERE Name = 'Alice' LIMIT 10",
+      "show_if": {
+        "operation": "search_rows"
+      }
+    }
+  }
+}
