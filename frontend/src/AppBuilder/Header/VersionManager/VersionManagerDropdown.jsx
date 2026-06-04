@@ -238,6 +238,35 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         });
       });
       setGitVersionStatus(newStatus);
+
+      // Remove local versions that no longer exist as remote git tags
+      const remoteVersionNames = new Set(newStatus.keys());
+      const staleVersions = versions.filter(
+        (v) =>
+          (v.versionType || v.version_type) === 'version' &&
+          v.status !== 'DRAFT' &&
+          v.id !== releasedVersionId &&
+          !remoteVersionNames.has(v.name)
+      );
+
+      for (const staleVersion of staleVersions) {
+        await new Promise((resolve) => {
+          deleteVersionAction(
+            appId,
+            staleVersion.id,
+            () => resolve(),
+            (error) => {
+              toast.error(error?.error || error?.message || `Failed to remove version "${staleVersion.name}"`);
+              resolve();
+            }
+          );
+        });
+      }
+
+      if (staleVersions.length > 0) {
+        const environmentToRefresh = selectedEnvironmentFilter || currentEnvironment;
+        await refreshVersions(appId, environmentToRefresh?.id);
+      }
     } catch {
       toast.error('Failed to refresh versions from git');
     } finally {
@@ -670,7 +699,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         onCancel={resetDeleteModal}
         confirmButtonText={isGitSyncEnabled ? 'Delete and commit' : 'Delete version'}
         cancelButtonText={'Cancel'}
-        cancelButtonType="tertiary"
+        cancelButtonType="secondary"
+        hideCloseIcon={isGitSyncEnabled}
+        staticBackdrop={isGitSyncEnabled}
       />
     </>
   );
