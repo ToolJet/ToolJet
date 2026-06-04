@@ -391,9 +391,12 @@ export const Tabs = function Tabs({
             <div
               className="px-2"
               onClick={() => scrollTabs('left')}
-              style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
+              style={{
+                cursor: canScrollLeft ? 'pointer' : 'default',
+                opacity: canScrollLeft ? 1 : 0.5,
+              }}
             >
-              <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
+              <SolidIcon fill={unselectedText} name={'cheveronleft'} />
             </div>
           )}
           {/* this started change */}
@@ -506,9 +509,12 @@ export const Tabs = function Tabs({
             <div
               className="px-2"
               onClick={() => scrollTabs('right')}
-              style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+              style={{
+                cursor: canScrollRight ? 'pointer' : 'default',
+                opacity: canScrollRight ? 1 : 0.5,
+              }}
             >
-              <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
+              <SolidIcon fill={unselectedText} name="cheveronright" width="25" height="25" />
             </div>
           )}
         </div>
