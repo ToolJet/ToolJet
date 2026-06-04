@@ -1,10 +1,11 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import Selecto from 'react-selecto';
 import './selecto.scss';
 import { shallow } from 'zustand/shallow';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const EditorSelecto = () => {
   const { moduleId } = useModuleContext();
@@ -13,6 +14,31 @@ const EditorSelecto = () => {
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
   const getComponentDefinition = useStore((state) => state.getComponentDefinition);
   const canvasStartId = useRef(null);
+
+  // Clicking a widget inside an embedded ModuleContainer cannot open the right
+  // sidebar through Moveable's `onClick`: the module's child widgets render
+  // read-only (`position-absolute`, not `.target`/`.moveable-box`), so they are
+  // not Moveable targets. The only Moveable target is the ModuleContainer widget
+  // itself, and Moveable's `onClick` is emitted from react-moveable's gesto
+  // drag-end lifecycle, which never starts on interactive child elements
+  // (buttons, inputs, …). Selecto still selects the ModuleContainer via
+  // `handleDragCondition`, so here we only need to open the configuration sidebar
+  // on a genuine click that lands inside a ModuleContainer. Scoped to
+  // ModuleContainers so normal widgets keep using the Moveable `onClick` path,
+  // and editor-only because EditorSelecto mounts only in edit mode.
+  useEffect(() => {
+    const handleModuleContainerClick = (e) => {
+      const moveableBox = e.target?.closest?.('.moveable-box');
+      if (!moveableBox || moveableBox.getAttribute('component-type') !== 'ModuleContainer') {
+        return;
+      }
+      if (e.shiftKey) return; // don't interfere with shift multi-select
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+      useStore.getState().setRightSidebarOpen(true);
+    };
+    document.addEventListener('click', handleModuleContainerClick, true);
+    return () => document.removeEventListener('click', handleModuleContainerClick, true);
+  }, [setActiveRightSideBarTab]);
 
   const filterSelectedComponentsByHighestLevel = (selectedIds) => {
     const highestLevelComponents = findHighestLevelofSelection(
