@@ -22,7 +22,7 @@ import config from 'config';
 import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
-import { camelizeKeys, decamelizeKeys, decamelize } from 'humps';
+import { camelize, camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -458,6 +458,9 @@ class DataSourceManagerComponent extends React.Component {
       }
       case 'bigquery': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
+      }
+      case 'databricks': {
+        return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
       }
       default:
         return true;
@@ -1041,13 +1044,37 @@ class DataSourceManagerComponent extends React.Component {
         });
       }
     }
+    // For old-schema plugin DSes that do have dsDefaults, also normalize the current side the same way.
+    const normalizedCurrentOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...options }
+    );
+    // Plugin DSes (new tj:version schema) have dsDefaults={} so the reduce above is a no-op for them.
+    // Encrypted fields are stripped from git-synced DSVOs, so normalizedSavedOptions may lack those keys
+    // while DynamicForm initializes them as { value: '' } in state.options, causing a false mismatch.
+    // DynamicForm may camelize schema keys (auth_token → authToken), so resolve the active key form
+    // from normalizedCurrentOptions before filling both sides — avoids duplicate snake/camel keys.
+    const schemaOptionFields = dataSourceMeta?.options ?? {};
+    Object.keys(schemaOptionFields).forEach((key) => {
+      if (!schemaOptionFields[key]?.encrypted) return;
+      const activeKey = Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, key)
+        ? key
+        : Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, camelize(key))
+        ? camelize(key)
+        : key;
+      if (normalizedSavedOptions[activeKey] === undefined) normalizedSavedOptions[activeKey] = { value: '' };
+      if (normalizedCurrentOptions[activeKey] === undefined) normalizedCurrentOptions[activeKey] = { value: '' };
+    });
     // Sample datasources are read-only (no DynamicForm, no save button), so they're never "editing".
     // Without this guard, normalizedSavedOptions gets defaults added that state.options never receives
     // (since DynamicForm which fills defaults isn't rendered for sample dbs), causing a false mismatch.
     const isSaveDisabled =
       isSampleDb ||
       (selectedDataSource
-        ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        ? deepEqual(normalizedCurrentOptions, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
           selectedDataSource?.name === datasourceName
         : true);
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
