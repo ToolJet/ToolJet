@@ -15,7 +15,7 @@ export function logoutAction() {
   unregisterBranchFocusSync();
   localStorage.clear();
   sessionStorage.clear();
-  sessionService.logout(true);
+  sessionService.logout(false);
 
   return Promise.resolve();
 }

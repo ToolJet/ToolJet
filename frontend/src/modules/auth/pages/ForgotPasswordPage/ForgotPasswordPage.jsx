@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { ForgotPasswordForm, ForgotPasswordInfoScreen } from './components';
 
 const ForgotPasswordPage = () => {
@@ -36,7 +36,7 @@ const ForgotPasswordPage = () => {
   return (
     <OnboardingBackgroundWrapper
       LeftSideComponent={() => <ForgotPasswordForm onSubmit={handleForgotPassword} />}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };

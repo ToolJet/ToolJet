@@ -234,6 +234,18 @@ export class VersionService implements IVersionService {
         shouldFreezeEditor = true;
       }
       editingVersion['globalSettings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete editingVersion['globalSettings']['libraries'];
+        delete editingVersion['globalSettings']['preloadedScript'];
+      }
+
       return {
         ...appData,
         editing_version: editingVersion,
@@ -246,7 +258,9 @@ export class VersionService implements IVersionService {
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
     const modules = await this.appUtilService.fetchModules(app, false, undefined);
 
-    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
+    response['modules'] = await Promise.all(
+      modules.map((module) => prepareResponse(module, module.editingVersion?.id))
+    );
 
     return response;
   }
@@ -295,8 +309,7 @@ export class VersionService implements IVersionService {
       if (appVersion.status === AppVersionStatus.PUBLISHED) {
         const nameChanging = appVersionUpdateDto.name && appVersionUpdateDto.name !== appVersion.name;
         const descChanging =
-          appVersionUpdateDto.description !== undefined &&
-          appVersionUpdateDto.description !== appVersion.description;
+          appVersionUpdateDto.description !== undefined && appVersionUpdateDto.description !== appVersion.description;
         if (nameChanging || descChanging) {
           const organizationGit = await this.organizationGitRepository.findOrgGitByOrganizationId(
             user.organizationId,

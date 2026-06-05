@@ -1261,8 +1261,7 @@ export const createQueryPanelSlice = (set, get) => ({
           const proxiedPage = deepClone(currentState?.page);
           const proxiedQueriesInResolvedState = queriesInResolvedState;
 
-          const hasJsLibrariesAccess = get().license?.featureAccess?.appJsLibraries;
-          const libraryRegistry = hasJsLibrariesAccess ? get().jsLibraryRegistry || {} : {};
+          const libraryRegistry = get().jsLibraryRegistry || {};
 
           const evalFunction = Function(
             [
@@ -1593,8 +1592,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-        const hasJsLibrariesAccess = get().license?.featureAccess?.appJsLibraries;
-        const libraryRegistry = hasJsLibrariesAccess ? get().jsLibraryRegistry || {} : {};
+        const libraryRegistry = get().jsLibraryRegistry || {};
         const fnParams = [
           'moment',
           '_',

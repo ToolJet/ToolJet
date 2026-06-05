@@ -291,11 +291,13 @@ export const handleWidgetResize = (e, list, boxes, gridWidth) => {
   e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
 };
 
-export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
+export function getMouseDistanceFromParentDiv(event, id, parentWidgetType, frozenTargetRect) {
   let parentDiv = document.getElementById('canvas-' + id) || document.getElementById('real-canvas');
   // Get the bounding rectangle of the parent div.
   const parentDivRect = parentDiv.getBoundingClientRect();
-  const targetDivRect = event.target.getBoundingClientRect();
+  // Use the pre-snapshotted rect when available (e.g. after async stub hydration the
+  // ghost element is already detached and getBoundingClientRect returns all-zeros).
+  const targetDivRect = frozenTargetRect ?? event.target.getBoundingClientRect();
 
   const mouseX = targetDivRect.left - parentDivRect.left;
   const mouseY = targetDivRect.top - parentDivRect.top;
@@ -320,17 +322,24 @@ export function findHighestLevelofSelection(_selectedComponents) {
   return result;
 }
 
+const collectChildrenAndGrandchildren = (parentId, widgets, visited) => {
+  if (visited.has(parentId)) return [];
+  visited.add(parentId);
+  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
+  let result = [];
+  for (const child of children) {
+    if (visited.has(child.id)) continue;
+    result.push(child.id);
+    result = result.concat(...collectChildrenAndGrandchildren(child.id, widgets, visited));
+  }
+  return result;
+};
+
 export function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
-  let result = [];
-  for (const child of children) {
-    result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
-  }
-  return result;
+  return collectChildrenAndGrandchildren(parentId, widgets, new Set());
 }
 
 export function adjustWidth(width, posX, gridWidth) {

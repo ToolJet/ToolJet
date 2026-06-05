@@ -5,11 +5,11 @@ import {
   SubmitButton,
   FormHeader,
   FormDescription,
-  GeneralFeatureImage,
   TermsAndPrivacyInfo,
 } from '@/modules/common/components';
 import { appService, authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import './resources/styles/workspace_invitation_page.scss';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
@@ -98,7 +98,7 @@ const WorkspaceInvitationPage = (props) => {
       </OnboardingUIWrapper>
     );
   };
-  return <OnboardingBackgroundWrapper LeftSideComponent={LeftSideComponent} RightSideComponent={GeneralFeatureImage} />;
+  return <OnboardingBackgroundWrapper LeftSideComponent={LeftSideComponent} RightSideComponent={LoginPageRightPanel} />;
 };
 
 export default WorkspaceInvitationPage;

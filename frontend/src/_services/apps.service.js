@@ -70,7 +70,11 @@ function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const branchId = getActiveBranchId();
   const branchParam = branchId ? `&branch_id=${branchId}` : '';
-  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}${branchParam}`, requestOptions).then(handleResponse);
+  if (page === 0)
+    return fetch(
+      `${config.apiUrl}/apps?all=true&folder=${folder || ''}&type=${type}${branchParam}`,
+      requestOptions
+    ).then(handleResponse);
   else
     return fetch(
       `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${branchParam}`,

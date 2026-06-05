@@ -88,8 +88,7 @@ describe("ClickHouse", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(clickhouseFormConfig, clickhouseFormConfig.invalidPort);
-        // ClickHouse HTTP port returns "Timeout error" (not ECONNREFUSED) for invalid ports
-        verifyDSConnection("failed", "Timeout error");
+        verifyDSConnection("failed", "connect ECONNREFUSED");
     });
 });
 

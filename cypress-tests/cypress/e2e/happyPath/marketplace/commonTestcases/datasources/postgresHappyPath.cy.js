@@ -119,7 +119,7 @@ describe("PostgreSQL", () => {
         verifyDSConnection("failed", `password authentication failed for user "postgres"`);
 
         fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidPort);
-        verifyDSConnection("failed", "Connection test failed: Database connection timeout. Please check host/port/firewall");
+        verifyDSConnection("failed", "Connection test failed: connect ECONNREFUSED");
     });
 
     it("4. PostgreSQL - Verify query editor", () => {

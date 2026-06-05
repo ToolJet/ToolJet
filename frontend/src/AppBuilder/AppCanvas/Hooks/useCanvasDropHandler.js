@@ -94,6 +94,17 @@ export const useCanvasDropHandler = () => {
     // we re-fetch the modules list so module_container / input_items are real.
     let dropComponent = component;
     if (dropComponent?.moduleId && dropComponent?.isStub && dropComponent?.appId) {
+      // Snapshot the drag ghost's bounding rect NOW, while the element is still
+      // mounted. The async hydration below lets the browser complete the drag
+      // lifecycle, which removes the ghost from the DOM. After that,
+      // getBoundingClientRect() on the detached node returns all-zeros, causing
+      // the widget to land at (0,0) instead of the drop position.
+      const ghostPos = useGridStore.getState().getGhostDragPosition();
+      if (ghostPos?.e?.target) {
+        const frozenTargetRect = ghostPos.e.target.getBoundingClientRect();
+        useGridStore.getState().actions.setGhostDragPosition({ ...ghostPos, frozenTargetRect });
+      }
+
       const toastId = toast.loading('Loading module from git…');
       try {
         await appsService.getApp(dropComponent.appId);
