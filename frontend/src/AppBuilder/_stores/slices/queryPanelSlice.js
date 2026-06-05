@@ -1178,14 +1178,15 @@ export const createQueryPanelSlice = (set, get) => ({
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.resetQuery(query.name);
               },
-              pausePeriodicRun: () => {
-                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-                return actions.pausePeriodicRun(query.name);
-              },
-              resumePeriodicRun: () => {
-                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-                return actions.resumePeriodicRun(query.name);
-              },
+              // Parked: pause/resume periodic-run CSAs not exposed in v1 (engine kept for future).
+              // pausePeriodicRun: () => {
+              //   const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+              //   return actions.pausePeriodicRun(query.name);
+              // },
+              // resumePeriodicRun: () => {
+              //   const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+              //   return actions.resumePeriodicRun(query.name);
+              // },
               getData: () => {
                 const resolvedState = get().getResolvedState(moduleId);
                 return resolvedState.queries[key].data;
@@ -1576,14 +1577,15 @@ export const createQueryPanelSlice = (set, get) => ({
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
           },
-          pausePeriodicRun: () => {
-            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-            return actions.pausePeriodicRun(query.name);
-          },
-          resumePeriodicRun: () => {
-            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
-            return actions.resumePeriodicRun(query.name);
-          },
+          // Parked: pause/resume periodic-run CSAs not exposed in v1 (engine kept for future).
+          // pausePeriodicRun: () => {
+          //   const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+          //   return actions.pausePeriodicRun(query.name);
+          // },
+          // resumePeriodicRun: () => {
+          //   const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+          //   return actions.resumePeriodicRun(query.name);
+          // },
           getData: () => {
             const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].data;
