@@ -133,7 +133,12 @@ export default class Mariadb implements QueryService {
   // ─── SQL mode ────────────────────────────────────────────────────────────────
 
   private async handleSqlQuery(conn: any, queryOptions: QueryOptions): Promise<QueryResult> {
-    const rows = await conn.query(queryOptions.query);
+    const { query, query_params } = queryOptions;
+    const queryParams = query_params || [];
+    const sanitizedQueryParams: Record<string, any> = Object.fromEntries(
+      queryParams.filter(([key]: [string, any]) => !isEmpty(key))
+    );
+    const rows = await conn.query(query, sanitizedQueryParams);
     return { status: 'ok', data: this.toJson(rows) };
   }
 
@@ -511,6 +516,7 @@ export default class Mariadb implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         stream,
+        namedPlaceholders: true,
         multipleStatements: true,
         connectionLimit,
         connectTimeout: 60000,
@@ -537,6 +543,7 @@ export default class Mariadb implements QueryService {
       password: sourceOptions.password,
       port: sourceOptions.port,
       database: sourceOptions.database,
+      namedPlaceholders: true,
       multipleStatements: true,
       connectionLimit,
       connectTimeout: 60000,
@@ -568,6 +575,7 @@ export default class Mariadb implements QueryService {
         password: sourceOptions.password,
         database: sourceOptions.database,
         stream,
+        namedPlaceholders: true,
         connectTimeout: 60000,
         ...(sslObject ? { ssl: sslObject } : {}),
       };
@@ -586,6 +594,7 @@ export default class Mariadb implements QueryService {
       password: sourceOptions.password,
       port: sourceOptions.port,
       database: sourceOptions.database,
+      namedPlaceholders: true,
       connectTimeout: 60000,
       ...(sslObject ? { ssl: sslObject } : {}),
     };
