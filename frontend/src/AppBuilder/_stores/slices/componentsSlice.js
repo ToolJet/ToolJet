@@ -69,13 +69,17 @@ function clearAllQueryRerunTimers() {
 
 // ---------------------------------------------------------------------------
 // Periodic query re-runs ("Run this query periodically" query setting).
-// Unlike the dependency-change debounce above, these are long-lived setInterval
-// timers that survive page navigation (a health-check query keeps polling) and
-// are only torn down on full app teardown, query delete, toggle-off, or pause.
+// Unlike the dependency-change debounce above, these are long-lived timers that
+// survive page navigation (a health-check query keeps polling) and are only torn
+// down on full app teardown, query delete, toggle-off, or pause.
+// Per product: "time to the next run is always calculated from the last run." So
+// these are self-re-arming one-shot setTimeouts (NOT a fixed-rate setInterval):
+// every run of the query — manual, event, page/app load, or a periodic tick —
+// re-anchors the next run to now + interval (see reconcileQueryPeriodicRun).
 // Keyed by queryId (queries are app-global); moduleId is stored in the value so
 // each tick targets the right module.
 // ---------------------------------------------------------------------------
-const queryPeriodicTimers = new Map(); // queryId -> { intervalId, intervalMs, moduleId }
+const queryPeriodicTimers = new Map(); // queryId -> { timeoutId, intervalMs, moduleId }
 // Queries explicitly paused via the pausePeriodicRun CSA. Reconcile must not
 // auto-restart these (a manual run / option edit shouldn't override a pause).
 const pausedPeriodicQueries = new Set();
@@ -100,19 +104,32 @@ function resolvePeriodicConfig(query, moduleId, store) {
   return { shouldRun: true, intervalMs: Math.max(num, MIN_PERIODIC_INTERVAL_MS) };
 }
 
-function startPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
-  // Idempotent: clear any existing timer before scheduling (avoids HMR/re-run dupes).
+// Arm (or re-arm) the one-shot timer that runs the query once, `intervalMs` from now.
+// The tick re-arms itself, so the chain continues; re-resolving config each tick lets a
+// changed fx interval / toggle-off take effect without an explicit reconcile.
+function armPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
+  // Idempotent: clear any pending timer before scheduling (avoids HMR/re-run dupes and
+  // resets the clock when a fresh run re-anchors the next tick).
   if (queryPeriodicTimers.has(queryId)) {
-    clearInterval(queryPeriodicTimers.get(queryId).intervalId);
+    clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
   }
-  const intervalId = setInterval(() => {
+  const timeoutId = setTimeout(() => {
     const store = getStore();
     const query = store.dataQuery?.queries?.modules?.[moduleId]?.find((q) => q.id === queryId);
-    if (!query) {
+    if (!query || pausedPeriodicQueries.has(queryId)) {
       clearPeriodicTimer(queryId);
       return;
     }
-    // Skip this tick if a previous run is still in flight (no overlap / pile-up).
+    const { shouldRun, intervalMs: nextMs, invalid } = resolvePeriodicConfig(query, moduleId, store);
+    if (!shouldRun || invalid) {
+      clearPeriodicTimer(queryId);
+      return;
+    }
+    // Re-arm BEFORE running so the chain survives even when this tick skips the run.
+    // (A run that completes will itself re-arm via reconcileQueryPeriodicRun; arming
+    // here too is idempotent and keeps the loop alive across skipped/in-flight ticks.)
+    armPeriodicTimer(queryId, moduleId, nextMs, getStore);
+    // Skip the actual run if a previous run is still in flight (no overlap / pile-up).
     if (store.getAllExposedValues(moduleId)?.queries?.[queryId]?.isLoading) return;
     // Run in the module's current mode so released/public apps don't toast errors on
     // every failing tick (runQuery only toasts when mode !== 'view').
@@ -120,7 +137,7 @@ function startPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
     // confirmed=true so periodic ticks bypass the "request confirmation" modal.
     store.queryPanel.runQuery(queryId, query.name, true, mode, {}, undefined, undefined, false, false, moduleId);
   }, intervalMs);
-  queryPeriodicTimers.set(queryId, { intervalId, intervalMs, moduleId });
+  queryPeriodicTimers.set(queryId, { timeoutId, intervalMs, moduleId });
 }
 
 /**
@@ -131,7 +148,7 @@ function startPeriodicTimer(queryId, moduleId, intervalMs, getStore) {
  */
 export function clearPeriodicTimer(queryId, { forgetPaused = false } = {}) {
   if (queryPeriodicTimers.has(queryId)) {
-    clearInterval(queryPeriodicTimers.get(queryId).intervalId);
+    clearTimeout(queryPeriodicTimers.get(queryId).timeoutId);
     queryPeriodicTimers.delete(queryId);
   }
   if (forgetPaused) pausedPeriodicQueries.delete(queryId);
@@ -139,17 +156,20 @@ export function clearPeriodicTimer(queryId, { forgetPaused = false } = {}) {
 
 /** Stop ALL periodic timers (full app teardown only — NOT page switch). */
 export function clearAllPeriodicTimers() {
-  queryPeriodicTimers.forEach(({ intervalId }) => clearInterval(intervalId));
+  queryPeriodicTimers.forEach(({ timeoutId }) => clearTimeout(timeoutId));
   queryPeriodicTimers.clear();
   pausedPeriodicQueries.clear();
 }
 
 /**
  * Bring a query's periodic timer in line with its current options.
- * - Called from runQuery (allowStart=true): the first/any run is what starts the timer.
- * - Called from updateDataQuery (allowStart=false): only adjusts/stops an EXISTING
- *   timer, so editing options never starts a timer for a query that hasn't run yet.
- * Re-resolves the interval each call, so an fx interval that changed restarts cleanly.
+ * - Called from runQuery (allowStart=true): every run (re)anchors the next run to now +
+ *   interval, so "time to the next run is always calculated from the last run" — a manual
+ *   or event-triggered run mid-cycle resets the clock, not just the first run.
+ * - Called from updateDataQuery (allowStart=false): only adjusts an EXISTING timer when
+ *   the resolved interval changed, so editing options never starts a timer for a query
+ *   that hasn't run yet, and an unrelated edit doesn't reset a running query's clock.
+ * Re-resolves the interval each call, so a changed fx interval re-anchors cleanly.
  */
 export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowStart = true } = {}) {
   const store = getStore();
@@ -174,13 +194,16 @@ export function reconcileQueryPeriodicRun(queryId, moduleId, getStore, { allowSt
     clearPeriodicTimer(queryId);
     return;
   }
-  if (!existing) {
-    if (allowStart) startPeriodicTimer(queryId, moduleId, intervalMs, getStore);
+  if (allowStart) {
+    // A run just happened (manual / event / page-load / periodic tick): (re)arm so the
+    // next run is measured from this run. Resets the clock even if the interval is unchanged.
+    armPeriodicTimer(queryId, moduleId, intervalMs, getStore);
     return;
   }
-  // Already running — restart only if the resolved interval changed.
-  if (existing.intervalMs !== intervalMs) {
-    startPeriodicTimer(queryId, moduleId, intervalMs, getStore);
+  // Editor option edit: never start a timer for an unrun query; only re-anchor an
+  // already-running one when the resolved interval actually changed.
+  if (existing && existing.intervalMs !== intervalMs) {
+    armPeriodicTimer(queryId, moduleId, intervalMs, getStore);
   }
 }
 
