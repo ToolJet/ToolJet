@@ -235,26 +235,23 @@ const OAuthWrapper = ({
             <div className="col-auto d-flex gap-2">
               {selectedDataSource?.kind === 'googlesheetsv2' ? (
                 <>
+                  <Button
+                    className={`m2 ${isSaving ? ' loading' : ''}`}
+                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                    onClick={() => saveDataSource()}
+                    variant="outline"
+                  >
+                    {isSaving ? t('globals.saving', 'Saving...') : t('globals.save', 'Save')}
+                  </Button>
                   {(!authStatus || authStatus === 'waiting_for_url') && (
                     <Button
                       className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
                       disabled={isSaving}
                       onClick={() => authorizeWithProvider()}
                     >
-                      {t(
-                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
-                        `Connect to ${dataSourceNameCapitalize}`
-                      )}
+                      {t(`${selectedDataSource.kind}.saveAndConnect${dataSourceNameCapitalize}`, 'Save and Connect')}
                     </Button>
                   )}
-                  <Button
-                    className={`m2 ${isSaving ? ' loading' : ''}`}
-                    disabled={isSaving || isDisabled || !hasFieldsChanged()}
-                    onClick={() => saveDataSource()}
-                    variant={localStorage.getItem('OAuthCode') ? 'primary' : 'tertiary'}
-                  >
-                    {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
-                  </Button>
                 </>
               ) : (
                 <>
