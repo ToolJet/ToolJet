@@ -24,6 +24,7 @@ import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import { getAutoFillStrategy } from '@/_helpers/autoFillRegistry';
 import { useConnectionStringAutoFill } from '@/_hooks/useConnectionStringAutofill';
+import OracleWalletPicker from '@/_components/OracleWalletPicker';
 
 const DynamicFormV2 = ({
   schema,
@@ -418,6 +419,8 @@ const DynamicFormV2 = ({
         return SqlAggregate;
       case 'dropdown':
         return Select;
+      case 'react-component-oracle-wallet':
+        return OracleWalletPicker;
       case 'react-component-oauth':
         return OAuthWrapper;
       // TODO: Move dropdown component flip logic to be handled here
@@ -657,6 +660,12 @@ const DynamicFormV2 = ({
           onChange: (value) => {
             optionchanged(key, [...value]);
           },
+        };
+      case 'react-component-oracle-wallet':
+        return {
+          value: options?.[key]?.value ?? '',
+          onChange: (val) => handleOptionChange(key, val),
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       default:
         return {};

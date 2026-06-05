@@ -643,6 +643,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'hubspot',
         'xero',
         'bigquery',
+        'databricks',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

@@ -27,7 +27,7 @@ export class CreateDataSourceDto {
   environment_id: string;
 }
 
-export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) { }
+export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
 export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {
   @IsString()
   @IsOptional()
