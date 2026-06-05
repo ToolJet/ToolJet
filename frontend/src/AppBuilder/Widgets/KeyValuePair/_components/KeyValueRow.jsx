@@ -15,6 +15,7 @@ import {
 import { SquarePen } from 'lucide-react';
 import Label from '@/_ui/Label';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -44,6 +45,7 @@ const KeyValueRow = ({
   isDisabled,
   autoLabelWidth,
   maxLabelWidth,
+  labelFontSize,
   hasChanges,
 }) => {
   const { key: fieldKey, name, label, fieldType = 'string', isEditable = false } = field;
@@ -59,6 +61,7 @@ const KeyValueRow = ({
   // Show input if editing is active
   const showInput = canEdit && isEditing;
   const _width = getLabelWidthOfInput('ofComponent', labelWidth);
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const isTopAlignment = alignment === 'top';
   const isRightDirection = direction === 'right';
 
@@ -175,6 +178,7 @@ const KeyValueRow = ({
           direction={direction}
           defaultAlignment={alignment}
           inputId={fieldKey}
+          fontSize={labelFontSizeValue}
           style={autoLabelWidth && maxLabelWidth > 0 ? { minWidth: `${maxLabelWidth}px` } : {}}
           classes={{
             labelContainer: cn({

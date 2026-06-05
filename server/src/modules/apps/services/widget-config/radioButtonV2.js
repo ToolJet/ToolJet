@@ -137,6 +137,12 @@ export const radiobuttonV2Config = {
       ],
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -334,6 +340,7 @@ export const radiobuttonV2Config = {
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       auto: { value: '{{true}}' },
       labelWidth: { value: '33' },

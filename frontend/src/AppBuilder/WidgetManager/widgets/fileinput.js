@@ -242,6 +242,12 @@ export const fileinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -481,6 +487,7 @@ export const fileinputConfig = {
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'top' },
       widthType: { value: 'ofComponent' },
       icon: { value: 'IconFileSearch' },

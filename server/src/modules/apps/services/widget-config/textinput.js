@@ -121,6 +121,12 @@ export const textinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -333,6 +339,7 @@ export const textinputConfig = {
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },

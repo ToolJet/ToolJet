@@ -54,6 +54,7 @@ export const KeyValuePair = ({
     direction = 'left', // 'left' | 'right'
     autoLabelWidth = true,
     labelWidth = 33,
+    labelFontSize,
     // Value styles
     textColor = 'var(--text-primary)',
     accentColor = 'var(--primary)',
@@ -219,6 +220,7 @@ export const KeyValuePair = ({
             isDisabled={isDisabled}
             autoLabelWidth={autoLabelWidth}
             maxLabelWidth={maxLabelWidth}
+            labelFontSize={labelFontSize}
             hasChanges={has(editedData, field.key)}
           />
         ))}

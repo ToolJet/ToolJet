@@ -163,6 +163,12 @@ export const treeSelectConfig = {
         value: 'new',
       },
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     autoLabelWidth: {
       type: 'checkbox',
       displayName: 'Width',
@@ -374,6 +380,7 @@ export const treeSelectConfig = {
       labelStyle: { value: 'new' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       autoLabelWidth: { value: '{{true}}' },
       labelWidth: { value: '33' },
       borderColor: { value: 'var(--cc-default-border)' },

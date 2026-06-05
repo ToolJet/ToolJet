@@ -113,6 +113,12 @@ export const numberinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -337,6 +343,7 @@ export const numberinputConfig = {
       color: { value: 'var(--cc-primary-text)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
       auto: { value: '{{true}}' },

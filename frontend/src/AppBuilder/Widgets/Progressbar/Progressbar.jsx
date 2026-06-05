@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Label from '@/_ui/Label';
+import { getLabelFontSize } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './progressbar.scss';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
@@ -18,18 +19,15 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
     completionColor,
     progressBarThickness,
     boxShadow,
-    textSize,
+    textSize: _textSize,
     padding,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   // ===== COMPUTED VALUES =====
   const computedHeight = padding !== 'none' ? height - 2 * BOX_PADDING : height;
-
-  // Calculate font size as percentage of component height (textSize: 1-100, default 26)
-  const validTextSize = textSize >= 1 && textSize <= 50 ? textSize : 26;
-  const fontSize = `${(computedHeight * validTextSize) / 100}px`;
-
-  // Calculate progress bar height as percentage of component height (progressBarThickness: 1-100, default 20)
   const validProgressBarThickness = progressBarThickness >= 1 && progressBarThickness <= 50 ? progressBarThickness : 20;
   const barHeight = (computedHeight * validProgressBarThickness) / 100;
 
@@ -168,7 +166,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
       _width={labelWidth}
       inputId={`component-${id}`}
       id={`${id}-label`}
-      fontSize={fontSize}
+      fontSize={labelFontSizeValue}
     />
   );
 

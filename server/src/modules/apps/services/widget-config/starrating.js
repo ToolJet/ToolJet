@@ -161,6 +161,12 @@ export const starratingConfig = {
         },
       ],
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -354,6 +360,7 @@ export const starratingConfig = {
       labelStyle: { value: 'standard' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       auto: { value: '{{true}}' },
       widthType: { value: 'ofComponent' },
       labelWidth: { value: '{{33}}' },

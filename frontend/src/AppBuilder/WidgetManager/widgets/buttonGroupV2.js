@@ -135,6 +135,12 @@ export const buttonGroupV2Config = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -414,6 +420,7 @@ export const buttonGroupV2Config = {
       labelWidth: { value: '33' },
       auto: { value: '{{true}}' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-default-border)' },

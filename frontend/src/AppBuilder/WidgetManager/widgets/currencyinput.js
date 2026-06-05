@@ -134,6 +134,12 @@ export const currencyinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -344,6 +350,7 @@ export const currencyinputConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       // iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
       color: { value: 'var(--cc-primary-text)' },

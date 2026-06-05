@@ -162,6 +162,12 @@ export const colorPickerConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -288,6 +294,7 @@ export const colorPickerConfig = {
       color: { value: 'var(--cc-primary-text)' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       auto: { value: '{{true}}' },
       width: { value: '{{33}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

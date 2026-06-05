@@ -119,6 +119,12 @@ export const passinputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -328,6 +334,7 @@ export const passinputConfig = {
       placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
       color: { value: 'var(--cc-primary-text)' },

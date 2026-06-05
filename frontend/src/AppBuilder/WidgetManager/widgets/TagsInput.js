@@ -230,6 +230,12 @@ export const tagsInputConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -434,6 +440,7 @@ export const tagsInputConfig = {
       autoPickChipColor: { value: '{{true}}' },
       tagBackgroundColor: { value: 'var(--cc-surface3-surface)' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

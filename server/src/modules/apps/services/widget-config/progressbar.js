@@ -99,6 +99,12 @@ export const progressbarConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     textSize: {
       type: 'slider',
       displayName: 'Size',
@@ -243,6 +249,7 @@ export const progressbarConfig = {
       textSize: { value: '{{30}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       width: { value: '{{33}}' },
       auto: { value: '{{true}}' },
       trackColor: { value: 'var(--cc-surface3-surface)' },

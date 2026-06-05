@@ -160,6 +160,12 @@ export const dropdownV2Config = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -420,6 +426,7 @@ export const dropdownV2Config = {
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },

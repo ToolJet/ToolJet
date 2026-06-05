@@ -248,6 +248,12 @@ export const daterangepickerConfig = {
       accordian: 'label',
       isFxNotRequired: true,
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     auto: {
       type: 'checkbox',
       displayName: 'Width',
@@ -422,6 +428,7 @@ export const daterangepickerConfig = {
       labelColor: { value: 'var(--cc-primary-text)' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
+      labelFontSize: { value: '{{12}}' },
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
