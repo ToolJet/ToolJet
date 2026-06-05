@@ -213,7 +213,6 @@ export class PluginsService implements IPluginsService {
     const installedPluginsInfo = [];
     try {
       const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
-      console.log('Plugins to be installed: ', pluginsToBeInstalled, shouldAutoInstall);
       if (shouldAutoInstall && pluginsToBeInstalled.length) {
         for (const pluginId of pluginsToBeInstalled) {
           const pluginDetails = pluginsListIdToDetailsMap[pluginId];
