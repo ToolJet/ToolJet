@@ -14,6 +14,7 @@ const Googlesheets = ({
   selectedDataSource,
   currentAppEnvironmentId,
   isDisabled,
+  setConnectionError,
 }) => {
   const [authStatus, setAuthStatus] = useState(null);
   const whiteLabelText = retrieveWhiteLabelText();
@@ -38,6 +39,7 @@ const Googlesheets = ({
           optionchanged('oauth2', true);
         });
         setAuthStatus('waiting_for_token');
+        if (setConnectionError) setConnectionError(null);
         window.open(authUrl);
       })
       .catch(({ error }) => {
