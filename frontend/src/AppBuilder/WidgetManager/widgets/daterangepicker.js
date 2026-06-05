@@ -225,6 +225,12 @@ export const daterangepickerConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -247,12 +253,6 @@ export const daterangepickerConfig = {
       ],
       accordian: 'label',
       isFxNotRequired: true,
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
     },
     auto: {
       type: 'checkbox',
@@ -426,9 +426,9 @@ export const daterangepickerConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
-      labelFontSize: { value: '{{12}}' },
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },

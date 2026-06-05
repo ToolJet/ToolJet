@@ -126,6 +126,12 @@ export const starratingConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -160,12 +166,6 @@ export const starratingConfig = {
           value: 'standard',
         },
       ],
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
     },
     auto: {
       type: 'checkbox',
@@ -352,6 +352,7 @@ export const starratingConfig = {
     events: [],
     styles: {
       textColor: { value: '#EFB82D' },
+      labelFontSize: { value: '{{12}}' },
       labelColor: { value: 'var(--cc-primary-text)' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -360,7 +361,6 @@ export const starratingConfig = {
       labelStyle: { value: 'standard' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
-      labelFontSize: { value: '{{12}}' },
       auto: { value: '{{true}}' },
       widthType: { value: 'ofComponent' },
       labelWidth: { value: '{{33}}' },

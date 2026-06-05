@@ -115,6 +115,12 @@ export const radiobuttonV2Config = {
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -135,12 +141,6 @@ export const radiobuttonV2Config = {
         { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
         { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
-      accordian: 'label',
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     auto: {
@@ -339,8 +339,8 @@ export const radiobuttonV2Config = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
-      direction: { value: 'left' },
       labelFontSize: { value: '{{12}}' },
+      direction: { value: 'left' },
       alignment: { value: 'side' },
       auto: { value: '{{true}}' },
       labelWidth: { value: '33' },

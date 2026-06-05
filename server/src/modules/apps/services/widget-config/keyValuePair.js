@@ -118,6 +118,12 @@ export const keyValuePairConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'Label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -144,12 +150,6 @@ export const keyValuePairConfig = {
         key: 'alignment',
         value: 'side',
       },
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
     },
     autoLabelWidth: {
       type: 'checkbox',
@@ -416,9 +416,9 @@ export const keyValuePairConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
-      labelFontSize: { value: '{{12}}' },
       autoLabelWidth: { value: '{{false}}' },
       labelWidth: { value: '{{33}}' },
       accentColor: { value: 'var(--cc-primary-brand)' },

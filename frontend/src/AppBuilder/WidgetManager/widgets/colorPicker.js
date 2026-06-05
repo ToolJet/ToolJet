@@ -139,6 +139,12 @@ export const colorPickerConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -161,12 +167,6 @@ export const colorPickerConfig = {
       ],
       accordian: 'label',
       isFxNotRequired: true,
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
     },
     auto: {
       type: 'checkbox',
@@ -292,9 +292,9 @@ export const colorPickerConfig = {
     events: [],
     styles: {
       color: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
-      labelFontSize: { value: '{{12}}' },
       auto: { value: '{{true}}' },
       width: { value: '{{33}}' },
       backgroundColor: { value: 'var(--cc-surface1-surface)' },

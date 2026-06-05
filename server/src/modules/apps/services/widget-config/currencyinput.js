@@ -111,6 +111,12 @@ export const currencyinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -133,12 +139,6 @@ export const currencyinputConfig = {
       ],
       accordian: 'label',
       isFxNotRequired: true,
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
     },
     auto: {
       type: 'checkbox',
@@ -343,6 +343,7 @@ export const currencyinputConfig = {
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       borderColor: { value: 'var(--cc-default-border)' },
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
@@ -350,7 +351,6 @@ export const currencyinputConfig = {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       // iconColor: { value: 'var(--cc-default-icon)' },
       direction: { value: 'left' },
-      labelFontSize: { value: '{{12}}' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
       color: { value: 'var(--cc-primary-text)' },

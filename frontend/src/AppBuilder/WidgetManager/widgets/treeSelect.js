@@ -122,6 +122,12 @@ export const treeSelectConfig = {
       validation: { schema: { type: 'string' } },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     labelStyle: {
       type: 'select',
       displayName: 'Style',
@@ -162,12 +168,6 @@ export const treeSelectConfig = {
         key: 'labelStyle',
         value: 'new',
       },
-    },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
     },
     autoLabelWidth: {
       type: 'checkbox',
@@ -377,10 +377,10 @@ export const treeSelectConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       labelStyle: { value: 'new' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
-      labelFontSize: { value: '{{12}}' },
       autoLabelWidth: { value: '{{true}}' },
       labelWidth: { value: '33' },
       borderColor: { value: 'var(--cc-default-border)' },
