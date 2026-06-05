@@ -3,9 +3,7 @@ id: navigation
 title: Navigation
 ---
 
-The **Navigation** component lets you build custom navigation menus with horizontal or vertical orientation. Menu items can be organized into groups and configured with icons, labels, and visibility rules.
-
-A product team builds an internal admin dashboard with multiple sections — Overview, Users, Settings, and Reports. They use the Navigation component in vertical orientation to create a sidebar, binding each item's visibility to role-based conditions so that only authorized users see sensitive sections like Reports.
+The **Navigation** component lets you build custom navigation menus with horizontal or vertical orientation. Menu items can be organized into groups and configured with icons, labels, and visibility rules. It fits well for scenarios like a top navigation bar across pages of an internal tool, a sidebar for an admin dashboard, or a bottom navigation menu in a mobile app.
 
 ## Content
 
