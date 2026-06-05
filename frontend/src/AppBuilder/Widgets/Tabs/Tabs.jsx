@@ -11,7 +11,7 @@ import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useTabsNavScrollArrows } from '@/AppBuilder/Widgets/Tabs/useTabsNavScrollArrows';
 import { shallow } from 'zustand/shallow';
-import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { getCssVarValue, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useTransition, animated } from 'react-spring';
 import './tabs.scss';
 const tinycolor = require('tinycolor2');
@@ -103,6 +103,9 @@ export const Tabs = function Tabs({
   const unselectedText = styles?.unselectedText ?? '#6A727C';
   const selectedText = styles?.selectedText ?? '#fff';
   const hoverBackground = styles?.hoverBackground ?? '#F1F3F4';
+  const resolvedHoverBackground = hoverBackground?.startsWith('var(')
+    ? getCssVarValue(document.documentElement, hoverBackground) ?? hoverBackground
+    : hoverBackground;
   const unselectedIcon = styles?.unselectedIcon ?? '#6A727C';
   const selectedIcon = styles?.selectedIcon ?? '#fff';
   const accent = styles?.accent ?? '#3c92dc';
@@ -418,7 +421,7 @@ export const Tabs = function Tabs({
                       fontWeight: '500',
                       background:
                         isHovered && hoveredTabId == tab.id
-                          ? tinycolor(hoverBackground).setAlpha(0.08).toString()
+                          ? tinycolor(resolvedHoverBackground).setAlpha(0.08).toString()
                           : 'transparent',
                       borderRadius: '6px',
                       paddingLeft: '1rem',
