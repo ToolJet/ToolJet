@@ -1,0 +1,47 @@
+---
+id: create-group
+title: "Create Group"
+---
+
+<EndpointHeader method="POST" path="/Groups" />
+
+<ApiColumns>
+<ApiLeft>
+
+Creates a new group in the organization.
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid request body or missing required fields (e.g. displayName)."},
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"409","description":"A group with the same displayName already exists."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+
+
+
+
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/scim/v2/Groups" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{}'`} />
+
+<ResponseExample statusCode="201" body={`{
+  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+  "id": "e9e30dba-f08f-4109-8486-d5c6a331660a",
+  "displayName": "Engineering",
+  "members": [],
+  "meta": {
+    "resourceType": "Group",
+    "created": "2024-01-23T04:56:22Z",
+    "lastModified": "2024-01-23T04:56:22Z",
+    "location": "https://{your-domain}/api/scim/v2/Groups/e9e30dba-f08f-4109-8486-d5c6a331660a"
+  }
+}`} />
+
+</ApiRight>
+</ApiColumns>

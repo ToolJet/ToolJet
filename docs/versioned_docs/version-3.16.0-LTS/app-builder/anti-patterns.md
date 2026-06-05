@@ -74,7 +74,7 @@ When building applications with ToolJet, it's essential to follow best practices
 queries.getEmployees.data = [];
 ```
 
-- **Solution**: Always use ToolJet's built in **[actions](/docs/actions/run-actions-from-runjs//)** to manipulate data.
+- **Solution**: Always use ToolJet's built in **[actions](/docs/actions/run-actions-from-runjs/)** to manipulate data.
 
 ```javascript
 // Correct: use actions to update data

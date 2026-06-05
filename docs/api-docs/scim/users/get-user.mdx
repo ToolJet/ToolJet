@@ -1,0 +1,52 @@
+---
+id: get-user
+title: "Get User by ID"
+---
+
+<EndpointHeader method="GET" path="/Users/{id}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Retrieves a single user by their SCIM ID.
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the user.","in":"path"}]} />
+
+<ErrorsTable errors={[
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"404","description":"User not found."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/scim/v2/Users/{id}" \
+  -H "Authorization: Basic <access_token>"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+  "id": "2819c223-7f76-453a-919d-413861904646",
+  "userName": "bjensen@tooljet.com",
+  "name": {
+    "formatted": "Barbara Jensen",
+    "familyName": "Jensen",
+    "givenName": "Barbara"
+  },
+  "emails": [
+    {
+      "value": "bjensen@tooljet.com",
+      "primary": true
+    }
+  ],
+  "active": true,
+  "meta": {
+    "resourceType": "User",
+    "created": "2024-01-23T04:56:22Z",
+    "lastModified": "2024-05-13T04:42:34Z",
+    "location": "https://{your-domain}/api/scim/v2/Users/2819c223-7f76-453a-919d-413861904646"
+  }
+}`} />
+
+</ApiRight>
+</ApiColumns>

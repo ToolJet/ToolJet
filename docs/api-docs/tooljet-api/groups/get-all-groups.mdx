@@ -1,0 +1,53 @@
+---
+id: get-all-groups
+title: "Get All Groups"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="GET" path="/workspaces/{workspaceId}/groups" />
+
+<ApiColumns>
+<ApiLeft>
+
+Retrieves all groups in a workspace. Supports search and pagination.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
+
+<ParamsTable title="Query Parameters" params={[{"name":"search","type":"string","required":false,"description":"Filter groups by name.","in":"query"},{"name":"page","type":"integer","required":false,"description":"Page number for pagination. Defaults to 1.","in":"query"},{"name":"per_page","type":"integer","required":false,"description":"Number of items per page. Defaults to 20.","in":"query"}]} />
+
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Query parameter validation failure — non-integer page/per_page or value less than 1."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic token."},
+  {"status":"404","description":"workspaceId does not match any workspace."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"500","description":"Unexpected database error."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspaces/{workspaceId}/groups?search=<search>&page=<page>&per_page=<per_page>" \
+  -H "Authorization: Basic <access_token>"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "data": [
+    {
+      "id": "grp_12345",
+      "name": "Backend Engineers",
+      "permissions": {},
+      "granularPermissions": []
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total_count": 1
+  }
+}`} />
+
+</ApiRight>
+</ApiColumns>

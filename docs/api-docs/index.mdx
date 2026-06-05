@@ -1,0 +1,66 @@
+---
+id: index
+title: ToolJet API Reference
+slug: /
+hide_title: true
+---
+
+<ApiHero />
+
+## Enabling ToolJet API
+
+Before making API calls, you need to enable the external API and set an access token on your ToolJet instance. Add these two variables to your `.env` file and restart the server:
+
+| Variable | Description |
+|:---------|:------------|
+| `ENABLE_EXTERNAL_API` | Set to `true` to enable the external API |
+| `EXTERNAL_API_ACCESS_TOKEN` | A secure random string used as the API access token |
+
+## Generating an Access Token
+
+You can generate a secure access token using `openssl`. The following command produces a cryptographically random 64-character base64 string:
+
+```bash
+openssl rand -base64 48
+```
+
+Copy the output and use it as the value for `EXTERNAL_API_ACCESS_TOKEN` in your `.env` file.
+
+:::warning
+Keep this token secret — it grants full API access to your ToolJet instance. Rotate it if it is ever exposed.
+:::
+
+## Authentication
+
+All API requests require a `Basic` access token in the `Authorization` header. Use the token you configured in `EXTERNAL_API_ACCESS_TOKEN`:
+
+```bash
+Authorization: Basic <access_token>
+```
+
+:::note
+SCIM endpoints use a separate token. See the [SCIM setup guide](/api/scim) for configuration.
+:::
+
+## Explore the APIs
+
+<div className="api-landing-grid">
+  <ApiCategoryCard
+    title="ToolJet API"
+    description="Manage users, workspaces, apps, modules, and groups programmatically."
+    href="/api/tooljet-api"
+    endpointCount={20}
+  />
+  <ApiCategoryCard
+    title="GitSync API"
+    description="Automate git sync operations and CI/CD pipelines for ToolJet applications."
+    href="/api/gitsync-api"
+    endpointCount={5}
+  />
+  <ApiCategoryCard
+    title="SCIM"
+    description="Provision and manage users and groups via the SCIM 2.0 standard."
+    href="/api/scim"
+    endpointCount={12}
+  />
+</div>

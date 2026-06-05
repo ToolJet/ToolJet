@@ -558,6 +558,57 @@ img {
   padding: 5px 13px !important;
 }
 
+.navbar-api,
+.navbar-api:hover {
+  color: white !important;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.navbar-api {
+  background-color: #4d72fa;
+  border: 1px solid #4d72fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 13px !important;
+  margin-right: 20px;
+  position: relative;
+}
+
+.navbar-api::after {
+  content: '';
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 22px;
+  width: 1px;
+  background: #E4E7EB;
+}
+
+[data-theme='dark'] .navbar-api::after {
+  background: #444950;
+}
+
+.navbar-api:hover {
+  background-color: #3a5ce5;
+  border-color: #3a5ce5;
+}
+
+[data-theme='dark'] .navbar-api,
+[data-theme='dark'] .navbar-api:hover {
+  color: white !important;
+}
+
+@media screen and (max-width: 996px) {
+  .navbar-api {
+    display: none !important;
+  }
+}
+
 
 
 button[title="Switch between dark and light mode (currently light mode)"],
@@ -639,9 +690,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 }
 
 .navbarSearchContainer_Bca1 {
-  border-right: 1px solid #E4E7EB !important;
-  padding: 4px 16px !important;
-  margin-right: 8px;
+  border-right: none !important;
+  padding: 4px 8px !important;
+  margin-right: 0;
 }
 
 .dropdown-archived-versions {
@@ -810,7 +861,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 }
 
 /* Side bar Styles */
-.category-as-header>.menu__list-item-collapsible:first-child a {
+.category-as-header>.menu__list-item-collapsible:first-child a,
+.category-as-header>.menu__link--sublist:first-child,
+.category-as-header>.menu__link:first-child {
   font-size: 15px;
   font-style: normal;
   font-weight: 600 !important;
@@ -819,7 +872,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   color: #1B1F24;
 }
 
-[data-theme='dark'] .category-as-header>.menu__list-item-collapsible:first-child a {
+[data-theme='dark'] .category-as-header>.menu__list-item-collapsible:first-child a,
+[data-theme='dark'] .category-as-header>.menu__link--sublist:first-child,
+[data-theme='dark'] .category-as-header>.menu__link:first-child {
   color: white;
 }
 
@@ -844,6 +899,12 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
   background-repeat: no-repeat;
   margin-right: 5px;
   vertical-align: middle;
+}
+
+.no-icon>.menu__list-item-collapsible:first-child a:first-of-type::before,
+.no-icon>.menu__link--sublist:first-child::before,
+.no-icon>.menu__link:first-child::before {
+  display: none !important;
 }
 
 .getting-started-header .menu__list-item-collapsible:first-child a:first-of-type::before {
@@ -1006,6 +1067,75 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 /* Tooltip for outdated version in navbar dropdown */
 .dropdown__menu {
   overflow: visible !important;
+}
+
+/* ─── Sidebar beta badge ─────────────────────────────────────────── */
+.sidebar-badge-beta .menu__link::after {
+  content: 'beta';
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #BF4F03;
+  background: #FAEFE7;
+  border: 1px solid #f0c4a8;
+  border-radius: 3px;
+  padding: 0px 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+  line-height: 1.6;
+  text-transform: lowercase;
+}
+
+[data-theme='dark'] .sidebar-badge-beta .menu__link::after {
+  color: #f97316;
+  background: #2a1500;
+  border-color: #7c2d12;
+}
+
+/* ─── API sidebar — "Back to Docs" pinned button ─────────────────── */
+.sidebar-back-to-docs .menu__link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.sidebar-back-to-docs .menu__link:hover {
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-900);
+}
+
+[data-theme='dark'] .sidebar-back-to-docs .menu__link {
+  color: var(--ifm-color-emphasis-600);
+}
+
+[data-theme='dark'] .sidebar-back-to-docs .menu__link:hover {
+  background: var(--ifm-color-emphasis-100);
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* ─── API sidebar — tighten gap between Overview and first section ─ */
+.sidebar-back-to-docs + .menu__list-item + .category-as-header > .menu__list-item-collapsible:first-child a {
+  margin-top: 4px;
+}
+
+/* ─── API sidebar — Overview item (immediately follows back-to-docs) */
+.sidebar-back-to-docs + .menu__list-item > .menu__link {
+  font-size: 15px;
+  font-weight: 600 !important;
+  line-height: 20px;
+  color: #1B1F24;
+}
+
+.sidebar-back-to-docs + .menu__list-item > .menu__link:hover {
+  background-color: var(--ifm-menu-color-background-hover);
+}
+
+.sidebar-back-to-docs + .menu__list-item > .menu__link.menu__link--active {
+  background-color: var(--ifm-menu-color-background-active);
+}
+
+[data-theme='dark'] .sidebar-back-to-docs + .menu__list-item > .menu__link {
+  color: white;
 }
 
 .dropdown__link[href*="2.50.0-LTS"] {

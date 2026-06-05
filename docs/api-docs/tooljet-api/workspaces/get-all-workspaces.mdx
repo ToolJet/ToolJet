@@ -1,0 +1,40 @@
+---
+id: get-all-workspaces
+title: "Get All Workspaces"
+---
+
+<EndpointHeader method="GET" path="/workspaces" />
+
+<ApiColumns>
+<ApiLeft>
+
+Retrieves a list of all workspaces.
+
+
+<ErrorsTable errors={[
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
+  {"status":"404","description":"Not available on Community Edition."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspaces" \
+  -H "Authorization: Basic <access_token>"`} />
+
+<ResponseExample statusCode="200" body={`[
+  {
+    "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
+    "name": "demo-workspace",
+    "status": "active",
+    "groups": [
+      {
+        "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
+        "name": "all_users"
+      }
+    ]
+  }
+]`} />
+
+</ApiRight>
+</ApiColumns>
