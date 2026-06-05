@@ -98,11 +98,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -122,11 +119,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -478,11 +472,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -501,11 +492,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -877,11 +865,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -900,11 +885,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1289,11 +1271,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1312,11 +1291,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
