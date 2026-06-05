@@ -31,6 +31,10 @@ export class FolderApp {
   @JoinColumn({ name: 'folder_id' })
   folder: Folder;
 
+  // null = non-git org (instance-wide); uuid = git org (scoped to that branch only)
+  @Column({ name: 'branch_id', nullable: true, default: null })
+  branchId?: string;
+
   @ManyToOne(() => App, (folder) => folder.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'app_id' })
   app: App;

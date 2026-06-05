@@ -1,5 +1,12 @@
 const isArray = (value) => Object.prototype.toString.call(value).slice(8, -1) === 'Array';
 
+export const normalizeCardData = (cardData) => {
+  if (!isArray(cardData)) {
+    return [];
+  }
+  return cardData;
+};
+
 export const convertArrayToObj = (data = []) => {
   const containers = {};
   if (isArray(data)) {
@@ -38,7 +45,6 @@ export const getCardData = (cardData, columnDataAsObj) => {
 
   return containers;
 };
-
 export const getData = (cardDataAsObj) => {
   return Object.keys(cardDataAsObj).map((cardId, index) => ({
     ...cardDataAsObj[cardId],

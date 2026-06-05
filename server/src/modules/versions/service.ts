@@ -258,7 +258,9 @@ export class VersionService implements IVersionService {
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
     const modules = await this.appUtilService.fetchModules(app, false, undefined);
 
-    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
+    response['modules'] = await Promise.all(
+      modules.map((module) => prepareResponse(module, module.editingVersion?.id))
+    );
 
     return response;
   }
