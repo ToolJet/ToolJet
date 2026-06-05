@@ -7,6 +7,7 @@ const MODAL_FOOTER = {
   HEIGHT: 80,
 };
 const DEFAULT_CUSTOM_MODAL_WIDTH = 600;
+const BOOTSTRAP_MODAL_SIZES = ['sm', 'lg', 'xl', 'fullscreen'];
 
 const parseModalWidthNumber = (value) => {
   if (typeof value === 'number') {
@@ -76,6 +77,14 @@ export const getCustomModalWidth = (value) => {
   }
 
   return `${parsedValue}px`;
+};
+
+export const getBootstrapModalSize = (value) => {
+  if (isCustomModalWidth(value)) {
+    return undefined;
+  }
+
+  return BOOTSTRAP_MODAL_SIZES.includes(value) ? value : 'lg';
 };
 
 export function isFalsyOrMultipleZeros(value) {
