@@ -405,7 +405,7 @@ describe(
                     cy.gitHubAssertAppFolderExists(folderBranch, origAppName);
 
                     cy.apiCreateFolder(folderName).then((folder) => {
-                      cy.apiAddAppToFolder(folder.id, fAppId);
+                      cy.apiAddAppToFolder(folder.id, fAppId, folderBranchId);
                       cy.apiRenameApp(fAppId, renamedInFolder, fVersionId);
 
                       const pushMsg = `feat: move to folder and rename ${renamedInFolder}`;

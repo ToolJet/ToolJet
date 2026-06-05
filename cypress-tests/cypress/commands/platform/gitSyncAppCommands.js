@@ -865,7 +865,8 @@ Cypress.Commands.add("apiCheckTagExists", (appId, versionName) => {
     cy
       .request({
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/app-git/${appId}/check-tag/${encodeURIComponent(versionName)}`,
+        url: `${Cypress.env("server_host")}/api/app-git/${appId}/check-tag`,
+        qs: { versionName },
         headers,
       })
       .then((res) => {
@@ -1184,9 +1185,10 @@ Cypress.Commands.overwrite("gitHubMergePR", (originalFn, prNumber = Cypress.env(
 });
 
 
-Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
-  return cy.getAuthHeaders().then((headers) =>
-    cy
+Cypress.Commands.add("apiAddAppToFolder", (folderId, appId, branchId = null) => {
+  return cy.getAuthHeaders().then((headers) => {
+    if (branchId) headers["x-branch-id"] = branchId;
+    return cy
       .request({
         method: "POST",
         url: `${Cypress.env("server_host")}/api/folder-apps`,
@@ -1195,9 +1197,9 @@ Cypress.Commands.add("apiAddAppToFolder", (folderId, appId) => {
       })
       .then((res) => {
         expect(res.status, `Add app ${appId} to folder ${folderId}`).to.be.oneOf([200, 201]);
-        Cypress.log({ message: `[gitSync] App ${appId} added to folder ${folderId}` });
-      }),
-  );
+        Cypress.log({ message: `[gitSync] App ${appId} added to folder ${folderId} (branch: ${branchId})` });
+      });
+  });
 });
 
 Cypress.Commands.add("gitHubAssertAppInFolder", (branch, folderName, appName) => {
@@ -1355,6 +1357,36 @@ Cypress.Commands.add("apiEnsureAppDraft", (appId, branchId = null) => {
           message: `[gitSync] App ${appId} draft ensured on branch ${branchId}: ${res.body?.draftVersionId}`,
         });
         return res.body;
+      });
+  });
+});
+
+Cypress.Commands.add("apiDeleteGitSync", (orgId) => {
+  return cy.getAuthHeaders().then((headers) => {
+    return cy
+      .request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/git-sync/${orgId}/status`,
+        headers,
+        failOnStatusCode: false,
+      })
+      .then((res) => {
+        if (res.status !== 200 || !res.body?.id) {
+          Cypress.log({ message: `[gitSync] No active git sync config to delete for org ${orgId}` });
+          return;
+        }
+        const configId = res.body.id;
+        return cy
+          .request({
+            method: "DELETE",
+            url: `${Cypress.env("server_host")}/api/git-sync/${configId}`,
+            headers,
+            qs: { gitType: "github_https" },
+          })
+          .then((delRes) => {
+            expect(delRes.status, `Delete git sync config ${configId}`).to.be.oneOf([200, 204]);
+            Cypress.log({ message: `[gitSync] Git sync config deleted for org ${orgId}` });
+          });
       });
   });
 });
