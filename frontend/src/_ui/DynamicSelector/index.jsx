@@ -790,7 +790,18 @@ const DynamicSelector = ({
       {error && (
         <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
           <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
-          <span>{error}</span>
+          <span
+            title={error}
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {error.length > 200 ? `${error.slice(0, 200)}…` : error}
+          </span>
         </div>
       )}
 

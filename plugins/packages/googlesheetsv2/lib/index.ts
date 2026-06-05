@@ -605,7 +605,15 @@ export default class Googlesheetsv2QueryService implements QueryService {
       if (statusCode === 401 || statusCode === 403) {
         throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
       }
-      throw new QueryError('Failed to fetch sheets', error.message, error);
+      let driverMessage: string;
+      try {
+        const rawBody = (error.data as any)?.error?.response?.body;
+        driverMessage = rawBody ? JSON.parse(rawBody)?.error?.message : null;
+      } catch {
+        driverMessage = null;
+      }
+      const displayMessage = driverMessage || error.message;
+      throw new QueryError(displayMessage, displayMessage, { statusCode, message: displayMessage });
     }
   }
 
