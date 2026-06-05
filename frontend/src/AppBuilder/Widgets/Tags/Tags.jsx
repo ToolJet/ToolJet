@@ -36,6 +36,12 @@ export const Tags = function Tags({
     isDisabled: disabledState,
   });
 
+  // Set by the setValue CSA. When non-null, this overrides the property-driven
+  // tagsData below — the widget renders these tags until setValue is called
+  // again. Pass null/[] (or invalid) to clear the override and revert to the
+  // data/options property.
+  const [overrideTags, setOverrideTags] = useState(null);
+
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prev) => ({
       ...prev,
@@ -45,7 +51,10 @@ export const Tags = function Tags({
 
   // Follow the exact same pattern as Tabs: use tagItems for static, schema/data for dynamic
   let tagsData;
-  if (!advanced) {
+  if (overrideTags !== null) {
+    // setValue takes precedence over the property-driven source
+    tagsData = overrideTags;
+  } else if (!advanced) {
     // In static mode, use tagItems (same as tabs uses tabItems)
     tagsData = options;
   } else {
@@ -110,6 +119,30 @@ export const Tags = function Tags({
     const _tags = parsedTags?.map(({ title }) => title) || [];
     const exposedVariables = {
       tags: _tags,
+      // setValue replaces the rendered tags. Accepts:
+      //   - an array of tag objects: [{ title, color, textColor, icon?, ... }]
+      //   - an array of strings (auto-wrapped with default colors)
+      //   - null / [] / non-array to clear the override and revert to the
+      //     `data`/`options` property
+      setValue: async function (newTags) {
+        if (newTags == null || (Array.isArray(newTags) && newTags.length === 0)) {
+          setOverrideTags(Array.isArray(newTags) ? newTags : null);
+          setExposedVariable('tags', []);
+          return;
+        }
+        if (!Array.isArray(newTags)) {
+          // Invalid input — clear override and expose empty
+          setOverrideTags(null);
+          setExposedVariable('tags', []);
+          return;
+        }
+        const normalized = newTags.map((tag) =>
+          typeof tag === 'string' ? { title: tag, color: '#405DE61A', textColor: '#405DE6' } : tag
+        );
+        setOverrideTags(normalized);
+        const titles = normalized.map((t) => t?.title).filter((t) => t !== undefined && t !== null);
+        setExposedVariable('tags', titles);
+      },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', !!value);
         updateExposedVariablesState('isVisible', !!value);

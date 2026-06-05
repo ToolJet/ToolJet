@@ -38,8 +38,21 @@ export const timelineConfig = {
     },
   },
   exposedVariables: {
-    value: {},
+    value: [],
   },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: `{{[{ title: 'New event', subTitle: 'Subtitle', date: '01/01/2024', iconBackgroundColor: 'var(--cc-primary-brand)' }]}}`,
+        },
+      ],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

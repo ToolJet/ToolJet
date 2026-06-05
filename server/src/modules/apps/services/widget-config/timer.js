@@ -62,6 +62,19 @@ export const timerConfig = {
   exposedVariables: {
     value: '',
   },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: '00:00:30:000',
+        },
+      ],
+    },
+  ],
   definition: {
     validation: {},
     others: {

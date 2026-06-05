@@ -124,8 +124,21 @@ export const tagsConfig = {
       accordian: 'pills',
     },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    tags: [],
+  },
   actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        {
+          handle: 'value',
+          displayName: 'Value',
+          defaultValue: `{{[{ title: 'New tag', color: '#405DE61A', textColor: '#405DE6' }]}}`,
+        },
+      ],
+    },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',

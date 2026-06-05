@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
+export const Timer = function Timer({
+  height,
+  properties = {},
+  styles,
+  setExposedVariable,
+  setExposedVariables,
+  fireEvent,
+  dataCy,
+}) {
   const getTimeObj = ({ HH, MM, SS, MS }) => {
     return {
       hour: isNaN(HH) ? 0 : parseInt(HH, 10),
@@ -40,6 +48,25 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
 
   useEffect(() => {
     setExposedVariable('value', {});
+    // Register CSAs. setValue snaps the displayed/internal time to the given
+    // 'HH:mm:ss:mmm' string. It does NOT change running/paused state — if the
+    // timer is running, it keeps counting from the new value; if paused, the
+    // display updates but state stays paused. To pause/reset, the user calls
+    // those actions separately.
+    if (typeof setExposedVariables === 'function') {
+      setExposedVariables({
+        setValue: async function (newValue) {
+          if (typeof newValue !== 'string') return;
+          const parts = newValue.split(':');
+          if (parts.length < 4) return;
+          const [HH, MM, SS, MS] = parts;
+          const newTime = getTimeObj({ HH, MM, SS, MS });
+          setTime(newTime);
+          setExposedVariable('value', newTime);
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
