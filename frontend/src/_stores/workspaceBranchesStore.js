@@ -63,9 +63,8 @@ export const useWorkspaceBranchesStore = create(
             const effectiveActiveBranchId = isGitSyncEnabled ? storedBranch?.id || serverActiveBranchId : null;
             const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
 
-            if (isGitSyncEnabled && currentBranch) {
-              // Persist resolved branch to sessionStorage
-              setActiveBranch(currentBranch);
+            if (isGitSyncEnabled) {
+              if (currentBranch) setActiveBranch(currentBranch);
               registerBranchFocusSync();
             } else {
               unregisterBranchFocusSync();
@@ -211,9 +210,8 @@ export const useWorkspaceBranchesStore = create(
             const effectiveActiveBranchId = isGitSyncEnabled ? storedBranch?.id || serverActiveBranchId : null;
             const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
 
-            if (isGitSyncEnabled && currentBranch) {
-              // Persist resolved branch to sessionStorage
-              setActiveBranch(currentBranch);
+            if (isGitSyncEnabled) {
+              if (currentBranch) setActiveBranch(currentBranch);
               registerBranchFocusSync();
             } else {
               unregisterBranchFocusSync();
