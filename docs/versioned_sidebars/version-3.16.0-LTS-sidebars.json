@@ -409,6 +409,7 @@
                 "widgets/map",
                 "widgets/modal-v2",
                 "widgets/multiselect",
+                "widgets/navigation",
                 "widgets/number-input",
                 "widgets/password-input",
                 "widgets/pagination",
