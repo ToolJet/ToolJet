@@ -95,30 +95,40 @@ This initializes the application in English when the page loads.
 
 <img className="screenshot-full img-l" src="/img/app-builder/events/multilingual-app/event-handler.png" alt="Dropdown Event Handler"/>
 
-### Step 7: Add App title and Description
+### Step 7: Add Company Branding, Title, and Description
 
-Add two text components onto the canvas. 
+Create a header section using a Container component. Inside the container: 
 
-**Title**
-- Set the data of the first Text component to:
+- Add two **Image** components to display the pictures.
 
-```javascript
-{{
-queries.getTranslations.data.find(
-  row => row.key === "title"
-)?.[variables.currentLanguage]
-}}
-```
+  **Company logo** : You can use any royalty-free image for the company logo. For example, set the Image URL property of the first Image component to:
 
-**Description**
-- Set the data of the second Text component to:
-```javascript
-{{
-queries.getTranslations.data.find(
-  row => row.key === "description"
-)?.[variables.currentLanguage]
-}}
-```
+  ```javascript
+  https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg
+  ```
+
+  **User Card** : Use the second Image component to display a user avatar. Then add a Text component beside it to display the user's name.
+
+- Add two **Text** components onto the canvas. 
+
+  **Title** : Set the data of the first Text component to:
+
+  ```javascript
+  {{
+  queries.getTranslations.data.find(
+    row => row.key === "title"
+  )?.[variables.currentLanguage]
+  }}
+  ```
+
+  **Description** :  Set the data of the second Text component to:
+  ```javascript
+  {{
+  queries.getTranslations.data.find(
+    row => row.key === "description"
+  )?.[variables.currentLanguage]
+  }}
+  ```
 The displayed text automatically updates whenever the selected language changes.
 
 ### Step 8 : Bind Data and Localize Headers
@@ -137,5 +147,33 @@ In this step, you'll bind employee data and dynamically translate table headers.
 | Email | `{{queries.getTranslations.data.find(row => row.key === "email")?.[variables.currentLanguage]}}` |
 
 The table data remains unchanged, while the column headers automatically update based on the selected language.
+
+### Step 9 : Add an Employee Creation Modal
+
+Add a button into the container, labeled **Add Employee** and configure it to open a Modal component. Inside the modal, add the following fields with the text input component for the employee details: **Name, Department, City, Email and Status**. 
+
+Next, Add two buttons to the modal:
+
+- **Add Employee** – Creates a new employee record.
+- **Cancel** – Closes the modal without saving changes.
+
+#### Create an Employee Creation Query
+Create a ToolJet Database query named `addEmployee`.
+
+- Select the operation as **Create Rows** and add columns as shown in the image. 
+- Add an event handler, set action to **Run Query** select `addEmployee` as the query.
+
+<img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/add-employee-query.png" alt="query builder"/>
+
+#### Add Employee Deletion
+
+Create another ToolJet Database query named `deleteEmployee`.
+
+- Select the operation as **Delete Rows** to delete the employee record from the `employees` table.
+- Add an event handler, set action to **Run Query** and select `deleteEmployee` as the query.
+
+By these, you can create and delete employee records while continuing to experience dynamic language switching throughout the application.
+
+This application enables users to switch between **multiple languages** and view localized content across the interface, including titles, descriptions, table headers, and actions. The application also includes company branding and employee management features.
 
 <img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/translated-app.png" alt="tranlasted app overview"/>
