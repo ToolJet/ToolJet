@@ -108,8 +108,13 @@ export const EventManager = ({
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const lastFocusedEventIndex = useRef(null);
 
-  const { autoOpenActionSelect, markEventCreationPending, onEventHandlersUpdated, dismissEventPopoverAutoOpen } =
-    useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventIndex);
+  const {
+    autoOpenActionSelect,
+    markEventCreationPending,
+    cancelPendingEventCreation,
+    onEventHandlersUpdated,
+    dismissEventPopoverAutoOpen,
+  } = useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventIndex);
 
   const { t } = useTranslation();
 
@@ -402,7 +407,7 @@ export const EventManager = ({
     });
   }
 
-  function addHandler(eventId) {
+  async function addHandler(eventId) {
     let newEvents = events;
     const eventIndex = newEvents.length;
     const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
@@ -429,7 +434,7 @@ export const EventManager = ({
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
     markEventCreationPending();
-    createAppVersionEventHandlers({
+    const createdEvent = await createAppVersionEventHandlers({
       name: getDefaultEventName(),
       event: {
         eventId: selectedEventId,
@@ -443,6 +448,7 @@ export const EventManager = ({
       attachedTo: sourceId,
       index: eventIndex,
     });
+    if (!createdEvent) cancelPendingEventCreation();
   }
 
   //following two are functions responsible for on change and value for the control specific actions

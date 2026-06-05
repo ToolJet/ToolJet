@@ -10,6 +10,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
  *   onEventHandlersUpdated(...)      ← call from the useEffect watching currentEvents
  *   [popover opens, then setTimeout] ← deferred so Radix portal has a stable DOM rect
  *   autoOpenActionSelect = true      ← action Select renders open
+ *   cancelPendingEventCreation()     ← call when event creation fails
  *   dismissEventPopoverAutoOpen()    ← call on popover close / action select / value pick
  */
 export function useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventIndex) {
@@ -35,6 +36,12 @@ export function useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventInd
   /** Call synchronously in addHandler before createAppVersionEventHandlers fires. */
   const markEventCreationPending = useCallback(() => {
     pendingNewEventFocus.current = true;
+  }, []);
+
+  const cancelPendingEventCreation = useCallback(() => {
+    pendingNewEventFocus.current = false;
+    pendingActionSelectOpen.current = false;
+    setAutoOpenActionSelect(false);
   }, []);
 
   /**
@@ -65,6 +72,7 @@ export function useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventInd
   return {
     autoOpenActionSelect,
     markEventCreationPending,
+    cancelPendingEventCreation,
     onEventHandlersUpdated,
     dismissEventPopoverAutoOpen,
   };
