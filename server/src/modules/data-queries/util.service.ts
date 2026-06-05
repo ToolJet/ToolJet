@@ -421,7 +421,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       organization_id,
       environmentId,
       user,
-      opts
+      opts,
+      dataSource?.kind
     );
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
 
@@ -493,7 +494,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     organization_id: string,
     environmentId?: string,
     user?: User,
-    opts?: DataQueryExecutionOptions
+    opts?: DataQueryExecutionOptions,
+    pluginKind?: string
   ): Promise<object> {
     // If workflow bundle context is available, use the enhanced template resolution
     if (opts?.workflow?.bundleContent || opts?.workflow?.isolate || opts?.workflow?.context) {
@@ -514,11 +516,11 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       Object.assign(enhancedOptions, templateVariables);
 
       // Use the standard parseQueryOptions logic but with enhanced options
-      return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user);
+      return this.parseQueryOptionsInternal(object, enhancedOptions, organization_id, environmentId, user, pluginKind);
     }
 
     // Fallback to original logic for non-bundle contexts
-    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user);
+    return this.parseQueryOptionsInternal(object, options, organization_id, environmentId, user, pluginKind);
   }
 
   private async parseQueryOptionsInternal(
@@ -526,7 +528,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     options: object,
     organization_id: string,
     environmentId?: string,
-    user?: User
+    user?: User,
+    pluginKind?: string
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
 
@@ -557,7 +560,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // field, collect user-supplied values as named parameters instead of
         // interpolating them directly into the SQL string. This routes execution
         // through the safe knex-parameterized path (handleRawQuery) in every plugin.
-        if (key === 'query' && parent?.mode === 'sql') {
+        const SQL_PLUGINS = ['postgresql', 'oracledb', 'mysql', 'mssql', 'mariadb'];
+        if (key === 'query' && parent?.mode === 'sql' && SQL_PLUGINS.includes(pluginKind ?? '')) {
           const allVars = resolvedValue.match(/\{\{(.*?)\}\}/g) || [];
           const userVars = allVars.filter((v) => Object.prototype.hasOwnProperty.call(options, v));
 
