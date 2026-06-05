@@ -18,7 +18,16 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 
-const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery', 'mysql', 'mssql', 'snowflake'];
+const GENERATE_QUERY_SUPPORTED_KINDS = [
+  'postgresql',
+  'openapi',
+  'mongodb',
+  'bigquery',
+  'mysql',
+  'mssql',
+  'snowflake',
+  'runjs',
+];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -337,8 +346,12 @@ const GenerateQueryButton = () => {
     requestAnimationFrame(() => store.ai.triggerChatInputFocus());
   };
 
+  const isRunJs = selectedDataSource?.kind === 'runjs';
+  const buttonLabel = isRunJs ? 'Write custom code' : 'Generate query';
+  const tooltipMessage = isRunJs ? 'Write custom code with AI' : 'Generate query with AI';
+
   return (
-    <ToolTip message="Generate query with AI" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+    <ToolTip message={tooltipMessage} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <span>
         <ButtonComponent
           size="medium"
@@ -350,7 +363,7 @@ const GenerateQueryButton = () => {
           data-cy="query-generate-button"
         >
           <AITripleSparkles width="14" height="14" />
-          Generate query
+          {buttonLabel}
         </ButtonComponent>
       </span>
     </ToolTip>
