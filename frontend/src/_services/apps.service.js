@@ -65,12 +65,14 @@ function validatePrivateApp(slug, queryParams) {
 }
 
 //use default value for type of apps i.e.'front-end'
-function getAll(page, folder, searchKey, type = 'front-end') {
+function getAll(page, folder, searchKey, type = 'front-end', perPage) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
+  const perPageParam = perPage ? `&per_page=${perPage}` : '';
+  if (page === 0)
+    return fetch(`${config.apiUrl}/apps?type=${type}${perPageParam}`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${perPageParam}`,
       requestOptions
     ).then(handleResponse);
 }

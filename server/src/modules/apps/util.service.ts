@@ -382,7 +382,14 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
+  async all(
+    user: User,
+    page: number,
+    searchKey: string,
+    type: string,
+    isGetAll: boolean,
+    perPage = 9
+  ): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -423,8 +430,8 @@ export class AppsUtilService implements IAppsUtilService {
       }
 
       return await viewableAppsQb
-        .take(9)
-        .skip(9 * (page - 1))
+        .take(perPage)
+        .skip(perPage * (page - 1))
         .getMany();
     });
   }

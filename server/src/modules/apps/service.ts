@@ -342,7 +342,12 @@ export class AppsService implements IAppsService {
     let apps = [];
     let totalFolderCount = 0;
 
-    const { folderId, page, searchKey, type } = appListDto;
+    const { folderId, page, searchKey, type, perPage: perPageRaw } = appListDto;
+
+    // Resolve page size: caller-provided per_page, clamped to [1, 100], default 9.
+    // Editor module picker passes 50; Dashboard Modules tab omits it and gets 9.
+    const parsedPerPage = parseInt(perPageRaw || '');
+    const perPage = Number.isFinite(parsedPerPage) && parsedPerPage > 0 ? Math.min(parsedPerPage, 100) : 9;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       if (appListDto.folderId) {
@@ -357,7 +362,7 @@ export class AppsService implements IAppsService {
         apps = viewableApps;
         totalFolderCount = totalCount;
       } else {
-        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll);
+        apps = await this.appsUtilService.all(user, parseInt(page || '1'), searchKey, type, isGetAll, perPage);
       }
 
       if (isGetAll) {
@@ -380,8 +385,9 @@ export class AppsService implements IAppsService {
 
       const totalPageCount = folderId ? totalFolderCount : totalCount;
 
+      // folder-apps still paginates at 9; non-folder uses the resolved perPage above.
       const meta = {
-        total_pages: Math.ceil(totalPageCount / 9),
+        total_pages: Math.ceil(totalPageCount / (folderId ? 9 : perPage)),
         total_count: totalCount,
         folder_count: totalFolderCount,
         current_page: parseInt(page || '1'),

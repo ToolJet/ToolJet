@@ -136,6 +136,7 @@ const useAppData = (
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
+  const setModulesMeta = useStore((state) => state?.setModulesMeta ?? noop);
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
@@ -146,7 +147,9 @@ const useAppData = (
     let totalPages = 1;
 
     while (currentPage <= totalPages) {
-      const data = await appsService.getAll(currentPage, '', '', 'module');
+      // Use the same page size as ModuleManager so total_pages in the response
+      // matches what the editor uses, and so this loop completes in fewer round-trips.
+      const data = await appsService.getAll(currentPage, '', '', 'module', 50);
       const pageModules = data?.apps || [];
 
       allModules.push(...pageModules);
@@ -832,21 +835,18 @@ const useAppData = (
     if (mode === 'edit') {
       requestIdleCallback(
         () => {
-          fetchAllModules()
-            .then((modules) => {
-              setModulesList(modules);
-            })
-            .catch((error) => {
-              console.error('Failed to preload modules', error);
-            })
-            .finally(() => {
-              setModulesIsLoading(false);
-            });
+          // Match ModuleManager's page size (50) so the meta returned here drives
+          // the editor's infinite-scroll logic with consistent total_pages.
+          appsService.getAll(1, '', '', 'module', 50).then((data) => {
+            setModulesIsLoading(false);
+            setModulesList(data.apps);
+            if (data.meta) setModulesMeta(data.meta);
+          });
         },
         { timeout: 2000 }
       ); // Adding a timeout of 2 seconds as fallback
     }
-  }, [fetchAllModules, setModulesIsLoading, setModulesList, mode, moduleMode]);
+  }, [setModulesIsLoading, setModulesList, setModulesMeta, mode, moduleMode]);
 
   return appTypeRef.current;
 };
