@@ -5,33 +5,25 @@ title: White Labeling
 
 <PlanBadge type="team" />
 
-The White Label feature in ToolJet lets you customize the look and feel of your ToolJet deployment to match your branding guidelines, including your logo, favicon, and page title, making ToolJet appear like your own product. This guide will help you understand the configuration of White labelling for your organization. For **self-hosted** instances, the white labelling is set at the [instance level](/docs/user-management/authentication/self-hosted/instance-login) and for the **cloud**, it is applied at the [workspace level](/docs/user-management/authentication/self-hosted/workspace-login).
+The White Label feature in ToolJet lets you customize the look and feel of your ToolJet deployment to match your branding guidelines, including your logo, favicon, page title, and the Login Page making ToolJet appear like your own product. This guide will help you understand the configuration of White labelling for your organization. For **self-hosted** instances, the white labelling is set at the [instance level](/docs/user-management/authentication/self-hosted/instance-login) and for the **cloud**, it is applied at the [workspace level](/docs/user-management/authentication/self-hosted/workspace-login).
 
-<img className="screenshot-full img-m" src="/img/tooljet-setup/whitelabelling/intro.png" alt="whitelable your brand" />
+## Configuration
 
-## Self-hosted Configuration:
+To access the White Labelling configuration, go to **Settings > White Labelling**. <br/><br/>
+Example URL:
+- Self Hosted - `https://app.corp.com/settings/white-labelling`
+- Cloud - `https://app.tooljet.com/<workspace-slug>/settings/white-labelling`
 
-To access the White Labelling configuration, go to **Settings > White Labelling**. ( Example URL - `https://app.corp.com/instance-settings/white-labelling`)
-
-In this section you can configure the following branding elements:
-
-- **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor and deployed application. (Preferred dimensions: 130px by 26px).
-- **Favicon**: It is an icon associated with the webpage displayed in the browser tab. (Preferred dimensions: 32px x 32px or 16px x 16px.)
-- **Page Title**: This is the title associated with the webpage displayed in the browser tab. (Preferred title length: 50-60 characters.)
-
-<img className="screenshot-full img-l" src="/img/tooljet-setup/whitelabelling/self-hosted.png" alt="whitelabelling selfhosted" />
-
-## Cloud Configuration:
-
-To access the White Labelling configuration, go to **Settings > White Labelling**. ( Example URL - `https://app.corp.com/<workspace-slug>/settings/white-labelling`)
+<img className="screenshot-full img-full" src="/img/tooljet-setup/whitelabelling/settings.png" alt="white labelling" /> <br/><br/>
 
 In this section you can configure the following branding elements:
 
-- **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor and deployed application. (Preferred dimensions: 130px by 26px).
-- **Favicon**: It is an icon associated with the webpage displayed in the browser tab. (Preferred dimensions: 32px x 32px or 16px x 16px.)
-- **Page Title**: This is the title associated with the webpage displayed in the browser tab. (Preferred title length: 50-60 characters.)
-
-<img className="screenshot-full img-l" src="/img/tooljet-setup/whitelabelling/cloud.png" alt="whitelabelling selfhosted" />
+- **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor and deployed application. (Preferred dimensions: 130px x 26px)
+- **Page Title**: This is the title associated with the webpage displayed in the browser tab. (Preferred title length: 50-60 characters)
+- **Favicon**: It is an icon associated with the webpage displayed in the browser tab. (Preferred dimensions: 32px x 32px or 16px x 16px) <br/>
+    <img style={{ marginTop: '10px' }} className="screenshot-full img-m" src="/img/tooljet-setup/whitelabelling/intro.png" alt="whitelable your brand" />
+- **Login page image**: It is displayed on the right side of the login page and can be used to give users a hint about what they are logging into. (Preferred dimensions: 1024px x 1024px) <br/>
+    <img style={{ marginTop: '10px' }} className="screenshot-full img-full" src="/img/tooljet-setup/whitelabelling/intro-v2.png" alt="whitelable your brand" />
 
 ## FAQ
 

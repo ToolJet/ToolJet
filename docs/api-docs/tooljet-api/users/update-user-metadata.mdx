@@ -1,0 +1,52 @@
+---
+id: update-user-metadata
+title: "Update User Metadata"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="PUT" path="/workspace/{workspaceIdentifier}/user/{userIdentifier}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Replaces the entire userDetails (metadata) for a user in a workspace. This is a full replace — keys not included will be removed.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceIdentifier","type":"string","required":true,"description":"Workspace UUID or slug.","in":"path"},{"name":"userIdentifier","type":"string","required":true,"description":"User UUID or email.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"userDetails","type":"array","required":true,"description":"Array of key-value pairs representing the user's metadata fields. Replaces all existing metadata.","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid request body or user account is inactive."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"User or workspace not found."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/workspace/{workspaceIdentifier}/user/{userIdentifier}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "userDetails": [
+    {
+      "key": "department",
+      "value": "Platform"
+    },
+    {
+      "key": "title",
+      "value": "Senior Engineer"
+    }
+  ]
+}'`} />
+
+**Response:** `200`
+
+</ApiRight>
+</ApiColumns>

@@ -1,0 +1,44 @@
+---
+id: list-modules
+title: "List Modules"
+---
+
+<EndpointHeader method="GET" path="/workspace/{workspaceId}/modules" />
+
+<ApiColumns>
+<ApiLeft>
+
+Retrieves a list of all modules in a workspace.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
+
+
+<ErrorsTable errors={[
+  {"status":"400","description":"workspaceId is not a valid UUID, or workspace does not exist."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic token."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"500","description":"Unexpected database error."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/workspace/{workspaceId}/modules" \
+  -H "Authorization: Basic <access_token>"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "modules": [
+    {
+      "id": "c0a80100-0000-4000-8000-000000000001",
+      "name": "User Management Module",
+      "slug": "user-management",
+      "isPublic": false,
+      "createdAt": "2025-02-15T09:30:00.000Z",
+      "updatedAt": "2025-05-01T14:12:33.000Z"
+    }
+  ],
+  "total": 1
+}`} />
+
+</ApiRight>
+</ApiColumns>

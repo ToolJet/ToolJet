@@ -1,0 +1,185 @@
+openapi: 3.0.3
+info:
+  title: ToolJet GitSync API
+  version: 1.0.0
+  description: >
+    APIs for managing the full CI/CD lifecycle of ToolJet applications via Git.
+    Configure git sync, push and pull versions, and automate deployments.
+
+servers:
+  - url: https://{your-domain}/api/ext
+    description: Your ToolJet instance
+
+security:
+  - BasicAuth: []
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+paths:
+
+  /organizations/git:
+    post:
+      operationId: addGitConfig
+      summary: Add GitHub HTTPS Git Configuration
+      description: >
+        Configure GitHub HTTPS settings for an organization by associating a
+        GitHub App and repository.
+      tags: [GitSync]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [organizationId, gitUrl, branchName, githubAppId, githubAppInstallationId, githubAppPrivateKey]
+              properties:
+                organizationId:
+                  type: string
+                  format: uuid
+                  description: UUID of the organization.
+                gitUrl:
+                  type: string
+                  description: Full HTTPS Git URL.
+                branchName:
+                  type: string
+                  description: Branch to sync with (e.g. "main").
+                githubAppId:
+                  type: string
+                  description: GitHub App ID.
+                githubAppInstallationId:
+                  type: string
+                  description: GitHub App installation ID.
+                githubAppPrivateKey:
+                  type: string
+                  description: GitHub App private key in PEM format.
+            example:
+              organizationId: "45892c81-c1f0-48c6-8875-c2e4fca516f8"
+              gitUrl: "https://github.com/username/repository.git"
+              branchName: "main"
+              githubAppId: "123456"
+              githubAppInstallationId: "78910"
+              githubAppPrivateKey: "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+      responses:
+        "201":
+          description: Git configuration created.
+
+  /apps/{appId}/versions/{versionId}/git-sync/push:
+    post:
+      operationId: pushAppVersion
+      summary: Push App Version to GitHub
+      description: Push a specific app version to the configured GitHub repository.
+      tags: [GitSync]
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the app.
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the app version to push.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [commitMessage]
+              properties:
+                commitMessage:
+                  type: string
+                  description: Git commit message.
+            example:
+              commitMessage: "Updated app configuration and components"
+      responses:
+        "200":
+          description: Version pushed to GitHub.
+
+  /apps:
+    post:
+      operationId: createAppFromGit
+      summary: Create App from GitHub
+      description: Creates a new ToolJet app from a GitHub repository.
+      tags: [GitSync]
+      parameters:
+        - name: createMode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [git]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gitAppId, gitVersionId, organizationId]
+              properties:
+                gitAppId:
+                  type: string
+                  description: Git App ID.
+                gitVersionId:
+                  type: string
+                  description: Git version ID (branch or tag).
+                organizationId:
+                  type: string
+                  format: uuid
+                  description: UUID of the organization.
+            example:
+              gitAppId: "app-123456"
+              gitVersionId: "main"
+              organizationId: "45892c81-c1f0-48c6-8875-c2e4fca516f8"
+      responses:
+        "201":
+          description: App created from GitHub.
+
+  /apps/{appId}:
+    put:
+      operationId: syncPullApp
+      summary: Sync and Pull App from Git
+      description: Sync and pull the latest changes from GitHub for an existing ToolJet app.
+      tags: [GitSync]
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the app.
+        - name: createMode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [git]
+      responses:
+        "200":
+          description: App synced with latest changes from GitHub.
+
+  /apps/{appId}/promote:
+    post:
+      operationId: autoPromoteApp
+      summary: Auto Promote App
+      description: >
+        Deploys an app by pulling the latest changes from Git and promoting the
+        latest version to the production environment.
+      tags: [GitSync]
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the app to promote.
+      responses:
+        "200":
+          description: App promoted to production.

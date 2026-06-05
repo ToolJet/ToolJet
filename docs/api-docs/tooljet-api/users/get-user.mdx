@@ -1,0 +1,41 @@
+---
+id: get-user
+title: "Get User by Identifier"
+---
+
+<EndpointHeader method="GET" path="/user/{identifier}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Returns details of a user identified by UUID or email address.
+
+:::note
+If the identifier matches no user, the endpoint returns `200` with an empty array `[]` — no `404` is thrown.
+:::
+
+<ParamsTable title="Path Parameters" params={[{"name":"identifier","type":"string","required":true,"description":"UUID (e.g. `d1493ea9-...`) or email (e.g. `john@example.com`).","in":"path"}]} />
+
+
+<ErrorsTable errors={[
+  {"status":"403","description":"ENABLE_EXTERNAL_API is not true, license missing, or Authorization header invalid."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"404","description":"Not available on Community Edition."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/ext/user/{identifier}" \
+  -H "Authorization: Basic <access_token>"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "id": "5b1608df-5e14-474b-b304-919623a9be57",
+  "name": "Sam Oliver",
+  "email": "sam@example.com",
+  "status": "active",
+  "workspaces": []
+}`} />
+
+</ApiRight>
+</ApiColumns>

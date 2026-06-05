@@ -1,0 +1,67 @@
+---
+id: create-group
+title: "Create Group"
+---
+
+:::warning BETA
+This endpoint is in beta and may change in future releases.
+:::
+
+<EndpointHeader method="POST" path="/workspace/{workspaceId}/groups" />
+
+<ApiColumns>
+<ApiLeft>
+
+Creates a new user group in a workspace with optional workspace-level permissions and granular permissions for apps and datasources.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":true,"description":"Name of the group.","in":"body"},{"name":"permissions","type":"object","required":false,"description":"Workspace-level permissions for the group (e.g. appCreate, appDelete).","in":"body"},{"name":"granularPermissions","type":"array","required":false,"description":"List of granular permission rules scoped to specific apps or datasources.","in":"body"}]} />
+
+
+<ErrorsTable errors={[
+  {"status":"400","description":"name fails format constraints (length, invalid chars, reserved keyword, or role name collision)."},
+  {"status":"400","description":"workspaceId not found or no admin user exists in the workspace."},
+  {"status":"400","description":"A resource in granularPermissions[].resources not found."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic token."},
+  {"status":"409","description":"A group with the same name already exists in the workspace."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/workspace/{workspaceId}/groups" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "Platform Engineers",
+  "permissions": {
+    "appCreate": true,
+    "appDelete": false
+  },
+  "granularPermissions": [
+    {
+      "type": "app",
+      "applyToAll": false,
+      "resources": [
+        "app-uuid-1"
+      ],
+      "permissions": {
+        "canEdit": true,
+        "hideFromDashboard": false,
+        "environments": [
+          "production"
+        ]
+      }
+    }
+  ]
+}'`} />
+
+<ResponseExample statusCode="201" body='{"message": "Group created successfully."}' />
+
+</ApiRight>
+</ApiColumns>

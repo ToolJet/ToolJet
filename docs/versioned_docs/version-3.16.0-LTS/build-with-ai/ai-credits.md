@@ -70,7 +70,7 @@ Credit usage in ToolJet varies based on the complexity of the request. Monthly c
   </div>
 
   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid var(--ifm-toc-border-color)', borderRadius: '8px', fontSize: '13px'}}>
-    <span>SQL Query Generation</span>
+    <span>Generate Query</span>
     <span style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
       <span style={{color: 'var(--ifm-color-emphasis-600)', fontSize: '13px'}}>Average</span>
       <span style={{padding: '3px 10px', borderRadius: '20px', fontWeight: '500', background: 'var(--ifm-color-emphasis-200)', minWidth: '90px', textAlign: 'center'}}>5 credits</span>
