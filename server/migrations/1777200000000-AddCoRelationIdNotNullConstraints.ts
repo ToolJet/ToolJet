@@ -14,6 +14,11 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class AddCoRelationIdNotNullConstraints1777200000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // The backfill UPDATE and the SET NOT NULL validation scan below both walk the
+    // whole apps table — disable statement_timeout for this transaction so neither is
+    // cancelled (57014) on a large instance. SET LOCAL reverts on commit/rollback.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // Safety backfill: 1777100000000 already filled rows that existed when it ran,
     // but rows inserted between that migration and this one (or in environments where
     // the prior backfill missed cases) can still be NULL. Copy the row's own id so the

@@ -172,7 +172,7 @@ export class VersionUtilService implements IVersionUtilService {
 
     const parentApp = await manager.findOne(App, {
       where: { id: appVersion.appId },
-      select: ['id', 'organizationId'],
+      select: ['id', 'organizationId', 'type'],
     });
     if (!parentApp?.organizationId) return;
 
@@ -211,6 +211,10 @@ export class VersionUtilService implements IVersionUtilService {
         status: AppVersionStatus.DRAFT,
         versionType: AppVersionType.VERSION,
         branchId: defaultBranch.id,
+        // Modules pin to a version via module_reference_id. Each new version gets a
+        // fresh uuid (mirrors createVersion line 347) — never leave it NULL for a
+        // module, or ModuleViewer pin resolution against this draft fails.
+        ...(parentApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
         co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
         parentVersionId: sourceVersion?.id ?? appVersion.id,
         currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,

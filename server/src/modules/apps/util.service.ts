@@ -13,7 +13,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, IsNull, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -562,17 +562,29 @@ export class AppsUtilService implements IAppsUtilService {
         }
       }
 
-      // Slug conflict check — query app_versions for non-workflows
+      // Slug conflict check — query app_versions for non-workflows.
+      // Mirrors findAppBySlug resolution: a slug is taken iff it would
+      // resolve to a different app via either (a) a default-branch row
+      // anywhere on the instance, or (b) a branchless row in a workspace
+      // that has no default branch (git-sync off for that org). Sub-branch
+      // rows aren't slug-addressable until they merge to the default branch,
+      // so they're intentionally excluded here.
       if (versionParams.slug && !isWorkflow) {
-        const conflictingVersion = await manager.findOne(AppVersion, {
-          where: {
-            slug: versionParams.slug,
-            branchId: branchId || undefined,
-            appId: Not(appId),
-          },
-        });
-        if (conflictingVersion) {
-          throw new BadRequestException('This slug is already taken on this branch.');
+        // Same-branch collision (git-sync sub-branch path only). Without a
+        // branchId we skip this — a non-git-sync update has no branch scope
+        // and would otherwise scan unaddressable sub-branch rows on other
+        // workspaces. The two addressable-slug checks below cover non-git.
+        if (branchId) {
+          const conflictingVersion = await manager.findOne(AppVersion, {
+            where: {
+              slug: versionParams.slug,
+              branchId,
+              appId: Not(appId),
+            },
+          });
+          if (conflictingVersion) {
+            throw new BadRequestException('This slug is already taken on this branch.');
+          }
         }
 
         // Instance-wide default-branch slug uniqueness, scoped by apps.type.
@@ -595,6 +607,33 @@ export class AppsUtilService implements IAppsUtilService {
           .limit(1)
           .getOne();
         if (defaultBranchSlugCollision) {
+          throw new BadRequestException('This slug is already taken.');
+        }
+
+        // Branchless-row uniqueness for workspaces with no default branch
+        // (git-sync off). Those branchless rows are the canonical slug
+        // holders for their orgs — findAppBySlug's step-2 fallback resolves
+        // to them — so the incoming slug must not collide with one,
+        // regardless of which workspace is writing. Restricted to rows
+        // whose owning org has no default branch so we don't flag stale
+        // branchless rows in orgs that have since enabled git-sync (their
+        // canonical row is already covered by the default-branch check
+        // above).
+        const branchlessSlugCollision = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .innerJoin(App, 'a', 'a.id = av.app_id')
+          .where('LOWER(av.slug) = LOWER(:slug)', { slug: versionParams.slug })
+          .andWhere('av.branch_id IS NULL')
+          .andWhere('a.type = :appType', { appType: app.type })
+          .andWhere('av.app_id <> :appId', { appId })
+          .andWhere(
+            'NOT EXISTS (SELECT 1 FROM organization_git_sync_branches wb2 ' +
+              'WHERE wb2.organization_id = a.organization_id AND wb2.is_default = true)'
+          )
+          .select('av.id')
+          .limit(1)
+          .getOne();
+        if (branchlessSlugCollision) {
           throw new BadRequestException('This slug is already taken.');
         }
       } else if (isWorkflow && appParams.slug) {
@@ -680,13 +719,14 @@ export class AppsUtilService implements IAppsUtilService {
           ]);
         } else {
           // Non-git-sync flow: all version rows of this app share the same metadata.
-          // Update every VERSION-type row with branch_id IS NULL so every version stays
-          // in sync (the version picker can read any row and get current values).
-          await manager.update(
-            AppVersion,
-            { appId, versionType: AppVersionType.VERSION, branchId: IsNull() },
-            versionParams
-          );
+          // Update every app_versions row for this app — no version_type or
+          // branch_id filter — so slug/name/icon/is_public stay in sync across
+          // VERSION rows, BRANCH rows, and any stale non-null branch_id rows
+          // left behind by a previous git-sync session. findAppBySlug's
+          // branchless fallback resolves by app_id without caring which row
+          // back-ed the slug, so keeping all rows consistent is the safest
+          // invariant when git is off.
+          await manager.update(AppVersion, { appId }, versionParams);
         }
       }
 
@@ -1088,11 +1128,11 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
-    const versionToLoad = versionId
-      ? await this.versionRepository.findVersion(versionId)
-      : app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+    // Only the version ID is needed to filter ModuleViewer components; avoid calling
+    // findVersion (which loads the full AppVersion with all relations) just for the UUID.
+    const versionToLoadId = versionId || app.currentVersionId || (app as any).editingVersion?.id;
+
+    if (!versionToLoadId && !allVersions) return [];
 
     const modules = await dbTransactionWrap(async (manager) => {
       const moduleComponents = await manager
@@ -1104,7 +1144,7 @@ export class AppsUtilService implements IAppsUtilService {
           `component.type = :module ${allVersions ? '' : 'AND app_version.id = :appVersionId'} AND app.id = :appId`,
           {
             module: 'ModuleViewer',
-            appVersionId: versionToLoad.id,
+            appVersionId: versionToLoadId,
             appId: app.id,
           }
         )
@@ -1146,7 +1186,25 @@ export class AppsUtilService implements IAppsUtilService {
               });
               if (branchVersion) {
                 moduleApp.editingVersion = branchVersion;
+                moduleApp.appVersions = [branchVersion];
+                return;
               }
+            }
+            // Fallback: TypeORM's async afterLoad is not reliably awaited in all query
+            // paths, so editingVersion may not be populated by the subscriber. Query
+            // explicitly to guarantee it is always set before returning.
+            if (!moduleApp.editingVersion) {
+              const fallbackVersion = await manager.findOne(AppVersion, {
+                where: { appId: moduleApp.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
+                order: { updatedAt: 'DESC' },
+              });
+              if (fallbackVersion) moduleApp.editingVersion = fallbackVersion;
+            }
+            // Populate appVersions so downstream callers (prepareResponse) can resolve
+            // the version by ID (fast path) instead of loading all versions via
+            // findVersionsFromApp.
+            if (moduleApp.editingVersion) {
+              moduleApp.appVersions = [moduleApp.editingVersion];
             }
             await this.overlayAppMetadata(moduleApp, parentBranchId);
           })

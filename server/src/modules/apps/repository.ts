@@ -90,15 +90,15 @@ export class AppsRepository extends Repository<App> {
     }
 
     let resolvedVersion: AppVersion = null;
-    // Pick either a non-git row (branch_id IS NULL) or any default-branch row
-    // on the INSTANCE (not just this org's default branch). Slug uniqueness is
-    // enforced instance-wide on default-branch rows by
+    // Slug uniqueness is enforced instance-wide on default-branch rows by
     // trg_app_versions_default_branch_slug_unique (migration 1779400000000),
     // so a default-branch slug resolves to exactly one app across all
     // workspaces. Dropping the org scope here is what enables cross-workspace
     // slug lookup (e.g. public app sharing where the requesting user is in a
     // different workspace than the app's owner).
     if (await this.checkIfGitEnabled(this.manager)) {
+      // 1) Prefer a default-branch row anywhere on the instance — that's the
+      //    canonical released slug for git-enabled workspaces.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')
@@ -107,11 +107,33 @@ export class AppsRepository extends Repository<App> {
         .where('av.slug = :slug', { slug })
         .orderBy('av.updated_at', 'DESC')
         .getOne();
+
+      // 2) Fall back to a branchless row — but only when the candidate app's
+      //    own workspace has no default branch (git sync still off for that
+      //    org). The branchless row is the canonical slug holder in that
+      //    case; if the org has since enabled git, step 1 would have found
+      //    the default-branch row already and this fallback would (correctly)
+      //    not apply.
+      if (!resolvedVersion) {
+        const candidate = await this.dataSource
+          .getRepository(AppVersion)
+          .createQueryBuilder('av')
+          .innerJoinAndSelect('av.app', 'app')
+          .where('av.slug = :slug', { slug })
+          .andWhere('av.branch_id IS NULL')
+          .orderBy('av.updated_at', 'DESC')
+          .getOne();
+
+        if (candidate?.app) {
+          const orgDefaultBranchId = await this.getDefaultBranchId(this.manager, candidate.app.organizationId);
+          if (!orgDefaultBranchId) {
+            resolvedVersion = candidate;
+          }
+        }
+      }
     } else {
-      // Git sync disabled — pick any app_versions row whose slug matches.
-      // Without git, there's no branch scoping concept: branchless rows hold
-      // the canonical metadata for every version, and stray branch_id values
-      // (if any from legacy data) can still legitimately back the slug lookup.
+      // No default branch exists anywhere on the instance — pick any
+      // app_versions row whose slug matches.
       resolvedVersion = await this.dataSource
         .getRepository(AppVersion)
         .createQueryBuilder('av')

@@ -206,7 +206,10 @@ export const ModalV2 = function Modal({
     currentLayout,
     isContainer: true,
     componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
+    // Includes footerHeight + showFooter so resizing/toggling the footer
+    // also triggers a reflow (configured slot heights feed into the modal's
+    // computed body height).
+    value: JSON.stringify({ headerHeight, footerHeight, showHeader, showFooter, showModal }),
     visibility: isVisible,
     subContainerIndex: contextIndices,
     componentType,
@@ -301,7 +304,9 @@ export const ModalV2 = function Modal({
       <ModalWidget
         show={showModal}
         contentClassName="modal-component"
-        container={document.getElementsByClassName('real-canvas')[0]}
+        container={
+          document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
+        }
         size={size}
         keyboard={true}
         enforceFocus={false}

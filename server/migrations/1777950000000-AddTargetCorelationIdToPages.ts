@@ -34,6 +34,11 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
  */
 export class AddTargetCorelationIdToPages1777950000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // The Step 2 backfill is a single multi-join UPDATE across the whole pages
+    // table — slow enough to trip statement_timeout (57014) on a large instance.
+    // Disable it for this transaction; SET LOCAL reverts on commit/rollback.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // Step 1: Add the new column.
     await queryRunner.addColumn(
       'pages',

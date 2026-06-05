@@ -2,6 +2,13 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // This migration backfills and dedupes the whole app_versions table — work
+    // that can exceed the connection's statement_timeout on a large dataset and
+    // get cancelled mid-way (57014). Disable it for this transaction; SET LOCAL
+    // reverts on commit/rollback. The temp indexes created before Step 4a keep the
+    // dedupe loops from degrading into per-row sequential scans.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // Step 1: Add new columns to app_versions
     await queryRunner.addColumn(
       'app_versions',
@@ -100,6 +107,23 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         CHECK (branch_id IS NULL OR (app_name IS NOT NULL AND slug IS NOT NULL));
     `);
 
+    // Temp indexes for the dedupe loops below: each loop probes app_versions by
+    // LOWER(slug) / app_name inside its inner loop, and uniqueness here is enforced
+    // by triggers (Step 4c) — there is no real index to lean on. Without these the
+    // probes are sequential scans and the migration blows statement_timeout on a
+    // large table. Predicates mirror the probe filters so they're index lookups.
+    // Dropped after Step 4b; a failed run rolls the whole transaction back.
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS tmp_idx_av_dedupe_slug
+        ON app_versions (LOWER(slug), branch_id)
+        WHERE version_type = 'branch'
+    `);
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS tmp_idx_av_dedupe_app_name
+        ON app_versions (app_name, branch_id)
+        WHERE version_type = 'branch'
+    `);
+
     // Step 4a: Dedupe (slug, branch_id, apps.type) among branch-type rows.
     // Partition by apps.type so an app and a module on the same branch can keep
     // the same slug — they're different product surfaces and the trigger below
@@ -186,6 +210,11 @@ export class AddMetadataColumnsToAppVersions1778000000000 implements MigrationIn
         END LOOP;
       END $$;
     `);
+
+    // Dedupe done — drop the temp indexes. Uniqueness from here on is trigger-based
+    // (Step 4c), so no permanent index replaces them.
+    await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_av_dedupe_slug`);
+    await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_av_dedupe_app_name`);
 
     // Step 4c: Trigger-based uniqueness scoped by apps.type. Replaces the
     // partial unique indexes that previously included a denormalized type column
