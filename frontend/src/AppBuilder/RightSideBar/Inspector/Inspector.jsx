@@ -55,6 +55,7 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import '../ComponentManagerTab/styles.scss';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -519,38 +520,52 @@ export const Inspector = ({
   };
 
   const propertiesTab = isMounted && (
-    <div className={`${shouldFreeze && 'disabled'}`}>
-      <GetAccordion
-        tabsPropertiesPanelKey={tabsPropertiesPanelKey}
-        componentName={componentMeta.component}
-        layoutPropertyChanged={layoutPropertyChanged}
-        component={component}
-        paramUpdated={paramUpdated}
-        paramsUpdated={paramsUpdated}
-        dataQueries={dataQueries}
-        componentMeta={componentMeta}
-        components={allComponents}
-        currentState={currentState}
-        darkMode={darkMode}
-        pages={pages}
-        allComponents={allComponents}
-      />
-    </div>
-  );
-  const stylesTab = (
-    <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
-      <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
-        <Inspector.RenderStyleOptions
-          componentMeta={componentMeta}
+    <FallbackBoundary
+      label="Properties tab"
+      location="Properties Panel Properties tab"
+      darkMode={darkMode}
+      resetKeys={[selectedComponentId]}
+    >
+      <div className={`${shouldFreeze && 'disabled'}`}>
+        <GetAccordion
+          tabsPropertiesPanelKey={tabsPropertiesPanelKey}
+          componentName={componentMeta.component}
+          layoutPropertyChanged={layoutPropertyChanged}
           component={component}
           paramUpdated={paramUpdated}
+          paramsUpdated={paramsUpdated}
           dataQueries={dataQueries}
+          componentMeta={componentMeta}
+          components={allComponents}
           currentState={currentState}
+          darkMode={darkMode}
+          pages={pages}
           allComponents={allComponents}
         />
       </div>
-      {!isRevampedComponent && buildGeneralStyle()}
-    </div>
+    </FallbackBoundary>
+  );
+  const stylesTab = (
+    <FallbackBoundary
+      label="Styles tab"
+      location="Properties Panel Styles tab"
+      darkMode={darkMode}
+      resetKeys={[selectedComponentId]}
+    >
+      <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
+        <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
+          <Inspector.RenderStyleOptions
+            componentMeta={componentMeta}
+            component={component}
+            paramUpdated={paramUpdated}
+            dataQueries={dataQueries}
+            currentState={currentState}
+            allComponents={allComponents}
+          />
+        </div>
+        {!isRevampedComponent && buildGeneralStyle()}
+      </div>
+    </FallbackBoundary>
   );
 
   React.useEffect(() => {

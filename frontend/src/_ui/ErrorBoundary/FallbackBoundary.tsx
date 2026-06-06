@@ -5,6 +5,7 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ErrorReportModal from './ErrorReportModal';
+import { getErrorContext } from './errorReport';
 import './FallbackBoundary.scss';
 
 interface FallbackBoundaryProps extends Partial<WithTranslation> {
@@ -15,6 +16,18 @@ interface FallbackBoundaryProps extends Partial<WithTranslation> {
   variant?: 'panel' | 'inline';
   /** When any value changes, the boundary auto-resets. */
   resetKeys?: unknown[];
+  /** Show a "Try again" button that re-mounts the unit. Only makes sense where a
+   *  re-mount can recover (e.g. canvas widgets); panels recover via resetKeys. */
+  canRetry?: boolean;
+  /** Show the "Report error" button. Off for end-user surfaces (viewer) where the
+   *  Slack report flow doesn't apply. */
+  canReport?: boolean;
+  /** Sentry `location` tag, e.g. "Component Button2" or "Properties Panel". Defaults to label. */
+  location?: string;
+  /** Sentry `source` tag. AppBuilder boundaries also get app/version/org context tags. */
+  source?: string;
+  /** Extra Sentry tags merged into the capture, e.g. { module: 'workflows' }. */
+  tags?: Record<string, string>;
   darkMode?: boolean;
 }
 
@@ -31,8 +44,9 @@ interface FallbackBoundaryState {
  *
  * - Isolates a failure to its own unit instead of blanking the editor.
  * - Surfaces a graceful inline fallback ("Something went wrong").
- * - Recovery: "Try again" re-mounts the unit; `resetKeys` auto-recovers when the
- *   selected entity changes (e.g. switching component / query / page).
+ * - Recovery: `resetKeys` auto-recovers when the selected entity changes (e.g.
+ *   switching component / query / page); `canRetry` adds a "Try again" re-mount
+ *   button where that makes sense (canvas widgets).
  * - "Report error" opens a modal with a copy-pasteable report (user-triggered, never auto).
  */
 class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBoundaryState> {
@@ -46,12 +60,37 @@ class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBo
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    const { label } = this.props;
+    const { label, location, source = 'AppBuilder', tags } = this.props;
+    // AppBuilder context (app/version/org/page) only makes sense for AppBuilder
+    // boundaries — other sources pass their own context via `tags`.
+    const isAppBuilder = source === 'AppBuilder';
+    const ctx = isAppBuilder ? getErrorContext() : null;
     // Sentry holds the de-minified stack (prod uses hidden-source-map). Keep the
     // returned event id so support can pull the symbolicated trace from the report.
+    // Tags are searchable filters (source/location/app/version/org); extra carries
+    // the rest of the debugging context.
     const eventId = Sentry.captureException(error, {
-      tags: { errorBoundary: label || 'app-builder' },
-      extra: { area: label, componentStack: errorInfo?.componentStack },
+      tags: {
+        source,
+        location: location || label || 'unknown',
+        ...(ctx && {
+          appId: ctx.appId || 'n/a',
+          versionId: ctx.versionId || 'n/a',
+          organizationId: ctx.organizationId || 'n/a',
+        }),
+        ...tags,
+      },
+      extra: {
+        area: label,
+        componentStack: errorInfo?.componentStack,
+        ...(ctx && {
+          appName: ctx.appName,
+          pageId: ctx.pageId,
+          environment: ctx.environment,
+          mode: ctx.mode,
+          tjVersion: ctx.tjVersion,
+        }),
+      },
     });
     this.setState({ error, errorInfo, eventId });
     // eslint-disable-next-line no-console
@@ -78,7 +117,7 @@ class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBo
 
   render(): React.ReactNode {
     const { hasError, error, errorInfo, eventId, showReport } = this.state;
-    const { children, variant = 'panel', label, darkMode, t } = this.props;
+    const { children, variant = 'panel', label, canRetry = false, canReport = true, darkMode, t } = this.props;
 
     if (!hasError) return children;
 
@@ -100,12 +139,16 @@ class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBo
             </div>
           )}
           <div className="tj-error-boundary__actions">
-            <ButtonSolid variant="tertiary" size="sm" onClick={this.reset} data-cy="error-boundary-retry">
-              Try again
-            </ButtonSolid>
-            <ButtonSolid variant="ghostBlue" size="sm" onClick={this.openReport} data-cy="error-boundary-report">
-              Report error
-            </ButtonSolid>
+            {canRetry && (
+              <ButtonSolid variant="tertiary" size="sm" onClick={this.reset} data-cy="error-boundary-retry">
+                Try again
+              </ButtonSolid>
+            )}
+            {canReport && (
+              <ButtonSolid variant="secondary" size="sm" onClick={this.openReport} data-cy="error-boundary-report">
+                Report error
+              </ButtonSolid>
+            )}
           </div>
         </div>
         {showReport && (

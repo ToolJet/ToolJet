@@ -28,18 +28,27 @@ export const RightSideBar = ({ darkMode }) => {
         )}
       >
         <div className={cx({ 'dark-theme theme-dark': darkMode })} style={{ position: 'relative', height: '100%' }}>
-          {activeTab === RIGHT_SIDE_BAR_TAB.PAGES && (
-            <FallbackBoundary label="Page settings" darkMode={darkMode}>
-              <CrashTest message="☠️ Deliberate test crash in Page settings" />
-              <PageSettings />
-            </FallbackBoundary>
-          )}
-          {activeTab === RIGHT_SIDE_BAR_TAB.COMPONENTS && (
-            <ComponentsManagerTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
-          )}
-          {activeTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
-            <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
-          )}
+          {/* Catch-all for anything the tab-level boundaries don't cover. */}
+          <FallbackBoundary label="Right sidebar" location="Right SideBar" darkMode={darkMode} resetKeys={[activeTab]}>
+            {activeTab === RIGHT_SIDE_BAR_TAB.PAGES && (
+              <FallbackBoundary label="Page settings" location="Page Settings" darkMode={darkMode}>
+                <CrashTest message="☠️ Deliberate test crash in Page settings" />
+                <PageSettings />
+              </FallbackBoundary>
+            )}
+            {activeTab === RIGHT_SIDE_BAR_TAB.COMPONENTS && (
+              <FallbackBoundary
+                label="Components manager"
+                location="Right SideBar Components manager"
+                darkMode={darkMode}
+              >
+                <ComponentsManagerTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
+              </FallbackBoundary>
+            )}
+            {activeTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION && (
+              <ComponentConfigurationTab darkMode={darkMode} isModuleEditor={isModuleEditor} />
+            )}
+          </FallbackBoundary>
         </div>
       </div>
     </div>

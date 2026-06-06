@@ -222,20 +222,27 @@ export const QueryPanel = ({ darkMode }) => {
         }}
       >
         {isQueryPaneExpanded && (
-          <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
-            <FallbackBoundary label="Query list" darkMode={darkMode}>
-              <CrashTest message="🧨 Deliberate test crash in Query list (QueryDataPane)" />
-              <MemoizedQueryDataPane darkMode={darkMode} />
-            </FallbackBoundary>
-            <div className="query-definition-pane-wrapper">
-              <div className="query-definition-pane">
-                <FallbackBoundary label="Query manager" darkMode={darkMode} resetKeys={[selectedQueryId]}>
-                  <CrashTest message="💥 Deliberate test crash in Query manager" />
-                  <MemoizedQueryManager darkMode={darkMode} />
-                </FallbackBoundary>
+          <FallbackBoundary label="Query panel" location="Query Panel" darkMode={darkMode}>
+            <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
+              <FallbackBoundary label="Query list" location="Query Panel Query list" darkMode={darkMode}>
+                <CrashTest message="🧨 Deliberate test crash in Query list (QueryDataPane)" />
+                <MemoizedQueryDataPane darkMode={darkMode} />
+              </FallbackBoundary>
+              <div className="query-definition-pane-wrapper">
+                <div className="query-definition-pane">
+                  <FallbackBoundary
+                    label="Query manager"
+                    location="Query Panel Query manager"
+                    darkMode={darkMode}
+                    resetKeys={[selectedQueryId]}
+                  >
+                    <CrashTest message="💥 Deliberate test crash in Query manager" />
+                    <MemoizedQueryManager darkMode={darkMode} />
+                  </FallbackBoundary>
+                </div>
               </div>
-            </div>
-          </QueryKeyHooks>
+            </QueryKeyHooks>
+          </FallbackBoundary>
         )}
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />

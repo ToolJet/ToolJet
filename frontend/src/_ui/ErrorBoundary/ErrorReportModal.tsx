@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react';
 import ModalBaseRaw from '@/_ui/Modal';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { buildErrorReport } from './errorReport';
 import './FallbackBoundary.scss';
+
+// Community Slack (redirects to the live invite) — where users report the copied error.
+const REPORT_URL = 'https://tooljet.com/slack';
 
 // ModalBase is an untyped JS component; relax its props to avoid spurious type errors.
 const ModalBase = ModalBaseRaw as React.FC<any>;
@@ -42,13 +46,30 @@ const ErrorReportModal: React.FC<ErrorReportModalProps> = ({
       darkMode={darkMode}
       title="Report this error"
       size="lg"
-      confirmBtnProps={{ title: 'Copy & report', variant: 'primary' }}
-      handleConfirm={() => copyToClipboard(report)}
+      footerBody={
+        <>
+          <a
+            className="tj-error-report__slack-link tj-text-sm"
+            href={REPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cy="error-report-slack"
+          >
+            Report on Slack ↗
+          </a>
+          <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid variant="primary" onClick={() => copyToClipboard(report)} data-cy="error-report-copy">
+            Copy
+          </ButtonSolid>
+        </>
+      }
     >
       <div className="tj-error-report">
         <p className="tj-error-report__hint tj-text-sm">
-          Something went wrong in <strong>{label || 'this area'}</strong>. Copy the details below and share them with
-          the ToolJet team so we can fix it.
+          Something went wrong in <strong>{label || 'this area'}</strong>. Copy the details below and report them on
+          our Slack community so we can fix it.
         </p>
         <div className="tj-error-report__message tj-text-sm" data-cy="error-report-message">
           {message}

@@ -280,7 +280,15 @@ const RenderWidget = ({
   if (!component) return null;
 
   return (
-    <FallbackBoundary variant="inline" label={componentName} darkMode={darkMode} resetKeys={[id]}>
+    <FallbackBoundary
+      variant="inline"
+      label={componentName}
+      location={`Component ${componentName}`}
+      canRetry
+      canReport={currentMode === 'edit'}
+      darkMode={darkMode}
+      resetKeys={[id]}
+    >
       <CrashTest message={`🧱 Deliberate test crash in canvas component (${componentName})`} />
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}

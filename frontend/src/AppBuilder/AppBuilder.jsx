@@ -2,7 +2,7 @@ import React, { Suspense, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useAppData from '@/AppBuilder/_hooks/useAppData';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import ErrorBoundary from '@/_ui/ErrorBoundary';
+import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
 import cx from 'classnames';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -58,7 +58,8 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   }
   return (
     <div className={cx('wrapper', { editor: currentMode === 'edit' })}>
-      <ErrorBoundary>
+      {/* Last-resort boundary — catches anything the panel-level boundaries miss. */}
+      <FallbackBoundary label="App builder" location="Editor" darkMode={darkMode}>
         <ModuleProvider moduleId={moduleId} appType={appType} isModuleMode={false} isModuleEditor={isModuleEditor}>
           <Suspense fallback={<div>Loading...</div>}>
             <EditorHeader darkMode={darkMode} appType={appType} />
@@ -77,7 +78,7 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
           </DndProvider>
           <Popups darkMode={darkMode} />
         </ModuleProvider>
-      </ErrorBoundary>
+      </FallbackBoundary>
     </div>
   );
 };

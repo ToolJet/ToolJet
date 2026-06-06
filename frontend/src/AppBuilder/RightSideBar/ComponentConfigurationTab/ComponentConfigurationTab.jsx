@@ -51,7 +51,12 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     );
   }
   return (
-    <FallbackBoundary label="Properties panel" darkMode={darkMode} resetKeys={[selectedComponentId]}>
+    <FallbackBoundary
+      label="Properties panel"
+      location="Properties Panel"
+      darkMode={darkMode}
+      resetKeys={[selectedComponentId]}
+    >
       <CrashTest message="🔥 Deliberate test crash in Properties panel (Inspector)" />
       <Inspector
         componentDefinitionChanged={() => {}}
