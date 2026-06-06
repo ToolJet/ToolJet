@@ -17,6 +17,8 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
+import { getErrorContext } from '@/_ui/ErrorBoundary/errorReport';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -47,6 +49,26 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       navigate('/error/restricted');
     }
   }, [hasModuleAccess, isModuleEditor]);
+
+  const currentVersionId = useStore((state) => state.currentVersionId, shallow);
+
+  // Tag every Sentry event raised while the editor is open — including handler/async
+  // errors that bypass the FallbackBoundaries — with the AppBuilder context.
+  useEffect(() => {
+    if (isEditorLoading) return;
+    const ctx = getErrorContext();
+    const scope = Sentry.getCurrentScope();
+    scope.setTags({
+      source: 'AppBuilder',
+      appId: ctx.appId || 'n/a',
+      versionId: ctx.versionId || 'n/a',
+      organizationId: ctx.organizationId || 'n/a',
+    });
+    return () => {
+      // Leaving the editor — drop the tags so other pages aren't mislabelled.
+      scope.setTags({ source: undefined, appId: undefined, versionId: undefined, organizationId: undefined });
+    };
+  }, [isEditorLoading, appId, currentVersionId]);
 
   //TODO: This can be added to the mode slice and set based on the mode
   if (isEditorLoading) {
