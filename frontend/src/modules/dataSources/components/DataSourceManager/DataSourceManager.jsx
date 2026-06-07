@@ -427,6 +427,12 @@ class DataSourceManagerComponent extends React.Component {
       case 'bigquery': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
+      case 'databricks': {
+        return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
+      }
+      case 'quickbooks': {
+        return false;
+      }
       default:
         return true;
     }
