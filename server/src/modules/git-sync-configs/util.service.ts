@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
+import { OrganizationGitSsh } from '@entities/gitsync_entities/organization_git_ssh.entity';
+import { OrganizationGitHttps } from '@entities/gitsync_entities/organization_git_https.entity';
+import { OrganizationGitLab } from '@entities/gitsync_entities/organization_gitlab.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
 import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
@@ -20,25 +23,48 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
   // Single source of truth for "is git sync active for this org" — combines the license
   // entitlement with the org's configured provider (DB row OR env-mapped config).
   // Returns empty options when either gate is off so callers don't need to re-check.
-  async getDetails(organizationId: string, isGetConfigs: boolean): Promise<GitSyncDetails> {
+  //
+  // isGitMandatory=true switches the return-empty paths to throws so callers in flows
+  // that require git can short-circuit with a precise HTTP status:
+  //   - License gate fails → 451 (Unavailable For Legal Reasons)
+  //   - Configuration/provider/branch gate fails → 422 (Unprocessable Content)
+  async getDetails(
+    organizationId: string,
+    orgGitObj?: OrganizationGitSync,
+    isGetConfigs?: boolean,
+    isGitMandatory: boolean = false
+  ): Promise<GitSyncDetails> {
     const empty: GitSyncDetails = {
       isEnabled: false,
       options: { type: null, defaultBranch: null, isBranchingEnabled: false },
       orgGit: null,
     };
 
+    // Helper: under isGitMandatory the caller expects git to be enabled, so each failure
+    // path throws instead of returning empty. 451 is reserved for the license gate;
+    // every downstream config/provider/branch failure surfaces as 422.
+    const failOrEmpty = (status: 422 | 451, message: string): GitSyncDetails => {
+      if (!isGitMandatory) return empty;
+      if (status === 422) throw new UnprocessableEntityException(message);
+      throw new HttpException(message, status);
+    };
+
     const licenseGitSync = await this.licenseTermsService.getLicenseTerms(
       [LICENSE_FIELD.GIT_SYNC, LICENSE_FIELD.GIT_SYNC_MULTI_BRANCH],
       organizationId
     );
-    if (!licenseGitSync[LICENSE_FIELD.GIT_SYNC]) return empty;
+    if (!licenseGitSync[LICENSE_FIELD.GIT_SYNC]) {
+      return failOrEmpty(451, 'Git Sync is not available on the current license plan.');
+    }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const orgGit = await manager.findOne(OrganizationGitSync, {
-        where: { organizationId },
-        relations: ['gitSsh', 'gitHttps', 'gitLab'],
-      });
-      if (!orgGit) return empty;
+      const orgGit =
+        orgGitObj ??
+        (await manager.findOne(OrganizationGitSync, {
+          where: { organizationId },
+          relations: ['gitSsh', 'gitHttps', 'gitLab'],
+        }));
+      if (!orgGit) return failOrEmpty(422, 'Git Sync is not configured for this workspace.');
 
       if (orgGit.useEnvConfig) {
         const activeProvider = this.gitSyncEnvUtilService.getActiveProvider(organizationId);
@@ -46,17 +72,21 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
           this.logger.warn(
             `Git Sync env config enabled for org ${organizationId} but no provider configs found, treating as disabled`
           );
-          return empty;
+          return failOrEmpty(422, 'Git Sync env configuration is enabled but no provider is active.');
         }
+        // Env-config orgs typically have no DB row for the active provider; overwrite the
+        // relation field with a synthesized config so downstream readers see one consistent
+        // shape regardless of mode. The `as` cast is the same pattern used in
+        // BaseGitUtilService.findOrgGitByOrganizationId.
         if (activeProvider === GITConnectionType.GITHUB_HTTPS) {
           const githubHttpsCfg = await this.gitSyncEnvUtilService.getGitHttpsConfig(organizationId);
           if (!githubHttpsCfg) {
             this.logger.warn(
               `Git Sync env config enabled for org ${organizationId} with active provider ${activeProvider} but no config found, treating as disabled`
             );
-            return empty;
+            return failOrEmpty(422, 'Git Sync env configuration is incomplete for the active provider.');
           }
-          orgGit.gitHttpsEnv = {
+          orgGit.gitHttps = {
             isEnabled: true,
             githubBranch: githubHttpsCfg.githubBranch,
             githubAppId: githubHttpsCfg.githubAppId,
@@ -64,43 +94,43 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
             githubPrivateKey: githubHttpsCfg.githubPrivateKey,
             githubEnterpriseUrl: githubHttpsCfg.githubEnterpriseUrl,
             githubEnterpriseApiUrl: githubHttpsCfg.githubEnterpriseApiUrl,
-          };
+          } as OrganizationGitHttps;
         } else if (activeProvider === GITConnectionType.GITHUB_SSH) {
           const githubSshCfg = await this.gitSyncEnvUtilService.getGitSshConfig(organizationId);
           if (!githubSshCfg) {
             this.logger.warn(
               `Git Sync env config enabled for org ${organizationId} with active provider ${activeProvider} but no config found, treating as disabled`
             );
-            return empty;
+            return failOrEmpty(422, 'Git Sync env configuration is incomplete for the active provider.');
           }
-          orgGit.gitSshEnv = {
+          orgGit.gitSsh = {
             isEnabled: true,
             gitUrl: githubSshCfg.gitUrl,
             gitBranch: githubSshCfg.gitBranch,
             sshPrivateKey: githubSshCfg.sshPrivateKey,
             sshPublicKey: githubSshCfg.sshPublicKey,
             keyType: githubSshCfg.keyType,
-          };
+          } as OrganizationGitSsh;
         } else if (activeProvider === GITConnectionType.GITLAB) {
           const gitlabCfg = await this.gitSyncEnvUtilService.getGitLabConfig(organizationId);
           if (!gitlabCfg) {
             this.logger.warn(
               `Git Sync env config enabled for org ${organizationId} with active provider ${activeProvider} but no config found, treating as disabled`
             );
-            return empty;
+            return failOrEmpty(422, 'Git Sync env configuration is incomplete for the active provider.');
           }
-          orgGit.gitLabEnv = {
+          orgGit.gitLab = {
             isEnabled: true,
             gitlabUrl: gitlabCfg.gitlabUrl,
             gitlabBranch: gitlabCfg.gitlabBranch,
             gitlabProjectAccessToken: gitlabCfg.gitlabProjectAccessToken,
             gitlabEnterpriseUrl: gitlabCfg.gitlabEnterpriseUrl,
-          };
+          } as OrganizationGitLab;
         } else {
           this.logger.warn(
             `Git Sync env config enabled for org ${organizationId} with unrecognized active provider ${activeProvider}, treating as disabled`
           );
-          return empty;
+          return failOrEmpty(422, 'Git Sync env configuration uses an unrecognized provider.');
         }
         // Mirror BaseGitUtilService.findOrgGitByOrganizationId so callers reading orgGit see
         // the same envGitProvider hint as the rest of the codebase.
@@ -108,7 +138,7 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
       }
 
       const activeType = this.resolveActiveProviderType(orgGit);
-      if (!activeType) return empty;
+      if (!activeType) return failOrEmpty(422, 'No Git provider is enabled for this workspace.');
 
       let defaultBranchRow: { id: string; name: string } | null = await manager.findOne(WorkspaceBranch, {
         where: { organizationId, isDefault: true },
@@ -133,7 +163,7 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
       }
 
       return {
-        isEnabled: true,
+        isEnabled: !!activeType,
         options: {
           type: activeType,
           defaultBranch: defaultBranchRow ? { id: defaultBranchRow.id, name: defaultBranchRow.name } : null,
@@ -196,24 +226,21 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
     }
   }
 
-  // Env-config orgs only carry the branch on the *Env shadow fields (the persisted relations
-  // are typically absent or have isEnabled=false). Check both shapes so this works for both.
+  // Env-config orgs overwrite the relation field with synthesized configs above, so a
+  // single check works for both DB-loaded and env-resolved providers.
   private deriveDefaultBranchName(orgGit: OrganizationGitSync): string | undefined {
     if (orgGit.gitSsh?.isEnabled) return orgGit.gitSsh.gitBranch;
     if (orgGit.gitHttps?.isEnabled) return orgGit.gitHttps.githubBranch;
     if (orgGit.gitLab?.isEnabled) return orgGit.gitLab.gitlabBranch;
-    if (orgGit.gitSshEnv?.isEnabled) return orgGit.gitSshEnv.gitBranch;
-    if (orgGit.gitHttpsEnv?.isEnabled) return orgGit.gitHttpsEnv.githubBranch;
-    if (orgGit.gitLabEnv?.isEnabled) return orgGit.gitLabEnv.gitlabBranch;
     return;
   }
 
-  // First DB-enabled provider wins; env-config orgs fall through to the *Env shadow fields
-  // hydrated above (the persisted relations stay null/false in env-config mode).
+  // First enabled provider wins. Works uniformly for DB-loaded and env-resolved providers
+  // because the env-config branch above writes synthesized configs onto the same relation.
   private resolveActiveProviderType(orgGit: OrganizationGitSync): GITConnectionType | null {
-    if (orgGit.gitSsh?.isEnabled || orgGit.gitSshEnv?.isEnabled) return GITConnectionType.GITHUB_SSH;
-    if (orgGit.gitHttps?.isEnabled || orgGit.gitHttpsEnv?.isEnabled) return GITConnectionType.GITHUB_HTTPS;
-    if (orgGit.gitLab?.isEnabled || orgGit.gitLabEnv?.isEnabled) return GITConnectionType.GITLAB;
+    if (orgGit.gitSsh?.isEnabled) return GITConnectionType.GITHUB_SSH;
+    if (orgGit.gitHttps?.isEnabled) return GITConnectionType.GITHUB_HTTPS;
+    if (orgGit.gitLab?.isEnabled) return GITConnectionType.GITLAB;
     return null;
   }
 }
