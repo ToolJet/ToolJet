@@ -18,7 +18,14 @@ import { Item } from './Components/Item';
 import { Container } from './Components/Container';
 import { Trash } from './Components/Trash';
 import { Modal } from './Components/Modal';
-import { getColumnData, getCardData, getData, convertArrayToObj, findContainer } from './helpers/utils';
+import {
+  getColumnData,
+  getCardData,
+  getData,
+  convertArrayToObj,
+  findContainer,
+  normalizeCardData,
+} from './helpers/utils';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
@@ -53,7 +60,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
   const columnDataAsObj = useMemo(() => convertArrayToObj(columnData), [JSON.stringify(columnData)]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const cardDataAsObj = useMemo(() => convertArrayToObj(cardData), [JSON.stringify(cardData)]);
+  const normalizedCardData = useMemo(() => normalizeCardData(cardData), [JSON.stringify(cardData)]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const cardDataAsObj = useMemo(() => convertArrayToObj(normalizedCardData), [JSON.stringify(normalizedCardData)]);
 
   const [items, setItems] = useState({});
   const [containers, setContainers] = useState([]);
@@ -87,15 +97,8 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
   }, []);
 
   // Check if the previous filtered data is different from the current filtered data
-  if (!isEqual(cardData, prevCardData.current)) {
-    prevCardData.current = cardData;
-    // Adding listItem as key value pair to the customResolvables
-    const cardDetails = cardData.map((data) => {
-      return {
-        cardData: data,
-      };
-    });
-    // Update the customResolvables with the new listItems
+  if (!isEqual(normalizedCardData, prevCardData.current)) {
+    prevCardData.current = normalizedCardData;
     updateCardDataInCustomResolvable(cardDataAsObj);
   }
 
@@ -126,10 +129,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
   }, [showModal]);
 
   useEffect(() => {
-    setItems(() => getCardData(cardData, { ...columnDataAsObj }));
+    setItems(() => getCardData(normalizedCardData, { ...columnDataAsObj }));
     shouldUpdateData.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(cardData), JSON.stringify(columnDataAsObj)]);
+  }, [JSON.stringify(normalizedCardData), JSON.stringify(columnDataAsObj)]);
 
   useEffect(() => {
     if (shouldUpdateData.current) {
