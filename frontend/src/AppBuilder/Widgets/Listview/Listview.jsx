@@ -3,8 +3,6 @@ import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react'
 import { Pagination } from '@/_components/Pagination';
 import _ from 'lodash';
 import './listview.scss';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -167,7 +165,7 @@ export const Listview = function Listview({
 
   // Check if the previous filtered data is different from the current filtered data
   if (
-    Object.keys(diff(filteredData, prevFilteredDataRef.current)).length > 0 ||
+    !_.isEqual(filteredData, prevFilteredDataRef.current) ||
     childComponentCount !== prevChildComponentCount.current ||
     parentIndicesChanged
   ) {

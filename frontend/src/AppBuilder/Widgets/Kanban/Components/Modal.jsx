@@ -4,8 +4,7 @@ import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import '@/_styles/widgets/kanban.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
+import { isEqual } from 'lodash';
 import './modal.scss';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useModalEventSideEffects } from '@/AppBuilder/Widgets/ModalV2/hooks/useResizeSideEffects';
@@ -29,7 +28,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
   });
 
   // Check if the previous lastSelectedCard data is different from the current lastSelectedCard data
-  if (Object.keys(diff(lastSelectedCard, prevLastSelectedCard.current)).length > 0) {
+  if (!isEqual(lastSelectedCard, prevLastSelectedCard.current)) {
     prevLastSelectedCard.current = lastSelectedCard;
     // Update the customResolvables with the lastSelectedCard
     updateCustomResolvables(`${id}-modal`, [{ cardData: lastSelectedCard }], 'cardData', moduleId);

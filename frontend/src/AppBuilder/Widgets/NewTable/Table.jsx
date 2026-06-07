@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, memo, useRef, useState } from 'react';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
 import { shallow } from 'zustand/shallow';
 import { isEmpty, isEqual } from 'lodash';
 import { useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
@@ -379,7 +378,19 @@ const Table = memo(
   },
   (prevProps, nextProps) => {
     // Avoid re-rendering if the props are same
-    return Object.keys(diff(prevProps, nextProps)).length === 0;
+    return (
+      prevProps.id === nextProps.id &&
+      prevProps.componentName === nextProps.componentName &&
+      prevProps.width === nextProps.width &&
+      prevProps.height === nextProps.height &&
+      prevProps.darkMode === nextProps.darkMode &&
+      prevProps.currentLayout === nextProps.currentLayout &&
+      prevProps.currentMode === nextProps.currentMode &&
+      prevProps.subContainerIndex === nextProps.subContainerIndex &&
+      prevProps.componentType === nextProps.componentType &&
+      isEqual(prevProps.properties, nextProps.properties) &&
+      isEqual(prevProps.styles, nextProps.styles)
+    );
   }
 );
 

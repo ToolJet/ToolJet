@@ -22,6 +22,7 @@ import { getColumnData, getCardData, getData, convertArrayToObj, findContainer }
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { isEqual } from 'lodash';
 import cx from 'classnames';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
@@ -86,7 +87,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id, dataCy }
   }, []);
 
   // Check if the previous filtered data is different from the current filtered data
-  if (Object.keys(diff(cardData, prevCardData.current)).length > 0) {
+  if (!isEqual(cardData, prevCardData.current)) {
     prevCardData.current = cardData;
     // Adding listItem as key value pair to the customResolvables
     const cardDetails = cardData.map((data) => {

@@ -17,8 +17,6 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
-// eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
 import Spinner from '@/_ui/Spinner';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
@@ -553,17 +551,59 @@ const FormComponent = (props) => {
 // Avoid rendering the Form component if there are no changes in properties or
 // changes are only in `generateFormFrom` as it is not required to re-render
 export const Form = React.memo(FormComponent, (prevProps, nextProps) => {
-  const diffInProps = diff(prevProps, nextProps) ?? {};
+  // Check primitive/simple props first
+  if (
+    prevProps.id !== nextProps.id ||
+    prevProps.width !== nextProps.width ||
+    prevProps.height !== nextProps.height ||
+    prevProps.darkMode !== nextProps.darkMode ||
+    prevProps.currentMode !== nextProps.currentMode ||
+    prevProps.componentType !== nextProps.componentType ||
+    prevProps.subContainerIndex !== nextProps.subContainerIndex ||
+    prevProps.componentCount !== nextProps.componentCount
+  ) {
+    return false;
+  }
 
-  if (Object.keys(diffInProps).length === 0) return true; // No changes detected, no need to re-render
-  if (Object.keys(diffInProps).length === 1) {
-    if (
-      diffInProps['properties'] &&
-      diffInProps['properties']['generateFormFrom'] &&
-      diffInProps['properties']['generateFormFrom'] !== 'jsonSchema'
-    ) {
-      return true; // No changes detected in childrenData, no need to re-render
+  // Check styles
+  if (!_.isEqual(prevProps.styles, nextProps.styles)) {
+    return false;
+  }
+
+  // Check properties
+  const prevPropsProperties = prevProps.properties || {};
+  const nextPropsProperties = nextProps.properties || {};
+
+  if (prevPropsProperties !== nextPropsProperties) {
+    const prevKeys = Object.keys(prevPropsProperties);
+    const nextKeys = Object.keys(nextPropsProperties);
+
+    const allKeys = new Set([...prevKeys, ...nextKeys]);
+    let generateFormFromChanged = false;
+    let otherKeysChanged = false;
+
+    for (const key of allKeys) {
+      if (!_.isEqual(prevPropsProperties[key], nextPropsProperties[key])) {
+        if (key === 'generateFormFrom') {
+          generateFormFromChanged = true;
+        } else {
+          otherKeysChanged = true;
+          break; // Any other change means we must re-render
+        }
+      }
+    }
+
+    if (otherKeysChanged) {
+      return false;
+    }
+
+    if (generateFormFromChanged) {
+      // If ONLY generateFormFrom changed, we only re-render if the new value is 'jsonSchema'
+      if (nextPropsProperties.generateFormFrom === 'jsonSchema') {
+        return false;
+      }
     }
   }
-  return false; // Changes detected, re-render the component
+
+  return true;
 });
