@@ -25,6 +25,7 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'mysql',
   'mssql',
   'snowflake',
+  'openai',
   'runjs',
 ];
 
