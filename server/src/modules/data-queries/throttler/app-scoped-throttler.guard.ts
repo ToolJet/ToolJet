@@ -3,8 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModuleOptions, ThrottlerStorage } from '@nestjs/throttler';
 
-const FALSY = new Set(['false', '0', 'no', 'off', '']);
-
 @Injectable()
 export class AppScopedThrottlerGuard extends ThrottlerGuard {
   constructor(
@@ -17,8 +15,8 @@ export class AppScopedThrottlerGuard extends ThrottlerGuard {
   }
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
-    const raw = String(this.config.get('DATA_QUERY_RUN_THROTTLE_ENABLED') ?? 'true').toLowerCase();
-    if (FALSY.has(raw)) return true;
+    // Throttle on by default; DISABLE_DATA_QUERY_RUN_THROTTLE=true bypasses it.
+    if (this.config.get('DISABLE_DATA_QUERY_RUN_THROTTLE') === 'true') return true;
     return super.canActivate(ctx);
   }
 
