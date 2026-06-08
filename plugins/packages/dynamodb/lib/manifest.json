@@ -109,9 +109,9 @@
       "description": "Select authentication method",
       "widget": "dropdown-component-flip",
       "list": [
-        { "value": "iam_access_keys", "name": "Use IAM Access Keys" },
-        { "value": "aws_instance_credentials", "name": "Use AWS Instance Credentials" },
-        { "value": "aws_arn_role", "name": "Use AWS ARN Role" }
+        { "value": "iam_access_keys", "name": "IAM Access Keys" },
+        { "value": "aws_instance_credentials", "name": "AWS Instance Credentials" },
+        { "value": "aws_arn_role", "name": "AWS ARN Role" }
       ]
     },
     "iam_access_keys": {
