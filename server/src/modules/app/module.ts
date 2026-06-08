@@ -74,7 +74,7 @@ import { ScimModule } from '@modules/scim/module';
 import { CustomDomainsModule } from '@modules/custom-domains/module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
-import basicAuth from 'express-basic-auth';
+import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';

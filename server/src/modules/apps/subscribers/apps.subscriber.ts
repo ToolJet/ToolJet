@@ -13,10 +13,10 @@ export const skipAppEditingVersionHydration = new AsyncLocalStorage<boolean>();
 @EventSubscriber()
 export class AppsSubscriber implements EntitySubscriberInterface {
   constructor(
-    private readonly appVersionRepository: VersionRepository,
-    private readonly appRepository: AppsRepository,
-    private readonly datasourceRepository: DataSource,
-    private readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
+    protected readonly appVersionRepository: VersionRepository,
+    protected readonly appRepository: AppsRepository,
+    protected readonly datasourceRepository: DataSource,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {
     datasourceRepository.subscribers.push(this);
   }

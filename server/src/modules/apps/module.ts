@@ -16,7 +16,6 @@ import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from './repository';
 import { FeatureAbilityFactory } from './ability';
 import { DataSourcesModule } from '@modules/data-sources/module';
-import { AppsSubscriber } from './subscribers/apps.subscriber';
 import { AiModule } from '@modules/ai/module';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { AppHistoryModule } from '@modules/app-history/module';
@@ -46,6 +45,7 @@ export class AppsModule extends SubModule {
       WorkflowService,
       AppImportExportService,
       PageHelperService,
+      AppsSubscriber,
     } = await this.getProviders(configs, 'apps', [
       'controller',
       'controllers/workflow.controller',
@@ -57,6 +57,7 @@ export class AppsModule extends SubModule {
       'services/workflow.service',
       'services/app-import-export.service',
       'services/page.util.service',
+      'subscribers/apps.subscriber',
     ]);
 
     return this.cacheModule(cacheKey, {
