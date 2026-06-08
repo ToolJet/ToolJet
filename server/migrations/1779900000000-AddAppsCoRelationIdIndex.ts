@@ -2,10 +2,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddAppsCoRelationIdIndex1779900000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // co_relation_id is the cross-instance app lineage id, looked up by module loader
-    // (co_relation_id IN (...)), git-sync, and import/export. High-cardinality, unindexed
-    // → those queries seq-scan apps. Partial — lineage-less rows excluded; every lookup
-    // filters co_relation_id = / IN, which implies NOT NULL, so the index stays eligible.
+    // Partial — co_relation_id lookups always imply NOT NULL.
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS "idx_apps_co_relation_id"
       ON "apps" ("co_relation_id")
