@@ -85,24 +85,17 @@ export class OrganizationRepository extends Repository<Organization> {
   }
 
   async fetchOrganization(slug: string, manager?: EntityManager): Promise<Organization> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const select: FindOptionsSelect<Organization> = { id: true, slug: true, name: true, status: true };
-      let organization: Organization;
-      try {
-        organization = await manager.findOneOrFail(Organization, {
-          where: { slug: slug },
-          select,
-        });
-      } catch {
-        organization = await manager.findOneOrFail(Organization, {
-          where: { id: slug },
-          select,
-        });
-      }
-      if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
-        throw new BadRequestException('Organization is Archived');
-      return organization;
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    const select: FindOptionsSelect<Organization> = { id: true, slug: true, name: true, status: true };
+    let organization: Organization;
+    try {
+      organization = await m.findOneOrFail(Organization, { where: { slug }, select });
+    } catch {
+      organization = await m.findOneOrFail(Organization, { where: { id: slug }, select });
+    }
+    if (organization && organization.status !== WORKSPACE_STATUS.ACTIVE)
+      throw new BadRequestException('Organization is Archived');
+    return organization;
   }
 
   updateOne(id: string, updatableData: Partial<Organization>, manager?: EntityManager): Promise<any> {
@@ -168,31 +161,21 @@ export class OrganizationRepository extends Repository<Organization> {
     name?: string,
     manager?: EntityManager
   ): Promise<{ organizations: Organization[]; totalCount: number }> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const whereClause: any = {
-        status,
-        organizationUsers: {
-          userId: user.id,
-          status: WORKSPACE_USER_STATUS.ACTIVE,
-        },
-      };
+    const m = manager ?? this.manager;
+    const whereClause: any = {
+      status,
+      organizationUsers: { userId: user.id, status: WORKSPACE_USER_STATUS.ACTIVE },
+    };
+    if (name) whereClause.name = ILike(`%${name}%`);
 
-      if (name) {
-        whereClause.name = ILike(`%${name}%`);
-      }
-
-      const [organizations, totalCount] = await manager.findAndCount(Organization, {
-        where: whereClause,
-        relations: ['organizationUsers'],
-        order: {
-          name: 'ASC',
-        },
-        skip: currentPage && perPageCount ? (currentPage - 1) * perPageCount : undefined,
-        take: isNaN(perPageCount) ? undefined : perPageCount,
-      });
-
-      return { organizations, totalCount };
-    }, manager || this.manager);
+    const [organizations, totalCount] = await m.findAndCount(Organization, {
+      where: whereClause,
+      relations: ['organizationUsers'],
+      order: { name: 'ASC' },
+      skip: currentPage && perPageCount ? (currentPage - 1) * perPageCount : undefined,
+      take: isNaN(perPageCount) ? undefined : perPageCount,
+    });
+    return { organizations, totalCount };
   }
   getSingleOrganization(): Promise<Organization> {
     /* TypeORM won't allow to find one without where clause */
@@ -204,24 +187,16 @@ export class OrganizationRepository extends Repository<Organization> {
   }
 
   async getSingleOrganizationWithId(orgId: string): Promise<Organization> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.findOne(Organization, {
-        where: { id: orgId },
-      });
-    });
+    return this.manager.findOne(Organization, { where: { id: orgId } });
   }
 
   async getDefaultWorkspaceOfInstance(): Promise<Organization> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      try {
-        return await manager.findOneOrFail(Organization, {
-          where: { isDefault: true },
-        });
-      } catch {
-        console.error('No default workspace in this instance');
-        return null;
-      }
-    });
+    try {
+      return await this.manager.findOneOrFail(Organization, { where: { isDefault: true } });
+    } catch {
+      console.error('No default workspace in this instance');
+      return null;
+    }
   }
 
   async changeDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {

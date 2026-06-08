@@ -28,6 +28,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { ConfirmDialog, ToolTip } from '@/_components';
+import { TriangleAlert } from 'lucide-react';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
@@ -460,6 +461,9 @@ class DataSourceManagerComponent extends React.Component {
       }
       case 'databricks': {
         return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
+      }
+      case 'quickbooks': {
+        return false;
       }
       default:
         return true;
@@ -1165,6 +1169,25 @@ class DataSourceManagerComponent extends React.Component {
                               </span>
                             )}
                           </div>
+                          {(() => {
+                            const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore.getState();
+                            if (!isInitialized || !orgGitConfig) return null;
+                            const isBranchingEnabled =
+                              orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled;
+                            const isDefault = currentBranch?.is_default || currentBranch?.isDefault;
+                            if (!isBranchingEnabled || isDefault) return null;
+                            return (
+                              <ToolTip
+                                message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                                placement="top"
+                                width="272px"
+                              >
+                                <span className="tw-flex tw-items-center">
+                                  <TriangleAlert size={14} className="tw-text-[var(--icon-warning)]" />
+                                </span>
+                              </ToolTip>
+                            );
+                          })()}
                           {selectedDataSource.is_dummy && (
                             <ToolTip
                               placement="right"

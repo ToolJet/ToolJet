@@ -16,8 +16,18 @@ import { debounce } from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import { useIsAiBlockedOnDefaultBranch } from '@/_hooks/useIsAiBlockedOnDefaultBranch';
 
-const GENERATE_QUERY_SUPPORTED_KINDS = ['postgresql', 'openapi', 'mongodb', 'bigquery', 'mysql', 'mssql', 'snowflake'];
+const GENERATE_QUERY_SUPPORTED_KINDS = [
+  'postgresql',
+  'openapi',
+  'mongodb',
+  'bigquery',
+  'mysql',
+  'mssql',
+  'snowflake',
+  'runjs',
+];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -300,6 +310,7 @@ const GenerateQueryButton = () => {
   // Derived boolean so the component only re-renders when mention is added/removed, not on every keystroke
   const isQueryMentioned = useStore((state) => hasQueryMention(state.ai?.inputMessage ?? '', queryName));
   const [buttonPressedForQuery, setButtonPressedForQuery] = useState(null);
+  const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
 
   if (!featureAccess?.ai) return null;
   if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
@@ -335,8 +346,12 @@ const GenerateQueryButton = () => {
     requestAnimationFrame(() => store.ai.triggerChatInputFocus());
   };
 
+  const isRunJs = selectedDataSource?.kind === 'runjs';
+  const buttonLabel = isRunJs ? 'Write custom code' : 'Generate query';
+  const tooltipMessage = isRunJs ? 'Write custom code with AI' : 'Generate query with AI';
+
   return (
-    <ToolTip message="Generate query with AI" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+    <ToolTip message={tooltipMessage} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
       <span>
         <ButtonComponent
           size="medium"
@@ -344,11 +359,11 @@ const GenerateQueryButton = () => {
           aria-selected={isPressed}
           className={isPressed ? '!tw-bg-button-outline-hover' : ''}
           onClick={handleGenerateQuery}
-          disabled={shouldFreeze}
+          disabled={shouldFreeze || isAiBlockedByBranch}
           data-cy="query-generate-button"
         >
           <AITripleSparkles width="14" height="14" />
-          Generate query
+          {buttonLabel}
         </ButtonComponent>
       </span>
     </ToolTip>

@@ -15,6 +15,10 @@ export class ValidAppGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { id, slug, versionId } = request.params;
     const user: User = request.user;
+    // x-branch-id pins the metadata-overlay source. Forwarding it overrides the
+    // repository's default-branch / any-row fallback so callers active on a
+    // sub-branch see that branch's name/slug/icon/is_public.
+    const branchId = (request.headers['x-branch-id'] as string) || undefined;
 
     // Check if either id or slug or user is provided, otherwise throw BadRequestException
     if (!(id || slug || user)) {
@@ -25,8 +29,8 @@ export class ValidAppGuard implements CanActivate {
     const app =
       request.tj_app ||
       (id
-        ? await this.appRepository.findById(id, user.organizationId, versionId)
-        : await this.appRepository.findBySlug(slug, user.organizationId, versionId));
+        ? await this.appRepository.findById(id, user.organizationId, versionId, branchId)
+        : await this.appRepository.findBySlug(slug, user.organizationId, versionId, branchId));
 
     // If app is not found, throw NotFoundException
     if (!app) {

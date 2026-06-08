@@ -3,7 +3,7 @@ import { FeatureAbilityFactory } from '.';
 import { AbilityGuard } from '@modules/app/guards/ability.guard';
 import { ResourceDetails } from '@modules/app/types';
 import { MODULES } from '@modules/app/constants/modules';
-import { AppGitSync } from '@entities/app_git_sync.entity';
+import { App } from '@entities/app.entity';
 
 @Injectable()
 export class FeatureAbilityGuard extends AbilityGuard {
@@ -16,6 +16,6 @@ export class FeatureAbilityGuard extends AbilityGuard {
   }
 
   protected getSubjectType() {
-    return AppGitSync;
+    return App;
   }
 }

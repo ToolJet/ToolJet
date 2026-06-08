@@ -62,6 +62,7 @@ import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+import { TriangleAlert } from 'lucide-react';
 
 import { appTypeToDisplayNameMapping } from './helper';
 
@@ -128,6 +129,7 @@ class HomePageComponent extends React.Component {
       showCreateAppModal: false,
       showSwitchBranchForCreate: false,
       showSwitchBranchForDelete: false,
+      showSwitchBranchForClone: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -150,6 +152,7 @@ class HomePageComponent extends React.Component {
       missingGroupsExpanded: false,
       showAIOnboardingLoadingScreen: false,
       showInsufficentPermissionModal: false,
+      showDependentAppsModal: false,
     };
   }
 
@@ -1168,6 +1171,13 @@ class HomePageComponent extends React.Component {
         this.fetchAddToFolderApps();
         break;
       case 'change-icon':
+        if (this.isWorkspaceBranchLocked()) {
+          this.setState({
+            appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+            showSwitchBranchForChangeIcon: true,
+          });
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
           showChangeIconModal: true,
@@ -1180,6 +1190,13 @@ class HomePageComponent extends React.Component {
         });
         break;
       case 'clone-app':
+        if (this.isWorkspaceBranchLocked()) {
+          this.setState({
+            appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
+            showSwitchBranchForClone: true,
+          });
+          break;
+        }
         this.setState({
           appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
           showCloneAppModal: true,
@@ -1672,6 +1689,7 @@ class HomePageComponent extends React.Component {
       missingGroupsExpanded,
       showAIOnboardingLoadingScreen,
       showInsufficentPermissionModal,
+      showDependentAppsModal,
     } = this.state;
 
     if (showAIOnboardingLoadingScreen) {
@@ -1789,6 +1807,22 @@ class HomePageComponent extends React.Component {
               this.setState({ showSwitchBranchForDelete: false, showAppDeletionConfirmation: true });
             }}
           />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForClone}
+            onClose={() => this.setState({ showSwitchBranchForClone: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForClone: false, showCloneAppModal: true });
+            }}
+          />
+          <WorkspaceSwitchBranchModal
+            show={this.state.showSwitchBranchForChangeIcon}
+            onClose={() => this.setState({ showSwitchBranchForChangeIcon: false })}
+            onBranchSwitch={() => {
+              this.fetchApps(1, this.state.currentFolder.id);
+              this.setState({ showSwitchBranchForChangeIcon: false, showChangeIconModal: true });
+            }}
+          />
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1894,6 +1928,19 @@ class HomePageComponent extends React.Component {
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
               title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
+              titleAdornment={
+                this.isOnFeatureBranch() ? (
+                  <ToolTip
+                    message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                    placement="top"
+                    width="272px"
+                  >
+                    <span className="tw-inline-flex tw-items-center tw-ml-2">
+                      <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                    </span>
+                  </ToolTip>
+                ) : null
+              }
               actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
               actionLoadingButton={'Renaming'}
               appType={this.props.appType}
@@ -1901,41 +1948,23 @@ class HomePageComponent extends React.Component {
           )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
-            title={
-              this.isOnFeatureBranch()
-                ? `Delete ${(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()}`
-                : undefined
-            }
+            title="Delete"
             message={
               this.isOnFeatureBranch() ? (
-                <>
-                  <p className="tw-mb-4">
-                    The {(appTypeToDisplayNameMapping[this.props.appType] || 'app').toLowerCase()} &apos;
-                    <strong>{appToBeDeleted?.name}</strong>&apos; will be deleted from this branch. On merge to main,{' '}
-                    <strong>the app and all its associated versions</strong> will be deleted from git and cannot be
-                    retrieved. Are you sure you want to continue?
-                  </p>
-                  <div className="tw-flex tw-items-start tw-gap-2">
-                    <input
-                      type="checkbox"
-                      checked
-                      disabled
-                      className="form-check-input tw-mt-0.5"
-                      style={{ width: '16px', height: '16px', minWidth: '16px' }}
-                    />
-                    <div>
-                      <span className="tw-text-xs tw-font-normal" style={{ color: '#1b1f24' }}>
-                        Commit changes
-                      </span>
-                      <p
-                        className="tw-font-normal tw-mt-0.5 tw-mb-0"
-                        style={{ fontSize: '11px', lineHeight: '16px', color: '#6a727c' }}
-                      >
-                        Delete will always be committed in git to ensure sync with ToolJet
-                      </p>
-                    </div>
-                  </div>
-                </>
+                <span>
+                  {`The ${appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} ${
+                    appToBeDeleted?.name
+                  } and the associated data will be deleted from this branch. On merge to main, `}
+                  <strong>
+                    {' '}
+                    {appTypeToDisplayNameMapping[this.props.appType]?.toLowerCase() ?? 'app'} and all its associated
+                    versions
+                  </strong>
+                  {' will be deleted from git and cannot be retrieved.'}
+                  <br />
+                  <br />
+                  {'Are you sure you want to continue?'}
+                </span>
               ) : (
                 this.props.t(
                   this.props.appType === 'workflow'
@@ -1957,6 +1986,38 @@ class HomePageComponent extends React.Component {
             darkMode={this.props.darkMode}
             cancelButtonText="Cancel"
           />
+
+          <ModalBase
+            show={showDependentAppsModal}
+            handleClose={() => this.setState({ showDependentAppsModal: false })}
+            showHeader={false}
+            showFooter={false}
+            darkMode={this.props.darkMode}
+            className="dependent-apps-modal"
+          >
+            <div className="tw-flex tw-flex-col tw-gap-6 tw-p-6">
+              <div className="tw-flex tw-flex-col tw-gap-2">
+                <SolidIcon name="warning" width="40" fill="var(--icon-danger)" />
+                <div className="tw-flex tw-flex-col tw-gap-[2px]">
+                  <div className="tw-font-medium tw-text-[16px] tw-leading-6 tw-text-default tw-opacity-80">
+                    Dependent apps found!
+                  </div>
+                  <div className="tw-font-normal tw-text-xs tw-leading-[18px] tw-text-default">
+                    Cannot delete this module as it is being used in one or more apps.
+                  </div>
+                </div>
+              </div>
+              <div className="tw-flex tw-justify-end">
+                <ButtonSolid
+                  variant="tertiary"
+                  onClick={() => this.setState({ showDependentAppsModal: false })}
+                  data-cy="dependent-apps-acknowledge-button"
+                >
+                  I understand
+                </ButtonSolid>
+              </div>
+            </div>
+          </ModalBase>
 
           <ConfirmDialog
             show={showRemoveAppFromFolderConfirmation}
@@ -2200,6 +2261,19 @@ class HomePageComponent extends React.Component {
             show={showChangeIconModal && !!appOperations.selectedApp}
             closeModal={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
             title={this.props.t('homePage.appCard.changeIcon', 'Change Icon')}
+            titleAdornment={
+              this.isOnFeatureBranch() ? (
+                <ToolTip
+                  message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                  placement="top"
+                  width="272px"
+                >
+                  <span className="tw-inline-flex tw-items-center tw-ml-2">
+                    <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                  </span>
+                </ToolTip>
+              ) : null
+            }
           >
             <div className="row">
               <div className="col modal-main icon-change-modal">
