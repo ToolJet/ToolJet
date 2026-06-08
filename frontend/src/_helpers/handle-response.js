@@ -1,5 +1,5 @@
 import React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import LegalReasonsErrorModal from '../_components/LegalReasonsErrorModal';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
@@ -115,7 +115,10 @@ export function handleResponse(
 
         const modalContainer = document.getElementById('modal-div');
         if (!message?.includes('expired') && !avoidUpgradeModal && modalContainer) {
-          ReactDOM.render(modalEl, modalContainer);
+          if (!modalContainer._reactRoot) {
+            modalContainer._reactRoot = createRoot(modalContainer);
+          }
+          modalContainer._reactRoot.render(modalEl);
         }
       } else if ([400].indexOf(response.status) !== -1) {
         redirectToSwitchOrArchivedAppPage(data);

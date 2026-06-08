@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '@/_styles/workspace-pull-conflict-modal.scss';
@@ -44,7 +44,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [] }) {
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <div className="pull-conflict-modal-overlay" onClick={handleOverlayClick}>
       <div className={`pull-conflict-modal${darkMode ? ' theme-dark' : ''}`}>
         {/* HEADER */}

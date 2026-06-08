@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
@@ -77,8 +77,7 @@ appService
     }
   })
   .then(() => {
-    render(<AppWithProfiler />, document.getElementById('app'));
-    // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
+    createRoot(document.getElementById('app')).render(<AppWithProfiler />);
 
     // App booted successfully — clear reload flags from both recovery mechanisms
     // (ChunkErrorBoundary in RootRouter.jsx and the .catch() below) so that
