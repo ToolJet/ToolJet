@@ -95,13 +95,8 @@ export class AppsService implements IAppsService {
       // trips chk_app_versions_branch_metadata.
       let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
       if (!branchId && type !== APP_TYPES.WORKFLOW) {
-        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-        if (orgGit) {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-          });
-          branchId = defaultBranch?.id;
-        }
+        const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        branchId = options.defaultBranch?.id;
       }
 
       // Reject app creation on the default branch when branching is enabled.
@@ -514,10 +509,8 @@ export class AppsService implements IAppsService {
         //   - Git off:     any version row works (every row carries identical metadata).
         const nonWorkflowAppIds = apps.filter((a) => a.type !== APP_TYPES.WORKFLOW).map((a) => a.id);
         if (nonWorkflowAppIds.length > 0) {
-          const defaultBranch = await manager.findOne(WorkspaceBranch, {
-            where: { organizationId: user.organizationId, isDefault: true },
-            select: ['id'],
-          });
+          const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+          const defaultBranchId = options.defaultBranch?.id;
           const qb = manager
             .createQueryBuilder()
             .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
@@ -527,8 +520,8 @@ export class AppsService implements IAppsService {
             .addSelect('av.is_public', 'is_public')
             .from('app_versions', 'av')
             .where('av.app_id IN (:...appIds)', { appIds: nonWorkflowAppIds });
-          if (defaultBranch?.id) {
-            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
+          if (defaultBranchId) {
+            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
           }
           const rows: {
             app_id: string;
@@ -581,13 +574,8 @@ export class AppsService implements IAppsService {
     providedBranchId?: string
   ): Promise<string | undefined> {
     if (providedBranchId || type !== APP_TYPES.FRONT_END) return providedBranchId;
-    const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-    if (!orgGit) return undefined;
-    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-      where: { organizationId: user.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    return defaultBranch?.id;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+    return options.defaultBranch?.id;
   }
 
   private async fetchDashboardApps(
@@ -701,13 +689,11 @@ export class AppsService implements IAppsService {
     if (app.editingVersion) return; // subscriber already set it (workflow / git-off)
     if (app.type === APP_TYPES.WORKFLOW) return;
 
-    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
-      where: { organizationId: app.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch) return; // git off — subscriber should have handled it
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    const defaultBranchId = options.defaultBranch?.id;
+    if (!defaultBranchId) return; // git off — subscriber should have handled it
 
-    const targetBranchId = branchId ?? defaultBranch.id;
+    const targetBranchId = branchId ?? defaultBranchId;
     const version = await this.versionRepository.findOne({
       where: { appId: app.id, branchId: targetBranchId, isStub: false },
       order: { updatedAt: 'DESC' },

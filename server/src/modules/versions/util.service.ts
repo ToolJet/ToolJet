@@ -1,5 +1,4 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -24,6 +23,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -34,7 +34,8 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly organizationGitSyncRepository: OrganizationGitSyncRepository,
-    protected readonly appHistoryUtilService: AppHistoryUtilService
+    protected readonly appHistoryUtilService: AppHistoryUtilService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -176,11 +177,8 @@ export class VersionUtilService implements IVersionUtilService {
     });
     if (!parentApp?.organizationId) return;
 
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId: parentApp.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch || defaultBranch.id !== appVersion.branchId) return;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(parentApp.organizationId);
+    if (!options.defaultBranch || options.defaultBranch.id !== appVersion.branchId) return;
 
     // Source from the latest version row by updated_at — the just-published
     // row has the freshest updated_at after the UPDATE that triggered this
@@ -210,7 +208,7 @@ export class VersionUtilService implements IVersionUtilService {
         appId: appVersion.appId,
         status: AppVersionStatus.DRAFT,
         versionType: AppVersionType.VERSION,
-        branchId: defaultBranch.id,
+        branchId: options.defaultBranch.id,
         // Modules pin to a version via module_reference_id. Each new version gets a
         // fresh uuid (mirrors createVersion line 347) — never leave it NULL for a
         // module, or ModuleViewer pin resolution against this draft fails.
@@ -421,7 +419,9 @@ export class VersionUtilService implements IVersionUtilService {
       //   orphan-fallback    — UUID pin matched no row; runtime drifts to active draft
       //   unpinned-fallback  — pin empty; runtime drifts to active draft
       //   pin-hit + DRAFT    — pin points directly at the editing draft
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter(
         (v) =>
           v.matchKind === 'no-row' ||
@@ -481,7 +481,9 @@ export class VersionUtilService implements IVersionUtilService {
     try {
       // Resolve pins; flag row below target env priority. Strict: no-row, orphan-fallback,
       // unpinned-fallback also block — runtime fallback isn't a stable promote target.
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter((v) => {
         if (
           v.matchKind === 'no-row' ||

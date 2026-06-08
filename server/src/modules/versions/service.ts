@@ -20,6 +20,7 @@ import { OrganizationThemesUtilService } from '@modules/organization-themes/util
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { VersionUtilService } from './util.service';
 import { listModuleVersions, resolveModuleRef } from './module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import {
   IVersionService,
@@ -48,7 +49,8 @@ export class VersionService implements IVersionService {
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
-    protected readonly organizationGitRepository: OrganizationGitSyncRepository
+    protected readonly organizationGitRepository: OrganizationGitSyncRepository,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -125,9 +127,13 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
+    const defaultBranchId =
+      app.type === APP_TYPES.MODULE
+        ? ((await this.gitSyncConfigsUtilService.getDetails(app.organizationId)).options.defaultBranch?.id ?? null)
+        : null;
     const result =
       app.type === APP_TYPES.MODULE
-        ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
+        ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
     if (result?.length) {
@@ -275,12 +281,14 @@ export class VersionService implements IVersionService {
       throw new NotFoundException('Module not found');
     }
 
+    const defaultBranchId =
+      (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ?? null;
     const version = await resolveModuleRef(
       this.versionRepository.manager,
       moduleApp,
       moduleReferenceId,
       branchId,
-      user.organizationId
+      defaultBranchId
     );
     if (!version) {
       // NotFoundException (not findOneOrFail) so drift surfaces as 404, not 500.

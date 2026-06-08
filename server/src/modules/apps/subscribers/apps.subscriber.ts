@@ -2,10 +2,10 @@ import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent, No
 import { AsyncLocalStorage } from 'async_hooks';
 import { App } from 'src/entities/app.entity';
 import { AppVersionType } from 'src/entities/app_version.entity';
-import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { VersionRepository } from '@modules/versions/repository';
 import { AppsRepository } from '@modules/apps/repository';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 // List endpoints opt out of the per-entity afterLoad hydration and run a single bulk query instead.
 export const skipAppEditingVersionHydration = new AsyncLocalStorage<boolean>();
@@ -15,7 +15,8 @@ export class AppsSubscriber implements EntitySubscriberInterface {
   constructor(
     private readonly appVersionRepository: VersionRepository,
     private readonly appRepository: AppsRepository,
-    private readonly datasourceRepository: DataSource
+    private readonly datasourceRepository: DataSource,
+    private readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {
     datasourceRepository.subscribers.push(this);
   }
@@ -56,18 +57,15 @@ export class AppsSubscriber implements EntitySubscriberInterface {
 
     if (skipAppEditingVersionHydration.getStore()) return;
 
-    // Git-sync detection: presence of a default workspace branch row signals
-    // git is on for this org. Workflows are exempt — they don't participate
-    // in branching (branch_id always NULL), so the subscriber falls through
-    // and picks their single VERSION row even when git is on for the org.
+    // Git-sync detection via the central util — gates on license + provider + branch.
+    // Workflows are exempt — they don't participate in branching (branch_id always NULL),
+    // so the subscriber falls through and picks their single VERSION row even when git
+    // is on for the org.
     const isWorkflow = app.type === APP_TYPES.WORKFLOW;
     let isGitEnabled = false;
     if (!isWorkflow) {
-      const defaultBranch = await this.datasourceRepository.manager.findOne(WorkspaceBranch, {
-        where: { organizationId: app.organizationId, isDefault: true },
-        select: ['id'],
-      });
-      isGitEnabled = !!defaultBranch;
+      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+      isGitEnabled = details.isEnabled;
     }
 
     if (isGitEnabled) {

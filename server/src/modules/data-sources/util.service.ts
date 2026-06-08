@@ -23,6 +23,7 @@ import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.ser
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -34,7 +35,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly inMemoryCacheService: InMemoryCacheService
+    protected readonly inMemoryCacheService: InMemoryCacheService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -482,10 +484,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
-        const isGitEnabled = !!(await manager.findOne(WorkspaceBranch, {
-          where: { organizationId, isDefault: true },
-          select: ['id'],
-        }));
+        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
 
         if (!isGitEnabled && name) {
           await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);

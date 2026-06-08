@@ -21,6 +21,7 @@ import {
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { TransactionLogger } from '@modules/logging/service';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -52,7 +53,6 @@ import { QueryPermission } from '@entities/query_permissions.entity';
 import { QueryUser } from '@entities/query_users.entity';
 import { ComponentPermission } from '@entities/component_permissions.entity';
 import { ComponentUser } from '@entities/component_users.entity';
-import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
@@ -283,7 +283,8 @@ export class AppImportExportService {
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
     protected appsRepository: AppsRepository,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -568,12 +569,10 @@ export class AppImportExportService {
             if (branchRow) {
               versionDbId = branchRow.id;
             } else {
-              const defaultBranch = await manager.findOne(WorkspaceBranch, {
-                where: { organizationId: appToExport.organizationId, isDefault: true },
-              });
-              if (defaultBranch) {
+              const { options } = await this.gitSyncConfigsUtilService.getDetails(appToExport.organizationId);
+              if (options.defaultBranch?.id) {
                 const defaultRow = await manager.findOne(AppVersion, {
-                  where: { appId: resolvedId, branchId: defaultBranch.id, isStub: false },
+                  where: { appId: resolvedId, branchId: options.defaultBranch.id, isStub: false },
                   order: { createdAt: 'DESC' },
                 });
                 versionDbId = defaultRow?.id;
@@ -705,10 +704,8 @@ export class AppImportExportService {
     // git-sync workspaces. Non-git-sync workspaces have no default branch — the lookup
     // falls back to "any version's app_name" since every version row carries the metadata.
     // Workflows are unaffected because modules can never be type=workflow.
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId: user.organizationId, isDefault: true },
-      select: ['id'],
-    });
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+    const defaultBranchId = options.defaultBranch?.id;
 
     const existingModules =
       moduleAppNames.length > 0 || moduleAppCoRelIds.length > 0
@@ -718,7 +715,7 @@ export class AppImportExportService {
             .andWhere(
               new Brackets((qb: any) => {
                 if (moduleAppNames.length > 0) {
-                  if (defaultBranch?.id) {
+                  if (defaultBranchId) {
                     qb.where(
                       `EXISTS (
                          SELECT 1 FROM app_versions av
@@ -726,7 +723,7 @@ export class AppImportExportService {
                            AND av.branch_id = :defaultBranchId
                            AND av.app_name IN (:...moduleAppNames)
                        )`,
-                      { defaultBranchId: defaultBranch.id, moduleAppNames }
+                      { defaultBranchId, moduleAppNames }
                     );
                   } else {
                     // Non-git-sync workspace: no branches. Match against any version's app_name.
@@ -757,8 +754,8 @@ export class AppImportExportService {
         .select(['av.app_id AS app_id', 'av.app_name AS app_name'])
         .where('av.app_id IN (:...appIds)', { appIds: existingModules.map((m) => m.id) })
         .andWhere('av.app_name IN (:...moduleAppNames)', { moduleAppNames });
-      if (defaultBranch?.id) {
-        nameQb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
+      if (defaultBranchId) {
+        nameQb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId });
       }
       const moduleNameRows: { app_id: string; app_name: string }[] = await nameQb.getRawMany();
       const appById = new Map(existingModules.map((m) => [m.id, m]));
@@ -1277,11 +1274,8 @@ export class AppImportExportService {
       // uniqueness via the partial unique index on (app_name, branch_id) WHERE
       // version_type='branch'.
       if (!isWorkflow && appParams?.name) {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user?.organizationId, isDefault: true },
-          select: ['id'],
-        });
-        if (!defaultBranch) {
+        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
+        if (!isGitEnabled) {
           const conflictingNameVersion = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'app', 'app.id = av.appId')
@@ -2790,12 +2784,9 @@ export class AppImportExportService {
     // Resolve target branch: use explicit branchId, or fall back to default branch
     let targetBranchId = branchId;
     if (!targetBranchId) {
-      const defaultBranch = await manager.findOne(WorkspaceBranch, {
-        where: { organizationId, isDefault: true },
-        select: ['id'],
-      });
-      if (!defaultBranch) return;
-      targetBranchId = defaultBranch.id;
+      const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+      if (!options.defaultBranch?.id) return;
+      targetBranchId = options.defaultBranch.id;
     }
 
     // Check if a branch-specific DSV already exists
@@ -3123,11 +3114,8 @@ export class AppImportExportService {
     });
     let currentEnvironmentId: string;
 
-    // Check if git sync is configured for the workspace
-    const orgGitSync = await manager.findOne(OrganizationGitSync, {
-      where: { organizationId: user?.organizationId },
-    });
-    const isGitSyncConfigured = !!orgGitSync;
+    // Check if git sync is fully enabled for the workspace (license + provider + branch).
+    const { isEnabled: isGitSyncConfigured } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
     // Workflows are branch-agnostic — they are not synced to git and must not be
     // scoped to a branch or use the BRANCH version type, otherwise the versions
     // list (which filters by default branch / VERSION type) will hide them.
