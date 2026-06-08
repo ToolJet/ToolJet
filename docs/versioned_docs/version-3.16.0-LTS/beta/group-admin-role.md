@@ -37,9 +37,7 @@ The Groups and Themes tabs are accessible to all builders by default. Group Admi
 
 ## Who Can Be a Group Admin
 
-Only **Builders** can be assigned as Group Admins. End Users cannot hold this role.
-
-If you attempt to assign an End User as a Group Admin, ToolJet will prompt you to convert them to a Builder first. This restriction exists for security — an End User who can manage group membership could add themselves to groups that grant access to resources they are not authorized to see.
+Only **Builders** can be assigned as Group Admins. End Users cannot hold this role. If you attempt to assign an End User as a Group Admin, ToolJet will prompt you to convert them to a Builder first.
 
 ## Which Groups Can Have a Group Admin
 
