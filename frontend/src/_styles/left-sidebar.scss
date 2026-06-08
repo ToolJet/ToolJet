@@ -456,6 +456,14 @@
     }
   }
 }
+
+.theme-dark {
+  .card.active {
+    background: var(--slate12) !important;
+    color: var(--text-default) !important;
+  }
+}
+
 .viewer-page-handler.dark {
   .card.active {
     background: #2c405c;
