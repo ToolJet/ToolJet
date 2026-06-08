@@ -41,16 +41,23 @@ export class DataQueriesModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
-        // One per-second limit per (user, app), shared by builder + viewer runs.
-        // Default 50/s: covers a dashboard's page-load query fan-out, stops runaway loops.
-        // Single-pod only; multi-pod = per-pod counters until Redis storage added.
+        // Two limits per (user, app), shared by builder + viewer runs; a request
+        // must pass BOTH. 'burst' (50/s) absorbs a dashboard's page-load query
+        // fan-out; 'sustained' (300/min ≈ 5/s avg) blocks a runaway loop hammering
+        // forever. Single-pod only; multi-pod = per-pod counters until Redis storage.
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],
           useFactory: (config: ConfigService) => [
             {
+              name: 'burst',
               ttl: parsePositiveInt(config.get('DATA_QUERY_RUN_TTL'), 1000),
               limit: parsePositiveInt(config.get('DATA_QUERY_RUN_LIMIT'), 50),
+            },
+            {
+              name: 'sustained',
+              ttl: parsePositiveInt(config.get('DATA_QUERY_RUN_SUSTAINED_TTL'), 60000),
+              limit: parsePositiveInt(config.get('DATA_QUERY_RUN_SUSTAINED_LIMIT'), 300),
             },
           ],
         }),
