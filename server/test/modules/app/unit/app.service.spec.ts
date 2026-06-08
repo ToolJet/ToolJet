@@ -5,6 +5,30 @@ import { FEATURE_KEY } from '@modules/apps/constants';
 import { App } from '@entities/app.entity';
 
 /** @group platform */
+describe('AppsService.getBySlug', () => {
+  const getBySlug = AppsService.prototype.getBySlug;
+
+  const makeApp = (overrides: Partial<App> = {}): App =>
+    ({ id: 'app-uuid-1', slug: 'my-app', currentVersionId: null, isPublic: true, ...overrides } as App);
+
+  it('throws 501 HttpException when unauthenticated user accesses app with no released version', async () => {
+    expect.assertions(3);
+    const app = makeApp({ currentVersionId: null });
+
+    try {
+      await getBySlug.call(null, app, null);
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(HttpException);
+      expect(e.getStatus()).toBe(HttpStatus.NOT_IMPLEMENTED);
+      expect(e.getResponse()).toMatchObject({
+        statusCode: HttpStatus.NOT_IMPLEMENTED,
+        error: 'App is not released yet',
+      });
+    }
+  });
+});
+
+/** @group platform */
 describe('AppsService.validateReleasedApp', () => {
   const validateReleasedApp = AppsService.prototype.validateReleasedApp;
 

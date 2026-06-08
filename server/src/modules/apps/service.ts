@@ -675,6 +675,17 @@ export class AppsService implements IAppsService {
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
+      if (!app.currentVersionId && !user) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_IMPLEMENTED,
+            error: 'App is not released yet',
+            message: { error: 'App is not released yet' },
+          },
+          HttpStatus.NOT_IMPLEMENTED
+        );
+      }
+
       const versionToLoad = app.currentVersionId
         ? await this.versionRepository.findVersion(app.currentVersionId)
         : await this.versionRepository.findVersion(app.editingVersion?.id);
