@@ -111,8 +111,12 @@ describe('GitObjectCacheService.mirrorPathFor', () => {
   const svc = new GitObjectCacheService({} as any);
 
   afterEach(() => {
-    // Tests can flip this env var; clear it so one test can't affect the next.
+    // Clear EVERY knob a test (or a prior spec file) could leave set. ROOT is a
+    // static on the class — process-global across spec files — so the path-shape
+    // assertions below would silently change if it leaked in. Reset all four.
     delete process.env.GIT_OBJECT_CACHE;
+    delete process.env.GIT_OBJECT_CACHE_DIR;
+    delete (GitObjectCacheService as any).ROOT;
   });
 
   it('gives the same repo the same folder, and different orgs different folders', () => {
@@ -146,6 +150,14 @@ describe('GitObjectCacheService.mirrorPathFor', () => {
 
 describe('GitObjectCacheService.authConfigArgs', () => {
   const svc = new GitObjectCacheService({} as any);
+
+  afterEach(() => {
+    // Defensive: this block sets nothing, but a leaked ROOT/env from another
+    // spec file in the same worker shouldn't survive past here.
+    delete process.env.GIT_OBJECT_CACHE;
+    delete process.env.GIT_OBJECT_CACHE_DIR;
+    delete (GitObjectCacheService as any).ROOT;
+  });
 
   it('passes the token to git as a one-time header, never written to disk', () => {
     // We hand git the token via a `-c http.extraHeader=...` flag that lives only
@@ -239,8 +251,8 @@ describe('GitObjectCacheService eviction', () => {
   it('when over the size cap, deletes the least-recently-used mirror first', async () => {
     const old = makeMirror('old', 5, 1_000_000); // ~1MB, last used 5 days ago
     const recent = makeMirror('recent', 0, 1_000_000); // ~1MB, used today
-    // Cap is ~1.5MB but we have ~2MB, so exactly one mirror must be dropped —
-    // and it should be the older (least-recently-used) one.
+    // 0.00143 GB ≈ 1.53 MB: enough for ONE ~1MB mirror but not two (~2MB total),
+    // so exactly one must be dropped — and it should be the least-recently-used one.
     process.env.GIT_OBJECT_CACHE_MAX_GB = '0.00143';
 
     await svc.enforceSizeCap();
@@ -311,6 +323,109 @@ describe('GitObjectCacheService.cachedSparseClone fallback', () => {
 
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
+
+  // The flag-OFF path is the byte-for-byte "today's behavior" guarantee (and what
+  // the CE stub does): go straight to plainClone WITHOUT building a mirror and
+  // WITHOUT wiping the temp dir. Contrast with the error path above, which wipes.
+  it('when the flag is off, calls plainClone directly and leaves the temp dir untouched', async () => {
+    delete process.env.GIT_OBJECT_CACHE; // off
+    const svc = new GitObjectCacheService({} as any);
+
+    // If the cache path were entered, this would throw — proving OFF skips it.
+    (svc as any).ensureMirror = async () => {
+      throw new Error('cache must not run when the flag is off');
+    };
+
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-off-'));
+    fs.writeFileSync(path.join(tmpDir, 'keep'), 'caller-prepared content');
+
+    let plainCloneDir: string | undefined;
+    let dirUntouched = false;
+    const plainClone = async (dir: string) => {
+      plainCloneDir = dir;
+      dirUntouched = fs.existsSync(path.join(dir, 'keep')); // OFF must NOT wipe the dir
+    };
+
+    await svc.cachedSparseClone({
+      orgId: 'org1',
+      cleanRepoUrl: 'https://github.com/a/b.git',
+      token: 't',
+      branch: 'main',
+      tmpDir,
+      paths: ['x'],
+      plainClone,
+    });
+
+    expect(plainCloneDir).toBe(tmpDir); // plainClone ran
+    expect(dirUntouched).toBe(true); // and the dir was left exactly as the caller made it
+
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+});
+
+describe('GitObjectCacheService per-repo locking (withLock)', () => {
+  // The cache must never run two git operations against the SAME mirror at once
+  // (one clone reading while another fetch/evict writes = corruption). withLock
+  // serializes per key. Different keys (different repos) must still run in parallel.
+  let svc: GitObjectCacheService;
+  beforeEach(() => {
+    svc = new GitObjectCacheService({} as any);
+  });
+
+  // wait a few event-loop turns so queued lock work can progress
+  const tick = () => new Promise((resolve) => setImmediate(resolve));
+
+  it('runs two operations on the SAME key strictly one-after-another', async () => {
+    const events: string[] = [];
+    let releaseFirst!: () => void;
+    const firstHoldsTheLock = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+
+    // First op grabs the lock and HOLDS it until we release it.
+    const first = (svc as any).withLock('repoA', async () => {
+      events.push('A-start');
+      await firstHoldsTheLock;
+      events.push('A-end');
+    });
+    // Second op on the SAME key must wait for the first to fully finish.
+    const second = (svc as any).withLock('repoA', async () => {
+      events.push('B-start');
+      events.push('B-end');
+    });
+
+    await tick(); // let the event loop run; B must still be blocked
+    expect(events).toEqual(['A-start']); // B has not started
+
+    releaseFirst(); // let A finish
+    await Promise.all([first, second]);
+
+    expect(events).toEqual(['A-start', 'A-end', 'B-start', 'B-end']); // strict order
+  });
+
+  it('runs operations on DIFFERENT keys concurrently', async () => {
+    const events: string[] = [];
+    let releaseA!: () => void;
+    const aHoldsTheLock = new Promise<void>((resolve) => {
+      releaseA = resolve;
+    });
+
+    const a = (svc as any).withLock('repoA', async () => {
+      events.push('A-start');
+      await aHoldsTheLock; // keep repoA's lock held
+      events.push('A-end');
+    });
+    const b = (svc as any).withLock('repoB', async () => {
+      events.push('B-start'); // different repo -> should not be blocked by A
+      events.push('B-end');
+    });
+
+    await tick();
+    expect(events).toContain('B-end'); // B finished while A is still holding repoA
+
+    releaseA();
+    await Promise.all([a, b]);
+  });
 });
 
 describe('GitObjectCacheService Redis fleet eviction', () => {
@@ -337,9 +452,14 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
   });
 
   // Some service work is "fire-and-forget" (it doesn't await the Redis publish so
-  // a slow Redis can't slow the user down). `settle()` waits one event-loop turn
-  // so those background promises finish before we assert.
-  const settle = () => new Promise((resolve) => setImmediate(resolve));
+  // a slow Redis can't slow the user down). Rather than guess how many event-loop
+  // turns that takes, poll until the expected effect appears (or give up). This is
+  // robust even if the publish->disconnect chain grows more async hops.
+  const flushUntil = async (done: () => boolean, tries = 50) => {
+    for (let i = 0; i < tries && !done(); i++) {
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+  };
 
   it('starts listening on the evict channel when the cache is enabled', async () => {
     process.env.GIT_OBJECT_CACHE = 'true';
@@ -370,16 +490,26 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
     expect(fs.existsSync(mirror)).toBe(false);
   });
 
-  it('ignores a garbage message instead of crashing', async () => {
+  it('ignores a garbage message safely and does not evict anything', async () => {
     process.env.GIT_OBJECT_CACHE = 'true';
     await svc.onModuleInit();
-    // A non-JSON message must be swallowed safely (bad input shouldn't crash a pod).
-    expect(() => redis.subscriber.deliver(CHANNEL, 'not-json')).not.toThrow();
+
+    // A real mirror exists. A non-JSON message must be swallowed (the handler
+    // promise RESOLVES, not rejects) AND must not delete the mirror.
+    const mirror = svc.mirrorPathFor('org1', 'https://github.com/a/b.git');
+    fs.mkdirSync(mirror, { recursive: true });
+    fs.writeFileSync(path.join(mirror, 'HEAD'), 'x');
+
+    // deliver() returns the handler's promise. `.resolves` actually exercises the
+    // async path — a missing try/catch in the handler would REJECT and fail here.
+    await expect(redis.subscriber.deliver(CHANNEL, 'not-json')).resolves.toBeDefined();
+
+    expect(fs.existsSync(mirror)).toBe(true); // nothing was evicted on bad input
   });
 
   it('broadcasts the exact org + repo when evicting everywhere', async () => {
     await svc.evictEverywhere('org1', 'https://github.com/a/b.git');
-    await settle();
+    await flushUntil(() => redis.publisher.published.length > 0);
     expect(redis.publisher.published).toEqual([
       { channel: CHANNEL, message: JSON.stringify({ orgId: 'org1', repoUrl: 'https://github.com/a/b.git' }) },
     ]);
@@ -387,8 +517,24 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
 
   it('closes the publisher connection after broadcasting (no connection leak)', async () => {
     await svc.evictEverywhere('org1', 'https://github.com/a/b.git');
-    await settle();
+    await flushUntil(() => redis.publisher.disconnected);
     expect(redis.publisher.disconnected).toBe(true);
+  });
+
+  it('still broadcasts to the fleet even when the LOCAL evict fails', async () => {
+    // If deleting this pod's own mirror fails (e.g. disk error), the other pods
+    // must STILL be told to drop theirs — otherwise they serve a stale/revoked
+    // repo. (Regression guard for the unconditional-broadcast fix.)
+    (svc as any).evict = async () => {
+      throw new Error('local disk boom');
+    };
+
+    await svc.evictEverywhere('org1', 'https://github.com/a/b.git');
+    await flushUntil(() => redis.publisher.published.length > 0);
+
+    expect(redis.publisher.published).toEqual([
+      { channel: CHANNEL, message: JSON.stringify({ orgId: 'org1', repoUrl: 'https://github.com/a/b.git' }) },
+    ]);
   });
 
   it('stops listening and closes the connection on shutdown', async () => {
