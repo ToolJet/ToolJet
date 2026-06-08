@@ -65,7 +65,7 @@ const parseDate = ({
   parseInUnixTimestamp,
   isTimeChecked,
 }) => {
-  if (!value) return null;
+  if (value === null || value === undefined || value === '') return null;
 
   // ISO 8601 strings (strict) and epoch millisecond numbers
   const parseAsIso = (input, timeZone) => {
