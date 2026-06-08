@@ -164,6 +164,12 @@ export const rangeSliderV2Config = {
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -384,6 +390,7 @@ export const rangeSliderV2Config = {
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
       color: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       visibility: { value: '{{true}}' },

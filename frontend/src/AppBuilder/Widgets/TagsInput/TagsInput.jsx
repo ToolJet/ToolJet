@@ -8,6 +8,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -69,6 +70,7 @@ const TagsInput = ({
     widthType,
     tagBackgroundColor,
     autoPickChipColor = true,
+    labelFontSize,
   } = styles;
 
   const isInitialRender = useRef(true);
@@ -772,6 +774,7 @@ const TagsInput = ({
   };
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   // Filter options to exclude already selected and match input text
   const filteredOptions = useMemo(() => {
@@ -819,6 +822,7 @@ const TagsInput = ({
           top={alignment === 'side' ? '8px' : undefined}
           widthType={widthType}
           id={`${id}-label`}
+          fontSize={labelFontSizeValue}
         />
         <div
           className={cx('px-0', { 'h-100': !isDynamicHeightEnabled })}

@@ -108,6 +108,12 @@ export const numberinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -352,6 +358,7 @@ export const numberinputConfig = {
       accentColor: { value: 'var(--cc-primary-brand)' },
       errTextColor: { value: 'var(--cc-error-systemStatus)' },
       textColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       placeholderTextColor: { value: 'var(--cc-placeholder-text)' },
       color: { value: 'var(--cc-primary-text)' },
       iconColor: { value: 'var(--cc-default-icon)' },

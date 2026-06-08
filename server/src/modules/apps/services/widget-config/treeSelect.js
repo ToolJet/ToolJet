@@ -140,6 +140,12 @@ export const treeSelectConfig = {
       validation: { schema: { type: 'string' } },
       accordian: 'label',
     },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
     labelStyle: {
       type: 'select',
       displayName: 'Style',
@@ -390,6 +396,7 @@ export const treeSelectConfig = {
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       labelStyle: { value: 'new' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
