@@ -7,9 +7,7 @@ title: Workspace-Level Branching
 Workspace-Level Branching is currently in beta and not recommended for production use.
 :::
 
-Previously, branches in ToolJet were scoped to individual applications. If you were building an app that depended on a module and a data source, those resources couldn't be part of the same branch — they lived outside the Git flow entirely.
-
-Workspace-level branching changes this. A branch now spans your entire workspace. When you work on a feature branch, every change you make — across apps, data sources, and modules — stays on that branch together. They commit together, they get reviewed together through a pull request, and they merge together. This ensures your complete feature, including all its dependencies, moves through Git as a single unit.
+A branch now spans your entire workspace. When you work on a feature branch, every change you make — across apps, data sources, and modules — stays on that branch together. They commit together, they get reviewed together through a pull request, and they merge together. This ensures your complete feature, including all its dependencies, moves through Git as a single unit.
 
 :::info
 Support for workflows in workspace-level branching is coming soon. Themes, custom styles, and constants will follow in future releases.
@@ -31,7 +29,7 @@ All three changes live on `taylor/inventory-v2`. When you open a pull request an
 Pushing is done **per resource**, from inside each builder or dashboard. There is no single button to push your entire workspace at once.
 
 | Where you push from | What gets pushed |
-|---|---|
+|:---|:---|
 | Inside the app builder | That specific app only |
 | Inside the module builder | That specific module only |
 | Data source dashboard | All data sources (as a single entity) |

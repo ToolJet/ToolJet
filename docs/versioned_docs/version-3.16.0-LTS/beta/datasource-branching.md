@@ -30,11 +30,9 @@ A data source connected to one or more app queries cannot be deleted, regardless
 
 ## Encrypted Fields and Git
 
-Data source configurations often contain sensitive values — passwords, API keys, connection strings. ToolJet does **not** sync encrypted fields to Git. This is intentional: pushing credentials to a Git repository would be a security risk.
+Data source configurations often contain sensitive values — passwords, API keys, connection strings. ToolJet does **not** sync encrypted fields to Git. Since pushing credentials to a Git repository would be a security risk.
 
 The practical consequence is that after pulling a data source from Git to a new instance, any encrypted fields will be empty. The connection will fail until those fields are filled in again manually.
-
-For teams that frequently pull across instances — for example, moving from development to staging to production — manually re-entering credentials every time is impractical. The recommended workaround is to use **workspace constants**.
 
 ## Using Workspace Constants for Encrypted Fields
 
@@ -49,15 +47,6 @@ When ToolJet detects this syntax in an encrypted field, it syncs the **constant 
 For this to work seamlessly, the same constant or secret names must exist on every instance that will receive the data source. The recommended approach is to use **environment variables** to pre-load constants into each ToolJet instance. This way, constants are defined at the infrastructure level and are automatically available on every instance without manual setup.
 
 Refer to the [GitSync environment variables guide](/docs/beta/gitsync-env-vars) for setting up instance-level configuration.
-
-## How ToolJet Handles Encrypted Fields in Git
-
-ToolJet automatically detects what is in each encrypted field and decides whether to sync it:
-
-- **Plain value** (e.g., a raw password string): Not synced to Git. The field will be empty on the destination instance after a pull.
-- **Constant or secret reference** (e.g., `{{secrets.pg_password}}`): The reference name is synced to Git. The value is resolved from the destination instance's own constants.
-
-You do not need to configure this — the detection is automatic based on whether the field contains the `{{constants.*}}` or `{{secrets.*}}` syntax.
 
 ## Restriction on Main Branch
 
