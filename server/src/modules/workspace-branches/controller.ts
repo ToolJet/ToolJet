@@ -88,6 +88,7 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
       user.organizationId,
       user,
       dto.moduleId,
+      dto.branchId,
       dto.tagSha,
       dto.tagName,
       dto.tagDescription,

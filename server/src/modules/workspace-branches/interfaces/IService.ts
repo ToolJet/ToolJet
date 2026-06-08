@@ -55,6 +55,7 @@ export interface IWorkspaceBranchService {
     organizationId: string,
     user: User,
     moduleId: string,
+    branchId?: string,
     tagSha?: string,
     tagName?: string,
     tagDescription?: string,

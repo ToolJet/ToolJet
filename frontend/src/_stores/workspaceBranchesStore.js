@@ -173,7 +173,14 @@ export const useWorkspaceBranchesStore = create(
         async pullModule(moduleId, tagSha, tagName, tagDescription) {
           set({ isPulling: true });
           try {
-            const result = await workspaceBranchesService.pullModule(moduleId, tagSha, tagName, tagDescription);
+            const branchId = get().activeBranchId;
+            const result = await workspaceBranchesService.pullModule(
+              moduleId,
+              tagSha,
+              tagName,
+              tagDescription,
+              branchId
+            );
             set({ isPulling: false });
             return result;
           } catch (error) {

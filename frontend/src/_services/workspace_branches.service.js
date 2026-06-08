@@ -97,9 +97,10 @@ function pullApp(appId, branchId, tagSha, tagName, tagDescription) {
   return fetch(`${config.apiUrl}/workspace-branches/pull-app`, requestOptions).then(handleResponse);
 }
 
-function pullModule(moduleId, tagSha, tagName, tagDescription) {
+function pullModule(moduleId, tagSha, tagName, tagDescription, branchId) {
   const body = {
     moduleId,
+    ...(branchId && { branchId }),
     ...(tagSha && { tagSha }),
     ...(tagName && { tagName }),
     ...(tagDescription && { tagDescription }),

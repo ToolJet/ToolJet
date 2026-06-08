@@ -75,6 +75,10 @@ export class PullModuleDto {
   moduleId: string;
 
   @IsOptional()
+  @IsUUID()
+  branchId?: string;
+
+  @IsOptional()
   @IsString()
   tagSha?: string;
 
