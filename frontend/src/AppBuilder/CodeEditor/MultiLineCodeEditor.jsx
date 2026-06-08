@@ -226,6 +226,14 @@ const MultiLineCodeEditor = (props) => {
     return initialValue;
   }, [initialValue, replaceIdsWithName]);
 
+  // @uiw/react-codemirror annotates external value-prop changes with ExternalChange
+  // and skips calling onChange to avoid echoing. This means currentValueRef stays stale
+  // when the value is set programmatically (e.g. AI-generated code). Sync it here so
+  // that handleOnBlur propagates the correct value when the user clicks Run.
+  useEffect(() => {
+    currentValueRef.current = initialValueWithReplacedIds ?? '';
+  }, [initialValueWithReplacedIds]);
+
   function updateCurrentLineObserver(editorView) {
     if (!editorView || !editorView?.view?.dom) return;
     const cursorPos = editorView.state.selection.main.head;
