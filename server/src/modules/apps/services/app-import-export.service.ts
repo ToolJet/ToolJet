@@ -3237,7 +3237,11 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          branchId: isWorkflow ? null : branchId,
+          // Only DRAFT rows may carry a branch_id (chk_app_versions_branched_implies_draft).
+          // PUBLISHED versions are branchless workspace history — e.g. hydrating a released
+          // module produces a PUBLISHED temp row, which the git-pull re-parent later forces
+          // back to DRAFT + branchId. Without this guard the INSERT violates the CHECK.
+          branchId: isWorkflow || versionStatus !== AppVersionStatus.DRAFT ? null : branchId,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {

@@ -2856,7 +2856,11 @@ describe('GitSyncController', () => {
           const os = await import('os');
           const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'tj-meta-capture-'));
           try {
-            const git = simpleGit({ baseDir: tmpDir, timeout: { block: 30000 } });
+            const git = simpleGit({
+              baseDir: tmpDir,
+              timeout: { block: 30000 },
+              unsafe: { allowUnsafeCredentialHelper: true },
+            });
             await git.clone(`${GIT_BASE_URL}/${GIT_REPO_PATH}.git`, '.', [
               '--branch',
               'main',
@@ -2940,8 +2944,61 @@ describe('GitSyncController', () => {
 
         await writeGitMeta('appMeta.json', originalAppMeta, 'restore app meta');
 
-        step(56, 'pull main with conflicting moduleMeta (intra-incoming same name) → 409 with conflict details');
-        // 56. Same shape as step 55 for modules.
+        step(56, 'pull main with appMeta same name in different folders → 409 with conflict details');
+        // 56. Cross-folder variant of step 55. App names are unique per
+        //     (branch, type) regardless of folder, so an incoming entry whose
+        //     appPath places an app with the SAME final name under a DIFFERENT
+        //     folder still collides. The injected appPath differs from every
+        //     existing entry, but the derived name (last path segment) matches,
+        //     so detectAndThrowConflicts must still raise a 409.
+        const originalAppMetaFolder = await captureGitMeta('appMeta.json');
+        const appMetaFolderObj = JSON.parse(originalAppMetaFolder);
+        const realAppFolderKeys = Object.keys(appMetaFolderObj).filter(
+          (k) => appMetaFolderObj[k] && typeof appMetaFolderObj[k] === 'object' && (appMetaFolderObj[k] as any).appPath
+        );
+        expect(realAppFolderKeys.length).toBeGreaterThan(0);
+        const sampleAppFolderEntry = appMetaFolderObj[realAppFolderKeys[0]];
+        const sampleAppFolderSegments = sampleAppFolderEntry.appPath.split('/').filter(Boolean);
+        const sampleAppFolderName = sampleAppFolderSegments[sampleAppFolderSegments.length - 1];
+        expect(sampleAppFolderName).toBeTruthy();
+
+        const fakeAppFolderCorid = randomUUIDForMeta();
+        // Same final segment (name), nested under a different folder → distinct appPath.
+        const folderedAppPath = `${sampleAppFolderSegments[0]}/e2e-conflict-folder/${sampleAppFolderName}`;
+        expect(folderedAppPath).not.toBe(sampleAppFolderEntry.appPath);
+        const folderConflictAppMeta = {
+          ...appMetaFolderObj,
+          [fakeAppFolderCorid]: {
+            appPath: folderedAppPath,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        await writeGitMeta(
+          'appMeta.json',
+          JSON.stringify(folderConflictAppMeta, null, 2),
+          'inject cross-folder app name conflict'
+        );
+
+        const appFolderConflictPullResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(409);
+        const appFolderConflictGroups = parseConflictGroups(appFolderConflictPullResp.body);
+        expect(appFolderConflictGroups).not.toBeNull();
+        const appFolderConflictGroup = appFolderConflictGroups!.find((g: any) => g.type === 'app');
+        expect(appFolderConflictGroup).toBeDefined();
+        expect(appFolderConflictGroup.conflictField).toBe('name');
+        expect(appFolderConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
+        expect(appFolderConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeAppFolderCorid);
+
+        await writeGitMeta('appMeta.json', originalAppMetaFolder, 'restore app meta');
+
+        step(57, 'pull main with conflicting moduleMeta (intra-incoming same name) → 409 with conflict details');
+        // 57. Same shape as step 55 for modules.
         const originalModuleMeta = await captureGitMeta('moduleMeta.json');
         const moduleMetaObj = JSON.parse(originalModuleMeta);
         const realModuleKeys = Object.keys(moduleMetaObj).filter(
@@ -2982,8 +3039,58 @@ describe('GitSyncController', () => {
 
         await writeGitMeta('moduleMeta.json', originalModuleMeta, 'restore module meta');
 
-        step(57, 'pull main with conflicting dataSourceMeta (intra-incoming same name) → 409 with conflict details');
-        // 57. Same shape as step 55 for data sources. The DS conflict
+        step(58, 'pull main with moduleMeta same name in different folders → 409 with conflict details');
+        // 58. Cross-folder variant of step 57 for modules — same final name
+        //     under a different folder still collides on the (branch, type)
+        //     name uniqueness, so the pull must raise a 409.
+        const originalModuleMetaFolder = await captureGitMeta('moduleMeta.json');
+        const moduleMetaFolderObj = JSON.parse(originalModuleMetaFolder);
+        const realModuleFolderKeys = Object.keys(moduleMetaFolderObj).filter(
+          (k) =>
+            moduleMetaFolderObj[k] && typeof moduleMetaFolderObj[k] === 'object' && (moduleMetaFolderObj[k] as any).appPath
+        );
+        expect(realModuleFolderKeys.length).toBeGreaterThan(0);
+        const sampleModuleFolderEntry = moduleMetaFolderObj[realModuleFolderKeys[0]];
+        const sampleModuleFolderSegments = sampleModuleFolderEntry.appPath.split('/').filter(Boolean);
+        const sampleModuleFolderName = sampleModuleFolderSegments[sampleModuleFolderSegments.length - 1];
+        expect(sampleModuleFolderName).toBeTruthy();
+
+        const fakeModuleFolderCorid = randomUUIDForMeta();
+        const folderedModulePath = `${sampleModuleFolderSegments[0]}/e2e-conflict-folder/${sampleModuleFolderName}`;
+        expect(folderedModulePath).not.toBe(sampleModuleFolderEntry.appPath);
+        const folderConflictModuleMeta = {
+          ...moduleMetaFolderObj,
+          [fakeModuleFolderCorid]: {
+            appPath: folderedModulePath,
+            updatedAt: new Date().toISOString(),
+          },
+        };
+        await writeGitMeta(
+          'moduleMeta.json',
+          JSON.stringify(folderConflictModuleMeta, null, 2),
+          'inject cross-folder module name conflict'
+        );
+
+        const moduleFolderConflictPullResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(409);
+        const moduleFolderConflictGroups = parseConflictGroups(moduleFolderConflictPullResp.body);
+        expect(moduleFolderConflictGroups).not.toBeNull();
+        const moduleFolderConflictGroup = moduleFolderConflictGroups!.find((g: any) => g.type === 'module');
+        expect(moduleFolderConflictGroup).toBeDefined();
+        expect(moduleFolderConflictGroup.conflictField).toBe('name');
+        expect(moduleFolderConflictGroup.conflicts.length).toBeGreaterThanOrEqual(2);
+        expect(moduleFolderConflictGroup.conflicts.map((c: any) => c.coRelationId)).toContain(fakeModuleFolderCorid);
+
+        await writeGitMeta('moduleMeta.json', originalModuleMetaFolder, 'restore module meta');
+
+        step(59, 'pull main with conflicting dataSourceMeta (intra-incoming same name) → 409 with conflict details');
+        // 59. Same shape as step 55 for data sources. The DS conflict
         //     detector keys on the `name` field of the meta entry.
         const originalDsMeta = await captureGitMeta('dataSourceMeta.json');
         const dsMetaObj = JSON.parse(originalDsMeta);
@@ -3021,8 +3128,8 @@ describe('GitSyncController', () => {
 
         await writeGitMeta('dataSourceMeta.json', originalDsMeta, 'restore ds meta');
 
-        step(58, 'orphan module + same-name incoming on default → pull succeeds (orphan filter)');
-        // 58. Module variant of step 51: a local orphan module on main shares
+        step(60, 'orphan module + same-name incoming on default → pull succeeds (orphan filter)');
+        // 60. Module variant of step 51: a local orphan module on main shares
         //     its name with an incoming git module (different corid). The
         //     orphan-aware conflict detector must exclude the orphan from the
         //     scan so the pull does not raise 409, after which the orphan
@@ -3141,8 +3248,8 @@ describe('GitSyncController', () => {
         expect(modOnMainAfterPull).toHaveLength(1);
         expect(modOnMainAfterPull[0].id).not.toBe(orphanModId);
 
-        step(59, 'orphan data source + same-name incoming on default → pull succeeds (orphan filter)');
-        // 59. Data-source variant: create a DS on a feature branch, SQL-move
+        step(61, 'orphan data source + same-name incoming on default → pull succeeds (orphan filter)');
+        // 61. Data-source variant: create a DS on a feature branch, SQL-move
         //     its DSV onto main as an "orphan" (no matching file in main's
         //     data-sources/), then create+push a same-named DS on another
         //     feature branch and merge to main. The orphan-aware detector
