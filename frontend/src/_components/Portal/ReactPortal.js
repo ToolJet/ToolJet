@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 
 export function ReactPortal({ children, parent, className, componentName }) {
   const el = React.useMemo(() => document.createElement('div'), []);
@@ -17,5 +17,5 @@ export function ReactPortal({ children, parent, className, componentName }) {
     };
   }, [el, parent, className, componentName]);
 
-  return ReactDOM.createPortal(children, el);
+  return createPortal(children, el);
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import * as ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
@@ -103,7 +103,7 @@ const LegalReasonsErrorModal = ({
       </Modal>
     </>
   );
-  return ReactDOM.createPortal(modalContent, document.body);
+  return createPortal(modalContent, document.body);
 };
 
 export default LegalReasonsErrorModal;
