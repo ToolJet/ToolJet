@@ -76,12 +76,6 @@ export const progressbarConfig = {
       },
       accordian: 'label',
     },
-    labelFontSize: {
-      type: 'numberInput',
-      displayName: 'Size',
-      validation: { schema: { type: 'number' }, defaultValue: 12 },
-      accordian: 'label',
-    },
     alignment: {
       type: 'switch',
       displayName: 'Alignment',
@@ -246,7 +240,6 @@ export const progressbarConfig = {
     events: [],
     styles: {
       textColor: { value: 'var(--cc-primary-text)' },
-      labelFontSize: { value: '{{12}}' },
       textSize: { value: '{{30}}' },
       alignment: { value: 'side' },
       direction: { value: 'left' },
