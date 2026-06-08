@@ -4,17 +4,17 @@ import { Rnd } from 'react-rnd';
 import { Button } from '@/_ui/LeftSidebar';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt, isCopilotEnabled } = restProps;
+  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt, isCopilotEnabled, title } = restProps;
 
-  const [name, setName] = React.useState(componentName);
+  const [name, setName] = React.useState(title || componentName);
   const handleClose = (e) => {
     e.stopPropagation();
     trigger(false);
   };
 
   React.useEffect(() => {
-    setName(componentName);
-  }, [componentName]);
+    setName(title || componentName);
+  }, [componentName, title]);
 
   React.useEffect(() => {
     if (isOpen) {
