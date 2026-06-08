@@ -185,7 +185,6 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
   show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
-    // Skip per-App afterLoad — getOne sets editingVersion explicitly downstream.
     return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, branchId));
   }
 

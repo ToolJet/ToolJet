@@ -146,8 +146,7 @@ export class VersionRepository extends Repository<AppVersion> {
    * (definition/queries/plugins) don't surface `app.name` etc.
    */
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
-    // Memo within request — show path resolves the same versionId 3x.
-    // Skip memo when a tx-bound manager is passed (caller owns isolation).
+    // skip memo for tx-bound manager — caller owns isolation
     if (!manager) {
       const ctx = RequestContext.currentContext;
       const memo = ctx?.res?.locals?.[FIND_VERSION_MEMO_KEY] as Record<string, AppVersion> | undefined;

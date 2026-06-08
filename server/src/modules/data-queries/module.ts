@@ -41,10 +41,7 @@ export class DataQueriesModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
-        // One per-second limit per (user, app), shared by builder + viewer runs.
-        // 50/s absorbs a dashboard's page-load query fan-out and stops a runaway
-        // loop (which fires flat-out) within a second. Single-pod only; multi-pod =
-        // per-pod counters until Redis storage added.
+        // 50/s per (user, app). Single-pod counters until Redis storage added.
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],

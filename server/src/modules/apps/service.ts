@@ -668,7 +668,6 @@ export class AppsService implements IAppsService {
     }
   }
 
-  // Caller wraps in skipAppEditingVersionHydration.run(true, ...) — bulk replaces per-entity afterLoad N+1.
   private async hydrateEditingVersionInBulk(apps: AppListItem[], manager: EntityManager): Promise<void> {
     if (apps.length === 0) return;
     const appIds = apps.map((a) => a.id).filter(Boolean);

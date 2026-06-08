@@ -286,15 +286,13 @@ export class AbilityUtilService {
     // Resolve folder-level permissions (owned folders + granular folder permissions) into app IDs.
     // folderDerivedAppIds tracks only apps that arrived via a folder the user actually has access to,
     // so we can grant them full environment access without leaking to unrelated folders in the org.
-    // Read-only block — uses getConnectionInstance().manager directly (no tx required).
     {
       const manager = getConnectionInstance().manager;
       const folderDerivedAppIds = new Set<string>();
 
       // 1. Apps in folders owned (created) by this user → always editable
       if (!userAppsPermissions.isAllEditable) {
-        // DISTINCT in SQL — folder_apps replicated per branch (133k rows / 553 apps on
-        // git-sync orgs). getMany would hydrate every branch row then JS-dedupe.
+        // DISTINCT in SQL — folder_apps replicated per branch; avoids hydrate-then-JS-dedupe
         const ownedFolderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .innerJoin('folderApp.folder', 'folder')
