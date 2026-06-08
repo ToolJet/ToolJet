@@ -22,7 +22,7 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import { getPreviewQueryParams, redirectToErrorPage, getSubpath } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
@@ -291,8 +291,9 @@ const useAppData = (
     lastModuleVersionRef.current = versionId;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
+    const hasPreviewParams = !!(queryParams.version || queryParams.env);
     const isPublicAccess =
-      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
+      !hasPreviewParams && ((currentSession?.load_app && currentSession?.authentication_failed) || mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
@@ -659,6 +660,12 @@ const useAppData = (
         }
         if (isPublicAccess && _error?.data?.statusCode === 501) {
           redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
+          return;
+        }
+        if (hasPreviewParams && currentSession?.authentication_failed) {
+          const subpath = getSubpath() ?? '';
+          const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `${subpath}/applications/${slug}/login?redirectTo=${redirectTo}`;
         }
       });
 
