@@ -22,7 +22,8 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getPreviewQueryParams, redirectToErrorPage } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -654,6 +655,10 @@ const useAppData = (
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
+          return;
+        }
+        if (isPublicAccess && _error?.data?.statusCode === 501) {
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
       });
 
