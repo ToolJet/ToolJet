@@ -66,10 +66,6 @@ Authenticates with Databricks using OAuth on behalf of the signed-in user, enabl
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/databricks/connection-oauth.png" alt="Databricks: OAuth Connection" />
 
-:::info
-OAuth U2M (per-user) authentication requires Databricks OAuth application support. This feature may not be available in Databricks Free Edition workspaces. 
-:::
-
 ## Querying Databricks
 
 1. Click on + Add button of the query manager at the bottom panel of the editor.
