@@ -1,5 +1,4 @@
 import { Controller, Get, Param, Body, Post, Patch, Delete, UseGuards, Put, Res, Query } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { AppScopedThrottlerGuard } from './throttler/app-scoped-throttler.guard';
 import { DataQueriesService } from './service';
@@ -109,7 +108,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_EDITOR)
-  @SkipThrottle({ viewer: true })
   @UseGuards(
     JwtAuthGuard,
     ValidateQueryAppGuard,
@@ -144,7 +142,6 @@ export class DataQueriesController implements IDataQueriesController {
   }
 
   @InitFeature(FEATURE_KEY.RUN_VIEWER)
-  @SkipThrottle({ editor: true })
   @UseGuards(QueryAuthGuard, AppFeatureAbilityGuard, AppScopedThrottlerGuard)
   @Post(':id/run')
   async runQuery(
