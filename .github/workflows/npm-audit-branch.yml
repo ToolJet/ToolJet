@@ -40,6 +40,8 @@ jobs:
         run: |
           set -uo pipefail
 
+          mkdir -p reports
+          rows="$(mktemp)"          # collects one row per advisory
           c=0 h=0 m=0 l=0 found=0
 
           # Find every lockfile in the branch, skipping node_modules
@@ -53,14 +55,55 @@ jobs:
             fi
 
             found=$((found + 1))
+            manifest="${dir#./}"; [ "$manifest" = "." ] && manifest="(root)"
             audit=$(cd "$dir" && npm audit --json 2>/dev/null || true)
+
+            # Headline counts
             c=$(( c + $(echo "$audit" | jq -r '.metadata.vulnerabilities.critical // 0') ))
             h=$(( h + $(echo "$audit" | jq -r '.metadata.vulnerabilities.high // 0') ))
             m=$(( m + $(echo "$audit" | jq -r '.metadata.vulnerabilities.moderate // 0') ))
             l=$(( l + $(echo "$audit" | jq -r '.metadata.vulnerabilities.low // 0') ))
+
+            # Per-advisory detail rows: rank<TAB>severity<TAB>package<TAB>title<TAB>range<TAB>fix<TAB>manifest
+            echo "$audit" | jq -r --arg manifest "$manifest" '
+              ({critical:1, high:2, moderate:3, low:4, info:5}) as $rankmap
+              | (.vulnerabilities // {})
+              | to_entries[]
+              | .key as $pkg
+              | .value as $v
+              | (
+                  if   ($v.fixAvailable | type) == "object"
+                    then ($v.fixAvailable.name + "@" + $v.fixAvailable.version
+                          + (if $v.fixAvailable.isSemVerMajor then " (major)" else "" end))
+                  elif ($v.fixAvailable == true) then "available"
+                  else "no fix"
+                  end
+                ) as $fix
+              | ($v.via[] | select(type == "object"))
+              | [ (($rankmap[.severity]) // 9 | tostring),
+                  .severity, $pkg, (.title // "-"),
+                  (.range // ($v.range // "-")), $fix, $manifest ]
+              | @tsv
+            ' >> "$rows" || true
           done < <(find . -name package-lock.json -not -path '*/node_modules/*')
 
           echo "Audited $found lockfile(s) on ${{ matrix.branch }}"
+
+          # Build a severity-sorted markdown table (worst first), de-duplicated
+          details="reports/details-${{ matrix.branch }}.md"
+          if [ -s "$rows" ]; then
+            {
+              echo "| Severity | Package | Vulnerability | Vulnerable range | Fix | Manifest |"
+              echo "|---|---|---|---|---|---|"
+              sort -t$'\t' -k1,1n -k3,3 "$rows" | sort -u -t$'\t' -k2 | sort -t$'\t' -k1,1n -k3,3 \
+                | while IFS=$'\t' read -r rank sev pkg title range fix manifest; do
+                    title="${title//|/\\|}"     # escape pipes for markdown
+                    echo "| ${sev} | \`${pkg}\` | ${title} | \`${range}\` | \`${fix}\` | ${manifest} |"
+                  done
+            } > "$details"
+          else
+            echo "_No vulnerabilities found._" > "$details"
+          fi
 
           # Color from the worst severity on this branch
           if   [ "$c" -gt 0 ]; then color="#D40E0D"   # red
@@ -81,11 +124,11 @@ jobs:
       # ---- Output for testing (independent of Slack) -------------------------
       - name: Write report file
         run: |
-          mkdir -p reports
           SCAN_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
+          report="reports/vuln-report-${{ matrix.branch }}.txt"
 
-          # Human-readable text
-          cat > "reports/vuln-report-${{ matrix.branch }}.txt" <<EOF
+          # Summary header
+          cat > "$report" <<EOF
           Weekly Vulnerability Report
           ===========================
           Repository : ${{ github.repository }}
@@ -99,10 +142,15 @@ jobs:
           Low      : ${{ steps.scan.outputs.low }}
           ---------------------------
           Total    : ${{ steps.scan.outputs.total }}
+
+          Details (sorted by severity):
           EOF
 
+          # Detailed table built in the scan step
+          cat "reports/details-${{ matrix.branch }}.md" >> "$report"
+
           echo "----- Report -----"
-          cat "reports/vuln-report-${{ matrix.branch }}.txt"
+          cat "$report"
 
       - name: Add to run summary
         run: |
@@ -118,6 +166,12 @@ jobs:
             echo "| 📊 **Total** | **${{ steps.scan.outputs.total }}** |"
             echo ""
             echo "_Lockfiles scanned: ${{ steps.scan.outputs.lockfiles }} · docs/ excluded_"
+            echo ""
+            echo "<details><summary>Show all vulnerabilities</summary>"
+            echo ""
+            cat "reports/details-${{ matrix.branch }}.md"
+            echo ""
+            echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload report artifact
