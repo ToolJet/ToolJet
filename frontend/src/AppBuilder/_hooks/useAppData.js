@@ -292,8 +292,20 @@ const useAppData = (
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
     const hasPreviewParams = !!(queryParams.version || queryParams.env);
+
+    // Unauthenticated users must not access preview URLs even when the app is public.
+    // load_app=true + authentication_failed=true is the session signal for "public app, no valid JWT".
+    // Without this guard, isPublicAccess below evaluates to true (via the load_app && auth_failed branch)
+    // and fetchAppBySlug is called, serving the released version to unauthenticated preview viewers.
+    if (!moduleMode && hasPreviewParams && currentSession?.load_app && currentSession?.authentication_failed) {
+      const subpath = getSubpath() ?? '';
+      const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `${subpath}/applications/${slug}/login?redirectTo=${redirectTo}`;
+      return;
+    }
+
     const isPublicAccess =
-      !hasPreviewParams && ((currentSession?.load_app && currentSession?.authentication_failed) || mode !== 'edit');
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
@@ -660,12 +672,6 @@ const useAppData = (
         }
         if (isPublicAccess && _error?.data?.statusCode === 501) {
           redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
-          return;
-        }
-        if (hasPreviewParams && currentSession?.authentication_failed) {
-          const subpath = getSubpath() ?? '';
-          const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.href = `${subpath}/applications/${slug}/login?redirectTo=${redirectTo}`;
         }
       });
 
