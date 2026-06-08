@@ -11,7 +11,6 @@ import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before commit
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
@@ -148,22 +147,14 @@ export const BaseLeftSidebar = ({
       case 'libraries':
         return <AppLibraries darkMode={darkMode} onClose={() => toggleLeftSidebar(false)} />;
       case 'debugger':
-        return (
-          <>
-            <CrashTest message="⚡ Deliberate test crash in Debugger" />
-            <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />
-          </>
-        );
+        return <Debugger onClose={() => toggleLeftSidebar(false)} darkMode={darkMode} />;
       case 'settings':
         return (
-          <>
-            <CrashTest message="💣 Deliberate test crash in Global settings" />
-            <GlobalSettings
-              darkMode={darkMode}
-              isModuleEditor={isModuleEditor}
-              onClose={() => toggleLeftSidebar(false)}
-            />
-          </>
+          <GlobalSettings
+            darkMode={darkMode}
+            isModuleEditor={isModuleEditor}
+            onClose={() => toggleLeftSidebar(false)}
+          />
         );
     }
   };

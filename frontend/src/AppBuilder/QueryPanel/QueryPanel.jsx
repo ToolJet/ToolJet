@@ -13,7 +13,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before commit
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -225,7 +224,6 @@ export const QueryPanel = ({ darkMode }) => {
           <FallbackBoundary label="Query panel" location="Query Panel" darkMode={darkMode}>
             <QueryKeyHooks isExpanded={isQueryPaneExpanded}>
               <FallbackBoundary label="Query list" location="Query Panel Query list" darkMode={darkMode}>
-                <CrashTest message="🧨 Deliberate test crash in Query list (QueryDataPane)" />
                 <MemoizedQueryDataPane darkMode={darkMode} />
               </FallbackBoundary>
               <div className="query-definition-pane-wrapper">
@@ -236,7 +234,6 @@ export const QueryPanel = ({ darkMode }) => {
                     darkMode={darkMode}
                     resetKeys={[selectedQueryId]}
                   >
-                    <CrashTest message="💥 Deliberate test crash in Query manager" />
                     <MemoizedQueryManager darkMode={darkMode} />
                   </FallbackBoundary>
                 </div>

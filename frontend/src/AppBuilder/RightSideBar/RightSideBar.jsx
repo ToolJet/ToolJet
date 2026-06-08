@@ -5,7 +5,6 @@ import ComponentsManagerTab from './ComponentManagerTab';
 import cx from 'classnames';
 import { PageSettings } from './PageSettingsTab';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before commit
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { RIGHT_SIDE_BAR_TAB } from './rightSidebarConstants';
 
@@ -32,7 +31,6 @@ export const RightSideBar = ({ darkMode }) => {
           <FallbackBoundary label="Right sidebar" location="Right SideBar" darkMode={darkMode} resetKeys={[activeTab]}>
             {activeTab === RIGHT_SIDE_BAR_TAB.PAGES && (
               <FallbackBoundary label="Page settings" location="Page Settings" darkMode={darkMode}>
-                <CrashTest message="☠️ Deliberate test crash in Page settings" />
                 <PageSettings />
               </FallbackBoundary>
             )}

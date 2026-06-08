@@ -76,6 +76,11 @@
 }
 
 .tj-error-report {
+  // dialog/message layout — stacked sections with 24px rhythm.
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   // Sits left in the modal footer, opposite the Cancel/Copy buttons.
   &__slack-link {
     margin-right: auto;
@@ -90,20 +95,71 @@
     }
   }
 
-  &__hint {
-    color: var(--text-default);
-    margin-bottom: 12px;
+  // Heading: large accent warning icon above the title + subtitle.
+  &__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  &__message {
-    padding: 8px 12px;
-    margin-bottom: 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border-default);
-    background: var(--background-error-weak, var(--background-surface-layer-01));
-    color: var(--text-default);
+  &__heading-icon {
+    flex-shrink: 0;
+  }
+
+  &__heading-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-size: 16px;
     font-weight: 500;
+    line-height: 24px;
+    color: var(--text-default);
+    opacity: 0.8;
+  }
+
+  &__subtitle {
+    line-height: 18px;
+    color: var(--text-placeholder);
+  }
+
+  // Footer: Cancel on the left, actions on the right.
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  // Inline-info callout shown as the error message header in the report modal.
+  &__callout {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 6px;
+    background: var(--background-error-weak, var(--background-surface-layer-01));
+  }
+
+  &__callout-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 0 0;
+    min-width: 0;
+  }
+
+  &__callout-message {
+    color: var(--text-placeholder);
+    line-height: 18px;
     word-break: break-word;
+    // Keep the header compact — the full message/stack lives in the scrollable details below.
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   &__details {

@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
 import ModalBaseRaw from '@/_ui/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { buildErrorReport } from './errorReport';
 import './FallbackBoundary.scss';
 
 // Community Slack (redirects to the live invite) — where users report the copied error.
-const REPORT_URL = 'https://tooljet.com/slack';
+// const REPORT_URL = 'https://tooljet.com/slack';
 
 // ModalBase is an untyped JS component; relax its props to avoid spurious type errors.
 const ModalBase = ModalBaseRaw as React.FC<any>;
@@ -44,35 +45,42 @@ const ErrorReportModal: React.FC<ErrorReportModalProps> = ({
       show={show}
       handleClose={onClose}
       darkMode={darkMode}
-      title="Report this error"
+      showHeader={false}
       size="lg"
       footerBody={
-        <>
-          <a
-            className="tj-error-report__slack-link tj-text-sm"
-            href={REPORT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-cy="error-report-slack"
-          >
-            Report on Slack ↗
-          </a>
+        <div className="tj-error-report__footer">
           <ButtonSolid variant="tertiary" onClick={onClose} data-cy="cancel-button">
             Cancel
           </ButtonSolid>
           <ButtonSolid variant="primary" onClick={() => copyToClipboard(report)} data-cy="error-report-copy">
             Copy
           </ButtonSolid>
-        </>
+        </div>
       }
     >
       <div className="tj-error-report">
-        <p className="tj-error-report__hint tj-text-sm">
-          Something went wrong in <strong>{label || 'this area'}</strong>. Copy the details below and report them on
-          our Slack community so we can fix it.
-        </p>
-        <div className="tj-error-report__message tj-text-sm" data-cy="error-report-message">
-          {message}
+        <div className="tj-error-report__heading">
+          <SolidIcon
+            name="warning"
+            width="40"
+            fill="var(--icon-danger, #d72d39)"
+            className="tj-error-report__heading-icon"
+          />
+          <div className="tj-error-report__heading-text">
+            <div className="tj-error-report__title" data-cy="error-report-modal-title">
+              Something went wrong in {label || 'this area'}
+            </div>
+            <div className="tj-error-report__subtitle tj-text-sm">
+              Copy the details below so our team can help fix it.
+            </div>
+          </div>
+        </div>
+        <div className="tj-error-report__callout" data-cy="error-report-callout">
+          <div className="tj-error-report__callout-content">
+            <div className="tj-error-report__callout-message tj-text-sm" data-cy="error-report-message">
+              {message}
+            </div>
+          </div>
         </div>
         <pre className="tj-error-report__details" data-cy="error-report-details">
           {report}

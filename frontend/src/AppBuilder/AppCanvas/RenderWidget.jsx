@@ -7,7 +7,6 @@ import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
-import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before commit
 import { BOX_PADDING } from './appCanvasConstants';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
@@ -289,7 +288,6 @@ const RenderWidget = ({
       darkMode={darkMode}
       resetKeys={[id]}
     >
-      <CrashTest message={`🧱 Deliberate test crash in canvas component (${componentName})`} />
       <OverlayTrigger
         placement={inCanvas ? 'auto' : 'top'}
         delay={{ show: 500, hide: 0 }}
