@@ -18,7 +18,7 @@ const justifyClass = {
   right: 'tw-justify-end',
 };
 
-export const FileButton = (props) => {
+const FileButton = (props) => {
   const {
     height,
     properties,
@@ -216,3 +216,5 @@ export const FileButton = (props) => {
     </div>
   );
 };
+
+export default FileButton;
