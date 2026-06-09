@@ -201,9 +201,9 @@
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.6",
     "babel-plugin-istanbul": "^6.1.1",
-    "compression-webpack-plugin": "^10.0.0",
+    "compression-webpack-plugin": "^12.0.0",
     "css-loader": "^6.7.3",
-    "css-minimizer-webpack-plugin": "^7.0.2",
+    "css-minimizer-webpack-plugin": "^8.0.0",
     "esbuild": "0.25.9",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^8.10.2",
@@ -284,7 +284,6 @@
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
     },
-    "serialize-javascript": "^7.0.5",
     "immutable@3": "^3.8.3"
   },
   "scripts": {
