@@ -206,36 +206,43 @@ export const deleteAppHistoryForStructuralMigration = async (
     let totalDeleted = 0;
     let batchNumber = 0;
 
-    // app_history has a self-referential FK: parent_id → app_history.id
-    // (delta rows reference snapshot rows as their parent).
-    // A plain batch DELETE fails with FK violation if a parent snapshot row
-    // is picked before its child delta rows are removed.
+    // app_history has a self-referential FK: parent_id → app_history.id.
+    // Deltas are always leaf nodes (nothing references them). Snapshots are
+    // always parents of deltas, including "restoration snapshots" which are
+    // created by restoreToPoint() with parent_id IS NOT NULL (pointing to the
+    // target entry). Using parent_id IS NOT NULL as the first-pass filter would
+    // incorrectly include restoration snapshots and trigger the FK when their
+    // deltas are still alive. Using history_type = 'delta' is the correct filter.
     //
-    // Fix: two-pass delete — the for loop runs two sequential passes:
-    //   Pass 1 (condition = 'AND parent_id IS NOT NULL'):
-    //     Deletes only child/delta rows in batches until none remain.
-    //     The inner while loop breaks when result[1] === 0 (no rows deleted),
-    //     then the for moves to the next iteration.
-    //   Pass 2 (condition = ''):
-    //     No extra filter — deletes all remaining rows. By this point every
-    //     child row is gone, so only parent/snapshot rows (parent_id IS NULL)
-    //     are left. These are now safely deletable since nothing references them.
-    //
-    // The two loops are sequential, not concurrent — Pass 2 never starts until
-    // Pass 1 has fully exhausted. No extra UPDATE writes needed; deletion order
-    // alone satisfies the FK constraint.
-    for (const condition of ['AND parent_id IS NOT NULL', '']) {
-      while (true) {
-        const result = await entityManager.query(
-          `DELETE FROM app_history
+    // Two-pass delete:
+    //   Pass 1 (history_type = 'delta'): removes all leaf delta rows.
+    //   Pass 2 (no filter): removes remaining snapshot rows, which are now
+    //     unreferenced since all their delta children are gone.
+    const queries = [
+      // Pass 1: delete delta rows (leaf nodes — they never have children).
+      // Using history_type = 'delta' rather than parent_id IS NOT NULL because
+      // restoration snapshots also have parent_id IS NOT NULL but ARE parents of
+      // subsequent deltas; deleting them first would trigger the FK.
+      `DELETE FROM app_history
            WHERE id IN (
              SELECT id FROM app_history
              WHERE app_version_id = ANY($1)
-             ${condition}
+               AND history_type = 'delta'
              LIMIT $2
            )`,
-          [appVersionIds, batchSize]
-        );
+      // Pass 2: delete remaining rows (all snapshots). All deltas are gone by
+      // this point so nothing references these snapshot ids anymore.
+      `DELETE FROM app_history
+           WHERE id IN (
+             SELECT id FROM app_history
+             WHERE app_version_id = ANY($1)
+             LIMIT $2
+           )`,
+    ];
+
+    for (const sql of queries) {
+      while (true) {
+        const result = await entityManager.query(sql, [appVersionIds, batchSize]);
 
         const deleted: number = result[1] ?? 0;
         if (deleted === 0) break;
