@@ -18,6 +18,7 @@ import {
   TestDataSourceDto,
   TestSampleDataSourceDto,
   UpdateDataSourceDto,
+  ValidateOptionsDto,
 } from './dto';
 import { OrganizationValidateGuard } from '@modules/app/guards/organization-validate.guard';
 import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
@@ -157,11 +158,22 @@ export class DataSourcesController implements IDataSourcesController {
     return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId);
   }
 
-  @InitFeature(FEATURE_KEY.AUTHORIZE)
-  @UseGuards(FeatureAbilityGuard)
-  @Post('decrypt')
-  async decryptOptions(@Body() options: Record<string, any>) {
-    return await this.dataSourcesService.decryptOptions(options);
+  @InitFeature(FEATURE_KEY.VALIDATE_OPTIONS)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Post(':id/validate-options')
+  async validateOptions(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query('environment_id') environmentId: string,
+    @Body() validateOptionsDto: ValidateOptionsDto
+  ) {
+    return await this.dataSourcesService.validateOptions(
+      dataSourceId,
+      user.organizationId,
+      environmentId ?? validateOptionsDto.environment_id,
+      validateOptionsDto.options,
+      validateOptionsDto.schema
+    );
   }
 
   @InitFeature(FEATURE_KEY.TEST_CONNECTION)

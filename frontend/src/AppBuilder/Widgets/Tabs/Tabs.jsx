@@ -9,10 +9,11 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { TAB_CANVAS_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useTabsNavScrollArrows } from '@/AppBuilder/Widgets/Tabs/useTabsNavScrollArrows';
 import { shallow } from 'zustand/shallow';
 import { getCssVarValue, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { useTransition, animated } from 'react-spring';
-import './styles/tabs.scss';
+import './tabs.scss';
 const tinycolor = require('tinycolor2');
 const TAB_HEADER_HEIGHT = 49.5;
 
@@ -76,7 +77,7 @@ export const Tabs = function Tabs({
   );
   const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
-
+  const tabsRef = useRef(null);
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
   const commonBackgroundColor = styles?.commonBackgroundColor;
@@ -233,48 +234,14 @@ export const Tabs = function Tabs({
   }, [setCurrentTab, currentTab]);
 
   const containerRef = useRef(null);
-  const tabsRef = React.useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const [canScroll, setCanScroll] = useState(false);
+  const { canScroll, canScrollLeft, canScrollRight, scrollTabs } = useTabsNavScrollArrows({
+    tabsRef,
+    tabWidth,
+    tabItems,
+  });
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredTabId, setHoveredTabId] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const checkScroll = () => {
-    if (tabsRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
-      setCanScroll(scrollLeft > 0 || scrollLeft + clientWidth < scrollWidth);
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft + clientWidth < scrollWidth);
-    }
-  };
-
-  const scrollTabs = (direction) => {
-    if (tabsRef.current) {
-      const scrollAmount = tabsRef.current.clientWidth / 2;
-      tabsRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-    checkScroll();
-  };
-
-  useEffect(() => {
-    checkScroll();
-    const onScroll = () => checkScroll();
-    const currentTabsRef = tabsRef.current;
-    if (currentTabsRef) {
-      currentTabsRef.addEventListener('scroll', onScroll);
-    }
-
-    return () => {
-      if (currentTabsRef) {
-        currentTabsRef.removeEventListener('scroll', onScroll);
-      }
-    };
-  }, [tabsRef.current, tabWidth, tabItems]);
 
   const parsedTabsString = JSON.stringify(parsedTabs);
   useEffect(() => {
@@ -282,23 +249,6 @@ export const Tabs = function Tabs({
     setExposedVariable('currentTabTitle', title);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parsedTabsString]);
-
-  useEffect(() => {
-    checkScroll();
-    const resizeObserver = new ResizeObserver(() => {
-      checkScroll();
-    });
-
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-
-    return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
-      }
-    };
-  }, []);
 
   function shouldRenderTabContent(tab) {
     if (parsedRenderOnlyActiveTab) {
@@ -394,9 +344,12 @@ export const Tabs = function Tabs({
             <div
               className="px-2"
               onClick={() => scrollTabs('left')}
-              style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
+              style={{
+                cursor: canScrollLeft ? 'pointer' : 'default',
+                opacity: canScrollLeft ? 1 : 0.5,
+              }}
             >
-              <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
+              <SolidIcon fill={unselectedText} name={'cheveronleft'} />
             </div>
           )}
           {/* this started change */}
@@ -509,9 +462,12 @@ export const Tabs = function Tabs({
             <div
               className="px-2"
               onClick={() => scrollTabs('right')}
-              style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+              style={{
+                cursor: canScrollRight ? 'pointer' : 'default',
+                opacity: canScrollRight ? 1 : 0.5,
+              }}
             >
-              <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
+              <SolidIcon fill={unselectedText} name="cheveronright" width="25" height="25" />
             </div>
           )}
         </div>
