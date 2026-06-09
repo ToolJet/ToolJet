@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, validateUrlForSSRF, getSSRFProtectionOptions } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
 const JSON5 = require('json5');
@@ -22,12 +22,16 @@ export default class Baserow implements QueryService {
     const host = sourceOptions.baserow_host;
     const baseURL = host === 'baserow_cloud' ? 'https://api.baserow.io' : sourceOptions.base_url;
 
+    await validateUrlForSSRF(baseURL);
+    const ssrfBaseOptions = getSSRFProtectionOptions();
+
     try {
       switch (operation) {
         case 'list_rows': {
           response = await got(`${baseURL}/api/database/rows/table/${tableId}/?user_field_names=true`, {
             method: 'get',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -38,6 +42,7 @@ export default class Baserow implements QueryService {
           response = await got(`${baseURL}/api/database/fields/table/${tableId}/?user_field_names=true`, {
             method: 'get',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -49,6 +54,7 @@ export default class Baserow implements QueryService {
           response = await got(`${baseURL}/api/database/rows/table/${tableId}/${row_id}/?user_field_names=true`, {
             method: 'get',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -60,6 +66,7 @@ export default class Baserow implements QueryService {
             method: 'post',
             headers: this.authHeader(apiToken),
             json: this.parseJSON(queryOptions.body),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -72,6 +79,7 @@ export default class Baserow implements QueryService {
             method: 'patch',
             headers: this.authHeader(apiToken),
             json: this.parseJSON(queryOptions.body),
+            ...ssrfBaseOptions,
           });
 
           result = this.parseJSON(response.body);
@@ -86,6 +94,7 @@ export default class Baserow implements QueryService {
             {
               method: 'patch',
               headers: this.authHeader(apiToken),
+              ...ssrfBaseOptions,
             }
           );
 
@@ -98,6 +107,7 @@ export default class Baserow implements QueryService {
           response = await got(`${baseURL}/api/database/rows/table/${tableId}/${row_id}`, {
             method: 'delete',
             headers: this.authHeader(apiToken),
+            ...ssrfBaseOptions,
           });
 
           if (response.statusCode === 204) {

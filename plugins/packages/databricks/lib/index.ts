@@ -8,6 +8,7 @@ import {
   ConnectionTestResult,
   getCurrentToken,
   createQueryBuilder,
+  validateUrlForSSRF,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 import { DBSQLClient } from '@databricks/sql';
@@ -309,6 +310,8 @@ export default class Databricks implements QueryService {
   // ──────────────────────────────────────────────────────────────────────────
 
   async getConnection(sourceOptions: SourceOptions): Promise<DBSQLClient> {
+    await validateUrlForSSRF(`https://${sourceOptions.host}`);
+
     const credentials: any = {
       host: sourceOptions.host,
       path: sourceOptions.http_path,

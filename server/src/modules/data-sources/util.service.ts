@@ -2,6 +2,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
+import { validateUrlForSSRF } from '@tooljet/plugins';
 import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
@@ -791,6 +792,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (!accessTokenUrl) {
       throw new BadRequestException('Missing access_token_url');
     }
+    await validateUrlForSSRF(accessTokenUrl);
     if (!sourceOptions['client_id']) {
       throw new BadRequestException('Missing client_id');
     }
