@@ -1,0 +1,35 @@
+---
+id: replace-user-workspaces
+title: "Replace User Workspaces Relations"
+---
+
+<EndpointHeader method="PUT" path="/user/{id}/workspaces" />
+
+<ApiColumns>
+<ApiLeft>
+
+Replaces all workspace relations associated with a user. Passing an empty array removes all existing workspace relations.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"UUID of the user.","in":"path"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Workspace not found, user account inactive, group not found, or invalid group type."},
+  {"status":"402","description":"User seat limit exceeded."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"User not found."},
+  {"status":"500","description":"Internal server error (e.g. invalid enum values in request body)."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/user/{id}/workspaces" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{}'`} />
+
+**Response:** `200`
+
+</ApiRight>
+</ApiColumns>

@@ -25,7 +25,6 @@ On a self-hosted ToolJet, a Super Admin is the user who has full access to all t
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---: | :---------: |
 | Manage Groups in their workspace ([Create Group](/docs/user-management/role-based-access/custom-groups#creating-custom-groups)/ Add or Delete Users from groups/ Modify Group Permissions) |  ✅   |     ✅      |
 | [Manage SSO](/docs/user-management/sso/overview) in their workspace                                                                                                                        |  ✅   |     ✅      |
-| [Manage Workspace Variables](/docs/security/constants/variables) in their workspace                                                                                                        |  ✅   |     ✅      |
 | [Manage Workspace Constants](/docs/security/constants/) in their workspace                                                                                                                 |  ✅   |     ✅      |
 | [Manage Data Sources](/docs/data-sources/overview) for the user group in their workspace                                                                                                   |  ✅   |     ✅      |
 | Access any user's personal workspace (Create/Edit/Delete Apps)                                                                                                                             |  ❌   |     ✅      |

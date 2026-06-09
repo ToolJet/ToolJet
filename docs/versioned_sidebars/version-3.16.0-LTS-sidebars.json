@@ -159,6 +159,7 @@
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
+        "build-with-ai/referencing-app-resources",
         "build-with-ai/integrating-data",
         "build-with-ai/prompting101",
         "build-with-ai/ai-docs-assistant",
@@ -313,7 +314,7 @@
                 "widgets/accordion",
                 "widgets/bounded-box",
                 "widgets/button",
-                "widgets/button-group",
+                "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
                 {
@@ -356,7 +357,6 @@
                 "widgets/date-range-picker",
                 "widgets/date-picker-v2",
                 "widgets/datetime-picker-v2",
-                "widgets/datepicker",
                 "widgets/divider",
                 "widgets/dropdown",
                 "widgets/email-input",
@@ -409,6 +409,7 @@
                 "widgets/map",
                 "widgets/modal-v2",
                 "widgets/multiselect",
+                "widgets/navigation",
                 "widgets/number-input",
                 "widgets/password-input",
                 "widgets/pagination",
@@ -482,7 +483,40 @@
                 "widgets/time-picker",
                 "widgets/toggle-switch-v2",
                 "widgets/tree-select",
-                "widgets/vertical-divider"
+                "widgets/vertical-divider",
+                 {
+                  "type": "category",
+                  "label": "Legacy Components",
+                  "items": [
+                    {
+                      "type": "link",
+                      "label": "Modal",
+                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal"
+                    },
+                    "widgets/datepicker",
+                    {
+                      "type": "link",
+                      "label": "Radio Button",
+                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Dropdown",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Multiselect",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-lts/widgets/multiselect/"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Range Slider",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
+                    },
+                    "widgets/button-group"
+                  ]
+                }
               ]
             },
             {
@@ -934,20 +968,9 @@
               ]
             },
             {
-              "type": "category",
+              "type": "link",
               "label": "SCIM",
-              "link": {
-                "type": "doc",
-                "id": "user-management/sso/scim/overview"
-              },
-              "items": [
-                "user-management/sso/scim/overview",
-                {
-                  "type": "link",
-                  "label": "API References",
-                  "href": "/api/scim"
-                }
-              ]
+              "href": "/api/scim/"
             }
           ]
         },
@@ -1143,9 +1166,17 @@
       "collapsible": false,
       "collapsed": true,
       "items": [
-        "tooljet-api",
+        {
+          "type": "link",
+          "label": "ToolJet API",
+          "href": "/api"
+        },
         "user-management/authentication/self-hosted/pat",
-        "development-lifecycle/cicd/gitsync-api"
+        {
+          "type": "link",
+          "label": "GitSync API",
+          "href": "/api/gitsync-api"
+        }
       ]
     },
     {

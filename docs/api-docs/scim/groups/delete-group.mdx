@@ -1,0 +1,31 @@
+---
+id: delete-group
+title: "Delete Group"
+---
+
+<EndpointHeader method="DELETE" path="/Groups/{id}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Permanently removes a group from the organization. Users within the group are not deleted.
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the group.","in":"path"}]} />
+
+<ErrorsTable errors={[
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"404","description":"Group not found."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X DELETE "https://{your-domain}/api/scim/v2/Groups/{id}" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+**Response:** `204`
+
+</ApiRight>
+</ApiColumns>

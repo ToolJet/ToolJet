@@ -1,0 +1,59 @@
+---
+id: export-application
+title: "Export Application"
+---
+
+<EndpointHeader method="POST" path="/export/workspace/{workspaceId}/apps/{appId}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Exports a ToolJet application, including pages, queries, data sources, environments, versions, and metadata.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"},{"name":"appId","type":"string","required":true,"description":"The unique identifier of the application to export.","in":"path"}]} />
+<ParamsTable title="Query Parameters" params={[{"name":"exportTJDB","type":"boolean","required":false,"description":"Whether to include ToolJet Database table schemas.","in":"query"},{"name":"appVersion","type":"string","required":false,"description":"Specific version to export.","in":"query"},{"name":"exportAllVersions","type":"boolean","required":false,"description":"Export all versions instead of just the latest.","in":"query"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid UUID format for workspaceId or appId, app not found in workspace, or specified version name does not exist."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization header."}
+]} />
+
+
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/export/workspace/{workspaceId}/apps/{appId}?exportTJDB=<exportTJDB>&appVersion=<appVersion>&exportAllVersions=<exportAllVersions>" \
+  -H "Authorization: Basic <access_token>" \
+  -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "tooljet_version": "3.x.x",
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "appVersions": [...],
+          "appEnvironments": [...],
+          "components": [...],
+          "pages": [...],
+          "events": [...],
+          "dataQueries": [...],
+          "dataSources": [...],
+          "dataSourceOptions": [...],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          },
+          "modules": [...]
+        }
+      }
+    }
+  ],
+  "tooljet_database": []
+}`} />
+
+</ApiRight>
+</ApiColumns>

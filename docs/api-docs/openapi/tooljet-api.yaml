@@ -1,0 +1,817 @@
+openapi: 3.0.3
+info:
+  title: ToolJet API
+  version: 1.0.0
+  description: >
+    The ToolJet API lets you manage users, workspaces, applications, modules,
+    and groups programmatically. All endpoints require a Basic access token.
+
+servers:
+  - url: https://{your-domain}/api/ext
+    description: Your ToolJet instance
+
+security:
+  - BasicAuth: []
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+paths:
+
+  # ── Users ──────────────────────────────────────────────────────────
+
+  /users:
+    get:
+      operationId: getAllUsers
+      summary: Get All Users
+      description: >
+        Retrieves a list of all users along with their workspace permissions and
+        group memberships. Optionally filter by group names.
+      tags: [Users]
+      parameters:
+        - name: group_names
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of group names to filter by (e.g. `admin,end-user`).
+      responses:
+        "200":
+          description: Array of user objects.
+          content:
+            application/json:
+              example:
+                - id: "1034fd65-7b40-474c-ab79-42d32780b299"
+                  name: "John Doe"
+                  email: "john@example.com"
+                  status: "active"
+                  workspaces: []
+                  userGroups: []
+                  userDetails: []
+
+    post:
+      operationId: createUser
+      summary: Create User
+      description: Creates a user with workspace assignments and returns 201 on success.
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, workspaces]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 5
+                  maxLength: 100
+                status:
+                  type: string
+                  enum: [active, archived]
+                workspaces:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, name]
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      status:
+                        type: string
+                        enum: [active, archived]
+                      groups:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            name:
+                              type: string
+            example:
+              name: "Alice Johnson"
+              email: "alice@example.com"
+              password: "qwy@4xt123"
+              status: "active"
+              workspaces:
+                - name: "team-spac"
+                  status: "active"
+                  groups:
+                    - name: "all_users"
+      responses:
+        "201":
+          description: User created successfully.
+
+  /user/{identifier}:
+    get:
+      operationId: getUser
+      summary: Get User by Identifier
+      description: Returns details of a user identified by UUID or email address.
+      tags: [Users]
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: UUID (e.g. `d1493ea9-...`) or email (e.g. `john@example.com`).
+      responses:
+        "200":
+          description: User object.
+          content:
+            application/json:
+              example:
+                id: "5b1608df-5e14-474b-b304-919623a9be57"
+                name: "Sam Oliver"
+                email: "sam@example.com"
+                status: "active"
+                workspaces: []
+
+    patch:
+      operationId: updateUser
+      summary: Update User
+      description: Partially updates fields of a user. Returns 200 on success.
+      tags: [Users]
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: UUID or email of the user to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 5
+                  maxLength: 100
+                status:
+                  type: string
+                  enum: [active, archived]
+            example:
+              name: "Jane Doe"
+              email: "jane.doe@example.com"
+              status: "active"
+      responses:
+        "200":
+          description: User updated successfully.
+
+  /update-user-role/workspace/{workspaceId}:
+    put:
+      operationId: updateUserRole
+      summary: Update User Role
+      description: Updates the role of a user within a specific workspace.
+      tags: [Users]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the workspace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newRole, email]
+              properties:
+                newRole:
+                  type: string
+                  description: New role to assign.
+                email:
+                  type: string
+                  format: email
+                  description: Email of the user whose role is being updated.
+            example:
+              newRole: "end-user"
+              email: "user@example.com"
+      responses:
+        "200":
+          description: Role updated successfully.
+
+  /user/{id}/workspaces:
+    put:
+      operationId: replaceUserWorkspaces
+      summary: Replace User Workspaces Relations
+      description: >
+        Replaces all workspace relations associated with a user. Passing an empty
+        array removes all existing workspace relations.
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                required: [id, name]
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  status:
+                    type: string
+                    enum: [active, archived]
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+      responses:
+        "200":
+          description: Workspace relations replaced.
+
+  /user/{id}/workspace/{workspaceId}:
+    patch:
+      operationId: replaceUserWorkspace
+      summary: Replace User Workspace
+      description: Updates a specific workspace relation for a user.
+      tags: [Users]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                status:
+                  type: string
+                  enum: [active, archived]
+                groups:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+            example:
+              status: "archived"
+              groups:
+                - name: "all_users"
+      responses:
+        "200":
+          description: Workspace relation updated.
+
+  /workspace/{workspaceIdentifier}/user/{userIdentifier}:
+    get:
+      operationId: getUserMetadata
+      summary: Get User Metadata
+      description: Returns metadata for a specific user within a workspace.
+      tags: [Users]
+      parameters:
+        - name: workspaceIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID or slug.
+        - name: userIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User UUID or email.
+      responses:
+        "200":
+          description: User object including userDetails metadata.
+          content:
+            application/json:
+              example:
+                id: "a1b2c3d4-..."
+                name: "John Doe"
+                email: "john@example.com"
+                status: "active"
+                userDetails:
+                  - key: "department"
+                    value: "Platform"
+
+    put:
+      operationId: updateUserMetadata
+      summary: Update User Metadata
+      description: >
+        Replaces the entire userDetails (metadata) for a user in a workspace.
+        This is a full replace — keys not included will be removed.
+      tags: [Users]
+      parameters:
+        - name: workspaceIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID or slug.
+        - name: userIdentifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User UUID or email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userDetails]
+              properties:
+                userDetails:
+                  type: array
+                  items:
+                    type: object
+                    required: [key, value]
+                    properties:
+                      key:
+                        type: string
+                      value:
+                        type: string
+            example:
+              userDetails:
+                - key: "department"
+                  value: "Platform"
+                - key: "title"
+                  value: "Senior Engineer"
+      responses:
+        "200":
+          description: Updated user object including new metadata.
+        "400":
+          description: userDetails must be an array.
+        "404":
+          description: Workspace or user not found, or user not a member.
+
+  # ── Workspaces ─────────────────────────────────────────────────────
+
+  /workspaces:
+    get:
+      operationId: getAllWorkspaces
+      summary: Get All Workspaces
+      description: Retrieves a list of all workspaces.
+      tags: [Workspaces]
+      responses:
+        "200":
+          description: Array of workspace objects.
+          content:
+            application/json:
+              example:
+                - id: "a831db72-c3d2-4b36-a98e-0023ffb15e66"
+                  name: "demo-workspace"
+                  status: "active"
+                  groups:
+                    - id: "b3ae95dd-b1ca-4a21-abac-b321ee76698e"
+                      name: "all_users"
+
+  /workspace/{workspaceId}/apps:
+    get:
+      operationId: getAllAppDetails
+      summary: Get All App Details
+      description: Returns app details for all applications in a workspace.
+      tags: [Workspaces]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Array of app detail objects.
+          content:
+            application/json:
+              example:
+                - id: "ae06cc7a-2922-4fe7-9064-462741558813"
+                  name: "Applicant tracking system"
+                  slug: "ae06cc7a-2922-4fe7-9064-462741558813"
+                  versions:
+                    - id: "37be6442-ca1b-4a5a-a6f4-f929e00a0ac1"
+                      name: "v1"
+
+  # ── Apps ───────────────────────────────────────────────────────────
+
+  /export/workspace/{workspaceId}/apps/{appId}:
+    post:
+      operationId: exportApplication
+      summary: Export Application
+      description: >
+        Exports a ToolJet application, including pages, queries, data sources,
+        environments, versions, and metadata.
+      tags: [Apps]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: exportTJDB
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Whether to include ToolJet Database table schemas.
+        - name: appVersion
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Specific version to export.
+        - name: exportAllVersions
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Export all versions instead of just the latest.
+      responses:
+        "200":
+          description: Exported application JSON.
+
+  /import/workspace/{workspaceId}/apps:
+    post:
+      operationId: importApplication
+      summary: Import Application
+      description: Imports an application into a ToolJet workspace.
+      tags: [Apps]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appName:
+                  type: string
+                  description: Overrides the app name on import. Uses the exported name if omitted.
+      responses:
+        "201":
+          description: Application imported successfully.
+
+  # ── Modules ────────────────────────────────────────────────────────
+
+  /workspace/{workspaceId}/modules:
+    get:
+      operationId: listModules
+      summary: List Modules
+      description: Retrieves a list of all modules in a workspace.
+      tags: [Modules]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of modules with metadata.
+          content:
+            application/json:
+              example:
+                modules:
+                  - id: "c0a80100-0000-4000-8000-000000000001"
+                    name: "User Management Module"
+                    slug: "user-management"
+                    isPublic: false
+                    createdAt: "2025-02-15T09:30:00.000Z"
+                    updatedAt: "2025-05-01T14:12:33.000Z"
+                total: 1
+
+  /export/workspace/{workspaceId}/modules/{moduleId}:
+    get:
+      operationId: exportModule
+      summary: Export Module
+      description: >
+        Exports a module, including its definition and optionally the ToolJet
+        Database table schemas it uses.
+      tags: [Modules]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: exportTJDB
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: When true, bundles the TJDB table schemas into the export payload.
+      responses:
+        "200":
+          description: Exported module payload.
+          content:
+            application/json:
+              example:
+                tooljet_database: []
+                app:
+                  - definition:
+                      appV2:
+                        name: "User Management Module"
+                        type: "module"
+                tooljet_version: "3.16.0"
+
+  /import/workspace/{workspaceId}/modules:
+    post:
+      operationId: importModule
+      summary: Import Module
+      description: Imports a module into a workspace from a previously exported payload.
+      tags: [Modules]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tooljet_version]
+              properties:
+                tooljet_version:
+                  type: string
+                  description: The ToolJet version the module was exported from.
+                app:
+                  type: object
+                  description: Module definition data from the export step.
+                appName:
+                  type: string
+                  description: Overrides the module name on import.
+            example:
+              tooljet_version: "3.16.0"
+              appName: "My Module"
+      responses:
+        "200":
+          description: Module imported successfully.
+          content:
+            application/json:
+              example:
+                message: "Module imported successfully."
+
+  # ── Groups ─────────────────────────────────────────────────────────
+
+  /workspace/{workspaceId}/groups:
+    post:
+      operationId: createGroup
+      summary: Create Group
+      description: >
+        Creates a new user group in a workspace with optional workspace-level
+        permissions and granular permissions for apps and datasources.
+      tags: [Groups]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                permissions:
+                  type: object
+                granularPermissions:
+                  type: array
+                  items:
+                    type: object
+                    required: [type, applyToAll, resources, permissions]
+                    properties:
+                      type:
+                        type: string
+                        enum: [app, data_source, workflow]
+                      applyToAll:
+                        type: boolean
+                      resources:
+                        type: array
+                        items:
+                          type: string
+                      permissions:
+                        type: object
+            example:
+              name: "Platform Engineers"
+              permissions:
+                appCreate: true
+                appDelete: false
+              granularPermissions:
+                - type: "app"
+                  applyToAll: false
+                  resources: ["app-uuid-1"]
+                  permissions:
+                    canEdit: true
+                    hideFromDashboard: false
+                    environments: ["production"]
+      responses:
+        "201":
+          description: Group created. No response body.
+
+  /workspaces/{workspaceId}/groups:
+    get:
+      operationId: getAllGroups
+      summary: Get All Groups
+      description: Retrieves all groups in a workspace. Supports search and pagination.
+      tags: [Groups]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter groups by name.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated list of groups.
+          content:
+            application/json:
+              example:
+                data:
+                  - id: "grp_12345"
+                    name: "Backend Engineers"
+                    permissions: {}
+                    granularPermissions: []
+                pagination:
+                  page: 1
+                  per_page: 20
+                  total_count: 1
+
+  /workspace/{workspaceId}/groups/{groupId}:
+    get:
+      operationId: getGroup
+      summary: Get Group by ID
+      description: Retrieves details of a specific group including its permissions.
+      tags: [Groups]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group object with permissions and granular permissions.
+
+    patch:
+      operationId: updateGroup
+      summary: Update Group
+      description: Updates group name, workspace-level permissions, or granular permissions.
+      tags: [Groups]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                permissions:
+                  type: object
+                granularPermissions:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        "200":
+          description: Updated group object.
+
+    delete:
+      operationId: deleteGroup
+      summary: Delete Group
+      description: Deletes a group from the workspace.
+      tags: [Groups]
+      parameters:
+        - name: workspaceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Group deleted. No content.

@@ -43,7 +43,7 @@ Add a few sample rows to the table.
    {{queries.fetchData.data;}}
    ```
 
-4. Drag a **[Modal](/docs/widgets/modal)** component above the Table.
+4. Drag a **[Modal](/docs/widgets/modal-v2/)** component above the Table.
 
     <img className="screenshot-full img-full" src="/img/how-to/use-form/v2/ui.png" alt="User Interface" />
 
