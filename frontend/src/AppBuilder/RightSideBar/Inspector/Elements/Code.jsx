@@ -22,6 +22,7 @@ export const Code = ({
   isHidden = false,
   setCodeEditorView,
   customMeta,
+  canRefresh = true,
 }) => {
   const currentState = useCurrentState();
 
@@ -77,6 +78,7 @@ export const Code = ({
         validationFn={validationFn}
         cyLabel=""
         setCodeEditorView={setCodeEditorView}
+        canRefresh={canRefresh}
       />
     </div>
   );

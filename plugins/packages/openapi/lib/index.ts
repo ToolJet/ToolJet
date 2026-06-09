@@ -157,4 +157,30 @@ export default class Openapi implements QueryService {
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     return getRefreshedToken(sourceOptions, error, userId, isAppPublic);
   }
+
+  async listTables(
+    sourceOptions: SourceOptions,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string
+  ): Promise<QueryResult> {
+    try {
+      const spec = sourceOptions.spec; 
+      const paths = spec?.paths || {};
+
+      const endpoints = Object.entries(paths).flatMap(([path, methods]: [string, any]) =>
+        Object.keys(methods)
+          .filter((m) => ['get','post','put','patch','delete','head','options'].includes(m))
+          .map((method) => ({
+            path,
+            method: method.toUpperCase(),
+            summary: methods[method]?.summary || '',
+            operationId: methods[method]?.operationId || '',
+          }))
+      );
+
+      return { status: 'ok', data: endpoints };
+    } catch (err) {
+      throw new QueryError('Could not fetch endpoints', err.message, {});
+    }
+  }
 }

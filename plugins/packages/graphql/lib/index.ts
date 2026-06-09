@@ -1,4 +1,6 @@
 const urrl = require('url');
+import { readFileSync } from 'fs';            
+import * as tls from 'tls';                  
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import {
   App,
@@ -10,6 +12,8 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
   sanitizeSearchParams,
+  sanitizeCookies,                            
+  cookiesToString,                            
   fetchHttpsCertsForCustomCA,
   getRefreshedToken,
   getAuthUrl,
@@ -42,6 +46,7 @@ export default class GraphqlQueryService implements QueryService {
 
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();
+    const hasDataSource = dataSourceId !== undefined;
 
     // Append parameters individually to preserve duplicates
     for (const [key, value] of Object.entries(paramsFromUrl)) {
@@ -51,15 +56,29 @@ export default class GraphqlQueryService implements QueryService {
         searchParams.append(key, String(value));
       }
     }
-    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions)) {
+    for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
       searchParams.append(key, String(value));
     }
+    const sourceBody = Object.fromEntries(
+      (sourceOptions.body || []).filter(([k]: [string]) => k)
+    );
+    const mergedJson = { ...sourceBody, ...json };
+
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
+
+    const cookieString = cookiesToString(
+      sanitizeCookies(sourceOptions, queryOptions, hasDataSource)
+    );
+    if (cookieString) {
+      (headers as Record<string, string>)['Cookie'] = cookieString;
+    }
+
     const _requestOptions: OptionsOfTextResponseBody = {
       method: 'post',
-      headers: sanitizeHeaders(sourceOptions, queryOptions),
+      headers,
       searchParams,
-      json,
-      ...fetchHttpsCertsForCustomCA(),
+      json: mergedJson,
+      ...this.fetchHttpsCertsForCustomCA(sourceOptions),
     };
 
     const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
@@ -131,6 +150,56 @@ export default class GraphqlQueryService implements QueryService {
         response: responseObject,
       },
     };
+  }
+
+  fetchHttpsCertsForCustomCA(sourceOptions: any) {
+    if (!sourceOptions.ssl_certificate) {
+      return {};
+    }
+
+    let httpsParams: any = {};
+
+    switch (sourceOptions.ssl_certificate) {
+      case 'ca_certificate':
+        httpsParams = { https: { certificateAuthority: [sourceOptions.ca_cert] } };
+        break;
+
+      case 'client_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+            key: [sourceOptions.client_key],
+            certificate: [sourceOptions.client_cert],
+          },
+        };
+        break;
+
+      case 'none':
+        httpsParams = { https: { rejectUnauthorized: false } };
+        break;
+
+      default:
+        return {};
+    }
+
+    if (process.env.NODE_EXTRA_CA_CERTS) {
+      'https' in httpsParams
+        ? (httpsParams.https.certificateAuthority =
+            httpsParams.https?.certificateAuthority.concat([
+              ...tls.rootCertificates,
+              readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+            ]))
+        : (httpsParams = {
+            https: {
+              certificateAuthority: [
+                ...tls.rootCertificates,
+                readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+              ].join('\n'),
+            },
+          });
+    }
+
+    return httpsParams;
   }
 
   authUrl(sourceOptions: SourceOptions): string {

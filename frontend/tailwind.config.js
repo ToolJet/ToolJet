@@ -2,7 +2,7 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  darkMode: ['class'],
+  darkMode: ['class', '[class~="dark-theme"]'],
   content: [
     './pages/**/*.{js,jsx}',
     './components/**/*.{js,jsx}',
@@ -28,13 +28,15 @@ module.exports = {
         'background-success-weak': 'var(--background-success-weak)',
         'background-error-strong': 'var(--background-error-strong)',
         'background-error-weak': 'var(--background-error-weak)',
-        'background-warning-stong': 'var(--background-warning-stong)',
+        'background-warning-strong': 'var(--background-warning-strong)',
         'background-warning-weak': 'var(--background-warning-weak)',
         'background-inverse': 'var(--background-inverse)',
+        'background-premium': 'var(--background-premium)',
         'text-default': 'var(--text-default)',
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',
         'text-inverse': 'var(--text-inverse)',
+        'text-tooltip': 'var(--text-tooltip)',
         'text-brand': 'var(--text-brand)',
         'text-accent': 'var(--text-brand)',
         'text-selected': 'var(--text-selected)',
@@ -105,6 +107,7 @@ module.exports = {
       boxShadow: {
         'interactive-focus-outline': ' 0px 0px 0px 2px var(--interactive-focus-outline)',
         'interactive-focus-outline-inset': 'inset 0px 0px 0px 2px #fff',
+        'elevation-none': '0px 0px 0px 0px rgba(0, 0, 0, 0.0)',
         'elevation-000': '0px 1px 0px 0px rgba(0, 0, 0, 0.10)',
         'elevation-100': '0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
         'elevation-200': '0px 2px 4px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
@@ -113,6 +116,16 @@ module.exports = {
         'elevation-500': '0px 16px 24px 0px rgba(48, 50, 51, 0.09), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
         'elevation-600': '0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
         'elevation-700': '0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05)',
+      },
+      ringOffsetColor: {
+        DEFAULT: 'var(--background-surface-layer-01)',
+      },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        full: 'var(--radius-full)',
       },
       fontSize: {
         sm: ['11px', '16px'],
@@ -135,6 +148,7 @@ module.exports = {
     },
   },
   plugins: [
+    require('@tailwindcss/container-queries'),
     require('tailwindcss-animate'),
     plugin(({ addUtilities }) => {
       const newUtilities = {

@@ -5,7 +5,7 @@ import EmptyTabContent from './EmptyTabContent';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
 export default ({
-  options = [],
+  options: optionsProp = [],
   theme,
   onChange,
   jsonBody, // FIXME: Remove this once data migration to raw_body is complete
@@ -20,6 +20,7 @@ export default ({
   onInputChange,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const options = Array.isArray(optionsProp) ? optionsProp : [];
 
   return (
     <div className="tab-content-wrapper" data-cy={`${generateCypressDataCy(tabType)}-tab-content`}>
@@ -30,7 +31,11 @@ export default ({
         options.map((option, index) => {
           return (
             <>
-              <div className="row-container query-manager-border-color" key={index} data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}>
+              <div
+                className="row-container query-manager-border-color"
+                key={index}
+                data-cy={`${generateCypressDataCy(tabType)}-row-${index}`}
+              >
                 <div className="fields-container mb-1 restapi-key-value">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter

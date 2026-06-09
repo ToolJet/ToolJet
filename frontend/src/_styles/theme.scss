@@ -325,8 +325,6 @@
 
 @layer utilities {
   .tw-transparent-scrollbar {
-    // scrollbar-color: transparent transparent;
-
     &::-webkit-scrollbar-thumb {
       background: transparent;
     }
@@ -337,10 +335,21 @@
   }
 
   .tw-show-scrollbar {
-    // scrollbar-color: var(--slate8);
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--slate8);
+      background: var(--interactive-hover);
+      background-clip: padding-box;
+      border: 2px solid transparent;
+      border-radius: 9999px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background: var(--interactive-selected);
+      background-clip: padding-box;
     }
 
     &::-webkit-scrollbar-track {
@@ -692,6 +701,7 @@ button {
     background-color: var(--surfaces-surface-01);
     background-clip: border-box;
     height: 100vh;
+    z-index: 1041;
 
     >div {
       background-color: var(--surfaces-surface-01);
@@ -16463,13 +16473,6 @@ section.ai-message-prompt-input-wrapper {
   box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
     0px 8px 16px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
 
-  .input-box-gradient {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    z-index: -1;
-  }
-
   .reactMarkdown {
     * {
       font-size: 12px !important;
@@ -17455,7 +17458,7 @@ section.ai-message-prompt-input-wrapper {
 }
 
 .cm-tooltip {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
 .accordion-item {

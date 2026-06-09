@@ -11,6 +11,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { ListviewSubcontainer } from './ListviewSubcontainer';
 import cx from 'classnames';
+import Spinner from '@/_ui/Spinner';
 
 export const Listview = function Listview({
   id,
@@ -35,7 +36,6 @@ export const Listview = function Listview({
   const updateCustomResolvables = useStore((state) => state.updateCustomResolvables, shallow);
   const initExposedValueArrayForChildren = useStore((state) => state.initExposedValueArrayForChildren, shallow);
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
-  const fallbackStyles = { visibility: true, disabledState: false };
   const isWidgetInContainerDragging = useStore(
     (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
     shallow
@@ -53,11 +53,14 @@ export const Listview = function Listview({
     columns = 1,
     dataSourceSelector,
     dynamicHeight,
+    loadingState = false,
   } = combinedProperties;
 
   const data = dataSourceSelector === 'rawJson' ? combinedProperties?.data : dataSourceSelector;
 
-  const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
+  const { borderRadius, boxShadow } = styles;
+  const visibility = combinedProperties.visibility ?? true;
+  const disabledState = combinedProperties.disabledState ?? false;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
@@ -75,7 +78,10 @@ export const Listview = function Listview({
     boxShadow,
     padding: '7px',
     overflowX: 'hidden',
-    overflowY: isWidgetInContainerDragging ? 'hidden' : 'auto',
+    // Dynamic mode (view-only) hides the listview's own scroll to suppress
+    // the one-frame flash while rows grow ahead of the parent reflow. Static
+    // and edit modes keep the default auto-scroll.
+    overflowY: isWidgetInContainerDragging || isDynamicHeightEnabled ? 'hidden' : 'auto',
   };
 
   const computeCanvasBackgroundColor = useMemo(() => {
@@ -88,6 +94,26 @@ export const Listview = function Listview({
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const parentRef = useRef(null);
+
+  // Dynamic-height toggle-off transition: drop this Listview's own inflated
+  // temp (widget-level + per-row heights). Done once at the widget level so
+  // it doesn't re-fire per row. Descendants (row template widgets) keep
+  // their own temps — they stay at whatever layout they currently hold, and
+  // the resolveContainerHeight gate on `dynamicHeight=false` stops row temps
+  // from feeding back into the widget height.
+  //
+  // parentIndices scopes the clear: at root the listview's keys across all
+  // row contexts are cleared; for a Listview nested inside a parent row,
+  // only keys under that parent row context are cleared so sibling parent
+  // rows stay untouched.
+  const clearContainerTempLayouts = useStore((state) => state.clearContainerTempLayouts, shallow);
+  const prevDynamicRef = useRef(isDynamicHeightEnabled);
+  useEffect(() => {
+    if (prevDynamicRef.current && !isDynamicHeightEnabled) {
+      clearContainerTempLayouts?.(id, parentIndices);
+    }
+    prevDynamicRef.current = isDynamicHeightEnabled;
+  }, [isDynamicHeightEnabled, id, parentIndices, clearContainerTempLayouts]);
 
   // children/data are now derived directly in the store by deriveListviewExposedData.
   // onRecordOrRowClicked reads from the store imperatively at click time.
@@ -165,64 +191,69 @@ export const Listview = function Listview({
   return (
     <div
       data-disabled={disabledState}
-      className={cx(`flex-column w-100 position-relative dynamic-${id}`)}
+      className={cx(`flex-column w-100 position-relative dynamic-${id}`, {
+        'jet-container-loading': loadingState,
+      })}
       id={id}
       ref={parentRef}
       style={computedStyles}
     >
-      <div
-        className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0 ${isDynamicHeightEnabled ? 'flex-grow-1' : ''
-          }`}
-      >
-        {filteredData.map((listItem, index) => (
-          <ListviewSubcontainer
-            key={index}
-            id={id}
-            index={index}
-            mode={mode}
-            rowHeight={rowHeight}
-            positiveColumns={positiveColumns}
-            showBorder={showBorder}
-            onRecordOrRowClicked={onRecordOrRowClicked}
-            computeCanvasBackgroundColor={computeCanvasBackgroundColor}
-            darkMode={darkMode}
-            width={width}
-            isDynamicHeightEnabled={isDynamicHeightEnabled}
-            adjustComponentPositions={adjustComponentPositions}
-            data={data}
-            currentLayout={currentLayout}
-            visibility={visibility}
-            parentHeight={height}
-            dataCy={dataCy}
-            componentType={componentType}
-          />
-        ))}
-      </div>
-      {enablePagination && _.isArray(data) && (
-        <div
-          className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
-          style={{
-            border: '1px solid',
-            borderColor,
-            margin: '1px',
-            borderTop: 0,
-            ...(isDynamicHeightEnabled ? {} : { left: '1px', right: '1px' }),
-          }}
-        >
-          <div style={{ backgroundColor }}>
-            {data?.length > 0 ? (
-              <Pagination
+      {loadingState ? (
+        <Spinner />
+      ) : (
+        <>
+          <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'} p-0`}>
+            {filteredData.map((_listItem, index) => (
+              <ListviewSubcontainer
+                key={index}
+                id={id}
+                index={index}
+                mode={mode}
+                rowHeight={rowHeight}
+                positiveColumns={positiveColumns}
+                showBorder={showBorder}
+                onRecordOrRowClicked={onRecordOrRowClicked}
+                computeCanvasBackgroundColor={computeCanvasBackgroundColor}
                 darkMode={darkMode}
-                currentPage={currentPage}
-                pageChanged={pageChanged}
-                count={data?.length}
-                itemsPerPage={rowPerPageValue}
+                width={width}
+                isDynamicHeightEnabled={isDynamicHeightEnabled}
+                adjustComponentPositions={adjustComponentPositions}
+                data={data}
+                currentLayout={currentLayout}
+                visibility={visibility}
+                parentHeight={height}
+                dataCy={dataCy}
+                componentType={componentType}
               />
-            ) : (
-              <div style={{ height: '61px' }}></div>
-            )}
+            ))}
           </div>
-        </div>
+          {enablePagination && _.isArray(data) && (
+            <div
+              className={cx({ 'fixed-bottom position-fixed': !isDynamicHeightEnabled })}
+              style={{
+                border: '1px solid',
+                borderColor,
+                margin: '1px',
+                borderTop: 0,
+                ...(isDynamicHeightEnabled ? { marginTop: 'auto' } : { left: '1px', right: '1px' }),
+              }}
+            >
+              <div style={{ backgroundColor }}>
+                {data?.length > 0 ? (
+                  <Pagination
+                    darkMode={darkMode}
+                    currentPage={currentPage}
+                    pageChanged={pageChanged}
+                    count={data?.length}
+                    itemsPerPage={rowPerPageValue}
+                  />
+                ) : (
+                  <div style={{ height: '61px' }}></div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

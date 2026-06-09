@@ -5,6 +5,7 @@ import moment from 'moment';
 import { getFormattedSelectTimestamp, getUnixTime, is24HourFormat, isDateValid } from './utils';
 import { BaseDateComponent } from './BaseDateComponent';
 import './styles.scss';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 export const TimePicker = ({
   height,
@@ -22,7 +23,8 @@ export const TimePicker = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, timeFormat, showClearBtn } = properties;
+  const { label, defaultValue, timeFormat, placeholder: placeholderProp, showClearBtn } = properties;
+  const placeholder = placeholderProp ?? 'Select time';
   const inputProps = {
     properties,
     setExposedVariable,
@@ -46,10 +48,11 @@ export const TimePicker = ({
   );
 
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
   const { isValid, validationError } = validationStatus;
   const [displayTimestamp, setDisplayTimestamp] = useState(
-    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : 'Select time'
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : ''
   );
 
   const setInputValue = (date, format, skipFireEvent = false) => {
@@ -64,7 +67,7 @@ export const TimePicker = ({
 
   const handleClear = () => {
     setInputValue(null);
-    setDisplayTimestamp('Select time');
+    setDisplayTimestamp('');
   };
 
   const onDateSelect = (date) => {
@@ -99,7 +102,7 @@ export const TimePicker = ({
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
-    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : 'Select time');
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, timeFormat) : '');
   }, [selectedTimestamp, timeFormat, textInputFocus]);
 
   useEffect(() => {
@@ -177,6 +180,7 @@ export const TimePicker = ({
     validationError,
     showClearBtn,
     onClear: handleClear,
+    inputPlaceholder: placeholder,
   };
 
   return (

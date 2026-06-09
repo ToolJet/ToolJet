@@ -155,7 +155,7 @@ const Sharepoint = ({
               disabled={isSaving || isDisabled}
               onClick={() => authSharepoint()}
             >
-              {t('globals.connect', 'Connect')} {t('sharepoint.toSharepoint', 'to Sharepoint')}
+              {t('globals.connect', 'Connect')} {t('sharepoint.toSharepoint', 'to SharePoint')}
             </Button>
           )}
         </div>

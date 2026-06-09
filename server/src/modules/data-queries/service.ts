@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { EntityManager, In, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -7,7 +7,7 @@ import { Response } from 'express';
 import { DataQueryRepository } from './repository';
 import { decode } from 'js-base64';
 import { decamelizeKeys } from 'humps';
-import { CreateDataQueryDto, IUpdatingReferencesOptions, UpdateDataQueryDto } from './dto';
+import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
 import { isEmpty } from 'lodash';
@@ -97,6 +97,27 @@ export class DataQueriesService implements IDataQueriesService {
     // No-op in CE, EE overrides to capture history
   }
 
+  // Serialises name checks per app version so two concurrent creates/renames cannot
+  // both pass the existence check. Lock auto-releases at txn end.
+  protected async assertUniqueQueryName(
+    manager: EntityManager,
+    appVersionId: string,
+    name: string,
+    excludeQueryId?: string
+  ): Promise<void> {
+    if (!appVersionId || !name) return;
+
+    await manager.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [`data_query_name:${appVersionId}`]);
+
+    const where: any = { appVersionId, name };
+    if (excludeQueryId) where.id = Not(excludeQueryId);
+
+    const conflict = await manager.findOne(DataQuery, { where, select: ['id'] });
+    if (conflict) {
+      throw new ConflictException(`A query named "${name}" already exists in this app version`);
+    }
+  }
+
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
     const serializedQueries = [];
@@ -136,6 +157,8 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryCreate(user, dataSource, dataQueryDto);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.assertUniqueQueryName(manager, appVersionId, name);
+
       const dataQuery = await this.dataQueryRepository.createOne(
         {
           name,
@@ -173,6 +196,15 @@ export class DataQueriesService implements IDataQueriesService {
     const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
+      if (name !== undefined) {
+        const existing = await manager.findOne(DataQuery, {
+          where: { id: dataQueryId },
+          select: ['id', 'appVersionId', 'name'],
+        });
+        if (existing && existing.name !== name) {
+          await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
+        }
+      }
       await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
     });
 
@@ -308,10 +340,10 @@ export class DataQueriesService implements IDataQueriesService {
     return result;
   }
 
-  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string) {
+  async listTablesForApp(user: User, dataSource: DataSource, environmentId: string, listTablesOptions?: ListTablesDto) {
     let result = {};
     try {
-      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId);
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, listTablesOptions);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

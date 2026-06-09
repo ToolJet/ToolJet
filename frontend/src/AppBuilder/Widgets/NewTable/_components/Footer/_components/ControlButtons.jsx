@@ -7,17 +7,20 @@ import { shallow } from 'zustand/shallow';
 import Popover from 'react-bootstrap/Popover';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useTableRefresh } from '@/AppBuilder/Widgets/NewTable/_hooks/useTableRefresh';
 
 export const ControlButtons = memo(
   ({ id, table, darkMode, height, componentName, showAddNewRowPopup, setShowAddNewRowPopup, fireEvent }) => {
     const showAddNewRowButton = useTableStore((state) => state.getTableProperties(id)?.showAddNewRowButton, shallow);
     const showDownloadButton = useTableStore((state) => state.getTableProperties(id)?.showDownloadButton, shallow);
+    const showRefreshButton = useTableStore((state) => state.getTableProperties(id)?.showRefreshButton, shallow);
     const hideColumnSelectorButton = useTableStore(
       (state) => state.getTableProperties(id)?.hideColumnSelectorButton,
       shallow
     );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
     const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
+    const { handleRefresh, isRefreshing } = useTableRefresh(id, fireEvent);
 
     const RenderButton = ({ icon, tooltipId, tooltipContent, className, label, fill, ...restProps }) => {
       return (
@@ -57,7 +60,13 @@ export const ControlButtons = memo(
           placement={'top-end'}
           tooltipId={tooltipId}
         >
-          <RenderButton icon={icon} onClick={onClick} tooltipId={tooltipId} tooltipContent={tooltipContent} data-cy={dataCy} />
+          <RenderButton
+            icon={icon}
+            onClick={onClick}
+            tooltipId={tooltipId}
+            tooltipContent={tooltipContent}
+            data-cy={dataCy}
+          />
         </OverlayTriggerComponent>
       );
     };
@@ -79,8 +88,9 @@ export const ControlButtons = memo(
             fill="var(--cc-primary-brand)"
             isTablerIcon={false}
             variant="ghostBlack"
-            className={`tw-w-full justify-content-start tw-pr-[6px] ${table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
-              }`}
+            className={`tw-w-full justify-content-start tw-pr-[6px] ${
+              table.getIsAllColumnsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+            }`}
           />
           {table.getAllLeafColumns().map((column) => {
             const header = column?.columnDef?.header;
@@ -95,8 +105,9 @@ export const ControlButtons = memo(
                   fill="var(--cc-primary-brand)"
                   isTablerIcon={false}
                   variant="ghostBlack"
-                  className={`tw-w-full justify-content-start tw-pr-[6px] ${column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
-                    }`}
+                  className={`tw-w-full justify-content-start tw-pr-[6px] ${
+                    column.getIsVisible() ? 'tw-pl-[12px]' : 'tw-pl-[36px]'
+                  }`}
                 />
               )
             );
@@ -157,6 +168,24 @@ export const ControlButtons = memo(
       );
     };
 
+    const renderRefreshButton = () => {
+      return (
+        <>
+          <span>
+            <Tooltip id="tooltip-for-refresh" className="tooltip" />
+            <RenderButton
+              icon="IconReload"
+              data-cy={`${generateCypressDataCy(componentName)}-refresh-button`}
+              onClick={handleRefresh}
+              tooltipId="tooltip-for-refresh"
+              tooltipContent="Refresh data"
+              disabled={isRefreshing}
+            />
+          </span>
+        </>
+      );
+    };
+
     const renderDownloadButton = () => {
       // if server side pagination is enabled and download event is associated with the table, then directly fire download event without displaying popover
       if (hasDownloadEvent && !clientSidePagination) {
@@ -176,16 +205,29 @@ export const ControlButtons = memo(
         );
       }
 
-      return renderOverlay('IconFileDownload', downlaodPopover, 'tooltip-for-download', 'Download', `${generateCypressDataCy(componentName)}-file-download-button`);
+      return renderOverlay(
+        'IconFileDownload',
+        downlaodPopover,
+        'tooltip-for-download',
+        'Download',
+        `${generateCypressDataCy(componentName)}-file-download-button`
+      );
     };
 
     const renderColumnSelectorButton = () => {
-      return renderOverlay('IconFreezeColumn', hideColumnsPopover, 'tooltip-for-manage-columns', 'Manage columns', `${generateCypressDataCy(componentName)}-manage-columns-button`);
+      return renderOverlay(
+        'IconFreezeColumn',
+        hideColumnsPopover,
+        'tooltip-for-manage-columns',
+        'Manage columns',
+        `${generateCypressDataCy(componentName)}-manage-columns-button`
+      );
     };
 
     const btns = [];
 
     if (showAddNewRowButton) btns.push(renderAddRowButton());
+    if (showRefreshButton) btns.push(renderRefreshButton());
     if (showDownloadButton) btns.push(renderDownloadButton());
     if (!hideColumnSelectorButton) btns.push(renderColumnSelectorButton());
 

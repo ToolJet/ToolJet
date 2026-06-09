@@ -1,5 +1,5 @@
 import OAuth from '@/_ui/OAuth';
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getHostURL } from '@/_helpers/routes';
 import { datasourceService, authenticationService } from '@/_services';
@@ -36,7 +36,7 @@ const OAuthWrapper = ({
 
   const hasFieldsChanged = () => {
     if (!selectedDataSource?.id || !initialOptions) {
-      return true; 
+      return true;
     }
 
     const optionKeys = Object.keys(options || {});
@@ -71,8 +71,8 @@ const OAuthWrapper = ({
     setAuthStatus('waiting_for_url');
 
     // Pass envId, orgId to resolve workspace constants on the backend
-    const fetchArgs = plugin_id 
-      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId] 
+    const fetchArgs = plugin_id
+      ? [provider, plugin_id, source_options, currentAppEnvironmentId, organizationId]
       : [provider, null, source_options, currentAppEnvironmentId, organizationId];
 
     datasourceService
@@ -177,6 +177,31 @@ const OAuthWrapper = ({
               <span className="text-muted" style={{ fontSize: '12px' }}>
                 Other users will be redirected to OAuth flow once first query of this data source is run in an app.
               </span>
+            </div>
+          </label>
+        </div>
+      )}
+      {oauth_configs?.allowed_dynamic_params_field && (
+        <div>
+          <label className="form-check form-switch mt-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={options?.[oauth_configs.allowed_dynamic_params_field.key]?.value || false}
+              onChange={() =>
+                optionchanged(
+                  oauth_configs.allowed_dynamic_params_field.key,
+                  !options?.[oauth_configs.allowed_dynamic_params_field.key]?.value
+                )
+              }
+            />
+            <div>
+              <span className="form-check-label">{oauth_configs.allowed_dynamic_params_field.label}</span>
+              {oauth_configs.allowed_dynamic_params_field.help_text && (
+                <span className="text-muted" style={{ fontSize: '12px' }}>
+                  {oauth_configs.allowed_dynamic_params_field.help_text}
+                </span>
+              )}
             </div>
           </label>
         </div>

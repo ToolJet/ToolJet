@@ -2,7 +2,8 @@ import { appVersionService } from '@/_services';
 import toast from 'react-hot-toast';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';
-import { getHostURL } from '@/_helpers/routes';
+import { getHostURL, getSubpath } from '@/_helpers/routes';
+import urlJoin from 'url-join';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
 import { logoutAction } from '@/AppBuilder/_utils/auth';
@@ -11,7 +12,6 @@ import generateCSV from '@/_lib/generate-csv';
 import generateFile from '@/_lib/generate-file';
 import { useCallback } from 'react';
 import moment from 'moment';
-import { getSubpath } from '@/_helpers/routes';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -226,13 +226,13 @@ export const createEventsSlice = (set, get) => ({
         state.eventsSlice.module[moduleId].events = newEvents;
       });
     },
-    setTablePageIndex: (tableId, index, eventObj) => {
+    setTablePageIndex: (tableId, index, eventObj, moduleId = 'canvas') => {
       try {
         const { getExposedValueOfComponent } = get();
         if (typeof index !== 'number' && index !== undefined) {
           throw new Error('Invalid page index.');
         }
-        const exposedValue = getExposedValueOfComponent(tableId);
+        const exposedValue = getExposedValueOfComponent(tableId, moduleId);
         if (!exposedValue) {
           throw new Error('No table is associated with this event.');
         }
@@ -244,14 +244,14 @@ export const createEventsSlice = (set, get) => ({
         });
       }
     },
-    showModal: (modal, show, eventObj) => {
+    showModal: (modal, show, eventObj, moduleId = 'canvas') => {
       try {
         const { getExposedValueOfComponent } = get();
         const modalId = modal?.id ?? modal;
         if (_.isEmpty(modalId)) {
           throw new Error('No modal is associated with this event.');
         }
-        const exposedValue = getExposedValueOfComponent(modalId);
+        const exposedValue = getExposedValueOfComponent(modalId, moduleId);
         show ? exposedValue.open() : exposedValue.close();
 
         return Promise.resolve();
@@ -271,7 +271,7 @@ export const createEventsSlice = (set, get) => ({
       const latestEvents = get().eventsSlice.getModuleEvents(moduleId);
       const filteredEvents = latestEvents.filter((event) => {
         const foundEvent = events.find((e) => e.id === event.id);
-        return foundEvent && foundEvent.name === eventName;
+        return foundEvent;
       });
       try {
         return get().eventsSlice.onEvent(eventName, filteredEvents, options, mode, moduleId);
@@ -401,6 +401,7 @@ export const createEventsSlice = (set, get) => ({
           'onRecordClicked',
           'onCancelChanges',
           'onSort',
+          'onHeaderClick',
           'onCellValueChanged',
           'onFilterChanged',
           'onRowHovered',
@@ -416,9 +417,11 @@ export const createEventsSlice = (set, get) => ({
           'onImageSave',
           'onExpand',
           'onCollapse',
+          'onFieldClick',
           'onSaveKeyValuePairChanges',
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',
+          'onRefresh',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -435,7 +438,7 @@ export const createEventsSlice = (set, get) => ({
     executeActionsForEventId: async (eventId, events = [], mode, customVariables, moduleId = 'canvas') => {
       if (!events || !Array.isArray(events) || events.length === 0) return;
       const filteredEvents = events
-        ?.filter((event) => event?.event.eventId === eventId)
+        ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
@@ -478,8 +481,9 @@ export const createEventsSlice = (set, get) => ({
 
         const headerMap = {
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
-          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${event.actionId ? `[Action ${event.actionId}]` : ''
-            }`,
+          page: `[Page ${pageName}] ${event.eventId ? `[Event ${event.eventId}]` : ''} ${
+            event.actionId ? `[Action ${event.actionId}]` : ''
+          }`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: `${event.key}`,
         };
@@ -519,6 +523,10 @@ export const createEventsSlice = (set, get) => ({
     executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
       const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
+
+      if (event?.disabled) {
+        return false;
+      }
 
       if (event?.runOnlyIf) {
         const shouldRun = getResolvedValue(event.runOnlyIf, customVariables, moduleId);
@@ -678,6 +686,7 @@ export const createEventsSlice = (set, get) => ({
                 window.open(url, '_self');
               } else {
                 if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
+                  // eslint-disable-next-line no-undef
                   window.open(urlJoin(getHostURL(), url));
                 }
               }
@@ -689,10 +698,10 @@ export const createEventsSlice = (set, get) => ({
           }
 
           case 'show-modal':
-            return get().eventsSlice.showModal(event.modal, true, eventObj);
+            return get().eventsSlice.showModal(event.modal, true, eventObj, moduleId);
 
           case 'close-modal':
-            return get().eventsSlice.showModal(event.modal, false, eventObj);
+            return get().eventsSlice.showModal(event.modal, false, eventObj, moduleId);
           case 'copy-to-clipboard': {
             const contentToCopy = getResolvedValue(event.contentToCopy, customVariables, moduleId);
             copyToClipboard(contentToCopy);
@@ -723,7 +732,8 @@ export const createEventsSlice = (set, get) => ({
             get().eventsSlice.setTablePageIndex(
               event.table,
               getResolvedValue(event.pageIndex, undefined, moduleId),
-              eventObj
+              eventObj,
+              moduleId
             );
             break;
           }
@@ -875,7 +885,7 @@ export const createEventsSlice = (set, get) => ({
               const parent = componentDefinition?.component?.parent;
               const parentDefinition = getComponentDefinition(parent, moduleId);
               const parentType = parentDefinition?.component?.component;
-              let component = getExposedValueOfComponent(event.componentId);
+              let component = getExposedValueOfComponent(event.componentId, moduleId);
               if (parentType === 'Form' && componentName) {
                 component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
               }

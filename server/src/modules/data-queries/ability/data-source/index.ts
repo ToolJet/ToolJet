@@ -77,6 +77,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.GET,
           FEATURE_KEY.UPDATE,
           FEATURE_KEY.UPDATE_ONE,
+          FEATURE_KEY.UPDATE_DATA_SOURCE,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.DELETE,
           FEATURE_KEY.CREATE,
@@ -99,6 +100,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.DELETE,
           FEATURE_KEY.PREVIEW,
           FEATURE_KEY.UPDATE_ONE,
+          FEATURE_KEY.UPDATE_DATA_SOURCE,
           FEATURE_KEY.LIST_TABLES,
         ],
         DataSource

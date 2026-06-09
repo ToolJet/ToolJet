@@ -52,8 +52,12 @@ const NoComponentCanvasContainer = () => {
           <div className="box-icon" data-cy="create-a-query-icon">
             <SolidIcon name="datasource" fill="#3E63DD" width="25" />
           </div>
-          <div className={`title-text`} data-cy="create-a-query-label">Create a Query</div>
-          <div className="title-desc" data-cy="create-a-query-description">{queryBoxText}</div>
+          <div className={`title-text`} data-cy="create-a-query-label">
+            Create a Query
+          </div>
+          <div className="title-desc" data-cy="create-a-query-description">
+            {queryBoxText}
+          </div>
           {!!sampleDataSource && !shouldFreeze && (
             <div className="box-link" data-cy="connect-to-sample-data-source-link">
               <div className="child">
@@ -73,7 +77,9 @@ const NoComponentCanvasContainer = () => {
           <div className="box-icon" data-cy="share-your-application-icon">
             <BulkIcon name="invitecollab" width="25" viewBox="0 0 28 28" />
           </div>
-          <div className={`title-text `} data-cy="share-your-application-label">Share your application!</div>
+          <div className={`title-text `} data-cy="share-your-application-label">
+            Share your application!
+          </div>
           <div className="title-desc" data-cy="share-your-application-description">
             Invite users to collaborate in real-time with multiplayer editing and comments for seamless development.
           </div>

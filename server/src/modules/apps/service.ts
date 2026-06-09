@@ -8,7 +8,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import {
   AppCreateDto,
   AppListDto,
@@ -44,6 +44,10 @@ import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
+import { DataQueryFolder } from '@entities/data_query_folder.entity';
+import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
+import { DataQuery } from '@entities/data_query.entity';
+import { AppVersion } from '@entities/app_version.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -218,6 +222,28 @@ export class AppsService implements IAppsService {
     return { id: app.id, slug: app.slug };
   }
 
+  async getAppAuthenticationConfig(slug: string) {
+    if (!slug || slug.length > 250) {
+      throw new BadRequestException('Invalid app slug');
+    }
+
+    const app = await this.appRepository.findOne({
+      where: { slug },
+      select: ['id', 'name', 'slug', 'isPublic', 'organizationId'],
+    });
+
+    if (!app) {
+      throw new NotFoundException('App not found');
+    }
+
+    return {
+      name: app.name,
+      slug: app.slug,
+      isPublic: app.isPublic,
+      organizationId: app.organizationId,
+    };
+  }
+
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name } = appUpdateDto;
@@ -276,6 +302,24 @@ export class AppsService implements IAppsService {
           appId: id,
           scheduleIds: scheduleIds,
         });
+      }
+
+      // Clean up query folder data — no CASCADE exists for these tables
+      const versions = await manager.find(AppVersion, { select: ['id'], where: { appId: id } });
+      const versionIds = versions.map((v) => v.id);
+      if (versionIds.length > 0) {
+        const folders = await manager.find(DataQueryFolder, { where: { appVersionId: In(versionIds) } });
+        const folderIds = folders.map((f) => f.id);
+        const queries = await manager.find(DataQuery, { select: ['id'], where: { appVersionId: In(versionIds) } });
+        const queryIds = queries.map((q) => q.id);
+        const allChildIds = [...folderIds, ...queryIds];
+
+        if (allChildIds.length > 0) {
+          await manager.delete(DataQueryFolderMapping, { childId: In(allChildIds) });
+        }
+        if (folderIds.length > 0) {
+          await manager.delete(DataQueryFolder, { appVersionId: In(versionIds) });
+        }
       }
 
       await manager.delete(App, { id, organizationId });
@@ -430,6 +474,17 @@ export class AppsService implements IAppsService {
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
       response['editing_version']['global_settings']['theme'] = appTheme;
+
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      if (!hasJsLibrariesAccess) {
+        delete response['editing_version']['global_settings']['libraries'];
+        delete response['editing_version']['global_settings']['preloadedScript'];
+      }
     }
     return response;
   }
@@ -457,8 +512,21 @@ export class AppsService implements IAppsService {
         });
       }
 
+      // Strip JS libraries from globalSettings when the org's license doesn't include
+      // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
+      const hasJsLibrariesAccess = await this.licenseTermsService.getLicenseTerms(
+        LICENSE_FIELD.APP_JS_LIBRARIES,
+        app.organizationId
+      );
+      const globalSettings = { ...versionToLoad.globalSettings, theme: appTheme };
+      if (!hasJsLibrariesAccess) {
+        delete globalSettings.libraries;
+        delete globalSettings.preloadedScript;
+      }
+
       // serialize
       return {
+        id: app.id,
         current_version_id: app['currentVersionId'],
         data_queries: versionToLoad?.dataQueries,
         definition: versionToLoad?.definition,
@@ -469,7 +537,7 @@ export class AppsService implements IAppsService {
         events: eventsForVersion,
         pages: this.appsUtilService.mergeDefaultComponentData(pagesForVersion),
         homePageId: versionToLoad.homePageId,
-        globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
+        globalSettings,
         showViewerNavigation: versionToLoad.showViewerNavigation,
         pageSettings: versionToLoad?.pageSettings,
         appId: app.id,

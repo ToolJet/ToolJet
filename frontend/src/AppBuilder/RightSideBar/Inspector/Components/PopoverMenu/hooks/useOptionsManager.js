@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
+/**
+ * @param {object} component - The component instance
+ * @param {Function} paramUpdated - Callback to update component params
+ * @param {string} [optionLabelPrefix='option'] - Prefix for new option labels (e.g. 'option', 'Card')
+ */
 export const useOptionsManager = (component, paramUpdated, optionLabelPrefix = 'option') => {
   const [options, setOptions] = useState([]);
   const [hoveredOptionIndex, setHoveredOptionIndex] = useState(null);
@@ -137,6 +142,30 @@ export const useOptionsManager = (component, paramUpdated, optionLabelPrefix = '
     reorderOptions(source.index, destination.index);
   };
 
+  const allowMultipleDefaults =
+    component?.component?.component === 'ButtonGroupV2' &&
+    getResolvedValue(component?.component?.definition?.properties?.multiSelection?.value);
+
+  const handleDefaultChange = (value, index) => {
+    const isMarkedAsDefault = typeof value === 'boolean' ? value : getResolvedValue(value);
+    const normalizedDefault = isMarkedAsDefault ? '{{true}}' : '{{false}}';
+
+    const newOptions = options.map((option, i) => {
+      const defaultPayload = { ...(option.default || {}), value: normalizedDefault };
+
+      if (allowMultipleDefaults) {
+        return i === index ? { ...option, default: defaultPayload } : option;
+      }
+
+      return {
+        ...option,
+        default: i === index ? defaultPayload : { ...(option.default || {}), value: '{{false}}' },
+      };
+    });
+
+    updateOptions(newOptions);
+  };
+
   // Side effects
   useEffect(() => {
     const newOptions = constructOptions();
@@ -154,5 +183,6 @@ export const useOptionsManager = (component, paramUpdated, optionLabelPrefix = '
     getItemStyle,
     getResolvedValue,
     isDynamicOptionsEnabled,
+    handleDefaultChange,
   };
 };

@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { keymap, tooltips } from '@codemirror/view';
+import { keymap, tooltips, EditorView } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
@@ -35,6 +35,8 @@ const langSupport = Object.freeze({
   jsx: javascript({ jsx: true }),
   css: sass(),
 });
+
+const lineWrappingExtension = EditorView.lineWrapping;
 
 const MultiLineCodeEditor = (props) => {
   const {
@@ -70,7 +72,7 @@ const MultiLineCodeEditor = (props) => {
   // Context-aware hints for components inside ListView/Kanban and table columns
   const getContextHints = useStore((state) => state.getContextHints, shallow);
   const getTableColumnContextHints = useStore((state) => state.getTableColumnContextHints, shallow);
-  const tableColumnComponentId = useContext(TableColumnContext); // Set at ColumnPopover level
+  const tableColumnComponentId = useContext(TableColumnContext)?.tableId; // Set at ColumnPopover level
   const getServerSideGlobalResolveSuggestions = useStore(
     (state) => state.getServerSideGlobalResolveSuggestions,
     shallow
@@ -224,6 +226,14 @@ const MultiLineCodeEditor = (props) => {
     return initialValue;
   }, [initialValue, replaceIdsWithName]);
 
+  // @uiw/react-codemirror annotates external value-prop changes with ExternalChange
+  // and skips calling onChange to avoid echoing. This means currentValueRef stays stale
+  // when the value is set programmatically (e.g. AI-generated code). Sync it here so
+  // that handleOnBlur propagates the correct value when the user clicks Run.
+  useEffect(() => {
+    currentValueRef.current = initialValueWithReplacedIds ?? '';
+  }, [initialValueWithReplacedIds]);
+
   function updateCurrentLineObserver(editorView) {
     if (!editorView || !editorView?.view?.dom) return;
     const cursorPos = editorView.state.selection.main.head;
@@ -285,6 +295,8 @@ const MultiLineCodeEditor = (props) => {
           selectors={{ className: 'preview-block-portal' }}
           dragResizePortal={true}
           callgpt={null}
+          onPortalDimensionsChange={portalProps?.onPortalDimensionsChange}
+          canRefresh={portalProps?.canRefresh}
         >
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
@@ -299,6 +311,7 @@ const MultiLineCodeEditor = (props) => {
                 theme={theme}
                 extensions={[
                   langExtention,
+                  lineWrappingExtension,
                   search({
                     createPanel: handleSearchPanel,
                   }),

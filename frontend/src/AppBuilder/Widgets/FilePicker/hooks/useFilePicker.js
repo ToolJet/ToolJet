@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 // eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
+import { v4 as uuidv4 } from 'uuid';
 import { formatFileSize, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -75,6 +77,7 @@ export const useFilePicker = ({
   const [dropzoneRejections, setDropzoneRejections] = useState([]);
   const [uiErrorMessage, setUiErrorMessage] = useState('');
   const [isTouched, setIsTouched] = useState(false);
+  useShowValidationOnFormSubmit(setIsTouched);
 
   // Calculate total file size
   const totalFileSize = useMemo(() => {
@@ -101,8 +104,35 @@ export const useFilePicker = ({
     });
   }, []);
 
+  const stripFileId = useCallback((file) => {
+    if (!file) return file;
+    const { internalId, ...publicFile } = file;
+    return publicFile;
+  }, []);
+
+  const isSameFile = useCallback((firstFile, secondFile) => {
+    if (!firstFile || !secondFile) return false;
+
+    return (
+      firstFile.name === secondFile.name &&
+      firstFile.size === secondFile.size &&
+      firstFile.lastModified === secondFile.lastModified &&
+      firstFile.type === secondFile.type
+    );
+  }, []);
+
+  // Reusable function to clear error states
+  const clearErrorStates = useCallback(() => {
+    setUiErrorMessage('');
+    setDropzoneRejections([]);
+    setFileErrors({});
+    setUploadingStatus({});
+  }, []);
+
   const fileReader = useCallback(
-    async (file) => {
+    async (file, internalId) => {
+      const fileStateKey = internalId ?? file?.name;
+
       try {
         const readFileAsText = await getFileData(file, 'readAsText');
         const readFileAsDataURLResult = await getFileData(file, 'readAsDataURL');
@@ -129,6 +159,7 @@ export const useFilePicker = ({
         }
 
         return {
+          internalId: fileStateKey,
           lastModified: file.lastModified,
           lastModifiedDate: file.lastModifiedDate,
           name: file.name,
@@ -144,10 +175,10 @@ export const useFilePicker = ({
       } catch (error) {
         console.error(`Error reading file ${file.name}:`, error);
         // Update status/errors directly here or ensure it's handled by caller
-        setUploadingStatus((prev) => ({ ...prev, [file.name]: 'error' }));
+        setUploadingStatus((prev) => ({ ...prev, [fileStateKey]: 'error' }));
         setFileErrors((prev) => ({
           ...prev,
-          [file.name]: error.message || 'Failed to read file',
+          [fileStateKey]: error.message || 'Failed to read file',
         }));
         throw error; // Re-throw for Promise.allSettled
       }
@@ -213,14 +244,14 @@ export const useFilePicker = ({
         clearErrorStates();
       }, 10000);
     },
-    [fileTypeCategory, minSize, maxSize, maxFileCount]
+    [fileTypeCategory, minSize, maxSize, maxFileCount, clearErrorStates]
   );
 
   // Custom validator
   const validateFile = useCallback(
     (file) => {
       // Check 1: Duplicate file
-      if (selectedFiles.some((existingFile) => existingFile.name === file.name && existingFile.size === file.size)) {
+      if (selectedFiles.some((existingFile) => isSameFile(existingFile, file))) {
         return {
           code: 'duplicate-file',
           message: `The file "${file.name}" has already been selected.`,
@@ -245,7 +276,7 @@ export const useFilePicker = ({
 
       return null; // File passes custom validation
     },
-    [selectedFiles, enableMultiple, maxFileCount]
+    [selectedFiles, enableMultiple, maxFileCount, isSameFile]
   );
 
   const onDrop = useCallback(
@@ -254,8 +285,16 @@ export const useFilePicker = ({
       fireEvent?.('onFileSelected');
       setIsTouched(true); // Set touched state
 
-      const currentFileNames = selectedFiles.map((f) => f.name);
-      const newFilesToAdd = acceptedDropFiles.filter((f) => !currentFileNames.includes(f.name));
+      const newFilesToAdd = acceptedDropFiles
+        .filter((file) => !selectedFiles.some((existingFile) => isSameFile(existingFile, file)))
+        .map((file) => ({
+          rawFile: file,
+          internalId: uuidv4(),
+        }));
+
+      if (newFilesToAdd.length === 0) {
+        return;
+      }
 
       if (parseContent) {
         setIsParsing(true);
@@ -265,9 +304,9 @@ export const useFilePicker = ({
         });
       }
 
-      const processPromises = newFilesToAdd.map((file) => {
-        setUploadingStatus((prev) => ({ ...prev, [file.name]: 'uploading' }));
-        return fileReader(file);
+      const processPromises = newFilesToAdd.map(({ rawFile, internalId }) => {
+        setUploadingStatus((prev) => ({ ...prev, [internalId]: 'uploading' }));
+        return fileReader(rawFile, internalId);
       });
 
       const results = await Promise.allSettled(processPromises);
@@ -277,16 +316,16 @@ export const useFilePicker = ({
       const currentStatuses = { ...uploadingStatus };
 
       results.forEach((result, index) => {
-        const fileName = newFilesToAdd[index].name;
+        const { internalId, rawFile } = newFilesToAdd[index];
         if (result.status === 'fulfilled') {
           successfullyProcessedFiles.push(result.value);
-          currentStatuses[fileName] = 'uploaded';
-          if (currentErrors[fileName]) delete currentErrors[fileName]; // Clear previous error
+          currentStatuses[internalId] = 'uploaded';
+          if (currentErrors[internalId]) delete currentErrors[internalId]; // Clear previous error
         } else {
           const errorMsg = result.reason?.message || 'Failed to process file';
-          currentErrors[fileName] = errorMsg;
-          currentStatuses[fileName] = 'error';
-          toast.error(`Error processing ${fileName}: ${errorMsg}`);
+          currentErrors[internalId] = errorMsg;
+          currentStatuses[internalId] = 'error';
+          toast.error(`Error processing ${rawFile.name}: ${errorMsg}`);
         }
       });
 
@@ -309,7 +348,9 @@ export const useFilePicker = ({
 
       // Fire 'onFileLoaded' event after processing
       if (fireEvent && successfullyProcessedFiles.length > 0) {
-        fireEvent?.('onFileLoaded', { files: successfullyProcessedFiles });
+        fireEvent?.('onFileLoaded', {
+          files: successfullyProcessedFiles.map(stripFileId),
+        });
       }
 
       // Clear dropzone rejections when new files are accepted
@@ -326,7 +367,9 @@ export const useFilePicker = ({
       enableMultiple,
       maxFileCount,
       fileErrors,
+      stripFileId,
       uploadingStatus,
+      isSameFile,
     ]
   );
 
@@ -343,14 +386,6 @@ export const useFilePicker = ({
       return acc;
     }, {});
   }, [fileTypeCategory]);
-
-  // Reusable function to clear error states
-  const clearErrorStates = useCallback(() => {
-    setUiErrorMessage('');
-    setDropzoneRejections([]);
-    setFileErrors({});
-    setUploadingStatus({});
-  }, []);
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject } = useDropzone({
     accept: acceptProp, // Use the calculated accept prop
@@ -388,23 +423,24 @@ export const useFilePicker = ({
     (indexToRemove) => {
       const fileToRemove = selectedFiles[indexToRemove];
       if (!fileToRemove) return;
+      const fileStateKey = fileToRemove?.internalId ?? fileToRemove.name;
 
       setSelectedFiles((prevFiles) => prevFiles.filter((_, index) => index !== indexToRemove));
 
       setFileErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors[fileToRemove.name];
+        delete newErrors[fileStateKey];
         return newErrors;
       });
       setUploadingStatus((prev) => {
         const newStatus = { ...prev };
-        delete newStatus[fileToRemove.name];
+        delete newStatus[fileStateKey];
         return newStatus;
       });
 
-      fireEvent?.('onFileDeselected', { file: fileToRemove });
+      fireEvent?.('onFileDeselected', { file: stripFileId(fileToRemove) });
     },
-    [selectedFiles, fireEvent]
+    [selectedFiles, fireEvent, stripFileId]
   );
 
   // --- Exposed Actions ---
@@ -502,7 +538,7 @@ export const useFilePicker = ({
       const formattedSelectedFiles = [];
 
       for (const file of selectedFiles) {
-        const { filePath, ...formattedFile } = file;
+        const { internalId, filePath, ...formattedFile } = file;
 
         legacySelectedFiles.push({
           name: file.name,

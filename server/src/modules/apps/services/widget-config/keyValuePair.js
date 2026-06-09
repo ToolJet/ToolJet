@@ -83,10 +83,31 @@ export const keyValuePairConfig = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
       validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
       section: 'additionalActions',
     },
     tooltip: {
@@ -95,9 +116,11 @@ export const keyValuePairConfig = {
       validation: { schema: { type: 'string' }, defaultValue: '' },
       section: 'additionalActions',
       placeholder: 'e.g., Enter your full name',
+      showLabel: false,
     },
   },
   events: {
+    onFieldClick: { displayName: 'Field clicked' },
     onSaveKeyValuePairChanges: { displayName: 'Save changes' },
     onFieldValueChanged: { displayName: 'Field edited' },
     onCancelKeyValuePairChanges: { displayName: 'Cancel changes' },
@@ -196,6 +219,7 @@ export const keyValuePairConfig = {
   exposedVariables: {
     data: {},
     changeSet: {},
+    lastClickedField: {},
   },
   actions: [
     {
@@ -391,8 +415,11 @@ export const keyValuePairConfig = {
       dynamicHeight: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       fieldDeletionHistory: { value: [] },
       showUpdateActions: { value: '{{true}}' },
     },

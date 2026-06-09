@@ -79,8 +79,14 @@ export const useMenuItemsManager = (component, paramUpdated) => {
   const generateNewItem = (isGroup = false) => {
     const id = generateUniqueId(isGroup ? 'group' : 'item');
     const icons = [
-      'IconHome2', 'IconLayoutDashboard', 'IconSettings', 'IconUser',
-      'IconFolder', 'IconFile', 'IconStar', 'IconHeart'
+      'IconHome2',
+      'IconLayoutDashboard',
+      'IconSettings',
+      'IconUser',
+      'IconFolder',
+      'IconFile',
+      'IconStar',
+      'IconHeart',
     ];
     const randomIcon = icons[Math.floor(Math.random() * icons.length)];
 

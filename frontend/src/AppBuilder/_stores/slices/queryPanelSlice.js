@@ -15,6 +15,7 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const initialState = {
   isQueryPaneExpanded: queryManagerPreferences?.isExpanded ?? true,
   isDraggingQueryPane: false,
+  // eslint-disable-next-line no-constant-binary-expression
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
   previewPanelHeight: 0,
@@ -430,12 +431,43 @@ export const createQueryPanelSlice = (set, get) => ({
         components: get().getComponentNameIdMapping(moduleId),
         queries: get().getQueryNameIdMapping(moduleId),
       });
-      if (dataQuery.options?.requestConfirmation) {
+      const disableQueryExpr = dataQuery.options?.disableQuery;
+      if (disableQueryExpr) {
+        const resolvedDisable = get().getResolvedValue(disableQueryExpr, queryState, moduleId);
+        if (resolvedDisable) {
+          const messageExpr = dataQuery.options?.disabledMessage;
+          const resolvedMessage = messageExpr ? get().getResolvedValue(messageExpr, queryState, moduleId) : '';
+          const trimmedMsg = typeof resolvedMessage === 'string' ? resolvedMessage.trim() : '';
+          if (trimmedMsg) {
+            toast(trimmedMsg, {
+              icon: '⚠️',
+            });
+          }
+          if (shouldSetPreviewData) {
+            setPreviewLoading(false);
+          }
+          setResolvedQuery(queryId, { isLoading: false }, moduleId);
+          get().debugger.log({
+            logLevel: 'info',
+            type: 'query',
+            kind: query.kind,
+            key: query.name,
+            message: `Query skipped${trimmedMsg ? `: ${trimmedMsg}` : ''}`,
+            errorTarget: 'Queries',
+          });
+          return;
+        }
+      }
+      const shouldConfirm = !!get().getResolvedValue(dataQuery.options?.requestConfirmation, {}, moduleId);
+      if (shouldConfirm) {
+        const rawMessage = dataQuery.options?.confirmationMessage;
+        const confirmationMessage = rawMessage ? get().getResolvedValue(rawMessage, {}, moduleId) : undefined;
         const queryConfirmation = {
           queryId,
           queryName,
           shouldSetPreviewData,
           parameters,
+          confirmationMessage,
         };
 
         if (!queryConfirmationList.some((query) => queryId === query.queryId) && confirmed === undefined) {
@@ -511,7 +543,7 @@ export const createQueryPanelSlice = (set, get) => ({
         );
         const successData = { status: 'ok', data: finalData };
         onEvent('onDataQuerySuccess', queryEvents, {}, mode, moduleId);
-        if (callbackFns?.onSuccess) return callbackFns.onSuccess(successData);
+        if (callbackFns?.onSuccess) callbackFns.onSuccess(successData);
         return successData;
       };
 
@@ -573,7 +605,7 @@ export const createQueryPanelSlice = (set, get) => ({
         );
 
         onEvent('onDataQueryFailure', queryEvents);
-        if (callbackFns?.onFailure) return callbackFns.onFailure(errorData);
+        if (callbackFns?.onFailure) callbackFns.onFailure(errorData);
         return errorData;
       };
 
@@ -747,6 +779,12 @@ export const createQueryPanelSlice = (set, get) => ({
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
+            const result = handleFailure({
+              status: 'failed',
+              message: errorMessage,
+              data: e?.data || {},
+              description: errorMessage,
+            });
             resolve({ status: 'failed', message: errorMessage });
           });
       });
@@ -983,10 +1021,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 onEvent('onDataQueryFailure', queryEvents);
                 if (callbackFns?.onFailure) {
                   const failureData = { status: data.status, data: finalData };
-                  setPreviewLoading(false);
-                  setIsPreviewQueryLoading(false);
-                  resolve(callbackFns.onFailure(failureData));
-                  return;
+                  callbackFns.onFailure(failureData);
                 }
                 if (!calledFromQuery) setPreviewData(errorData);
                 break;
@@ -1025,11 +1060,8 @@ export const createQueryPanelSlice = (set, get) => ({
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
                     const failureData = { status: data.status, data: finalData };
-                    if (callbackFns?.onFailure) {
-                      resolve(callbackFns.onFailure(failureData));
-                    } else {
-                      resolve(failureData);
-                    }
+                    if (callbackFns?.onFailure) callbackFns.onFailure(failureData);
+                    resolve(failureData);
                     if (!calledFromQuery) setPreviewData(finalData);
                     return;
                   }
@@ -1040,10 +1072,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
                 if (callbackFns?.onSuccess) {
                   const successData = { status: data.status, data: finalData };
-                  setPreviewLoading(false);
-                  setIsPreviewQueryLoading(false);
-                  resolve(callbackFns.onSuccess(successData));
-                  return;
+                  callbackFns.onSuccess(successData);
                 }
                 break;
               }
@@ -1219,6 +1248,8 @@ export const createQueryPanelSlice = (set, get) => ({
           const proxiedPage = deepClone(currentState?.page);
           const proxiedQueriesInResolvedState = queriesInResolvedState;
 
+          const libraryRegistry = get().jsLibraryRegistry || {};
+
           const evalFunction = Function(
             [
               'data',
@@ -1232,6 +1263,7 @@ export const createQueryPanelSlice = (set, get) => ({
               'constants',
               ...(appType === 'module' ? ['input'] : []),
               'actions',
+              ...Object.keys(libraryRegistry),
             ],
             transformation
           );
@@ -1257,7 +1289,8 @@ export const createQueryPanelSlice = (set, get) => ({
               log: function (log) {
                 return actions.log.call(actions, log, true);
               },
-            }
+            },
+            ...Object.values(libraryRegistry)
           );
         } catch (err) {
           const stackLines = err.stack.split('\n');
@@ -1353,7 +1386,15 @@ export const createQueryPanelSlice = (set, get) => ({
         return { data: undefined, status: 'failed' };
       }
     },
-    triggerWorkflow: async (moduleId, query, workflowAppId, syncExecution = true, params = {}, appEnvId, workflowVersionId = null) => {
+    triggerWorkflow: async (
+      moduleId,
+      query,
+      workflowAppId,
+      syncExecution = true,
+      params = {},
+      appEnvId,
+      workflowVersionId = null
+    ) => {
       const { getAllExposedValues } = get();
       const currentState = getAllExposedValues();
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
@@ -1527,6 +1568,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
+        const libraryRegistry = get().jsLibraryRegistry || {};
         const fnParams = [
           'moment',
           '_',
@@ -1540,6 +1582,7 @@ export const createQueryPanelSlice = (set, get) => ({
           'constants',
           ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? ['input'] : []), // Include 'input' only for module,
+          ...Object.keys(libraryRegistry),
           code,
         ];
         var evalFn = new AsyncFunction(...fnParams);
@@ -1557,6 +1600,7 @@ export const createQueryPanelSlice = (set, get) => ({
           resolvedState?.constants,
           ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? [resolvedState.input] : []), // Include 'input' only for module
+          ...Object.values(libraryRegistry),
         ];
         result = {
           status: 'ok',

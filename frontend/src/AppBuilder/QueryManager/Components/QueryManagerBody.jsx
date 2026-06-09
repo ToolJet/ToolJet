@@ -13,6 +13,9 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
 import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import ConfirmationInputs from './ConfirmationInputs';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
@@ -25,6 +28,8 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
+  const { moduleId } = useModuleContext();
+  const getResolvedValue = useStore((state) => state.getResolvedValue);
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
@@ -43,7 +48,6 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
-
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
@@ -76,6 +80,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   };
 
   const validateNewOptions = (newOptions) => {
+    // Guard against stale writes: when queries are switched rapidly, child components (e.g. DynamicSelector)
+    // calls optionsChanged after the user has already moved to a different query.
+    // Without this check, the old query's options would be written onto the newly selected query.
+    const currentStoreQueryId = useStore.getState().queryPanel.selectedQuery?.id;
+    if (currentStoreQueryId !== selectedQuery?.id) return;
     const updatedOptions = cleanFocusedFields(newOptions);
     updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
@@ -249,7 +258,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         })}
         data-cy="query-events-section"
       >
-        <div className={`form-label`} data-cy="query-manager-events-label">{t('editor.queryManager.eventsHandler', 'Events')}</div>
+        <div className={`form-label`} data-cy="query-manager-events-label">
+          {t('editor.queryManager.eventsHandler', 'Events')}
+        </div>
         <div className="query-manager-events pb-4">
           <EventManager
             sourceId={selectedQuery?.id}
@@ -257,6 +268,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             eventMetaDefinition={queryComponent.componentMeta}
             callerQueryId={selectedQueryId}
             popoverPlacement="auto"
+            callerQueryName={selectedQuery?.name}
           />
         </div>
       </div>
@@ -265,14 +277,61 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   const renderTimeout = () => {
     return (
-      <div className="d-flex" data-cy="query-timeout-section">
-        <div className="form-label mt-2" data-cy="query-manager-timeout-label">{t('editor.queryManager.timeout', 'Timeout ( ms )')}</div>
+      <div className="d-flex" data-cy="query-timeout-section" style={{ marginBottom: '16px' }}>
+        <div className="form-label mt-2" data-cy="query-manager-timeout-label">
+          {t('editor.queryManager.timeout', 'Timeout ( ms )')}
+        </div>
         <div className="query-manager-query-timeout">
           <CodeHinter
             theme={darkMode ? 'monokai' : 'base16-light'}
             initialValue={selectedQuery?.options?.query_timeout ?? ''}
             onChange={(value) => optionchanged('query_timeout', value)}
             cyLabel="query-timeout-input"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderDisableQuery = () => {
+    return (
+      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disable-section">
+        <div className="form-label mt-2" data-cy="query-manager-disable-label">
+          {t('editor.queryManager.disableQuery', 'Disable query')}
+        </div>
+        <div className="flex-grow-1 tw-max-w-[460px]">
+          <CodeHinter
+            type="basic"
+            initialValue={selectedQuery?.options?.disableQuery ?? ''}
+            onChange={(value) => optionchanged('disableQuery', value)}
+            placeholder="{{components.toggleswitch1.value}}"
+            cyLabel="query-disable-expression"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderDisabledMessage = () => {
+    const hasDisableExpression = !!selectedQuery?.options?.disableQuery?.trim();
+    return (
+      <div className={cx('d-flex tw-mb-4', { 'disabled ': isFreezed })} data-cy="query-disabled-message-section">
+        <div className="form-label mt-2" data-cy="query-manager-disabled-message-label">
+          {t('editor.queryManager.disabledMessageLabel', 'Disable message')}
+        </div>
+        <div
+          className={cx(
+            'flex-grow-1 tw-max-w-[460px]',
+            hasDisableExpression ? 'tw-opacity-100' : 'tw-opacity-30 tw-pointer-events-none'
+          )}
+        >
+          <CodeHinter
+            type="basic"
+            initialValue={selectedQuery?.options?.disabledMessage ?? ''}
+            onChange={(value) => optionchanged('disabledMessage', value)}
+            placeholder={t('editor.queryManager.queryDisabledDefault', 'This query is disabled')}
+            cyLabel="query-disabled-message"
+            disabled={!hasDisableExpression}
           />
         </div>
       </div>
@@ -288,18 +347,62 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           })}
           data-cy="query-triggers-section"
         >
-          <div className="form-label mt-2" data-cy="query-manager-triggers-label">{t('editor.queryManager.settings', 'Triggers')}</div>
+          <div className="form-label mt-2" data-cy="query-manager-triggers-label">
+            {t('editor.queryManager.settings', 'Triggers')}
+          </div>
           <div className="flex-grow-1">
-            {Object.keys(customToggles).map((toggle, index) => (
-              <CustomToggleFlag
-                {...customToggles[toggle]}
-                toggleOption={toggleOption}
-                value={selectedQuery?.options?.[customToggles[toggle]?.action]}
-                index={index}
-                key={toggle}
-                darkMode={darkMode}
-              />
-            ))}
+            {Object.keys(customToggles).map((toggle, index) => {
+              const config = customToggles[toggle];
+              const fxMode = config.fx ? !!selectedQuery?.options?.[config.fxKey] : false;
+              const handleFxToggle = config.fx
+                ? () => {
+                    if (fxMode) {
+                      const currentExpression = selectedQuery?.options?.[config.action];
+                      let evaluated = false;
+                      try {
+                        evaluated = !!getResolvedValue(currentExpression, {}, moduleId);
+                      } catch (e) {
+                        evaluated = false;
+                      }
+                      optionsChanged({
+                        ...options,
+                        [config.action]: evaluated,
+                        [config.fxKey]: false,
+                      });
+                    } else {
+                      const currentBool = !!selectedQuery?.options?.[config.action];
+                      optionsChanged({
+                        ...options,
+                        [config.action]: currentBool ? '{{true}}' : '{{false}}',
+                        [config.fxKey]: true,
+                      });
+                    }
+                  }
+                : undefined;
+              const toggleValue = fxMode ? false : !!selectedQuery?.options?.[config?.action];
+              return (
+                <React.Fragment key={toggle}>
+                  <CustomToggleFlag
+                    {...config}
+                    toggleOption={toggleOption}
+                    value={toggleValue}
+                    index={index}
+                    darkMode={darkMode}
+                    queryKind={selectedQuery?.kind}
+                    fxMode={fxMode}
+                    onFxToggle={handleFxToggle}
+                  />
+                  {config.action === 'requestConfirmation' && (
+                    <ConfirmationInputs
+                      options={options}
+                      darkMode={darkMode}
+                      optionchanged={optionchanged}
+                      queryName={queryName}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
             {selectedQuery?.kind === 'restapi' &&
               Object.keys(RestAPIToggles).map((toggle, index) => (
                 <CustomToggleFlag
@@ -314,7 +417,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           </div>
         </div>
         <div className="d-flex">
-          <div className="form-label">{ }</div>
+          <div className="form-label">{}</div>
           <SuccessNotificationInputs
             // currentState={currentState}
             options={options}
@@ -322,8 +425,10 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             optionchanged={optionchanged}
           />
         </div>
-        {renderEventManager()}
         {renderTimeout()}
+        {renderDisableQuery()}
+        {renderDisabledMessage()}
+        {renderEventManager()}
       </div>
     );
   };
@@ -339,8 +444,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
       : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
-        ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
-        : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -362,7 +467,11 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           >
             Source
           </div>
-          <div className="d-flex flex-column align-items-start" style={{ width: '500px' }} data-cy="query-manager-change-data-source">
+          <div
+            className="d-flex flex-column align-items-start"
+            style={{ width: '500px' }}
+            data-cy="query-manager-change-data-source"
+          >
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
@@ -406,14 +515,15 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
-      canReadDataSource(selectedQuery?.data_source_id) ||
-      canDeleteDataSource()
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
       : true;
 
   return (
     <div
-      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${!hasPermissions || isFreezed ? 'disabled' : ''
-        }`}
+      className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
+        !hasPermissions || isFreezed ? 'disabled' : ''
+      }`}
       style={{
         height: `calc(100% - ${selectedQuery ? previewHeight + 40 : 0}px)`,
         overflowY: 'auto',
@@ -445,29 +555,52 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   );
 };
 
-const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, subLabel, value, toggleOption, darkMode }) => {
-  const [flag, setFlag] = useState(false);
+const UNSUPPORTED_DEPENDENCY_CHANGE_KINDS = new Set(['runjs', 'runpy']);
 
+const CustomToggleFlag = ({
+  dataCy,
+  action,
+  translatedLabel,
+  label,
+  subLabel,
+  value,
+  toggleOption,
+  darkMode,
+  queryKind,
+  fx,
+  fxMode,
+  onFxToggle,
+}) => {
+  const [flag, setFlag] = useState(false);
   const { t } = useTranslation();
+
+  const isHidden = action === 'runOnDependencyChange' && UNSUPPORTED_DEPENDENCY_CHANGE_KINDS.has(queryKind);
 
   useEffect(() => {
     setFlag(value);
   }, [value]);
 
+  if (isHidden) return null;
+
   return (
     <div className="query-manager-settings-toggles">
-      <CustomToggleSwitch
-        dataCy={dataCy}
-        isChecked={flag}
-        toggleSwitchFunction={(flag) => {
-          setFlag((state) => !state);
-          toggleOption(flag);
-        }}
-        action={action}
-        darkMode={darkMode}
-        label={t(translatedLabel, label)}
-        subLabel={subLabel}
-      />
+      <div className={cx({ 'toggle-fx-row': fx && onFxToggle, 'fx-active': fxMode })}>
+        <CustomToggleSwitch
+          dataCy={dataCy}
+          isChecked={flag}
+          toggleSwitchFunction={(flag) => {
+            if (fxMode) return;
+            setFlag((state) => !state);
+            toggleOption(flag);
+          }}
+          action={action}
+          darkMode={darkMode}
+          label={t(translatedLabel, label)}
+          subLabel={subLabel}
+          disabled={fxMode}
+        />
+        {fx && onFxToggle && <FxButton active={!!fxMode} onPress={onFxToggle} dataCy={dataCy} />}
+      </div>
     </div>
   );
 };

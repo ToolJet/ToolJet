@@ -54,6 +54,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'IFrame',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
+  'FileButton',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -83,7 +85,18 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Accordion: 'Data',
   JSONExplorer: 'Data',
   JSONEditor: 'Data',
+  ColorPicker: 'Data',
+  FileButton: 'Data',
 };
+
+// Widgets whose tooltip lives in `properties` (additionalActions section) AND
+// whose tooltip we explicitly moved out of `general` in this PR. Suppressing
+// the legacy General-section Tooltip field for these prevents the duplicate
+// Tooltip UX (one in General, one in Additional Actions). For other widgets
+// in SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY (Button et al.), the pre-existing
+// duplicate is left as-is — a broader cleanup is tracked for phase 2 alongside
+// the migration of the remaining 13 widgets out of the General-section path.
+const SUPPRESS_GENERAL_TOOLTIP_FOR = ['ModalV2', 'Container'];
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -198,6 +211,9 @@ export const baseComponentProperties = (
       'JSONEditor',
       'IFrame',
       'Accordion',
+      'ColorPicker',
+      'FileButton',
+      'Listview',
     ],
     Layout: [],
   };
@@ -270,24 +286,31 @@ export const baseComponentProperties = (
     });
   }
 
-  items.push({
-    title: `${i18next.t('widget.common.general', 'General')}`,
-    isOpen: true,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'tooltip',
-          'general',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
-  });
+  // Skip the legacy General-section Tooltip field for widgets whose tooltip
+  // we moved into `properties` (additionalActions). Without this, ModalV2
+  // and Container would render two "Tooltip" fields in the inspector: a stale
+  // one in General (no longer read by the renderer) and the working one in
+  // Additional Actions. See SUPPRESS_GENERAL_TOOLTIP_FOR at the top of the file.
+  if (!SUPPRESS_GENERAL_TOOLTIP_FOR.includes(component?.component?.component)) {
+    items.push({
+      title: `${i18next.t('widget.common.general', 'General')}`,
+      isOpen: true,
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            layoutPropertyChanged,
+            dataQueries,
+            'tooltip',
+            'general',
+            currentState,
+            allComponents
+          )}
+        </>
+      ),
+    });
+  }
 
   items.push({
     title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,

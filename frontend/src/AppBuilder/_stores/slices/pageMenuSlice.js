@@ -42,31 +42,34 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
 };
 
 const createPageUpdateCommand =
-  (updatePaths, afterUpdateFn = () => { }, enableSave = true) =>
-    (pageId, values) => {
-      return (set, get) => {
-        set((state) => {
-          const page = state.modules.canvas.pages.find((p) => p.id === pageId);
-          if (page) {
-            updatePaths.forEach((path, index) => {
-              _.set(page, path, values[index]);
-            });
-            state.editingPage = page;
-            afterUpdateFn(state);
-          }
-        });
+  (updatePaths, afterUpdateFn = () => {}, enableSave = true) =>
+  (pageId, values) => {
+    return (set, get) => {
+      set((state) => {
+        const page = state.modules.canvas.pages.find((p) => p.id === pageId);
+        if (page) {
+          updatePaths.forEach((path, index) => {
+            _.set(page, path, values[index]);
+          });
+          state.editingPage = page;
+          afterUpdateFn(state);
+        }
+      });
 
-        const { appStore, currentVersionId } = get();
-        const app = appStore.modules.canvas.app;
-        const diff = _.zipObject(updatePaths, values);
-        if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
-      };
+      const { appStore, currentVersionId } = get();
+      const app = appStore.modules.canvas.app;
+      const diff = _.zipObject(updatePaths, values);
+      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
     };
+  };
 
 export const createPageMenuSlice = (set, get) => {
   const updatePageVisibility = createPageUpdateCommand(['hidden']);
 
   const disableOrEnablePage = createPageUpdateCommand(['disabled']);
+
+  const _togglePageHeaderCmd = createPageUpdateCommand(['pageHeader']);
+  const _togglePageFooterCmd = createPageUpdateCommand(['pageFooter']);
 
   const updatePageName = createPageUpdateCommand(['name'], (state) => {
     state.showEditPageNameInput = false;
@@ -79,7 +82,7 @@ export const createPageMenuSlice = (set, get) => {
   const updatePageTarget = createPageUpdateCommand(['openIn']);
   const updatePageAppId = createPageUpdateCommand(['appId']);
 
-  const updatePageGroupName = createPageUpdateCommand(['name'], (state) => { });
+  const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
 
   const updatePageHandle = createPageUpdateCommand(['handle'], (state) => {
     state.showRenamePageHandleModal = false;
@@ -87,7 +90,7 @@ export const createPageMenuSlice = (set, get) => {
     state.editingPage = null;
   });
 
-  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => { }, false);
+  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
 
   return {
     editingPage: null,
@@ -178,6 +181,38 @@ export const createPageMenuSlice = (set, get) => {
     // page actions
     updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
     disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
+    togglePageHeader: (pageId, checked, mode) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    updatePageHeaderStyle: (pageId, styleName, value) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        [styleName]: value,
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    togglePageFooter: (pageId, checked, mode) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageFooterStyle: (pageId, styleName, value) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        [styleName]: value,
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
     updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
     updatePageName: (pageId, value) => {
       const page = get().modules.canvas.pages.find((p) => p.id === pageId);
@@ -369,16 +404,28 @@ export const createPageMenuSlice = (set, get) => {
     reorderPages: async (reorderdPages) => {
       const diff = {};
       const currentPageId = get().getCurrentPageId('canvas');
+      const currentPageIndex = get().getCurrentPageIndex('canvas');
+      let newCurrentPageIndex = null;
+
       // update index of everything to avoid inconsistencies
       reorderdPages.forEach((page, index) => {
+        // update currentPageIndex in state in case index of current page was changed
+        if (page?.id === currentPageId && index !== currentPageIndex) {
+          newCurrentPageIndex = index;
+        }
+
         diff[page.id] = {
           index,
           pageGroupId: page.pageGroupId,
         };
       });
+
       // @todo come back to this, components can be segregated which will make this update fast compaaed to the current approach
       set((state) => {
         state.modules.canvas.pages = reorderdPages;
+        if (newCurrentPageIndex !== null) {
+          state.modules.canvas.currentPageIndex = newCurrentPageIndex;
+        }
       });
       const { getAppId, currentVersionId } = get();
       const appId = getAppId('canvas');
@@ -418,8 +465,8 @@ export const createPageMenuSlice = (set, get) => {
         isPageGroup,
         ...(isPageGroup
           ? {
-            icon: `IconFolder`,
-          }
+              icon: `IconFolder`,
+            }
           : {}),
       };
       set((state) => {
@@ -525,11 +572,13 @@ export const createPageMenuSlice = (set, get) => {
         modeStore,
         isPreviewInEditor,
         setCurrentPageHandle,
+        eventsSlice,
       } = get();
       const pages = modules[moduleId].pages;
       const selectedVersionName = selectedVersion?.name;
       const selectedEnvironmentName = selectedEnvironment?.name;
       const currentMode = modeStore.modules[moduleId].currentMode;
+      const { fireEvent } = eventsSlice;
 
       if (page?.type === 'url') {
         if (page?.url) {
@@ -562,6 +611,11 @@ export const createPageMenuSlice = (set, get) => {
           return false;
         }
         return true;
+      }
+
+      if (page?.type === 'custom') {
+        fireEvent('onClick', page?.id, moduleId, {}, {});
+        return;
       }
 
       if (currentPageId === page?.id) {

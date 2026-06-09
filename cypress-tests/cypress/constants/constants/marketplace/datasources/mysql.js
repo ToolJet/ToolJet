@@ -13,7 +13,7 @@ export const mysqlUIConfig = {
             type: "dropdown",
             fieldName: "Connection type",
             validations: {
-                defaultValue: 'Hostname',
+                defaultValue: 'Manual connection',
                 disabled: false
             }
         },
@@ -23,7 +23,7 @@ export const mysqlUIConfig = {
             fieldName: "Host",
             validations: {
                 isRequired: true,
-                placeholder: "Enter host",
+                placeholder: "localhost",
                 defaultValue: "localhost",
                 disabled: false
             }
@@ -33,17 +33,17 @@ export const mysqlUIConfig = {
             fieldName: "Port",
             validations: {
                 isRequired: true,
-                placeholder: "Enter port",
+                placeholder: "3306",
                 defaultValue: "3306",
                 disabled: false
             }
         },
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             validations: {
-                isRequired: true,
-                placeholder: "Name of the database",
+                isRequired: false,
+                placeholder: "Enter name of the database",
                 defaultValue: "",
                 disabled: false
             }
@@ -53,7 +53,7 @@ export const mysqlUIConfig = {
             type: "input",
             fieldName: "Username",
             validations: {
-                isRequired: true,
+                isRequired: false,
                 placeholder: "Enter username",
                 defaultValue: "",
                 disabled: false
@@ -62,7 +62,7 @@ export const mysqlUIConfig = {
 
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             validations: {
                 defaultValue: false,
                 disabled: false
@@ -73,22 +73,13 @@ export const mysqlUIConfig = {
             type: "encrypted",
             fieldName: "Password",
             validations: {
-                isRequired: true,
+                isRequired: false,
                 placeholder: "**************",
                 defaultValue: "",
                 disabled: true,
                 hasEditButton: true,
                 showEncrypted: true,
                 hasEyeIcon: true
-            }
-        },
-
-        {
-            type: "dropdown",
-            fieldName: "SSL certificate",
-            validations: {
-                defaultValue: 'None',
-                disabled: false
             }
         }
     ]
@@ -108,12 +99,12 @@ export const mysqlFormConfig = {
         },
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             text: 'test_db'
         },
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             shouldBeChecked: false
         },
         {
@@ -158,14 +149,14 @@ export const mysqlFormConfig = {
     invalidDatabase: [
         {
             type: "input",
-            fieldName: "Database name",
+            fieldName: "Database",
             text: "nonexistent_database"
         }
     ],
     invalidSsl: [
         {
             type: "toggle",
-            fieldName: "SSL",
+            fieldName: "SSL/TLS",
             shouldBeChecked: true
         }
     ],

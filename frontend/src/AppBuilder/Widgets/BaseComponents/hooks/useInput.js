@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 //eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode } from 'react-phone-number-input';
 
@@ -13,6 +14,16 @@ export const getWidthTypeOfComponentStyles = (widthType, labelWidth, labelAutoWi
 export const getLabelWidthOfInput = (widthType, labelWidth) => {
   if (widthType === 'ofComponent') return labelWidth;
   return (labelWidth / 100) * 70;
+};
+
+export const getLabelFontSize = (labelFontSize, defaultSize = 12) => {
+  const size = Number(labelFontSize);
+  return `${Number.isFinite(size) && size > 0 ? size : defaultSize}px`;
+};
+
+export const getLabelHeight = (labelFontSize, defaultSize = 12) => {
+  const size = Number(labelFontSize);
+  return (Number.isFinite(size) && size > 0 ? size : defaultSize) + 8;
 };
 
 export const checkIfInputWidgetTypeIsDeprecated = (optionValue) => {
@@ -44,6 +55,7 @@ export const useInput = ({
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [validationStatus, setValidationStatus] = useState(validate(value));
   const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
   const [iconVisibility, setIconVisibility] = useState(false);
@@ -278,6 +290,7 @@ export const useInput = ({
     setCountry,
     validationStatus,
     showValidationError,
+    setShowValidationError,
     isFocused,
     labelWidth,
     iconVisibility,

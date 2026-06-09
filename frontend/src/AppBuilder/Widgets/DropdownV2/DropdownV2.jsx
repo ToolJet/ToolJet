@@ -19,9 +19,11 @@ import { useMenuWidth } from './useMenuWidth';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -88,6 +90,7 @@ export const DropdownV2 = ({
     direction,
     fieldBorderColor,
     fieldBackgroundColor,
+    placeholderTextColor,
     labelWidth,
     icon,
     iconVisibility,
@@ -99,6 +102,7 @@ export const DropdownV2 = ({
     widthType,
     menuWidthMode,
     menuCustomWidth,
+    labelFontSize,
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -115,6 +119,7 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
   const menuBackgroundColor = getInputBackgroundColor({
     fieldBackgroundColor,
     darkMode,
@@ -142,6 +147,7 @@ export const DropdownV2 = ({
           ...data,
           label: getSafeRenderableValue(data?.label),
           value: data?.value,
+          caption: data?.caption ?? null,
           isDisabled: data?.disable ?? false,
         }));
 
@@ -172,7 +178,9 @@ export const DropdownV2 = ({
     const _selectedOption = selectOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
-      selectedOption: pick(_selectedOption, ['label', 'value']),
+      selectedOption: _selectedOption
+        ? { ...pick(_selectedOption, ['label', 'value']), caption: _selectedOption?.caption ?? null }
+        : null,
     });
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
@@ -233,7 +241,7 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     setExposedVariable('options', _options);
 
     setExposedVariable('selectOption', async function (value) {
@@ -287,7 +295,7 @@ export const DropdownV2 = ({
   }, [validate, currentValue, setExposedVariable]);
 
   useEffect(() => {
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     const exposedVariables = {
       clear: async function () {
         setInputValue(null);
@@ -421,7 +429,7 @@ export const DropdownV2 = ({
     }),
     placeholder: (provided, _state) => ({
       ...provided,
-      color: 'var(--cc-placeholder-text)',
+      color: placeholderTextColor || 'var(--cc-placeholder-text)',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -482,9 +490,11 @@ export const DropdownV2 = ({
     menuPortal: (base) => ({
       ...base,
       ...(menuWidthStyle?.maxWidth ? { maxWidth: menuWidthStyle.maxWidth } : {}),
+      zIndex: 1040,
     }),
   };
   const _width = getLabelWidthOfInput(widthType, labelWidth); // Max width which label can go is 70% for better UX calculate width based on this value
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   return (
     <>
       <div
@@ -525,6 +535,7 @@ export const DropdownV2 = ({
           _width={_width}
           widthType={widthType}
           id={`${id}-label`}
+          fontSize={labelFontSizeValue}
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
@@ -556,6 +567,13 @@ export const DropdownV2 = ({
               setUserInteracted(true);
             }}
             options={selectOptions}
+            filterOption={(option, input) => {
+              if (!input) return true;
+              const needle = input.toLowerCase();
+              const label = String(option?.label ?? '').toLowerCase();
+              const caption = String(option?.data?.caption ?? '').toLowerCase();
+              return label.includes(needle) || caption.includes(needle);
+            }}
             styles={customStyles}
             aria-hidden={!visibility}
             aria-disabled={isDropdownDisabled}
@@ -589,6 +607,7 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             menuBackgroundColor={menuBackgroundColor}
             optionsLoadingState={optionsLoadingState && advanced}
+            placeholderTextColor={placeholderTextColor}
             menuPlacement="auto"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !isMenuOpen && !isDropdownLoading) {

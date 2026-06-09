@@ -26,7 +26,7 @@ export async function reconfigurePostgrest(
           );
 
           if (!grantExists || grantExists.length === 0) {
-            await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to ${options.user}`);
+            await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to "${options.user}"`);
           }
 
           await transactionalEntityManager.queryRunner.query(`create or replace function postgrest.pre_config()
@@ -40,7 +40,7 @@ export async function reconfigurePostgrest(
       $$ language sql;
       `);
           await transactionalEntityManager.queryRunner.query(
-            `ALTER ROLE ${options.user} SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
+            `ALTER ROLE "${options.user}" SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
           );
         });
       } finally {
@@ -105,7 +105,7 @@ export async function reconfigurePostgrestWithoutSchemaSync(
           );
 
           if (!grantExists || grantExists.length === 0) {
-            await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to ${options.user}`);
+            await transactionalEntityManager.queryRunner.query(`GRANT USAGE ON SCHEMA postgrest to "${options.user}"`);
           }
 
           await transactionalEntityManager.queryRunner.query(`create or replace function postgrest.pre_config()
@@ -116,7 +116,7 @@ export async function reconfigurePostgrestWithoutSchemaSync(
           `);
 
           await transactionalEntityManager.queryRunner.query(
-            `ALTER ROLE ${options.user} SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
+            `ALTER ROLE "${options.user}" SET statement_timeout TO '${options.statementTimeoutInSecs}s'`
           );
         });
       } finally {

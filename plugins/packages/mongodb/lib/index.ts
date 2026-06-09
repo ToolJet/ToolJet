@@ -117,6 +117,14 @@ function validateSSHOptions(sourceOptions: SourceOptions): void {
   }
 }
 
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
@@ -272,24 +280,43 @@ export default class MongodbService implements QueryService {
     };
   }
 
-  async listCollections(
+  async listTables(
     sourceOptions: SourceOptions,
     dataSourceId: string,
-    dataSourceUpdatedAt: string
+    dataSourceUpdatedAt: string,
+    queryOptions?: { search?: string; page?: number; limit?: number }
   ): Promise<QueryResult> {
     const { db, close } = await this.getConnection(sourceOptions);
 
     try {
-      const collections = await db.listCollections().toArray();
+      const search = queryOptions?.search;
+      const limit = queryOptions?.limit || 0;
+      const page = queryOptions?.page || 1;
 
-      const result = collections.map((col) => ({
+      const filter = search ? { name: { $regex: search, $options: 'i' } } : {};
+
+      // ListCollectionsCursor does not support .skip()/.limit(), fetch all matching then slice
+      const allCollections = await db.listCollections(filter).toArray();
+
+      const mapped = allCollections.map((col) => ({
         collection_name: col.name,
         type: col.type || 'collection',
       }));
 
+      if (limit > 0) {
+        const offset = (page - 1) * limit;
+        const rows = mapped.slice(offset, offset + limit);
+        const totalCount = mapped.length;
+
+        return {
+          status: 'ok',
+          data: { rows, totalCount },
+        };
+      }
+
       return {
         status: 'ok',
-        data: result,
+        data: mapped,
       };
     } catch (error) {
       const errorMessage = error.message || 'An unknown error occurred';
@@ -307,24 +334,37 @@ export default class MongodbService implements QueryService {
     if (methodName === 'listCollections') {
       const dataSourceId = args?.dataSourceId || '';
       const dataSourceUpdatedAt = args?.dataSourceUpdatedAt || '';
+      const isPaginated = !!args?.limit;
 
-      const response = await this.listCollections(
+      const response = await this.listTables(
         sourceOptions,
         dataSourceId,
-        dataSourceUpdatedAt
+        dataSourceUpdatedAt,
+        {
+          search: args?.search,
+          page:   args?.page,
+          limit:  args?.limit,
+        }
       );
 
-      const collections = (response?.data ?? []) as any[];
+      const payload = (response?.data ?? {}) as any;
 
+      if (isPaginated) {
+        const rows = payload?.rows ?? [];
+        const totalCount = payload?.totalCount ?? 0;
+        const formatted = rows.map((col: any) => ({
+          label: col.collection_name,
+          value: col.collection_name,
+        }));
+        return { items: formatted, totalCount };
+      }
+
+      const collections = Array.isArray(payload) ? payload : [];
       const formatted = collections.map((col: any) => ({
         label: col.collection_name,
         value: col.collection_name,
       }));
-
-      return {
-        status: 'ok',
-        data: formatted,
-      };
+      return { status: 'ok', data: formatted };
     }
 
     throw new QueryError(
@@ -484,8 +524,8 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   if (authPart.includes(":")) {
     const colonIdx = authPart.indexOf(":");
-    connUser = decodeURIComponent(authPart.slice(0, colonIdx));
-    connPass = decodeURIComponent(authPart.slice(colonIdx + 1));
+    connUser = safeDecode(authPart.slice(0, colonIdx));
+    connPass = safeDecode(authPart.slice(colonIdx + 1));
   }
 
   const finalUser = explicitUser || connUser || "";

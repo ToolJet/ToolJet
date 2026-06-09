@@ -4,6 +4,7 @@ import { Page } from '@entities/page.entity';
 import { ComponentsService } from './component.service';
 import { CreatePageDto, UpdatePageDto } from '../dto/page';
 import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
 import { EventsService } from './event.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
@@ -22,14 +23,16 @@ import {
   DeletePageOptions,
 } from '../interfaces/services/IPageService';
 import { RequestContext } from '@modules/request-context/service';
+import { TransactionLogger } from '@modules/logging/service';
 
 @Injectable()
 export class PageService implements IPageService {
   constructor(
     protected componentsService: ComponentsService,
     protected pageHelperService: PageHelperService,
-    protected eventHandlerService: EventsService
-  ) {}
+    protected eventHandlerService: EventsService,
+    protected readonly transactionLogger: TransactionLogger
+  ) { }
 
   /**
    * Hook called before page creation - override in EE to capture state for history
@@ -220,6 +223,8 @@ export class PageService implements IPageService {
       newPage.url = pageToClone.url;
       newPage.disabled = pageToClone.disabled;
       newPage.hidden = pageToClone.hidden;
+      newPage.pageHeader = pageToClone.pageHeader;
+      newPage.pageFooter = pageToClone.pageFooter;
 
       clonedPage = await manager.save(newPage);
 
@@ -285,6 +290,18 @@ export class PageService implements IPageService {
       const pageComponents = await manager.find(Component, {
         where: { pageId },
       });
+
+      // Heal any pre-existing parent-child cycle on the source page before
+      // cloning. Otherwise the clone preserves the cycle verbatim through the
+      // ID remap and the new page is born corrupt.
+      const { repairedIds } = repairParentCycles(pageComponents);
+      if (repairedIds.length > 0) {
+        this.transactionLogger.warn(
+          `[page-clone] Repaired ${repairedIds.length} parent-child cycle(s) on source page ${pageId}. ` +
+            `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+        );
+      }
+
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
       const mappingsToUpdate = [];
@@ -421,19 +438,23 @@ export class PageService implements IPageService {
         let parentId = originalComponent.parent ? originalComponent.parent : null;
 
         if (parentId) {
-          const isParentIdSuffixed = isSpecialParentType(originalComponent, pageComponents, parentId);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentIdSuffixed = isSpecialParentType(originalComponent, pageComponents, parentId);
 
-          if (isParentIdSuffixed) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = componentsIdMap[originalBaseParentId];
+            if (isParentIdSuffixed) {
+              const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
+              const mappedBaseParentId = componentsIdMap[originalBaseParentId];
 
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              if (mappedBaseParentId) {
+                parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+              } else {
+                parentId = null;
+              }
             } else {
-              parentId = null;
+              parentId = componentsIdMap[parentId];
             }
-          } else {
-            parentId = componentsIdMap[parentId];
           }
         }
         component.parent = parentId;

@@ -48,6 +48,7 @@ import {
   AppTypeTab,
 } from '@/modules/dashboard/components';
 import CreateAppWithPrompt from '@/modules/AiBuilder/components/CreateAppWithPrompt';
+import CreateModuleWithPrompt from '@/modules/AiBuilder/components/CreateModuleWithPrompt';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { isWorkflowsFeatureEnabled } from '@/modules/common/helpers/utils';
 import EmptyModuleSvg from '../../assets/images/icons/empty-modules.svg';
@@ -1154,7 +1155,7 @@ class HomePageComponent extends React.Component {
       this.setState({
         importingGitAppOperations: validationMessage,
       });
-      return; 
+      return;
     }
     this.setState({
       importedAppName: newAppName,
@@ -1861,6 +1862,8 @@ class HomePageComponent extends React.Component {
                 {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
+
+                {this.props.appType === 'module' && this.canCreateApp() && <CreateModuleWithPrompt />}
 
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>

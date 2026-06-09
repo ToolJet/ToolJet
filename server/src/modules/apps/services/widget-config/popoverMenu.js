@@ -84,12 +84,27 @@ export const popoverMenuConfig = {
             validation: { schema: { type: 'boolean' }, defaultValue: false },
             section: 'additionalActions',
         },
+        tooltipFormat: {
+            type: 'switch',
+            displayName: 'Tooltip',
+            options: [
+              { displayName: 'Plain text', value: 'plainText' },
+              { displayName: 'Markdown', value: 'markdown' },
+              { displayName: 'HTML', value: 'html' },
+            ],
+            isFxNotRequired: true,
+            defaultValue: { value: 'plainText' },
+            fullWidth: true,
+            newLine: true,
+            section: 'additionalActions',
+        },
         tooltip: {
             type: 'code',
             displayName: 'Tooltip',
             validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
             section: 'additionalActions',
             placeholder: 'Enter tooltip text',
+            showLabel: false,
         },
     },
     events: {
@@ -106,6 +121,38 @@ export const popoverMenuConfig = {
             },
             accordian: 'Menu',
         },
+        hoverBackgroundMode: {
+            type: 'switch',
+            displayName: 'Hover background',
+            validation: { schema: { type: 'string' }, defaultValue: 'auto' },
+            options: [
+                { displayName: 'Auto', value: 'auto' },
+                { displayName: 'Manual', value: 'manual' },
+            ],
+            conditionallyRender: {
+                key: 'buttonType',
+                value: 'primary',
+            },
+            accordian: 'Menu',
+            isFxNotRequired: true,
+        },
+        hoverBackgroundColor: {
+            type: 'colorSwatches',
+            displayName: '',
+            showLabel: false,
+            validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+            conditionallyRender: [
+                {
+                    key: 'buttonType',
+                    value: 'primary',
+                },
+                {
+                    key: 'hoverBackgroundMode',
+                    value: 'manual',
+                },
+            ],
+            accordian: 'Menu',
+        },
         textColor: {
             type: 'colorSwatches',
             displayName: 'Text',
@@ -113,6 +160,27 @@ export const popoverMenuConfig = {
                 schema: { type: 'string' },
                 defaultValue: '#FFFFFF',
             },
+            accordian: 'Menu',
+        },
+        textSize: {
+            type: 'numberInput',
+            displayName: 'Font size',
+            validation: {
+                schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+                defaultValue: 14,
+            },
+            accordian: 'Menu',
+        },
+        fontWeight: {
+            type: 'select',
+            displayName: 'Font Weight',
+            options: [
+                { name: 'normal', value: 'normal' },
+                { name: 'medium', value: 'medium' },
+                { name: 'bold', value: 'bold' },
+                { name: 'lighter', value: 'lighter' },
+                { name: 'bolder', value: 'bolder' },
+            ],
             accordian: 'Menu',
         },
         borderColor: {
@@ -125,6 +193,15 @@ export const popoverMenuConfig = {
             type: 'colorSwatches',
             displayName: 'Loader',
             validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+            accordian: 'Menu',
+        },
+        contentAlignment: {
+            type: 'alignButtons',
+            displayName: 'Content alignment',
+            validation: {
+                schema: { type: 'string' },
+                defaultValue: 'center',
+            },
             accordian: 'Menu',
         },
         icon: {
@@ -268,13 +345,19 @@ export const popoverMenuConfig = {
             disabledState: { value: '{{false}}' },
             loadingState: { value: '{{false}}' },
             tooltip: { value: '' },
+            tooltipFormat: { value: 'plainText' },
         },
         events: [],
         styles: {
             backgroundColor: { value: 'var(--cc-primary-brand)' },
+            hoverBackgroundMode: { value: 'auto' },
+            hoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
             textColor: { value: '#FFFFFF' },
+            textSize: { value: '{{14}}' },
+            fontWeight: { value: 'normal' },
             borderColor: { value: 'var(--cc-primary-brand)' },
             loaderColor: { value: 'var(--cc-surface1-surface)' },
+            contentAlignment: { value: 'center' },
             icon: { value: 'IconMenu2' },
             iconVisibility: { value: '{{true}}' },
             iconColor: { value: '#FFFFFF' },

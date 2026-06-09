@@ -41,7 +41,7 @@ import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
-import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import { copyComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
 import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 import { ToolTip } from '@/_components/ToolTip';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
@@ -50,7 +50,6 @@ import { Chat } from './Components/Chat.jsx';
 import { Tags } from './Components/Tags.jsx';
 import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
 import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
-import { ReorderableList } from './Components/ReorderableList';
 import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
 import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -148,6 +147,9 @@ export const NEW_REVAMPED_COMPONENTS = [
   'TreeSelect',
   'Accordion',
   'ReorderableList',
+  'ColorPicker',
+  'FileButton',
+  'ButtonGroupV2',
 ];
 
 export const Inspector = ({
@@ -460,7 +462,11 @@ export const Inspector = ({
     setShowHeaderActionsMenu(false);
   };
   const buildGeneralStyle = () => {
-    if (!componentMeta?.definition?.generalStyles) {
+    if (
+      !componentMeta?.definition?.generalStyles ||
+      componentMeta?.styles?.boxShadow ||
+      ['ModuleContainer', 'ModuleViewer'].includes(componentMeta?.component)
+    ) {
       return null;
     }
     const items = [];
@@ -582,9 +588,8 @@ export const Inspector = ({
   };
 
   const renderTabs = () => {
-    const isContainerOrViewerModule = ['ModuleContainer', 'ModuleViewer'].includes(componentMeta.component);
     return (
-      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isContainerOrViewerModule}>
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
         <Tab eventKey="properties" title="Properties">
           {propertiesTab}
         </Tab>
@@ -876,6 +881,7 @@ const GetAccordion = React.memo(
       case 'Chart':
         return <Chart {...restProps} />;
 
+      case 'FileButton': // fall-through to FilePicker
       case 'FilePicker':
       case 'FileInput':
         return <FilePicker {...restProps} />;
@@ -924,10 +930,11 @@ const GetAccordion = React.memo(
 
       case 'ModuleViewer':
         return <ModuleViewerInspector {...restProps} />;
+
+      case 'ButtonGroupV2':
       case 'PopoverMenu':
-        return <PopoverMenu {...restProps} />;
       case 'ReorderableList':
-        return <ReorderableList {...restProps} />;
+        return <PopoverMenu {...restProps} />;
       case 'KeyValuePair':
         return <KeyValuePair {...restProps} />;
       case 'Navigation':

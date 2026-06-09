@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty, IsArray } from 'class-validator';
+import { IsUUID, IsString, IsOptional, IsObject, IsNotEmpty, IsArray,IsNumber } from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -33,6 +33,10 @@ export class CreateDataQueryDto {
   @IsObject()
   @IsOptional()
   resolvedOptions: object;
+
+  @IsUUID()
+  @IsOptional()
+  folder_id: string;
 }
 
 export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}
@@ -54,4 +58,28 @@ export class UpdateSourceDto {
   @IsNotEmpty()
   @IsUUID()
   data_source_id: string;
+}
+
+export class ListTablesDto {
+  @IsString()
+  @IsOptional()
+  schema?: string;
+
+  @IsString()
+  @IsOptional()
+  datasetId?: string;
+  
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsNumber()
+  @IsOptional()
+  page?: number;
+
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsNumber()
+  @IsOptional()
+  limit?: number;
 }

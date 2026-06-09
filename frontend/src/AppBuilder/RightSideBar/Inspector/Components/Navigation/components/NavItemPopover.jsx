@@ -4,7 +4,10 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
 const NavItemPopover = forwardRef(
-  ({ item, darkMode, onItemChange, onDeleteItem, onDuplicateItem, getResolvedValue, parentId = null, ...restProps }, ref) => {
+  (
+    { item, darkMode, onItemChange, onDeleteItem, onDuplicateItem, getResolvedValue, parentId = null, ...restProps },
+    ref
+  ) => {
     const iconVisibility = item?.iconVisibility;
 
     // Common CodeHinter props
@@ -85,10 +88,7 @@ const NavItemPopover = forwardRef(
             <div className="nav-item-popover-fields-section">
               {/* Label field */}
               <div data-cy="inspector-nav-item-details-label-field" className="nav-item-popover-field">
-                <label
-                  data-cy="inspector-nav-item-details-label-label"
-                  className="nav-item-popover-field-label"
-                >
+                <label data-cy="inspector-nav-item-details-label-label" className="nav-item-popover-field-label">
                   Label
                 </label>
                 <CodeHinter

@@ -15,10 +15,20 @@ const FileListItem = ({ fileName, fileSize, fileType, onDelete, onClick, error, 
   return (
     <div className={itemClasses} onClick={onClick}>
       <div className="file-details">
-        <span className="file-name" data-cy={`${generateCypressDataCy(fileName).replace(/\.[^/.]+$/, '')}-file-name`} title={fileName}>
+        <span
+          className="file-name"
+          data-cy={`${generateCypressDataCy(fileName).replace(/\.[^/.]+$/, '')}-file-name`}
+          title={fileName}
+        >
           {typeof fileName === 'string' ? fileName.replace(/\.[^/.]+$/, '') : fileName}
         </span>
-        <span className="file-meta" data-cy={`${generateCypressDataCy(fileType)}-${generateCypressDataCy(fileSize).replace(/\.[^/.]+$/, '')}-file-meta`}>
+        <span
+          className="file-meta"
+          data-cy={`${generateCypressDataCy(fileType)}-${generateCypressDataCy(fileSize).replace(
+            /\.[^/.]+$/,
+            ''
+          )}-file-meta`}
+        >
           {fileType} {fileSize}
         </span>
       </div>

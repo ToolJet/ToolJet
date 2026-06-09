@@ -21,7 +21,14 @@ export const workflowExecutionsService = {
 
 function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
   const currentSession = authenticationService.currentSessionValue;
-  const body = { appVersionId, userId: currentSession.current_user?.id, queryId, nodeId, state, appEnvId: environmentId };
+  const body = {
+    appVersionId,
+    userId: currentSession.current_user?.id,
+    queryId,
+    nodeId,
+    state,
+    appEnvId: environmentId,
+  };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
 }
@@ -134,12 +141,11 @@ function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
     method: 'POST',
     headers: authHeader(),
     body: JSON.stringify(body),
-    credentials: 'include'
+    credentials: 'include',
   };
 
   // Use appVersionId in URL path for trigger endpoint
-  return fetch(`${config.apiUrl}/workflow_executions/${appVersionId}/trigger`, requestOptions)
-    .then(handleResponse);
+  return fetch(`${config.apiUrl}/workflow_executions/${appVersionId}/trigger`, requestOptions).then(handleResponse);
 }
 
 function terminate(executionId) {
@@ -158,10 +164,9 @@ function getExecutionStates(appVersionId, executionIds) {
     method: 'POST',
     headers: authHeader(),
     body: JSON.stringify({ executionIds }),
-    credentials: 'include'
+    credentials: 'include',
   };
-  return fetch(
-    `${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`,
-    requestOptions
-  ).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`, requestOptions).then(
+    handleResponse
+  );
 }

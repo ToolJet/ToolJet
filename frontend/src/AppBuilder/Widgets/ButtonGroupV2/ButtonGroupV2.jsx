@@ -1,0 +1,426 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import Label from '@/_ui/Label';
+import './buttonGroupV2.scss';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
+// eslint-disable-next-line import/no-unresolved
+import { cx } from 'class-variance-authority';
+import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import Loader from '@/ToolJetUI/Loader/Loader';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+
+export const ButtonGroupV2 = (props) => {
+  // ===== PROPS DESTRUCTURING =====
+  const {
+    height,
+    properties,
+    styles,
+    fireEvent,
+    id,
+    dataCy,
+    setExposedVariable,
+    setExposedVariables,
+    width,
+    validate,
+    validation,
+    darkMode,
+  } = props;
+
+  const {
+    labelColor,
+    alignment,
+    direction,
+    auto: labelAutoWidth,
+    labelWidth,
+    backgroundColor,
+    hoverBackgroundMode = 'auto',
+    hoverBackgroundColor = 'var(--cc-primary-brand)',
+    borderColor,
+    textColor,
+    textSize = 14,
+    fontWeight = 'normal',
+    iconColor,
+    errTextColor,
+    selectedBackgroundColor,
+    selectedTextColor,
+    selectedIconColor,
+    borderRadius,
+    btnAlignment,
+    boxShadow,
+    padding,
+    labelFontSize,
+  } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
+
+  const { label, advanced, schema, options, multiSelection, layout, loadingState, disabledState, visibility } =
+    properties;
+
+  const labelRef = useRef(null);
+  const groupWrapperRef = useRef(null);
+  const groupRef = useRef(null);
+
+  // ===== COMPUTED VALUES =====
+  const transformedOptions = advanced ? schema : options;
+
+  const formattedOptions = useMemo(() => {
+    return Array.isArray(transformedOptions)
+      ? transformedOptions.map((option) => {
+          return {
+            ...option,
+            label: getSafeRenderableValue(option?.label),
+            value: option?.value,
+            isDisabled: option?.disable ?? false,
+          };
+        })
+      : [];
+  }, [JSON.stringify(transformedOptions)]);
+
+  const defaultOptionValues = (options) => {
+    const defaultOptions = options.filter((option) => option?.default);
+    const defaultValues = defaultOptions.map((option) => option?.value);
+    return multiSelection ? defaultValues : defaultValues.length > 0 ? [defaultValues[0]] : [];
+  };
+
+  const validOptionValues = formattedOptions.map((option) => option.value);
+
+  // ===== STATE MANAGEMENT =====
+  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
+    isLoading: loadingState,
+    isVisible: visibility,
+    isDisabled: disabledState || loadingState,
+    selected: defaultOptionValues(formattedOptions),
+  });
+
+  // ===== VALIDATION =====
+  const isMandatory = validation?.mandatory ?? false;
+  const [validationStatus, setValidationStatus] = useState(
+    validate(exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null)
+  );
+  const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
+  const { isValid, validationError } = validationStatus;
+  const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
+
+  // ===== HELPER FUNCTIONS =====
+  const updateExposedVariablesState = (key, value) => {
+    setExposedVariablesTemporaryState((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
+  };
+
+  // ===== EFFECTS =====
+  useBatchedUpdateEffectArray([
+    {
+      dep: loadingState,
+      sideEffect: () => {
+        updateExposedVariablesState('isLoading', loadingState);
+        setExposedVariable('isLoading', loadingState);
+      },
+    },
+    {
+      dep: properties.visibility,
+      sideEffect: () => {
+        updateExposedVariablesState('isVisible', visibility);
+        setExposedVariable('isVisible', visibility);
+      },
+    },
+    {
+      dep: disabledState,
+      sideEffect: () => {
+        updateExposedVariablesState('isDisabled', disabledState);
+        setExposedVariable('isDisabled', disabledState);
+      },
+    },
+    {
+      dep: exposedVariablesTemporaryState.selected,
+      sideEffect: () => {
+        setExposedVariable('selected', exposedVariablesTemporaryState.selected);
+        const validationStatus = validate(
+          exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null
+        );
+        setValidationStatus(validationStatus);
+        setExposedVariable('isValid', validationStatus?.isValid);
+      },
+    },
+    {
+      dep: validate,
+      sideEffect: () => {
+        const validationStatus = validate(
+          exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null
+        );
+        setValidationStatus(validationStatus);
+        setExposedVariable('isValid', validationStatus?.isValid);
+      },
+    },
+  ]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      ...exposedVariablesTemporaryState,
+      isValid: isValid,
+      clear: async function () {
+        updateExposedVariablesState('selected', []);
+        setUserInteracted(true);
+      },
+      setDisable: async function (value) {
+        updateExposedVariablesState('isDisabled', !!value);
+        setExposedVariable('isDisabled', !!value);
+      },
+      setVisibility: async function (value) {
+        updateExposedVariablesState('isVisible', !!value);
+        setExposedVariable('isVisible', !!value);
+      },
+      setLoading: async function (value) {
+        updateExposedVariablesState('isLoading', !!value);
+        setExposedVariable('isLoading', !!value);
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('setSelected', async function (value) {
+      if (Array.isArray(value)) {
+        if (value.length === 0) updateExposedVariablesState('selected', []);
+
+        const newSelected = value.filter((item) => validOptionValues.includes(item));
+
+        if (multiSelection) {
+          updateExposedVariablesState('selected', newSelected);
+        } else {
+          updateExposedVariablesState('selected', newSelected.length > 0 ? [newSelected[0]] : []);
+        }
+      } else if (typeof value === 'string' || typeof value === 'number') {
+        const isValidValue = validOptionValues.includes(value);
+        if (isValidValue) {
+          updateExposedVariablesState('selected', [value]);
+        }
+      }
+      setUserInteracted(true);
+    });
+  }, [multiSelection, validOptionValues, updateExposedVariablesState, setExposedVariable]);
+
+  useEffect(() => {
+    updateExposedVariablesState('selected', defaultOptionValues(formattedOptions));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(options), JSON.stringify(schema), multiSelection]);
+
+  const handleButtonClick = (value) => {
+    const isSelected = exposedVariablesTemporaryState.selected.includes(value);
+    if (multiSelection) {
+      updateExposedVariablesState(
+        'selected',
+        isSelected
+          ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
+          : [...exposedVariablesTemporaryState.selected, value]
+      );
+    } else {
+      updateExposedVariablesState('selected', isSelected ? [] : [value]);
+    }
+    fireEvent('onClick');
+    setUserInteracted(true);
+  };
+
+  // ===== COMPUTED STYLES =====
+  const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const justifyContentByAlignment = btnAlignment === 'left' ? 'start' : btnAlignment === 'right' ? 'end' : 'center';
+
+  const groupStyles = {
+    width: layout === 'wrap' ? '100%' : 'max-content',
+    flexDirection: layout === 'wrap' ? 'row' : layout,
+    ...(layout === 'wrap' && { flexWrap: 'wrap', justifyContent: justifyContentByAlignment }),
+  };
+
+  const groupWrapperStyles = {
+    height: _height,
+    ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
+    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, labelAutoWidth, alignment),
+  };
+
+  const commonStyles = {
+    backgroundColor,
+    color: textColor,
+    borderRadius: `${borderRadius}px`,
+    border: `1px solid ${borderColor}`,
+    transition: 'all .1s ease',
+    boxShadow,
+  };
+
+  const normalizedTextSize = Number(textSize);
+  const computedFontSize = Number.isFinite(normalizedTextSize) ? normalizedTextSize : 14;
+  const computedLineHeight = computedFontSize * 1.42;
+  const computedIconSize = computedLineHeight * 0.8;
+  const normalizedFontWeight = fontWeight === 'medium' ? 500 : fontWeight;
+  const computedFontWeight = normalizedFontWeight ? normalizedFontWeight : normalizedFontWeight === '0' ? 0 : 'normal';
+  const computedHoverBackgroundColor =
+    hoverBackgroundMode === 'manual'
+      ? hoverBackgroundColor || getModifiedColor(backgroundColor, 'hover')
+      : getModifiedColor(backgroundColor, 'hover');
+
+  const selectedStyles = {
+    backgroundColor: selectedBackgroundColor,
+    color: selectedTextColor,
+    border: `1px solid ${selectedBackgroundColor}`,
+  };
+
+  const disabledStyles = {
+    opacity: 0.5,
+    pointerEvents: 'none',
+    cursor: 'not-allowed',
+  };
+
+  // ===== ALIGNMENT FIX FOR 'ROW' LAYOUT =====
+  useEffect(() => {
+    if (!groupWrapperRef.current || !groupRef.current) return;
+
+    const wrapper = groupWrapperRef.current;
+    const group = groupRef.current;
+
+    if (layout !== 'row') {
+      wrapper.style.justifyContent = justifyContentByAlignment;
+      return;
+    }
+
+    const syncRowAlignmentAndScroll = () => {
+      const maxScrollLeft = Math.max(group.clientWidth - wrapper.clientWidth, 0);
+      const hasOverflow = maxScrollLeft > 0;
+
+      if (hasOverflow) {
+        wrapper.style.justifyContent = 'start';
+      } else {
+        wrapper.style.justifyContent = justifyContentByAlignment;
+      }
+    };
+
+    syncRowAlignmentAndScroll();
+  }, [layout, btnAlignment, justifyContentByAlignment, JSON.stringify(formattedOptions), width]);
+
+  // ===== MAIN RENDER =====
+  return (
+    <>
+      <div
+        className={cx('button-group-widget', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : '']: true,
+          'd-none': !exposedVariablesTemporaryState.isVisible,
+          'tw-flex-row-reverse': alignment === 'side' && direction === 'right',
+        })}
+        role="group"
+        id={`component-${id}`}
+        aria-hidden={!exposedVariablesTemporaryState.isVisible}
+        aria-disabled={exposedVariablesTemporaryState.isDisabled}
+        aria-busy={exposedVariablesTemporaryState.isLoading}
+        aria-invalid={!isValid}
+        aria-labelledby={`${id}-label`}
+        data-cy={dataCy}
+        data-disabled={exposedVariablesTemporaryState.isDisabled}
+      >
+        <Label
+          label={label}
+          width={labelWidth}
+          labelRef={labelRef}
+          auto={labelAutoWidth}
+          darkMode={darkMode}
+          color={labelColor}
+          direction={direction}
+          defaultAlignment={alignment}
+          isMandatory={isMandatory}
+          _width={labelWidth}
+          top={alignment !== 'top' && '9px'}
+          id={`${id}-label`}
+          dataCy={dataCy}
+          fontSize={labelFontSizeValue}
+        />
+        <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
+          {exposedVariablesTemporaryState.isLoading ? (
+            <Loader
+              absolute={false}
+              style={{ margin: '0 auto', marginTop: alignment !== 'top' ? '8px' : '0' }}
+              width="20"
+            />
+          ) : (
+            <div className="button-group-content" style={groupStyles} ref={groupRef}>
+              {formattedOptions?.map((option, index) => (
+                <button
+                  data-cy={`${dataCy}-button-${index}`}
+                  style={{
+                    ...commonStyles,
+                    backgroundColor:
+                      hoveredButtonIndex === index && !exposedVariablesTemporaryState.selected?.includes(option.value)
+                        ? computedHoverBackgroundColor
+                        : backgroundColor,
+                    ...(exposedVariablesTemporaryState.selected?.includes(option.value) && selectedStyles),
+                    ...(option.isDisabled && disabledStyles),
+                    fontSize: `${computedFontSize}px`,
+                    lineHeight: `${computedLineHeight}px`,
+                    fontWeight: computedFontWeight,
+                  }}
+                  key={index}
+                  disabled={option.isDisabled}
+                  className={'button-group-button'}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleButtonClick(option.value);
+                  }}
+                  onMouseEnter={() => {
+                    setHoveredButtonIndex(index);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredButtonIndex(null);
+                  }}
+                >
+                  {option.iconVisibility && (
+                    <div
+                      className="tw-flex tw-shrink-0"
+                      style={{
+                        width: `${computedIconSize}px`,
+                        height: `${computedIconSize}px`,
+                      }}
+                    >
+                      <TablerIcon
+                        iconName={option.icon}
+                        style={{
+                          width: `${computedIconSize}px`,
+                          height: `${computedIconSize}px`,
+                          color: exposedVariablesTemporaryState.selected?.includes(option.value)
+                            ? selectedIconColor
+                            : iconColor,
+                        }}
+                        stroke={1.5}
+                        data-cy={`${dataCy}-icon`}
+                      />
+                    </div>
+                  )}
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {userInteracted && exposedVariablesTemporaryState.isVisible && !isValid && (
+        <div
+          className="d-flex"
+          style={{
+            color: errTextColor,
+            justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {validationError}
+        </div>
+      )}
+    </>
+  );
+};

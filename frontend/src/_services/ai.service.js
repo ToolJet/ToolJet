@@ -8,11 +8,37 @@ export const aiService = {
   getCopilotSuggestion,
   getCreditBalance,
   fixWithAI,
+  updateKey,
+  getKeySettings,
   updateMessageData,
   listConversations,
   createConversation,
   getConversation,
+  autoSort,
+  getTokenUsage,
 };
+
+function handleAITextResponse(response) {
+  return response.text().then((text) => {
+    let data = null;
+
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      throw {
+        error: data?.message || text || response.statusText,
+        data: data || { message: text },
+        statusCode: response?.status,
+      };
+    }
+
+    return data ?? text;
+  });
+}
 
 async function voteMessage(messageId, voteType) {
   const body = {
@@ -36,7 +62,12 @@ async function sendMessage(body, onMessage, isDocs = false) {
     },
     openWhenHidden: true,
     onopen: async (response) => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const err = new Error(data?.message || `HTTP error! status: ${response.status}`);
+        err.statusCode = response.status;
+        throw err;
+      }
     },
     onmessage: (event) => {
       if (!event.data) return;
@@ -66,7 +97,7 @@ async function sendMessage(body, onMessage, isDocs = false) {
 
 async function getCopilotSuggestion(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/copilot`, requestOptions).then(handleAITextResponse);
 }
 async function getCreditBalance() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -78,7 +109,17 @@ async function getCreditBalance() {
 
 async function fixWithAI(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/ai/fix-with-ai`, requestOptions).then(handleAITextResponse);
+}
+
+async function updateKey(body) {
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/ai/update-key`, requestOptions).then(handleResponse);
+}
+
+async function getKeySettings(licenseType) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/key-settings?licenseType=${licenseType}`, requestOptions).then(handleResponse);
 }
 
 async function updateMessageData(messageId, body) {
@@ -95,12 +136,12 @@ async function listConversations(appId, conversationType = 'generate') {
   ).then(handleResponse);
 }
 
-async function createConversation(appId, conversationType = 'generate') {
+async function createConversation(payload) {
   const requestOptions = {
     method: 'POST',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ appId, conversationType }),
+    body: JSON.stringify({ ...payload, ...(!payload?.conversationType && { conversationType: 'generate' }) }),
   };
   return fetch(`${config.apiUrl}/ai/conversation`, requestOptions).then(handleResponse);
 }
@@ -108,4 +149,19 @@ async function createConversation(appId, conversationType = 'generate') {
 async function getConversation(conversationId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/ai/conversation/${conversationId}`, requestOptions).then(handleResponse);
+}
+
+async function autoSort(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/ai/autosort`, requestOptions).then(handleAITextResponse);
+}
+
+async function getTokenUsage(conversationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/ai/conversation/${conversationId}/token-usage`, requestOptions).then(handleResponse);
 }

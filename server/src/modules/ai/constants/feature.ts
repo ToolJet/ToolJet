@@ -41,5 +41,17 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GET_CONVERSATION]: {
       license: LICENSE_FIELD.AI_FEATURE,
     },
+    [FEATURE_KEY.UPDATE_KEY]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.GET_KEY_SETTINGS]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.AUTO_SORT_QUERIES]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
+    [FEATURE_KEY.GET_THREAD_TOKEN_USAGE]: {
+      license: LICENSE_FIELD.AI_FEATURE,
+    },
   },
 };

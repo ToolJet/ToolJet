@@ -37,7 +37,13 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
       >
         <div className="left">
           <div className="main-page-icon-wrapper">
-            <TablerIcon iconName={item?.icon?.value || 'IconFile'} fallbackIcon="IconFile" size={20} stroke={1.5} className="nav-item-icon" />
+            <TablerIcon
+              iconName={item?.icon?.value || 'IconFile'}
+              fallbackIcon="IconFile"
+              size={20}
+              stroke={1.5}
+              className="nav-item-icon"
+            />
           </div>
           <OverflowTooltip childrenClassName="page-name">
             {getSafeRenderableValue(getResolvedValue?.(item?.label) ?? item?.label)}
@@ -70,11 +76,23 @@ export const MenuItem = ({ darkMode, item, onDeleteItem, onItemChange, getResolv
                 className={`${darkMode ? 'dark-theme theme-dark' : ''} nav-item-actions-popover`}
               >
                 <Popover.Body className="p-2">
-                  <div className="nav-item-action-option" onClick={(e) => { e.stopPropagation(); handleEdit(); }}>
+                  <div
+                    className="nav-item-action-option"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit();
+                    }}
+                  >
                     <TablerIcon iconName="IconPencil" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Edit menu item</span>
                   </div>
-                  <div className="nav-item-action-option nav-item-action-option-danger" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
+                  <div
+                    className="nav-item-action-option nav-item-action-option-danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete();
+                    }}
+                  >
                     <TablerIcon iconName="IconTrash" size={16} stroke={1.5} className="nav-item-action-option-icon" />
                     <span className="nav-item-action-option-label">Delete nav item</span>
                   </div>

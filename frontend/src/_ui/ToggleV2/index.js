@@ -11,10 +11,7 @@ function ToggleV2({
   dataCy = '',
 }) {
   return (
-    <label
-      className={`form-check form-switch tj-toggle-v2 ${className}`}
-      data-cy={`${dataCy}-toggle-wrapper`}
-    >
+    <label className={`form-check form-switch tj-toggle-v2 ${className}`} data-cy={`${dataCy}-toggle-wrapper`}>
       {/* Toggle Switch */}
       <input
         className="form-check-input tj-toggle-switch"
@@ -28,19 +25,13 @@ function ToggleV2({
       {/* Text Section */}
       <div className="text-wrappers">
         {label && (
-          <span
-            className="tj-toggle-v2-label"
-            data-cy={`${dataCy}-toggle-label`}
-          >
+          <span className="tj-toggle-v2-label" data-cy={`${dataCy}-toggle-label`}>
             {label}
           </span>
         )}
 
         {helpText && (
-          <span
-            className="tj-toggle-v2-helptext"
-            data-cy={`${dataCy}-toggle-helptext`}
-          >
+          <span className="tj-toggle-v2-helptext" data-cy={`${dataCy}-toggle-helptext`}>
             {helpText}
           </span>
         )}

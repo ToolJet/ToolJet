@@ -20,7 +20,7 @@ function getAll(appVersionId, mode) {
   return fetch(`${config.apiUrl}/data-queries/${appVersionId}?mode=${mode}`, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id) {
+function create(app_id, app_version_id, name, kind, options, data_source_id, plugin_id, folder_id) {
   const body = {
     app_id,
     app_version_id,
@@ -29,6 +29,7 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
     options,
     data_source_id,
     plugin_id,
+    ...(folder_id ? { folder_id } : {}),
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
@@ -95,8 +96,9 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
     options: options,
   };
 
-  let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
-    }?mode=${mode}`;
+  let url = `${config.apiUrl}/data-queries/${queryId}/versions/${versionId}/run${
+    environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+  }?mode=${mode}`;
 
   //For public/released apps
   if (!environmentId || !versionId) {
@@ -116,7 +118,8 @@ function preview(query, options, versionId, environmentId) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(
-    `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+    `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
+      environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
     }`,
     requestOptions
   ).then(handleResponse);
@@ -138,7 +141,7 @@ function invoke(dataSourceId, methodName, environmentId, args) {
   const body = {
     method: methodName,
     environmentId: environmentId,
-    args: args
+    args: args,
   };
 
   const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;
@@ -147,7 +150,7 @@ function invoke(dataSourceId, methodName, environmentId, args) {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   };
   return fetch(url, requestOptions).then(handleResponse);
 }

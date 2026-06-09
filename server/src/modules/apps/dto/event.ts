@@ -3,6 +3,10 @@ import { Type } from 'class-transformer';
 import { Target } from 'src/entities/event_handler.entity';
 
 export class CreateEventHandlerDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @IsObject()
   event: any;
 

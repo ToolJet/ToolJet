@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import { components } from 'react-select';
 import { IconX } from '@tabler/icons-react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Label from '@/_ui/Label';
@@ -12,14 +13,16 @@ import RemoveRectangle from '@/_ui/Icon/bulkIcons/RemoveRectangle';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
 import './fileInput.scss';
-
+const { ClearIndicator } = components;
 export const CustomClearIndicator = (props) => {
   return (
+    // eslint-disable-next-line react/jsx-no-undef
     <ClearIndicator {...props}>
       <IconX size={16} color="var(--borders-strong)" className="cursor-pointer clear-indicator" />
     </ClearIndicator>
@@ -59,7 +62,10 @@ export const FileInput = (props) => {
     icon = 'IconFileSearch',
     iconVisibility,
     iconColor = 'var(--cc-default-icon)',
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const label = properties.label ?? 'Label';
   const placeholder = properties.instructionText ?? 'Click to select file';
@@ -253,6 +259,7 @@ export const FileInput = (props) => {
           _width={_width}
           widthType={widthType}
           inputId={`component-${id}`}
+          fontSize={labelFontSizeValue}
           style={alignment === 'side' ? { alignItems: 'center', height: '100%' } : {}}
         />
 

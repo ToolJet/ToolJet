@@ -51,14 +51,7 @@ function DividerWithText() {
 
 function WidgetIcon({ type }) {
   const { icon, iconColor } = WIDGET_TYPES[type];
-  return (
-    <SolidIcon
-      name={icon}
-      className="tw-size-5 tw-shrink-0"
-      fill={iconColor}
-      data-name={icon}
-    />
-  );
+  return <SolidIcon name={icon} className="tw-size-5 tw-shrink-0" fill={iconColor} data-name={icon} />;
 }
 
 function ContentBlock({ title, description, descriptionClassName = '', titleClassName = '', ...props }) {
@@ -68,12 +61,14 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
       {...props}
     >
       <p
-        className={`tw-block tw-text-text-default tw-font-title-large tw-whitespace-pre tw-m-0 tw-mb-0.5 ${titleClassName}`} data-cy="widget-card-title"
+        className={`tw-block tw-text-text-default tw-font-title-large tw-whitespace-pre tw-m-0 tw-mb-0.5 ${titleClassName}`}
+        data-cy="widget-card-title"
       >
         {title}
       </p>
       <p
-        className={`tw-block tw-font-body-default tw-text-text-placeholder tw-m-0 tw-mb-0.5 ${descriptionClassName}`} data-cy="widget-card-description"
+        className={`tw-block tw-font-body-default tw-text-text-placeholder tw-m-0 tw-mb-0.5 ${descriptionClassName}`}
+        data-cy="widget-card-description"
       >
         {description}
       </p>
@@ -81,7 +76,7 @@ function ContentBlock({ title, description, descriptionClassName = '', titleClas
   );
 }
 
-function GetStartedWidget({ type, to, onClick}) {
+function GetStartedWidget({ type, to, onClick }) {
   const { title, description } = WIDGET_TYPES[type];
   return (
     <GetStartedCard to={to} onClick={onClick} data-cy={`getstarted-${type.toLowerCase()}-widget`}>
@@ -124,37 +119,18 @@ function GetStartedOptionsRow({ edition, isToolJetCloud }) {
   if (isToolJetCloud || edition === 'cloud') {
     return (
       <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
-        <GetStartedWidget
-          type="APP"
-          to={getPrivateRoute('dashboard')}
-        />
-        <GetStartedWidget
-          type="DATASOURCE"
-          to={getPrivateRoute('data_sources')}
-        />
-        <GetStartedWidget
-          type="EXPLORE_TEMPLATES"
-          to={`${getPrivateRoute('dashboard')}?fromtemplate=true`}
-        />
+        <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
+        <GetStartedWidget type="DATASOURCE" to={getPrivateRoute('data_sources')} />
+        <GetStartedWidget type="EXPLORE_TEMPLATES" to={`${getPrivateRoute('dashboard')}?fromtemplate=true`} />
       </div>
     );
   }
 
   return (
     <div className="tw-flex tw-flex-row tw-gap-4 tw-items-start tw-justify-start tw-w-full">
-      <GetStartedWidget
-        type="APP"
-        to={getPrivateRoute('dashboard')}
-      />
-      <GetStartedWidget
-        type="DATASOURCE"
-        to={getPrivateRoute('data_sources')}
-      />
-      <GetStartedWidget
-        type="WORKFLOW"
-        to={getPrivateRoute('workflows')}
-        onClick={handleWorkflowClick}
-      />
+      <GetStartedWidget type="APP" to={getPrivateRoute('dashboard')} />
+      <GetStartedWidget type="DATASOURCE" to={getPrivateRoute('data_sources')} />
+      <GetStartedWidget type="WORKFLOW" to={getPrivateRoute('workflows')} onClick={handleWorkflowClick} />
     </div>
   );
 }

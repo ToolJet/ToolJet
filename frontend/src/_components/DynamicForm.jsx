@@ -34,6 +34,8 @@ import AccordionForm from './AccordionForm';
 import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
 import OAuthWrapper from './OAuthWrapper';
 import DynamicSelector from '@/_ui/DynamicSelector';
+import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
+import OracleWalletPicker from '@/_components/OracleWalletPicker';
 
 const DynamicForm = ({
   schema,
@@ -70,6 +72,24 @@ const DynamicForm = ({
     if (!isEditMode || isEmpty(options)) {
       typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
       optionsChanged(schema?.defaults ?? {});
+    } else {
+      // Ensure existing datasources get newly added default properties.
+      let hasMissingDefaults = false;
+      const mergedOptions = { ...options };
+
+      if (schema?.defaults) {
+        Object.keys(schema.defaults).forEach((key) => {
+          // If the key doesn't exist in the old options, fill it with the schema's default
+          if (mergedOptions[key] === undefined) {
+            mergedOptions[key] = schema.defaults[key];
+            hasMissingDefaults = true;
+          }
+        });
+      }
+
+      if (hasMissingDefaults && typeof optionsChanged === 'function') {
+        optionsChanged(mergedOptions);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,6 +231,8 @@ const DynamicForm = ({
         return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-key-value-tabs':
+        return GraphqlKeyValueTabs;
       case 'react-component-sort':
         return Sort;
       case 'react-component-oauth-authentication':
@@ -219,6 +241,8 @@ const DynamicForm = ({
         return GoogleSheets;
       case 'react-component-slack':
         return Slack;
+      case 'react-component-oracle-wallet':
+        return OracleWalletPicker;
       case 'codehinter':
         return CodeHinter;
       case 'react-component-openapi-validator':
@@ -303,6 +327,9 @@ const DynamicForm = ({
     parse_key,
     columnSelectorOperation,
     columnSelectorDependsOn,
+    tabs,
+    pagination,
+    pageSize,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -359,6 +386,34 @@ const DynamicForm = ({
           useCustomStyles: computeSelectStyles ? true : false,
           isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           encrypted: options?.[key]?.encrypted,
+          customOption: (option) => {
+            const labelText = option?.label || '';
+            const isDeprecated = typeof labelText === 'string' && labelText.includes('(Deprecated)');
+
+            if (isDeprecated) {
+              const baseText = labelText.replace(/\(Deprecated\)/g, '').trim();
+              return (
+                <div className="d-flex align-items-center">
+                  <span>{baseText}</span>
+                  <span
+                    className="badge ms-2"
+                    style={{
+                      backgroundColor: '#F0F4F8', // light grayish-blue background
+                      color: '#111827', // dark gray text
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      textTransform: 'none',
+                    }}
+                  >
+                    Deprecated
+                  </span>
+                </div>
+              );
+            }
+            return option?.label;
+          },
         };
       case 'checkbox-group':
         return {
@@ -389,6 +444,21 @@ const DynamicForm = ({
           buttonText,
           width: width,
           ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-key-value-tabs': {
+        return {
+          options,
+          optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          tabs: tabs || [],
+        };
+      }
+      case 'react-component-oracle-wallet': {
+        return {
+          value: options?.[key]?.value ?? schema?.defaults?.[key]?.value ?? '',
+          onChange: (val) => optionchanged(key, val),
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(), // Respects Tooljet's read-only modes
         };
       }
       case 'react-component-sort': {
@@ -502,8 +572,8 @@ const DynamicForm = ({
           cyLabel: label
             ? generateCypressDataCy(label)
             : key
-              ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
-              : '',
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
           disabled,
           delayOnChange: false,
           renderCopilot,
@@ -597,6 +667,8 @@ const DynamicForm = ({
           fxEnabled: fxEnabled || fx_enabled,
           isMulti: isMulti || false,
           autoFetch: autoFetch || false,
+          pagination: pagination || false,
+          pageSize: pageSize || 25,
         };
       case 'react-component-sql-filters':
         return {

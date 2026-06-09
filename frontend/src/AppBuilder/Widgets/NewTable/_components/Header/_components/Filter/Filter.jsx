@@ -31,10 +31,10 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
         prevFilters.map((f, i) =>
           i === index
             ? {
-              ...f,
-              id: filter.value,
-              value: { ...f.value, column: filter.name },
-            }
+                ...f,
+                id: filter.value,
+                value: { ...f.value, column: filter.name },
+              }
             : f
         )
       );
@@ -55,12 +55,12 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
     const newFilters = localFilters.map((filter, i) =>
       i === index
         ? {
-          ...filter,
-          value: {
-            ...filter.value,
-            condition: value,
-          },
-        }
+            ...filter,
+            value: {
+              ...filter.value,
+              condition: value,
+            },
+          }
         : filter
     );
 
@@ -83,12 +83,12 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
     const newFilters = localFilters.map((filter, i) =>
       i === index
         ? {
-          ...filter,
-          value: {
-            ...filter.value,
-            value: value,
-          },
-        }
+            ...filter,
+            value: {
+              ...filter.value,
+              value: value,
+            },
+          }
         : filter
     );
     setLocalFilters(newFilters);
@@ -148,7 +148,10 @@ export const Filter = memo(({ id, table, darkMode, setFilters, setShowFilter, co
   }, [debouncedFilterChanged, localFilters]);
 
   return (
-    <div className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`} data-cy={`${componentName}-filter-panel`}>
+    <div
+      className={`table-filters card ${darkMode ? 'dark-theme theme-dark' : 'light-theme'}`}
+      data-cy={`${componentName}-filter-panel`}
+    >
       <FilterHeader setShowFilter={setShowFilter} />
       <div className="card-body">
         {localFilters.map((filter, index) => (

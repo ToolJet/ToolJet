@@ -182,8 +182,20 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
-  async decryptOptions(options: Record<string, any>) {
-    return await this.dataSourcesUtilService.decrypt(options);
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ) {
+    return await this.dataSourcesUtilService.validateOptions(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      options,
+      schema
+    );
   }
 
   async delete(dataSourceId: string, user: User) {
@@ -339,6 +351,12 @@ export class DataSourcesService implements IDataSourcesService {
         {
           user: { id: user?.id },
           app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+          dataSourceDetails: {
+            datasourceId: dataSource?.id,
+            datasourcekind: dataSource?.kind,
+            datasourceUpdatedAt: dataSourceOptions?.updatedAt,
+            dataSourceOptionsEnvironmentId: dataSourceOptions?.environmentId,
+          },
         },
         sourceOptions,
         args

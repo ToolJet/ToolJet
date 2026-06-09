@@ -51,7 +51,7 @@
  */
 import { getMouseDistanceFromParentDiv } from '../gridUtils';
 
-import { DROPPABLE_PARENTS } from '../../appCanvasConstants';
+import { DROPPABLE_PARENTS, NESTING_LEVEL_LIMITS } from '../../appCanvasConstants';
 import { isDroppingRestrictedWidget } from '../gridUtils';
 
 const CANVAS_ID = 'canvas';
@@ -180,9 +180,8 @@ export class DragContext {
       return false;
     }
 
-    // Check ListView nesting restriction:
-    // If dragging a ListView into a slot that's inside a nested ListView, block it
-    if (dragged.widgetType === 'Listview' && isInsideNestedListview(target.slotId, widgets)) {
+    // Check nesting depth restrictions (e.g., Listview: 2, Table: 3)
+    if (isNestingLimitReached(target.slotId, widgets, dragged.widgetType)) {
       return false;
     }
 
@@ -289,22 +288,29 @@ export function getWidgetById(boxList, targetId) {
  *
  * @param {string} slotId - The slot ID to check
  * @param {Array} widgets - Array of all widgets
- * @returns {boolean} - True if inside a nested ListView (2+ levels deep)
+ * @param {string} widgetType - The widget type to check nesting for
+ * @returns {boolean} - True if nesting limit (from NESTING_LEVEL_LIMITS) is reached
  */
-export function isInsideNestedListview(slotId, widgets) {
+export function isNestingLimitReached(slotId, widgets, widgetType) {
+  const limit = NESTING_LEVEL_LIMITS[widgetType];
+  if (!limit) return false;
+
   let currentParentId = slotId;
-  let listviewCount = 0;
+  let count = 0;
+  const visited = new Set();
 
   while (currentParentId && currentParentId !== 'canvas' && currentParentId !== 'real-canvas') {
     const baseId = currentParentId?.length > 36 ? currentParentId.slice(0, 36) : currentParentId;
+    if (visited.has(baseId)) return false;
+    visited.add(baseId);
     const parentWidget = widgets.find((w) => w.id === baseId);
 
-    if (parentWidget?.component?.component === 'Listview') {
-      listviewCount++;
-      if (listviewCount >= 2) return true; // Already 2 levels, can't add more
+    if (parentWidget?.component?.component === widgetType) {
+      count++;
+      if (count >= limit) return true;
     }
 
-    currentParentId = parentWidget?.component?.parent; // Fixed: was parentWidget?.parent
+    currentParentId = parentWidget?.component?.parent;
   }
   return false;
 }
@@ -357,7 +363,12 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
  */
 export const isTargetModuleContainer = (targetSlotId, isModuleEditor) => {
   if (isModuleEditor) return false;
-  return document.getElementById(`canvas-${targetSlotId}`)?.getAttribute('component-type') === 'ModuleContainer';
+  let el = document.getElementById(`canvas-${targetSlotId}`);
+  while (el) {
+    if (el.getAttribute && el.getAttribute('component-type') === 'ModuleContainer') return true;
+    el = el.parentElement;
+  }
+  return false;
 };
 
 /**

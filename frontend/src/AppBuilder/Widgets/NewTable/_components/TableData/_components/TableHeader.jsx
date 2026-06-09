@@ -13,8 +13,9 @@ import { shallow } from 'zustand/shallow';
 import { IconPencil, IconSortDescending, IconSortAscending } from '@tabler/icons-react';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { getPinnedStyles } from '../pinColumnsUtils';
 
-const DraggableHeader = ({ header, darkMode, id }) => {
+const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVariables }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
     id: header.id,
   });
@@ -26,6 +27,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
   const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const enabledSort = useTableStore((state) => state.getTableProperties(id)?.enabledSort ?? true, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -39,6 +41,30 @@ const DraggableHeader = ({ header, darkMode, id }) => {
 
   const isDataColumn = column.columnType !== 'selector';
 
+  const handleHeaderClick = () => {
+    if (!isDataColumn) return;
+    setExposedVariables({
+      selectedColumnHeader: {
+        key: column.key,
+        name: column.name,
+        index: header.column.getIndex(),
+      },
+    });
+    fireEvent('onHeaderClick');
+    if (enabledSort && header.column.getCanSort()) {
+      header.column.toggleSorting();
+    }
+  };
+  const {
+    pinnedPosition,
+    isPinnedBoundary,
+    style: pinnedStyles,
+  } = getPinnedStyles({
+    column: header.column,
+    table,
+    isHeader: true,
+  });
+
   const style = {
     opacity: isDragging ? 0.8 : 1,
     position: 'relative',
@@ -46,7 +72,8 @@ const DraggableHeader = ({ header, darkMode, id }) => {
     transition: 'width transform 0.2s ease-in-out',
     whiteSpace: 'nowrap',
     width: header.column.getSize(),
-    zIndex: isDragging ? 1 : 0,
+    flex: '0 0 auto',
+    zIndex: isDragging ? 15 : pinnedStyles.zIndex ?? 0,
     backgroundColor: columnBackgroundColor,
     color: columnTitleColor,
     '--cc-table-header-hover': getModifiedColor(columnBackgroundColor, 6),
@@ -62,11 +89,16 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         'has-actions': header.column.columnDef.header === 'Actions',
         'selector-header': header.column.columnDef.type === 'selector',
         'dark-theme': darkMode,
+        'pinned-column': !!pinnedPosition,
+        'pinned-column-left': pinnedPosition === 'left',
+        'pinned-column-right': pinnedPosition === 'right',
+        'pinned-column-boundary-left': pinnedPosition === 'left' && isPinnedBoundary,
+        'pinned-column-boundary-right': pinnedPosition === 'right' && isPinnedBoundary,
       })}
       style={{
         width: header.getSize(),
-        position: 'relative',
         ...style,
+        ...pinnedStyles,
       }}
     >
       <div
@@ -76,14 +108,15 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         className={cx('d-flex justify-content-between custom-gap-4', {
           'd-flex justify-content-center w-100': header.column.columnDef.type === 'selector',
         })}
-        onClick={header.column.getCanSort() ? () => header.column.toggleSorting() : undefined}
-        style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
+        onClick={isDataColumn ? handleHeaderClick : undefined}
+        style={{ cursor: isDataColumn ? 'pointer' : 'default', width: '100%' }}
       >
         <div
-          className={`d-flex thead-editable-icon-header-text-wrapper ${column.columnType === 'selector'
-            ? 'justify-content-center'
-            : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
-            } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+          className={`d-flex thead-editable-icon-header-text-wrapper ${
+            column.columnType === 'selector'
+              ? 'justify-content-center'
+              : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
+          } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
         >
           <div className="d-flex align-items-center tw-flex-shrink-0">
             {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
@@ -115,7 +148,10 @@ const DraggableHeader = ({ header, darkMode, id }) => {
                 'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
               })}
               data-cy={`${generateCypressDataCy(column.name)}-column-header`}
-              style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
+              style={{
+                textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none',
+                textAlign: column.columnType !== 'selector' ? column?.horizontalAlignment || 'left' : undefined,
+              }}
               onMouseEnter={() => setShowOverlay(true)}
               onMouseLeave={() => setShowOverlay(false)}
             >
@@ -126,9 +162,17 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         {header.column.getIsSorted() && (
           <div className="tw-flex-shrink-0">
             {header.column.getIsSorted() === 'desc' ? (
-              <IconSortDescending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-descending`} />
+              <IconSortDescending
+                size={16}
+                color="var(--cc-secondary-icon, var(--icon-default))"
+                data-cy={`${generateCypressDataCy(column.name)}-sort-icon-descending`}
+              />
             ) : (
-              <IconSortAscending size={16} color="var(--cc-secondary-icon, var(--icon-default))" data-cy={`${generateCypressDataCy(column.name)}-sort-icon-ascending`} />
+              <IconSortAscending
+                size={16}
+                color="var(--cc-secondary-icon, var(--icon-default))"
+                data-cy={`${generateCypressDataCy(column.name)}-sort-icon-ascending`}
+              />
             )}
           </div>
         )}
@@ -137,6 +181,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
         <div
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
+          onClick={(e) => e.stopPropagation()}
           className={cx('resizer', { 'resizing-column': header.column.getIsResizing() })}
         >
           <div
@@ -152,9 +197,10 @@ const DraggableHeader = ({ header, darkMode, id }) => {
   );
 };
 
-export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }) => {
-  const { getLoadingState } = useTableStore();
+export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, fireEvent, setExposedVariables }) => {
+  const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
+  const isRefreshing = getIsRefreshing(id);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -176,7 +222,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
     });
   };
 
-  if (loadingState) {
+  if (loadingState || isRefreshing) {
     return (
       <div className="w-100">
         <Loader height={28} />
@@ -191,7 +237,15 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy} key={headerGroup.id}>
             <tr className="tr" style={{ display: 'flex' }}>
               {headerGroup.headers.map((header) => (
-                <DraggableHeader key={header.id} header={header} darkMode={darkMode} id={id} />
+                <DraggableHeader
+                  key={header.id}
+                  header={header}
+                  darkMode={darkMode}
+                  id={id}
+                  table={table}
+                  fireEvent={fireEvent}
+                  setExposedVariables={setExposedVariables}
+                />
               ))}
             </tr>
           </SortableContext>

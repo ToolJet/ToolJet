@@ -1,14 +1,19 @@
 import React from 'react';
 //TODO: Inspector folder needs to be refactored
 import { Inspector } from '@/AppBuilder/RightSideBar/Inspector/Inspector';
+import ErrorBoundary from '@/_ui/ErrorBoundary';
 import useStore from '@/AppBuilder/_stores/store';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { shallow } from 'zustand/shallow';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import AppHeaderStylesPanel from './AppHeaderStylesPanel';
+import AppFooterStylesPanel from './AppFooterStylesPanel';
 
 export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
   const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
   const activeTab = useStore((state) => state.activeRightSideBarTab, shallow);
+  const isCanvasHeaderSelected = useStore((state) => state.isCanvasHeaderSelected, shallow);
+  const isCanvasFooterSelected = useStore((state) => state.isCanvasFooterSelected, shallow);
   const setRightSidebarOpen = useStore((state) => state.setRightSidebarOpen);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
 
@@ -16,6 +21,14 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     setActiveRightSideBarTab(null);
     setRightSidebarOpen(false);
   };
+
+  if (isCanvasHeaderSelected) {
+    return <AppHeaderStylesPanel />;
+  }
+  if (isCanvasFooterSelected) {
+    return <AppFooterStylesPanel />;
+  }
+
   if (!selectedComponentId && activeTab !== RIGHT_SIDE_BAR_TAB.PAGES) {
     // return setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
     return (
@@ -37,13 +50,15 @@ export const ComponentConfigurationTab = ({ darkMode, isModuleEditor }) => {
     );
   }
   return (
-    <Inspector
-      componentDefinitionChanged={() => {}}
-      darkMode={darkMode}
-      selectedComponentId={selectedComponentId}
-      pages={[]}
-      isModuleEditor={isModuleEditor}
-      handleRightSidebarToggle={handleToggle}
-    />
+    <ErrorBoundary key={selectedComponentId}>
+      <Inspector
+        componentDefinitionChanged={() => {}}
+        darkMode={darkMode}
+        selectedComponentId={selectedComponentId}
+        pages={[]}
+        isModuleEditor={isModuleEditor}
+        handleRightSidebarToggle={handleToggle}
+      />
+    </ErrorBoundary>
   );
 };

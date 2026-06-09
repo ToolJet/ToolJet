@@ -13,6 +13,7 @@ import { MetaModule } from '@modules/meta/module';
 import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
+import { AppService } from './service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { UsersModule } from '@modules/users/module';
@@ -32,6 +33,7 @@ import { WhiteLabellingModule } from '@modules/white-labelling/module';
 import { EmailModule } from '@modules/email/module';
 import { OrganizationConstantModule } from '@modules/organization-constants/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
+import { DataQueryFoldersModule } from '@modules/data-query-folders/module';
 import { AppsModule } from '@modules/apps/module';
 import { VersionModule } from '@modules/versions/module';
 import { DataQueriesModule } from '@modules/data-queries/module';
@@ -104,6 +106,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await InstanceSettingsModule.register(configs, true),
       await FoldersModule.register(configs, true),
       await FolderAppsModule.register(configs, true),
+      await DataQueryFoldersModule.register(configs, true),
       await SMTPModule.register(configs, true),
       await RolesModule.register(configs, true),
       await GroupPermissionsModule.register(configs, true),
@@ -188,6 +191,7 @@ export class AppModule implements OnModuleInit, NestModule {
         AuditLogsClearScheduler,
         MfaCleanupScheduler,
         CustomDomainStatusScheduler,
+        AppService,
       ],
     };
   }

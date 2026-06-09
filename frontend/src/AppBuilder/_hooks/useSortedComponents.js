@@ -16,7 +16,10 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
   }, shallow);
 
   const prevForceUpdateRef = useRef(0);
-  const prevComponentsOrder = useRef(components);
+  // Initialize to empty so the first render always triggers sorting.
+  // else in viewer mode Grid.jsx is not rendered so setReorderContainerChildren
+  // is never called, leaving components permanently unsorted.
+  const prevComponentsOrder = useRef([]);
 
   // Function to sort the components based on position in container for tab navigation
   const sortedComponents = useMemo(() => {
@@ -41,7 +44,7 @@ const useSortedComponents = (components, currentLayout, id, moduleId) => {
       return prevComponentsOrder.current;
     }
 
-    const currentPageComponents = getCurrentPageComponents();
+    const currentPageComponents = getCurrentPageComponents(moduleId);
 
     const newComponentsOrder = [...components].sort((a, b) => {
       const aTop = currentPageComponents?.[a]?.layouts?.[currentLayout]?.top;

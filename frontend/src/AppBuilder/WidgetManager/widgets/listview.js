@@ -73,6 +73,15 @@ export const listviewConfig = {
         value: 'rawJson',
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     dynamicHeight: {
       type: 'toggle',
       displayName: 'Dynamic height',
@@ -81,6 +90,59 @@ export const listviewConfig = {
         defaultValue: false,
       },
       section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
     mode: {
       type: 'select',
@@ -164,22 +226,6 @@ export const listviewConfig = {
         defaultValue: 'var(--cc-weak-border)',
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
     borderRadius: {
       type: 'number',
       displayName: 'Border radius',
@@ -187,6 +233,11 @@ export const listviewConfig = {
         schema: { type: 'number' },
         defaultValue: 6,
       },
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
     },
   },
   exposedVariables: {
@@ -211,8 +262,15 @@ export const listviewConfig = {
       rowHeight: {
         value: '100',
       },
+      loadingState: { value: '{{false}}' },
       dynamicHeight: { value: '{{false}}' },
       visible: { value: '{{true}}' },
+      visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },
@@ -221,9 +279,8 @@ export const listviewConfig = {
     styles: {
       backgroundColor: { value: 'var(--cc-surface1-surface)' },
       borderColor: { value: 'var(--cc-weak-border)' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

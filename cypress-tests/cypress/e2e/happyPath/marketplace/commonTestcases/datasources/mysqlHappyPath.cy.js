@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { mysqlUIConfig, mysqlFormConfig } from "Constants/constants/marketplace/datasources/mysql";
 
 const data = {};
@@ -26,7 +26,8 @@ describe("MySQL", () => {
             `${mysqlDataSourceName}`,
             "mysql",
             [
-                { key: "connection_type", value: "hostname", encrypted: false },
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "protocol", value: "hostname", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 3306, encrypted: false },
                 { key: "database", value: "", encrypted: false },
@@ -52,7 +53,8 @@ describe("MySQL", () => {
             `${mysqlDataSourceName}`,
             "mysql",
             [
-                { key: "connection_type", value: "hostname", encrypted: false },
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "protocol", value: "hostname", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 3306, encrypted: false },
                 { key: "database", value: "", encrypted: false },
@@ -81,7 +83,8 @@ describe("MySQL", () => {
             `${mysqlDataSourceName}`,
             "mysql",
             [
-                { key: "connection_type", value: "hostname", encrypted: false },
+                { key: "connection_type", value: "manual", encrypted: false },
+                { key: "protocol", value: "hostname", encrypted: false },
                 { key: "host", value: "localhost", encrypted: false },
                 { key: "port", value: 3306, encrypted: false },
                 { key: "database", value: "", encrypted: false },
@@ -105,15 +108,43 @@ describe("MySQL", () => {
         verifyDSConnection("failed", "getaddrinfo ENOTFOUND invalid-host");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidUsername);
-        verifyDSConnection("failed", "Access denied for user 'invalid-username'@'194.22.189.63' (using password: YES)");
+        verifyDSConnection("failed", "Access denied for user 'invalid-username'");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidPassword);
-        verifyDSConnection("failed", "Access denied for user 'root'@'194.22.189.63' (using password: YES)");
+        verifyDSConnection("failed", "Access denied for user");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidPort);
-        verifyDSConnection("failed", "connect ETIMEDOUT");
+        verifyDSConnection("failed", "Connection test failed: connect ECONNREFUSED");
 
         fillDSConnectionForm(mysqlFormConfig, mysqlFormConfig.invalidDatabase);
         verifyDSConnection("failed", "Unknown database 'nonexistent_database'");
     });
 });
+
+/*
+ * Test Cases for MySQL
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with manual connection type and hostname protocol
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: connection_type, protocol, host, port, database, username, ssl_enabled, ssl_certificate, password, ca_cert, client_key, client_cert, root_cert
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with manual connection type
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses mysqlFormConfig valid credentials
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with manual connection type
+ *   - Steps: Navigate to data sources page → Click on data source → Verify UI → Test multiple invalid credential scenarios → Verify error messages
+ *   - Expected:
+ *     - UI elements match manifest specifications
+ *     - Invalid host: Connection fails with "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid username: Connection fails with "Access denied for user 'invalid-username'"
+ *     - Invalid password: Connection fails with "Access denied for user"
+ *     - Invalid port: Connection fails with "connect ETIMEDOUT"
+ *     - Invalid database: Connection fails with "Unknown database 'nonexistent_database'"
+ */

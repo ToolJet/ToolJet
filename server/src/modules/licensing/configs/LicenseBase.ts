@@ -53,6 +53,8 @@ export default class LicenseBase {
   private _isGoogle: boolean;
   private _isGithub: boolean;
   private _isObservability: object;
+  private _aiPlan: 'byok' | 'selfhostai' | 'credits';
+  private _appComponents: Record<string, boolean> = {};
 
   constructor(
     BASIC_PLAN_TERMS?: Partial<Terms>,
@@ -64,7 +66,7 @@ export default class LicenseBase {
   ) {
     this.BASIC_PLAN_TERMS = BASIC_PLAN_TERMS;
 
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test' && !licenseData) {
       const now = new Date();
       now.setMinutes(now.getMinutes() + 30);
       // Setting expiry 30 minutes
@@ -80,6 +82,7 @@ export default class LicenseBase {
       this._isLicenseValid = true;
       this._isMultiEnvironment = true;
       this._isAi = true;
+      this._aiPlan = 'credits';
       this._isExternalApis = true;
       this._isAppWhiteLabelling = true;
       this._isCustomDomains = true;
@@ -119,6 +122,9 @@ export default class LicenseBase {
     this._isModulesEnabled = licenseData?.modules?.enabled;
     this._permissions = licenseData?.permissions;
     this._app = licenseData?.app;
+    this._appComponents = this._app?.components
+      ? Object.fromEntries(Object.entries(this._app.components).map(([k, v]) => [k, v ?? false]))
+      : {};
     this._isCustomGroups = this.getPermissionValue('customGroups');
     this._isObservability = licenseData?.observability;
 
@@ -143,6 +149,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
   private getFeatureValue(key: string) {
@@ -254,6 +261,22 @@ export default class LicenseBase {
       return true; //Not passed set to true for older licenses and trial
     }
     return !!this._app['pages']?.features?.addNavGroup;
+  }
+
+  public get canvasPageHeaderEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageHeader;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageHeader;
+  }
+
+  public get canvasPageFooterEnabled(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.pages?.features?.canvasPageFooter;
+    }
+
+    return !!this._app?.['pages']?.features?.canvasPageFooter;
   }
 
   public get moduleEnabled(): boolean {
@@ -412,6 +435,17 @@ export default class LicenseBase {
     return this._isGitSync;
   }
 
+  public get queryFolders(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.queryFolders;
+    }
+
+    if (this._features?.['queryFolders'] === undefined) {
+      return false;
+    }
+    return !!this._features?.['queryFolders'];
+  }
+
   public get saml(): boolean {
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.saml;
@@ -506,6 +540,13 @@ export default class LicenseBase {
     return this._isAi;
   }
 
+  public get aiPlan(): 'byok' | 'selfhostai' | 'credits' {
+    if (this.IsBasicPlan) {
+      return (this.BASIC_PLAN_TERMS.ai?.plan as 'byok' | 'selfhostai' | 'credits') || 'credits';
+    }
+    return this._aiPlan || 'credits';
+  }
+
   public get updatedAt(): Date {
     return this._updatedDate;
   }
@@ -537,6 +578,8 @@ export default class LicenseBase {
       customGroups: this.customGroups,
       appPagesAddNavGroupEnabled: this.appPagesAddNavGroupEnabled,
       appPagesHeaderAndLogoEnabled: this.appPagesHeaderAndLogoEnabled,
+      canvasPageHeaderEnabled: this.canvasPageHeaderEnabled,
+      canvasPageFooterEnabled: this.canvasPageFooterEnabled,
       appPagesEnabled: this.appPagesEnabled,
       appPermissionComponent: this.appPermissionComponent,
       appPermissionQuery: this.appPermissionQuery,
@@ -552,6 +595,12 @@ export default class LicenseBase {
       scim: this.scim,
       observabilityEnabled: this.observabilityEnabled,
       appHistory: this.appHistory,
+      appJsLibraries: this.appJsLibraries,
+      queryFolders: this.queryFolders,
+      aiPlan: this.aiPlan,
+      ...Object.fromEntries(
+        Object.entries(this.appComponents).map(([k, v]) => [`component${k[0].toUpperCase()}${k.slice(1)}`, v])
+      ),
     };
   }
 
@@ -588,6 +637,7 @@ export default class LicenseBase {
       workflows: this.workflows,
       startDate: this.startDate,
       appHistoryEnabled: this.appHistory,
+      appJsLibrariesEnabled: this.appJsLibraries,
     };
   }
 
@@ -645,5 +695,23 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
+  }
+
+  public get appComponents(): Record<string, boolean> {
+    if (this.IsBasicPlan) {
+      return this.BASIC_PLAN_TERMS.app?.components ?? {};
+    }
+    return this._appComponents;
+  }
+
+  public get appJsLibraries(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.app?.features?.jsLibraries;
+    }
+
+    if (this._app?.features?.jsLibraries === undefined) {
+      return false;
+    }
+    return !!this._app?.features?.jsLibraries;
   }
 }

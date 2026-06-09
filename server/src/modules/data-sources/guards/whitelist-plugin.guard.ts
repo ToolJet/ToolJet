@@ -11,6 +11,10 @@ export class WhitelistPluginGuard implements CanActivate {
     'mysql',
     'postgresql',
     'mongodb',
+    'bigquery',
+    'snowflake',
+    'oracledb',
+    'databricks',
   ]); // Start with grpcv2, easily expandable
 
   canActivate(context: ExecutionContext): boolean {

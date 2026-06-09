@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
-import { useInput, getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
+import {
+  useInput,
+  getLabelFontSize,
+  getWidthTypeOfComponentStyles,
+  getLabelWidthOfInput,
+} from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
@@ -118,11 +123,13 @@ export const CurrencyInput = (props) => {
     boxShadow,
     borderRadius,
     widthType,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const hasLabel =
-    (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
+  const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
   const disabledState = disable || loading;
   const isInitialRender = useRef(true);
   const hasValue = value !== '' && value !== null && value !== undefined;
@@ -133,26 +140,26 @@ export const CurrencyInput = (props) => {
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : borderColor != '#CCD1D5'
-        ? borderColor
-        : disabledState
-          ? '1px solid var(--borders-disabled-on-white)'
-          : 'var(--borders-default)',
+      ? borderColor
+      : disabledState
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(borderColor, 24),
     backgroundColor:
       backgroundColor != '#fff'
         ? backgroundColor
         : disabledState
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-surface-03)'
-          : 'var(--surfaces-surface-01)',
+        ? darkMode
+          ? 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-03)'
+        : 'var(--surfaces-surface-01)',
     padding: '8px 10px',
     paddingRight: shouldShowClearBtn ? '32px' : undefined,
     overflow: 'hidden',
@@ -161,16 +168,9 @@ export const CurrencyInput = (props) => {
   };
 
   const loaderStyle = {
-    right:
-      direction === 'right' &&
-        defaultAlignment === 'side' &&
-        hasLabel
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
-    transform:
-      defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
+    right: direction === 'right' && defaultAlignment === 'side' && hasLabel ? `${labelWidth + 11}px` : '11px',
+    top: defaultAlignment === 'top' ? hasLabel && 'calc(50% + 10px)' : '',
+    transform: defaultAlignment === 'top' && hasLabel && ' translateY(-50%)',
     zIndex: 3,
   };
   const clearButtonRight =
@@ -246,11 +246,12 @@ export const CurrencyInput = (props) => {
   return (
     <>
       <div
-        className={`text-input d-flex phone-input-widget ${defaultAlignment === 'top' &&
+        className={`text-input d-flex phone-input-widget ${
+          defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
-          ? 'flex-column'
-          : 'align-items-center'
-          } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
+            ? 'flex-column'
+            : 'align-items-center'
+        } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
       ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
       ${visibility || 'invisible'}`}
         style={{
@@ -276,6 +277,7 @@ export const CurrencyInput = (props) => {
           inputId={`component-${id}`}
           classes={labelClasses}
           dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
@@ -320,8 +322,9 @@ export const CurrencyInput = (props) => {
           <ReactCurrencyInput
             ref={inputRef}
             placeholder={placeholder}
-            className={`tj-text-input-widget ${!isValid && showValidationError ? 'is-invalid' : ''
-              } validation-without-icon`}
+            className={`tj-text-input-widget ${
+              !isValid && showValidationError ? 'is-invalid' : ''
+            } validation-without-icon`}
             value={value}
             decimalsLimit={decimalPlaces}
             groupSeparator={separators.groupSeparator}

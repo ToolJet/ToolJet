@@ -24,6 +24,7 @@ import { RadioButtonV2 } from '@/AppBuilder/Widgets/RadioButtonV2/RadioButtonV2'
 import { Rating as StarRating } from '@/AppBuilder/Widgets/Rating/Rating';
 import { Divider } from '@/AppBuilder/Widgets/Divider';
 import { FileInput } from '@/AppBuilder/Widgets/FileInput';
+import { FileButton } from '@/AppBuilder/Widgets/FileButton/FileButton';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
@@ -41,6 +42,7 @@ import { Timeline } from '@/AppBuilder/Widgets/Timeline';
 import { SvgImage } from '@/AppBuilder/Widgets/SvgImage';
 import { Html } from '@/AppBuilder/Widgets/Html';
 import { ButtonGroup } from '@/AppBuilder/Widgets/ButtonGroup';
+import { ButtonGroupV2 } from '@/AppBuilder/Widgets/ButtonGroupV2/ButtonGroupV2';
 import { CustomComponent } from '@/AppBuilder/Widgets/CustomComponent/CustomComponent';
 import { VerticalDivider } from '@/AppBuilder/Widgets/VerticalDivider';
 import { Steps } from '@/AppBuilder/Widgets/Steps';
@@ -51,7 +53,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
 import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
-import { Tabs } from '@/AppBuilder/Widgets/Tabs';
+import { Tabs } from '@/AppBuilder/Widgets/Tabs/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
@@ -76,7 +78,7 @@ import { APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '../AppCanvas/appCanvasCons
 const Icon = lazy(() => import('@/AppBuilder/Widgets/Icon'));
 const Table = lazy(() => import('@/AppBuilder/Widgets/NewTable/Table'));
 const KanbanBoard = lazy(() => import('@/AppBuilder/Widgets/KanbanBoard/KanbanBoard'));
-const ColorPicker = lazy(() => import('@/AppBuilder/Widgets/ColorPicker'));
+const ColorPicker = lazy(() => import('@/AppBuilder/Widgets/ColorPicker/ColorPicker'));
 const CodeEditor = lazy(() => import('@/AppBuilder/Widgets/CodeEditor'));
 const Calendar = lazy(() => import('@/AppBuilder/Widgets/Calendar/Calendar'));
 const Chart = lazy(() => import('@/AppBuilder/Widgets/Chart'));
@@ -136,6 +138,7 @@ export const AllComponents = {
   Divider,
   FilePicker,
   FileInput,
+  FileButton,
   PasswordInput,
   EmailInput,
   PhoneInput,
@@ -154,6 +157,7 @@ export const AllComponents = {
   SvgImage,
   Html,
   ButtonGroup,
+  ButtonGroupV2,
   CustomComponent,
   VerticalDivider,
   ColorPicker,

@@ -26,6 +26,7 @@ export const Header = memo(
     const showFilterButton = useTableStore((state) => state.getTableProperties(id)?.showFilterButton, shallow);
 
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const isRefreshing = useTableStore((state) => state.getIsRefreshing(id), shallow);
     const headerVisibility = useTableStore((state) => state.getHeaderVisibility(id), shallow);
 
     const appliedFilters = table.getState().columnFilters;
@@ -36,9 +37,12 @@ export const Header = memo(
     if (!headerVisibility) return null;
 
     // Loading state for header
-    if (loadingState) {
+    if (loadingState || isRefreshing) {
       return (
-        <div className={'table-card-header d-flex justify-content-between align-items-center'} data-cy={`${componentName}-header-section`}>
+        <div
+          className={'table-card-header d-flex justify-content-between align-items-center'}
+          data-cy={`${componentName}-header-section`}
+        >
           <Loader width={83} height={28} />
           <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
             <Loader width={100} height={28} />
@@ -121,7 +125,14 @@ export const Header = memo(
           </div>
         </div>
         {showFilter && (
-          <Filter id={id} table={table} darkMode={darkMode} setFilters={setFilters} setShowFilter={setShowFilter} componentName={componentName} />
+          <Filter
+            id={id}
+            table={table}
+            darkMode={darkMode}
+            setFilters={setFilters}
+            setShowFilter={setShowFilter}
+            componentName={componentName}
+          />
         )}
       </>
     );

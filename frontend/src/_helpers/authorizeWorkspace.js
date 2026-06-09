@@ -1,4 +1,4 @@
-import { organizationService, authenticationService, sessionService } from '@/_services';
+import { organizationService, authenticationService, sessionService, appsService } from '@/_services';
 import {
   pathnameToArray,
   getSubpath,
@@ -28,7 +28,6 @@ function hasRecentRedirectAttempt() {
 function setRedirectAttempt() {
   sessionStorage.setItem(REDIRECT_KEY, String(Date.now()));
 }
-
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -125,7 +124,7 @@ export const authorizeWorkspace = async () => {
           fetchWhiteLabelDetails(workspaceIdOrSlug);
         }
       )
-      .catch((error) => {
+      .catch(async (error) => {
         fetchWhiteLabelDetails(workspaceIdOrSlug);
         const isDesiredStatusCode =
           (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
@@ -153,6 +152,7 @@ export const authorizeWorkspace = async () => {
             const subpath = getSubpath();
             window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
           }
+          return;
         }
         if (!isApplicationsPath) {
           /* CASE-3 */
@@ -160,7 +160,39 @@ export const authorizeWorkspace = async () => {
             authentication_status: false,
           });
         } else if (isApplicationsPath) {
-          /* CASE-4 */
+          /* CASE-4: For app viewer paths, check if app is public before redirecting to login */
+          const pathSegments = getPathname(null, true).split('/').filter(Boolean);
+          const appSlug = pathSegments[1]; // /applications/:slug/...
+          if (appSlug) {
+            try {
+              const appConfig = await appsService.getAppAuthenticationConfig(appSlug);
+              if (appConfig?.isPublic) {
+                // Public app — let the Viewer load it without authentication
+                updateCurrentSession({
+                  authentication_failed: true,
+                  load_app: true,
+                });
+                return;
+              }
+            } catch (configErr) {
+              // App doesn't exist (e.g., slug was changed) — show invalid-link error
+              if (configErr?.data?.statusCode === 404) {
+                redirectToErrorPage(ERROR_TYPES.INVALID);
+                return;
+              }
+              // For other errors (network), fall through to login redirect
+            }
+            const subpath = getSubpath() ?? '';
+            const currentPath = getPathname(null, true);
+            const currentSearch = window.location.search;
+            const fullRedirectPath = `${currentPath}${currentSearch}`;
+            const redirectParam =
+              fullRedirectPath !== `/applications/${appSlug}`
+                ? `?redirectTo=${encodeURIComponent(fullRedirectPath)}`
+                : '';
+            window.location.href = `${subpath}/applications/${appSlug}/login${redirectParam}`;
+            return;
+          }
           updateCurrentSession({
             authentication_failed: true,
             load_app: true,
@@ -187,6 +219,11 @@ const isThisExistedRoute = () => {
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
   const pathnames = pathnameToArray();
   if (pathnames.includes('login') && pathnames.includes('sso')) {
+    return true;
+  }
+  // App-scoped auth pages handle their own auth
+  const appAuthPages = ['login', 'signup', 'forgot-password', 'reset-password'];
+  if (pathnames[0] === 'applications' && appAuthPages.includes(pathnames[2])) {
     return true;
   }
   const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
@@ -233,7 +270,9 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
         setRedirectAttempt();
         try {
           const { token } = await sessionTransferService.createTransferToken();
-          const redirect = encodeURIComponent(`/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`);
+          const redirect = encodeURIComponent(
+            `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
+          );
           window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
           return;
         } catch (e) {

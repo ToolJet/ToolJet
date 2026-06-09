@@ -86,7 +86,7 @@ export default class Sharepoint implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      throw Error(`Could not connect to Sharepoint:\n${error?.message}`);
+      throw Error(`Could not connect to SharePoint:\n${error?.message}`);
     }
 
     return authDetails;
@@ -345,8 +345,8 @@ export default class Sharepoint implements QueryService {
         );
       }
     } catch (error) {
-      console.error(`Error while Sharepoint refresh token call. ${JSON.stringify(error)}`);
-      throw new QueryError('could not connect to Sharepoint', JSON.stringify(error), {});
+      console.error(`Error while SharePoint refresh token call. ${JSON.stringify(error)}`);
+      throw new QueryError('could not connect to SharePoint', JSON.stringify(error), {});
     }
     return accessTokenDetails;
   }

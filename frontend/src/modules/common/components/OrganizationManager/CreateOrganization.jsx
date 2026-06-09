@@ -56,7 +56,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           setTimeout(() => {
             const newPath = appendWorkspaceId(slugValue, location.pathname, true);
             if (isCustomDomain()) {
-              redirectWithSessionTransfer(getBaseHostURL(), newPath, data?.organization_id || data?.current_organization_id);
+              redirectWithSessionTransfer(
+                getBaseHostURL(),
+                newPath,
+                data?.organization_id || data?.current_organization_id
+              );
             } else {
               window.history.replaceState(null, null, newPath);
               window.location.reload();

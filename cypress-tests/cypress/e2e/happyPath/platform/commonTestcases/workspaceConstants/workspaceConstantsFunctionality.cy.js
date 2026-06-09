@@ -49,22 +49,22 @@ describe("Workspace constants", () => {
         // Create and update constants as needed
         createAndUpdateConstant(
             "url",
-            "http://20.29.40.108:4000/development",
+            "http://130.131.160.149:4000/development",
             ["Global"],
             ["development", "staging", "production"],
             {
-                staging: "http://20.29.40.108:4000/staging",
-                production: "http://20.29.40.108:4000/production",
+                staging: "http://130.131.160.149:4000/staging",
+                production: "http://130.131.160.149:4000/production",
             }
         );
         createAndUpdateConstant(
             "url",
-            "http://20.29.40.108:4000/development",
+            "http://130.131.160.149:4000/development",
             ["Secret"],
             ["development", "staging", "production"],
             {
-                staging: "http://20.29.40.108:4000/staging",
-                production: "http://20.29.40.108:4000/production",
+                staging: "http://130.131.160.149:4000/staging",
+                production: "http://130.131.160.149:4000/production",
             }
         );
         cy.apiCreateWorkspaceConstant(
@@ -82,13 +82,13 @@ describe("Workspace constants", () => {
 
         createAndUpdateConstant(
             "gconst",
-            "108",
+            "149",
             ["Global"],
             ["development", "staging", "production"]
         );
         cy.apiCreateWorkspaceConstant(
             "gconstUrl",
-            "http://20.29.40.108:4000/",
+            "http://130.131.160.149:4000/",
             ["Global"],
             ["development", "staging", "production"]
         );
@@ -136,7 +136,7 @@ describe("Workspace constants", () => {
         // Verify global const in static query URL and preview
         verifyGlobalConstInStaticQuery(
             '[data-cy="list-query-static_restapi_constants_url"]',
-            "http://20.29.40.108:4000/development"
+            "http://130.131.160.149:4000/development"
         );
         verifyStaticQueryPreview(
             '[data-cy="list-query-constants_runjs"]',
@@ -184,7 +184,7 @@ describe("Workspace constants", () => {
         cy.get('[data-cy="constants-button"]').click();
         verifyConstantValueVisibility(
             dataSourceSelector.baseUrlTextField,
-            "http://20.29.40.108:4000/development"
+            "http://130.131.160.149:4000/development"
         );
         verifyConstantValueVisibility(
             '[value="{{constants.restapiHeaderKey}}"]',

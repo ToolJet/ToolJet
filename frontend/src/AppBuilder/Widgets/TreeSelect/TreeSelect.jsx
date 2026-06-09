@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useId } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
@@ -14,6 +14,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import cx from 'classnames';
 import { Triangle } from 'lucide-react';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -60,11 +61,16 @@ const TreeSelect = ({
     autoLabelWidth,
     labelWidth,
     labelStyle = 'new',
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const containerRef = useRef(null);
+  const reactId = useId();
+  const inputId = `component-${reactId}`;
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -340,7 +346,7 @@ const TreeSelect = ({
       checkModel="all"
       noCascade={true}
       disabled={isDisabled}
-      id={`component-${id}`}
+      id={inputId}
       icons={{
         check: (
           <TreeSelectCheckbox
@@ -411,7 +417,7 @@ const TreeSelect = ({
         aria-disabled={isDisabled}
       >
         <div className="card-title" style={{ marginBottom: '0.5rem' }}>
-          <label htmlFor={`component-${id}`}>{label}</label>
+          <label htmlFor={inputId}>{label}</label>
         </div>
         {renderCheckboxTree()}
         {renderValidationError()}
@@ -456,7 +462,8 @@ const TreeSelect = ({
           defaultAlignment={defaultAlignment}
           darkMode={darkMode}
           isMandatory={isMandatory}
-          inputId={`component-${id}`}
+          inputId={inputId}
+          fontSize={labelFontSizeValue}
         />
         <div
           style={{

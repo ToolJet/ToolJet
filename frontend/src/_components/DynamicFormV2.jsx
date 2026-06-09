@@ -5,6 +5,7 @@ import Textarea from '@/_ui/Textarea';
 import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
+import OAuthWrapper from './OAuthWrapper';
 import Toggle from '@/_ui/Toggle';
 import ToggleV2 from '@/_ui/ToggleV2';
 import InputV3 from '@/_ui/Input-V3';
@@ -23,6 +24,7 @@ import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers.
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import { getAutoFillStrategy } from '@/_helpers/autoFillRegistry';
 import { useConnectionStringAutoFill } from '@/_hooks/useConnectionStringAutofill';
+import OracleWalletPicker from '@/_components/OracleWalletPicker';
 
 const DynamicFormV2 = ({
   schema,
@@ -42,6 +44,8 @@ const DynamicFormV2 = ({
   showValidationErrors,
   clearValidationErrorBanner,
   elementsProps = null,
+  createDataSource = null,
+  isSaving = false,
 }) => {
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
@@ -146,7 +150,7 @@ const DynamicFormV2 = ({
 
   const validateOptions = React.useCallback(async () => {
     try {
-      const { valid, errors } = await dsm.validateData(options);
+      const { valid, errors } = await dsm.validateData(options, selectedDataSource?.id, currentAppEnvironmentId);
 
       const conditionallyRequiredFields = processAllOfConditions(schema, options);
       setConditionallyRequiredProperties(conditionallyRequiredFields);
@@ -181,7 +185,25 @@ const DynamicFormV2 = ({
         clearValidationMessages();
         clearValidationErrorBanner();
       } else {
-        setValidationMessages(finalErrors, schema, interactedFields);
+        // Auto-mark fields that have errors as interacted so that allOf/if/then
+        // conditional required fields (e.g. username triggered by connection_type change)
+        // are shown without requiring the user to directly touch them.
+        // Compute the updated set locally so we can pass it to setValidationMessages
+        // in the same render — avoids a second validation cycle caused by the dep change.
+        const errorFields = finalErrors
+          .map((e) =>
+            e.keyword === 'required'
+              ? e.params?.missingProperty
+              : (e.instancePath || e.dataPath || '').replace(/^[./]/, '')
+          )
+          .filter(Boolean);
+        const updatedInteractedFields = errorFields.some((f) => !interactedFields.has(f))
+          ? new Set([...interactedFields, ...errorFields])
+          : interactedFields;
+        if (updatedInteractedFields !== interactedFields) {
+          setInteractedFields(updatedInteractedFields);
+        }
+        setValidationMessages(finalErrors, schema, updatedInteractedFields);
       }
     } catch (error) {
       console.error('Validation error:', error);
@@ -250,8 +272,7 @@ const DynamicFormV2 = ({
   React.useEffect(() => {
     if (showValidationErrors) {
       setHasUserInteracted(true);
-      const allFieldKeys = Object.keys(options);
-      setInteractedFields(new Set(allFieldKeys));
+      setInteractedFields(new Set(Object.keys(options)));
     }
   }, [showValidationErrors, options]);
 
@@ -396,6 +417,12 @@ const DynamicFormV2 = ({
         return SqlGroupBy;
       case 'react-component-sql-aggregate':
         return SqlAggregate;
+      case 'dropdown':
+        return Select;
+      case 'react-component-oracle-wallet':
+        return OracleWalletPicker;
+      case 'react-component-oauth':
+        return OAuthWrapper;
       // TODO: Move dropdown component flip logic to be handled here
       // case 'dropdown-component-flip':
       //   return Select;
@@ -405,7 +432,18 @@ const DynamicFormV2 = ({
   };
 
   const getElementProps = (uiProperties) => {
-    const { label, description, widget, required, width, key, help_text: helpText, list, buttonText } = uiProperties;
+    const {
+      label,
+      description,
+      widget,
+      required,
+      width,
+      key,
+      help_text: helpText,
+      list,
+      buttonText,
+      oauth_configs,
+    } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
@@ -420,7 +458,6 @@ const DynamicFormV2 = ({
         setHasUserInteracted(true);
       }
       setInteractedFields((prev) => new Set(prev).add(key));
-
       // Delegate manual edit tracking to the autofill hook
       if (autoFillStrategy) {
         handleManualFieldEdit(key, value);
@@ -475,12 +512,12 @@ const DynamicFormV2 = ({
           autoFillStrategy && key === autoFillStrategy.connectionStringKey && customValidation.valid !== null
             ? customValidation
             : skipValidation
-              ? { valid: null, message: '' }
-              : validationMessages[key]
-                ? { valid: false, message: validationMessages[key] }
-                : isRequired
-                  ? { valid: true, message: '' }
-                  : { valid: null, message: '' };
+            ? { valid: null, message: '' }
+            : validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' };
 
         return {
           propertyKey: key,
@@ -506,6 +543,21 @@ const DynamicFormV2 = ({
           labelDisabled: false,
         };
       }
+      case 'react-component-oauth':
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+          currentAppEnvironmentId,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          optionsChanged,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          scopes: options?.scopes?.value,
+          oauth_configs,
+        };
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;
         if (isGDS) {
@@ -557,6 +609,7 @@ const DynamicFormV2 = ({
           onChange: (e) => handleOptionChange(key, e.target.checked, true),
         };
       case 'toggle-flip':
+        // eslint-disable-next-line no-case-declarations
         const isEnabled = currentValue === 'enabled' || currentValue === true;
         return {
           checked: isEnabled,
@@ -607,6 +660,12 @@ const DynamicFormV2 = ({
           onChange: (value) => {
             optionchanged(key, [...value]);
           },
+        };
+      case 'react-component-oracle-wallet':
+        return {
+          value: options?.[key]?.value ?? '',
+          onChange: (val) => handleOptionChange(key, val),
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       default:
         return {};
@@ -814,7 +873,10 @@ const DynamicFormV2 = ({
                   className={cx({ 'flex-grow-1': isHorizontalLayout })}
                 >
                   {flipComponentDropdown.widget === 'toggle-flip' ? (
-                    <ToggleV2 {...getElementProps(flipComponentDropdown)} />
+                    <ToggleV2
+                      {...getElementProps(flipComponentDropdown)}
+                      dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                    />
                   ) : (
                     <Select
                       {...getElementProps(flipComponentDropdown)}

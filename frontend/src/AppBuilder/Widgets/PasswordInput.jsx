@@ -13,8 +13,7 @@ export const PasswordInput = (props) => {
   const TogglePasswordVisibilityIcon = !inputLogic.iconVisibility ? IconEye : IconEyeClosed;
 
   const passwordIcon = (
-    <div onClick={toggleVisibility}
-      data-cy={`password-visibility-icon`}>
+    <div onClick={toggleVisibility} data-cy={`password-visibility-icon`}>
       <TogglePasswordVisibilityIcon size={16} color="var(--icons-weak-disabled)" />
     </div>
   );

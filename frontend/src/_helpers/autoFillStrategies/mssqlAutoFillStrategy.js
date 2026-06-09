@@ -3,7 +3,7 @@ export const mssqlAutoFillStrategy = {
   connectionStringKey: 'connection_string',
   connectionTypeKey: 'connection_type',
   activeConnectionTypeValue: 'string',
-  autoFillableFields: ['host', 'port', 'database', 'username', 'password','azure', 'instance_name'],
+  autoFillableFields: ['host', 'port', 'database', 'username', 'password', 'azure', 'instance_name'],
 
   parse(connectionString) {
     const params = {};
@@ -11,12 +11,9 @@ export const mssqlAutoFillStrategy = {
 
     const trimmed = connectionString.trim();
 
-    const withoutScheme = /^sqlserver:\/\//i.test(trimmed)
-      ? trimmed.replace(/^sqlserver:\/\//i, '')
-      : trimmed;
+    const withoutScheme = /^sqlserver:\/\//i.test(trimmed) ? trimmed.replace(/^sqlserver:\/\//i, '') : trimmed;
 
-    const looksLikeHybrid = withoutScheme.includes(';') &&
-      !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
+    const looksLikeHybrid = withoutScheme.includes(';') && !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
 
     if (looksLikeHybrid) {
       const firstSemi = withoutScheme.indexOf(';');
@@ -31,7 +28,7 @@ export const mssqlAutoFillStrategy = {
         if (hostMatch[4]) params.port = parseInt(hostMatch[4], 10);
       }
 
-      rest.split(';').forEach(pair => {
+      rest.split(';').forEach((pair) => {
         if (!pair.includes('=')) return;
         const [key, ...valueParts] = pair.split('=');
         const value = valueParts.join('=').trim();
@@ -64,12 +61,9 @@ export const mssqlAutoFillStrategy = {
     }
 
     const trimmed = connectionString.trim();
-    const withoutScheme = /^sqlserver:\/\//i.test(trimmed)
-      ? trimmed.replace(/^sqlserver:\/\//i, '')
-      : trimmed;
+    const withoutScheme = /^sqlserver:\/\//i.test(trimmed) ? trimmed.replace(/^sqlserver:\/\//i, '') : trimmed;
 
-    const looksLikeHybrid = withoutScheme.includes(';') &&
-      !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
+    const looksLikeHybrid = withoutScheme.includes(';') && !/^[a-z ]+=/i.test(withoutScheme.split(';')[0]);
 
     if (!looksLikeHybrid) {
       return {
@@ -88,15 +82,16 @@ export const mssqlAutoFillStrategy = {
       if (connectionType === 'string' && err.keyword === 'if') {
         return false;
       }
+      const errPath = err.instancePath || err.dataPath || '';
       if (
         connectionType === 'string' &&
-        err.dataPath === '.connection_string' &&
+        (errPath === '/connection_string' || errPath === '.connection_string') &&
         err.keyword === 'required' &&
         err.schemaPath.includes('allOf')
       ) {
         return false;
       }
-      if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
+      if (connectionType === 'manual' && errPath.includes('connection_string')) {
         return false;
       }
       return true;

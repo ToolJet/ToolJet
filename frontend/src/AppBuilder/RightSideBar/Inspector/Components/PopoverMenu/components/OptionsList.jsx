@@ -16,12 +16,11 @@ const OptionsList = ({
   onDragEnd,
   getResolvedValue,
   getItemStyle,
-  // Configurable props for reuse
-  dataCyPrefix = 'inspector-popover-menu',
-  popoverFields,
-  popoverClassName,
+  config, // Configurable props for reuse
   ...restProps
 }) => {
+  const { dataCy: dataCyPrefix, addOptionCtaLabel } = config;
+
   return (
     <List data-cy={`${dataCyPrefix}-options-list`} style={{ marginBottom: '12px' }}>
       <DragDropContext
@@ -46,9 +45,7 @@ const OptionsList = ({
                     onOptionChange={onOptionChange}
                     getResolvedValue={getResolvedValue}
                     getItemStyle={getItemStyle}
-                    dataCyPrefix={dataCyPrefix}
-                    popoverFields={popoverFields}
-                    popoverClassName={popoverClassName}
+                    config={config}
                     {...restProps}
                   />
                 ))}
@@ -59,7 +56,7 @@ const OptionsList = ({
         </Droppable>
       </DragDropContext>
       <AddNewButton onClick={onAddOption} dataCy={`${dataCyPrefix}-add-new-option`} className="mt-0">
-        Add new option
+        {addOptionCtaLabel}
       </AddNewButton>
     </List>
   );

@@ -11,14 +11,7 @@ export const postgresqlAutoFillStrategy = {
   connectionTypeKey: 'connection_type',
   activeConnectionTypeValue: 'string',
 
-  autoFillableFields: [
-    'host',
-    'port',
-    'username',
-    'password',
-    'database',
-    'ssl_enabled',
-  ],
+  autoFillableFields: ['host', 'port', 'username', 'password', 'database', 'ssl_enabled'],
 
   parse(connectionString) {
     return parsePostgresConnectionString(connectionString);
@@ -38,16 +31,17 @@ export const postgresqlAutoFillStrategy = {
     return errors.filter((err) => {
       if (connectionType === 'string' && err.keyword === 'if') return false;
 
+      const errPath = err.instancePath || err.dataPath || '';
       if (
         connectionType === 'string' &&
-        err.dataPath === '.connection_string' &&
+        (errPath === '/connection_string' || errPath === '.connection_string') &&
         err.keyword === 'required' &&
         err.schemaPath.includes('allOf')
       ) {
         return false;
       }
 
-      if (connectionType === 'manual' && err.dataPath.includes('connection_string')) {
+      if (connectionType === 'manual' && errPath.includes('connection_string')) {
         return false;
       }
 

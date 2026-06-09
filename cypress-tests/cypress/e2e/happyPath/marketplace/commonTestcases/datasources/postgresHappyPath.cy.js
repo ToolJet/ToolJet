@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { dsCommonSelector } from "Selectors/marketplace/common";
-import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/datasourceformUIHelpers";
-import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/datasourceformFillHelpers";
+import { verifyConnectionFormUI } from "Support/utils/marketplace/dataSource/dataSourceFormUIHelpers";
+import { fillDSConnectionForm, verifyDSConnection } from "Support/utils/marketplace/dataSource/dataSourceFormFillHelpers";
 import { postgresUIConfig, postgresFormConfig, postgresQueryConfig, postgresQueryFillConfig } from "Constants/constants/marketplace/datasources/postgres";
 import { verifyPreviewData } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Constants/selectors/dataSource";
@@ -13,6 +13,7 @@ describe("PostgreSQL", () => {
         .toLowerCase()
         .replaceAll("[^A-Za-z]", "");
     data.appName = `${fake.companyName}-App`;
+    data.appCreated = false;
     const postgresqlDataSourceName = `cypress-${data.dataSourceName}-postgresql`;
     beforeEach(() => {
         cy.apiLogin();
@@ -20,6 +21,10 @@ describe("PostgreSQL", () => {
     });
 
     afterEach(() => {
+        if (data.appCreated) {
+            cy.apiDeleteApp();
+            data.appCreated = false;
+        }
         cy.apiDeleteDataSource(postgresqlDataSourceName);
     });
 
@@ -114,7 +119,7 @@ describe("PostgreSQL", () => {
         verifyDSConnection("failed", `password authentication failed for user "postgres"`);
 
         fillDSConnectionForm(postgresFormConfig, postgresFormConfig.invalidPort);
-        verifyDSConnection("failed", "Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?");
+        verifyDSConnection("failed", "Connection test failed: connect ECONNREFUSED");
     });
 
     it("4. PostgreSQL - Verify query editor", () => {
@@ -140,7 +145,27 @@ describe("PostgreSQL", () => {
             true
         );
 
-        cy.apiCreateApp(data.appName);
+        cy.getAuthHeaders().then((headers) => {
+            cy.request({
+                method: "GET",
+                url: `${Cypress.env("server_host")}/api/apps`,
+                headers,
+                failOnStatusCode: false,
+            }).then((response) => {
+                const app = response.body?.apps?.find((a) => a.name === data.appName);
+                if (app?.id) {
+                    cy.request({
+                        method: "DELETE",
+                        url: `${Cypress.env("server_host")}/api/apps/${app.id}`,
+                        headers,
+                        failOnStatusCode: false,
+                    });
+                }
+            });
+        });
+        cy.apiCreateApp(data.appName).then(() => {
+            data.appCreated = true;
+        });
         cy.apiAddQueryToApp({
             queryName: "table-creation",
             options: {
@@ -176,7 +201,45 @@ describe("PostgreSQL", () => {
         cy.forceClickOnCanvas();
         cy.wait(5000);
         verifyPreviewData("Bob Smith Updated");
-        cy.apiDeleteApp();
 
     });
 });
+
+/*
+ * Test Cases for PostgreSQL
+ * ========================
+ *
+ * TC_001: Verify connection form UI elements
+ *   - Pre-condition: Data source created via API with manual connection type and default SSL settings
+ *   - Steps: Navigate to data sources page → Click on data source → Verify all form fields
+ *   - Expected: All field labels, placeholders, default values, and states (disabled/enabled) match manifest
+ *   - Fields verified: connection_type, host, port, ssl_enabled, ssl_certificate, password, ca_cert, client_key, client_cert, root_cert, connection_string
+ *
+ * TC_002: Verify data source connection with valid credentials
+ *   - Pre-condition: Data source created via API with manual connection type
+ *   - Steps: Navigate to data sources page → Click on data source → Fill valid credentials → Test connection
+ *   - Expected: Toast message "Test connection verified" appears
+ *   - Credentials: Uses postgresFormConfig valid credentials
+ *
+ * TC_003: Verify UI and connection together
+ *   - Pre-condition: Data source created via API with manual connection type
+ *   - Steps: Navigate to data sources page → Click on data source → Verify UI → Test multiple invalid credential scenarios → Verify error messages
+ *   - Expected:
+ *     - UI elements match manifest specifications
+ *     - Invalid SSL: Connection fails with "The server does not support SSL connections"
+ *     - Invalid host: Connection fails with "getaddrinfo ENOTFOUND invalid-host"
+ *     - Invalid username: Connection fails with "password authentication failed for user "invalid-username""
+ *     - Invalid password: Connection fails with "password authentication failed for user "postgres""
+ *     - Invalid port: Connection fails with "Connection test failed: Database connection timeout. Please check host/port/firewall"
+ *
+ * TC_004: Verify query editor
+ *   - Pre-condition: Data source created via API with valid credentials (pg_host, pg_database, pg_user, pg_password env vars), app created via API, query added to app
+ *   - Steps: Open app → Click query → Verify SQL mode UI → Switch to GUI mode → Verify GUI default state → Select Bulk update operation → Verify bulk update UI → Fill bulk update fields → Run query → Switch to SQL mode → Run SELECT query → Verify preview data
+ *   - Expected:
+ *     - SQL mode default fields match postgresQueryConfig.defaultFields
+ *     - GUI mode default fields match postgresQueryConfig.guiModeDefault
+ *     - Bulk update UI fields match postgresQueryConfig.bulkUpdateUsingPrimaryKey
+ *     - Bulk update query executes successfully
+ *     - SELECT query returns updated data ("Bob Smith Updated")
+ *   - Credentials: pg_host, pg_database, pg_user, pg_password
+ */

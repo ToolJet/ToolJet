@@ -25,6 +25,11 @@ import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
+import {
+  parseParentIdAndSuffix,
+  remapParentIdForVersionCopy,
+  shouldSkipComponentOnVersionCopy,
+} from '../helpers/version-copy-parent.helper';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -33,7 +38,7 @@ export class VersionsCreateService implements IVersionsCreateService {
     protected readonly dataSourceUtilService: DataSourcesUtilService,
     protected readonly dataSourceRepository: DataSourcesRepository,
     protected readonly dataQueryRepository: DataQueryRepository
-  ) { }
+  ) {}
   async setupNewVersion(
     appVersion: AppVersion,
     versionFrom: AppVersion,
@@ -41,9 +46,9 @@ export class VersionsCreateService implements IVersionsCreateService {
     manager: EntityManager
   ): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
+      ((appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
         (appVersion.globalSettings = versionFrom.globalSettings),
-        (appVersion.pageSettings = versionFrom.pageSettings);
+        (appVersion.pageSettings = versionFrom.pageSettings));
       await manager.save(appVersion);
 
       const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -371,17 +376,6 @@ export class VersionsCreateService implements IVersionsCreateService {
     const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
-    const parseParentIdAndSuffix = (parentIdString: string) => {
-      if (!parentIdString) {
-        return { baseId: null, suffix: null };
-      }
-      const match = parentIdString.match(/([a-fA-F0-9-]{36})-(.+)/);
-      if (match) {
-        return { baseId: match[1], suffix: match[2] };
-      }
-      return { baseId: parentIdString, suffix: null };
-    };
-
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
       if (componentParentId) {
         const { baseId } = parseParentIdAndSuffix(componentParentId);
@@ -422,6 +416,16 @@ export class VersionsCreateService implements IVersionsCreateService {
           index: page.index,
           disabled: page.disabled,
           hidden: page.hidden,
+          pageHeader: page.pageHeader,
+          pageFooter: page.pageFooter,
+          icon: page.icon,
+          type: page.type,
+          openIn: page.openIn,
+          appId: page.appId,
+          url: page.url,
+          pageGroupId: page.pageGroupId,
+          pageGroupIndex: page.pageGroupIndex,
+          isPageGroup: page.isPageGroup,
           appVersionId: appVersion.id,
         })
       );
@@ -446,15 +450,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         await manager.save(newEvent);
       });
 
+      const originalPageComponents = page.components.filter(
+        (component) => !shouldSkipComponentOnVersionCopy(component)
+      );
+      const validComponentIds = new Set(page.components.map((component) => component.id));
+
       const tempNewComponents: Component[] = [];
-      for (const component of page.components) {
+      for (const component of originalPageComponents) {
         const newComponent = new Component();
         newComponent.id = uuid.v4();
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
         tempNewComponents.push(newComponent);
       }
 
-      for (const originalComponent of page.components) {
+      for (const originalComponent of originalPageComponents) {
         const newComponent = tempNewComponents.find(
           (c) => c.id === oldComponentToNewComponentMapping[originalComponent.id]
         );
@@ -487,28 +496,35 @@ export class VersionsCreateService implements IVersionsCreateService {
         }
 
         if (parentId) {
-          const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
-          const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
-          const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
+          // Preserve virtual container parents (canvas-header, canvas-footer) as-is
+          // These are not UUID-based and should not be remapped
+          if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
+            const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(
+              originalComponent,
+              originalPageComponents,
+              parentId
+            );
+            const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
+            const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, originalPageComponents);
 
-          if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
-            const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
+            if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
+              const { suffix } = parseParentIdAndSuffix(parentId);
+              parentId = remapParentIdForVersionCopy(
+                parentId,
+                oldComponentToNewComponentMapping,
+                validComponentIds,
+                suffix
+              );
+            } else if (isKanbanModalChildFlag) {
+              parentId = remapParentIdForVersionCopy(
+                parentId,
+                oldComponentToNewComponentMapping,
+                validComponentIds,
+                'modal'
+              );
             } else {
-              parentId = null;
+              parentId = remapParentIdForVersionCopy(parentId, oldComponentToNewComponentMapping, validComponentIds);
             }
-          } else if (isKanbanModalChildFlag) {
-            const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
-            const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-            if (mappedBaseParentId) {
-              parentId = `${mappedBaseParentId}-modal`;
-            } else {
-              parentId = null;
-            }
-          } else {
-            parentId = oldComponentToNewComponentMapping[parentId];
           }
         }
 

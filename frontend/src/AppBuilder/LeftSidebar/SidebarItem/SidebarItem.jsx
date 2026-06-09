@@ -36,8 +36,9 @@ export const SidebarItem = forwardRef(
     const content = (
       <Button
         {...rest}
-        className={`${className} ${selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
-          } ${icon}-icon`}
+        className={`${className} ${
+          selectedSidebarItem === icon && selectedSidebarItem !== 'comments' && 'sidebar-item--active'
+        } ${icon}-icon`}
         onClick={onClick && onClick}
         ref={ref}
         type="button"
@@ -77,7 +78,7 @@ export const SidebarItem = forwardRef(
   }
 );
 
-function CommentBadge () {
+function CommentBadge() {
   return (
     <svg
       className="comment-badge"
@@ -92,7 +93,7 @@ function CommentBadge () {
   );
 }
 
-function NotificationBadge ({ count }) {
+function NotificationBadge({ count }) {
   const fontSize = count > 999 ? '7.5px' : '8.5px';
   return (
     <>

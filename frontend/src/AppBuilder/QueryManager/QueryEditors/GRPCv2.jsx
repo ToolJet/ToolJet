@@ -51,7 +51,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     );
 
     return new Fuse(allMethods, {
-      keys: ['serviceLabel'], // Only search service names
+      keys: ['serviceLabel', 'label'],
       threshold: 0.3,
       shouldSort: true,
     });
@@ -139,7 +139,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
     // Use pre-computed search index
     const results = searchIndex.search(debouncedSearchTerm).map((r) => r.item);
 
-    // Group by service and include all methods
+    // Group by service, including only matched methods
     const grouped = {};
     results.forEach((method) => {
       const serviceKey = method.serviceValue;
@@ -151,9 +151,10 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
           value: originalService.value,
           type: originalService.type,
           service: originalService.service,
-          methods: originalService.methods, // Include all methods from the service
+          methods: [],
         };
       }
+      grouped[serviceKey].methods.push(method);
     });
 
     return Object.values(grouped);
@@ -219,7 +220,7 @@ const HierarchicalDropdown = ({ options, value, onChange, placeholder, disabled,
 
       {isOpen && (
         <div className="grpcv2-dropdown__menu">
-          {(isLoading || (options.length === 0 && !debouncedSearchTerm.trim())) ? (
+          {isLoading || (options.length === 0 && !debouncedSearchTerm.trim()) ? (
             <div className="grpcv2-dropdown__loading">Loading services...</div>
           ) : getFilteredOptions.length === 0 ? (
             <div className="grpcv2-dropdown__no-results">No results found</div>
@@ -552,10 +553,10 @@ const GRPCv2Component = ({ darkMode, selectedDataSource, ...restProps }) => {
                   options?.service && options?.method
                     ? `${options.service} → ${options.method}`
                     : isLoadingServices
-                      ? 'Loading services...'
-                      : hierarchicalOptions.length === 0
-                        ? 'No services found'
-                        : 'Select service'
+                    ? 'Loading services...'
+                    : hierarchicalOptions.length === 0
+                    ? 'No services found'
+                    : 'Select service'
                 }
                 disabled={
                   (!options?.service || !options?.method) && (isLoadingServices || hierarchicalOptions.length === 0)
@@ -728,8 +729,9 @@ const TabContent = ({
                 />
               </div>
               <button
-                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${darkMode ? 'delete-field-option-dark' : ''
-                  }`}
+                className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end qm-delete-btn ${
+                  darkMode ? 'delete-field-option-dark' : ''
+                }`}
                 role="button"
                 onClick={() => {
                   removeKeyValuePair(index);

@@ -59,7 +59,7 @@
     },
     "connection_string": {
       "type": "string",
-      "title": "Connection string",
+      "title": "Connection string (encoded)",
       "description": "postgres://username:password@hostname:port/database?sslmode=require"
     },
     "ca_cert": {
@@ -147,7 +147,7 @@
         }
       },
       "then": {
-        "required": ["host", "port", "username", "password"],
+        "required": ["host", "port", "username"],
         "allOf": [
           {
             "if": {
@@ -211,7 +211,7 @@
       "widget": "dropdown-component-flip",
       "list": [
         { "name": "Manual connection", "value": "manual" },
-        { "name": "Connection string", "value": "string" }
+        { "name": "Connection string (encoded)", "value": "string" }
       ]
     },
     "manual": {
@@ -258,7 +258,6 @@
         "label": "Password",
         "description": "Enter password",
         "widget": "password-v3",
-        "required": true,
         "help_text": "Supports secrets (e.g.,{{secrets.db_password}})"
       },
       "connection_options": {
@@ -422,11 +421,12 @@
         "order": 2,
         "$ref": "#/properties/connection_string",
         "key": "connection_string",
-        "label": "Connection string",
+        "label": "Connection string (encoded)",
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
         "widget": "password-v3-textarea",
-        "required": true
-      },
+        "required": true,
+        "help_text":"e.g., postgresql://admin:p%40ssword@localhost:5432/my%23db. Encode special characters using a <a href=\"https://meyerweb.com/eric/tools/dencoder/\" target=\"_blank\">URL encoder</a>."
+       },
       "host": {
         "order": 10,
         "$ref": "#/properties/host",

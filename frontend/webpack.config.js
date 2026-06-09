@@ -81,6 +81,12 @@ if (process.env.APM_VENDOR === 'sentry') {
         // The version should be same as what its when we are sending error events
         name: `tooljet-${version}`,
       },
+      sourcemaps: {
+        // Upload source maps to Sentry then delete them from the build output.
+        // This keeps stack traces readable in Sentry while preventing oversized
+        // .map files from being deployed (Cloudflare Pages has a 25 MiB limit).
+        filesToDeleteAfterUpload: ['**/*.js.map'],
+      },
     })
   );
 }
@@ -242,7 +248,7 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
@@ -258,7 +264,12 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: environment === 'development' ? 'eval-source-map' : 'hidden-source-map',
+  // In development: fast inline maps.
+  // In production with Sentry: hidden-source-map so Sentry can symbolicate errors
+  //   (sentryWebpackPlugin uploads then deletes the .map files from the build dir).
+  // In production without Sentry: skip map generation entirely — nothing consumes
+  //   them and they push individual chunks past Cloudflare Pages' 25 MiB limit.
+  devtool: environment === 'development' ? 'eval-source-map' : process.env.APM_VENDOR === 'sentry' ? 'hidden-source-map' : false,
   module: {
     rules: [
       {
@@ -325,10 +336,10 @@ module.exports = {
         ],
       },
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         resolve: {
-          extensions: ['.js', '.jsx'],
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
         },
         use: {
           loader: 'babel-loader',

@@ -11,17 +11,17 @@ export const datasourceService = {
   save,
   fetchOauth2BaseUrl,
   testSampleDb,
-  getDecryptedOptions,
+  validateOptions,
 };
 
-function getDecryptedOptions(options) {
+function validateOptions(dataSourceId, options, schema, environmentId) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify(options),
+    body: JSON.stringify({ options, schema, environment_id: environmentId }),
   };
-  return fetch(`${config.apiUrl}/data-sources/decrypt`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/${dataSourceId}/validate-options`, requestOptions).then(handleResponse);
 }
 
 function getAll(appVersionId, environment_id, includeStaticSources = false) {
@@ -95,13 +95,19 @@ function setOauth2Token(dataSourceId, body, current_organization_id) {
   ).then(handleResponse);
 }
 
-function fetchOauth2BaseUrl(provider, plugin_id = null, source_options = {}, environment_id = null, organization_id = null) {
-  const payload = { 
-    provider, 
-    ...(plugin_id && { plugin_id }), 
+function fetchOauth2BaseUrl(
+  provider,
+  plugin_id = null,
+  source_options = {},
+  environment_id = null,
+  organization_id = null
+) {
+  const payload = {
+    provider,
+    ...(plugin_id && { plugin_id }),
     ...(source_options && { source_options }),
     ...(environment_id && { environment_id }),
-    ...(organization_id && { organization_id })
+    ...(organization_id && { organization_id }),
   };
   const requestOptions = {
     method: 'POST',

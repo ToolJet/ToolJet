@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useId } from 'react';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
@@ -7,6 +7,7 @@ import { has, isObject } from 'lodash';
 import { getSafeRenderableValue } from '../utils';
 import {
   getWidthTypeOfComponentStyles,
+  getLabelFontSize,
   getLabelWidthOfInput,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 
@@ -21,10 +22,9 @@ export const RadioButtonV2 = ({
   validate,
   validation,
   id,
-  subContainerIndex,
-  dataCy
+  dataCy,
 }) => {
-  const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
+  const { label, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } = properties;
 
   const {
     activeColor,
@@ -39,9 +39,13 @@ export const RadioButtonV2 = ({
     labelColor,
     alignment,
     widthType,
+    labelFontSize,
   } = styles;
 
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
+
   const isInitialRender = useRef(true);
+  const reactId = useId();
 
   const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -191,14 +195,21 @@ export const RadioButtonV2 = ({
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
 
+  const computedLayoutStyles = {
+    height: '100%',
+    flexDirection: layout === 'wrap' ? 'row' : layout,
+    ...(layout === 'wrap' && { flexWrap: 'wrap', maxHeight: '100%', height: 'max-content' }),
+    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+  };
+
   return (
     <>
       <div
         data-disabled={isDisabled}
         className={cx('radio-button', 'd-flex', {
           [alignment === 'top' &&
-            ((labelWidth != 0 && label?.length != 0) ||
-              (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : '']: true,
           'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -209,6 +220,7 @@ export const RadioButtonV2 = ({
         style={{
           position: 'relative',
           width: '100%',
+          height: '100%',
           paddingLeft: '0px',
         }}
         role="radiogroup"
@@ -235,75 +247,74 @@ export const RadioButtonV2 = ({
           top={alignment !== 'top' && '2px'}
           widthType={widthType}
           inputId={`component-${id}`}
+          fontSize={labelFontSizeValue}
         />
 
-        <div
-          className="px-0 h-100"
-          ref={radioBtnRef}
-          style={{
-            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
-          }}
-        >
-          {isLoading || optionsLoadingState ? (
-            <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
-          ) : (
-            <div className="">
-              {selectOptions.map((option, index) => {
-                const isChecked = checkedValue == option.value;
-                const inputId = `${id}${subContainerIndex !== null || subContainerIndex !== undefined ? `-${subContainerIndex}` : ''
-                  }-option-${index}`;
+        {isLoading || optionsLoadingState ? (
+          <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
+        ) : (
+          <div
+            className="d-flex px-0"
+            ref={radioBtnRef}
+            style={{
+              ...computedLayoutStyles,
+              ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+            }}
+          >
+            {selectOptions.map((option, index) => {
+              const isChecked = checkedValue == option.value;
+              const inputId = `${reactId}-option-${index}`;
 
-                return (
-                  <label key={index} className="radio-button-container" htmlFor={inputId}>
-                    <span
-                      data-cy={`${dataCy}-option-label-${index}`}
-                      style={{
-                        color:
-                          optionsTextColor !== '#1B1F24'
-                            ? optionsTextColor
-                            : isDisabled || isLoading
-                              ? 'var(--text-disabled)'
-                              : 'var(--text-primary)',
-                      }}
-                    >
-                      {String(option.label)}
-                    </span>
-                    <input
-                      data-cy={`${dataCy}-option-input-${index}`}
-                      style={{
-                        marginTop: '1px',
-                        backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
-                      }}
-                      checked={checkedValue == option.value}
-                      type="radio"
-                      value={option.value}
-                      onChange={() => {
-                        onSelect(option.value);
-                        fireEvent('onSelectionChange');
-                      }}
-                      disabled={option.isDisabled}
-                      id={inputId}
-                    />
-                    <span
-                      className="checkmark"
-                      style={{
-                        backgroundColor:
-                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
-                        '--selected-background-color': option.isDisabled
-                          ? 'var(--surfaces-surface-03)'
-                          : switchOnBackgroundColor,
-                        '--selected-border-color': borderColor,
-                        '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
-                        border:
-                          !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
-                      }}
-                    ></span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </div>
+              return (
+                <label key={index} className="radio-button-container" htmlFor={inputId}>
+                  <span
+                    data-cy={`${dataCy}-option-label-${index}`}
+                    style={{
+                      color:
+                        optionsTextColor !== '#1B1F24'
+                          ? optionsTextColor
+                          : isDisabled || isLoading
+                          ? 'var(--text-disabled)'
+                          : 'var(--text-primary)',
+                    }}
+                  >
+                    {String(option.label)}
+                  </span>
+                  <input
+                    data-cy={`${dataCy}-option-input-${index}`}
+                    style={{
+                      marginTop: '1px',
+                      backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                    }}
+                    checked={checkedValue == option.value}
+                    type="radio"
+                    value={option.value}
+                    onChange={() => {
+                      onSelect(option.value);
+                      fireEvent('onSelectionChange');
+                    }}
+                    disabled={option.isDisabled}
+                    id={inputId}
+                  />
+                  <span
+                    className="checkmark"
+                    style={{
+                      backgroundColor:
+                        !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : switchOffBackgroundColor),
+                      '--selected-background-color': option.isDisabled
+                        ? 'var(--surfaces-surface-03)'
+                        : switchOnBackgroundColor,
+                      '--selected-border-color': borderColor,
+                      '--selected-handle-color': option.isDisabled ? 'var(--icons-default)' : handleColor,
+                      border:
+                        !isChecked && (option.isDisabled ? 'var(--surfaces-surface-03)' : `1px solid ${borderColor}`),
+                    }}
+                  ></span>
+                </label>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div
         className={`${isValid ? 'd-none' : visibility ? 'd-flex' : 'd-none'}`}

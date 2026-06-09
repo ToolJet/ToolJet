@@ -64,7 +64,7 @@ const DropDownSelect = ({
   loader,
   isLoading = false,
   columnDefaultValue = '',
-  setColumnDefaultValue = () => { },
+  setColumnDefaultValue = () => {},
   showControlComponent = false,
   placeholder = '',
   dataCy = 'show-ds-popover-button',
@@ -115,7 +115,7 @@ const DropDownSelect = ({
     // onChange && onChange(selected);
     const badges = document.querySelectorAll('.dd-select-value-badge');
     if (isEmpty(badges)) {
-      return () => { };
+      return () => {};
     }
     let isNewOverFlown = false;
     for (let i = 0; i < badges.length; i++) {
@@ -195,27 +195,28 @@ const DropDownSelect = ({
         <Popover
           key={'page.i'}
           id={popoverId.current}
-          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
-            } tjdb-workflow-query-editor-popover-index`}
+          className={`${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          } tjdb-workflow-query-editor-popover-index`}
           style={{
             width: isForeignKeyInEditCell
               ? '300px'
               : foreignKeyAccess
-                ? '403px'
-                : foreignKeyAccessInRowForm === true
-                  ? '494px'
-                  : isCellEdit
-                    ? '266px'
-                    : '244px',
+              ? '403px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '244px',
             maxWidth: isForeignKeyInEditCell
               ? '300px'
               : foreignKeyAccess
-                ? '403px'
-                : foreignKeyAccessInRowForm === true
-                  ? '494px'
-                  : isCellEdit
-                    ? '266px'
-                    : '246px',
+              ? '403px'
+              : foreignKeyAccessInRowForm === true
+              ? '494px'
+              : isCellEdit
+              ? '266px'
+              : '246px',
             overflow: 'hidden',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }}
@@ -368,8 +369,8 @@ const DropDownSelect = ({
                       {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer
                         ? topPlaceHolder
                         : placeholder
-                          ? placeholder
-                          : 'Select...'}
+                        ? placeholder
+                        : 'Select...'}
                     </span>
                   ) : (
                     ''

@@ -140,8 +140,9 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
   }
 
   async onInvalidSession(invitedUser: any, accountToken: string) {
-    const { status, source: organizationUserSource } = invitedUser;
-    if (accountToken && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(status as USER_STATUS)) {
+    const { source: organizationUserSource } = invitedUser;
+    const userStatus = invitedUser.user?.status;
+    if (accountToken && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(userStatus as USER_STATUS)) {
       /* User doesn't have a valid session & User didn't activate account yet */
       return invitedUser;
     } else {

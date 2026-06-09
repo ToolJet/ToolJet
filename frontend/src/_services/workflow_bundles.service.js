@@ -28,10 +28,14 @@ function getInstalledPackages(workflowId, language = 'javascript') {
 function getPackageStatus(workflowId, signal, language = 'javascript') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   if (signal) requestOptions.signal = signal;
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/${language}/status`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/${language}/status`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function updateExistingPackages(workflowId, language = 'javascript') {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify({}) };
-  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/${language}/rebuild`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workflows/${workflowId}/bundle/${language}/rebuild`, requestOptions).then(
+    handleResponse
+  );
 }

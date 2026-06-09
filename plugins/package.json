@@ -40,7 +40,6 @@
     "@tooljet-plugins/grpc": "file:packages/grpc",
     "@tooljet-plugins/grpcv2": "file:packages/grpcv2",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
-    "@tooljet-plugins/jira": "file:packages/jira",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
     "@tooljet-plugins/minio": "file:packages/minio",
@@ -66,7 +65,8 @@
     "@tooljet-plugins/twilio": "file:packages/twilio",
     "@tooljet-plugins/typesense": "file:packages/typesense",
     "@tooljet-plugins/woocommerce": "file:packages/woocommerce",
-    "@tooljet-plugins/zendesk": "file:packages/zendesk"
+    "@tooljet-plugins/zendesk": "file:packages/zendesk",
+    "snowflake-sdk": "^2.4.0"
   },
   "peerDependencies": {
     "form-data": "^4.0.0",

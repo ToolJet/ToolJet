@@ -30,7 +30,7 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
         handleDrop(item, currentDragCanvasId);
       },
     }),
-    [component.component]
+    [component.component, component.moduleId]
   );
 
   useEffect(() => {
@@ -46,10 +46,6 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
     }
   }, [isDragging, setShowModuleBorder, isModuleEditor, toggleRightSidebar]);
 
-  // const size = isModuleTab
-  //   ? component.module_container.layouts[currentLayout]
-  //   : component.defaultSize || { width: 30, height: 40 };
-
   return (
     <>
       <div
@@ -57,7 +53,11 @@ export const DragLayer = ({ index, component, isModuleTab = false, disabled = fa
         className={`draggable-box${disabled ? ' disabled' : ''}`}
         style={{ height: '100%', width: isModuleTab && '100%' }}
       >
-        {isModuleTab ? <ModuleWidgetBox module={component} /> : <WidgetBox index={index} component={component} />}
+        {isModuleTab ? (
+          <ModuleWidgetBox index={index} module={component} />
+        ) : (
+          <WidgetBox index={index} component={component} />
+        )}
       </div>
     </>
   );

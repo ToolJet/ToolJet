@@ -9,7 +9,11 @@ import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from '../BaseComponents/hooks/useInput';
+import {
+  getLabelFontSize,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '../BaseComponents/hooks/useInput';
 import { getDateLocale } from './localeUtils';
 
 const tinycolor = require('tinycolor2');
@@ -32,7 +36,7 @@ export const BaseDateComponent = ({
   customDateInputProps,
   id,
   showClearBtn,
-  dataCy
+  dataCy,
 }) => {
   const { i18n } = useTranslation();
   const currentLocale = getDateLocale(i18n.language);
@@ -56,7 +60,10 @@ export const BaseDateComponent = ({
     padding,
     errTextColor,
     widthType,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
   const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
@@ -67,26 +74,26 @@ export const BaseDateComponent = ({
         ? accentColor
         : 'var(--primary-accent-strong)'
       : fieldBorderColor != '#CCD1D5'
-        ? fieldBorderColor
-        : disable || loading
-          ? '1px solid var(--borders-disabled-on-white)'
-          : 'var(--borders-default)',
+      ? fieldBorderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
     '--tblr-input-border-color-darker': getModifiedColor(fieldBorderColor, 24),
     borderRadius: `${fieldBorderRadius || borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
       ? selectedTextColor
       : disable || loading
-        ? 'var(--text-disabled)'
-        : 'var(--text-primary)',
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     boxShadow: boxShadow,
     backgroundColor:
       fieldBackgroundColor != '#fff'
         ? fieldBackgroundColor
         : disable || loading
-          ? darkMode
-            ? 'var(--surfaces-app-bg-default)'
-            : 'var(--surfaces-surface-03)'
-          : 'var(--surfaces-surface-01)',
+        ? darkMode
+          ? 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-03)'
+        : 'var(--surfaces-surface-01)',
     paddingLeft: '10px',
     ...(iconVisibility && {
       ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
@@ -97,16 +104,17 @@ export const BaseDateComponent = ({
   const loaderStyles = {
     right:
       direction === 'right' &&
-        alignment === 'side' &&
-        ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+      alignment === 'side' &&
+      ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
         ? `${labelWidth + 11}px`
         : '11px',
-    top: `${alignment === 'top'
-      ? ((label?.length > 0 && labelWidth > 0) ||
-        (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
-      '50%'
-      : 'calc(50% - 7px)'
-      }`,
+    top: `${
+      alignment === 'top'
+        ? ((label?.length > 0 && labelWidth > 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
+          '50%'
+        : 'calc(50% - 7px)'
+    }`,
     transform:
       alignment === 'top' &&
       ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
@@ -133,7 +141,7 @@ export const BaseDateComponent = ({
     <div
       className={cx('d-flex datetimepicker-component', {
         [alignment === 'top' &&
-          ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+        ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
           ? 'flex-column'
           : 'align-items-center']: true,
         'flex-row-reverse': direction === 'right' && alignment === 'side',
@@ -160,6 +168,7 @@ export const BaseDateComponent = ({
         widthType={widthType}
         inputId={`component-${id}`}
         dataCy={dataCy}
+        fontSize={labelFontSizeValue}
       />
       <div
         className="px-0 h-100"

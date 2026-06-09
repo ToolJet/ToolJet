@@ -4,11 +4,11 @@ import './tagsInput.scss';
 import cx from 'classnames';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { ToolTip } from '@/_components/ToolTip';
 import { useEditorStore } from '@/_stores/editorStore';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -18,6 +18,7 @@ import TagsInputMenuList from './TagsInputMenuList';
 import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
 const TagsInput = ({
   id,
@@ -49,7 +50,6 @@ const TagsInput = ({
     optionsLoadingState,
     dynamicHeight,
     sort,
-    tooltip,
     enableSearch = true,
   } = properties;
 
@@ -70,6 +70,7 @@ const TagsInput = ({
     widthType,
     tagBackgroundColor,
     autoPickChipColor = true,
+    labelFontSize,
   } = styles;
 
   const isInitialRender = useRef(true);
@@ -90,6 +91,7 @@ const TagsInput = ({
   const [isTagsDisabled, setIsTagsDisabled] = useState(properties.disabledState);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
+  useShowValidationOnFormSubmit(setUserInteracted);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
 
@@ -121,13 +123,13 @@ const TagsInput = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-        .filter((data) => data?.visible ?? true)
-        .map((data) => ({
-          ...data,
-          label: getSafeRenderableValue(data?.label),
-          value: data?.value,
-          isDisabled: data?.disable ?? false,
-        }))
+          .filter((data) => data?.visible ?? true)
+          .map((data) => ({
+            ...data,
+            label: getSafeRenderableValue(data?.label),
+            value: data?.value,
+            isDisabled: data?.disable ?? false,
+          }))
       : [];
     return sortArray(_selectOptions, sort);
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
@@ -138,21 +140,24 @@ const TagsInput = ({
   }, [selectOptions, newTagsAdded]);
 
   // Color palette for auto pick chip color (matching Tags component)
-  const chipColorPalette = useMemo(() => [
-    { bg: '#40474D1A', text: '#40474D' }, // gray
-    { bg: '#CE27611A', text: '#CE2761' }, // pink
-    { bg: '#6745E21A', text: '#6745E2' }, // purple
-    { bg: '#2576CE1A', text: '#2576CE' }, // blue
-    { bg: '#1A9C6D1A', text: '#1A9C6D' }, // teal
-    { bg: '#69AF201A', text: '#69AF20' }, // green
-    { bg: '#F357171A', text: '#F35717' }, // orange
-    { bg: '#EB2E391A', text: '#EB2E39' }, // red
-    { bg: '#A438C01A', text: '#A438C0' }, // magenta
-    { bg: '#405DE61A', text: '#405DE6' }, // indigo
-    { bg: '#1E8FA31A', text: '#1E8FA3' }, // cyan
-    { bg: '#34A9471A', text: '#34A947' }, // lime
-    { bg: '#F191191A', text: '#F19119' }, // amber
-  ], []);
+  const chipColorPalette = useMemo(
+    () => [
+      { bg: '#40474D1A', text: '#40474D' }, // gray
+      { bg: '#CE27611A', text: '#CE2761' }, // pink
+      { bg: '#6745E21A', text: '#6745E2' }, // purple
+      { bg: '#2576CE1A', text: '#2576CE' }, // blue
+      { bg: '#1A9C6D1A', text: '#1A9C6D' }, // teal
+      { bg: '#69AF201A', text: '#69AF20' }, // green
+      { bg: '#F357171A', text: '#F35717' }, // orange
+      { bg: '#EB2E391A', text: '#EB2E39' }, // red
+      { bg: '#A438C01A', text: '#A438C0' }, // magenta
+      { bg: '#405DE61A', text: '#405DE6' }, // indigo
+      { bg: '#1E8FA31A', text: '#1E8FA3' }, // cyan
+      { bg: '#34A9471A', text: '#34A947' }, // lime
+      { bg: '#F191191A', text: '#F19119' }, // amber
+    ],
+    []
+  );
 
   // Create a stable color map for all options
   const optionColorMap = useMemo(() => {
@@ -230,7 +235,10 @@ const TagsInput = ({
     const newTag = { label: trimmedValue, value: trimmedValue };
     const updatedNewTags = [...newTagsAdded, newTag];
     setNewTagsAdded(updatedNewTags);
-    setExposedVariable('newTagsAdded', updatedNewTags.map(({ label, value }) => ({ label, value })));
+    setExposedVariable(
+      'newTagsAdded',
+      updatedNewTags.map(({ label, value }) => ({ label, value }))
+    );
 
     const newSelected = [...selected, newTag];
     setInputValues(newSelected);
@@ -256,7 +264,10 @@ const TagsInput = ({
     const hasDelimiters = value.includes(',') || value.includes(';');
     if (!hasDelimiters) return null;
 
-    const parts = value.split(/[,;]/).map((part) => part.trim()).filter(Boolean);
+    const parts = value
+      .split(/[,;]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
     return parts.length > 1 ? parts : null;
   };
 
@@ -275,7 +286,10 @@ const TagsInput = ({
     const newTag = { label: tagText, value: tagText };
     setNewTagsAdded((prev) => {
       const updated = [...prev, newTag];
-      setExposedVariable('newTagsAdded', updated.map(({ label, value }) => ({ label, value })));
+      setExposedVariable(
+        'newTagsAdded',
+        updated.map(({ label, value }) => ({ label, value }))
+      );
       return updated;
     });
     return newTag;
@@ -561,9 +575,7 @@ const TagsInput = ({
           const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
 
           // Find matching option by value first, then by label as fallback
-          const matchingOption = allOptions.find(
-            (option) => option.value === tagValue || option.label === tagLabel
-          );
+          const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
 
           if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
             newSelected.push(matchingOption);
@@ -582,9 +594,7 @@ const TagsInput = ({
         // Filter out options that match by value OR label
         const newSelected = selected.filter(
           (option) =>
-            !tagIdentifiers.some(
-              (identifier) => option.value === identifier.value || option.label === identifier.label
-            )
+            !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
         );
         setInputValues(newSelected);
       }
@@ -643,8 +653,7 @@ const TagsInput = ({
       ...provided,
       minHeight: _height,
       height: isDynamicHeightEnabled ? 'auto' : _height,
-      boxShadow:
-        state.isFocused || isMenuOpen ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}` : boxShadow,
+      boxShadow: state.isFocused || isMenuOpen ? `0 0 0 1px ${getInputFocusedColor({ accentColor })}` : boxShadow,
       borderRadius: Number.parseFloat(fieldBorderRadius),
       alignItems: 'flex-start',
       overflowY: isDynamicHeightEnabled ? 'visible' : 'auto',
@@ -724,16 +733,15 @@ const TagsInput = ({
       const { selectProps, data } = state;
       const options = selectProps?.options || [];
       const optionIndex = options.findIndex((opt) => opt.value === data?.value);
-      const isControlledFocused = selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
+      const isControlledFocused =
+        selectProps?.focusedOptionIndex >= 0 && optionIndex === selectProps?.focusedOptionIndex;
 
       // Use color-mix to get 50% of hover color (effectively 4% alpha from 8%)
       const hoverBgColor = 'color-mix(in srgb, var(--interactive-overlays-fill-hover) 50%, transparent)';
 
       return {
         ...provided,
-        backgroundColor: isControlledFocused
-          ? hoverBgColor
-          : 'var(--surfaces-surface-01)',
+        backgroundColor: isControlledFocused ? hoverBgColor : 'var(--surfaces-surface-01)',
         color: 'var(--text-primary)',
         opacity: state.isDisabled ? 0.3 : 1,
         cursor: 'pointer',
@@ -753,7 +761,7 @@ const TagsInput = ({
       flexDirection: 'column',
       overflowY: 'auto',
       backgroundColor: 'var(--surfaces-surface-01)',
-      padding: "4px",
+      padding: '4px',
     }),
     menu: (provided) => ({
       ...provided,
@@ -766,6 +774,7 @@ const TagsInput = ({
   };
 
   const _width = getLabelWidthOfInput(widthType, labelWidth);
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   // Filter options to exclude already selected and match input text
   const filteredOptions = useMemo(() => {
@@ -776,129 +785,128 @@ const TagsInput = ({
 
   return (
     <>
-      <ToolTip message={tooltip} show={!!tooltip}>
+      <div
+        ref={tagsRef}
+        data-cy={`label-${String(componentName).toLowerCase()}`}
+        className={cx('tags-input-widget', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : 'align-items-start']: true,
+          'flex-row-reverse': direction === 'right' && alignment === 'side',
+          'text-right': direction === 'right' && alignment === 'top',
+          invisible: !visibility,
+          visibility: visibility,
+        })}
+        style={{
+          position: 'relative',
+          whiteSpace: 'nowrap',
+          width: '100%',
+        }}
+        onMouseDown={() => {
+          onComponentClick(id);
+          useEditorStore.getState().actions.setHoveredComponent('');
+        }}
+      >
+        <Label
+          label={label}
+          width={labelWidth}
+          labelRef={labelRef}
+          darkMode={darkMode}
+          color={labelColor}
+          defaultAlignment={alignment}
+          direction={direction}
+          auto={auto}
+          isMandatory={isMandatory}
+          _width={_width}
+          top={alignment === 'side' ? '8px' : undefined}
+          widthType={widthType}
+          id={`${id}-label`}
+          fontSize={labelFontSizeValue}
+        />
         <div
-          ref={tagsRef}
-          data-cy={`label-${String(componentName).toLowerCase()}`}
-          className={cx('tags-input-widget', 'd-flex', {
-            [alignment === 'top' &&
-              ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
-              ? 'flex-column'
-              : 'align-items-start']: true,
-            'flex-row-reverse': direction === 'right' && alignment === 'side',
-            'text-right': direction === 'right' && alignment === 'top',
-            invisible: !visibility,
-            visibility: visibility,
-          })}
+          className={cx('px-0', { 'h-100': !isDynamicHeightEnabled })}
+          onClick={handleClickInside}
+          onTouchEnd={handleClickInside}
           style={{
-            position: 'relative',
-            whiteSpace: 'nowrap',
-            width: '100%',
-          }}
-          onMouseDown={() => {
-            onComponentClick(id);
-            useEditorStore.getState().actions.setHoveredComponent('');
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
+            ...(auto && {
+              flex: 1,
+              minWidth: 0,
+            }),
           }}
         >
-          <Label
-            label={label}
-            width={labelWidth}
-            labelRef={labelRef}
-            darkMode={darkMode}
-            color={labelColor}
-            defaultAlignment={alignment}
-            direction={direction}
-            auto={auto}
-            isMandatory={isMandatory}
-            _width={_width}
-            top={alignment === 'side' ? '8px' : undefined}
-            widthType={widthType}
-            id={`${id}-label`}
-          />
-          <div
-            className={cx('px-0', { 'h-100': !isDynamicHeightEnabled })}
-            onClick={handleClickInside}
-            onTouchEnd={handleClickInside}
-            style={{
-              ...getWidthTypeOfComponentStyles(widthType, labelWidth, auto, alignment),
-              ...(auto && {
-                flex: 1,
-                minWidth: 0,
-              }),
+          <CreatableSelect
+            ref={selectRef}
+            menuId={id}
+            isDisabled={isTagsDisabled}
+            value={selected}
+            onChange={onChangeHandler}
+            onCreateOption={handleCreate}
+            options={filteredOptions}
+            styles={customStyles}
+            aria-hidden={!visibility}
+            aria-disabled={isTagsDisabled}
+            aria-busy={isTagsLoading}
+            aria-required={isMandatory}
+            aria-invalid={!isValid}
+            id={`component-${id}`}
+            aria-labelledby={`${id}-label`}
+            aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
+            isLoading={isTagsLoading}
+            inputValue={inputValue}
+            onInputChange={handleInputChange}
+            menuIsOpen={enableSearch && isMenuOpen}
+            placeholder={placeholder}
+            formatCreateLabel={(input) => `add "${input}"`}
+            isValidNewOption={(input) => {
+              if (!allowNewTags || !input.trim()) return false;
+              // Don't show create option if label already exists (case-sensitive)
+              const trimmedInput = input.trim();
+              const labelExists = allOptions.some((opt) => opt.label === trimmedInput);
+              return !labelExists;
             }}
-          >
-            <CreatableSelect
-              ref={selectRef}
-              menuId={id}
-              isDisabled={isTagsDisabled}
-              value={selected}
-              onChange={onChangeHandler}
-              onCreateOption={handleCreate}
-              options={filteredOptions}
-              styles={customStyles}
-              aria-hidden={!visibility}
-              aria-disabled={isTagsDisabled}
-              aria-busy={isTagsLoading}
-              aria-required={isMandatory}
-              aria-invalid={!isValid}
-              id={`component-${id}`}
-              aria-labelledby={`${id}-label`}
-              aria-label={!auto && labelWidth == 0 && label?.length != 0 ? label : undefined}
-              isLoading={isTagsLoading}
-              inputValue={inputValue}
-              onInputChange={handleInputChange}
-              menuIsOpen={enableSearch && isMenuOpen}
-              placeholder={placeholder}
-              formatCreateLabel={(input) => `add "${input}"`}
-              isValidNewOption={(input) => {
-                if (!allowNewTags || !input.trim()) return false;
-                // Don't show create option if label already exists (case-sensitive)
-                const trimmedInput = input.trim();
-                const labelExists = allOptions.some((opt) => opt.label === trimmedInput);
-                return !labelExists;
-              }}
-              components={{
-                MultiValue: TagsInputChip,
-                ValueContainer: TagsInputValueContainer,
-                MenuList: (props) => (
-                  <TagsInputMenuList
-                    {...props}
-                    allowNewTags={allowNewTags}
-                    inputValue={inputValue}
-                    optionsLoadingState={optionsLoadingState && advanced}
-                    darkMode={darkMode}
-                    tagBackgroundColor={tagBackgroundColor}
-                    selectedTextColor={selectedTextColor}
-                    allOptions={allOptions}
-                    onCreateTag={handleCreate}
-                    autoPickChipColor={autoPickChipColor}
-                  />
-                ),
-                Option: TagsInputOption,
-                LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
-                DropdownIndicator: () => null,
-              }}
-              isClearable={false}
-              isMulti
-              hideSelectedOptions={true}
-              filterOption={(option, inputValue) => option.label?.includes(inputValue)}
-              closeMenuOnSelect={false}
-              tabSelectsValue={false}
-              onKeyDown={handleKeyDown}
-              menuPlacement="auto"
-              menuPortalTarget={document.body}
-              minMenuHeight={300}
-              // Custom props
-              allowNewTags={allowNewTags}
-              tagBackgroundColor={tagBackgroundColor}
-              selectedTextColor={selectedTextColor}
-              focusedOptionIndex={focusedOptionIndex}
-              autoPickChipColor={autoPickChipColor}
-              getChipColor={getChipColor}
-            />
-          </div>
+            components={{
+              MultiValue: TagsInputChip,
+              ValueContainer: TagsInputValueContainer,
+              MenuList: (props) => (
+                <TagsInputMenuList
+                  {...props}
+                  allowNewTags={allowNewTags}
+                  inputValue={inputValue}
+                  optionsLoadingState={optionsLoadingState && advanced}
+                  darkMode={darkMode}
+                  tagBackgroundColor={tagBackgroundColor}
+                  selectedTextColor={selectedTextColor}
+                  allOptions={allOptions}
+                  onCreateTag={handleCreate}
+                  autoPickChipColor={autoPickChipColor}
+                />
+              ),
+              Option: TagsInputOption,
+              LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
+              DropdownIndicator: () => null,
+            }}
+            isClearable={false}
+            isMulti
+            hideSelectedOptions={true}
+            filterOption={(option, inputValue) => option.label?.includes(inputValue)}
+            closeMenuOnSelect={false}
+            tabSelectsValue={false}
+            onKeyDown={handleKeyDown}
+            menuPlacement="auto"
+            menuPortalTarget={document.body}
+            minMenuHeight={300}
+            // Custom props
+            allowNewTags={allowNewTags}
+            tagBackgroundColor={tagBackgroundColor}
+            selectedTextColor={selectedTextColor}
+            focusedOptionIndex={focusedOptionIndex}
+            autoPickChipColor={autoPickChipColor}
+            getChipColor={getChipColor}
+          />
         </div>
-      </ToolTip>
+      </div>
       {userInteracted && visibility && !isValid && (
         <div
           className="d-flex"
