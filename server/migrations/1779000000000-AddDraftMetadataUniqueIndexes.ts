@@ -4,14 +4,17 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Enforces an instance-wide unique-slug invariant on default-branch DRAFT app
  * version rows, scoped by apps.type:
  *
- *   For status='DRAFT' AND branch_id IS NOT NULL AND version_type='version',
+ *   For status='DRAFT' AND version_type='version' (any branch_id),
  *   (slug, apps.type) must be globally unique.
  *
- * Rationale: slug-only lookups (no branch context) fall back to the workspace's
- * default branch via AppsRepository.findAppBySlug / findBySlug. Default-branch
- * editor rows are version_type='version' + branch_id IS NOT NULL + status=DRAFT.
- * Making the slug globally unique among those rows guarantees the fallback
- * resolves to exactly one row.
+ * Rationale: slug-only lookups (no branch context) fall back to the canonical
+ * editor row via AppsRepository.findAppBySlug / findBySlug. That row is
+ * version_type='version' + status=DRAFT — on git-on workspaces it sits on the
+ * default branch, but branch_id is deliberately NOT part of the predicate:
+ * git-off rows may carry a non-null branch_id (a workspace that toggled git
+ * sync off keeps branch_id on its rows) and never-git rows carry a null one.
+ * Keying on status+version_type alone guarantees the fallback resolves to
+ * exactly one row regardless of git state.
  *
  * apps.type is included so apps and modules can share slugs — they're different
  * product surfaces with separate dashboards. Since apps.type isn't a column on
@@ -41,7 +44,7 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS tmp_idx_av_dedupe_draft_slug
         ON app_versions (LOWER(slug))
-        WHERE status = 'DRAFT' AND branch_id IS NOT NULL AND version_type = 'version'
+        WHERE status = 'DRAFT' AND version_type = 'version'
     `);
 
     // Step 1: Dedupe (slug, apps.type) globally among default-branch DRAFT rows.
@@ -65,7 +68,6 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
             FROM app_versions av
             JOIN apps a ON a.id = av.app_id
             WHERE av.status = 'DRAFT'
-              AND av.branch_id IS NOT NULL
               AND av.version_type = 'version'
               AND av.slug IS NOT NULL
           ) ranked
@@ -79,7 +81,6 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
               FROM app_versions av2
               JOIN apps a2 ON a2.id = av2.app_id
               WHERE av2.status = 'DRAFT'
-                AND av2.branch_id IS NOT NULL
                 AND av2.version_type = 'version'
                 AND LOWER(av2.slug) = LOWER(new_value)
                 AND a2.type IS NOT DISTINCT FROM rec.app_type
@@ -106,7 +107,6 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
         v_app_type varchar;
       BEGIN
         IF NEW.status::text <> 'DRAFT'
-           OR NEW.branch_id IS NULL
            OR NEW.version_type::text <> 'version'
            OR NEW.slug IS NULL THEN
           RETURN NEW;
@@ -127,7 +127,6 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
           FROM app_versions av
           JOIN apps a ON a.id = av.app_id
           WHERE av.status::text = 'DRAFT'
-            AND av.branch_id IS NOT NULL
             AND av.version_type::text = 'version'
             AND LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
