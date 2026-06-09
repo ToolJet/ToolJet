@@ -25,10 +25,10 @@ Creates a new group in the organization.
 
 
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/scim/v2/Groups" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{}'`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/scim/v2/Groups" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{}'`} />
 
 <ResponseExample statusCode="201" body={`{
   "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],

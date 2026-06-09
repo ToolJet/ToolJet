@@ -26,10 +26,10 @@ Imports an application into a ToolJet workspace.
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/apps" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{}'`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/apps" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{}'`} />
 
 <ResponseExample statusCode="201" body={`{
   "message": "App imported successfully into workspace : <workspaceId>"

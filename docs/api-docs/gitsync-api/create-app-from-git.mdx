@@ -27,14 +27,14 @@ Creates a new ToolJet app from a GitHub repository.
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps?createMode=git" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "gitAppId": "app-123456",
-  "gitVersionId": "main",
-  "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8"
-}'`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps?createMode=git" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "gitAppId": "app-123456",
+      "gitVersionId": "main",
+      "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8"
+    }'`} />
 
 <ResponseExample statusCode="201" body={`{
   "app": {

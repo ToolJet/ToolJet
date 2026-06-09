@@ -26,9 +26,9 @@ Exports a module, including its definition and optionally the ToolJet Database t
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/export/workspace/{workspaceId}/modules/{moduleId}?exportTJDB=<exportTJDB>" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json"`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/export/workspace/{workspaceId}/modules/{moduleId}?exportTJDB=<exportTJDB>" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json"`} />
 
 <ResponseExample statusCode="200" body={`{
   "tooljet_database": [],

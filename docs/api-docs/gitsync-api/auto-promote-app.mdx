@@ -1,6 +1,6 @@
 ---
 id: auto-promote-app
-title: "Auto Promote App"
+title: "Promote App to Next Environment"
 ---
 
 <EndpointHeader method="POST" path="/apps/{appId}/promote" />
@@ -8,7 +8,7 @@ title: "Auto Promote App"
 <ApiColumns>
 <ApiLeft>
 
-Deploys an app by pulling the latest changes from Git and promoting the latest version to the production environment.
+Pulls the latest version of an app from the configured Git repository and promotes it to the next environment in your pipeline. Promotion moves the app forward by one step — for example, development → staging, or staging → production. It does not skip environments or jump directly to production. If there is no higher environment to promote to, the call returns a 500 error.
 
 
 <ParamsTable title="Path Parameters" params={[{"name":"appId","type":"string","required":true,"description":"ID of the app to promote.","in":"path"}]} />
@@ -25,9 +25,9 @@ Deploys an app by pulling the latest changes from Git and promoting the latest v
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appId}/promote" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json"`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appId}/promote" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json"`} />
 
 <ResponseExample statusCode="200" body={`{
   "editorEnvironment": {

@@ -1,6 +1,6 @@
 ---
 id: replace-user-workspace
-title: "Replace User Workspace"
+title: "Update User Configuration in Single Workspace"
 ---
 
 <EndpointHeader method="PATCH" path="/user/{id}/workspace/{workspaceId}" />
@@ -8,7 +8,7 @@ title: "Replace User Workspace"
 <ApiColumns>
 <ApiLeft>
 
-Updates a specific workspace relation for a user.
+Updates a user's role, status, or group assignments in a specific workspace. Only the workspace specified in the URL is affected — all other workspace memberships remain unchanged.
 
 <ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"UUID of the user.","in":"path"},{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
 
@@ -26,17 +26,17 @@ Updates a specific workspace relation for a user.
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{id}/workspace/{workspaceId}" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "status": "archived",
-  "groups": [
-    {
-      "name": "all_users"
-    }
-  ]
-}'`} />
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{id}/workspace/{workspaceId}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "status": "archived",
+      "groups": [
+        {
+          "name": "all_users"
+        }
+      ]
+    }'`} />
 
 **Response:** `200`
 
