@@ -89,8 +89,10 @@ const Container = React.memo(
     const flexRafRef = useRef(null);
 
     // // Monitor drag layer to update ghost position continuously
-    const { isDragging } = useDragLayer((monitor) => ({
+    const { isDragging, clientOffset, draggedItem } = useDragLayer((monitor) => ({
       isDragging: monitor.isDragging(),
+      clientOffset: monitor.getClientOffset(),
+      draggedItem: monitor.getItem(),
     }));
     // // // Cleanup ghost when drag ends
     useEffect(() => {
@@ -106,11 +108,42 @@ const Container = React.memo(
       }
     }, [id, isDragging, deactivateMoveableGhost, isFlexContainer, setFlexContainerDropTarget]);
 
+    useEffect(() => {
+      if (id !== 'canvas' || !isDragging || !clientOffset || !draggedItem?.component?.defaultSize) return;
+
+      const canvasArea = document.getElementsByClassName('tj-canvas-area')?.[0];
+      if (!canvasArea) return;
+
+      const canvasAreaRect = canvasArea.getBoundingClientRect();
+      const isPointerInsideCanvasArea =
+        clientOffset.x >= canvasAreaRect.left &&
+        clientOffset.x <= canvasAreaRect.right &&
+        clientOffset.y >= canvasAreaRect.top &&
+        clientOffset.y <= canvasAreaRect.bottom;
+
+      if (!isPointerInsideCanvasArea) return;
+
+      const hoveredCanvasId = findNewParentIdFromMousePosition(clientOffset.x, clientOffset.y, id);
+      if (hoveredCanvasId) {
+        setCurrentDragCanvasId(hoveredCanvasId);
+      } else {
+        setCurrentDragCanvasId('canvas');
+      }
+
+      const appCanvasWidth = realCanvasRef?.current?.offsetWidth || 0;
+      const componentSize = {
+        width: (appCanvasWidth * draggedItem.component.defaultSize.width) / NO_OF_GRIDS,
+        height: draggedItem.component.defaultSize.height,
+      };
+
+      activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
+    }, [id, isDragging, clientOffset, draggedItem, activateMoveableGhost, setCurrentDragCanvasId]);
+
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && ROW_SCOPED_WIDGET_TYPES.includes(componentType)) || currentMode === 'view';
     }, [index, componentType, currentMode]);
 
-    const [, drop] = useDrop({
+    const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
       canDrop: () => !isContainerReadOnly,
       hover: (item, monitor) => {
@@ -142,7 +175,11 @@ const Container = React.memo(
           width,
           height: item.component?.defaultSize?.height,
         };
-        if (clientOffset && id === 'canvas') {
+        // Activate ghost from any container (main canvas OR modal/sub-canvas) so that
+        // dropping a new widget directly into an open modal still produces a visible
+        // drag preview - main canvas hover never fires when its drop region is covered
+        // by the modal backdrop.
+        if (clientOffset) {
           activateMoveableGhost(componentSize, clientOffset, realCanvasRef);
         }
       },
