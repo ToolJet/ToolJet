@@ -154,6 +154,7 @@ export const DEFAULT_ERROR_MESSAGE = {
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
   RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
+  DEFAULT_BRANCH_LOCKED: 'Master branch is locked. Switch branch to update app slug.',
 };
 
 export const DATA_SOURCE_TYPE = {

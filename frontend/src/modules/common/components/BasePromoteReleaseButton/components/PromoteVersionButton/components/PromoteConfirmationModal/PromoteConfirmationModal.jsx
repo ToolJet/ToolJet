@@ -45,7 +45,6 @@ const PromoteConfirmationModal = React.memo(({ data, onClose, editingVersion }) 
     onClose();
     setShow(false);
   }, [promotingEnvironment, onClose]);
-  const allowAppEdit = useStore((state) => state.allowEditing);
 
   const handleConfirm = () => {
     setPromotingEnvironment(true);

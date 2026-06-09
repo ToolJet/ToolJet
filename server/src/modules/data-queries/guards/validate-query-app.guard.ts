@@ -26,6 +26,8 @@ export class ValidateQueryAppGuard implements CanActivate {
       const { id, versionId } = request.params;
       const appId = request.body?.app_id;
       const user: User = request.user;
+      // Forward x-branch-id so metadata overlay reflects the caller's active branch.
+      const branchId = (request.headers['x-branch-id'] as string) || undefined;
 
       if (!id && !versionId && !appId) {
         throw new BadRequestException();
@@ -40,7 +42,7 @@ export class ValidateQueryAppGuard implements CanActivate {
         app = await this.appsRepository.findByDataQuery(id, user?.organizationId, versionId);
       }
       if (!app && appId) {
-        app = await this.appsRepository.findById(appId, user?.organizationId, versionId);
+        app = await this.appsRepository.findById(appId, user?.organizationId, versionId, branchId);
       }
       if (!app && versionId) {
         app = await this.versionRepository.findAppFromVersion(versionId, user?.organizationId);

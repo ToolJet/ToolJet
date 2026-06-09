@@ -1,27 +1,5 @@
 import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
-export class AppGitCreateDto {
-  @IsString()
-  @IsNotEmpty()
-  appId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  versionId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  organizationGitId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  gitAppName: string;
-
-  @IsBoolean()
-  @IsOptional()
-  allowEditing: boolean;
-}
-
 export class AppGitPushDto {
   @IsString()
   gitAppName: string;
@@ -46,14 +24,8 @@ export class AppGitPushDto {
 
 export class AppGitPullDto {
   @IsString()
-  gitAppId: string;
-
-  @IsString()
-  gitVersionId: string;
-
-  @IsString()
   @IsOptional()
-  lastCommitMessage?: string;
+  gitAppId?: string;
 
   @IsString()
   @IsOptional()
@@ -61,27 +33,15 @@ export class AppGitPullDto {
 
   @IsString()
   @IsOptional()
-  lastCommitUser?: string;
+  gitAppName?: string;
 
   @IsString()
   @IsOptional()
-  lastPushDate?: string;
+  gitVersionName?: string;
 
   @IsString()
-  organizationGitId: string;
-
-  @IsString()
-  gitAppName: string;
-
-  @IsString()
-  gitVersionName: string;
-
-  @IsString()
-  appName: string;
-
-  @IsBoolean()
   @IsOptional()
-  allowEditing: boolean;
+  appName?: string;
 
   @IsString()
   @IsOptional()
@@ -98,25 +58,12 @@ export class AppGitPullDto {
 
 export class AppGitPullUpdateDto {
   @IsString()
-  gitVersionId: string;
+  @IsOptional()
+  gitAppName?: string;
 
   @IsString()
   @IsOptional()
-  lastCommitMessage?: string;
-
-  @IsString()
-  @IsOptional()
-  lastCommitUser?: string;
-
-  @IsString()
-  @IsOptional()
-  lastPushDate?: string;
-
-  @IsString()
-  gitAppName: string;
-
-  @IsString()
-  gitVersionName: string;
+  gitVersionName?: string;
 
   @IsOptional()
   gitBranchName?: string;
@@ -136,10 +83,7 @@ export class AppGitPullUpdateDto {
   @IsOptional()
   taggedVersionName?: string;
 }
-export class AppGitUpdateDto {
-  @IsBoolean()
-  allowEditing: boolean;
-}
+
 export class RenameAppOrVersionDto {
   @IsString()
   @IsNotEmpty()
@@ -157,6 +101,7 @@ export class RenameAppOrVersionDto {
   @IsOptional()
   remoteName: string;
 }
+
 export class AppCommitInfoDto {
   @IsString()
   @IsNotEmpty()

@@ -6,13 +6,17 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class CustomDomainsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { CustomDomainsController, CustomDomainsService, CloudflareProvider } = await this.getProviders(
       configs,
       'custom-domains',
       ['controller', 'service', 'providers/cloudflare-provider']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: CustomDomainsModule,
       imports: [],
       controllers: isMainImport ? [CustomDomainsController] : [],
@@ -24,6 +28,6 @@ export class CustomDomainsModule extends SubModule {
         CloudflareProvider,
       ],
       exports: [CustomDomainsService, CustomDomainCacheService],
-    };
+    });
   }
 }

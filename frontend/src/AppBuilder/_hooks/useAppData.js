@@ -22,7 +22,7 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getPreviewQueryParams, replaceEditorURL } from '@/_helpers/routes';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -472,7 +472,7 @@ const useAppData = (
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
-        if (initialLoadRef.current) {
+        if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
@@ -542,6 +542,14 @@ const useAppData = (
         };
         const newState = { ...currentState, ...pageInfo };
         window.history.replaceState(newState, '', window.location.href);
+
+        // Sync the browser URL if it was opened with the app UUID but the app has a proper slug
+        if (appData.slug && mode === 'edit' && !moduleMode) {
+          const currentUrlSlug = window.location.pathname.split('/apps/')[1]?.split('/')[0];
+          if (currentUrlSlug && currentUrlSlug !== appData.slug) {
+            replaceEditorURL(appData.slug, startingPage.handle);
+          }
+        }
 
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);

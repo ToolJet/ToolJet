@@ -39,10 +39,6 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.GIT_APP_VERSION_RENAME]: {
       license: LICENSE_FIELD.GIT_SYNC,
     },
-    // Used to update the permission to allow app edit for imported applications
-    [FEATURE_KEY.GIT_APP_CONFIGS_UPDATE]: {
-      license: LICENSE_FIELD.GIT_SYNC,
-    },
     // Used for fetching app configs
     [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: {},
 
