@@ -76,6 +76,19 @@ function buildComponentHints(storeState, moduleId) {
     }
 
     hints.push({ hint: `components.${name}`, type: 'Object' });
+
+    const compType = storeState.getComponentTypeFromId(id, moduleId);
+    if (compType === 'ModuleViewer' || compType === 'ModuleContainer') {
+      // Modules also expose flat output keys (components.<module>.<output>) for backward compatibility,
+      // but only the nested inputs and outputs formats are offered as suggestions.
+      ['inputs', 'outputs'].forEach((kind) => {
+        const sub = dataToTraverse[kind];
+        hints.push({ hint: `components.${name}.${kind}`, type: 'Object' });
+        hints.push(...traverseObjectToHints(sub, `components.${name}.${kind}`, 3));
+      });
+      return;
+    }
+
     hints.push(...traverseObjectToHints(dataToTraverse, `components.${name}`, 3));
   });
 
