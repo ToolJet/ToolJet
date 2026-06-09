@@ -5,9 +5,13 @@ title: Gmail
 
 The Gmail plugin lets you connect your Gmail account to ToolJet apps to send, read, and manage emails within your ToolJet application.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
-You will need the following credential to connect with Gmail:
+You will need the following credentials to connect with Gmail:
 - **Client ID**
 - **Client Secret**
 

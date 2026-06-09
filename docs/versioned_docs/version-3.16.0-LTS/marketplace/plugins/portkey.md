@@ -5,13 +5,13 @@ title: Portkey
 
 ToolJet can integrate with Portkey to access AI services such as text completion, chat completion, prompt completion, and embedding creation. This integration enables ToolJet to leverage Portkey's LMOps platform to develop, launch, maintain, and iterate on generative AI features.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 <div style={{textAlign: 'center', paddingBottom: '24px'}}>
     <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/overview.png" alt="Portkey Dashboard Overview" />
 </div>
-
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
-:::
 
 ## Connection
 
@@ -45,10 +45,12 @@ Portkey in ToolJet supports the following operations:
 This operation generates text completions based on a given prompt.
 
 #### Required Parameters:
+
 - **Prompt**: The input text to generate completions for.
 - **Model**: The AI model to use.
 
 #### Optional Parameters:
+
 - **Max Tokens**: Maximum number of tokens to generate.
 - **Temperature**: Controls randomness.
 - **Stop Sequences**: Sequences where the API will stop generating further tokens.
@@ -92,10 +94,12 @@ This operation generates text completions based on a given prompt.
 This operation generates chat completions based on a series of messages.
 
 #### Required Parameters:
+
 - **Messages**: An array of message objects representing the conversation.
 - **Model**: The AI model to use.
 
 #### Operational Parameters:
+
 - **Max Tokens**: Maximum number of tokens to generate.
 - **Temperature**: Controls randomness.
 - **Stop Sequence**: Sequences where the API will stop generating further tokens.
@@ -142,9 +146,11 @@ This operation generates chat completions based on a series of messages.
 This operation generates completions based on a pre-defined prompt.
 
 #### Required Parameter:
+
 - **Prompt ID**: The ID of the pre-defined prompt to use.
 
 #### Optional Parameters:
+
 - **Variables**: Variables to be used in the prompt.
 - **Parameters**: Additional parameters for the prompt completion.
 - **Metadata**: Additional metadata for the request.
@@ -189,10 +195,12 @@ This operation generates completions based on a pre-defined prompt.
 This operation creates embeddings for given input text.
 
 #### Required Parameters:
+
 - **Input**: The input text to create embeddings for.
 - **Model**: The AI model to use for creating embeddings.
 
 #### Optional Parameters:
+
 - **Metadata**: Additional metadata for the request.
 - **Config**: Configuration options for the request.
 - **Virtual Key**: A specific virtual key to use for the request, overriding the default.

@@ -7,11 +7,15 @@ title: PrestoDB
 
 ToolJet allows you to connect to your PrestoDB database to perform SQL queries and retrieve data.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect to a PrestoDB data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
 
-To connect to your PrestoDB database, the following details are required:
+To connect to your PrestoDB database, the following credentials are required:
 
 - **Username**
 - **Password**
