@@ -271,6 +271,60 @@ const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'N
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
+const TOOLTIP_FORMAT_COMPONENT_TYPES = [
+  'Accordion',
+  'AudioRecorder',
+  'Button',
+  'ButtonGroupV2',
+  'Camera',
+  'Checkbox',
+  'CircularProgressBar',
+  'ColorPicker',
+  'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'Divider',
+  'DropdownV2',
+  'EmailInput',
+  'FileButton',
+  'FileInput',
+  'FilePicker',
+  'Form',
+  'Icon',
+  'IFrame',
+  'Image',
+  'JSONEditor',
+  'JSONExplorer',
+  'Kanban',
+  'KeyValuePair',
+  'Link',
+  'Listview',
+  'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'PopoverMenu',
+  'ProgressBar',
+  'RadioButtonV2',
+  'RangeSliderV2',
+  'ReorderableList',
+  'StarRating',
+  'Statistics',
+  'Tabs',
+  'Tags',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TextInput',
+  'TimePicker',
+  'ToggleSwitchV2',
+  'TreeSelect',
+  'VerticalDivider',
+];
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -491,9 +545,18 @@ export class AppImportExportService {
         versionIdentifier: moduleComponent.properties?.moduleVersionId?.value,
       }));
 
+      // Deduplicate: multiple ModuleViewer components may reference the same module.
+      // Keep one entry per unique moduleId (co_relation_id).
+      const seenExportModuleIds = new Set<string>();
+      const uniqueModuleAppIds = moduleAppIds.filter((m) => {
+        if (!m.moduleId || seenExportModuleIds.has(m.moduleId)) return false;
+        seenExportModuleIds.add(m.moduleId);
+        return true;
+      });
+
       // moduleAppId.value stores co_relation_id after migration — resolve to real DB ids
       // so this.export() can fetch the module app correctly.
-      const coRelationIds = moduleAppIds.map((m) => m.moduleId).filter(Boolean);
+      const coRelationIds = uniqueModuleAppIds.map((m) => m.moduleId).filter(Boolean);
       const moduleAppsById: Record<string, string> = {};
       if (coRelationIds.length > 0) {
         const resolvedModules = await manager
@@ -520,7 +583,7 @@ export class AppImportExportService {
 
       const moduleApps = [];
       await Promise.all(
-        moduleAppIds.map(async (moduleAppId) => {
+        uniqueModuleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
 
           let versionDbId: string | undefined;
@@ -716,7 +779,18 @@ export class AppImportExportService {
 
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
-      for (const importedModule of appParams.modules) {
+      // Deduplicate: the export may include the same module once per ModuleViewer
+      // component that references it. Keep only the first occurrence keyed by
+      // co_relation_id (preferred) or name (fallback).
+      const seenModuleKeys = new Set<string>();
+      const uniqueModules = appParams.modules.filter((m: any) => {
+        const key = m?.appV2?.co_relation_id || m?.appV2?.name;
+        if (!key || seenModuleKeys.has(key)) return false;
+        seenModuleKeys.add(key);
+        return true;
+      });
+
+      for (const importedModule of uniqueModules) {
         // Prefer passport match (survives renames and cross-lineage name collisions).
         const existingModule =
           (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
@@ -3733,6 +3807,10 @@ function migrateProperties(
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {
+    properties.tooltipFormat = { value: 'plainText' };
   }
 
   if (!tooljetVersion) {
