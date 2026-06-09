@@ -207,52 +207,39 @@ export const deleteAppHistoryForStructuralMigration = async (
     let batchNumber = 0;
 
     // app_history has a self-referential FK: parent_id → app_history.id.
-    // Deltas are always leaf nodes (nothing references them). Snapshots are
-    // always parents of deltas, including "restoration snapshots" which are
-    // created by restoreToPoint() with parent_id IS NOT NULL (pointing to the
-    // target entry). Using parent_id IS NOT NULL as the first-pass filter would
-    // incorrectly include restoration snapshots and trigger the FK when their
-    // deltas are still alive. Using history_type = 'delta' is the correct filter.
+    // The data can have irregular parent references due to a historical bug in
+    // restoreToPoint() that set parentId = targetEntry.id (where targetEntry
+    // could be a delta, not just a snapshot). This means any row type can
+    // reference any other row type, so filtering by history_type or parent_id
+    // is unreliable.
     //
-    // Two-pass delete:
-    //   Pass 1 (history_type = 'delta'): removes all leaf delta rows.
-    //   Pass 2 (no filter): removes remaining snapshot rows, which are now
-    //     unreferenced since all their delta children are gone.
-    const queries = [
-      // Pass 1: delete delta rows (leaf nodes — they never have children).
-      // Using history_type = 'delta' rather than parent_id IS NOT NULL because
-      // restoration snapshots also have parent_id IS NOT NULL but ARE parents of
-      // subsequent deltas; deleting them first would trigger the FK.
-      `DELETE FROM app_history
-           WHERE id IN (
-             SELECT id FROM app_history
-             WHERE app_version_id = ANY($1)
-               AND history_type = 'delta'
-             LIMIT $2
-           )`,
-      // Pass 2: delete remaining rows (all snapshots). All deltas are gone by
-      // this point so nothing references these snapshot ids anymore.
-      `DELETE FROM app_history
-           WHERE id IN (
-             SELECT id FROM app_history
-             WHERE app_version_id = ANY($1)
-             LIMIT $2
-           )`,
-    ];
+    // Strategy: repeatedly delete only true leaf nodes — rows in the affected
+    // app versions that are not currently referenced by any other row's parent_id.
+    // Each iteration peels one layer of leaves off the tree until all rows are gone.
+    // The NOT EXISTS subquery is unfiltered by app_version_id so cross-version
+    // references (shouldn't exist, but defensive) also prevent deletion.
+    const leafDeleteSql = `
+      DELETE FROM app_history
+      WHERE id IN (
+        SELECT h.id FROM app_history h
+        WHERE h.app_version_id = ANY($1)
+          AND NOT EXISTS (
+            SELECT 1 FROM app_history child WHERE child.parent_id = h.id
+          )
+        LIMIT $2
+      )`;
 
-    for (const sql of queries) {
-      while (true) {
-        const result = await entityManager.query(sql, [appVersionIds, batchSize]);
+    while (true) {
+      const result = await entityManager.query(leafDeleteSql, [appVersionIds, batchSize]);
 
-        const deleted: number = result[1] ?? 0;
-        if (deleted === 0) break;
+      const deleted: number = result[1] ?? 0;
+      if (deleted === 0) break;
 
-        totalDeleted += deleted;
-        batchNumber++;
-        console.log(
-          `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
-        );
-      }
+      totalDeleted += deleted;
+      batchNumber++;
+      console.log(
+        `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
+      );
     }
 
     console.log(
