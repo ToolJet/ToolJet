@@ -1418,9 +1418,11 @@ export class AppsUtilService implements IAppsUtilService {
           throw new BadRequestException(`No DRAFT version found for app ${app.id} on branch ${branchId}.`);
         }
       } else {
-        // Git off: pick any version row — every row carries identical metadata.
+        // Git off: pick any VERSION-type row under the app — every row carries
+        // identical metadata. branch_id is always NULL in this mode, so it is
+        // deliberately NOT part of the filter.
         source = await manager.findOne(AppVersion, {
-          where: { appId: app.id },
+          where: { appId: app.id, versionType: AppVersionType.VERSION },
           order: { updatedAt: 'DESC' },
           select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
         });

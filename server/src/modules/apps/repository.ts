@@ -313,7 +313,7 @@ export class AppsRepository extends Repository<App> {
     // Source resolution for the per-app metadata join (av_meta):
     //   - branchId supplied:        most recent row on that exact branch
     //   - no branchId, git enabled: most recent row on the workspace's default branch
-    //   - no branchId, git off:     most recent slug-bearing row across all versions
+    //   - no branchId, git off:     most recent VERSION-type row under the app (any branch_id)
     // Workflows COALESCE through to apps.* since they don't carry metadata on versions.
     if (branchId) {
       qb.addSelect('av_meta.app_name AS name')
@@ -353,9 +353,9 @@ export class AppsRepository extends Repository<App> {
         qb.leftJoin(
           'app_versions',
           'av_meta',
-          `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
+          `av_meta.app_id = app.id AND av_meta.version_type = 'version' AND av_meta.id = (
             SELECT av_inner.id FROM app_versions av_inner
-            WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
+            WHERE av_inner.app_id = app.id AND av_inner.version_type = 'version'
             ORDER BY av_inner.updated_at DESC
             LIMIT 1
           )`
@@ -368,7 +368,7 @@ export class AppsRepository extends Repository<App> {
 
   // Lists every module in a workspace with branch-aware metadata overlay.
   //   - git enabled (workspace has a default branch) → metadata from the default branch row
-  //   - git off                                      → metadata from any slug-bearing row
+  //   - git off                                      → metadata from any VERSION-type row
   // No branchId parameter: modules are workspace-wide listings, not branch-scoped lookups.
   // defaultBranchId — caller-supplied; null when git-sync is off.
   async findAllOrganizationModules(
@@ -402,9 +402,9 @@ export class AppsRepository extends Repository<App> {
       qb.leftJoin(
         'app_versions',
         'av_meta',
-        `av_meta.app_id = app.id AND av_meta.slug IS NOT NULL AND av_meta.id = (
+        `av_meta.app_id = app.id AND av_meta.version_type = 'version' AND av_meta.id = (
           SELECT av_inner.id FROM app_versions av_inner
-          WHERE av_inner.app_id = app.id AND av_inner.slug IS NOT NULL
+          WHERE av_inner.app_id = app.id AND av_inner.version_type = 'version'
           ORDER BY av_inner.updated_at DESC
           LIMIT 1
         )`
@@ -539,7 +539,10 @@ export class AppsRepository extends Repository<App> {
         status: AppVersionStatus.DRAFT,
       });
     } else {
-      qb.andWhere('av.slug IS NOT NULL');
+      // Git off: metadata lives on VERSION-type rows. branch_id is always NULL
+      // in this mode, so it is deliberately NOT part of the filter — pick any
+      // version-type row under the app.
+      qb.andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION });
     }
 
     const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
