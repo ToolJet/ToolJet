@@ -151,6 +151,27 @@ const useIconList = ({ exposedComponentsVariables, componentIdNameMapping, expos
         ];
       }
 
+      if (!isEmpty(component) && ['ModuleViewer', 'ModuleContainer'].includes(component.component)) {
+        const icons = [];
+
+        Object.entries(componentExposedVariables).forEach(([key]) => {
+          if (!['id', 'inputs', 'outputs'].includes(key)) {
+            icons.push({
+              iconName: key,
+              absolutePath: `components.${component.name}.${key}`,
+              jsx: ({ height = 16, width = 16 }) => (
+                <Icon name={'warning'} height={height} width={width} fill="#DB4324" />
+              ),
+              className: 'component-icon',
+              tooltipMessage: 'This attribute will be deprecated soon, You can use outputs as an alternative',
+              isInfoIcon: true,
+            });
+          }
+        });
+
+        return icons;
+      }
+
       return [];
     })
     .flat()

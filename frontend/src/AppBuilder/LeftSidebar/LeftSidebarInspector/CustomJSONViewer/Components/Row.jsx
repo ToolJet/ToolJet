@@ -14,8 +14,10 @@ import { copyToClipboard, extractComponentName, formatPathForCopy } from '../../
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 
-const renderNodeIcons = (node, iconsList, darkMode) => {
-  const icon = iconsList.filter((icon) => icon?.iconName === node)[0];
+const renderNodeIcons = (node, absolutePath, iconsList, darkMode) => {
+  const icon = iconsList.filter(
+    (icon) => icon?.iconName === node && (icon?.absolutePath ? icon?.absolutePath === absolutePath : true)
+  )[0];
 
   if (icon && icon.jsx) {
     if (icon?.tooltipMessage) {
@@ -82,7 +84,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
             data-cy={`inspector-${generateCypressDataCy(label || '')}-label`}
           >
             <OverflowTooltip style={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-              {renderNodeIcons(label, iconsList, darkMode)}
+              {renderNodeIcons(label, absolutePath, iconsList, darkMode)}
               {label}
             </OverflowTooltip>
           </div>

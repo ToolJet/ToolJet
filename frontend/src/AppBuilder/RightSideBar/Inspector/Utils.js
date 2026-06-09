@@ -3,6 +3,7 @@ import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
 import { LabeledDivider } from './Components/Form/_components';
+import { getPrivateRoute, getSubpath } from '@/_helpers/routes';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -251,3 +252,13 @@ export function renderElement(
     />
   );
 }
+
+export const goToModule = (moduleAppId) => {
+  const subpath = getSubpath();
+  const slug =
+    moduleAppId === undefined || moduleAppId === null || `${moduleAppId}`.trim() === '' ? '__invalid__' : moduleAppId;
+  const appPath = getPrivateRoute('editor', { slug });
+  const path = subpath ? `${subpath}${appPath}` : appPath;
+
+  window.open(path, '_blank', 'noopener,noreferrer');
+};
