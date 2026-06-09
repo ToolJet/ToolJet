@@ -49,7 +49,7 @@ async function listSavedVersionsOnDefaultBranch(
   if (!defaultBranch) {
     // Non-git-sync workspace: versions have branch_id = NULL.
     return manager.find(AppVersion, {
-      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
+      where: { appId: moduleApp.id, branchId: IsNull(), versionType: AppVersionType.VERSION, isStub: false },
       order: { createdAt: 'DESC' },
     });
   }
@@ -156,10 +156,10 @@ export async function resolveModuleRef(
     });
     return (
       draft ??
-      manager.findOne(AppVersion, {
+      (await manager.findOne(AppVersion, {
         where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
         order: { createdAt: 'DESC' },
-      })
+      }))
     );
   }
   return manager.findOne(AppVersion, {
@@ -477,7 +477,7 @@ export async function resolveAllModuleViewersForVersion(
             r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
-      } else if (!isGitSyncEnabled) {
+      } else {
         // Non-git-sync: defaultBranch === null means no WorkspaceBranch rows exist.
         const onNullBranch = candidates.find(
           (r) => r.moduleReferenceId === pin && r.branchId === null && r.isStub === false
