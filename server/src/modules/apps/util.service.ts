@@ -712,15 +712,12 @@ export class AppsUtilService implements IAppsUtilService {
             },
           ]);
         } else {
-          // Non-git-sync flow: all version rows of this app share the same metadata.
-          // Update every app_versions row for this app — no version_type or
-          // branch_id filter — so slug/name/icon/is_public stay in sync across
-          // VERSION rows, BRANCH rows, and any stale non-null branch_id rows
-          // left behind by a previous git-sync session. findAppBySlug's
-          // branchless fallback resolves by app_id without caring which row
-          // back-ed the slug, so keeping all rows consistent is the safest
-          // invariant when git is off.
-          await manager.update(AppVersion, { appId }, versionParams);
+          // Non-git-sync flow: all version_type='version' rows of this app share
+          // the same metadata. Propagate to every version-type row (the canonical
+          // DRAFT plus published snapshots) so slug/name/icon/is_public stay in
+          // sync regardless of which row backs a slug lookup. Scoped to
+          // version_type='version' per the cross-version metadata invariant.
+          await this.versionRepository.syncMetadataAcrossVersions(appId, versionParams, manager);
         }
       }
 
@@ -731,6 +728,20 @@ export class AppsUtilService implements IAppsUtilService {
         }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
       }
     }, manager);
+  }
+
+  /**
+   * Public passthrough to VersionRepository.syncMetadataAcrossVersions so callers
+   * that already depend on this service (e.g. the platform git pull/hydrate path)
+   * can enforce the cross-version metadata invariant without wiring the versions
+   * repository in directly. See the repository method for semantics.
+   */
+  async syncVersionMetadata(
+    appId: string,
+    metadata: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean },
+    manager?: EntityManager
+  ): Promise<void> {
+    return this.versionRepository.syncMetadataAcrossVersions(appId, metadata, manager);
   }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {

@@ -244,6 +244,17 @@ export class VersionUtilService implements IVersionUtilService {
     // Step 2: detach branch_id from the just-published row. Delegated via the
     // repository to keep the DB write centralised.
     await this.versionRepository.updateVersion(appVersion.id, { branchId: null }, manager);
+
+    // Step 3: enforce the cross-version metadata invariant. Publishing created a
+    // fresh DRAFT and left the just-published snapshot behind; older published
+    // snapshots may still carry stale metadata from earlier publishes. Sync all
+    // version_type='version' rows to the new DRAFT's metadata so every snapshot
+    // matches the current app-level metadata.
+    await this.versionRepository.syncMetadataAcrossVersions(
+      appVersion.appId,
+      { appName: newDraft.appName, slug: newDraft.slug, icon: newDraft.icon, isPublic: newDraft.isPublic },
+      manager
+    );
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
