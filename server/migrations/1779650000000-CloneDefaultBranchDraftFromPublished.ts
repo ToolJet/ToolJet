@@ -22,14 +22,27 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *   2. Otherwise pick the latest PUBLISHED VERSION-type, branchless
  *      (branch_id IS NULL) row — newest by updated_at, one per app_id.
  *   3. Clone that row verbatim into a new row, overriding only:
- *        - id           → fresh UUID (primary key)
- *        - name         → fresh UUID (kept unique per (name, app_id))
- *        - branch_id    → default branch id
- *        - status       → DRAFT
- *        - version_type → version (unchanged; PUBLISHED source is already
- *                         a VERSION row, set explicitly for clarity)
+ *        - id              → fresh UUID (primary key)
+ *        - name            → fresh UUID (kept unique per (name, app_id))
+ *        - branch_id       → default branch id
+ *        - status          → DRAFT
+ *        - version_type    → version (unchanged; PUBLISHED source is already
+ *                            a VERSION row, set explicitly for clarity)
+ *        - remote_updated_at → now()  ┐ force a lazy git re-hydration on the
+ *        - pulled_at         → NULL   ┘ user's first open of this draft.
  *      Every other column (definition, settings, co_relation_id, is_stub,
  *      metadata, …) is copied as-is from the published source.
+ *
+ * Why force hydration (remote_updated_at=now(), pulled_at=NULL): this INSERT
+ * clones only the app_versions row — it does NOT clone child entities
+ * (pages / components / queries / event handlers). The copied `definition`
+ * blob alone is not enough for the editor, which renders from the normalized
+ * child tables. Leaving the source's pulled_at/remote_updated_at as-is would
+ * let AppsService.getOne treat the draft as up-to-date and open it with no
+ * child rows. Setting remote_updated_at > pulled_at (here: now() vs NULL)
+ * trips the staleness branch in getOne, so the first open pulls the latest
+ * content from git and hydrates the child entities. These are git-enabled
+ * orgs (the is_default JOIN guarantees it), so the app exists in the remote.
  *
  * Metadata guard: chk_app_versions_branch_metadata requires app_name and slug
  * to be non-null on any branched row, so both are COALESCE'd to app_id::text
@@ -95,13 +108,13 @@ export class CloneDefaultBranchDraftFromPublished1779650000000 implements Migrat
         src.source_tag,
         false,                                          -- is_stub
         src.default_branch_id,                          -- branch_id
-        src.pulled_at,
+        NULL,                                           -- pulled_at (force re-hydration on first open)
         src.module_reference_id,
         COALESCE(src.slug, src.app_id::text),           -- branch-metadata guard
         COALESCE(src.app_name, src.app_id::text),       -- branch-metadata guard
         src.icon,
         src.is_public,
-        src.remote_updated_at
+        now()                                           -- remote_updated_at (> pulled_at NULL ⇒ stale ⇒ hydrate)
       FROM (
         SELECT DISTINCT ON (av.app_id)
           av.*,
