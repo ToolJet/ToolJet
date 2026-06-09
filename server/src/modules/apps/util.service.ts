@@ -850,8 +850,7 @@ export class AppsUtilService implements IAppsUtilService {
       resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
-    // INNER JOIN below enforces branch scope. Skip EE's NOT EXISTS predicate
-    // to avoid correlated subplans (~600x cost on prod-sized app_versions).
+    // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
     const willInnerJoinOnBranch =
       !!branchId &&
       ((type === APP_TYPES.MODULE && !isGetAll) || type === APP_TYPES.FRONT_END);
@@ -1126,7 +1125,6 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
-    // Read-only — skip txn wrap and per-App afterLoad. Bulk-hydrate editingVersion once below.
     return skipAppEditingVersionHydration.run(true, async () => {
       const versionToLoadId =
         versionId || app.currentVersionId || (app as any).editingVersion?.id;
@@ -1161,11 +1159,10 @@ export class AppsUtilService implements IAppsUtilService {
         .getMany();
       if (modules.length === 0) return [];
 
-      // Batched replacement for base's per-module (afterLoad + fallback findOne + overlayAppMetadata).
-      // Base resolves TWO independent rows per module — keep them SEPARATE:
+      // TWO independent rows per module, resolved in bulk (keep SEPARATE):
       //   (1) editingVersion: latest non-branch non-stub VERSION row (the row the editor loads).
       //   (2) metadata source: git-on => latest DRAFT on target branch; git-off => latest any row.
-      // 1 defaultBranch lookup + 2 bulk DISTINCT ON queries replace ~3N per-module SELECTs.
+      // 1 defaultBranch lookup + 2 bulk DISTINCT ON queries, keyed per module.
       const moduleIds = modules.map((m) => m.id);
       const parentBranchId = app.editingVersion?.branchId ?? null;
 
@@ -1176,9 +1173,8 @@ export class AppsUtilService implements IAppsUtilService {
       });
       const gitEnabled = !!defaultBranch;
 
-      // (1a) Bulk branch-row preference: latest non-stub row on parentBranchId per module.
-      //      Mirrors base early-return — when set, module uses this row and SKIPS fallback+overlay+throw.
-      //      Only query when parentBranchId is set (else needless round-trip).
+      // (1a) Branch-row preference: latest non-stub row on parentBranchId per module.
+      //      When set, the module uses this row and skips fallback + overlay + the no-DRAFT throw.
       let branchMap = new Map<string, AppVersion>();
       if (parentBranchId) {
         const branchRows = await manager
@@ -1193,8 +1189,7 @@ export class AppsUtilService implements IAppsUtilService {
         branchMap = new Map(branchRows.map((v) => [v.appId, v]));
       }
 
-      // (1b) Bulk editingVersion fallback: latest non-branch non-stub row per module.
-      //     Mirrors base afterLoad / fallback (versionType != BRANCH AND isStub = false, updatedAt DESC).
+      // (1b) editingVersion fallback: latest non-branch non-stub row per module (updatedAt DESC).
       const editingRows = await manager
         .createQueryBuilder(AppVersion, 'av')
         .distinctOn(['av.appId'])
@@ -1206,7 +1201,7 @@ export class AppsUtilService implements IAppsUtilService {
         .getMany();
       const editingMap = new Map(editingRows.map((v) => [v.appId, v]));
 
-      // (2) Bulk metadata source — mirrors overlayAppMetadata.
+      // (2) metadata source row per module.
       const metaQb = manager
         .createQueryBuilder(AppVersion, 'av')
         .distinctOn(['av.appId'])
@@ -1225,9 +1220,8 @@ export class AppsUtilService implements IAppsUtilService {
       const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
 
       for (const moduleApp of modules as any[]) {
-        // (1) Branch-row preference + early return (base lines 1180-1189): when the parent is
-        //     viewed on a branch and the module has a branch row, use it and SKIP fallback,
-        //     overlay, and the no-DRAFT throw — exactly like base's `return`.
+        // (1) Branch-row preference + early return: parent viewed on a branch and module has a
+        //     branch row → use it, skip fallback + overlay + the no-DRAFT throw.
         if (parentBranchId && branchMap.has(moduleApp.id)) {
           const bv = branchMap.get(moduleApp.id);
           moduleApp.editingVersion = bv;
@@ -1235,18 +1229,16 @@ export class AppsUtilService implements IAppsUtilService {
           continue;
         }
 
-        // editingVersion (base: afterLoad + fallback findOne).
         const ev = editingMap.get(moduleApp.id);
         if (ev) {
           moduleApp.editingVersion = ev;
           moduleApp.appVersions = [ev];
         } else if (!gitEnabled) {
-          // git-off afterLoad sets isStub when no non-branch non-stub row exists.
+          // git-off: no editing row → mark stub
           moduleApp.isStub = true;
         }
-        // git-on with no editingVersion: leave as-is (base afterLoad returns early).
+        // git-on with no editingVersion: leave as-is
 
-        // metadata overlay (base: overlayAppMetadata).
         const meta = metaMap.get(moduleApp.id);
         if (gitEnabled && !meta && parentBranchId) {
           throw new BadRequestException(

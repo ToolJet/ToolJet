@@ -9,7 +9,7 @@ const REQUEST_MEMO_KEY = 'tj_license_setting';
 @Injectable()
 export class LicenseRepository {
   async getLicense(manager?: EntityManager): Promise<InstanceSettings> {
-    // Tx-scoped reads bypass memo — caller owns isolation.
+    // skip memo for tx-bound manager — caller owns isolation
     if (manager) {
       return manager.findOneOrFail(InstanceSettings, { where: { key: 'LICENSE_KEY' } });
     }
