@@ -56,9 +56,13 @@ export class AppAuthGuard extends AuthGuard('jwt') {
 
     if (app.isPublic === true) {
       if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
-        const licenseStatus = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.STATUS, app.organizationId);
-        const { licenseType } = licenseStatus;
-        if (licenseType === LICENSE_TYPE.BASIC || licenseType === LICENSE_TYPE.TRIAL) {
+        const licenseTerms = await this.licenseTermsService.getLicenseTerms(
+          [LICENSE_FIELD.STATUS, LICENSE_FIELD.PLAN],
+          app.organizationId
+        );
+        const { licenseType } = licenseTerms[LICENSE_FIELD.STATUS] ?? {};
+        const planType: string | undefined = licenseTerms[LICENSE_FIELD.PLAN];
+        if (licenseType === LICENSE_TYPE.BASIC || licenseType === LICENSE_TYPE.TRIAL || planType === 'starter') {
           throw new ForbiddenException('public-app-plan-restricted');
         }
       }

@@ -65,7 +65,7 @@ export const ERROR_MESSAGES = {
   },
   'public-app-plan-restricted': {
     title: 'Feature not available',
-    message: 'Public apps are not available on the free or trial plan. Please upgrade to share this app.',
+    message: 'Public apps are not available in your plan. Please upgrade to share this app.',
     cta: 'Back to home page',
     retry: false,
     queryParams: [],
