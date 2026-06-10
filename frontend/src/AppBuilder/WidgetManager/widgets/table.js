@@ -336,6 +336,14 @@ export const tableConfig = {
         value: true,
       },
     },
+    stickyHeader: {
+      type: 'toggle',
+      displayName: 'Make column headers sticky',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -837,6 +845,7 @@ export const tableConfig = {
       enableExpandableRows: { value: '{{false}}' },
       expansionHeight: { value: '{{229}}' },
       disableRowDeselection: { value: '{{false}}' },
+      stickyHeader: { value: '{{true}}' },
     },
     events: [],
     styles: {

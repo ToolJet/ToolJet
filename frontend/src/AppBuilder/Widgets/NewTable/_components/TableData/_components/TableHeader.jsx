@@ -201,6 +201,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, 
   const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
   const isRefreshing = getIsRefreshing(id);
+  const stickyHeader = useTableStore((state) => state.getTableProperties(id)?.stickyHeader ?? true, shallow);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -231,7 +232,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, 
   }
 
   return (
-    <thead>
+    <thead style={stickyHeader ? {} : { position: 'static' }}>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         {table.getHeaderGroups().map((headerGroup) => (
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy} key={headerGroup.id}>

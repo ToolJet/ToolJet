@@ -45,6 +45,7 @@ export const TableData = ({
   );
 
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
+  const stickyHeader = useTableStore((state) => state.getTableProperties(id)?.stickyHeader ?? true, shallow);
   const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
   const disableRowDeselection = useTableStore((state) => state.getTableProperties(id)?.disableRowDeselection, shallow);
 
@@ -182,7 +183,7 @@ export const TableData = ({
       ref={tableBodyRef}
     >
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        <thead style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
+        <thead style={{ position: stickyHeader ? 'sticky' : 'static', top: 0, zIndex: 10, backgroundColor: containerBackgroundColor }}>
           {renderTableHeader()}
         </thead>
         <tbody
