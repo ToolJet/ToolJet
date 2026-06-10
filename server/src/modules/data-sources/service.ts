@@ -182,8 +182,20 @@ export class DataSourcesService implements IDataSourcesService {
     return;
   }
 
-  async decryptOptions(options: Record<string, any>) {
-    return await this.dataSourcesUtilService.decrypt(options);
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ) {
+    return await this.dataSourcesUtilService.validateOptions(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      options,
+      schema
+    );
   }
 
   async delete(dataSourceId: string, user: User) {
