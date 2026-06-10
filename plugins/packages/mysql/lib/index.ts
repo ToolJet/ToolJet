@@ -781,7 +781,8 @@ export default class MysqlQueryService implements QueryService {
     try {
       knexInstance = await this.buildConnection(sourceOptions);
 
-      const search = typeof queryOptions?.search === 'string' ? queryOptions.search : '';      const searchPattern = `%${search}%`;
+      const search = typeof queryOptions?.search === 'string' ? queryOptions.search : '';
+      const searchPattern = `%${search}%`;
 
       if (queryOptions?.limit) {
         const limit = queryOptions.limit;
@@ -799,7 +800,10 @@ export default class MysqlQueryService implements QueryService {
           ),
         ]);
 
-        const rows = (dataResult[0] || []).map((row: any) => ({ table_name: row.TABLE_NAME, table_schema: row.TABLE_SCHEMA }));
+        const rows = (dataResult[0] || []).map((row: any) => ({
+          table_name: row.TABLE_NAME,
+          table_schema: row.TABLE_SCHEMA,
+        }));
         const totalCount = parseInt(countResult[0]?.[0]?.total ?? '0', 10);
 
         return { status: 'ok', data: { rows, totalCount } };
@@ -810,7 +814,10 @@ export default class MysqlQueryService implements QueryService {
         [searchPattern]
       );
 
-      const tables = (result[0] || []).map((row: any) => ({ table_name: row.TABLE_NAME, table_schema: row.TABLE_SCHEMA }));
+      const tables = (result[0] || []).map((row: any) => ({
+        table_name: row.TABLE_NAME,
+        table_schema: row.TABLE_SCHEMA,
+      }));
 
       return { status: 'ok', data: tables };
     } catch (err) {
@@ -904,14 +911,19 @@ export default class MysqlQueryService implements QueryService {
     args?: any
   ): Promise<any> {
     try {
+      if (sourceOptions['allow_dynamic_connection_parameters']) {
+        if (args?.host != null && args?.host !== '') sourceOptions['host'] = args.host;
+        if (args?.database != null && args?.database !== '') sourceOptions['database'] = args.database;
+      }
+
       if (methodName === 'getTables') {
         // return await this.listTables(sourceOptions);
         const isPaginated = !!args?.limit;
         const result = await this.listTables(sourceOptions, undefined, undefined, {
-            search: args?.search,
-            page: args?.page,
-            limit: args?.limit,
-          });
+          search: args?.search,
+          page: args?.page,
+          limit: args?.limit,
+        });
 
         const payload = (result as any)?.data ?? [];
 
@@ -924,7 +936,6 @@ export default class MysqlQueryService implements QueryService {
           }));
           return { items: formattedTables, totalCount };
         }
-        
 
         const rows = Array.isArray(payload) ? payload : [];
         const formattedTables = rows.map((row: any) => ({

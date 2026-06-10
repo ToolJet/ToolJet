@@ -11,6 +11,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet, isEmpty } from 'lodash';
 import {
   computeComponentName,
+  getDropTargetLabel,
   getAllChildComponents,
   getParentWidgetFromId,
   wouldCreateParentCycle,
@@ -20,7 +21,10 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
 import { savePageChanges } from './pageMenuSlice';
 import { toast } from 'react-hot-toast';
-import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import {
+  RESTRICTED_WIDGETS_CONFIG,
+  RESTRICTED_WIDGET_SLOTS_CONFIG,
+} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
@@ -1232,10 +1236,16 @@ export const createComponentsSlice = (set, get) => ({
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
     const parentWidget = getParentWidgetFromId(parentType, parentId);
-    const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
+    const parentSlotType = parentId ? parentId.split('-').pop() : undefined;
+    const restrictedWidgets = [
+      ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || []),
+      ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
+    ];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed) {
-      toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
+      toast.error(
+        `${currentWidget} is not compatible as a child component of ${getDropTargetLabel(parentWidget, parentSlotType)}`
+      );
       return false;
     }
 
@@ -1290,7 +1300,8 @@ export const createComponentsSlice = (set, get) => ({
           moduleId
         ) === false
       ) {
-        return false;
+        resolve(false);
+        return;
       }
       const newComponents = buildComponentDefinition(componentDefinitions, moduleId);
 

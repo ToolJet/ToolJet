@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DataSourcesRepository } from './repository';
 import { DataSourcesUtilService } from './util.service';
+import { DataQueriesUtilService } from '@modules/data-queries/util.service';
 import { User } from '@entities/user.entity';
 import { decode } from 'js-base64';
 import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
@@ -29,6 +30,7 @@ export class DataSourcesService implements IDataSourcesService {
   constructor(
     protected readonly dataSourcesRepository: DataSourcesRepository,
     protected readonly dataSourcesUtilService: DataSourcesUtilService,
+    protected readonly dataQueriesUtilService: DataQueriesUtilService,
     protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector
   ) {}
@@ -324,7 +326,8 @@ export class DataSourcesService implements IDataSourcesService {
     methodName: string,
     user: User,
     environmentId: string,
-    args?: any
+    args?: any,
+    resolvedOptions?: object
   ): Promise<QueryResult> {
     const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
 
@@ -345,6 +348,16 @@ export class DataSourcesService implements IDataSourcesService {
       user
     );
 
+    const resolvedArgs = resolvedOptions
+      ? await this.dataQueriesUtilService.parseQueryOptions(
+          args,
+          resolvedOptions,
+          user.organizationId,
+          environmentId,
+          user
+        )
+      : args;
+
     try {
       const result = await service.invokeMethod(
         methodName,
@@ -359,7 +372,7 @@ export class DataSourcesService implements IDataSourcesService {
           },
         },
         sourceOptions,
-        args
+        resolvedArgs
       );
       return { status: 'ok', data: result };
     } catch (error) {
@@ -403,7 +416,7 @@ export class DataSourcesService implements IDataSourcesService {
                 app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
               },
               updatedSourceOptions,
-              args
+              resolvedArgs
             );
             return { status: 'ok', data: result };
           } catch (refreshError) {
