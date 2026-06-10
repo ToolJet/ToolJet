@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved

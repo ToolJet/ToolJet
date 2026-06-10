@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import Dropdown from '@/components/ui/Dropdown/Index';
@@ -36,13 +36,13 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
   const { subContainerWidths } = useGridStore((state) => ({ subContainerWidths: state.subContainerWidths }), shallow);
+  const [widthPxEdit, setWidthPxEdit] = useState(null);
 
   const parentId = allComponents?.[selectedComponentId]?.component?.parent;
   const parentType = parentId ? allComponents?.[parentId]?.component?.component : null;
+  const isFlexChild = parentType === 'FlexContainer';
 
-  if (parentType !== 'FlexContainer') return null;
-
-  const layoutData = allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {};
+  const layoutData = isFlexChild ? allComponents?.[selectedComponentId]?.layouts?.[currentLayout] ?? {} : {};
 
   const containerWidthPx = (parentId && subContainerWidths?.[parentId]) || subContainerWidths?.canvas;
   const gridCellWidthPx = containerWidthPx / NO_OF_GRIDS;
@@ -52,6 +52,12 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
 
   const widthMode = fillWidth ? 'fill-parent' : 'fixed';
   const widthValue = widthPx ?? fallbackWidthPx;
+
+  useEffect(() => {
+    setWidthPxEdit(null);
+  }, [selectedComponentId, fillWidth]);
+
+  if (!isFlexChild) return null;
 
   const update = (patch) => {
     setComponentLayout({ [selectedComponentId]: patch });
@@ -66,10 +72,26 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
   };
 
   const handleWidthPxChange = (e) => {
-    const parsed = parseInt(e.target.value, 10);
-    if (!isNaN(parsed) && parsed > 0) {
-      update({ fillWidth: false, widthPx: parsed });
+    // Local edit only — commit on blur so partial values (e.g. "5" while clearing "50") are not saved.
+    setWidthPxEdit(e.target.value);
+  };
+
+  const handleWidthPxBlur = () => {
+    if (widthPxEdit === null) return;
+
+    if (widthPxEdit === '') {
+      setWidthPxEdit(null);
+      return;
     }
+
+    const parsed = parseInt(widthPxEdit, 10);
+    if (isNaN(parsed)) {
+      setWidthPxEdit(null);
+      return;
+    }
+
+    update({ fillWidth: false, widthPx: parsed });
+    setWidthPxEdit(null);
   };
 
   return (
@@ -97,9 +119,9 @@ export const FlexChildLayoutPanel = ({ selectedComponentId, allComponents }) => 
           <input
             data-cy="flex-child-width-px"
             type="number"
-            min={1}
-            value={widthValue}
+            value={widthPxEdit !== null ? widthPxEdit : String(widthValue)}
             onChange={handleWidthPxChange}
+            onBlur={handleWidthPxBlur}
             style={inputStyle}
           />
         </div>

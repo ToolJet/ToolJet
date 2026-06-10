@@ -27,6 +27,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
 import {
   parseParentIdAndSuffix,
+  remapFlexContainerChildOrder,
   remapParentIdForVersionCopy,
   shouldSkipComponentOnVersionCopy,
 } from '../helpers/version-copy-parent.helper';
@@ -596,6 +597,10 @@ export class VersionsCreateService implements IVersionsCreateService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+        // remapped explicitly to the new component ids — otherwise the saved flex-child order
+        // is lost on draft/version creation (issue #5153).
+        remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
         return updateEntityReferences(component, mappings);
       });
 

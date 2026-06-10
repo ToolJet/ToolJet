@@ -41,6 +41,7 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
+import { computeOppositeEdgeResizeTransform, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -689,13 +690,9 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentWidget.height;
-          const isFlexContainerWidget = currentWidget?.componentType === 'FlexContainer';
-          // Retool-like behavior for FlexContainer widget:
-          // - keep LEFT fixed for any horizontal resize (even when dragging left handle)
-          // - keep TOP fixed for any vertical resize (even when dragging top handle)
-          // This makes resizing act in the "opposite" direction of the handle.
-          const isLeftChanged = !isFlexContainerWidget && e.direction[0] === -1;
-          const isTopChanged = !isFlexContainerWidget && e.direction[1] === -1;
+
+          const isLeftChanged = e.direction[0] === -1;
+          const isTopChanged = e.direction[1] === -1;
 
           // Get scroll delta from autoscroll hook
           const scrollDelta = getScrollDelta();
@@ -768,19 +765,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               currentWidget.component?.parent &&
               getComponentTypeFromId(currentWidget.component.parent) === 'FlexContainer'
             ) {
-              const snappedW = Math.max(
-                GRID_HEIGHT,
-                Math.round((e.lastEvent?.width ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT
-              );
-              const snappedH = Math.max(
-                GRID_HEIGHT,
-                Math.round((e.lastEvent?.height ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT
-              );
-              const flexPatch = {
-                widthPx: snappedW,
-                height: snappedH,
-                fillWidth: false,
-              };
+              const flexPatch = computeFlexResizeEndPatch({ lastEvent: e.lastEvent, gridHeight: GRID_HEIGHT });
+              // A click on the resizer/edge fires resizeEnd with no lastEvent (no actual drag).
+              // Skip committing the patch so the flex child keeps its current size instead of shrinking.
+              if (!flexPatch) return;
 
               setComponentLayout({ [currentWidget.id]: flexPatch });
               setReorderContainerChildren(currentWidget.component.parent);
@@ -802,12 +790,10 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               Math.round((e?.lastEvent?.height - topAlignmentAddedHeight) / GRID_HEIGHT) * GRID_HEIGHT
             );
             const currentWidth = currentWidget.width * _gridWidth;
-            const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = height - currentWidget?.height;
-            const isFlexContainerWidget = currentWidget?.componentType === 'FlexContainer';
-            // Match live preview behavior (see onResize): keep left/top fixed for FlexContainer widget.
-            const isLeftChanged = !isFlexContainerWidget && e.lastEvent?.direction?.[0] === -1;
-            const isTopChanged = !isFlexContainerWidget && e.lastEvent?.direction?.[1] === -1;
+            const diffWidth = e.lastEvent?.width - currentWidth;
+            const isLeftChanged = e.lastEvent?.direction?.[0] === -1;
+            const isTopChanged = e.lastEvent?.direction?.[1] === -1;
 
             let transformX = currentWidget.left * _gridWidth;
             let transformY = currentWidget.top;

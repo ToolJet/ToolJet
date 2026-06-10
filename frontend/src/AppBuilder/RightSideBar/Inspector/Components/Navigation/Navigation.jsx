@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderElement } from '../../Utils';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { EventManager } from '../../EventManager';
 import { NavItemsList } from './components';
 import { useMenuItemsManager } from './hooks';

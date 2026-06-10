@@ -55,6 +55,7 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { FlexChildInspectorProvider } from './FlexChildInspectorContext';
 import '../ComponentManagerTab/styles.scss';
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -519,24 +520,30 @@ export const Inspector = ({
   };
 
   const propertiesTab = isMounted && (
-    <div className={`${shouldFreeze && 'disabled'}`}>
-      <GetAccordion
-        tabsPropertiesPanelKey={tabsPropertiesPanelKey}
-        componentName={componentMeta.component}
-        layoutPropertyChanged={layoutPropertyChanged}
-        component={component}
-        paramUpdated={paramUpdated}
-        paramsUpdated={paramsUpdated}
-        dataQueries={dataQueries}
-        componentMeta={componentMeta}
-        components={allComponents}
-        currentState={currentState}
-        darkMode={darkMode}
-        pages={pages}
-        allComponents={allComponents}
-        selectedComponentId={selectedComponentId}
-      />
-    </div>
+    <FlexChildInspectorProvider
+      selectedComponentId={selectedComponentId}
+      allComponents={allComponents}
+      widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
+    >
+      <div className={`${shouldFreeze && 'disabled'}`}>
+        <GetAccordion
+          tabsPropertiesPanelKey={tabsPropertiesPanelKey}
+          componentName={componentMeta.component}
+          layoutPropertyChanged={layoutPropertyChanged}
+          component={component}
+          paramUpdated={paramUpdated}
+          paramsUpdated={paramsUpdated}
+          dataQueries={dataQueries}
+          componentMeta={componentMeta}
+          components={allComponents}
+          currentState={currentState}
+          darkMode={darkMode}
+          pages={pages}
+          allComponents={allComponents}
+          selectedComponentId={selectedComponentId}
+        />
+      </div>
+    </FlexChildInspectorProvider>
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>

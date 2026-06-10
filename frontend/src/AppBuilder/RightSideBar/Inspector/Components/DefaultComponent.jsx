@@ -1,5 +1,5 @@
 import React from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
@@ -9,8 +9,6 @@ import { resolveReferences } from '@/_helpers/utils';
 import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { FlexChildLayoutPanel } from './FlexChildLayoutPanel';
-
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
   'Container',
@@ -289,21 +287,6 @@ export const baseComponentProperties = (
           darkMode,
           componentMeta.validation?.[property]?.placeholder
         )
-      ),
-    });
-  }
-
-  const flexParentId = allComponents?.[selectedComponentId]?.component?.parent;
-  const flexParentType = flexParentId ? allComponents?.[flexParentId]?.component?.component : null;
-  if (flexParentType === 'FlexContainer') {
-    items.push({
-      title: `${i18next.t('widget.flexChild.widthAndHeight', 'Width')}`,
-      children: (
-        <FlexChildLayoutPanel
-          selectedComponentId={selectedComponentId}
-          allComponents={allComponents}
-          darkMode={darkMode}
-        />
       ),
     });
   }
