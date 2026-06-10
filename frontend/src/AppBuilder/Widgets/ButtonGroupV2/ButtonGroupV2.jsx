@@ -7,7 +7,7 @@ import './buttonGroupV2.scss';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 // eslint-disable-next-line import/no-unresolved
 import { cx } from 'class-variance-authority';
-import { getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 
@@ -50,7 +50,10 @@ export const ButtonGroupV2 = (props) => {
     btnAlignment,
     boxShadow,
     padding,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const { label, advanced, schema, options, multiSelection, layout, loadingState, disabledState, visibility } =
     properties;
@@ -335,6 +338,7 @@ export const ButtonGroupV2 = (props) => {
           top={alignment !== 'top' && '9px'}
           id={`${id}-label`}
           dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
           {exposedVariablesTemporaryState.isLoading ? (

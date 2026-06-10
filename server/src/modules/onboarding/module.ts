@@ -13,13 +13,17 @@ import { SubModule } from '@modules/app/sub-module';
 
 export class OnboardingModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { OnboardingService, OnboardingUtilService, OnboardingController } = await this.getProviders(
       configs,
       'onboarding',
       ['service', 'util.service', 'controller']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: OnboardingModule,
       imports: [
         await MetaModule.register(configs),
@@ -39,6 +43,6 @@ export class OnboardingModule extends SubModule {
       ],
       controllers: isMainImport ? [OnboardingController] : [],
       exports: [OnboardingUtilService],
-    };
+    });
   }
 }

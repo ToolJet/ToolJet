@@ -20,7 +20,8 @@ import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { getQueryVariables } from 'lib/utils';
 import { DataQueryExecutionOptions } from './interfaces/IUtilService';
 import { AbortControllerHandler } from '@helpers/abortqueryhandler.helper';
-import { AppVersion, AppVersionType } from '@entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
+import { APP_TYPES } from '@modules/apps/constants';
 import { ListTablesDto } from './dto';
 
 @Injectable()
@@ -81,6 +82,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     // Hoist these variables to function scope for access in finally block
     let dataSource: DataSource;
     let appToUse: App;
+    let effectiveAppName: string | undefined;
+    let effectiveIsPublic: boolean | undefined;
 
     try {
       dataSource = dataQuery?.dataSource;
@@ -91,19 +94,28 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       }
       const organizationId = user ? user.organizationId : appToUse.organizationId;
 
-      // Lazy-load appVersion to determine branchId (for BRANCH-type versions only)
+      // Lazy-load appVersion: branchId drives env resolution; isPublic and appName
+      // carry the branch-specific metadata for non-workflows (workflows keep these on apps.*).
       if (!dataQuery.appVersion && dataQuery.appVersionId) {
         dataQuery.appVersion = await dbTransactionWrap(async (manager: EntityManager) => {
           return manager.findOne(AppVersion, {
             where: { id: dataQuery.appVersionId },
-            select: ['id', 'versionType', 'branchId'],
+            select: ['id', 'versionType', 'branchId', 'isPublic', 'appName'],
           });
         });
       }
 
       // Branch-aware: resolve branchId from appVersion when version type is 'branch'
-      const branchId =
-        dataQuery?.appVersion?.versionType === AppVersionType.BRANCH ? dataQuery.appVersion.branchId : undefined;
+      // default branch version type is version
+      const branchId = dataQuery?.appVersion?.branchId || undefined;
+
+      // Workflows carry isPublic/name on apps.*; apps and modules carry them on every
+      // version row (default branch uses VERSION-type, sub-branches BRANCH-type, all
+      // carry the metadata). Use the dataQuery's own version row directly.
+      const isWorkflow = appToUse?.type === APP_TYPES.WORKFLOW;
+      const metaSource: { isPublic?: boolean; appName?: string } | undefined = dataQuery?.appVersion;
+      effectiveIsPublic = isWorkflow ? appToUse?.isPublic : metaSource?.isPublic;
+      effectiveAppName = isWorkflow ? appToUse?.name : metaSource?.appName;
       // Removed: appVersionId path — released (VERSION-type) versions now use is_default DSV.
       // const appVersionId = dataQuery?.appVersion?.versionType !== AppVersionType.BRANCH ? dataQuery?.appVersion?.id : undefined;
 
@@ -141,7 +153,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       try {
         abortCtrl.throwIfAborted();
         // multi-auth will not work with public apps
-        if (appToUse?.isPublic && sourceOptions['multiple_auth_enabled']) {
+        if (effectiveIsPublic && sourceOptions['multiple_auth_enabled']) {
           throw new QueryError(
             'Authentication required for all users should be turned off since the app is public',
             '',
@@ -188,7 +200,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             user: { id: user?.id },
             app: {
               id: appToUse?.id,
-              isPublic: appToUse?.isPublic,
+              isPublic: effectiveIsPublic,
               ...(dataSource.kind === 'tooljetdb' && { organization_id: appToUse.organizationId }),
             },
           }
@@ -210,7 +222,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 sourceOptions['multiple_auth_enabled'],
                 sourceOptions['tokenData'],
                 user?.id,
-                appToUse?.isPublic
+                effectiveIsPublic
               );
           if (currentUserToken && currentUserToken['refresh_token']) {
             console.log('Access token expired. Attempting refresh token flow.');
@@ -220,7 +232,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
                 sourceOptions,
                 dataSource.id,
                 user?.id,
-                appToUse?.isPublic
+                effectiveIsPublic
               );
             } catch (error) {
               if (error.constructor.name === 'OAuthUnauthorizedClientError') {
@@ -294,7 +306,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataSourceOptions.updatedAt,
               {
                 user: { id: user?.id },
-                app: { id: appToUse?.id, isPublic: appToUse?.isPublic },
+                app: { id: appToUse?.id, isPublic: effectiveIsPublic },
               }
             );
             promises.push(queryPromise);
@@ -365,7 +377,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         const enrichedMetadata = {
           ...queryMetadata,
           appId: appToUse?.id || 'unknown',
-          appName: appToUse?.name || 'unknown',
+          appName: effectiveAppName || 'unknown',
           dataSourceType: dataSource?.kind || 'unknown',
         };
 
