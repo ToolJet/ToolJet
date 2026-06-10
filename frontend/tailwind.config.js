@@ -36,6 +36,7 @@ module.exports = {
         'text-medium': 'var(--text-medium)',
         'text-placeholder': 'var(--text-placeholder)',
         'text-inverse': 'var(--text-inverse)',
+        'text-tooltip': 'var(--text-tooltip)',
         'text-brand': 'var(--text-brand)',
         'text-accent': 'var(--text-brand)',
         'text-selected': 'var(--text-selected)',

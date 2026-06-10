@@ -102,3 +102,16 @@ export class InvokeDataSourceMethodDto {
 }
 
 export type InvokeDataSourceMethodResponseDto = QueryResult;
+
+export class ValidateOptionsDto {
+  @IsDefined()
+  options: Record<string, any>;
+
+  @IsDefined()
+  schema: Record<string, any>;
+
+  @IsUUID()
+  @IsOptional()
+  environment_id?: string;
+}
+
