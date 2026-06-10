@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
@@ -196,7 +196,14 @@ export const ModalV2 = function Modal({
     onHideModal,
     onShowModal,
   });
-  const contextIndices = contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex;
+  // Memoized: this lands in useDynamicHeight's effect deps. A fresh array per
+  // render (e.g. inside a Listview row, where Viewer re-renders on every
+  // canvasUpdater tick) would refire the effect → adjustComponentPositions →
+  // incrementCanvasUpdater → re-render, freezing the preview in a reflow loop.
+  const contextIndices = useMemo(
+    () => (contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex),
+    [contextPath, subContainerIndex]
+  );
 
   useDynamicHeight({
     isDynamicHeightEnabled,
