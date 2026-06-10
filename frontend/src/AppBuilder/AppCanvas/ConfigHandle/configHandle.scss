@@ -16,6 +16,10 @@
   position: absolute;
 }
 
+.flex-child-wrapper {
+  overflow-x: clip;
+}
+
 .multiple-components-config-handle {
   position: absolute;
   left: 54px;
