@@ -241,10 +241,37 @@ export function computeComponentName(componentType, currentComponents) {
   return _componentName;
 }
 
-export const getAllChildComponents = (allComponents, parentId) => {
+// Walks the ancestor chain of `newParentId`; returns true if `componentId`
+// appears anywhere along it (assigning it as the new parent would close a
+// cycle), or if the chain is already cyclic (defensive — protects against
+// corrupt trees from past multiplayer races / git-sync merges).
+export const wouldCreateParentCycle = (componentId, newParentId, allComponents, getBaseParentId) => {
+  if (!componentId || !newParentId) return false;
+  const toBase = (id) => (getBaseParentId ? getBaseParentId(id) || id : id);
+  const visited = new Set();
+  let currentId = toBase(newParentId);
+  while (currentId) {
+    if (currentId === componentId) return true;
+    if (visited.has(currentId)) return true;
+    visited.add(currentId);
+    const parentRef = allComponents[currentId]?.component?.parent;
+    if (!parentRef) return false;
+    currentId = toBase(parentRef);
+  }
+  return false;
+};
+
+// Internal worker that threads `visited` across recursion. A cyclic parent
+// chain (multiplayer race / git-sync merge / legacy corrupt data) would
+// otherwise infinite-loop and freeze the editor.
+const collectChildComponents = (allComponents, parentId, visited) => {
+  if (!parentId || visited.has(parentId)) return [];
+  visited.add(parentId);
+
   const childComponents = [];
 
   Object.keys(allComponents).forEach((componentId) => {
+    if (visited.has(componentId)) return;
     const componentParentId = allComponents[componentId].component?.parent;
 
     const isParentTabORCalendar =
@@ -264,8 +291,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
         childComponent.isParentTabORCalendar = true;
         childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
         childComponents.push(childComponent);
-        // Recursively find children of the current child component
-        const childrenOfChild = getAllChildComponents(allComponents, componentId);
+        const childrenOfChild = collectChildComponents(allComponents, componentId, visited);
         childComponents.push(...childrenOfChild);
       }
     }
@@ -276,13 +302,16 @@ export const getAllChildComponents = (allComponents, parentId) => {
       childComponent.events = useStore.getState().eventsSlice.getEventsByComponentsId(componentId);
       childComponents.push(childComponent);
 
-      // Recursively find children of the current child component
-      const childrenOfChild = getAllChildComponents(allComponents, componentId);
+      const childrenOfChild = collectChildComponents(allComponents, componentId, visited);
       childComponents.push(...childrenOfChild);
     }
   });
 
   return childComponents;
+};
+
+export const getAllChildComponents = (allComponents, parentId) => {
+  return collectChildComponents(allComponents, parentId, new Set());
 };
 
 export const getCanvasWidth = (moduleId = 'canvas') => {
