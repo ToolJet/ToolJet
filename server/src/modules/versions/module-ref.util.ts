@@ -153,7 +153,19 @@ export async function resolveModuleRef(
       });
       if (onDefault) return onDefault;
     }
-    // Name not found on either branch — fall through to latest non-stub.
+    // Branchless PUBLISHED versions (branchId = NULL enforced by chk_app_versions_branched_implies_draft)
+    const branchlessForName = await manager.findOne(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        name: versionName,
+        branchId: IsNull(),
+        status: AppVersionStatus.PUBLISHED,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+      },
+    });
+    if (branchlessForName) return branchlessForName;
+    // Name not found on any branch — fall through to latest non-stub.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
