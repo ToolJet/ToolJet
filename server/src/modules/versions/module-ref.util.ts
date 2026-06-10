@@ -124,10 +124,22 @@ export async function resolveModuleRef(
   organizationId: string
 ): Promise<AppVersion | null> {
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
-  // The frontend sends ref=<versionName> when the bridge field is populated.
-  // Consumer branch is checked first so post-pull hydrated versions take priority.
+  // Branchless PUBLISHED is checked first: by constraint chk_app_versions_branched_implies_draft,
+  // any branched row MUST be DRAFT — so onConsumer/onDefault can only ever return a DRAFT.
+  // Checking PUBLISHED first prevents a same-named DRAFT on the branch shadowing the real release.
   if (moduleReferenceId && !UUID_RE.test(moduleReferenceId)) {
     const versionName = moduleReferenceId;
+    const branchlessForName = await manager.findOne(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        name: versionName,
+        branchId: IsNull(),
+        status: AppVersionStatus.PUBLISHED,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+      },
+    });
+    if (branchlessForName) return branchlessForName;
     if (consumerBranchId) {
       const onConsumer = await manager.findOne(AppVersion, {
         where: {
@@ -153,18 +165,6 @@ export async function resolveModuleRef(
       });
       if (onDefault) return onDefault;
     }
-    // Branchless PUBLISHED versions (branchId = NULL enforced by chk_app_versions_branched_implies_draft)
-    const branchlessForName = await manager.findOne(AppVersion, {
-      where: {
-        appId: moduleApp.id,
-        name: versionName,
-        branchId: IsNull(),
-        status: AppVersionStatus.PUBLISHED,
-        versionType: AppVersionType.VERSION,
-        isStub: false,
-      },
-    });
-    if (branchlessForName) return branchlessForName;
     // Name not found on any branch — fall through to latest non-stub.
   }
 
@@ -372,7 +372,10 @@ export async function resolveAllModuleViewersForVersion(
   const viewers: ViewerRaw[] = await manager.query(
     `SELECT c.id AS "componentId",
             c.properties::jsonb -> 'moduleAppId' ->> 'value' AS "moduleAppCoRel",
-            COALESCE(c.properties::jsonb -> 'moduleVersionId' ->> 'value', '') AS "pinnedValue"
+            COALESCE(
+              NULLIF(c.properties::jsonb -> 'moduleVersionId' ->> 'versionName', ''),
+              COALESCE(c.properties::jsonb -> 'moduleVersionId' ->> 'value', '')
+            ) AS "pinnedValue"
      FROM components c
      JOIN pages p ON p.id = c.page_id
      WHERE p.app_version_id = $1 AND c.type = 'ModuleViewer'`,
