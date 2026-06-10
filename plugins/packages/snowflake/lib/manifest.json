@@ -70,7 +70,7 @@
     "allow_dynamic_connection_parameters": {
       "type": "boolean",
       "title": "Allow dynamic connection parameters",
-      "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+      "description": "Turning this on will allow dynamically setting database, schema, warehouse and role from the application",
       "default": false
     },
     "client_id": {
@@ -157,9 +157,9 @@
         "$ref": "#/properties/allow_dynamic_connection_parameters",
         "key": "allow_dynamic_connection_parameters",
         "label": "Allow dynamic connection parameters",
-        "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+        "description": "Turning this on will allow dynamically setting database, schema, warehouse and role from the application",
         "widget": "toggle-v2",
-        "help_text": "Enable this to override the default database, warehouse, and role at query runtime"
+        "help_text": "Enable this to override the default database, schema, warehouse, and role at query runtime"
       }
     },
     "oauth2": {
@@ -183,7 +183,7 @@
           "allowed_dynamic_params_field": {
             "key": "allow_dynamic_connection_parameters",
             "label": "Allow dynamic connection parameters",
-            "help_text": "Turning this on will allow dynamically setting database, warehouse and role from the application."
+            "help_text": "Turning this on will allow dynamically setting database, schema, warehouse and role from the application."
           },
           "oauthTypes": {
             "required": true,
@@ -211,9 +211,9 @@
         "$ref": "#/properties/allow_dynamic_connection_parameters",
         "key": "allow_dynamic_connection_parameters",
         "label": "Allow dynamic connection parameters",
-        "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+        "description": "Turning this on will allow dynamically setting database, schema, warehouse and role from the application",
         "widget": "toggle-v2",
-        "help_text": "Enable this to override the default database, warehouse, and role at query runtime"
+        "help_text": "Enable this to override the default database, schema, warehouse, and role at query runtime"
       }
     },
     "key_pair": {
@@ -246,9 +246,9 @@
         "$ref": "#/properties/allow_dynamic_connection_parameters",
         "key": "allow_dynamic_connection_parameters",
         "label": "Allow dynamic connection parameters",
-        "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+        "description": "Turning this on will allow dynamically setting database, schema, warehouse and role from the application",
         "widget": "toggle-v2",
-        "help_text": "Enable this to override the default database, warehouse, and role at query runtime"
+        "help_text": "Enable this to override the default database, schema, warehouse, and role at query runtime"
       }
     },
     "database": {

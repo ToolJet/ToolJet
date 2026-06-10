@@ -59,6 +59,7 @@ export default class Snowflake implements QueryService {
 
     if (sourceOptions.allow_dynamic_connection_parameters) {
       if (queryOptions.database) sourceOptions.database = queryOptions.database;
+      if (queryOptions.schema) sourceOptions.schema = queryOptions.schema;
       if (queryOptions.warehouse) sourceOptions.warehouse = queryOptions.warehouse;
       if (queryOptions.role) sourceOptions.role = queryOptions.role;
     }

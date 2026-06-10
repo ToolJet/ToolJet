@@ -26,6 +26,15 @@
           "height": "36px",
           "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
         },
+        "schema": {
+          "label": "Schema",
+          "placeholder": "Leave empty to use default",
+          "key": "schema",
+          "type": "codehinter",
+          "description": "Enter schema name",
+          "height": "36px",
+          "shouldRenderTheProperty": "allow_dynamic_connection_parameters"
+        },
         "warehouse": {
           "label": "Warehouse",
           "placeholder": "Leave empty to use default",
