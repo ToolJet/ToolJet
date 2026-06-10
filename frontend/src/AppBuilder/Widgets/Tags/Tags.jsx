@@ -7,6 +7,30 @@ import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArra
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import './tags.scss';
 
+function deriveTagsFromProperties({ data, advanced, schema, options }) {
+  let tagsData;
+  if (!advanced) {
+    tagsData = options;
+  } else if (Array.isArray(data) && data.length > 0) {
+    tagsData = data;
+  } else {
+    tagsData = data || schema || [];
+  }
+  if (advanced && typeof tagsData === 'string') {
+    tagsData = resolveWidgetFieldValue(tagsData);
+  }
+  if (!Array.isArray(tagsData)) return [];
+  return tagsData
+    .filter((tag) => {
+      const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
+      return isVisible;
+    })
+    .map((tag, index) => ({
+      ...tag,
+      id: tag.id ? tag.id : index,
+    }));
+}
+
 export const Tags = function Tags({
   width,
   height,
@@ -36,11 +60,14 @@ export const Tags = function Tags({
     isDisabled: disabledState,
   });
 
-  // Set by the setValue CSA. When non-null, this overrides the property-driven
-  // tagsData below — the widget renders these tags until setValue is called
-  // again. Pass null/[] (or invalid) to clear the override and revert to the
-  // data/options property.
-  const [overrideTags, setOverrideTags] = useState(null);
+  const [parsedTags, setParsedTags] = useState(() => deriveTagsFromProperties({ data, advanced, schema, options }));
+
+  useEffect(() => {
+    setParsedTags(deriveTagsFromProperties({ data, advanced, schema, options }));
+  }, [JSON.stringify(data), JSON.stringify(options), advanced, JSON.stringify(schema)]);
+
+  const propsRef = useRef({ data, advanced, schema, options });
+  propsRef.current = { data, advanced, schema, options };
 
   const updateExposedVariablesState = (key, value) => {
     setExposedVariablesTemporaryState((prev) => ({
@@ -48,41 +75,6 @@ export const Tags = function Tags({
       [key]: value,
     }));
   };
-
-  // Follow the exact same pattern as Tabs: use tagItems for static, schema/data for dynamic
-  let tagsData;
-  if (overrideTags !== null) {
-    // setValue takes precedence over the property-driven source
-    tagsData = overrideTags;
-  } else if (!advanced) {
-    // In static mode, use tagItems (same as tabs uses tabItems)
-    tagsData = options;
-  } else {
-    // In dynamic mode, prefer data over schema (data seems to be the primary source)
-    if (Array.isArray(data) && data.length > 0) {
-      tagsData = data;
-    } else {
-      tagsData = data || schema || [];
-    }
-  }
-
-  // Resolve dynamic values - similar to tabs resolveWidgetFieldValue for dynamic mode
-  if (advanced && typeof tagsData === 'string') {
-    tagsData = resolveWidgetFieldValue(tagsData);
-  }
-
-  let parsedTags = tagsData;
-  if (Array.isArray(parsedTags)) {
-    parsedTags = parsedTags
-      ?.filter((tag) => {
-        const isVisible = tag?.visible?.value !== undefined ? tag.visible.value : tag?.visible !== false;
-        return isVisible;
-      })
-      ?.map((tag, index) => ({
-        ...tag,
-        id: tag.id ? tag.id : index,
-      }));
-  }
 
   useBatchedUpdateEffectArray([
     {
@@ -119,29 +111,21 @@ export const Tags = function Tags({
     const _tags = parsedTags?.map(({ title }) => title) || [];
     const exposedVariables = {
       tags: _tags,
-      // setValue replaces the rendered tags. Accepts:
-      //   - an array of tag objects: [{ title, color, textColor, icon?, ... }]
-      //   - an array of strings (auto-wrapped with default colors)
-      //   - null / [] / non-array to clear the override and revert to the
-      //     `data`/`options` property
       setValue: async function (newTags) {
-        if (newTags == null || (Array.isArray(newTags) && newTags.length === 0)) {
-          setOverrideTags(Array.isArray(newTags) ? newTags : null);
-          setExposedVariable('tags', []);
+        if (newTags == null) {
+          setParsedTags(deriveTagsFromProperties(propsRef.current));
           return;
         }
         if (!Array.isArray(newTags)) {
-          // Invalid input — clear override and expose empty
-          setOverrideTags(null);
-          setExposedVariable('tags', []);
+          setParsedTags([]);
           return;
         }
-        const normalized = newTags.map((tag) =>
-          typeof tag === 'string' ? { title: tag, color: '#405DE61A', textColor: '#405DE6' } : tag
+        const normalized = newTags.map((tag, index) =>
+          typeof tag === 'string'
+            ? { title: tag, color: '#405DE61A', textColor: '#405DE6', id: index }
+            : { ...tag, id: tag.id ? tag.id : index }
         );
-        setOverrideTags(normalized);
-        const titles = normalized.map((t) => t?.title).filter((t) => t !== undefined && t !== null);
-        setExposedVariable('tags', titles);
+        setParsedTags(normalized);
       },
       setVisibility: async function (value) {
         setExposedVariable('isVisible', !!value);

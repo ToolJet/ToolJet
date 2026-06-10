@@ -48,11 +48,7 @@ export const Timer = function Timer({
 
   useEffect(() => {
     setExposedVariable('value', {});
-    // Register CSAs. setValue snaps the displayed/internal time to the given
-    // 'HH:mm:ss:mmm' string. It does NOT change running/paused state — if the
-    // timer is running, it keeps counting from the new value; if paused, the
-    // display updates but state stays paused. To pause/reset, the user calls
-    // those actions separately.
+
     if (typeof setExposedVariables === 'function') {
       setExposedVariables({
         setValue: async function (newValue) {

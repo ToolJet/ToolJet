@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { isArray } from 'lodash';
 import { getSafeRenderableValue } from './utils';
+
+function deriveEvents(data) {
+  return isArray(data) ? data : [];
+}
 
 export const Timeline = function Timeline({
   height,
@@ -14,18 +18,19 @@ export const Timeline = function Timeline({
   const { visibility, boxShadow } = styles;
   const { data, hideDate } = properties;
 
-  // Set by the setValue CSA. When non-null, this overrides the property-driven
-  // `data` below — the widget renders these events until setValue is called
-  // again with null/[] to revert to the `data` property.
-  const [overrideData, setOverrideData] = useState(null);
-  const renderData = overrideData !== null ? overrideData : isArray(data) ? data : [];
+  const [renderData, setRenderData] = useState(() => deriveEvents(data));
 
-  // Keep the exposed `value` in sync with whatever is rendering.
+  useEffect(() => {
+    setRenderData(deriveEvents(data));
+  }, [JSON.stringify(data)]);
+
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
   useEffect(() => {
     if (typeof setExposedVariable === 'function') {
       setExposedVariable('value', renderData);
     }
-    // Re-run when the rendered list changes (either via property data or override).
   }, [JSON.stringify(renderData), setExposedVariable]);
 
   // Register CSAs once on mount.
@@ -33,19 +38,16 @@ export const Timeline = function Timeline({
     if (typeof setExposedVariables !== 'function') return;
     setExposedVariables({
       value: renderData,
-      // setValue replaces the rendered timeline events. Accepts an array of
-      // event objects matching the `data` property's shape. Pass null/[] to
-      // clear the override and revert to the property-driven source.
       setValue: async function (newEvents) {
         if (newEvents == null) {
-          setOverrideData(null);
+          setRenderData(deriveEvents(dataRef.current));
           return;
         }
         if (!isArray(newEvents)) {
-          setOverrideData([]);
+          setRenderData([]);
           return;
         }
-        setOverrideData(newEvents);
+        setRenderData(newEvents);
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
