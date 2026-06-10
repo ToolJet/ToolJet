@@ -38,6 +38,7 @@ export const ERROR_TYPES = {
   USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
+  PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
 };
 
 export const ERROR_MESSAGES = {
@@ -60,6 +61,13 @@ export const ERROR_MESSAGES = {
     message: 'Access to this environment preview is restricted. Contact admin to know more.',
     retry: false,
     cta: 'Back to home page',
+    queryParams: [],
+  },
+  'public-app-plan-restricted': {
+    title: 'Feature not available',
+    message: 'Public apps are not available on the free or trial plan. Please upgrade to share this app.',
+    cta: 'Back to home page',
+    retry: false,
     queryParams: [],
   },
   'no-accessible-pages': {
