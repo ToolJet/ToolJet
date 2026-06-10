@@ -45,7 +45,10 @@ export class PluginsService implements IPluginsService {
       throw new InternalServerErrorException('Invalid plugin files');
     }
 
-    return shouldCreate && (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles));
+    return (
+      shouldCreate &&
+      (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles))
+    );
   }
 
   async findAll() {
