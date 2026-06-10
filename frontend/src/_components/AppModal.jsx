@@ -118,7 +118,7 @@ export function AppModal({
     const newAppName = e.target.value;
     const trimmedName = newAppName.trim();
     setNewAppName(newAppName);
-    if (newAppName.length >= 50) {
+    if (newAppName.length >= 100) {
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
@@ -128,7 +128,7 @@ export function AppModal({
   };
 
   const isNameEmpty = newAppName?.trim().length === 0;
-  const isNameTooLong = newAppName?.length > 50;
+  const isNameTooLong = newAppName?.length > 100;
   const isNameInvalid = isNameEmpty || isNameTooLong || !!errorText;
   const renameRequiresChange = actionButton.includes('Rename') && !isNameChanged;
   const createBtnDisableState = isLoading || isNameInvalid || renameRequiresChange;
@@ -178,7 +178,7 @@ export function AppModal({
                 placeholder={`Enter ${appTypeName.toLowerCase()} name`}
                 value={newAppName}
                 data-cy={`${generateCypressDataCy(appTypeName)}-name-input`}
-                maxLength={50}
+                maxLength={100}
                 autoFocus
                 ref={inputRef}
                 style={{
@@ -197,7 +197,7 @@ export function AppModal({
                 >
                   {errorText}
                 </small>
-              ) : infoText || newAppName.length >= 50 ? (
+              ) : infoText || newAppName.length >= 100 ? (
                 <small
                   className="tj-input-error"
                   style={{
@@ -217,7 +217,7 @@ export function AppModal({
                   }}
                   data-cy={`${generateCypressDataCy(appTypeName)}-name-info-label`}
                 >
-                  {`${appTypeName} name must be unique and max 50 characters`}
+                  {`${appTypeName} name must be unique and max 100 characters`}
                 </small>
               )}
               {/* Disabling autoCommit */}
