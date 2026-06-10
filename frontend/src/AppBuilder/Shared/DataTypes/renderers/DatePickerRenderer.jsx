@@ -236,10 +236,19 @@ export const DatePickerRenderer = ({
 
   const handleInputDateChange = useCallback(
     (value) => {
-      const inputDate = moment(value, parseDateFormat).toDate();
+      const inputDate = parseDate({
+        value,
+        parseDateFormat: getDateTimeFormat(
+          parseDateFormat,
+          isTimeChecked,
+          isTwentyFourHrFormatEnabled,
+          isDateSelectionEnabled
+        ),
+        isTimeChecked,
+      });
       handleDateChange(inputDate);
     },
-    [parseDateFormat, handleDateChange]
+    [parseDateFormat, isTimeChecked, isTwentyFourHrFormatEnabled, isDateSelectionEnabled, handleDateChange]
   );
 
   // Initialize date from value
