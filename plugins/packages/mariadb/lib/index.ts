@@ -118,6 +118,9 @@ export default class Mariadb implements QueryService {
       throw new QueryError('Query could not be completed', error.message, {});
     } finally {
       if (conn) conn.release();
+      if (!checkCache) {
+        try { await pool.end(); } catch (_) { /* ignore */ }
+      }
     }
   }
 
@@ -148,162 +151,167 @@ export default class Mariadb implements QueryService {
     const { operation, table } = queryOptions;
     const queryBuilder = createQueryBuilder('mariadb');
 
-    switch (operation) {
+    try {
+      switch (operation) {
 
-      case 'list_rows': {
-        const { list_rows, limit, offset } = queryOptions;
-        const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
-        const { query, params } = queryBuilder.listRows(table, {
-          where_filters,
-          order_filters,
-          aggregates,
-          group_by,
-          limit,
-          offset,
-        }) as { query: string; params: unknown[] };
-        const rows = await conn.query(query, params);
-        return { status: 'ok', data: this.toJson(rows) };
-      }
-
-      case 'create_row': {
-        const { columns } = queryOptions.create_row || {};
-        const { query, params } = queryBuilder.createRow(table, undefined, columns) as {
-          query: string;
-          params: unknown[];
-        };
-        const result = await conn.query(query, params);
-        return {
-          status: 'ok',
-          data: { insertId: result?.insertId != null ? Number(result.insertId) : null },
-        };
-      }
-
-      case 'update_rows': {
-        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
-        const { columns, where_filters } = queryOptions.update_rows || {};
-
-        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
-        if (!hasWhereFilters) {
-          throw new QueryError(
-            'Query could not be completed',
-            'Update rows requires at least one filter condition.',
-            {}
-          );
+        case 'list_rows': {
+          const { list_rows, limit, offset } = queryOptions;
+          const { where_filters, order_filters, aggregates, group_by } = list_rows || {};
+          const { query, params } = queryBuilder.listRows(table, {
+            where_filters,
+            order_filters,
+            aggregates,
+            group_by,
+            limit,
+            offset,
+          }) as { query: string; params: unknown[] };
+          const rows = await conn.query(query, params);
+          return { status: 'ok', data: this.toJson(rows) };
         }
 
-        const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
-          query: string;
-          params: unknown[];
-        };
-
-        const affectedRows = await this.executeWriteInTransaction(conn, query, params as unknown[], {
-          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
-          zero_records_as_success: this._normalizeBool(zero_records_as_success),
-          operationLabel: 'updated',
-        });
-
-        return { status: 'ok', data: { affectedRows } };
-      }
-
-      case 'upsert_rows': {
-        const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
-        const { primary_key_columns } = queryOptions;
-        const { columns } = queryOptions.upsert_rows || {};
-
-        const { query, params } = queryBuilder.upsertRows(table, {
-          primary_key_columns,
-          columns,
-        }) as { query: string; params: unknown[] };
-
-        const rawAffected = await this.executeWriteInTransaction(conn, query, params as unknown[], {
-          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
-          zero_records_as_success: this._normalizeBool(zero_records_as_success),
-          operationLabel: 'upserted',
-          normalizeAffectedRows: (n) => (n === 2 ? 1 : n),
-        });
-
-        return { status: 'ok', data: { affectedRows: rawAffected } };
-      }
-
-      case 'delete_rows': {
-        const { limit, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
-        const { where_filters } = queryOptions.delete_rows || {};
-
-        const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
-        const hasLimit = limit != null && limit !== '';
-        if (!hasWhereFilters && !hasLimit) {
-          throw new QueryError(
-            'Query could not be completed',
-            'delete_rows requires at least one filter condition or a limit to prevent accidental mass deletions.',
-            {}
-          );
-        }
-
-        const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
-          query: string;
-          params: unknown[];
-        };
-
-        const affectedRows = await this.executeWriteInTransaction(conn, query, params as unknown[], {
-          allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
-          zero_records_as_success: this._normalizeBool(zero_records_as_success),
-          operationLabel: 'deleted',
-        });
-
-        return { status: 'ok', data: { affectedRows } };
-      }
-
-      case 'bulk_insert': {
-        const { records } = queryOptions;
-        const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
-
-        const batchQueries: { query: string; params: unknown[] }[] = batches.map((batch) => {
-          return queryBuilder.bulkInsert(table, { rows_insert: batch }) as {
+        case 'create_row': {
+          const { columns } = queryOptions.create_row || {};
+          const { query, params } = queryBuilder.createRow(table, undefined, columns) as {
             query: string;
             params: unknown[];
           };
-        });
-
-        const totalAffected = await this.executeBulkInTransaction(conn, batchQueries);
-        return { status: 'ok', data: { affectedRows: totalAffected } };
-      }
-
-      case 'bulk_update_pkey': {
-        const { primary_key_columns, records } = queryOptions;
-        const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
-
-        const allQueries: { query: string; params: unknown[] }[] = [];
-        for (const batch of batches) {
-          const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
-            primary_key: primary_key_columns,
-            rows_update: batch,
-          }) as { queries: { query: string; params: unknown[] }[] };
-          allQueries.push(...queries);
+          const result = await conn.query(query, params);
+          return {
+            status: 'ok',
+            data: { insertId: result?.insertId != null ? Number(result.insertId) : null },
+          };
         }
 
-        const totalAffected = await this.executeBulkInTransaction(conn, allQueries);
-        return { status: 'ok', data: { affectedRows: totalAffected }, bulk_update_status: 'success' } as any;
-      }
+        case 'update_rows': {
+          const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+          const { columns, where_filters } = queryOptions.update_rows || {};
 
-      case 'bulk_upsert_pkey': {
-        const { primary_key_columns, records } = queryOptions;
-        const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
+          const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+          if (!hasWhereFilters) {
+            throw new QueryError(
+              'Query could not be completed',
+              'Update rows requires at least one filter condition.',
+              {}
+            );
+          }
 
-        const allQueries: { query: string; params: unknown[] }[] = [];
-        for (const batch of batches) {
-          const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
-            primary_key: primary_key_columns,
-            row_upsert: batch,
-          }) as { queries: { query: string; params: unknown[] }[] };
-          allQueries.push(...queries);
+          const { query, params } = queryBuilder.updateRows(table, { columns, where_filters }) as {
+            query: string;
+            params: unknown[];
+          };
+
+          const affectedRows = await this.executeWriteInTransaction(conn, query, params as unknown[], {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'updated',
+          });
+
+          return { status: 'ok', data: { affectedRows } };
         }
 
-        const totalAffected = await this.executeBulkInTransaction(conn, allQueries);
-        return { status: 'ok', data: { affectedRows: totalAffected }, bulk_upsert_status: 'success' } as any;
-      }
+        case 'upsert_rows': {
+          const { allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+          const { primary_key_columns } = queryOptions;
+          const { columns } = queryOptions.upsert_rows || {};
 
-      default:
-        throw new QueryError('Query could not be completed', `Unsupported GUI operation: "${operation}"`, {});
+          const { query, params } = queryBuilder.upsertRows(table, {
+            primary_key_columns,
+            columns,
+          }) as { query: string; params: unknown[] };
+
+          const rawAffected = await this.executeWriteInTransaction(conn, query, params as unknown[], {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'upserted',
+            normalizeAffectedRows: (n) => (n === 2 ? 1 : n),
+          });
+
+          return { status: 'ok', data: { affectedRows: rawAffected } };
+        }
+
+        case 'delete_rows': {
+          const { limit, allow_multiple_updates = false, zero_records_as_success = false } = queryOptions;
+          const { where_filters } = queryOptions.delete_rows || {};
+
+          const hasWhereFilters = where_filters && Object.keys(where_filters).length > 0;
+          const hasLimit = limit != null && limit !== '';
+          if (!hasWhereFilters && !hasLimit) {
+            throw new QueryError(
+              'Query could not be completed',
+              'delete_rows requires at least one filter condition or a limit to prevent accidental mass deletions.',
+              {}
+            );
+          }
+
+          const { query, params } = queryBuilder.deleteRows(table, { where_filters, limit }) as {
+            query: string;
+            params: unknown[];
+          };
+
+          const affectedRows = await this.executeWriteInTransaction(conn, query, params as unknown[], {
+            allow_multiple_updates: this._normalizeBool(allow_multiple_updates),
+            zero_records_as_success: this._normalizeBool(zero_records_as_success),
+            operationLabel: 'deleted',
+          });
+
+          return { status: 'ok', data: { affectedRows } };
+        }
+
+        case 'bulk_insert': {
+          const { records } = queryOptions;
+          const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
+
+          const batchQueries: { query: string; params: unknown[] }[] = batches.map((batch) => {
+            return queryBuilder.bulkInsert(table, { rows_insert: batch }) as {
+              query: string;
+              params: unknown[];
+            };
+          });
+
+          const totalAffected = await this.executeBulkInTransaction(conn, batchQueries);
+          return { status: 'ok', data: { affectedRows: totalAffected } };
+        }
+
+        case 'bulk_update_pkey': {
+          const { primary_key_columns, records } = queryOptions;
+          const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
+
+          const allQueries: { query: string; params: unknown[] }[] = [];
+          for (const batch of batches) {
+            const { queries } = queryBuilder.bulkUpdateWithPrimaryKey(table, {
+              primary_key: primary_key_columns,
+              rows_update: batch,
+            }) as { queries: { query: string; params: unknown[] }[] };
+            allQueries.push(...queries);
+          }
+
+          const totalAffected = await this.executeBulkInTransaction(conn, allQueries);
+          return { status: 'ok', data: { affectedRows: totalAffected }, bulk_update_status: 'success' } as any;
+        }
+
+        case 'bulk_upsert_pkey': {
+          const { primary_key_columns, records } = queryOptions;
+          const batches = this.splitIntoBatches(records, this.computeBatchSize(records));
+
+          const allQueries: { query: string; params: unknown[] }[] = [];
+          for (const batch of batches) {
+            const { queries } = queryBuilder.bulkUpsertWithPrimaryKey(table, {
+              primary_key: primary_key_columns,
+              row_upsert: batch,
+            }) as { queries: { query: string; params: unknown[] }[] };
+            allQueries.push(...queries);
+          }
+
+          const totalAffected = await this.executeBulkInTransaction(conn, allQueries);
+          return { status: 'ok', data: { affectedRows: totalAffected }, bulk_upsert_status: 'success' } as any;
+        }
+
+        default:
+          throw new QueryError('Query could not be completed', `Unsupported GUI operation: "${operation}"`, {});
+      }
+    } catch (error) {
+      if (error instanceof QueryError) throw error;
+      throw new QueryError('Query could not be completed', error.message, {});
     }
   }
 
@@ -406,8 +414,8 @@ export default class Mariadb implements QueryService {
     | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     let conn;
+    const pool = await this.buildConnectionPool(sourceOptions);
     try {
-      const pool = await this.getConnection(sourceOptions, {}, false);
       conn = await pool.getConnection();
       const db = sourceOptions.database;
       const searchPattern = `%${search}%`;
@@ -443,6 +451,7 @@ export default class Mariadb implements QueryService {
       throw new QueryError('Could not fetch tables', err.message, {});
     } finally {
       if (conn) conn.release();
+      try { await pool.end(); } catch (_) { /* ignore */ }
     }
   }
 
@@ -451,8 +460,8 @@ export default class Mariadb implements QueryService {
     table: string
   ): Promise<Array<{ value: string; label: string }>> {
     let conn;
+    const pool = await this.buildConnectionPool(sourceOptions);
     try {
-      const pool = await this.getConnection(sourceOptions, {}, false);
       conn = await pool.getConnection();
       const db = sourceOptions.database;
       const rows: any[] = await conn.query(
@@ -466,6 +475,7 @@ export default class Mariadb implements QueryService {
       throw new QueryError('Could not fetch columns', err.message, {});
     } finally {
       if (conn) conn.release();
+      try { await pool.end(); } catch (_) { /* ignore */ }
     }
   }
 
@@ -510,12 +520,11 @@ export default class Mariadb implements QueryService {
 
     // ── SSH tunnel ────────────────────────────────────────────────────────────
     if (sourceOptions.ssh_enabled === 'enabled') {
-      const { stream } = await createSSHStream(sourceOptions);
       const poolConfig: any = {
         user: sourceOptions.user,
         password: sourceOptions.password,
         database: sourceOptions.database,
-        stream,
+        stream: () => createSSHStream(sourceOptions).then(({ stream }) => stream),
         namedPlaceholders: true,
         multipleStatements: true,
         connectionLimit,
