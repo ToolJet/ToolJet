@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo, useContext } from 'react';
+import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
@@ -41,7 +42,6 @@ const FormComponent = (props) => {
     properties,
     resetComponent = () => {},
     dataCy,
-    adjustComponentPositions,
     currentLayout,
     componentCount,
     onComponentClick,
@@ -153,7 +153,6 @@ const FormComponent = (props) => {
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
@@ -189,6 +188,8 @@ const FormComponent = (props) => {
     });
     return result;
   }, shallow);
+
+  useExposedValueBatch(componentCount);
 
   // Derive childrenData from raw exposed values + component definitions (read imperatively).
   // Only recomputes when childExposedMap actually changes.
