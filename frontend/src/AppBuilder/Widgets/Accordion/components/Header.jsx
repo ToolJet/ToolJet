@@ -40,6 +40,7 @@ const Header = (props) => {
       borderTopLeftRadius: `${borderRadius}px`,
       borderTopRightRadius: `${borderRadius}px`,
       ...(!isExpanded && { borderBottomLeftRadius: `${borderRadius}px`, borderBottomRightRadius: `${borderRadius}px` }),
+      overflow: 'hidden',
       ...headerBgColor,
     };
   }, [borderRadius, isExpanded, headerBgColor, headerMaxHeight]);
