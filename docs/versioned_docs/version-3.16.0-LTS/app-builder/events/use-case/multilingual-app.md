@@ -1,142 +1,119 @@
 ---
 id: multilingual-app
-title: Multilingual App
+title: Build a Multilingual Employee Directory App
 ---
 
 This guide demonstrates how to build a multilingual application in ToolJet using ToolJet Database, App Variables, and component bindings. You'll create a simple Employee Directory app where users can switch between multiple languages and see the interface update instantly.
 
-:::note
-Before you begin, ensure that:
-
-- You have access to a ToolJet workspace.
-- You have permission to create applications and ToolJet Database tables.
-:::
-
 ## Overview 
 
-This application implements multilingual support using ToolJet Database, App Variables, event handlers, and dynamic component bindings. Translation strings are stored in **ToolJet Database** table and retrieved using a query. The currently selected language is maintained in an **App Variable**. UI components dynamically resolve the appropriate translation based on the value of this variable.
+This application implements a database-driven localization architecture that separates translation resources, application state, and presentation logic.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/app-overview.png" alt="Multilingual App Overview"/>
+Translation strings are stored in a **ToolJet Database** table and retrieved when the application loads. The currently selected language is maintained using an **App Variable**. UI components dynamically resolve the appropriate translation based on the active language.
 
-Here are the steps on how to create your application in ToolJet.
+<img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/app-overview.png" alt="Multilingual App Overview"/>
 
-### Step 1: Create a New Application
+## Application Architecture
 
-Click on the **Create new app** from the Dashboard. Name your application as **Multilingual App**.
+This application consists of three primary layers.
 
-### Step 2: Create Table and Add Records
+### Translation Layer
 
-Create a ToolJetDB table to store translation strings for all supported languages. 
+The `translations` table acts as a localization repository. Each row represents a translatable key, while each language is stored in a dedicated column.
 
-- Name your table as `translations`.
-- Create following columns with the type **varchar**.
-    - key
-    - en
-    - es
-    - fr
-    - ja
-    - de
+This approach allows new languages to be introduced by simply adding additional columns and translation values.
 
-Once the table has been created, add translation records for the UI elements used in the application.
+### State Management Layer
+
+The selected language is stored in the `currentLanguage` App Variable.
+
+Whenever the user changes the language, the variable is updated and all bound components automatically re-evaluate their expressions.
+
+### Presentation Layer
+
+UI components reference translation keys rather than hardcoded text. At runtime, each component resolves the appropriate value from the translation dataset based on the currently selected language.
+
+This keeps localization logic centralized and avoids maintaining **language-specific** UI components.
+
+## Implementing Localization
+
+### Store Translation Resources
+
+Create a ToolJet Database table to store translation keys and localized values.
+
+The guide uses English, Spanish, French, German, and Japanese, but the same approach can be extended to support any number of languages.
+
+Create the following columns with the type **varchar** in the ToolJet Database.
+
+| key | en | es | fr | ja | de |
+|-----|----|----|----|----|----|
 
 <img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/translations-table.png" alt="ToolJetDB table"/>
 
-### Step 3: Create a Query
+### Load Translation Data
 
-- Open the **Query Panel** and create a new query. Select **ToolJet Database** as the data source, choose the translations table, and name the query `getTranslations`.
+Create a query that loads translation resources when the application starts. Loading translations during initialization ensures that localized content is immediately available to all components.
+
+- Name the query as `getTranslations`.
+
 - Select the operation as **List Rows**.
+
 - In the query settings, enable **Run this query on application load**.
 
-### Step 4: Create an Employee Data Table
+The query loads data from the `translations` table when the application starts, making localized content available to all UI components.
 
-Create another ToolJet Database table to store employee records. 
+<img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/get-translations-query.png" alt="get translations query builder"/>
 
-- Name your table as `employees`.
-- Create the following columns:
+### Manage Language State
 
-| Column Name | Type |
-|------|-------------|
-| id | Serial | 
-| name | Varchar | 
-| department | Varchar | 
-| status | Varchar | 
-| address | Varchar | 
-| email | Varchar | 
+Configure **event handlers** to initialize the default language when the application loads and update the active language whenever a user selects a different option from the language selector.
 
-Once the table has been created, add records to the table.
+- Add a Dropdown component and name it as  `languageDropdown`.
 
-After populating the table, navigate back to the App Builder to create a query that retrieves employee data from the `employees` table.
-
-- Create another query from **Query Builder** to fetch `employees` table. Name the query as `getEmployees`. 
-- Select the operation as **List Rows**.
-- In the query settings, enable **Run this query on application load**.
-
-<img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/employees-table.png" alt="Employees table"/>
-
-### Step 5: Add Language Selector
-
-Add a Dropdown component onto the canvas. Name it as `languageDropdown`. It allows users to switch between supported languages.
-
-### Step 6: Create an App Variable and Add Event Handlers
-
-To enable language switching across the application, you'll use an App Variable named `currentLanguage` to store the selected language. Since App Variables are created when they are first referenced, you'll create and update this variable using event handlers.
- 
-#### Set a Default Language
-- Click the page name under Pages and Navigation to open Page Settings. Then click on **+** for a new event handler, select **On page load** as the event, and **Set variable** as the action.
-
-- Set the key as `currentLanguage` and value as `en`.
-
-This initializes the application in English when the page loads.
-
-#### Update Variable When Language Changes
-- Add an **event handler** to the `languageDropdown` component, on select the event, set action as `Set variable`.
+- Add an event handler, on select the event, set action as `Set variable`.
 
 - Set the key as `currentLanguage` and value as `{{components.languageDropdown.value}}`.
 
 <img className="screenshot-full img-l" src="/img/app-builder/events/multilingual-app/event-handler.png" alt="Dropdown Event Handler"/>
 
-### Step 7: Add Company Branding, Title, and Description
+### Create Business Data
 
-Create a header section using a Container component. Inside the container: 
+In addition to translation resources, the application requires business data to demonstrate localization. Employee records are displayed in a **Table** component and serve as the application's business data. This demonstrates how localized interface elements can coexist with non-localized application data.
 
-- Add two **Image** components to display the pictures.
+- Create a ToolJet Database table and name it as `employees`.
 
-  **Company logo** : You can use any royalty-free image for the company logo. For example, set the Image URL property of the first Image component to:
+- Create the following columns:
 
-  ```javascript
-  https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg
-  ```
+| Column Name | Type |
+|------|-------------|
+| id   | Serial      | 
+| name | Varchar     | 
+| department | Varchar | 
+| status | Varchar   | 
+| address | Varchar  | 
+| email | Varchar    | 
 
-  **User Card** : Use the second Image component to display a user avatar. Then add a Text component beside it to display the user's name.
+- After populating the table, retrieve the employees data by creating another query named `getEmployees`. 
 
-- Add two **Text** components onto the canvas. 
+- Select the operation as **List Rows**.
 
-  **Title** : Set the data of the first Text component to:
+- In the query settings, enable **Run this query on application load**.
 
-  ```javascript
-  {{
-  queries.getTranslations.data.find(
-    row => row.key === "title"
-  )?.[variables.currentLanguage]
-  }}
-  ```
+<img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/employees-table.png" alt="Employees table"/>
 
-  **Description** :  Set the data of the second Text component to:
-  ```javascript
-  {{
-  queries.getTranslations.data.find(
-    row => row.key === "description"
-  )?.[variables.currentLanguage]
-  }}
-  ```
-The displayed text automatically updates whenever the selected language changes.
+:::note
+Only interface elements are translated in this example. Employee records remain unchanged regardless of the selected language.
+:::
 
-### Step 8 : Bind Data and Localize Headers
+### Bind Localized Content
 
-In this step, you'll bind employee data and dynamically translate table headers.
+Instead of hardcoding labels, titles, descriptions, and column headers, bind component properties to values from the translation dataset.
+
+Whenever the selected language changes, the interface automatically updates without requiring page reloads or additional queries.
 
 - Drag a Table component onto the canvas. In the Data property, bind the query response to `{{queries.getEmployees.data}}`.
-- To display translated column names, update the column labels using values from the `translations` table.
+
+- To display the translated column names, update the column labels using values from the `translations` table.
 
 | Column | Label |
 |---------|---------|
@@ -146,34 +123,8 @@ In this step, you'll bind employee data and dynamically translate table headers.
 | Address | `{{queries.getTranslations.data.find(row => row.key === "address")?.[variables.currentLanguage]}}` |
 | Email | `{{queries.getTranslations.data.find(row => row.key === "email")?.[variables.currentLanguage]}}` |
 
-The table data remains unchanged, while the column headers automatically update based on the selected language.
+The completed application allows users to switch between **multiple languages** and view localized content across the interface, including titles, descriptions, table headers, and actions. 
 
-### Step 9 : Add an Employee Creation Modal
-
-Add a button into the container, labeled **Add Employee** and configure it to open a Modal component. Inside the modal, add the following fields with the text input component for the employee details: **Name, Department, City, Email and Status**. 
-
-Next, Add two buttons to the modal:
-
-- **Add Employee** – Creates a new employee record.
-- **Cancel** – Closes the modal without saving changes.
-
-#### Create an Employee Creation Query
-Create a ToolJet Database query named `addEmployee`.
-
-- Select the operation as **Create Rows** and add columns as shown in the image. 
-- Add an event handler, set action to **Run Query** select `addEmployee` as the query.
-
-<img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/add-employee-query.png" alt="query builder"/>
-
-#### Add Employee Deletion
-
-Create another ToolJet Database query named `deleteEmployee`.
-
-- Select the operation as **Delete Rows** to delete the employee record from the `employees` table.
-- Add an event handler, set action to **Run Query** and select `deleteEmployee` as the query.
-
-By these, you can create and delete employee records while continuing to experience dynamic language switching throughout the application.
-
-This application enables users to switch between **multiple languages** and view localized content across the interface, including titles, descriptions, table headers, and actions. The application also includes company branding and employee management features.
+This approach centralizes translation management, introduces additional languages and can be combined with ToolJet's dynamic bindings to build scalable multilingual experiences.
 
 <img className="screenshot-full img-full" src="/img/app-builder/events/multilingual-app/translated-app.png" alt="tranlasted app overview"/>
