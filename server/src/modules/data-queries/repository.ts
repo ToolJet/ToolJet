@@ -40,7 +40,7 @@ export class DataQueryRepository extends Repository<DataQuery> {
   }
 
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {
-    return await this.manager
+    const qb = this.manager
       .createQueryBuilder(App, 'app')
       .innerJoin(AppVersion, 'app_version', 'app_version.app_id = app.id')
       .innerJoin(Page, 'page', 'page.app_version_id = app_version.id')
@@ -54,12 +54,15 @@ export class DataQueryRepository extends Repository<DataQuery> {
       .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
       .andWhere('module_version.app_id != app.id')
       .andWhere('app.organization_id = module_app.organization_id')
-      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleAppId::text", {
-        moduleAppId,
-      })
-      .andWhere("component.properties::jsonb -> 'moduleVersionId' ->> 'value' = data_query.app_version_id::text")
-      .limit(1)
-      .getOne();
+      .andWhere("component.properties::jsonb -> 'moduleAppId' ->> 'value' = module_app.co_relation_id::text")
+      .andWhere(
+        `(component.properties::jsonb -> 'moduleVersionId' ->> 'value' = ''
+          OR component.properties::jsonb -> 'moduleVersionId' ->> 'value' = module_version.module_reference_id::text
+          OR component.properties::jsonb -> 'moduleVersionId' ->> 'value' = data_query.app_version_id::text)`
+      )
+      .limit(1);
+
+    return qb.getOne();
   }
 
   getAll(appVersionId: string): Promise<DataQuery[]> {
