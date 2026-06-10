@@ -27,26 +27,26 @@ Creates a user with workspace assignments and returns 201 on success.
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/users" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "name": "Alice Johnson",
-  "email": "alice@example.com",
-  "password": "qwy@4xt123",
-  "status": "active",
-  "workspaces": [
-    {
-      "name": "team-spac",
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/users" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "name": "Alice Johnson",
+      "email": "alice@example.com",
+      "password": "qwy@4xt123",
       "status": "active",
-      "groups": [
+      "workspaces": [
         {
-          "name": "all_users"
+          "name": "team-spac",
+          "status": "active",
+          "groups": [
+            {
+              "name": "all_users"
+            }
+          ]
         }
       ]
-    }
-  ]
-}'`} />
+    }'`} />
 
 <ResponseExample statusCode="201" body={`{
   "id": "2819c223-7f76-453a-919d-413861904646",

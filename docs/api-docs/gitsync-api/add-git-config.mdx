@@ -25,17 +25,17 @@ Configure GitHub HTTPS settings for an organization by associating a GitHub App 
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/organizations/git" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8",
-  "gitUrl": "https://github.com/username/repository.git",
-  "branchName": "main",
-  "githubAppId": "123456",
-  "githubAppInstallationId": "78910",
-  "githubAppPrivateKey": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
-}'`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/organizations/git" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "organizationId": "45892c81-c1f0-48c6-8875-c2e4fca516f8",
+      "gitUrl": "https://github.com/username/repository.git",
+      "branchName": "main",
+      "githubAppId": "123456",
+      "githubAppInstallationId": "78910",
+      "githubAppPrivateKey": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+    }'`} />
 
 **Response:** `201`
 

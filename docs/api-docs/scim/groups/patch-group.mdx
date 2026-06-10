@@ -22,10 +22,10 @@ Partially updates a group using SCIM patch operations. Commonly used to add or r
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X PATCH "https://{your-domain}/api/scim/v2/Groups/{id}" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{}'`} />
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/scim/v2/Groups/{id}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{}'`} />
 
 <ResponseExample statusCode="200" body={`{
   "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],

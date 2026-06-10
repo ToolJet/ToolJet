@@ -27,13 +27,13 @@ Imports a module into a workspace from a previously exported payload.
 </ApiLeft>
 <ApiRight>
 
-<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/modules" \
-  -H "Authorization: Basic <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "tooljet_version": "3.16.0",
-  "appName": "My Module"
-}'`} />
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/import/workspace/{workspaceId}/modules" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "tooljet_version": "3.16.0",
+      "appName": "My Module"
+    }'`} />
 
 <ResponseExample statusCode="200" body={`{
   "message": "Module imported successfully."
