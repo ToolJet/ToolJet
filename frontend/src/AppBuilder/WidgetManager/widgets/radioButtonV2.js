@@ -94,6 +94,20 @@ export const radiobuttonV2Config = {
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -103,6 +117,7 @@ export const radiobuttonV2Config = {
       },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
   },
   events: {
@@ -113,6 +128,12 @@ export const radiobuttonV2Config = {
       type: 'colorSwatches',
       displayName: 'Color',
       validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
       accordian: 'label',
     },
     alignment: {
@@ -329,10 +350,13 @@ export const radiobuttonV2Config = {
         value:
           "{{[\t{label: 'option1',value: '1',disable: false,visible: true,default: true},{label: 'option2',value: '2',disable: false,visible: true},{label: 'option3',value: '3',disable: false,visible: true}\t]}}",
       },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
       labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
       auto: { value: '{{true}}' },

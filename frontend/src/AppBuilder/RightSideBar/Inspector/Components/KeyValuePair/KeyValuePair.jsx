@@ -16,6 +16,7 @@ const ADDITIONAL_ACTIONS = [
   'visibility',
   'collapseWhenHidden',
   'disabledState',
+  'tooltipFormat',
   'tooltip',
 ];
 

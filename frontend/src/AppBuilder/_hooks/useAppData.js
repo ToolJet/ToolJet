@@ -22,7 +22,7 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getPreviewQueryParams, replaceEditorURL } from '@/_helpers/routes';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -135,6 +135,8 @@ const useAppData = (
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
   const isLicenseFetched = useStore((state) => state.isLicenseFetched);
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -199,6 +201,7 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
   const promptSentRef = useRef(false);
+  const isPageSwitchRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -233,15 +236,10 @@ const useAppData = (
 
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      isPageSwitchRef.current = true;
       setPageSwitchInProgress(false);
-      setTimeout(() => {
-        handleEvent('onPageLoad', currentPageEvents, {});
-        // Rebuild all suggestion segments for the new page's components/queries/variables
-        mode === 'edit' && initSuggestions(moduleId);
-      }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
+  }, [pageSwitchInProgress, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -475,7 +473,7 @@ const useAppData = (
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
-        if (initialLoadRef.current) {
+        if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
@@ -545,6 +543,14 @@ const useAppData = (
         };
         const newState = { ...currentState, ...pageInfo };
         window.history.replaceState(newState, '', window.location.href);
+
+        // Sync the browser URL if it was opened with the app UUID but the app has a proper slug
+        if (appData.slug && mode === 'edit' && !moduleMode) {
+          const currentUrlSlug = window.location.pathname.split('/apps/')[1]?.split('/')[0];
+          if (currentUrlSlug && currentUrlSlug !== appData.slug) {
+            replaceEditorURL(appData.slug, startingPage.handle);
+          }
+        }
 
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);
@@ -649,6 +655,7 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
       })
@@ -668,6 +675,7 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
+      flushExposedValueBatch();
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
@@ -695,9 +703,21 @@ const useAppData = (
           }
         }
 
-        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
-        handleEvent('onPageLoad', currentPageEvents, {});
+        if (isPageSwitchRef.current) {
+          // Page switch: skip runOnLoadQueries and only fire onPageLoad.
+          // Running runOnLoadQueries here would create an infinite loop if any
+          // runOnPageLoad query has a success/failure event that navigates to another
+          // page — each navigation would re-trigger queries which re-trigger navigation.
+          // Apps that need data refresh on navigation should trigger queries from the
+          // onPageLoad event instead of relying on runOnPageLoad.
+          isPageSwitchRef.current = false;
+          handleEvent('onPageLoad', currentPageEvents, {});
+        } else {
+          runOnLoadQueries(moduleId).then(() => {
+            handleEvent('onPageLoad', currentPageEvents, {});
+          });
+        }
       };
 
       loadLibrariesAndRun();

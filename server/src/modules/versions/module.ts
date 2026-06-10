@@ -7,7 +7,6 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { DataSourcesModule } from '@modules/data-sources/module';
 import { AppsRepository } from '@modules/apps/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { FeatureAbilityFactory } from './ability';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
@@ -18,6 +17,10 @@ import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlat
 
 export class VersionModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       VersionController,
       VersionControllerV2,
@@ -45,7 +48,7 @@ export class VersionModule extends SubModule {
       ['services/component.service', 'services/event.service', 'services/page.service', 'services/page.util.service']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: VersionModule,
       imports: [
         await AppsModule.register(configs),
@@ -68,7 +71,6 @@ export class VersionModule extends SubModule {
         VersionRepository,
         OrganizationGitSyncRepository,
         AppsRepository,
-        AppGitRepository,
         VersionsCreateService,
         PageService,
         EventsService,
@@ -79,6 +81,6 @@ export class VersionModule extends SubModule {
         ValidModuleByCorrelationGuard,
       ],
       exports: [VersionUtilService],
-    };
+    });
   }
 }

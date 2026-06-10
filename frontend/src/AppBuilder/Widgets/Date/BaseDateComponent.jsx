@@ -9,7 +9,11 @@ import DatePickerComponent from 'react-datepicker';
 import CustomDatePickerHeader from './CustomDatePickerHeader';
 import { flip, offset } from '@floating-ui/dom';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from '../BaseComponents/hooks/useInput';
+import {
+  getLabelFontSize,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '../BaseComponents/hooks/useInput';
 import { getDateLocale } from './localeUtils';
 
 const tinycolor = require('tinycolor2');
@@ -56,7 +60,10 @@ export const BaseDateComponent = ({
     padding,
     errTextColor,
     widthType,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
   const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
@@ -161,6 +168,7 @@ export const BaseDateComponent = ({
         widthType={widthType}
         inputId={`component-${id}`}
         dataCy={dataCy}
+        fontSize={labelFontSizeValue}
       />
       <div
         className="px-0 h-100"
