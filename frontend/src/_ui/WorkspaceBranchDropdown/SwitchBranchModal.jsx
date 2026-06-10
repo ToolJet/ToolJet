@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Fuse from 'fuse.js';
 import AlertDialog from '@/_ui/AlertDialog';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -16,13 +17,18 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
+  const [switchingBranchId, setSwitchingBranchId] = useState(null);
 
-  const { branches, activeBranchId, orgGitConfig, currentBranch } = useWorkspaceBranchesStore((state) => ({
-    branches: state.branches,
-    activeBranchId: state.activeBranchId,
-    orgGitConfig: state.orgGitConfig,
-    currentBranch: state.currentBranch,
-  }));
+  const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, hasMoreRemote, isLoadingMore } =
+    useWorkspaceBranchesStore((state) => ({
+      branches: state.branches,
+      activeBranchId: state.activeBranchId,
+      orgGitConfig: state.orgGitConfig,
+      currentBranch: state.currentBranch,
+      remoteBranches: state.remoteBranches,
+      hasMoreRemote: state.hasMoreRemote,
+      isLoadingMore: state.isLoadingMore,
+    }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
   const organizationId = authenticationService.currentSessionValue?.current_organization_id;
 
@@ -32,19 +38,80 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
 
   useEffect(() => {
     if (show) {
+      actions.resetRemoteBranches();
       setIsLoading(true);
-      actions.fetchBranches().finally(() => setIsLoading(false));
+      Promise.all([actions.fetchBranches(), actions.fetchRemoteBranches().catch(() => {})]).finally(() =>
+        setIsLoading(false)
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
-  // Filter branches by search term
-  const filteredBranches = branches.filter((branch) => {
-    if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    // When used for "create app" flow, hide the default branch (user is leaving it)
-    if (onBranchSwitch && (branch.is_default || branch.isDefault)) return false;
-    return true;
-  });
+  const branchSorter = useCallback(
+    (a, b) => {
+      const aIsDefault = a.is_default || a.isDefault;
+      const bIsDefault = b.is_default || b.isDefault;
+      const aIsActive = a.id === activeBranchId;
+      const bIsActive = b.id === activeBranchId;
+      if (aIsDefault && !bIsDefault) return -1;
+      if (!aIsDefault && bIsDefault) return 1;
+      if (aIsActive && !bIsActive) return -1;
+      if (!aIsActive && bIsActive) return 1;
+      const aDate = a.lastCommitAt ? new Date(a.lastCommitAt).getTime() : 0;
+      const bDate = b.lastCommitAt ? new Date(b.lastCommitAt).getTime() : 0;
+      if (bDate !== aDate) return bDate - aDate;
+      // Tiebreaker: branches with the same committedDate (e.g. created from the same source)
+      // are ordered by DB createdAt DESC — more recently created branch appears first.
+      const aCreated = a.createdAt || a.created_at;
+      const bCreated = b.createdAt || b.created_at;
+      const aCreatedMs = aCreated ? new Date(aCreated).getTime() : 0;
+      const bCreatedMs = bCreated ? new Date(bCreated).getTime() : 0;
+      return bCreatedMs - aCreatedMs;
+    },
+    [activeBranchId]
+  );
+  const filteredBranches = useMemo(() => {
+    const PAGE_SIZE = 10;
+    const paginated = (remoteBranches || []).filter(
+      (branch) => !(onBranchSwitch && (branch.is_default || branch.isDefault))
+    );
+    const activeMissing = currentBranch && !paginated.some((b) => b.id === currentBranch.id);
+
+    if (!activeMissing) {
+      return [...paginated].sort(branchSorter);
+    }
+
+    const sorted = [...paginated].sort(branchSorter);
+    const base = sorted.length >= PAGE_SIZE ? sorted.slice(0, sorted.length - 1) : sorted;
+    // Re-sort after appending active so branchSorter places it at position 2.
+    return [...base, { ...currentBranch, lastCommitAt: currentBranch.lastCommitAt ?? null }].sort(branchSorter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteBranches, onBranchSwitch, branchSorter, currentBranch]);
+
+  // Fuse instance over all branches (DB-loaded, no commit dates) — rebuilt only when branches list changes
+  const fuse = useMemo(
+    () =>
+      new Fuse(branches || [], {
+        keys: ['name'],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+      }),
+    [branches]
+  );
+
+  // Fuzzy search results across ALL branches (not just loaded page)
+  const searchResults = useMemo(() => {
+    if (!searchTerm) return [];
+    return fuse
+      .search(searchTerm)
+      .map((r) => r.item)
+      .filter((b) => !(onBranchSwitch && (b.is_default || b.isDefault)))
+      .sort(branchSorter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fuse, searchTerm, onBranchSwitch, activeBranchId]);
+
+  const displayBranches = searchTerm ? searchResults : filteredBranches;
 
   const handleBranchClick = async (branch) => {
     if (branch.id === activeBranchId) {
@@ -63,6 +130,15 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
       }
 
       await actions.switchBranch(branch.id);
+
+      // Seeded branches (no createdBy, non-default) were created at git sync config time without
+      // workspace data — pull before reloading so the user lands on a populated workspace.
+      const isSeededBranch = !branch.createdBy && !(branch.is_default || branch.isDefault);
+      if (isSeededBranch) {
+        setIsLoading(true);
+        await actions.pullWorkspace(branch.name);
+      }
+
       toast.success(`Switched to ${branch.name}`);
       if (onBranchSwitch) {
         onBranchSwitch(branch);
@@ -147,7 +223,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
 
           {/* Search Section */}
           <div className="search-section">
-            <label className="section-label">ALL OPEN BRANCHES</label>
+            <label className="section-label">RECENT BRANCHES</label>
             <div className="search-input-wrapper">
               <SolidIcon name="search" width="16" fill="var(--slate11)" />
               <input
@@ -168,13 +244,13 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
                 <div className="spinner"></div>
                 <span>Loading branches...</span>
               </div>
-            ) : filteredBranches.length === 0 ? (
+            ) : displayBranches.length === 0 ? (
               <div className="empty-state">
                 <p>No branches found</p>
               </div>
             ) : (
               <>
-                {filteredBranches.map((branch) => {
+                {displayBranches.map((branch) => {
                   const isCurrentBranch = branch.id === activeBranchId;
                   const isDefaultBranch = branch.is_default || branch.isDefault;
                   return (
@@ -226,6 +302,23 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
                   );
                 })}
                 <Tooltip id="delete-branch-tooltip" place="right" />
+                {hasMoreRemote && !searchTerm && (
+                  <button
+                    className="load-more-btn"
+                    onClick={() => actions.loadMoreRemoteBranches()}
+                    disabled={isLoadingMore}
+                    data-cy="workspace-branch-load-more-btn"
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <div className="branch-spinner"></div>
+                        <span>Loading..</span>
+                      </>
+                    ) : (
+                      'Load more..'
+                    )}
+                  </button>
+                )}
               </>
             )}
           </div>

@@ -99,9 +99,11 @@ function checkForUpdates(branch) {
   return fetch(`${config.apiUrl}/workspace-branches/check-updates${params}`, requestOptions).then(handleResponse);
 }
 
-function listRemoteBranches() {
+function listRemoteBranches(limit = 10, after = null) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (after) params.set('after', after);
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/workspace-branches/remote`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/workspace-branches/remote?${params}`, requestOptions).then(handleResponse);
 }
 
 function fetchPullRequests() {

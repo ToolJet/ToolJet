@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Fuse from 'fuse.js';
 import AlertDialog from '@/_ui/AlertDialog';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
@@ -48,10 +49,22 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   }));
 
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  const { workspaceActiveBranch, wsBranches, wsActions } = useWorkspaceBranchesStore((state) => ({
+  const {
+    workspaceActiveBranch,
+    wsBranches,
+    wsActions,
+    wsRemoteBranches,
+    wsHasMoreRemote,
+    wsIsLoadingMore,
+    wsActiveBranchId,
+  } = useWorkspaceBranchesStore((state) => ({
     workspaceActiveBranch: state.currentBranch,
     wsBranches: state.branches,
     wsActions: state.actions,
+    wsRemoteBranches: state.remoteBranches,
+    wsHasMoreRemote: state.hasMoreRemote,
+    wsIsLoadingMore: state.isLoadingMore,
+    wsActiveBranchId: state.activeBranchId,
   }));
 
   // Determine current branch name:
@@ -67,8 +80,10 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     if (show && appId && organizationId) {
       setIsLoading(true);
       if (branchingEnabled) {
-        // Platform git sync: fetch workspace branches from DB only (no remote call)
-        wsActions.fetchBranches().finally(() => setIsLoading(false));
+        wsActions.resetRemoteBranches();
+        Promise.all([wsActions.fetchBranches(), wsActions.fetchRemoteBranches().catch(() => {})]).finally(() =>
+          setIsLoading(false)
+        );
       } else {
         // Per-app branching: fetch from remote git
         Promise.all([
@@ -78,32 +93,81 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         ]).finally(() => setIsLoading(false));
       }
     }
-  }, [
-    show,
-    appId,
-    organizationId,
-    branchingEnabled,
-    fetchBranches,
-    lazyLoadAppVersions,
-    fetchDevelopmentVersions,
-    wsActions,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [show, appId, organizationId, branchingEnabled]);
 
-  // Branch list: workspace branches for platform git sync, per-app branches otherwise
-  const branchList = branchingEnabled ? wsBranches : allBranches;
-  const filteredBranches = branchList.filter((branch) => {
-    if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
+  // Stable sort function — only recreated when active branch changes.
+  const branchSorter = useCallback(
+    (a, b) => {
+      const aIsDefault = a.is_default || a.isDefault;
+      const bIsDefault = b.is_default || b.isDefault;
+      const aIsActive = a.id === wsActiveBranchId;
+      const bIsActive = b.id === wsActiveBranchId;
+      if (aIsDefault && !bIsDefault) return -1;
+      if (!aIsDefault && bIsDefault) return 1;
+      if (aIsActive && !bIsActive) return -1;
+      if (!aIsActive && bIsActive) return 1;
+      const aDate = a.lastCommitAt ? new Date(a.lastCommitAt).getTime() : 0;
+      const bDate = b.lastCommitAt ? new Date(b.lastCommitAt).getTime() : 0;
+      if (bDate !== aDate) return bDate - aDate;
+      const aCreated = a.createdAt || a.created_at;
+      const bCreated = b.createdAt || b.created_at;
+      return (bCreated ? new Date(bCreated).getTime() : 0) - (aCreated ? new Date(aCreated).getTime() : 0);
+    },
+    [wsActiveBranchId]
+  );
+
+  // Fuse instance over all DB branches — rebuilt only when wsBranches changes
+  const fuse = useMemo(
+    () =>
+      new Fuse(wsBranches || [], {
+        keys: ['name'],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+      }),
+    [wsBranches]
+  );
+
+  // Platform git sync: paginated display + fuzzy search.
+  // Active branch (workspaceActiveBranch) injected here if absent — keeps store clean for Load More.
+  const wsDisplayBranches = useMemo(() => {
+    if (!branchingEnabled) return [];
+    if (searchTerm) {
+      return fuse
+        .search(searchTerm)
+        .map((r) => r.item)
+        .sort(branchSorter);
     }
-    // For per-app branching: exclude version names from the list
-    if (!branchingEnabled) {
+    const PAGE_SIZE = 10;
+    const paginated = wsRemoteBranches || [];
+    const activeMissing = workspaceActiveBranch && !paginated.some((b) => b.id === workspaceActiveBranch.id);
+
+    if (!activeMissing) {
+      return [...paginated].sort(branchSorter);
+    }
+
+    const sorted = [...paginated].sort(branchSorter);
+    const base = sorted.length >= PAGE_SIZE ? sorted.slice(0, sorted.length - 1) : sorted;
+    return [...base, { ...workspaceActiveBranch, lastCommitAt: workspaceActiveBranch.lastCommitAt ?? null }].sort(
+      branchSorter
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [branchingEnabled, searchTerm, fuse, wsRemoteBranches, workspaceActiveBranch, branchSorter]);
+
+  // Per-app branching: simple filter + search (unchanged)
+  const perAppFilteredBranches = useMemo(() => {
+    if (branchingEnabled) return [];
+    return (allBranches || []).filter((branch) => {
+      if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       const isVersionName = appVersions?.some(
         (v) => v.name === branch.name && (v.versionType === 'version' || v.version_type === 'version')
       );
       return !isVersionName;
-    }
-    return true;
-  });
+    });
+  }, [branchingEnabled, allBranches, searchTerm, appVersions]);
+
+  const displayBranches = branchingEnabled ? wsDisplayBranches : perAppFilteredBranches;
 
   const [switchingBranchName, setSwitchingBranchName] = useState(null);
   const [branchToDelete, setBranchToDelete] = useState(null);
@@ -142,6 +206,14 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
             activeBranchId: targetWsBranch.id,
             currentBranch: branchObj,
           });
+
+          // Seeded branches (no createdBy, non-default) were created at git sync config time without
+          // workspace data — pull before navigating so the user lands on a populated workspace.
+          const isSeededBranch = !targetWsBranch.createdBy && !targetWsBranch.isDefault;
+          if (isSeededBranch) {
+            await wsActions.pullWorkspace(branch.name);
+          }
+
           // Don't close modal — let the dimmed/spinner state persist until page navigates
           const pathParts = window.location.pathname.split('/');
           if (resolvedAppId) {
@@ -252,7 +324,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         <div className="switch-branch-modal-content">
           {/* Search Section */}
           <div className="search-section">
-            <label className="section-label">ALL OPEN BRANCHES</label>
+            <label className="section-label">{branchingEnabled ? 'RECENT BRANCHES' : 'ALL OPEN BRANCHES'}</label>
             <div className="search-input-wrapper">
               <SolidIcon name="search" width="16" fill="var(--slate11)" />
               <input
@@ -273,13 +345,13 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                 <div className="spinner"></div>
                 <span>{switchingBranchName ? `Switching to ${switchingBranchName}...` : 'Loading branches...'}</span>
               </div>
-            ) : filteredBranches.length === 0 ? (
+            ) : displayBranches.length === 0 ? (
               <div className="empty-state">
                 <p>No branches found</p>
               </div>
             ) : (
               <>
-                {filteredBranches.map((branch) => {
+                {displayBranches.map((branch) => {
                   const isCurrentBranch = branch.name === currentBranchName;
                   const isDefaultBranch = branch.is_default || branch.isDefault;
                   return (
@@ -328,6 +400,24 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                   );
                 })}
                 {branchingEnabled && <Tooltip id="ab-delete-branch-tooltip" place="right" style={{ zIndex: 9999 }} />}
+                {/* Load More — platform git sync only, hidden during search */}
+                {branchingEnabled && wsHasMoreRemote && !searchTerm && (
+                  <button
+                    className="load-more-btn"
+                    onClick={() => wsActions.loadMoreRemoteBranches()}
+                    disabled={wsIsLoadingMore}
+                    data-cy="branch-load-more-btn"
+                  >
+                    {wsIsLoadingMore ? (
+                      <>
+                        <div className="branch-spinner"></div>
+                        <span>Loading..</span>
+                      </>
+                    ) : (
+                      'Load more..'
+                    )}
+                  </button>
+                )}
               </>
             )}
           </div>
