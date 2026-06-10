@@ -2,7 +2,7 @@
   "tooljet_database": [
     {
       "id": "6841c89d-8061-4b2c-8f4c-25a66fbc0408",
-      "table_name": "my_application",
+      "table_name": "digital_marketing_campaign",
       "schema": {
         "columns": [
           {
@@ -167,7 +167,7 @@
             "currentEnvironmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
             "promotedFrom": null,
             "createdAt": "2024-04-25T07:39:09.541Z",
-            "updatedAt": "2024-04-30T23:58:13.860Z"
+            "updatedAt": "2024-05-02T17:30:38.217Z"
           },
           "components": [
             {
@@ -309,6 +309,9 @@
                 },
                 "actionButtonRadius": {
                   "value": "5"
+                },
+                "contentWrap": {
+                  "value": "{{true}}"
                 }
               },
               "generalStyles": {},
@@ -322,7 +325,7 @@
               },
               "validation": {},
               "createdAt": "2024-04-25T07:39:09.549Z",
-              "updatedAt": "2024-04-26T06:43:03.745Z",
+              "updatedAt": "2024-05-02T17:30:38.207Z",
               "layouts": [
                 {
                   "id": "495535ed-e2c0-4593-b88f-c64f82c283aa",
@@ -331,7 +334,8 @@
                   "left": 2.3255811789541276,
                   "width": 41,
                   "height": 590,
-                  "componentId": "5fa81679-523e-4a94-9113-28ce94231be5"
+                  "componentId": "5fa81679-523e-4a94-9113-28ce94231be5",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "4cbc9744-ce9d-4fd1-92c0-cf51c9d46316",
@@ -340,7 +344,8 @@
                   "left": 2.3255813953488373,
                   "width": 67.11627906976744,
                   "height": 456,
-                  "componentId": "5fa81679-523e-4a94-9113-28ce94231be5"
+                  "componentId": "5fa81679-523e-4a94-9113-28ce94231be5",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -393,7 +398,8 @@
                   "left": 16.27906976744186,
                   "width": 10,
                   "height": 34,
-                  "componentId": "1a209697-4175-47b6-ab90-fdb61881fdeb"
+                  "componentId": "1a209697-4175-47b6-ab90-fdb61881fdeb",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "a0c98d8d-eab9-45f8-a8ba-3b00d55087f0",
@@ -402,7 +408,8 @@
                   "left": 2.325586870913104,
                   "width": 5,
                   "height": 40,
-                  "componentId": "1a209697-4175-47b6-ab90-fdb61881fdeb"
+                  "componentId": "1a209697-4175-47b6-ab90-fdb61881fdeb",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -446,7 +453,8 @@
                   "left": 20.93023235878248,
                   "width": 32,
                   "height": 40,
-                  "componentId": "67e73b39-715a-4b42-8d5f-ffcf1d84aa03"
+                  "componentId": "67e73b39-715a-4b42-8d5f-ffcf1d84aa03",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "bdf471ce-e0dd-4b6c-9d0e-d8f6c3fac4e5",
@@ -455,7 +463,8 @@
                   "left": 18.6046511627907,
                   "width": 23.25581395348837,
                   "height": 40,
-                  "componentId": "67e73b39-715a-4b42-8d5f-ffcf1d84aa03"
+                  "componentId": "67e73b39-715a-4b42-8d5f-ffcf1d84aa03",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -502,7 +511,8 @@
                   "left": 76.74418604651163,
                   "width": 6.976744186046512,
                   "height": 30,
-                  "componentId": "646f26aa-fc65-4a5e-9c6a-f00b84ba23a2"
+                  "componentId": "646f26aa-fc65-4a5e-9c6a-f00b84ba23a2",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "666daa64-54af-4048-b9ab-169201819980",
@@ -511,7 +521,8 @@
                   "left": 81.39534287249784,
                   "width": 7,
                   "height": 40,
-                  "componentId": "646f26aa-fc65-4a5e-9c6a-f00b84ba23a2"
+                  "componentId": "646f26aa-fc65-4a5e-9c6a-f00b84ba23a2",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -551,7 +562,8 @@
                   "left": 2.325581395348837,
                   "width": 5,
                   "height": 200,
-                  "componentId": "cc4df5cd-c88a-4e8c-94f4-00d3907a6c21"
+                  "componentId": "cc4df5cd-c88a-4e8c-94f4-00d3907a6c21",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "44f938b0-11a7-4ad4-a212-a51142b65fce",
@@ -560,7 +572,8 @@
                   "left": 2.3255813953488373,
                   "width": 41,
                   "height": 690,
-                  "componentId": "cc4df5cd-c88a-4e8c-94f4-00d3907a6c21"
+                  "componentId": "cc4df5cd-c88a-4e8c-94f4-00d3907a6c21",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -611,7 +624,8 @@
                   "left": 34.88372093023256,
                   "width": 23.25581395348837,
                   "height": 40,
-                  "componentId": "50ece29d-cb07-46ab-a507-0ef208a53423"
+                  "componentId": "50ece29d-cb07-46ab-a507-0ef208a53423",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "1b948d88-63ff-4701-8561-81bba829f770",
@@ -620,7 +634,8 @@
                   "left": 20.930231661032778,
                   "width": 32,
                   "height": 40,
-                  "componentId": "50ece29d-cb07-46ab-a507-0ef208a53423"
+                  "componentId": "50ece29d-cb07-46ab-a507-0ef208a53423",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -671,7 +686,8 @@
                   "left": 37.2093023255814,
                   "width": 23.25581395348837,
                   "height": 40,
-                  "componentId": "13a18cff-1258-4bbe-9944-4f3bf501ee90"
+                  "componentId": "13a18cff-1258-4bbe-9944-4f3bf501ee90",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "85048493-d239-4eee-ba62-05cc8b4b977d",
@@ -680,7 +696,8 @@
                   "left": 20.930233455246288,
                   "width": 32,
                   "height": 40,
-                  "componentId": "13a18cff-1258-4bbe-9944-4f3bf501ee90"
+                  "componentId": "13a18cff-1258-4bbe-9944-4f3bf501ee90",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -731,7 +748,8 @@
                   "left": 20.930232558139537,
                   "width": 23.25581395348837,
                   "height": 40,
-                  "componentId": "ee580926-01da-4d4a-905d-17a8391d1d0d"
+                  "componentId": "ee580926-01da-4d4a-905d-17a8391d1d0d",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "0a0a0266-d7ec-4ff1-9ec4-dea31ea4bfe0",
@@ -740,7 +758,8 @@
                   "left": 20.93023644415038,
                   "width": 32,
                   "height": 40,
-                  "componentId": "ee580926-01da-4d4a-905d-17a8391d1d0d"
+                  "componentId": "ee580926-01da-4d4a-905d-17a8391d1d0d",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -784,7 +803,8 @@
                   "left": 23.255813953488374,
                   "width": 23.25581395348837,
                   "height": 40,
-                  "componentId": "f4747f02-74f7-4b25-a4f8-7fee2cf891a2"
+                  "componentId": "f4747f02-74f7-4b25-a4f8-7fee2cf891a2",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "21713895-f6e1-4d1a-8d97-673929f68483",
@@ -793,7 +813,8 @@
                   "left": 20.930232558139533,
                   "width": 32,
                   "height": 40,
-                  "componentId": "f4747f02-74f7-4b25-a4f8-7fee2cf891a2"
+                  "componentId": "f4747f02-74f7-4b25-a4f8-7fee2cf891a2",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -847,7 +868,8 @@
                   "left": 23.25581395348837,
                   "width": 23.25581395348837,
                   "height": 40,
-                  "componentId": "cd5677e8-5a52-4843-a6b8-1b3c7159ac4f"
+                  "componentId": "cd5677e8-5a52-4843-a6b8-1b3c7159ac4f",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "1e6a99f4-2424-437e-bb2f-fd1516889913",
@@ -856,7 +878,8 @@
                   "left": 20.930262786288107,
                   "width": 32,
                   "height": 40,
-                  "componentId": "cd5677e8-5a52-4843-a6b8-1b3c7159ac4f"
+                  "componentId": "cd5677e8-5a52-4843-a6b8-1b3c7159ac4f",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -915,7 +938,8 @@
                   "left": 25.58139534883721,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "93cebb45-33ac-4634-8c67-859e1515ab51"
+                  "componentId": "93cebb45-33ac-4634-8c67-859e1515ab51",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "f7b55127-369d-4a57-8e16-fa8028682d10",
@@ -924,7 +948,8 @@
                   "left": 20.930220033577218,
                   "width": 32,
                   "height": 80,
-                  "componentId": "93cebb45-33ac-4634-8c67-859e1515ab51"
+                  "componentId": "93cebb45-33ac-4634-8c67-859e1515ab51",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -979,7 +1004,8 @@
                   "left": 90.69767441860466,
                   "width": 6.976744186046512,
                   "height": 30,
-                  "componentId": "05ada93c-055e-4802-bf39-645245fb592f"
+                  "componentId": "05ada93c-055e-4802-bf39-645245fb592f",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "da466d0a-a88d-4555-980c-758f4dcb3cdd",
@@ -988,7 +1014,8 @@
                   "left": 86.046519155145,
                   "width": 4,
                   "height": 30,
-                  "componentId": "05ada93c-055e-4802-bf39-645245fb592f"
+                  "componentId": "05ada93c-055e-4802-bf39-645245fb592f",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1047,7 +1074,8 @@
                   "left": 32.558139534883715,
                   "width": 6.976744186046512,
                   "height": 30,
-                  "componentId": "421caa3b-3c6a-45c6-8a94-1befb7c557a9"
+                  "componentId": "421caa3b-3c6a-45c6-8a94-1befb7c557a9",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "9c8b77ff-0c7b-49be-8a64-e3c8921907b9",
@@ -1056,7 +1084,8 @@
                   "left": 20.930235080984584,
                   "width": 32,
                   "height": 40,
-                  "componentId": "421caa3b-3c6a-45c6-8a94-1befb7c557a9"
+                  "componentId": "421caa3b-3c6a-45c6-8a94-1befb7c557a9",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1114,7 +1143,8 @@
                   "left": 72.09302325581396,
                   "width": 6.976744186046512,
                   "height": 30,
-                  "componentId": "92582d91-e57c-438d-89a0-20eb90b67462"
+                  "componentId": "92582d91-e57c-438d-89a0-20eb90b67462",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "ad131ed9-e1d4-42a7-9d90-3332c8013faa",
@@ -1123,7 +1153,8 @@
                   "left": 74.41859707278594,
                   "width": 9,
                   "height": 40,
-                  "componentId": "92582d91-e57c-438d-89a0-20eb90b67462"
+                  "componentId": "92582d91-e57c-438d-89a0-20eb90b67462",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1177,7 +1208,8 @@
                   "left": 53.48837209302326,
                   "width": 19,
                   "height": 40,
-                  "componentId": "2b8cf34c-f06a-4a86-a45d-4524a5a6932c"
+                  "componentId": "2b8cf34c-f06a-4a86-a45d-4524a5a6932c",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1233,7 +1265,8 @@
                   "left": 2.3255811827776833,
                   "width": 6,
                   "height": 40,
-                  "componentId": "deac8024-81b5-49b3-a9ff-afc0ae8138c2"
+                  "componentId": "deac8024-81b5-49b3-a9ff-afc0ae8138c2",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1277,7 +1310,8 @@
                   "left": 4.651158805905836,
                   "width": 7,
                   "height": 40,
-                  "componentId": "0741d5f7-b09b-4660-bd17-2bea9e890365"
+                  "componentId": "0741d5f7-b09b-4660-bd17-2bea9e890365",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "79cdc066-b0d0-4eee-bbe9-af3bdd764aa7",
@@ -1286,7 +1320,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "0741d5f7-b09b-4660-bd17-2bea9e890365"
+                  "componentId": "0741d5f7-b09b-4660-bd17-2bea9e890365",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1330,7 +1365,8 @@
                   "left": 4.651160396063708,
                   "width": 7,
                   "height": 40,
-                  "componentId": "73d20ccf-8d36-4b97-b33c-694057b88032"
+                  "componentId": "73d20ccf-8d36-4b97-b33c-694057b88032",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "4663d3e9-ba8c-45d1-84fe-407e4288eb36",
@@ -1339,7 +1375,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "73d20ccf-8d36-4b97-b33c-694057b88032"
+                  "componentId": "73d20ccf-8d36-4b97-b33c-694057b88032",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1383,7 +1420,8 @@
                   "left": 4.651159605683358,
                   "width": 7,
                   "height": 60,
-                  "componentId": "38414898-6b18-4040-be62-978d360d2e7e"
+                  "componentId": "38414898-6b18-4040-be62-978d360d2e7e",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "021a63e5-1b01-4ada-9b9c-f7f6a538ca04",
@@ -1392,7 +1430,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "38414898-6b18-4040-be62-978d360d2e7e"
+                  "componentId": "38414898-6b18-4040-be62-978d360d2e7e",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1436,7 +1475,8 @@
                   "left": 4.651160892162732,
                   "width": 7,
                   "height": 40,
-                  "componentId": "aebd62ca-aded-40b4-a744-9d9dc1f9af5d"
+                  "componentId": "aebd62ca-aded-40b4-a744-9d9dc1f9af5d",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "c9ce47dd-22ae-4db3-94a0-bc5ca8f6ef18",
@@ -1445,7 +1485,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "aebd62ca-aded-40b4-a744-9d9dc1f9af5d"
+                  "componentId": "aebd62ca-aded-40b4-a744-9d9dc1f9af5d",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1489,7 +1530,8 @@
                   "left": 4.651165486548979,
                   "width": 7,
                   "height": 40,
-                  "componentId": "48f491c5-3e7b-4ab6-992d-7a1d931e8cc8"
+                  "componentId": "48f491c5-3e7b-4ab6-992d-7a1d931e8cc8",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "e0199a3e-16d8-4c1c-8ba1-ab8f9dcc44a3",
@@ -1498,7 +1540,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "48f491c5-3e7b-4ab6-992d-7a1d931e8cc8"
+                  "componentId": "48f491c5-3e7b-4ab6-992d-7a1d931e8cc8",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1542,7 +1585,8 @@
                   "left": 2.3255833196588704,
                   "width": 41,
                   "height": 70,
-                  "componentId": "a7e8e17f-77d2-4ab9-a002-ac437c7531bd"
+                  "componentId": "a7e8e17f-77d2-4ab9-a002-ac437c7531bd",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1593,7 +1637,8 @@
                   "left": 0,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "f9a74159-ebe5-4294-b711-3d7a96e0a3b1"
+                  "componentId": "f9a74159-ebe5-4294-b711-3d7a96e0a3b1",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "f78a1286-57f1-4163-884d-b76f6d9bc56f",
@@ -1602,7 +1647,8 @@
                   "left": 2.3255813953488444,
                   "width": 13.000000000000002,
                   "height": 40,
-                  "componentId": "f9a74159-ebe5-4294-b711-3d7a96e0a3b1"
+                  "componentId": "f9a74159-ebe5-4294-b711-3d7a96e0a3b1",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1646,7 +1692,8 @@
                   "left": 4.651157262994028,
                   "width": 7,
                   "height": 40,
-                  "componentId": "f166862a-3a5f-4a84-864b-aa9072a7ffd3"
+                  "componentId": "f166862a-3a5f-4a84-864b-aa9072a7ffd3",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "6102558f-4e00-4b7d-8b7d-f569207101b7",
@@ -1655,7 +1702,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "f166862a-3a5f-4a84-864b-aa9072a7ffd3"
+                  "componentId": "f166862a-3a5f-4a84-864b-aa9072a7ffd3",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1699,7 +1747,8 @@
                   "left": 4.6511506533698475,
                   "width": 7,
                   "height": 80,
-                  "componentId": "c8c6fd67-f82b-41f7-82cb-0c5099597ae4"
+                  "componentId": "c8c6fd67-f82b-41f7-82cb-0c5099597ae4",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "8a88f28b-63b8-42f2-a943-7624fbebe4b7",
@@ -1708,7 +1757,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "c8c6fd67-f82b-41f7-82cb-0c5099597ae4"
+                  "componentId": "c8c6fd67-f82b-41f7-82cb-0c5099597ae4",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1752,7 +1802,8 @@
                   "left": 4.651161466491635,
                   "width": 7,
                   "height": 40,
-                  "componentId": "f2af5c75-1be7-44d6-913b-09c5f3bacfcf"
+                  "componentId": "f2af5c75-1be7-44d6-913b-09c5f3bacfcf",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "a7633d48-c5bb-4f11-b167-2c04ee56fa61",
@@ -1761,7 +1812,8 @@
                   "left": 2.3255813953488373,
                   "width": 13.953488372093023,
                   "height": 40,
-                  "componentId": "f2af5c75-1be7-44d6-913b-09c5f3bacfcf"
+                  "componentId": "f2af5c75-1be7-44d6-913b-09c5f3bacfcf",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1805,7 +1857,8 @@
                   "left": 20.930232558139533,
                   "width": 13.953488372093023,
                   "height": 100,
-                  "componentId": "ea53d3a8-f323-4714-ab81-ce00c07790eb"
+                  "componentId": "ea53d3a8-f323-4714-ab81-ce00c07790eb",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "a381fff9-3a88-409f-85a5-e3673e55de27",
@@ -1814,7 +1867,8 @@
                   "left": 20.930230511855857,
                   "width": 32,
                   "height": 100,
-                  "componentId": "ea53d3a8-f323-4714-ab81-ce00c07790eb"
+                  "componentId": "ea53d3a8-f323-4714-ab81-ce00c07790eb",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             },
@@ -1874,7 +1928,8 @@
                   "left": 72.09302325581396,
                   "width": 6.976744186046512,
                   "height": 30,
-                  "componentId": "cedf6629-eb4b-40f0-af07-145ad64d6cd7"
+                  "componentId": "cedf6629-eb4b-40f0-af07-145ad64d6cd7",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 },
                 {
                   "id": "7cea9abe-705a-4abc-b10b-83a12d7a125a",
@@ -1883,7 +1938,8 @@
                   "left": 58.13953877153513,
                   "width": 6,
                   "height": 40,
-                  "componentId": "cedf6629-eb4b-40f0-af07-145ad64d6cd7"
+                  "componentId": "cedf6629-eb4b-40f0-af07-145ad64d6cd7",
+                  "updatedAt": "2024-05-02T07:53:28.271Z"
                 }
               ]
             }
@@ -2177,120 +2233,13 @@
           ],
           "dataQueries": [
             {
-              "id": "9e0eea46-2d32-453f-bf15-4a7a4c64acb8",
-              "name": "generateTaggedUrl",
-              "options": {
-                "code": "function generateUtmUrl({\n  utmMedium,\n  utmSource,\n  utmCampaign,\n  utmTerm,\n  utmContent,\n  baseUrl,\n}) {\n  // Trim white spaces from the parameters & base url\n  utmMedium = utmMedium.trim();\n  utmSource = utmSource.trim();\n  utmCampaign = utmCampaign.trim();\n  utmTerm = utmTerm.trim();\n  utmContent = utmContent.trim();\n  baseUrl = baseUrl.trim();\n\n  // Construct the UTM parameters\n  const utmParams = [];\n\n  // Add mandatory parameters\n  if (!utmMedium || !utmSource || !utmCampaign || !baseUrl) {\n    actions.showAlert(\"warning\", \"Please complete the required fields.\");\n    return;\n  }\n  utmParams.push(`utm_medium=${encodeURI(utmMedium)}`);\n  utmParams.push(`utm_source=${encodeURI(utmSource)}`);\n  utmParams.push(`utm_campaign=${encodeURI(utmCampaign)}`);\n\n  // Add optional parameters if provided\n  if (utmTerm) {\n    utmParams.push(`utm_term=${encodeURI(utmTerm)}`);\n  }\n  if (utmContent) {\n    utmParams.push(`utm_content=${encodeURI(utmContent)}`);\n  }\n\n  // Construct the final URL\n  const utmParamsString = utmParams.join(\"&\");\n  const indexOfParams = baseUrl.indexOf(\"?\");\n  let finalURL;\n  if (indexOfParams != -1) {\n    finalURL = `${baseUrl.slice(0, indexOfParams + 1)}`;\n    finalURL += `${utmParamsString}`;\n    finalURL += `&${baseUrl.slice(indexOfParams + 1)}`;\n  } else {\n    finalURL = `${baseUrl}?${utmParamsString}`;\n  }\n\n  return finalURL;\n}\n\nreturn generateUtmUrl({\n  utmMedium: components.textinput2.value,\n  utmSource: components.textinput3.value,\n  utmCampaign: components.textinput4.value,\n  utmTerm: components.textinput5.value,\n  utmContent: components.textinput6.value,\n  baseUrl: components.textinput7.value,\n});",
-                "parameters": []
-              },
-              "dataSourceId": "1c6810f9-0fe5-44ff-a3b9-383ee26699ff",
-              "appVersionId": "3566a416-9a1e-4a8f-8a83-cf85f777beb0",
-              "createdAt": "2024-04-25T07:39:09.549Z",
-              "updatedAt": "2024-04-25T07:39:09.549Z"
-            },
-            {
-              "id": "1301c5af-62c5-4461-aa9c-87c8db80394d",
-              "name": "createUtmTag",
-              "options": {
-                "operation": "create_row",
-                "transformationLanguage": "javascript",
-                "enableTransformation": false,
-                "organization_id": "fcf15b7b-6daa-4f2c-b458-eeafd41a04bd",
-                "table_id": "6841c89d-8061-4b2c-8f4c-25a66fbc0408",
-                "join_table": {
-                  "joins": [
-                    {
-                      "id": 1712467232783,
-                      "conditions": {
-                        "operator": "AND",
-                        "conditionsList": [
-                          {
-                            "operator": "=",
-                            "leftField": {
-                              "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
-                            }
-                          }
-                        ]
-                      },
-                      "joinType": "INNER"
-                    }
-                  ],
-                  "from": {
-                    "name": "7498f8cb-b774-44c6-b9d3-57ee088a9210",
-                    "type": "Table"
-                  },
-                  "fields": [
-                    {
-                      "name": "id",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
-                    },
-                    {
-                      "name": "UTM_medium",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
-                    },
-                    {
-                      "name": "UTM_source",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
-                    },
-                    {
-                      "name": "UTM_campaign",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
-                    }
-                  ]
-                },
-                "list_rows": {},
-                "create_row": {
-                  "0": {
-                    "column": "UTM_medium",
-                    "value": "{{components.textinput2.value}}"
-                  },
-                  "1": {
-                    "column": "UTM_source",
-                    "value": "{{components.textinput3.value}}"
-                  },
-                  "2": {
-                    "column": "UTM_campaign",
-                    "value": "{{components.textinput4.value}}"
-                  },
-                  "3": {
-                    "column": "UTM_term",
-                    "value": "{{components.textinput5.value}}"
-                  },
-                  "4": {
-                    "column": "UTM_content",
-                    "value": "{{components.textinput6.value}}"
-                  },
-                  "5": {
-                    "column": "URL",
-                    "value": "{{components.textinput7.value}}"
-                  },
-                  "6": {
-                    "column": "Final_updated_URL",
-                    "value": "{{variables.generatedUrl}}"
-                  },
-                  "7": {
-                    "column": "Last_updated_on",
-                    "value": "{{moment().format()}}"
-                  },
-                  "72e9e0dc-b802-4f0d-a807-3b449ee6e09a": {
-                    "column": "Notes",
-                    "value": "{{components.textarea1.value}}"
-                  }
-                }
-              },
-              "dataSourceId": "edb3eb05-d46d-4fdd-9f64-6a2b9f0ad0e5",
-              "appVersionId": "3566a416-9a1e-4a8f-8a83-cf85f777beb0",
-              "createdAt": "2024-04-25T07:39:09.549Z",
-              "updatedAt": "2024-04-25T07:39:09.549Z"
-            },
-            {
               "id": "4a7904fe-bf7b-444e-832a-1462d5ebba64",
               "name": "getUtmTags",
               "options": {
                 "operation": "list_rows",
                 "transformationLanguage": "javascript",
                 "enableTransformation": false,
-                "organization_id": "fcf15b7b-6daa-4f2c-b458-eeafd41a04bd",
+                "organization_id": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
                 "table_id": "6841c89d-8061-4b2c-8f4c-25a66fbc0408",
                 "join_table": {
                   "joins": [
@@ -2363,6 +2312,137 @@
               "dataSourceId": "edb3eb05-d46d-4fdd-9f64-6a2b9f0ad0e5",
               "appVersionId": "3566a416-9a1e-4a8f-8a83-cf85f777beb0",
               "createdAt": "2024-04-25T07:39:09.549Z",
+              "updatedAt": "2024-05-03T16:32:58.623Z"
+            },
+            {
+              "id": "1301c5af-62c5-4461-aa9c-87c8db80394d",
+              "name": "createUtmTag",
+              "options": {
+                "operation": "create_row",
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "organization_id": "fcf15b7b-6daa-4f2c-b458-eeafd41a04bd",
+                "table_id": "6841c89d-8061-4b2c-8f4c-25a66fbc0408",
+                "join_table": {
+                  "joins": [
+                    {
+                      "id": 1714753945878,
+                      "conditions": {
+                        "operator": "AND",
+                        "conditionsList": [
+                          {
+                            "operator": "=",
+                            "leftField": {
+                              "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                            }
+                          }
+                        ]
+                      },
+                      "joinType": "INNER"
+                    }
+                  ],
+                  "from": {
+                    "name": "6841c89d-8061-4b2c-8f4c-25a66fbc0408",
+                    "type": "Table"
+                  },
+                  "fields": [
+                    {
+                      "name": "id",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "UTM_medium",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "UTM_source",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "UTM_campaign",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "UTM_term",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "UTM_content",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "URL",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "Final_updated_URL",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "Last_updated_on",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    },
+                    {
+                      "name": "Notes",
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
+                    }
+                  ]
+                },
+                "list_rows": {},
+                "create_row": {
+                  "0": {
+                    "column": "UTM_medium",
+                    "value": "{{components.textinput2.value}}"
+                  },
+                  "1": {
+                    "column": "UTM_source",
+                    "value": "{{components.textinput3.value}}"
+                  },
+                  "2": {
+                    "column": "UTM_campaign",
+                    "value": "{{components.textinput4.value}}"
+                  },
+                  "3": {
+                    "column": "UTM_term",
+                    "value": "{{components.textinput5.value}}"
+                  },
+                  "4": {
+                    "column": "UTM_content",
+                    "value": "{{components.textinput6.value}}"
+                  },
+                  "5": {
+                    "column": "URL",
+                    "value": "{{components.textinput7.value}}"
+                  },
+                  "6": {
+                    "column": "Final_updated_URL",
+                    "value": "{{variables.generatedUrl}}"
+                  },
+                  "7": {
+                    "column": "Last_updated_on",
+                    "value": "{{moment().format()}}"
+                  },
+                  "72e9e0dc-b802-4f0d-a807-3b449ee6e09a": {
+                    "column": "Notes",
+                    "value": "{{components.textarea1.value}}"
+                  }
+                }
+              },
+              "dataSourceId": "edb3eb05-d46d-4fdd-9f64-6a2b9f0ad0e5",
+              "appVersionId": "3566a416-9a1e-4a8f-8a83-cf85f777beb0",
+              "createdAt": "2024-04-25T07:39:09.549Z",
+              "updatedAt": "2024-05-03T16:32:28.917Z"
+            },
+            {
+              "id": "9e0eea46-2d32-453f-bf15-4a7a4c64acb8",
+              "name": "generateTaggedUrl",
+              "options": {
+                "code": "function generateUtmUrl({\n  utmMedium,\n  utmSource,\n  utmCampaign,\n  utmTerm,\n  utmContent,\n  baseUrl,\n}) {\n  // Trim white spaces from the parameters & base url\n  utmMedium = utmMedium.trim();\n  utmSource = utmSource.trim();\n  utmCampaign = utmCampaign.trim();\n  utmTerm = utmTerm.trim();\n  utmContent = utmContent.trim();\n  baseUrl = baseUrl.trim();\n\n  // Construct the UTM parameters\n  const utmParams = [];\n\n  // Add mandatory parameters\n  if (!utmMedium || !utmSource || !utmCampaign || !baseUrl) {\n    actions.showAlert(\"warning\", \"Please complete the required fields.\");\n    return;\n  }\n  utmParams.push(`utm_medium=${encodeURI(utmMedium)}`);\n  utmParams.push(`utm_source=${encodeURI(utmSource)}`);\n  utmParams.push(`utm_campaign=${encodeURI(utmCampaign)}`);\n\n  // Add optional parameters if provided\n  if (utmTerm) {\n    utmParams.push(`utm_term=${encodeURI(utmTerm)}`);\n  }\n  if (utmContent) {\n    utmParams.push(`utm_content=${encodeURI(utmContent)}`);\n  }\n\n  // Construct the final URL\n  const utmParamsString = utmParams.join(\"&\");\n  const indexOfParams = baseUrl.indexOf(\"?\");\n  let finalURL;\n  if (indexOfParams != -1) {\n    finalURL = `${baseUrl.slice(0, indexOfParams + 1)}`;\n    finalURL += `${utmParamsString}`;\n    finalURL += `&${baseUrl.slice(indexOfParams + 1)}`;\n  } else {\n    finalURL = `${baseUrl}?${utmParamsString}`;\n  }\n\n  return finalURL;\n}\n\nreturn generateUtmUrl({\n  utmMedium: components.textinput2.value,\n  utmSource: components.textinput3.value,\n  utmCampaign: components.textinput4.value,\n  utmTerm: components.textinput5.value,\n  utmContent: components.textinput6.value,\n  baseUrl: components.textinput7.value,\n});",
+                "parameters": []
+              },
+              "dataSourceId": "1c6810f9-0fe5-44ff-a3b9-383ee26699ff",
+              "appVersionId": "3566a416-9a1e-4a8f-8a83-cf85f777beb0",
+              "createdAt": "2024-04-25T07:39:09.549Z",
               "updatedAt": "2024-04-25T07:39:09.549Z"
             },
             {
@@ -2377,14 +2457,14 @@
                 "join_table": {
                   "joins": [
                     {
-                      "id": 1712589269670,
+                      "id": 1714753958920,
                       "conditions": {
                         "operator": "AND",
                         "conditionsList": [
                           {
                             "operator": "=",
                             "leftField": {
-                              "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                              "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                             }
                           }
                         ]
@@ -2393,49 +2473,49 @@
                     }
                   ],
                   "from": {
-                    "name": "7498f8cb-b774-44c6-b9d3-57ee088a9210",
+                    "name": "6841c89d-8061-4b2c-8f4c-25a66fbc0408",
                     "type": "Table"
                   },
                   "fields": [
                     {
                       "name": "id",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "UTM_medium",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "UTM_source",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "UTM_campaign",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "UTM_term",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "UTM_content",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "URL",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "Final_updated_URL",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "Last_updated_on",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     },
                     {
                       "name": "Notes",
-                      "table": "7498f8cb-b774-44c6-b9d3-57ee088a9210"
+                      "table": "6841c89d-8061-4b2c-8f4c-25a66fbc0408"
                     }
                   ]
                 },
@@ -2455,7 +2535,7 @@
               "dataSourceId": "edb3eb05-d46d-4fdd-9f64-6a2b9f0ad0e5",
               "appVersionId": "3566a416-9a1e-4a8f-8a83-cf85f777beb0",
               "createdAt": "2024-04-25T07:39:09.549Z",
-              "updatedAt": "2024-04-25T07:39:09.549Z"
+              "updatedAt": "2024-05-03T16:32:41.630Z"
             }
           ],
           "dataSources": [
@@ -2540,7 +2620,7 @@
               "currentEnvironmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
               "promotedFrom": null,
               "createdAt": "2024-04-25T07:39:09.541Z",
-              "updatedAt": "2024-04-30T23:58:13.860Z"
+              "updatedAt": "2024-05-02T17:30:38.217Z"
             }
           ],
           "appEnvironments": [
@@ -2706,5 +2786,5 @@
       }
     }
   ],
-  "tooljet_version": "2.35.4-ee2.15.26-cloud2.3.10"
+  "tooljet_version": "2.38.0-ee2.15.28-cloud2.3.11"
 }
