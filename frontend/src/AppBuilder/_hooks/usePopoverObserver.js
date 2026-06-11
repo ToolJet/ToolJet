@@ -3,23 +3,29 @@ import { useEffect, useRef } from 'react';
 function usePopoverObserver(containerRef, triggerRef, popoverRef, show, onShow, onHide, threshold = 0.5) {
   const prevShow = useRef(false);
 
-  // Check if it is a ref or a DOM element
-  const container = containerRef?.current !== undefined ? containerRef.current : containerRef;
-  const trigger = triggerRef?.current !== undefined ? triggerRef.current : triggerRef;
-  const popover = popoverRef?.current !== undefined ? popoverRef.current : popoverRef;
+  // Refs so the effect never re-runs due to caller passing new function references each render.
+  const onShowRef = useRef(onShow);
+  const onHideRef = useRef(onHide);
+  onShowRef.current = onShow;
+  onHideRef.current = onHide;
 
   useEffect(() => {
+    // Check if it is a ref or a DOM element
+    const container = containerRef?.current !== undefined ? containerRef.current : containerRef;
+    const trigger = triggerRef?.current !== undefined ? triggerRef.current : triggerRef;
+    const popover = popoverRef?.current !== undefined ? popoverRef.current : popoverRef;
+
     if (!container || !trigger) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           if (prevShow.current) {
-            onShow();
+            onShowRef.current();
             prevShow.current = false;
           }
         } else if (show) {
-          onHide();
+          onHideRef.current();
           prevShow.current = true;
         }
       },
@@ -40,7 +46,7 @@ function usePopoverObserver(containerRef, triggerRef, popoverRef, show, onShow, 
       observer.unobserve(trigger);
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, [containerRef, triggerRef, popoverRef, show, onShow, onHide, threshold]);
+  }, [containerRef, triggerRef, popoverRef, show, threshold]); // onShow/onHide removed from deps
 }
 
 export default usePopoverObserver;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, ButtonGroup, OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
 
@@ -10,21 +10,21 @@ import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
 const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
   const [showModal, setShowModal] = useState(false);
-  const closeMenu = () => setShowModal(false);
+  const closeMenu = useCallback(() => setShowModal(false), []);
+
+  // Ref so the document listener always reads the current showModal without a stale closure.
+  const showModalRef = useRef(showModal);
+  showModalRef.current = showModal;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (!showModalRef.current) return;
       const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
       const parameterItemPillButton = event.target.closest('.parameterItemPillButton');
       const isClickedOnPillButton = !!(parameterItemPillButton?.id === `query-param-${String(name).toLowerCase()}`);
-      if (isClickedOnAddButton && !isEdit) {
-        return;
-      }
-      if (isClickedOnPillButton) {
-        return;
-      }
+      if (isClickedOnAddButton && !isEdit) return;
+      if (isClickedOnPillButton) return;
       if (
-        showModal &&
         event.target.closest('#parameter-form-popover') === null &&
         event.target.closest('.cm-completionListIncompleteBottom') === null
       ) {
@@ -32,16 +32,10 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       }
     };
 
-    if (showModal) {
-      document.addEventListener('click', handleClickOutside);
-    } else {
-      document.removeEventListener('click', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]); // Include isEdit in the dependency array
+  }, []); // register once — showModal read via ref, name/isEdit/closeMenu are stable
 
   const handleSubmit = (param) => {
     if (param.name) {
@@ -50,6 +44,9 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
     }
   };
 
+  // Stable callbacks so usePopoverObserver's effect doesn't re-run (and recreate observers) on every render.
+  const handleShow = useCallback(() => setShowModal(true), []);
+
   usePopoverObserver(
     document.getElementsByClassName('query-details')[0],
     isEdit
@@ -57,7 +54,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       : document.getElementById('runjs-param-add-btn'),
     document.getElementById('parameter-form-popover'),
     showModal,
-    () => setShowModal(true),
+    handleShow,
     closeMenu
   );
 
