@@ -746,11 +746,20 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     if (validationRegex && validationRegex.trim() !== '') {
-      const re = new RegExp(validationRegex, 'g');
-      if (!re.test(widgetValue)) {
+      try {
+        const re = new RegExp(validationRegex, 'g');
+        if (!re.test(widgetValue)) {
+          return {
+            isValid: false,
+            validationError: 'The input should match pattern',
+          };
+        }
+      } catch (err) {
+        // Invalid/faulty regex pattern (eg, unterminated `[123123`). Surface it as a
+        // validation message instead of letting the SyntaxError crash the widget render.
         return {
           isValid: false,
-          validationError: 'The input should match pattern',
+          validationError: 'Invalid regex pattern',
         };
       }
     }
