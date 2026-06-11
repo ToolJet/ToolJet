@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../flexChildInspectorUtils';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -578,6 +579,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

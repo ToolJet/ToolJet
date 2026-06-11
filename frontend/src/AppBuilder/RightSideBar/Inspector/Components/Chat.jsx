@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../flexChildInspectorUtils';
 import { EventManager } from '../EventManager';
 
 export const Chat = ({
@@ -135,6 +136,7 @@ export const Chat = ({
 
   // Additional Actions accordion
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: 'Additional Actions',
     children: (
       <>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderElement } from '../../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../flexChildInspectorUtils';
 import { EventManager } from '../../EventManager';
 import { NavItemsList } from './components';
 import { useMenuItemsManager } from './hooks';
@@ -87,7 +88,8 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   // Helper function to create accordion items
-  const createAccordionItem = (title, children, isOpen = true) => ({
+  const createAccordionItem = (title, children, isOpen = true, id) => ({
+    id,
     title,
     isOpen,
     children,
@@ -125,6 +127,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
       ),
     },
     {
+      id: ADDITIONAL_ACTIONS_ACCORDION_ID,
       title: 'Additional Actions',
       type: 'properties',
       properties: additionalActions,
@@ -143,7 +146,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   // Build accordion items
   const items = sections.map((section) => {
     if (section.custom) {
-      return createAccordionItem(section.title, section.custom());
+      return createAccordionItem(section.title, section.custom(), section.isOpen, section.id);
     }
 
     const children = section.properties.map((property) => {
@@ -151,7 +154,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
       return createRenderElement(property, section.type, extraProps);
     });
 
-    return createAccordionItem(section.title, children);
+    return createAccordionItem(section.title, children, section.isOpen, section.id);
   });
 
   return <Accordion items={items} />;

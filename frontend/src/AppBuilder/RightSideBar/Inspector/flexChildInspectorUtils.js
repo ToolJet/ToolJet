@@ -1,14 +1,7 @@
 import React from 'react';
 import { FlexChildLayoutPanel } from './Components/FlexChildLayoutPanel';
 
-const ADDITIONAL_ACTIONS_TITLE_RE = /additional\s+actions?/i;
-
-export const isAdditionalActionsAccordionTitle = (title) => {
-  if (typeof title === 'string') {
-    return ADDITIONAL_ACTIONS_TITLE_RE.test(title.trim());
-  }
-  return false;
-};
+export const ADDITIONAL_ACTIONS_ACCORDION_ID = 'additional-actions';
 
 export const buildFlexChildWidthAccordionItem = ({ selectedComponentId, allComponents, title = 'Width' }) => ({
   title,
@@ -18,7 +11,7 @@ export const buildFlexChildWidthAccordionItem = ({ selectedComponentId, allCompo
 export const injectFlexChildWidthBeforeAdditionalActions = (items, flexChildItem) => {
   if (!flexChildItem || !Array.isArray(items)) return items;
 
-  const additionalActionsIndex = items.findIndex((item) => isAdditionalActionsAccordionTitle(item?.title));
+  const additionalActionsIndex = items.findIndex((item) => item?.id === ADDITIONAL_ACTIONS_ACCORDION_ID);
   if (additionalActionsIndex === -1) return items;
 
   const next = [...items];

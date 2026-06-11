@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../flexChildInspectorUtils';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
@@ -670,6 +671,7 @@ export const Table = (props) => {
       },
       // Additional actions section
       {
+        id: ADDITIONAL_ACTIONS_ACCORDION_ID,
         title: 'Additional actions',
         children: additionalActions.map((option) => renderCustomElement(option)),
       },
