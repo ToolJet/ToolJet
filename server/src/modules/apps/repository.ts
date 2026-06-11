@@ -5,7 +5,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { SessionAppData } from './types';
 import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
-import { dbTransactionWrap } from '@helpers/database.helper';
 import { isUUID } from 'class-validator';
 import { APP_TYPES } from './constants';
 
@@ -398,66 +397,64 @@ export class AppsRepository extends Repository<App> {
   }
 
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
-    return dbTransactionWrap(async (mgr: EntityManager) => {
-      const app = await mgr.findOne(App, {
-        where: { id: appId },
-        relations: ['appVersions'],
-      });
-      if (app && app.type !== APP_TYPES.WORKFLOW) {
-        const version = await this.resolveMetadataVersion(mgr, app);
-        this.overlayMetadata(app, version);
-      }
-      return app;
-    }, manager || this.manager);
+    const mgr = manager ?? this.manager;
+    const app = await mgr.findOne(App, {
+      where: { id: appId },
+      relations: ['appVersions'],
+    });
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
+      const version = await this.resolveMetadataVersion(mgr, app);
+      this.overlayMetadata(app, version);
+    }
+    return app;
   }
 
   async findByIdOrSlug(idOrSlug: string): Promise<App | null> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      if (isUUID(idOrSlug)) {
-        const app = await manager.findOne(App, {
-          where: { id: idOrSlug },
-          relations: ['appVersions'],
-        });
-        if (app) {
-          if (app.type === APP_TYPES.WORKFLOW) return app;
-          const version = await this.resolveMetadataVersion(manager, app);
-          this.overlayMetadata(app, version);
-          return app;
-        }
-      }
-
-      // Slug path: resolve through app_versions.slug
-      const candidate = await manager
-        .getRepository(AppVersion)
-        .createQueryBuilder('av')
-        .innerJoinAndSelect('av.app', 'app')
-        .where('av.slug = :slug', { slug: idOrSlug })
-        .getOne();
-
-      if (candidate?.app) {
-        const defaultBranchId = await this.getDefaultBranchId(manager, candidate.app.organizationId);
-        let resolved: AppVersion | null = candidate;
-
-        if (defaultBranchId && candidate.branchId !== defaultBranchId) {
-          // Git enabled — only default-branch rows are authoritative for slug lookup
-          resolved = await manager
-            .getRepository(AppVersion)
-            .createQueryBuilder('av')
-            .innerJoinAndSelect('av.app', 'app')
-            .where('av.slug = :slug', { slug: idOrSlug })
-            .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
-            .getOne();
-          if (!resolved?.app) return null;
-        }
-
-        const app = resolved.app;
-        this.overlayMetadata(app, resolved);
+    const manager = this.manager;
+    if (isUUID(idOrSlug)) {
+      const app = await manager.findOne(App, {
+        where: { id: idOrSlug },
+        relations: ['appVersions'],
+      });
+      if (app) {
+        if (app.type === APP_TYPES.WORKFLOW) return app;
+        const version = await this.resolveMetadataVersion(manager, app);
+        this.overlayMetadata(app, version);
         return app;
       }
+    }
 
-      // Fallback to apps.slug (workflows — metadata lives on apps.*)
-      return manager.findOne(App, { where: { slug: idOrSlug }, relations: ['appVersions'] });
-    }, this.manager);
+    // Slug path: resolve through app_versions.slug
+    const candidate = await manager
+      .getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .innerJoinAndSelect('av.app', 'app')
+      .where('av.slug = :slug', { slug: idOrSlug })
+      .getOne();
+
+    if (candidate?.app) {
+      const defaultBranchId = await this.getDefaultBranchId(manager, candidate.app.organizationId);
+      let resolved: AppVersion | null = candidate;
+
+      if (defaultBranchId && candidate.branchId !== defaultBranchId) {
+        // Git enabled — only default-branch rows are authoritative for slug lookup
+        resolved = await manager
+          .getRepository(AppVersion)
+          .createQueryBuilder('av')
+          .innerJoinAndSelect('av.app', 'app')
+          .where('av.slug = :slug', { slug: idOrSlug })
+          .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+          .getOne();
+        if (!resolved?.app) return null;
+      }
+
+      const app = resolved.app;
+      this.overlayMetadata(app, resolved);
+      return app;
+    }
+
+    // Fallback to apps.slug (workflows — metadata lives on apps.*)
+    return manager.findOne(App, { where: { slug: idOrSlug }, relations: ['appVersions'] });
   }
 
   // ----- helpers ---------------------------------------------------------
