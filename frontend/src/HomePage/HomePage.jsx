@@ -1072,6 +1072,8 @@ class HomePageComponent extends React.Component {
       .importGitApp(body)
       .then((data) => {
         const workspaceId = getWorkspaceId();
+        const appName = importedAppName?.trim() || git_app_name;
+        toast.success(`${appName} and its dependent resources have been imported successfully!`);
         this.props.navigate(`/${workspaceId}/apps/${data.app.id}`);
       })
       .catch((error) => {
