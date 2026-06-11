@@ -55,7 +55,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     wsActions,
     wsRemoteBranches,
     wsHasMoreRemote,
-    wsIsLoadingMore,
+    wsVisibleCount,
     wsActiveBranchId,
   } = useWorkspaceBranchesStore((state) => ({
     workspaceActiveBranch: state.currentBranch,
@@ -63,7 +63,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     wsActions: state.actions,
     wsRemoteBranches: state.remoteBranches,
     wsHasMoreRemote: state.hasMoreRemote,
-    wsIsLoadingMore: state.isLoadingMore,
+    wsVisibleCount: state.visibleCount,
     wsActiveBranchId: state.activeBranchId,
   }));
 
@@ -129,8 +129,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     [wsBranches]
   );
 
-  // Platform git sync: paginated display + fuzzy search.
-  // Active branch (workspaceActiveBranch) injected here if absent — keeps store clean for Load More.
+  // Platform git sync: full list is in store — sort, then slice to visibleCount
   const wsDisplayBranches = useMemo(() => {
     if (!branchingEnabled) return [];
     if (searchTerm) {
@@ -139,21 +138,9 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         .map((r) => r.item)
         .sort(branchSorter);
     }
-    const PAGE_SIZE = 10;
-    const paginated = wsRemoteBranches || [];
-    const activeMissing = workspaceActiveBranch && !paginated.some((b) => b.id === workspaceActiveBranch.id);
-
-    if (!activeMissing) {
-      return [...paginated].sort(branchSorter);
-    }
-
-    const sorted = [...paginated].sort(branchSorter);
-    const base = sorted.length >= PAGE_SIZE ? sorted.slice(0, sorted.length - 1) : sorted;
-    return [...base, { ...workspaceActiveBranch, lastCommitAt: workspaceActiveBranch.lastCommitAt ?? null }].sort(
-      branchSorter
-    );
+    return [...(wsRemoteBranches || [])].sort(branchSorter).slice(0, wsVisibleCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchingEnabled, searchTerm, fuse, wsRemoteBranches, workspaceActiveBranch, branchSorter]);
+  }, [branchingEnabled, searchTerm, fuse, wsRemoteBranches, wsVisibleCount, branchSorter]);
 
   // Per-app branching: simple filter + search (unchanged)
   const perAppFilteredBranches = useMemo(() => {
@@ -405,17 +392,9 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                   <button
                     className="load-more-btn"
                     onClick={() => wsActions.loadMoreRemoteBranches()}
-                    disabled={wsIsLoadingMore}
                     data-cy="branch-load-more-btn"
                   >
-                    {wsIsLoadingMore ? (
-                      <>
-                        <div className="branch-spinner"></div>
-                        <span>Loading..</span>
-                      </>
-                    ) : (
-                      'Load more..'
-                    )}
+                    Load more..
                   </button>
                 )}
               </>

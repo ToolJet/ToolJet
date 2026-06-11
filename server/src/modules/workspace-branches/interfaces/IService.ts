@@ -43,6 +43,6 @@ export interface IWorkspaceBranchService {
     tagName?: string
   ): Promise<{ draftVersionId: string | null }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
-  listRemoteBranches(organizationId: string, limit?: number, after?: string): Promise<{ branches: any[]; nextCursor: string | null; hasMore: boolean }>;
+  listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;
   getPullRequests(organizationId: string): Promise<any>;
 }

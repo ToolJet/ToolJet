@@ -19,9 +19,8 @@ const initialState = {
   isPushing: false,
   isPulling: false,
   remoteBranches: [],
-  remoteCursor: null,
+  visibleCount: 10,
   hasMoreRemote: false,
-  isLoadingMore: false,
   isDeletingBranch: false,
   deleteBranchError: null,
 };
@@ -161,12 +160,12 @@ export const useWorkspaceBranchesStore = create(
 
         async fetchRemoteBranches() {
           try {
-            const result = await workspaceBranchesService.listRemoteBranches(10, null);
+            const result = await workspaceBranchesService.listRemoteBranches();
             const branches = result?.branches || [];
             set({
               remoteBranches: branches,
-              remoteCursor: result?.nextCursor || null,
-              hasMoreRemote: result?.hasMore || false,
+              visibleCount: 10,
+              hasMoreRemote: branches.length > 10,
             });
             return branches;
           } catch (error) {
@@ -175,59 +174,24 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async loadMoreRemoteBranches() {
-          const cursor = get().remoteCursor;
-          if (!cursor || get().isLoadingMore) return;
-          set({ isLoadingMore: true });
-          try {
-            const result = await workspaceBranchesService.listRemoteBranches(10, cursor);
-            const newBranches = result?.branches || [];
-            const existingIds = new Set(get().remoteBranches.map((b) => b.id));
-            const uniqueNew = newBranches.filter((b) => !existingIds.has(b.id));
-            set({
-              remoteBranches: [...get().remoteBranches, ...uniqueNew],
-              remoteCursor: result?.nextCursor || null,
-              hasMoreRemote: result?.hasMore || false,
-              isLoadingMore: false,
-            });
-          } catch (error) {
-            console.error('Failed to load more remote branches:', error);
-            set({ isLoadingMore: false });
-          }
+        loadMoreRemoteBranches() {
+          const { remoteBranches, visibleCount } = get();
+          const newCount = visibleCount + 10;
+          set({ visibleCount: newCount, hasMoreRemote: newCount < remoteBranches.length });
         },
 
         async checkForUpdates(branch) {
           return await workspaceBranchesService.checkForUpdates(branch);
         },
 
-        async checkBranchExistsOnRemote(branchName) {
+        checkBranchExistsOnRemote(branchName) {
+          // Full list is already in store — check DB branches first, then remote
           if (get().branches.some((b) => b.name === branchName)) return true;
-          // Not in DB — GitHub-only branch. Check remote sample.
-          const loaded = get().remoteBranches;
-          if (loaded.some((b) => b.name === branchName)) return true;
-          const result = await workspaceBranchesService.listRemoteBranches(10, null);
-          return (result?.branches || []).some((b) => b.name === branchName);
+          return get().remoteBranches.some((b) => b.name === branchName);
         },
 
         resetRemoteBranches() {
-          set({ remoteBranches: [], remoteCursor: null, hasMoreRemote: false });
-        },
-        ensureActiveBranchVisible() {
-          const { activeBranchId, branches, remoteBranches, remoteCursor } = get();
-          if (!activeBranchId) return;
-          const isInList = remoteBranches.some((b) => b.id === activeBranchId);
-          if (isInList) return;
-          const activeBranch = branches.find((b) => b.id === activeBranchId);
-          if (!activeBranch) return;
-
-          const PAGE_SIZE = 10;
-          if (remoteBranches.length < PAGE_SIZE) {
-            // Fewer than 10 returned (small repo) — just append, total stays ≤ 10
-            set({ remoteBranches: [...remoteBranches, { ...activeBranch, lastCommitAt: null }] });
-          } else {
-            const trimmed = remoteBranches.slice(0, PAGE_SIZE - 1);
-            set({ remoteBranches: [...trimmed, { ...activeBranch, lastCommitAt: null }] });
-          }
+          set({ remoteBranches: [], visibleCount: 10, hasMoreRemote: false });
         },
 
         resetDeleteState() {

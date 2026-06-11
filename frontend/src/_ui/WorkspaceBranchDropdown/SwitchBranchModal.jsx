@@ -19,7 +19,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [branchToDelete, setBranchToDelete] = useState(null);
   const [switchingBranchId, setSwitchingBranchId] = useState(null);
 
-  const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, hasMoreRemote, isLoadingMore } =
+  const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, hasMoreRemote, visibleCount } =
     useWorkspaceBranchesStore((state) => ({
       branches: state.branches,
       activeBranchId: state.activeBranchId,
@@ -27,7 +27,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
       currentBranch: state.currentBranch,
       remoteBranches: state.remoteBranches,
       hasMoreRemote: state.hasMoreRemote,
-      isLoadingMore: state.isLoadingMore,
+      visibleCount: state.visibleCount,
     }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
   const organizationId = authenticationService.currentSessionValue?.current_organization_id;
@@ -70,23 +70,12 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
     },
     [activeBranchId]
   );
+  // Full list is always in store — just sort and slice to visibleCount
   const filteredBranches = useMemo(() => {
-    const PAGE_SIZE = 10;
-    const paginated = (remoteBranches || []).filter(
-      (branch) => !(onBranchSwitch && (branch.is_default || branch.isDefault))
-    );
-    const activeMissing = currentBranch && !paginated.some((b) => b.id === currentBranch.id);
-
-    if (!activeMissing) {
-      return [...paginated].sort(branchSorter);
-    }
-
-    const sorted = [...paginated].sort(branchSorter);
-    const base = sorted.length >= PAGE_SIZE ? sorted.slice(0, sorted.length - 1) : sorted;
-    // Re-sort after appending active so branchSorter places it at position 2.
-    return [...base, { ...currentBranch, lastCommitAt: currentBranch.lastCommitAt ?? null }].sort(branchSorter);
+    const all = (remoteBranches || []).filter((branch) => !(onBranchSwitch && (branch.is_default || branch.isDefault)));
+    return [...all].sort(branchSorter).slice(0, visibleCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remoteBranches, onBranchSwitch, branchSorter, currentBranch]);
+  }, [remoteBranches, onBranchSwitch, branchSorter, visibleCount]);
 
   // Fuse instance over all branches (DB-loaded, no commit dates) — rebuilt only when branches list changes
   const fuse = useMemo(
@@ -306,17 +295,9 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
                   <button
                     className="load-more-btn"
                     onClick={() => actions.loadMoreRemoteBranches()}
-                    disabled={isLoadingMore}
                     data-cy="workspace-branch-load-more-btn"
                   >
-                    {isLoadingMore ? (
-                      <>
-                        <div className="branch-spinner"></div>
-                        <span>Loading..</span>
-                      </>
-                    ) : (
-                      'Load more..'
-                    )}
+                    Load more..
                   </button>
                 )}
               </>

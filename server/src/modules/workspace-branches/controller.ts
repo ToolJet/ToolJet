@@ -81,16 +81,8 @@ export class WorkspaceBranchController implements IWorkspaceBranchController {
   @InitFeature(FEATURE_KEY.LIST_REMOTE_BRANCHES)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('remote')
-  async listRemoteBranches(
-    @User() user,
-    @Query('limit') limit?: string,
-    @Query('after') after?: string
-  ) {
-    return this.workspaceBranchService.listRemoteBranches(
-      user.organizationId,
-      limit ? parseInt(limit, 10) : 10,
-      after
-    );
+  async listRemoteBranches(@User() user) {
+    return this.workspaceBranchService.listRemoteBranches(user.organizationId);
   }
 
   @InitFeature(FEATURE_KEY.FETCH_PULL_REQUESTS)
