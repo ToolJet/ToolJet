@@ -7,6 +7,7 @@ import { EventManager } from '../../EventManager';
 import { useTranslation } from 'react-i18next';
 import { FieldPopoverContent, FieldsList } from './FieldManager';
 import { useFieldManager, usePopoverState } from './hooks';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../flexChildInspectorUtils';
 
 // Constants
 const ADDITIONAL_ACTIONS = [
@@ -213,6 +214,7 @@ export const KeyValuePair = (props) => {
       },
       // Additional actions section
       {
+        id: ADDITIONAL_ACTIONS_ACCORDION_ID,
         title: 'Additional actions',
         children: ADDITIONAL_ACTIONS.map((option) => renderCustomElement(option)),
       },
