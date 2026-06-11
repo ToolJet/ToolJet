@@ -1,0 +1,73 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Gmail datasource",
+  "description": "A schema defining Gmail datasource",
+  "type": "api",
+  "source": {
+    "name": "Gmail",
+    "kind": "gmail",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "redirect_url": {
+        "type": "string"
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "redirect_url": {
+      "value": "",
+      "encrypted": false
+    },
+    "allowed_auth_types": {
+      "value": "oauth2",
+      "encrypted": false
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    },
+    "access_token_url": {
+      "value": "https://oauth2.googleapis.com/token"
+    }
+  },
+  "properties": {
+    "oauth": {
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "OAuth configuration for Gmail",
+      "oauth_configs": {
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ]
+        },
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_scope_field": false
+      }
+    }
+  },
+  "required": []
+}

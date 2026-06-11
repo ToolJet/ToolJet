@@ -1,0 +1,730 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "BigQuery datasource",
+  "description": "A schema defining BigQuery datasource",
+  "type": "database",
+  "defaults": {
+    "mode": "gui"
+  },
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        { "name": "SQL mode", "value": "sql" },
+        { "name": "GUI mode", "value": "gui" }
+      ]
+    },
+    "sql": {
+      "query": {
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter SQL query",
+        "height": "150px",
+        "editorType": "multiline",
+        "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = @state LIMIT 100"
+      },
+      "query_params": {
+        "key": "query_params",
+        "label": "SQL Parameters",
+        "type": "react-component-headers",
+        "description": "Parameters for the SQL query",
+        "buttonText": "Add parameter",
+        "tooltip": "Use these parameters in the SQL query using name notation < @parameter_name >"
+      },
+      "queryOptions": {
+        "label": "Query options",
+        "key": "queryOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ location: 'US', dryRun: true }",
+        "description": "Enter query options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "queryResultsOptions": {
+        "label": "Query results options",
+        "key": "queryResultsOptions",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ wrapIntegers: true }",
+        "description": "Enter Query results options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "gui": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for operation",
+        "list": [
+          {
+            "value": "query",
+            "name": "Query"
+          },
+          {
+            "value": "list_datasets",
+            "name": "List Datasets"
+          },
+          {
+            "value": "list_tables",
+            "name": "List Tables"
+          },
+          {
+            "value": "get_dataset_info",
+            "name": "Get Dataset Info"
+          },
+          {
+            "value": "create_table",
+            "name": "Create Table"
+          },
+          {
+            "value": "delete_table",
+            "name": "Delete Table"
+          },
+          {
+            "value": "create_view",
+            "name": "Create View"
+          },
+          {
+            "value": "insert_record",
+            "name": "Insert Record"
+          },
+          {
+            "value": "delete_record",
+            "name": "Delete Record"
+          },
+          {
+            "value": "update_record",
+            "name": "Update Record"
+          },
+          {
+            "value": "bulk_insert",
+            "name": "Bulk insert"
+          },
+          {
+            "value": "bulk_update_pkey",
+            "name": "Bulk update using primary key"
+          },
+          {
+            "value": "bulk_upsert_pkey",
+            "name": "Bulk upsert using primary key"
+          }
+        ]
+      },
+      "list_datasets": {},
+      "insert_record": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "rows": {
+          "label": "Rows",
+          "key": "rows",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "[{name: 'Tom', age: 30},{name: 'Jane', age: 32}]",
+          "description": "Enter rows",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        }
+      },
+      "delete_record": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "condition": {
+          "label": "Condition",
+          "key": "condition",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "CustomerName='Alfreds Futterkiste'",
+          "description": "Enter condition",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryOptions": {
+          "label": "Query options",
+          "key": "queryOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ location: 'US', dryRun: true }",
+          "description": "Enter query options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryResultsOptions": {
+          "label": "Query results options",
+          "key": "queryResultsOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ wrapIntegers: true }",
+          "description": "Enter Query results options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        }
+      },
+      "create_table": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Table ID",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter Table ID"
+        },
+        "options": {
+          "label": "Options",
+          "key": "options",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{schema: [{name: 'Name', type: 'STRING', mode: 'REQUIRED'},{name: 'Age', type: 'INTEGER'}], location: 'US' }",
+          "description": "Enter options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        }
+      },
+      "delete_table": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        }
+      },
+      "create_view": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "view_name": {
+          "label": "View name",
+          "key": "view_name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter view name",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter view name"
+        },
+        "viewcolumns": {
+          "label": "View columns",
+          "key": "viewcolumns",
+          "type": "codehinter",
+          "placeholder": "column1, column2, ... ",
+          "description": "Enter viewcolumns",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "condition": {
+          "label": "Condition",
+          "key": "condition",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "CustomerName='Alfreds Futterkiste'",
+          "description": "Enter condition",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryOptions": {
+          "label": "Query options",
+          "key": "queryOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ location: 'US', dryRun: true }",
+          "description": "Enter query options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryResultsOptions": {
+          "label": "Query results options",
+          "key": "queryResultsOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ wrapIntegers: true }",
+          "description": "Enter Query results options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        }
+      },
+      "update_record": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "columns": {
+          "label": "Columns",
+          "key": "columns",
+          "type": "codehinter",
+          "placeholder": "{{({name:'bob',age:30})}}",
+          "description": "Enter columns",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "condition": {
+          "label": "Condition",
+          "key": "condition",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "CustomerName='Alfreds Futterkiste'",
+          "description": "Enter condition",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryOptions": {
+          "label": "Query options",
+          "key": "queryOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ location: 'US', dryRun: true }",
+          "description": "Enter query options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryResultsOptions": {
+          "label": "Query results options",
+          "key": "queryResultsOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ wrapIntegers: true }",
+          "description": "Enter Query results options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        }
+      },
+      "get_dataset_info": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        }
+      },
+      "list_tables": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        }
+      },
+      "query": {
+        "query": {
+          "label": "Query",
+          "key": "query",
+          "type": "codehinter",
+          "placeholder": "SELECT name FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = @state LIMIT 100",
+          "description": "Enter query",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "query_params": {
+          "key": "query_params",
+          "label": "SQL Parameters",
+          "type": "react-component-headers",
+          "description": "Parameters for the SQL query",
+          "buttonText": "Add parameter",
+          "tooltip": "Use these parameters in the SQL query using name notation < @parameter_name >"
+        },
+        "queryOptions": {
+          "label": "Query options",
+          "key": "queryOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ location: 'US', dryRun: true }",
+          "description": "Enter query options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        },
+        "queryResultsOptions": {
+          "label": "Query results options",
+          "key": "queryResultsOptions",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ wrapIntegers: true }",
+          "description": "Enter Query results options",
+          "height": "150px",
+          "editorType": "extendedSingleLine"
+        }
+      },
+      "bulk_insert": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "records": {
+          "label": "Records to insert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      },
+      "bulk_update_pkey": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "One or more primary key columns. Enter a single column name or an array for composite keys.",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "records": {
+          "label": "Records to update",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to update. Each row must include all primary key column values.",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      },
+      "bulk_upsert_pkey": {
+        "datasetId": {
+          "label": "Dataset ID",
+          "key": "datasetId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listDatasets",
+            "label": "Fetch Datasets"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a dataset",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select dataset"
+        },
+        "tableId": {
+          "label": "Table ID",
+          "key": "tableId",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "dependsOn": ["datasetId"],
+          "operation": {
+            "invokeMethod": "listTables",
+            "label": "Fetch Tables"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a table",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select table"
+        },
+        "primary_key_columns": {
+          "label": "Primary key column(s)",
+          "key": "primary_key_columns",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "One or more primary key columns used to detect conflicts. Enter a single column name or an array for composite keys.",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "e.g. id  or  {{ [\"id\", \"tenant_id\"] }}"
+        },
+        "records": {
+          "label": "Records to upsert",
+          "key": "records",
+          "type": "codehinter",
+          "description": "Array of row objects to insert or update. Each row must include all primary key column values.",
+          "height": "150px",
+          "editorType": "extendedSingleLine",
+          "placeholder": "{{ [ { id: 1, name: 'Alice' } ] }}"
+        }
+      }
+    }
+  }
+}

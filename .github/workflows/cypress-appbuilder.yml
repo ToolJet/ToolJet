@@ -1,0 +1,194 @@
+name: Cypress App-Builder
+
+on:
+  pull_request_target:
+    types: [labeled]
+  workflow_dispatch:
+
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  Cypress-App-Builder:
+    runs-on: ubuntu-22.04
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+
+    strategy:
+      matrix:
+        edition: >-
+          ${{ 
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') && fromJson('["ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
+            fromJson('[]')
+          }}
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 22.15.1
+
+      - name: Set up Git authentication for private submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Checkout with Submodules
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checking out the correct branch for submodules EE
+        if: matrix.edition == 'ee'
+        run: |
+          git submodule update --init --recursive
+          git submodule foreach --recursive '
+            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
+
+      - name: Set up Docker
+        uses: docker-practice/actions-setup-docker@master
+
+      - name: Install and build dependencies
+        run: |
+          npm cache clean --force
+          npm install
+          npm install --prefix server
+          npm install --prefix frontend
+          npm run build:plugins
+
+      - name: Local development setup
+        run: |
+          sudo docker network create tooljet
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+
+      - name: Run PostgREST Docker Container
+        run: |
+          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
+          -e PGRST_DB_URI="postgres://postgres:postgres@localhost:5432/tooljet" \
+          -e PGRST_DB_ANON_ROLE="postgres" \
+          -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+          postgrest/postgrest:v12.2.0
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
+          echo "TOOLJET_HOST=http://localhost:8082" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=localhost" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@localhost:5432/tooljet" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+
+      - name: Set up database
+        run: |
+          npm run --prefix server db:create
+          npm run --prefix server db:reset
+
+      - name: sleep 5
+        run: sleep 5
+
+      - name: Start services
+        run: |
+          cd plugins && npm start &
+          cd server && npm run start:dev &
+          cd frontend && npm start &
+
+      - name: Wait for the server to be ready
+        run: |
+          timeout 1500 bash -c '
+          until curl --silent --fail http://localhost:8082; do
+            sleep 5
+          done'
+
+      - name: Seeding (Setup Super Admin)
+        run: |
+          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "companyName": "ToolJet",
+              "name": "The Developer",
+              "workspaceName": "Tooljet'\''s workspace",
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }'
+
+      - name: docker logs
+        run: sudo docker logs postgrest
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+      - name: App builder
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=http://localhost:8082"
+          config-file: cypress-app-builder.config.js
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-appbuilder-${{ matrix.edition }}
+          path: cypress-tests/cypress/screenshots
+
+  # Cypress-App-builder-Subpath:
+  #   runs-on: ubuntu-22.04
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+  #       contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-subpath')
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.pull_request.head.ref }}
+
+  #     - name: Create Cypress environment file
+  #       id: create-json
+  #       uses: jsdaniell/create-json@1.1.2
+  #       with:
+  #         name: "cypress.env.json"
+  #         json: ${{ secrets.CYPRESS_SECRETS }}
+  #         dir: "./cypress-tests"
+
+  #     - name: App Builder subpath
+  #       uses: cypress-io/github-action@v5
+  #       with:
+  #         working-directory: ./cypress-tests
+  #         config: "baseUrl=http://localhost:80/apps/tooljet/"
+  #         config-file: cypress-app-builder.config.js
+
+  #     - name: Capture Screenshots
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: screenshots
+  #         path: cypress-tests/cypress/screenshots

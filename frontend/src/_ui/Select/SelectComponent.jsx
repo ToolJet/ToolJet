@@ -1,0 +1,92 @@
+import React from 'react';
+import _ from 'lodash';
+import Select, { components } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import defaultStyles from './styles';
+const CustomInput = (props) => {
+  return <components.Input {...props} data-cy={`${props.selectProps.dataCy || ''}-select-dropdown-input`} />;
+};
+export const SelectComponent = ({
+  options = [],
+  value,
+  onChange,
+  closeMenuOnSelect,
+  darkMode,
+  creatable = false,
+  ...restProps
+}) => {
+  const selectRef = React.useRef(null);
+  const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
+  const SelectElement = creatable ? CreatableSelect : Select;
+  const {
+    isMulti = false,
+    styles = {},
+    isLoading = false,
+    hasSearch = true,
+    height,
+    width,
+    placeholder = 'Select..',
+    customOption = undefined,
+    defaultValue = null,
+    useMenuPortal = true, // todo: deprecate this prop, use menuPortalTarget instead
+    maxMenuHeight = 250,
+    menuPortalTarget = null,
+    menuPlacement = 'auto',
+    useCustomStyles = false,
+    isDisabled = false,
+    borderRadius,
+    openMenuOnFocus = false,
+    customClassPrefix = '',
+    dataCy = '',
+  } = restProps;
+  const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
+  const selectOptions =
+    Array.isArray(options) && options.length === 0
+      ? options
+      : options?.map((option) => {
+          if (!option.hasOwnProperty('label')) {
+            return _.mapKeys(option, (value, key) => (key === 'value' ? key : 'label'));
+          }
+          return option;
+        });
+  const currentValue = value ? selectOptions.find((option) => option.value === value) || value : defaultValue;
+  const handleOnChange = (data) => {
+    if (isMulti) {
+      onChange(data);
+    } else {
+      onChange(data.value);
+    }
+  };
+  const renderCustomOption = (option) => {
+    if (customOption) {
+      return customOption(option);
+    }
+    return option.label;
+  };
+  return (
+    <SelectElement
+      {...restProps}
+      ref={selectRef}
+      selectRef={selectRef} // Exposed ref for custom components if needed
+      isLoading={isLoading}
+      isDisabled={isDisabled || isLoading}
+      options={selectOptions}
+      value={currentValue}
+      isSearchable={restProps.isSearchable ?? hasSearch}
+      onChange={handleOnChange}
+      placeholder={placeholder}
+      styles={customStyles}
+      openMenuOnFocus={openMenuOnFocus}
+      formatOptionLabel={(option) => renderCustomOption(option)}
+      menuPlacement={menuPlacement}
+      maxMenuHeight={maxMenuHeight}
+      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+      closeMenuOnSelect={closeMenuOnSelect ?? true}
+      classNamePrefix={`${customClassPrefix} ${isDarkMode && 'dark-theme'} ${'react-select'}`}
+      components={{
+        Input: CustomInput,
+        ...restProps.components,
+      }}
+    />
+  );
+};

@@ -1,0 +1,163 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Dynamodb datasource",
+  "description": "A schema defining Dynamodb datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "list_tables",
+          "name": "List Tables"
+        },
+        {
+          "value": "get_item",
+          "name": "Get Item"
+        },
+        {
+          "value": "query_table",
+          "name": "Query Table"
+        },
+        {
+          "value": "scan_table",
+          "name": "Scan Table"
+        },
+        {
+          "value": "delete_item",
+          "name": "Delete Item"
+        },
+        {
+          "value": "update_item",
+          "name": "Update Item"
+        },
+        {
+          "value": "describe_table",
+          "name": "Describe Table"
+        },
+        {
+          "value": "create_table",
+          "name": "Create Table"
+        },
+        {
+          "value": "put_item",
+          "name": "Put Item"
+        }
+      ]
+    },
+    "get_item": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
+      },
+      "key": {
+        "label": "Key name",
+        "key": "key",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter key name",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "query_table": {
+      "query_condition": {
+        "label": "Query condition",
+        "key": "query_condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter query condition",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "scan_table": {
+      "scan_condition": {
+        "label": "Scan condition",
+        "key": "scan_condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter scan condition",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete_item": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
+      },
+      "key": {
+        "label": "Key name",
+        "key": "key",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter key name",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "update_item": {
+      "update_condition": {
+        "label": "Update Condition",
+        "key": "update_condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter update condition",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "create_table": {
+      "table_parameters": {
+        "label": "Table Parameters",
+        "key": "table_parameters",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter table parameters",
+        "height": "200px"
+      }
+    },
+    "describe_table": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
+      }
+    },
+    "put_item": {
+      "new_item_details": {
+        "label": "New Item Details",
+        "key": "new_item_details",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter new item details to insert",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    }
+  }
+}

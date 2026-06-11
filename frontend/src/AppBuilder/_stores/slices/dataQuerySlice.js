@@ -1,0 +1,682 @@
+import { dataqueryService, appPermissionService } from '@/_services';
+import { getDefaultOptions } from '@/_stores/storeHelper';
+import { v4 as uuidv4 } from 'uuid';
+import _, { isEmpty, throttle } from 'lodash';
+import { toast } from 'react-hot-toast';
+import { isQueryRunnable } from '@/_helpers/utils';
+import { replaceQueryOptionsEntityReferencesWithIds } from '@/AppBuilder/_stores/utils';
+import { normalizeQueryTransformationOptions } from '@/AppBuilder/_hooks/useAppData';
+import { clearQueryRerunTimer } from '@/AppBuilder/_stores/slices/componentsSlice';
+
+const initialState = {
+  sortBy: 'custom',
+  sortOrder: 'desc',
+  isDeletingQueryInProcess: false,
+  creatingQueryInProcessId: null,
+  queryConfirmationList: [],
+  queuedActions: {},
+  queryUpdates: {},
+  queries: {
+    modules: {
+      canvas: [],
+    },
+  },
+};
+
+export const createDataQuerySlice = (set, get) => ({
+  initializeDataQuerySlice: (moduleId = 'canvas') => {
+    set(
+      (state) => {
+        state.dataQuery.queries.modules[moduleId] = [];
+      },
+      false,
+      'initializeDataQuerySlice'
+    );
+  },
+  dataQuery: {
+    ...initialState,
+    checkExistingQueryName: (newName, moduleId = 'canvas') =>
+      get().dataQuery.queries.modules[moduleId].some((query) => query.name === newName),
+    getCurrentModuleQueries: (moduleId = 'canvas') => get().dataQuery.queries.modules[moduleId],
+    setQueries: (queries, moduleId = 'canvas') => {
+      set(
+        (state) => {
+          state.dataQuery.queries.modules[moduleId] = queries;
+        },
+        false,
+        'setQueries'
+      );
+    },
+    sortDataQueries: (sortBy, sortOrder, moduleId = 'canvas') => {
+      set((state) => {
+        if (sortBy === 'custom') {
+          state.dataQuery.sortBy = 'custom';
+          return;
+        }
+        const newSortOrder = sortOrder ? sortOrder : state.dataQuery.sortOrder === 'asc' ? 'desc' : 'asc';
+        state.dataQuery.sortBy = sortBy;
+        state.dataQuery.sortOrder = newSortOrder;
+        state.dataQuery.queries.modules[moduleId] = sortByAttribute(
+          state.dataQuery.queries.modules[moduleId],
+          sortBy,
+          newSortOrder
+        );
+      });
+    },
+    createDataQuery: (
+      selectedDataSource,
+      shouldRunQuery,
+      customOptions = {},
+      moduleId = 'canvas',
+      queryName,
+      extraProperties = {}
+    ) => {
+      let name;
+      const appVersionId = get().currentVersionId;
+      const appId = get().appStore.modules[moduleId].app.appId;
+      const { options: defaultOptions, name: nameFromDefaultOptions } = getDefaultOptions(selectedDataSource);
+      if (!queryName) name = nameFromDefaultOptions;
+      else name = queryName;
+      const options = { ...defaultOptions, ...customOptions };
+      const kind = selectedDataSource.kind;
+      const tempId = uuidv4();
+      set((state) => {
+        state.dataQuery.creatingQueryInProcessId = tempId;
+      });
+      const selectedQuery = get().queryPanel.selectedQuery;
+      const setSelectedQuery = get().queryPanel.setSelectedQuery;
+      const setNameInputFocused = get().queryPanel.setNameInputFocused;
+      const setQueryToBeRun = get().queryPanel.setQueryToBeRun;
+      const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
+      const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
+      const setIsAppSaving = get().setIsAppSaving;
+      setIsAppSaving(true);
+      const dataQueries = get().dataQuery.queries.modules[moduleId];
+      const currDataQueries = [...dataQueries];
+      const runOnCreate = options.runOnCreate;
+      const callbackFunction = extraProperties?.callbackFunction;
+      let cleanSelectedQuery = { ...selectedQuery };
+      if (selectedQuery?.permissions) {
+        delete cleanSelectedQuery?.permissions; //Remove the permissions array from the selectedQuery before using it if exists
+      }
+
+      const folderId = extraProperties?.folderId;
+
+      set((state) => {
+        state.dataQuery.queries.modules[moduleId] = [
+          {
+            ...cleanSelectedQuery,
+            plugin_id: selectedDataSource.pluginId || selectedDataSource.plugin_id || null,
+            data_source_id: dataSourceId,
+            app_version_id: appVersionId,
+            options,
+            name,
+            kind,
+            id: tempId,
+            plugin: selectedDataSource.plugin,
+          },
+          ...currDataQueries,
+        ];
+      });
+      setSelectedQuery(tempId);
+      setNameInputFocused(true);
+      dataqueryService
+        .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId, folderId)
+        .then((data) => {
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
+            state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
+              if (query.id === tempId) {
+                return {
+                  ...query,
+                  id: data.id,
+                  data_source_id: dataSourceId,
+                };
+              }
+              return query;
+            });
+          });
+          // EE: add the real folder mapping from the backend response
+          if (data.folderMapping) {
+            get().queryFolders?.addRealQueryMapping?.(data.folderMapping);
+          }
+          setSelectedQuery(data.id);
+          if (shouldRunQuery) setQueryToBeRun(data);
+
+          /** Checks if there is an API call cached. If yes execute it */
+          if (!isEmpty(get()?.dataQuery?.queuedActions?.renameQuery)) {
+            get().dataQuery.renameQuery(data.id, get().dataQuery?.queuedActions.renameQuery);
+            set((state) => {
+              state.dataQuery.queuedActions = { ...get().dataQuery?.queuedActions, renameQuery: undefined };
+            });
+          }
+
+          if (!isEmpty(get()?.dataQuery?.queuedActions?.saveData)) {
+            get().dataQuery.saveData({ ...get().dataQuery?.queuedActions.saveData, id: data.id });
+            set((state) => {
+              state.dataQuery.queuedActions = { ...get().dataQuery?.queuedActions, saveData: undefined };
+            });
+          }
+
+          get().addNewQueryMapping(data.id, data.name, moduleId);
+          //! we need default value in store so that query can be resolved if referenced from other entity
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
+            },
+            moduleId
+          );
+
+          if (runOnCreate) {
+            get().queryPanel.runQuery(data.id, data.name, undefined, undefined, {}, true, false, moduleId);
+          }
+          if (callbackFunction) {
+            callbackFunction(data);
+          }
+        })
+        .catch((error) => {
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
+            state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
+              (query) => query.id !== tempId
+            );
+          });
+          setSelectedQuery(null);
+          toast.error(`Failed to create query: ${error.message ?? error.error}`);
+        })
+        .finally(() => setIsAppSaving(false));
+    },
+    renameQuery: (id, newName, moduleId = 'canvas') => {
+      /** If query creation in progress, skips call and pushes the update to queue */
+      if (get().dataQuery.creatingQueryInProcessId === id) {
+        set((state) => {
+          state.dataQuery.queuedActions = { ...get().dataQuery.queuedActions, renameQuery: newName };
+        });
+        return;
+      }
+      const setIsAppSaving = get().setIsAppSaving;
+      setIsAppSaving(true);
+      /**
+       * Seting name to store before api call for instant UI update and better UX.
+       * Name is again set to state post api call to handle if renaming fails in backend.
+       * */
+      set((state) => {
+        state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) =>
+          query.id === id ? { ...query, name: newName } : query
+        );
+      });
+      const versionId = get().currentVersionId;
+      dataqueryService
+        .update(id, versionId, newName)
+        .then((data) => {
+          set((state) => {
+            state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) =>
+              query.id === id ? { ...query, name: newName, updated_at: data.updated_at } : query
+            );
+          });
+
+          const selectedQuery = get().queryPanel.selectedQuery;
+          get().renameQueryMapping(selectedQuery?.name, newName, selectedQuery?.id, moduleId);
+
+          const setSelectedQuery = get().queryPanel.setSelectedQuery;
+          setSelectedQuery(id);
+        })
+        .catch((error) => {
+          toast.error(`Failed to rename query: ${error.message ?? error.error}`);
+        })
+        .finally(() => {
+          setIsAppSaving(false);
+        });
+    },
+    deleteDataQueries: (queryId, moduleId = 'canvas') => {
+      set((state) => {
+        state.dataQuery.isDeletingQueryInProcess = true;
+      });
+      const versionId = get().currentVersionId;
+      const setIsAppSaving = get().setIsAppSaving;
+      setIsAppSaving(true);
+      dataqueryService
+        .del(queryId, versionId)
+        .then(() => {
+          const dataQueries = get().dataQuery.queries.modules[moduleId];
+          // const deletedQueryName = dataQueries.find((query) => query.id === queryId).name;
+          const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
+          const setSelectedQuery = get().queryPanel.setSelectedQuery;
+          const setSelectedDataSource = get().queryPanel.setSelectedDataSource;
+          const selectedQuery = get().queryPanel.selectedQuery;
+          setSelectedQuery(newSelectedQuery?.id || null);
+          get().deleteQueryMapping(selectedQuery?.name, selectedQuery?.id, moduleId);
+
+          if (!newSelectedQuery?.id) {
+            setSelectedDataSource(null);
+          }
+          set((state) => {
+            state.dataQuery.isDeletingQueryInProcess = false;
+            state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].filter(
+              (query) => query.id !== queryId
+            );
+            delete state.resolvedStore.modules[moduleId].exposedValues.queries[queryId];
+          });
+          // EE: clean up folder mapping for the deleted query
+          get().queryFolders?.removeQueryMapping?.(queryId);
+        })
+        .catch((e) => {
+          if (e.statusCode === 403) {
+            toast.error('You do not have permission to delete this query.');
+          } else {
+            toast.error(`Failed to delete query: ${e.error}`);
+          }
+          set((state) => {
+            state.dataQuery.isDeletingQueryInProcess = false;
+          });
+        })
+        .finally(() => setIsAppSaving(false));
+
+      clearQueryRerunTimer(queryId);
+      get().removeNode(`queries.${queryId}`, moduleId);
+      get().updateDependencyValues(`queries.${queryId}`, moduleId);
+    },
+    duplicateQuery: (id, appId, moduleId = 'canvas') => {
+      set((state) => {
+        state.dataQuery.creatingQueryInProcessId = uuidv4();
+      });
+      const { eventsSlice } = get();
+      const { getEventsByComponentsId, bulkCreateAppVersionEventHandlers } = eventsSlice;
+      const dataQueries = get().dataQuery.queries.modules[moduleId];
+      const queryToClone = { ...dataQueries.find((query) => query.id === id) };
+      let newName = queryToClone.name + '_copy';
+      const names = dataQueries.map(({ name }) => name);
+      let count = 0;
+      while (names.includes(newName)) {
+        count++;
+        newName = queryToClone.name + '_copy' + count.toString();
+      }
+      queryToClone.name = newName;
+
+      const setIsAppSaving = get().setIsAppSaving;
+      const setSelectedQuery = get().queryPanel.setSelectedQuery;
+      setIsAppSaving(true);
+
+      dataqueryService
+        .create(
+          appId,
+          queryToClone.app_version_id,
+          queryToClone.name,
+          queryToClone.kind,
+          queryToClone.options,
+          queryToClone.data_source_id,
+          queryToClone.pluginId
+        )
+        .then((data) => {
+          set((state) => {
+            state.dataQuery.queries.modules[moduleId] = [
+              {
+                ...data,
+                data_source_id: queryToClone.data_source_id,
+                plugin: { iconFile: queryToClone.plugin?.iconFile, icon_file: queryToClone.plugin?.icon_file },
+              },
+              ...state.dataQuery.queries.modules[moduleId],
+            ];
+          });
+          setSelectedQuery(data.id, moduleId);
+
+          get().addNewQueryMapping(data.id, data.name, moduleId);
+          //! we need default value in store so that query can be resolved if referenced from other entity
+          get().setResolvedQuery(
+            data.id,
+            {
+              isLoading: false,
+              data: [],
+              rawData: [],
+              id: data.id,
+              metadata: undefined,
+              request: undefined,
+              response: undefined,
+              responseHeaders: undefined,
+              error: undefined,
+            },
+            moduleId
+          );
+
+          const events = getEventsByComponentsId(queryToClone.id) || [];
+
+          // Collect all events for bulk creation, filtering out invalid events
+          // Ensure data.id (new query ID) is valid before creating events
+          if (data?.id && events.length > 0) {
+            const newQueryId = data.id;
+            const eventsToCreate = events
+              .filter((event) => event?.event && event?.target && event?.index != null)
+              .map((event) => ({
+                name: event.name,
+                event: {
+                  ...event.event,
+                },
+                eventType: event.target,
+                attachedTo: newQueryId,
+                index: event.index,
+              }))
+              .filter((event) => event.attachedTo && event.eventType && event.event);
+
+            // Create all events in a single bulk request
+            // TODO: Extend query creation API to include events for single history entry
+            if (eventsToCreate.length > 0) {
+              bulkCreateAppVersionEventHandlers(eventsToCreate, moduleId);
+            }
+          }
+
+          if (queryToClone.permissions && queryToClone.permissions.length !== 0) {
+            const body = {
+              type: queryToClone.permissions[0]?.type,
+              ...(queryToClone.permissions[0]?.type === 'GROUP'
+                ? {
+                    groups: (queryToClone.permissions[0]?.groups || queryToClone.permissions[0]?.users || []).map(
+                      (group) => group.permissionGroupsId || group.permission_groups_id
+                    ),
+                  }
+                : { users: queryToClone.permissions[0]?.users.map((user) => user.userId || user.user_id) }),
+            };
+            appPermissionService
+              .createQueryPermission(appId, data.id, body)
+              .then((newQuery) => {
+                const dataQueries = get().dataQuery.queries.modules[moduleId];
+                const updatedDataQueries = dataQueries.map((query) => {
+                  if (query.id === data.id) {
+                    return {
+                      ...query,
+                      permissions: newQuery.length === 0 || newQuery.length === undefined ? [] : [newQuery[0]],
+                    };
+                  }
+                  return query;
+                });
+                get().dataQuery.setQueries(updatedDataQueries);
+              })
+              .catch(() => {
+                toast.error('Permission could not be created. Please try again!', {
+                  className: 'text-nowrap w-auto mw-100',
+                });
+              });
+          }
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
+          });
+        })
+        .catch((error) => {
+          console.error('error', error);
+          toast.error(`Failed to duplicate query: ${error.message ?? error.error}`);
+          set((state) => {
+            state.dataQuery.creatingQueryInProcessId = null;
+          });
+        })
+        .finally(() => setIsAppSaving(false));
+    },
+    changeDataQuery: (newDataSource, moduleId = 'canvas') => {
+      const appVersionId = get().currentVersionId;
+      const { queryPanel, setIsAppSaving } = get();
+      const { selectedQuery, setSelectedQuery, setSelectedDataSource } = queryPanel;
+      set((state) => {
+        state.dataQuery.isUpdatingQueryInProcess = true;
+      });
+      setIsAppSaving(true);
+      dataqueryService
+        .changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId)
+        .then(() => {
+          set((state) => {
+            state.dataQuery.isUpdatingQueryInProcess = false;
+            state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
+              if (query?.id === selectedQuery?.id) {
+                return { ...query, dataSourceId: newDataSource?.id, data_source_id: newDataSource?.id };
+              }
+              return query;
+            });
+          });
+          setSelectedQuery(selectedQuery.id);
+          setSelectedDataSource(newDataSource);
+        })
+        .catch((error) => {
+          toast.error(`Failed to change data query: ${error.message ?? error.error}`);
+          set((state) => {
+            state.dataQuery.isUpdatingQueryInProcess = false;
+          });
+        })
+        .finally(() => setIsAppSaving(false));
+    },
+    updateDataQuery: (options, moduleId = 'canvas') => {
+      const componentNameIdMapping = get().modules['canvas'].componentNameIdMapping;
+      const queryNameIdMapping = get().modules['canvas'].queryNameIdMapping;
+      set((state) => {
+        state.dataQuery.isUpdatingQueryInProcess = true;
+      });
+      const selectedQuery = get().queryPanel.selectedQuery;
+
+      const setSelectedQuery = get().queryPanel.setSelectedQuery;
+
+      const newOptions = replaceQueryOptionsEntityReferencesWithIds(
+        options,
+        componentNameIdMapping,
+        queryNameIdMapping
+      );
+
+      set((state) => {
+        state.dataQuery.isUpdatingQueryInProcess = false;
+        state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
+          if (query.id === selectedQuery.id) {
+            return {
+              ...query,
+              options: { ...newOptions },
+            };
+          }
+          return query;
+        });
+      });
+
+      // Update query dependency registrations when options change.
+      // Pass `options` (with entity names), not `newOptions` (with IDs), because
+      // registerQueryDependencies uses extractAndReplaceReferencesFromString which handles name→ID mapping.
+      if (options.runOnDependencyChange) {
+        get().registerQueryDependencies(selectedQuery.id, selectedQuery.name, selectedQuery.kind, options, moduleId);
+      } else {
+        // Toggle turned off — clean up __options__ sentinel node if it exists
+        const optionsPath = `queries.${selectedQuery.id}.__options__`;
+        const depGraph = get().dependencyGraph.modules[moduleId]?.graph;
+        if (depGraph && depGraph.hasNode(optionsPath)) {
+          set(
+            (state) => {
+              state.dependencyGraph.modules[moduleId].graph.removeLeafNode(optionsPath);
+              return { ...state };
+            },
+            false,
+            'clearQueryOptionsDeps'
+          );
+        }
+      }
+
+      setSelectedQuery(selectedQuery?.id);
+    },
+    saveData: throttle((newValues, moduleId = 'canvas') => {
+      /** If query creation in progress, skips call and pushes the update to queue */
+      if (get().dataQuery.creatingQueryInProcessId && get().dataQuery.creatingQueryInProcessId === newValues.id) {
+        set((state) => {
+          state.dataQuery.queuedActions = { ...get().dataQuery.queuedActions, saveData: newValues };
+        });
+        return;
+      }
+      // const entityIdMappedOptions = useResolveStore.getState().actions.findReferences(newValues?.options);
+
+      const setIsAppSaving = get().setIsAppSaving;
+      setIsAppSaving(true);
+      set((state) => {
+        state.dataQuery.isUpdatingQueryInProcess = true;
+      });
+
+      // .update(newValues?.id, newValues?.name, entityIdMappedOptions)
+      if (!newValues?.id) {
+        setIsAppSaving(false);
+        set((state) => {
+          state.dataQuery.isUpdatingQueryInProcess = true;
+        });
+        return;
+      }
+      const versionId = get().currentVersionId;
+      const updatePromise = dataqueryService.update(newValues?.id, versionId, newValues?.name, newValues?.options);
+      set((state) => {
+        state.dataQuery.queryUpdates[newValues?.id] = updatePromise;
+      });
+      updatePromise
+        .then((data) => {
+          localStorage.removeItem('transformation');
+          set((state) => {
+            state.dataQuery.queries.modules[moduleId] = state.dataQuery.queries.modules[moduleId].map((query) => {
+              if (query.id === newValues?.id) {
+                return { ...query, updated_at: data.updated_at };
+              }
+              return query;
+            });
+            state.dataQuery.isUpdatingQueryInProcess = false;
+          });
+        })
+        .catch(() => {
+          toast.error('App could not be saved.');
+          set((state) => {
+            state.dataQuery.isUpdatingQueryInProcess = false;
+          });
+        })
+        .finally(() => {
+          setIsAppSaving(false);
+          set((state) => {
+            delete state.dataQuery.queryUpdates[newValues?.id];
+          });
+        });
+    }, 500),
+    runOnLoadQueries: async (moduleId = 'canvas', queryList = null) => {
+      const queries = Array.isArray(queryList) ? queryList : get().dataQuery.queries.modules[moduleId];
+
+      try {
+        for (const query of queries) {
+          if (
+            (query.options?.runOnPageLoad || query.options?.run_on_page_load) &&
+            (query.restricted || isQueryRunnable(query))
+          ) {
+            await get().queryPanel.runQuery(
+              query.id,
+              query.name,
+              undefined,
+              undefined,
+              {},
+              undefined,
+              undefined,
+              false,
+              true,
+              moduleId
+            );
+          }
+        }
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    },
+    performDeletionUpdationAndCreationOfQuery: (queriesInfo, moduleId = 'canvas') => {
+      if (!(queriesInfo?.delete?.length || queriesInfo?.update?.length || queriesInfo?.create?.length)) return;
+
+      const queryIdsToDelete = new Set(queriesInfo.delete?.map((query) => query.id) ?? []);
+      const queriesToUpdate = new Map(queriesInfo.update?.map((query) => [query.id, query]) ?? []);
+      const queriesToCreate = (queriesInfo.create ?? []).map(normalizeQueryTransformationOptions);
+
+      set(
+        (state) => {
+          const queriesValueInState = state.dataQuery.queries.modules[moduleId];
+          const queryNameIdMapping = get().modules[moduleId].queryNameIdMapping;
+          const componentNameIdMapping = get().modules[moduleId].componentNameIdMapping;
+
+          const updatedQueriesValue = queriesValueInState
+            .filter((query) => {
+              const queryToBeDeleted = queryIdsToDelete.has(query.id);
+
+              if (queryToBeDeleted) {
+                delete state.modules[moduleId].queryNameIdMapping[query.name];
+                delete state.modules[moduleId].queryIdNameMapping[query.id];
+
+                delete state.resolvedStore.modules[moduleId].exposedValues.queries[query.id];
+
+                get().removeNode(`queries.${query.id}`, moduleId);
+                get().updateDependencyValues(`queries.${query.id}`, moduleId);
+              }
+
+              return !queryToBeDeleted;
+            })
+            .map((query) => {
+              if (queriesToUpdate.has(query.id)) {
+                const updatedQuery = normalizeQueryTransformationOptions(queriesToUpdate.get(query.id));
+
+                const newOptions = replaceQueryOptionsEntityReferencesWithIds(
+                  updatedQuery.options,
+                  componentNameIdMapping,
+                  queryNameIdMapping
+                );
+
+                state.modules[moduleId].queryIdNameMapping[query.id] = updatedQuery.name;
+
+                return { ...updatedQuery, options: { ...newOptions } };
+              }
+
+              return query;
+            });
+
+          queriesToCreate.forEach((query) => {
+            updatedQueriesValue.push(query);
+
+            state.modules[moduleId].queryNameIdMapping[query.name] = query.id;
+            state.modules[moduleId].queryIdNameMapping[query.id] = query.name;
+          });
+
+          state.dataQuery.queries.modules[moduleId] = updatedQueriesValue;
+
+          const currentSelectedQueryId = state.queryPanel.selectedQuery?.id;
+          if (currentSelectedQueryId && queriesToUpdate.has(currentSelectedQueryId)) {
+            const updatedSelectedQuery = updatedQueriesValue.find((q) => q.id === currentSelectedQueryId);
+            if (updatedSelectedQuery) {
+              state.queryPanel.selectedQuery = updatedSelectedQuery;
+            }
+          }
+        },
+        false,
+        'performDeletionUpdationAndCreationOfQuery'
+      );
+
+      queriesToCreate.length && get().dataQuery.runOnLoadQueries(moduleId, queriesToCreate);
+
+      get().rebuildQueryHints(moduleId);
+    },
+  },
+});
+
+const sortByAttribute = (data, sortBy, order) => {
+  if (sortBy === 'updated_at') {
+    return data.sort((a, b) => {
+      const aTime = new Date(a.updated_at ?? 0).getTime();
+      const bTime = new Date(b.updated_at ?? 0).getTime();
+      return order === 'asc' ? aTime - bTime : bTime - aTime;
+    });
+  }
+  if (order === 'asc') {
+    if (sortBy === 'kind') {
+      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+    }
+    return data.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+  }
+  if (order === 'desc') {
+    if (sortBy === 'kind') {
+      return data.sort((a, b) => a.name.localeCompare(b.name)).sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+    }
+    return data.sort((a, b) => b[sortBy].localeCompare(a[sortBy]));
+  }
+};

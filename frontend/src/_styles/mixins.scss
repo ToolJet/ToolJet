@@ -1,0 +1,62 @@
+@mixin theme-border($light-theme: true, $outline:false) {
+    @if $light-theme{
+      @if($outline) {
+        outline-color: $border-grey-light;
+      } @else {
+        border-color: $border-grey-light;
+      }
+    } @else {
+      @if($outline) {
+        outline-color: $border-grey-dark;
+      } @else {
+        border-color: $border-grey-dark;
+      }
+    }
+}
+
+
+@mixin button-outline($light-theme: true) {
+    border: 1px solid $primary;
+    box-sizing: border-box;
+    border-radius: $border-radius;
+    color: $primary;
+    @if $light-theme {
+      background: $white;
+      &:hover {
+        background: $primary;
+        color: #FFFFFC;
+      }
+    } @else {
+      background: transparent!important;
+      &:hover {
+        background: $primary!important;
+        color: #FFFFFC!important;
+
+      }
+    }
+}
+
+@mixin scrollable($max-height: 50vh) {
+  display: block;
+  max-height: $max-height;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+    &:hover {
+      background-color: #555;
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+}

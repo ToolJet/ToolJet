@@ -1,0 +1,372 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Supabase datasource",
+  "description": "A schema defining Supabase datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_rows",
+          "name": "Get Rows"
+        },
+        {
+          "value": "create_row",
+          "name": "Create Row(s)"
+        },
+        {
+          "value": "update_row",
+          "name": "Update Row(s)"
+        },
+        {
+          "value": "delete_row",
+          "name": "Delete Row(s)"
+        },
+        {
+          "value": "count_rows",
+          "name": "Count Rows"
+        }
+      ]
+    },
+    "get_rows": {
+      "get_table_name": {
+        "label": "Table",
+        "key": "get_table_name",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "placeholder": "Enter table name"
+      },
+      "get_filters": {
+        "label": "Where",
+        "key": "get_filters",
+        "type": "filters",
+        "description": "Supabase filter component",
+        "placeholders": {
+          "columnKey": "Enter Column name",
+          "operator": "Select operation",
+          "value": "Enter value"
+        },
+        "list": [
+          {
+            "value": "==",
+            "name": "Equals"
+          },
+          {
+            "value": "!=",
+            "name": "Not Equals"
+          },
+          {
+            "value": "<",
+            "name": "Less Than"
+          },
+          {
+            "value": ">",
+            "name": "Greater Than"
+          },
+          {
+            "value": "<=",
+            "name": "Less Than Equal To"
+          },
+          {
+            "value": ">=",
+            "name": "Greater Than Equal To"
+          },
+          {
+            "value": "is",
+            "name": "Is"
+          },
+          {
+            "value": "is not",
+            "name": "Is not"
+          },
+          {
+            "value": "in",
+            "name": "In"
+          }
+        ]
+      },
+      "get_sort": {
+        "label": "Sort",
+        "key": "get_sort",
+        "type": "sorts",
+        "description": "Supabase sort component",
+        "placeholders": {
+          "columnKey": "Enter column name",
+          "order": "Select order"
+        },
+        "list": [
+          {
+            "value": "ascend",
+            "name": "Ascending"
+          },
+          {
+            "value": "dscend",
+            "name": "Dscending"
+          }
+        ]
+      },
+      "get_limit": {
+        "label": "Limit",
+        "key": "get_limit",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter limit value to get number of rows",
+        "placeholder": "Enter limit"
+      }
+    },
+    "create_row": {
+      "create_table_name": {
+        "label": "Table",
+        "key": "create_table_name",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "placeholder": "Enter table name"
+      },
+      "create_body": {
+        "label": "Body",
+        "key": "create_body",
+        "type": "codehinter",
+        "description": "Enter document body",
+        "height": "150px",
+        "placeholder": "example value -> [{\"text\": \"abc\", \"number\":123}, {\"text\": \"xyz\", \"number\":345}]"
+      }
+    },
+    "update_row": {
+      "update_table_name": {
+        "label": "Table",
+        "key": "update_table_name",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "placeholder": "Enter table name"
+      },
+      "update_filters": {
+        "label": "Where",
+        "key": "update_filters",
+        "type": "filters",
+        "description": "Supabase filter component",
+        "placeholders": {
+          "columnKey": "Enter Column name",
+          "operator": "Select operation",
+          "value": "Enter value"
+        },
+        "list": [
+          {
+            "value": "==",
+            "name": "Equals"
+          },
+          {
+            "value": "!=",
+            "name": "Not Equals"
+          },
+          {
+            "value": "<",
+            "name": "Less Than"
+          },
+          {
+            "value": ">",
+            "name": "Greater Than"
+          },
+          {
+            "value": "<=",
+            "name": "Less Than Equal To"
+          },
+          {
+            "value": ">=",
+            "name": "Greater Than Equal To"
+          },
+          {
+            "value": "is",
+            "name": "Is"
+          },
+          {
+            "value": "is not",
+            "name": "Is not"
+          },
+          {
+            "value": "in",
+            "name": "In"
+          }
+        ]
+      },
+      "update_column_fields": {
+        "label": "Columns",
+        "key": "update_column_fields",
+        "type": "columns",
+        "description": "Supabase column component",
+        "placeholders": {
+          "columnKey": "Enter column name",
+          "value": "Enter value to update"
+        }
+      }
+    },
+    "delete_row": {
+      "delete_table_name": {
+        "label": "Table",
+        "key": "delete_table_name",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "placeholder": "Enter table name"
+      },
+      "delete_filters": {
+        "label": "Where",
+        "key": "delete_filters",
+        "type": "filters",
+        "description": "Supabase filter component",
+        "placeholders": {
+          "columnKey": "Enter Column name",
+          "operator": "Select operation",
+          "value": "Enter value"
+        },
+        "list": [
+          {
+            "value": "==",
+            "name": "Equals"
+          },
+          {
+            "value": "!=",
+            "name": "Not Equals"
+          },
+          {
+            "value": "<",
+            "name": "Less Than"
+          },
+          {
+            "value": ">",
+            "name": "Greater Than"
+          },
+          {
+            "value": "<=",
+            "name": "Less Than Equal To"
+          },
+          {
+            "value": ">=",
+            "name": "Greater Than Equal To"
+          },
+          {
+            "value": "is",
+            "name": "Is"
+          },
+          {
+            "value": "is not",
+            "name": "Is not"
+          },
+          {
+            "value": "in",
+            "name": "In"
+          }
+        ]
+      },
+      "delete_sort": {
+        "label": "Sort",
+        "key": "delete_sort",
+        "type": "sorts",
+        "description": "Supabase sort component",
+        "placeholders": {
+          "columnKey": "Enter column name",
+          "order": "Select order"
+        },
+        "list": [
+          {
+            "value": "ascend",
+            "name": "Ascending"
+          },
+          {
+            "value": "dscend",
+            "name": "Dscending"
+          }
+        ]
+      },
+      "delete_limit": {
+        "label": "Limit",
+        "key": "delete_limit",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter limit value to delete number of rows",
+        "placeholder": "Enter limit"
+      }
+    },
+    "count_rows": {
+      "count_table_name": {
+        "label": "Table",
+        "key": "count_table_name",
+        "type": "codehinter",
+        "height": "36px",
+        "className": "codehinter-plugins col-4",
+        "lineNumbers": false,
+        "description": "Enter table name",
+        "placeholder": "Enter table name"
+      },
+      "count_filters": {
+        "label": "Where",
+        "key": "count_filters",
+        "type": "filters",
+        "description": "Supabase filter component",
+        "placeholders": {
+          "columnKey": "Enter Column name",
+          "operator": "Select operation",
+          "value": "Enter value"
+        },
+        "list": [
+          {
+            "value": "==",
+            "name": "Equals"
+          },
+          {
+            "value": "!=",
+            "name": "Not Equals"
+          },
+          {
+            "value": "<",
+            "name": "Less Than"
+          },
+          {
+            "value": ">",
+            "name": "Greater Than"
+          },
+          {
+            "value": "<=",
+            "name": "Less Than Equal To"
+          },
+          {
+            "value": ">=",
+            "name": "Greater Than Equal To"
+          },
+          {
+            "value": "is",
+            "name": "Is"
+          },
+          {
+            "value": "is not",
+            "name": "Is not"
+          },
+          {
+            "value": "in",
+            "name": "In"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Xero datasource",
+  "description": "A schema defining Xero datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "tenant_id": {
+      "key": "tenant_id",
+      "label": "Tenant",
+      "type": "dynamic-selector",
+      "description": "Select the Xero tenant. Click 'Get Tenants' to fetch available tenants.",
+      "operation": {
+        "key": "get_tenants",
+        "label": "Get Tenants",
+        "invokeMethod": "getTenants"
+      },
+      "fxEnabled": true
+    },
+    "operation": {
+      "label": "",
+      "key": "xero_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": {
+        "Accounts": "@spec/xero/accounts",
+        "Finance": "@spec/xero/finance",
+        "identity": "@spec/xero/identity",
+        "BankFeeds": "@spec/xero/bankfeeds",
+        "AppStore": "@spec/xero/appstore",
+        "Assets": "@spec/xero/assets",
+        "PayrollAu": "@spec/xero/payrollau",
+        "PayrollUk": "@spec/xero/payrolluk",
+        "PayrollNz": "@spec/xero/payrollnz",
+        "Projects": "@spec/xero/projects",
+        "Files": "@spec/xero/files"
+      }
+    }
+  }
+}

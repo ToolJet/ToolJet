@@ -1,0 +1,266 @@
+import config from 'config';
+import { authHeader, handleResponse } from '@/_helpers';
+
+export const appVersionService = {
+  getAll,
+  getOne,
+  getAppVersionData,
+  getModuleVersionData,
+  create,
+  del,
+  save,
+  promoteEnvironment,
+  autoSaveApp,
+  saveAppVersionEventHandlers,
+  createAppVersionEventHandler,
+  bulkCreateAppVersionEventHandlers,
+  deleteAppVersionEventHandler,
+  clonePage,
+  findAllEventsWithSourceId,
+  cloneGroup,
+  createDraftVersion,
+};
+
+function getAll(appId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
+}
+
+function getOne(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
+function promoteEnvironment(appId, versionId, currentEnvironmentId) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ currentEnvironmentId }),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
+}
+function getAppVersionData(appId, versionId, mode) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  // `ref` is the version's module_reference_id (uuid). Empty/missing → unpinned;
+  // server resolver returns the latest non-stub on the consumer's branch.
+  const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
+  return fetch(
+    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function create(appId, versionName, versionDescription, versionFromId, currentEnvironmentId, versionType = 'version') {
+  const body = {
+    versionName,
+    versionDescription,
+    versionFromId,
+    environmentId: currentEnvironmentId,
+    versionType,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
+}
+
+function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '') {
+  const body = {
+    versionFromId,
+    environmentId,
+  };
+  if (versionDescription) {
+    body.versionDescription = versionDescription;
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/draft-versions`, requestOptions).then(handleResponse);
+}
+
+function del(appId, versionId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
+function save(appId, versionId, values, isUserSwitchedVersion = false) {
+  const body = { is_user_switched_version: isUserSwitchedVersion };
+  if (values.definition) body['definition'] = values.definition;
+  if (values.name) body['name'] = values.name;
+  if (values.diff) body['app_diff'] = values.diff;
+  if (values.description !== undefined && values.description !== null) body['description'] = values.description;
+  if (values.status) body['status'] = values.status;
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
+function autoSaveApp(
+  appId,
+  versionId,
+  diff,
+  type,
+  pageId,
+  operation,
+  isUserSwitchedVersion = false,
+  isComponentCutProcess = false
+) {
+  const OPERATION = {
+    create: 'POST',
+    update: 'PUT',
+    delete: 'DELETE',
+  };
+
+  const bodyMappings = {
+    pages: {
+      create: { ...diff },
+      delete: { ...diff },
+    },
+    global_settings: {
+      update: { ...diff },
+    },
+    page_settings: {
+      update: { ...diff },
+    },
+  };
+
+  const body = !type
+    ? { ...diff }
+    : bodyMappings[type]?.[operation] || {
+        is_user_switched_version: isUserSwitchedVersion,
+        pageId,
+        diff,
+      };
+
+  if (type === 'components' && operation === 'delete' && isComponentCutProcess) {
+    body['is_component_cut'] = true;
+  }
+
+  const requestOptions = {
+    method: OPERATION[operation],
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  const url = `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`;
+
+  return fetch(url, requestOptions).then(handleResponse);
+}
+
+function saveAppVersionEventHandlers(appId, versionId, events, updateType = 'update') {
+  const body = {
+    events,
+    updateType,
+  };
+
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events`, requestOptions).then(handleResponse);
+}
+
+function createAppVersionEventHandler(appId, versionId, event) {
+  const body = {
+    ...event,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events`, requestOptions).then(handleResponse);
+}
+
+function bulkCreateAppVersionEventHandlers(appId, versionId, events) {
+  const body = {
+    events,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events/bulk`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function deleteAppVersionEventHandler(appId, versionId, eventId) {
+  const requestOptions = {
+    method: 'DELETE',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events/${eventId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function clonePage(appId, versionId, pageId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function cloneGroup(appId, versionId, pageId) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/pages/${pageId}/clone-group`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function findAllEventsWithSourceId(appId, versionId, sourceId = undefined) {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+
+  return fetch(
+    `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/events${sourceId ? `?sourceId=${sourceId}` : ''}
+  `,
+    requestOptions
+  ).then(handleResponse);
+}

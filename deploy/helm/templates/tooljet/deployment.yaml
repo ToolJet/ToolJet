@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet
+spec:
+  selector:
+    matchLabels:
+      app: tooljet
+  template:
+    metadata:
+      labels:
+        app: tooljet
+    spec:
+      containers:
+        - name: tooljet
+          image: "tooljet/tooljet-ce:{{ .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          args: ["npm", "run", "start:prod"]
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              memory: {{ .Values.apps.tooljet.deployment.resources.limits.memory }}
+              cpu: {{ .Values.apps.tooljet.deployment.resources.limits.cpu }}
+            requests:
+              memory: {{ .Values.apps.tooljet.deployment.resources.requests.memory }}
+              cpu: {{ .Values.apps.tooljet.deployment.resources.requests.cpu }}
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /api/health
+            successThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          env:
+            - name: TOOLJET_HOST
+              value: "{{ .Values.apps.tooljet.service.host }}"
+            - name: PG_HOST
+              value: "{{ .Release.Name }}-postgresql"
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.apps.tooljet.secret.name }}"
+                  key: pg_user
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.apps.tooljet.secret.name }}"
+                  key: pg_password
+            - name: PG_DB
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.apps.tooljet.secret.name }}"
+                  key: pg_db
+            - name: LOCKBOX_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.apps.tooljet.secret.name }}"
+                  key: lockbox_key
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.apps.tooljet.secret.name }}"
+                  key: secret_key_base
+            - name: DEPLOYMENT_PLATFORM
+              value: "k8s:helm"

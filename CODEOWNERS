@@ -1,0 +1,20 @@
+# Code owners for specific package.json and package-lock.json files
+/server/* @gsmithun4 @shah21 @akshaysasidrn
+
+/frontend/* @johnsoncherian @kavinvenkatachalam
+
+/marketplace/* @ganesh8056 @gsmithun4
+
+/cypress/* @emidhun @ajith-k-v @Mekhla-Asopa
+/plugins/* @ganesh8056 @gsmithun4
+
+.github/workflows/ @adishm98 @slancerk
+/docker/* @adishm98 @slancerk
+/deploy/* @adishm98 @slancerk
+
+# Code owners for specific files
+**/module.ts @gsmithun4
+
+# Code owners for specific directories
+/server/migrations/* @gsmithun4
+/server/data-migrations/* @gsmithun4

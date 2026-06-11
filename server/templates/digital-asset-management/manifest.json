@@ -1,0 +1,20 @@
+{
+  "name": "Digital asset management",
+  "description": "Efficiently organize, store, and retrieve your digital assets with robust search, tagging, and version control capabilities with TJDB as the database.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "digital-asset-management",
+  "category": "product-management"
+}

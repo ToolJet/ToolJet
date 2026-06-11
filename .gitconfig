@@ -1,0 +1,148 @@
+[alias]
+    # This command does a checkout and pull the changes.
+    checkout-all = "!f() { \
+        git checkout \"$1\" && git pull; \
+        git submodule foreach --recursive \" \
+            if git show-ref --verify --quiet refs/heads/$1; then \
+                git checkout $1 && git pull; \
+            else \
+                echo 'Skipping submodule $(basename $PWD), branch $1 not found.'; \
+            fi\"; \
+    }; f"
+
+    # This command helps to pull changes for the base and submodule repos.
+    pull-all = "!f() { \
+        git pull && \
+        git submodule foreach 'git pull'; \
+    }; f"
+
+    # This command helps to stage the changes for the base and submodule repos.
+    add-all = "!f() { \
+        git add -A && \
+        git submodule foreach 'git add -A'; \
+    }; f"
+
+    # This command creates custom and pushes a new branch in the base and submodule repos.
+    create-branch-all = "!f() { \
+        branch_name=$1; \
+        if [ -z \"$branch_name\" ]; then \
+            echo \"Branch name required! Usage: git create-branch-all <branch_name>\"; \
+            return 1; \
+        fi; \
+        echo \"Creating new branch $branch_name in the base repo...\"; \
+        git checkout -b $branch_name && git push -u origin $branch_name; \
+        echo \"Creating new branch $branch_name in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git checkout -b $branch_name && git push -u origin $branch_name\"; \
+    }; f"
+
+    # This command creates and pushes a new branch with the 'feature/' prefix in the base and submodule repos.
+    create-feature-all = "!f() { \
+        branch_name=$1; \
+        if [ -z \"$branch_name\" ]; then \
+            echo \"Feature name required! Usage: git create-feature-all <feature_name>\"; \
+            return 1; \
+        fi; \
+        feature_branch=\"feature/$branch_name\"; \
+        echo \"Creating new feature branch $feature_branch in the base repo...\"; \
+        git checkout -b $feature_branch && git push -u origin $feature_branch; \
+        echo \"Creating new feature branch $feature_branch in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git checkout -b $feature_branch && git push -u origin $feature_branch\"; \
+    }; f"
+
+    # This command creates and pushes a new branch with the 'hot-fix/' prefix in the base and submodule repos.
+    create-hotfix-all = "!f() { \
+        branch_name=$1; \
+        if [ -z \"$branch_name\" ]; then \
+            echo \"Hotfix name required! Usage: git create-hotfix-all <hotfix_name>\"; \
+            return 1; \
+        fi; \
+        hotfix_branch=\"hot-fix/$branch_name\"; \
+        echo \"Creating new hotfix branch $hotfix_branch in the base repo...\"; \
+        git checkout -b $hotfix_branch && git push -u origin $hotfix_branch; \
+        echo \"Creating new hotfix branch $hotfix_branch in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git checkout -b $hotfix_branch && git push -u origin $hotfix_branch\"; \
+    }; f"
+
+    # This command creates and pushes a new branch with the 'release/' prefix in the base and submodule repos.
+    create-release-all = "!f() { \
+        branch_name=$1; \
+        if [ -z \"$branch_name\" ]; then \
+            echo \"Release name required! Usage: git create-release-all <release_name>\"; \
+            return 1; \
+        fi; \
+        release_branch=\"release/$branch_name\"; \
+        echo \"Creating new release branch $release_branch in the base repo...\"; \
+        git checkout -b $release_branch && git push -u origin $release_branch; \
+        echo \"Creating new release branch $release_branch in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git checkout -b $release_branch && git push -u origin $release_branch\"; \
+    }; f"
+
+    # This command creates and pushes a new branch with the 'revamp/' prefix in the base and submodule repos.
+    create-revamp-all = "!f() { \
+        branch_name=$1; \
+        if [ -z \"$branch_name\" ]; then \
+            echo \"Revamp name required! Usage: git create-revamp-all <revamp_name>\"; \
+            return 1; \
+        fi; \
+        revamp_branch=\"revamp/$branch_name\"; \
+        echo \"Creating new revamp branch $revamp_branch in the base repo...\"; \
+        git checkout -b $revamp_branch && git push -u origin $revamp_branch; \
+        echo \"Creating new revamp branch $revamp_branch in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git checkout -b $revamp_branch && git push -u origin $revamp_branch\"; \
+    }; f"
+
+    # This command creates and pushes a new branch with the 'sprint/' prefix in the base and submodule repos.
+    create-sprint-all = "!f() { \
+        branch_name=$1; \
+        if [ -z \"$branch_name\" ]; then \
+            echo \"Sprint name required! Usage: git create-sprint-all <sprint_name>\"; \
+            return 1; \
+        fi; \
+        sprint_branch=\"sprint/$branch_name\"; \
+        echo \"Creating new sprint branch $sprint_branch in the base repo...\"; \
+        git checkout -b $sprint_branch && git push -u origin $sprint_branch; \
+        echo \"Creating new sprint branch $sprint_branch in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git checkout -b $sprint_branch && git push -u origin $sprint_branch\"; \
+    }; f"
+
+    # This command creates and pushes a new tag in the base and submodule repos.
+    create-tag-all = "!f() { \
+        tag_name=$1; \
+        if [ -z \"$tag_name\" ]; then \
+            echo \"Tag name required! Usage: git create-tag-all <tag_name>\"; \
+            return 1; \
+        fi; \
+        echo \"Creating and pushing tag $tag_name in the base repo...\"; \
+        git tag $tag_name && git push origin $tag_name; \
+        echo \"Creating and pushing tag $tag_name in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git tag $tag_name && git push origin $tag_name\"; \
+    }; f"
+
+    # This command stages and commits changes for the base and submodule repos.
+    commit-all = "!f() { \
+        commit_message=\"$1\"; \
+        if [ -z \"$commit_message\" ]; then \
+            echo \"Commit message required! Usage: git commit-all <commit_message>\"; \
+            return 1; \
+        fi; \
+        echo \"Committing changes in the base repo...\"; \
+        git commit -m \"$commit_message\"; \
+        echo \"Committing changes in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git commit -m '$commit_message'\"; \
+    }; f"
+
+
+    # This command pushes commits for the base and submodule repos.
+    push-all = "!f() { \
+        echo \"Pushing changes in the base repo...\"; \
+        git push; \
+        echo \"Pushing changes in submodules...\"; \
+        git submodule foreach --quiet --recursive \"git push\"; \
+    }; f"
+
+    status-all = "!f() { \
+        echo \"Status of base repo...\"; \
+        git status; \
+        echo \"Status of submodules...\"; \
+        git submodule foreach --quiet --recursive \"git status\"; \
+    }; f"

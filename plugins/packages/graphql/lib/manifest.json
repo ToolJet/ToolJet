@@ -1,0 +1,285 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Graphql datasource",
+  "description": "A schema defining graphql datasource",
+  "type": "api",
+  "source": {
+    "name": "GraphQL",
+    "kind": "graphql",
+    "options": {
+      "url": {
+        "type": "string"
+      },
+      "headers": {
+        "type": "array"
+      },
+      "url_params": {
+        "type": "array"
+      },
+      "body": {
+        "type": "array"
+      },
+      "cookies": {
+        "type": "array"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "grant_type": {
+        "type": "string"
+      },
+      "add_token_to": {
+        "type": "string"
+      },
+      "header_prefix": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "audience": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "encrypted": true
+      },
+      "bearer_token": {
+        "encrypted": true
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "auth_url": {
+        "type": "string"
+      },
+      "client_auth": {
+        "type": "string"
+      },
+      "custom_auth_params": {
+        "type": "array"
+      },
+      "access_token_custom_headers": {
+        "type": "array"
+      },
+      "multiple_auth_enabled": {
+        "type": "boolean"
+      },
+      "ssl_certificate": {
+        "type": "string"
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      }
+    },
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "url": {
+      "value": ""
+    },
+    "auth_type": {
+      "value": "none"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
+    },
+    "access_token_url": {
+      "value": ""
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "audience": {
+      "value": ""
+    },
+    "scopes": {
+      "value": "read, write"
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
+    },
+    "auth_url": {
+      "value": ""
+    },
+    "client_auth": {
+      "value": "header"
+    },
+    "headers": {
+      "value": [["", ""]]
+    },
+    "url_params": {
+      "value": [["", ""]]
+    },
+    "body": {
+      "value": [["", ""]]
+    },
+    "cookies": {
+      "value": [["", ""]]
+    },
+    "custom_query_params": {
+      "value": [["", ""]]
+    },
+    "custom_auth_params": {
+      "value": [["", ""]]
+    },
+    "access_token_custom_headers": {
+      "value": [["", ""]]
+    },
+    "multiple_auth_enabled": {
+      "value": false
+    },
+    "ssl_certificate": {
+      "value": "none"
+    }
+  },
+  "properties": {
+    "renderForm": {
+      "type": "react-form-component",
+      "credentialsInputs": {
+        "title": "CREDENTIALS",
+        "inputs": {
+          "url": {
+            "label": "Base URL",
+            "key": "url",
+            "type": "text",
+            "description": "https://api.example.com/v1/graphql"
+          },
+          "headers": {
+            "label": "Headers",
+            "key": "headers",
+            "type": "react-component-headers",
+            "description": "key-value pair headers for graphql api",
+            "width": "300px"
+          },
+          "url_parameters": {
+            "label": "URL parameters",
+            "key": "url_params",
+            "type": "react-component-headers",
+            "description": "key-value pair url parameters for graphql api",
+            "width": "300px"
+          },
+          "body": {
+            "label": "Body",
+            "key": "body",
+            "type": "react-component-headers",
+            "description": "key-value pair body for graphql api",
+            "width": "300px"
+          },
+          "cookies": {
+            "label": "Cookies",
+            "key": "cookies",
+            "type": "react-component-headers",
+            "description": "key-value pair cookies for graphql api",
+            "width": "300px"
+          }
+        }
+      },
+      "authenticationInputs": {
+        "title": "AUTHENTICATION",
+        "inputs": {
+          "auth_type": {
+            "key": "auth_type",
+            "type": "react-component-oauth-authentication",
+            "description": "key-value pair headers for graphql api"
+          }
+        }
+      },
+      "sslInputs": {
+        "title": "SECURE SOCKETS LAYER",
+        "inputs": {
+          "ssl_certificate": {
+            "label": "SSL certificate",
+            "key": "ssl_certificate",
+            "type": "dropdown-component-flip",
+            "description": "Single select dropdown for choosing certificates",
+            "list": [
+              {
+                "value": "ca_certificate",
+                "name": "CA certificate"
+              },
+              {
+                "value": "client_certificate",
+                "name": "Client certificate"
+              },
+              {
+                "value": "none",
+                "name": "None"
+              }
+            ]
+          },
+          "ca_certificate": {
+            "ca_cert": {
+              "label": "CA cert",
+              "key": "ca_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter CA certificate"
+            }
+          },
+          "client_certificate": {
+            "client_key": {
+              "label": "Client key",
+              "key": "client_key",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter client key"
+            },
+            "client_cert": {
+              "label": "Client cert",
+              "key": "client_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter client certificate"
+            },
+            "ca_cert": {
+              "label": "CA cert",
+              "key": "ca_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter CA certificate"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "url"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Google Cloud Storage datasource",
+  "description": "A schema defining GCS datasource",
+  "type": "cloud-storage",
+  "source": {
+    "name": "GCS",
+    "kind": "gcs",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "private_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "private_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "private_key": {
+      "label": "Private key",
+      "key": "private_key",
+      "type": "textarea",
+      "description": "Enter JSON private key for service account",
+      "encrypted": true 
+    }
+  },
+  "required": [
+    "private_key"
+  ]
+}

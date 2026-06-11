@@ -1,0 +1,23 @@
+{
+  "name": "@tooljet-plugins/common",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "tsc -b",
+    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "tough-cookie": "^4.1.3"
+  },
+  "devDependencies": {
+    "@types/tough-cookie": "^4.0.2"
+  }
+}

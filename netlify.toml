@@ -1,0 +1,15 @@
+[build]
+  base = "/"
+  publish = "frontend/build/"
+  command = "npm run build:plugins:prod && npm run build:frontend"
+
+[template.environment]
+  NODE_ENV = "production"
+  TOOLJET_EDITION = "cloud"
+  NODE_VERSION = "22.15.1"
+  NPM_VERSION = "10.9.2"
+
+[[redirects]]
+  from = "/*"
+  to = "/"
+  status = 200

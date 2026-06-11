@@ -1,0 +1,29 @@
+{
+  "name": "@tooljet-plugins/restapi",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "tsc -b",
+    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@aws-crypto/sha256-js": "^5.2.0",
+    "@aws-sdk/credential-provider-node": "^3.972.12",
+    "@smithy/signature-v4": "^4.2.0",
+    "@tooljet-plugins/common": "file:../common",
+    "form-data": "^4.0.0",
+    "got": "^11.8.6",
+    "react": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "url": "^0.11.0"
+  }
+}

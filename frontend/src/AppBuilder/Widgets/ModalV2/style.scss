@@ -1,0 +1,81 @@
+.modal-open .modal.show {
+  /* To fix the padding issue */
+  scrollbar-gutter: auto;
+  //  padding-right: 0 !important;
+}
+
+.modal-content.modal-component.tj-modal-widget-content {
+  border: 0;
+
+  .tj-modal-close-button {
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--interactive-hover);
+    }
+
+    &.is-disabled {
+      position: absolute;
+      top: 8px;
+      bottom: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      left: 0;
+      z-index: 1;
+    }
+  }
+
+  .tj-modal-disabled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1;
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 0;
+    position: relative;
+    min-height: 40px;
+    border-bottom: 1px solid var(--cc-modal-header-divider-color, var(--cc-default-border)) !important;
+  }
+
+  .modal-body {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .modal-footer {
+    position: relative;
+    padding: 0;
+    border-top: 1px solid var(--cc-modal-footer-divider-color, var(--cc-default-border));
+    overflow-x: hidden;
+    width: 100%;
+
+  }
+}
+
+.jet-modalv2-footer .resize-handle {
+  top: -4px;
+  bottom: unset;
+}
+
+/* Suppress the one-frame scroll flash while modal-body children grow ahead
+ * of the Modal reflow. Lifted when body genuinely overflows the 85vh cap.
+ */
+.modal-content[class*="dynamic-"]:not(.tj-modal-allow-body-scroll) .modal-body .real-canvas {
+  overflow-y: hidden !important;
+}

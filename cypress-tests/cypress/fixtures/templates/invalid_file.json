@@ -1,0 +1,50 @@
+{
+  "userId": 12345,
+  "username": "random_user",
+  "email": "randomuser@example.com",
+  "profile": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "age": 30,
+    "gender": "Male",
+    "location": {
+      "city": "Springfield",
+      "state": "IL",
+      "country": "USA"
+    }
+  },
+  "preferences": {
+    "notifications": true,
+    "theme": "dark",
+    "language": "en-US"
+  },
+  "subscription": {
+    "type": "premium",
+    "startDate": "2024-01-15",
+    "endDate": "2025-01-15"
+  },
+  "activities": [
+    {
+      "activityId": 1,
+      "description": "Logged in",
+      "timestamp": "2024-06-15T08:30:00Z"
+    },
+    {
+      "activityId": 2,
+      "description": "Updated profile",
+      "timestamp": "2024-06-16T14:45:00Z"
+    },
+    {
+      "activityId": 3,
+      "description": "Made a purchase",
+      "timestamp": "2024-06-18T10:15:00Z"
+    }
+  ],
+  "settings": {
+    "privacy": {
+      "showEmail": false,
+      "showActivityStatus": true
+    },
+    "accountStatus": "active"
+  }
+}

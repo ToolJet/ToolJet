@@ -1,0 +1,20 @@
+{
+  "name": "AI powered SQL query generator",
+  "description": "Leverage Gemini AI and REST API to generate optimized SQL queries. Enhance database performance and simplify complex data retrieval.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "RestAPI",
+      "id": "restapi"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "ai-powered-sql-query-generator",
+  "category": "developer-utilities"
+}

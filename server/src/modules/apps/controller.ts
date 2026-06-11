@@ -1,0 +1,205 @@
+import { InitModule } from '@modules/app/decorators/init-module';
+import { AppsService } from './service';
+import { MODULES } from '@modules/app/constants/modules';
+import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { AppCountGuard } from '@modules/licensing/guards/app.guard';
+import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
+import { AppCreateDto, AppListDto, AppUpdateDto, VersionReleaseDto } from './dto';
+import { FeatureAbilityGuard } from './ability/guard';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { FEATURE_KEY } from './constants';
+import { AbilityDecorator as Ability, AppAbility } from '@modules/app/decorators/ability.decorator';
+import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
+import { App as AppEntity } from '@entities/app.entity';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
+import { AppAuthGuard } from './guards/app-auth.guard';
+import { ValidSlugGuard } from './guards/valid-slug.guard';
+import { ValidAppGuard } from './guards/valid-app.guard';
+import { IAppsController } from './interfaces/IController';
+import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
+import { Response } from 'express';
+import { isHttpsEnabled, getCookieDomain } from '@helpers/utils.helper';
+
+@InitModule(MODULES.APP)
+@Controller('apps')
+export class AppsController implements IAppsController {
+  constructor(protected readonly appsService: AppsService) {}
+
+  @InitFeature(FEATURE_KEY.CREATE)
+  @UseGuards(JwtAuthGuard, AppCountGuard, FeatureAbilityGuard)
+  @Post()
+  create(
+    @User() user: UserEntity,
+    @Body() appCreateDto: AppCreateDto,
+    @Res({ passthrough: true }) response: Response,
+    @AiCookies() cookies: Record<string, any>
+  ) {
+    // clear ai cookies
+    // FIXME: can move this to service or middlewares
+    const cookieDomain = getCookieDomain();
+    const clearOptions = {
+      secure: isHttpsEnabled(),
+      httpOnly: true,
+      sameSite: 'lax' as const,
+      // Must match the domain used when setting, otherwise clearCookie has no effect
+      ...(cookieDomain && { domain: cookieDomain }),
+    };
+    if (cookies.tj_ai_prompt) {
+      response.clearCookie('tj_ai_prompt', clearOptions);
+    }
+    if (cookies.tj_template_id) {
+      response.clearCookie('tj_template_id', clearOptions);
+    }
+
+    return this.appsService.create(user, appCreateDto);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_APP_AUTHENTICATION_CONFIG)
+  @Get('app-authentication-config/:slug')
+  getAppAuthenticationConfig(@Param('slug') slug: string) {
+    return this.appsService.getAppAuthenticationConfig(slug);
+  }
+
+  @InitFeature(FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS)
+  @UseGuards(JwtAuthGuard, ValidSlugGuard, FeatureAbilityGuard)
+  @Get('validate-private-app-access/:slug')
+  validatePrivateAppAccess(
+    @Query('access_type') accessType: string,
+    @Query('version_name') versionName: string,
+    @Query('environment_name') environmentName: string,
+    @Query('version_id') versionId: string,
+    @Query('environment_id') envId: string,
+    @Ability() ability: AppAbility,
+    @App() app: AppEntity,
+    @User() user: UserEntity,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    return this.appsService.validatePrivateAppAccess(app, ability, user, {
+      accessType,
+      versionName,
+      environmentName,
+      versionId,
+      envId,
+      branchId,
+    });
+  }
+
+  @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
+  @UseGuards(AppAuthGuard, FeatureAbilityGuard)
+  @Get('validate-released-app-access/:slug')
+  validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
+    return this.appsService.validateReleasedApp(ability, app);
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id')
+  update(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('app') appUpdateDto: AppUpdateDto,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
+    return this.appsService.update(app, appUpdateDto, user);
+  }
+
+  @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id/public')
+  updatePublic(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('app') appUpdateDto: AppUpdateDto,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
+    return this.appsService.update(app, appUpdateDto, user);
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Delete(':id')
+  delete(@User() user: UserEntity, @App() app: AppEntity) {
+    return this.appsService.delete(app, user);
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get()
+  index(@User() user: UserEntity, @Query() query: any, @Headers('x-branch-id') headerBranchId?: string) {
+    const AppListDto: AppListDto = {
+      page: query.page,
+      folderId: query.folder,
+      searchKey: query.searchKey || '',
+      type: query.type ?? 'front-end',
+      branchId: query.branch_id || headerBranchId,
+    };
+    return this.appsService.getAllApps(user, AppListDto, query.all === 'true');
+  }
+
+  @InitFeature(FEATURE_KEY.GET)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
+  @Get('/addable')
+  indexAddable(@User() user: UserEntity, @Query('branch_id') branchId?: string) {
+    return this.appsService.getAllApps(
+      user,
+      {
+        page: '1',
+        folderId: null,
+        searchKey: '',
+        type: 'front-end',
+        branchId,
+      },
+      true
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE_ICON)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id/icons')
+  async updateIcon(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('icon') icon: string,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    const appUpdateDto = new AppUpdateDto();
+    appUpdateDto.icon = icon;
+    if (branchId) appUpdateDto.branch_id = branchId;
+    await this.appsService.update(app, appUpdateDto, user);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get(':id/tables')
+  async tables(@User() user: UserEntity, @App() app: AppEntity) {
+    const result = await this.appsService.findTooljetDbTables(app.id);
+    return { tables: result };
+  }
+
+  @InitFeature(FEATURE_KEY.GET_ONE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get(':id')
+  show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
+    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, branchId));
+  }
+
+  @InitFeature(FEATURE_KEY.GET_BY_SLUG)
+  // This guard will allow access for unauthenticated user if the app is public
+  @UseGuards(AppAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Get('slugs/:slug')
+  appFromSlug(@User() user: UserEntity, @App() app: AppEntity) {
+    return this.appsService.getBySlug(app, user);
+  }
+
+  @InitFeature(FEATURE_KEY.RELEASE)
+  @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
+  @Put(':id/release')
+  releaseVersion(@User() user: UserEntity, @App() app: AppEntity, @Body() versionReleaseDto: VersionReleaseDto) {
+    return this.appsService.release(app, user, versionReleaseDto);
+  }
+}

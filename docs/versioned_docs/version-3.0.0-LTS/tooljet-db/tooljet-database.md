@@ -1,0 +1,100 @@
+---
+id: tooljet-database
+title: Overview
+---
+
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. ToolJet database require no setup and gives you a powerful user interface for managing your data.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdb-v2.png" alt="ToolJet database" />
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Enabling the ToolJet Database for your instance
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### PostgREST Server
+
+PostgREST is a standalone web server that turns your PostgreSQL database directly into queryable RESTful APIs which is utilized for Tooljet Database. This server only communicates with the ToolJet server and therefore does not need to be publicly exposed.
+
+:::tip
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified, PostgREST will refuse authentication requests.
+:::
+
+```env
+PGRST_HOST=localhost:3001
+PGRST_LOG_LEVEL=info
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+PGRST_SERVER_PORT=3001
+PGRST_DB_URI=
+PGRST_JWT_SECRET=
+```
+
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+</div>
+
+| <div style={{ width:"100px"}}> Variable </div>           | <div style={{ width:"100px"}}> Description </div>                                  |
+| ------------------ | -------------------------------------------- |
+| TOOLJET_DB         | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST    | database host                                |
+| TOOLJET_DB_USER    | database username                            |
+| TOOLJET_DB_PASS    | database password                            |
+| TOOLJET_DB_PORT    | database port                                |
+| PGRST_JWT_SECRET   | JWT token client provided for authentication |
+| PGRST_HOST         | postgrest database host                      |
+| TOOLJET_DB_BULK_UPLOAD_MAX_ROWS | Maximum rows allowed to bulk upload. Default value is 1000 |
+| TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB  | Maximum file size of CSV for bulk upload. Default value is 5 MB  |
+
+
+If you intend to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
+
+:::tip
+When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+In case you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
+:::
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Features
+
+ToolJet database allows you to:
+
+- **Maintain tables of data** in a secure database that's only accessible within your ToolJet organization.
+- **Edit, search, filter, sort, and filter** data using a spreadsheet-like interface.
+- **Use the SQL editor** to write and execute complex SQL queries directly on your ToolJet database, providing more advanced data manipulation and retrieval capabilities.
+- **Quickly build applications and write queries** to interact with the ToolJet Database, just like any other datasource but without any setup.
+- **Export schema** from the ToolJet Database to a JSON file.
+- Uniquely identify each record in a table using **Primary Keys**, ensuring data integrity and enabling efficient querying and indexing.
+- Establish relationships between tables using **Foreign Keys**, allowing you to create associations based on the Primary Key of one table and maintain referential integrity.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Accessing ToolJet Database
+
+Once you log-in to your ToolJet account, from the left sidebar of the dashboard you can navigate to **ToolJet Database**.
+
+The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.ai)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdbside-v2.png" alt="ToolJet database" />
+</div>
+
+</div>
+
+

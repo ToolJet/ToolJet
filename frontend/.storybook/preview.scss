@@ -1,0 +1,21 @@
+@import '~bootstrap/scss/bootstrap';
+@import '../src/_styles/componentdesign.scss';
+
+body {
+  overflow-y: scroll !important;
+}
+
+.sb-main-padded {
+  padding: 0 !important;
+}
+
+.storybook-docs,
+.storybook-preview-wrapper,
+.sb-show-main {
+  background-color: var(--background-surface-layer-01) !important;
+}
+
+.sb-show-main.sb-main-centered #storybook-root {
+  width: 100%;
+  height: stretch;
+}

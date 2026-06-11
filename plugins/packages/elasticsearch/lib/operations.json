@@ -1,0 +1,319 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Elasticsearch datasource",
+  "description": "A schema defining Elasticsearch datasource",
+  "type": "database",
+  "defaults": {
+    "query": "",
+    "operation": "search"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "search",
+          "name": "Search"
+        },
+        {
+          "value": "index_document",
+          "name": "Index a document"
+        },
+        {
+          "value": "get",
+          "name": "Get a document"
+        },
+        {
+          "value": "update",
+          "name": "Update a document"
+        },
+        {
+          "value": "delete",
+          "name": "Delete a document"
+        },
+        {
+          "value": "bulk",
+          "name": "Bulk operation"
+        },
+        {
+          "value": "count",
+          "name": "Count documents"
+        },
+        {
+          "value": "exists",
+          "name": "Check document exists"
+        },
+        {
+          "value": "mget",
+          "name": "Multi-get documents"
+        },
+        {
+          "value": "scroll",
+          "name": "Scroll search"
+        },
+        {
+          "value": "clear_scroll",
+          "name": "Clear scroll"
+        },
+        {
+          "value": "cat_indices",
+          "name": "Get indices info"
+        },
+        {
+          "value": "cluster_health",
+          "name": "Get cluster health"
+        }
+      ]
+    },
+    "search": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "placeholder": "{ \"query\": { \"match\": { \"field\": \"value\" } } }",
+        "description": "Enter query",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "scroll": {
+        "label": "Scroll",
+        "key": "scroll",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scroll value",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "[number][time unit]' (e.g., '5m' for 5 minute)"
+      }
+    },
+    "index_document": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"field1\": \"value1\", \"field2\": \"value2\" }",
+        "description": "Enter body",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "get": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
+      }
+    },
+    "update": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"doc\": { \"field\": \"new_value\" } }",
+        "description": "Enter body",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
+      }
+    },
+    "bulk": {
+      "operations": {
+        "label": "Operations",
+        "key": "operations",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "[{ \"index\": { \"_index\": \"index_name\", \"_id\": \"1\" } }, { \"field\": \"value\" }]",
+        "description": "Enter bulk operations",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "count": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "placeholder": "{ \"query\": { \"match_all\": {} } }",
+        "description": "Enter query (optional)",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "exists": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter index",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter index"
+      },
+      "id": {
+        "label": "Id",
+        "key": "id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document id",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter id"
+      }
+    },
+    "mget": {
+      "operations": {
+        "label": "Operations",
+        "key": "operations",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ \"docs\": [{ \"_index\": \"index_name\", \"_id\": \"1\" }, { \"_index\": \"index_name\", \"_id\": \"2\" }] }",
+        "description": "Enter multi-get operations",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "scroll": {
+      "scroll_id": {
+        "label": "Scroll ID",
+        "key": "scroll_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scroll ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter scroll ID"
+      },
+      "scroll": {
+        "label": "Scroll",
+        "key": "scroll",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scroll value in the format '[number][time unit]'",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "[number][time unit]' (e.g., '5m' for 5 minute)"
+      }
+    },
+    "clear_scroll": {
+      "scroll_id": {
+        "label": "Scroll ID",
+        "key": "scroll_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter scroll ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter scroll ID"
+      }
+    },
+    "cat_indices": {},
+    "cluster_health": {}
+  }
+}

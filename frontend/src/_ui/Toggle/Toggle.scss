@@ -1,0 +1,43 @@
+.tj-toggle-label {
+    margin-left: 8px;
+}
+
+.form-check-input.tj-toggle-switch:not(:checked) {
+    border: 1px solid var(--slate7); 
+}
+
+.form-check-input.tj-toggle-switch{
+    width: 28px !important;
+    height: 16px !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--indigo9);
+}
+
+.form-check-input:hover{
+    cursor: pointer;
+}
+
+// This is overriding theme.scss file which it shouldnt as per cloud henceforth commenting out the below code
+
+// .form-check>.form-check-input:not(:checked) {
+//     background-color: #ffffff;
+//     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e")
+// }
+
+.text-wrappers{
+    display: flex;
+    flex-direction: column;
+}
+.tj-toggle-text{
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+}
+.tj-toggle-subtext{
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    color: #6A727C;
+}

@@ -1,0 +1,217 @@
+import { InitModule } from '@modules/app/decorators/init-module';
+import { DataSourcesService } from './service';
+import { MODULES } from '@modules/app/constants/modules';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { FeatureAbilityGuard } from './ability/guard';
+import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { FEATURE_KEY } from './constants';
+import { User } from '@modules/app/decorators/user.decorator';
+import { User as UserEntity } from '@entities/user.entity';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import {
+  AuthorizeDataSourceOauthDto,
+  CreateDataSourceDto,
+  GetDataSourceOauthUrlDto,
+  InvokeDataSourceMethodDto,
+  TestDataSourceDto,
+  TestSampleDataSourceDto,
+  UpdateDataSourceDto,
+  ValidateOptionsDto,
+} from './dto';
+import { OrganizationValidateGuard } from '@modules/app/guards/organization-validate.guard';
+import { ValidateAppVersionGuard } from '@modules/versions/guards/validate-app-version.guard';
+import { IDataSourcesController } from './interfaces/IController';
+import { ValidateDataSourceGuard } from './guards/validate-query-source.guard';
+import { WhitelistPluginGuard } from './guards/whitelist-plugin.guard';
+import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
+import { UserPermissions } from '@modules/ability/types';
+import { DataSource, DataSourceEntity } from '@modules/app/decorators/data-source.decorator';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+
+// TODO: Create guard to get data source from id for FeatureAbilityGuard
+@Controller('data-sources')
+@InitModule(MODULES.GLOBAL_DATA_SOURCE)
+@UseGuards(JwtAuthGuard)
+export class DataSourcesController implements IDataSourcesController {
+  constructor(protected readonly dataSourcesService: DataSourcesService) {}
+
+  // Listing of all global data sources
+  @InitFeature(FEATURE_KEY.GET)
+  @Get(':organizationId')
+  @UseGuards(OrganizationValidateGuard, FeatureAbilityGuard)
+  async fetchGlobalDataSources(
+    @User() user: UserEntity,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.getAll({ branchId }, user, userPermissions);
+  }
+
+  // TODO: Add guard to validate environmentId & version id
+  @InitFeature(FEATURE_KEY.GET_FOR_APP)
+  @UseGuards(OrganizationValidateGuard, ValidateAppVersionGuard, FeatureAbilityGuard)
+  @Get(':organizationId/environments/:environmentId/versions/:versionId')
+  async fetchGlobalDataSourcesForVersion(
+    @User() user: UserEntity,
+    @Param('versionId') appVersionId,
+    @Param('environmentId') environmentId,
+    @UserPermissionsDecorator() userPermissions: UserPermissions,
+    @Query('branch_id') branchId?: string
+  ) {
+    const shouldIncludeWorkflows = getTooljetEdition() === TOOLJET_EDITIONS.EE;
+    // appVersionId kept in route URL for backwards compatibility; no longer forwarded to service
+    // (released versions now use is_default DSV instead of version-specific DSV).
+    return this.dataSourcesService.getForApp(
+      { environmentId, shouldIncludeWorkflows, branchId },
+      user,
+      userPermissions
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.CREATE)
+  @UseGuards(FeatureAbilityGuard)
+  @Post()
+  async createGlobalDataSources(
+    @User() user: UserEntity,
+    @Body() createDataSourceDto: CreateDataSourceDto,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.create(createDataSourceDto, user, branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.UPDATE)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Put(':id')
+  async update(
+    @User() user,
+    @Param('id') dataSourceId,
+    @Query('environment_id') environmentId,
+    @Body() updateDataSourceDto: UpdateDataSourceDto,
+    @Query('branch_id') branchId?: string
+  ) {
+    await this.dataSourcesService.update(updateDataSourceDto, user, { dataSourceId, environmentId }, branchId);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.DELETE)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Delete(':id')
+  async delete(@User() user: UserEntity, @Param('id') dataSourceId, @Query('branch_id') branchId?: string) {
+    await this.dataSourcesService.delete(dataSourceId, user, branchId);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.SCOPE_CHANGE)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Post(':id/scope')
+  async changeScope(@User() user: UserEntity, @Param('id') dataSourceId) {
+    await this.dataSourcesService.changeScope(dataSourceId, user);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.GET_BY_ENVIRONMENT)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Get(':id/environment/:environment_id')
+  getDataSourceByEnvironment(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId,
+    @Param('environment_id') environmentId,
+    @Query('branch_id') branchId?: string
+  ) {
+    return this.dataSourcesService.findOneByEnvironment(dataSourceId, user.organizationId, environmentId, branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION_SAMPLE_DB)
+  @UseGuards(FeatureAbilityGuard)
+  @Post('sample-db/test-connection')
+  testConnectionSampleDb(@User() user, @Body() testDataSourceDto: TestSampleDataSourceDto) {
+    return this.dataSourcesService.testSampleDBConnection(testDataSourceDto, user);
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Post(':id/test-connection')
+  testConnection(@User() user, @Body() testDataSourceDto: TestDataSourceDto) {
+    return this.dataSourcesService.testConnection(testDataSourceDto, user.organizationId);
+  }
+
+  @InitFeature(FEATURE_KEY.GET_OAUTH2_BASE_URL)
+  @UseGuards(FeatureAbilityGuard)
+  @Post('fetch-oauth2-base-url')
+  getAuthUrl(@Body() getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto) {
+    return this.dataSourcesService.getAuthUrl(getDataSourceOauthUrlDto);
+  }
+
+  @InitFeature(FEATURE_KEY.AUTHORIZE)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Post(':id/authorize_oauth2')
+  async authorizeOauth2(
+    @User() user: UserEntity,
+    @Param('id') id: string,
+    @Query('environment_id') environmentId,
+    @Body() authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
+  ) {
+    await this.dataSourcesService.authorizeOauth2(id, environmentId, authorizeDataSourceOauthDto, user);
+    return;
+  }
+
+  @InitFeature(FEATURE_KEY.QUERIES_DATASOURCE_LINKED_TO_MARKETPLACE_PLUGIN)
+  @UseGuards(FeatureAbilityGuard)
+  @Get('dependent-queries/marketplace-plugin/:plugin_id')
+  async findDatasourcesAndQueriesOfMarketplacePlugin(@User() user: UserEntity, @Param('plugin_id') pluginId) {
+    return await this.dataSourcesService.findDatasourcesAndQueriesOfMarketplacePlugin(pluginId);
+  }
+
+  @InitFeature(FEATURE_KEY.QUERIES_LINKED_TO_DATASOURCE)
+  @UseGuards(FeatureAbilityGuard)
+  @Get('dependent-queries/:datasource_id')
+  async findQueriesLinkedToDatasource(
+    @User() user: UserEntity,
+    @Param('datasource_id') datasourceId: string,
+    @Query('branch_id') branchId?: string
+  ) {
+    return await this.dataSourcesService.findQueriesLinkedToDatasource(datasourceId, user.organizationId, branchId);
+  }
+
+  @InitFeature(FEATURE_KEY.VALIDATE_OPTIONS)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard)
+  @Post(':id/validate-options')
+  async validateOptions(
+    @User() user: UserEntity,
+    @Param('id') dataSourceId: string,
+    @Query('environment_id') environmentId: string,
+    @Body() validateOptionsDto: ValidateOptionsDto
+  ) {
+    return await this.dataSourcesService.validateOptions(
+      dataSourceId,
+      user.organizationId,
+      environmentId ?? validateOptionsDto.environment_id,
+      validateOptionsDto.options,
+      validateOptionsDto.schema
+    );
+  }
+
+  @InitFeature(FEATURE_KEY.TEST_CONNECTION)
+  @UseGuards(ValidateDataSourceGuard, FeatureAbilityGuard, WhitelistPluginGuard)
+  @Post(':id/invoke')
+  async invokeDataSourceMethod(
+    @User() user: UserEntity,
+    @Body() invokeDto: InvokeDataSourceMethodDto,
+    @DataSource() dataSource: DataSourceEntity,
+    @Query('branch_id') branchId?: string
+  ): Promise<QueryResult> {
+    const result = await this.dataSourcesService.invokeMethod(
+      dataSource,
+      invokeDto.method,
+      user,
+      invokeDto.environmentId,
+      invokeDto.args,
+      branchId,
+      invokeDto.resolvedOptions
+    );
+
+    return result;
+  }
+}

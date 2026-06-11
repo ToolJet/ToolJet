@@ -1,0 +1,42 @@
+.h-32 {
+    height: 32px;
+}
+
+.border-dashed {
+    border: 1px dashed var(--slate8) !important;
+}
+
+.border-radius-6 {
+    border-radius: 6px;
+}
+
+.border-width-except-right {
+    border-width: 1px 0 1px 1px !important;
+}
+
+.border-width-except-left {
+    border-width: 1px 1px 1px 0 !important;
+}
+
+.border-only-right {
+    border-width: 0 1px 0 0 !important;
+}
+
+.width-fit-content {
+    width: fit-content;
+}
+
+.query-manager {
+    .minw-400-w-400 {
+        width: 45% !important;
+        max-width: 45%;
+        min-width: 45%;
+      }
+}
+
+.workflows-query-node {
+    .minw-400-w-400 {
+        max-width: unset;
+        min-width: 45%;
+    }
+}

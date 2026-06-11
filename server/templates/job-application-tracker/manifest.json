@@ -1,0 +1,16 @@
+{
+  "name": "Job application tracker",
+  "description": "Centralize job applications in a Google Sheet with custom columns for position, date applied, status, and notes to streamline tracking.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "Google Sheets",
+      "id": "googlesheets"
+    }
+  ],
+  "id": "job-application-tracker",
+  "category": "human-resources"
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Google Sheets datasource",
+  "description": "A schema defining google sheets datasource",
+  "type": "api",
+  "source": {
+    "name": "Google Sheets",
+    "kind": "googlesheets",
+    "tags": ["legacy"],
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "service_account_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": false,
+    "hideSave": false
+  },
+  "defaults": {
+    "access_type": {
+      "value": "read"
+    },
+    "authentication_type": {
+      "value": "oauth2"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication Type",
+      "key": "authentication_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing authentication type",
+      "list": [
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        },
+        {
+          "value": "service_account",
+          "name": "Service Account"
+        }
+      ]
+    },
+    "oauth2": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      }
+    },
+    "service_account": {
+      "sheets" : {
+        "label": "",
+        "key": "sheets",
+        "type": "react-component-google-sheets",
+        "description": "A component for google sheets"
+      },
+      "service_account_key": {
+        "label": "Service Account Key",
+        "key": "service_account_key",
+        "type": "textarea",
+        "description": "Enter JSON private key for service account",
+        "encrypted": true 
+      }
+    }
+  }
+}

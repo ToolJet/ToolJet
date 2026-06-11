@@ -1,0 +1,6 @@
+docs/*
+tmp/*
+**/node_modules/*
+**/dist/*
+**/logs/*
+**/*.log

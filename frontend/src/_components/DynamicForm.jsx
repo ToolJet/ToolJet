@@ -1,0 +1,1015 @@
+import React from 'react';
+import cx from 'classnames';
+import Input from '@/_ui/Input';
+import Textarea from '@/_ui/Textarea';
+import Select from '@/_ui/Select';
+import Headers from '@/_ui/HttpHeaders';
+import Sort from '@/_ui/Sort';
+import OAuth from '@/_ui/OAuth';
+import Toggle from '@/_ui/Toggle';
+import OpenApi from '@/_ui/OpenAPI';
+import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import GoogleSheets from '@/_components/Googlesheets';
+import Slack from '@/_components/Slack';
+import Zendesk from '@/_components/Zendesk';
+import ApiEndpointInput from '@/_components/ApiEndpointInput';
+import ApiEndpointInputOld from './ApiEndpointInputOld';
+import SqlFilters from '@/_components/SqlFilters';
+import SqlColumns from '@/_components/SqlColumns';
+import SqlSort from '@/_components/SqlSort';
+import SqlGroupBy from '@/_components/SqlGroupBy';
+import SqlAggregate from '@/_components/SqlAggregate';
+import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
+import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
+import { orgEnvironmentConstantService } from '../_services';
+import { filter, find, isEmpty } from 'lodash';
+import { ButtonSolid } from './AppButton';
+import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
+import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
+import { Constants } from '@/_helpers/utils';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import Sharepoint from '@/_components/Sharepoint';
+import AccordionForm from './AccordionForm';
+import { generateCypressDataCy } from '../modules/common/helpers/cypressHelpers';
+import OAuthWrapper from './OAuthWrapper';
+import DynamicSelector from '@/_ui/DynamicSelector';
+import GraphqlKeyValueTabs from '@/AppBuilder/QueryManager/QueryEditors/Graphql/GraphqlKeyValueTabs';
+import OracleWalletPicker from '@/_components/OracleWalletPicker';
+
+const DynamicForm = ({
+  schema,
+  isGDS,
+  optionchanged,
+  createDataSource,
+  options,
+  isSaving,
+  selectedDataSource,
+  isEditMode,
+  optionsChanged,
+  queryName,
+  computeSelectStyles = false,
+  currentAppEnvironmentId,
+  setDefaultOptions,
+  disableMenuPortal = false,
+  onBlur,
+  layout = 'vertical',
+  renderCopilot,
+  elementsProps = null,
+  isWorkspaceBranchLocked = false,
+}) => {
+  const [computedProps, setComputedProps] = React.useState({});
+  const isHorizontalLayout = layout === 'horizontal';
+  const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
+
+  const globalDataSourcesStatus = useGlobalDataSourcesStatus();
+  const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
+
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
+  const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
+
+  // if(schema.properties)  todo add empty check
+  React.useLayoutEffect(() => {
+    if (!isEditMode || isEmpty(options)) {
+      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
+      optionsChanged(schema?.defaults ?? {});
+    } else {
+      // Ensure existing datasources get newly added default properties.
+      let hasMissingDefaults = false;
+      const mergedOptions = { ...options };
+
+      if (schema?.defaults) {
+        Object.keys(schema.defaults).forEach((key) => {
+          // If the key doesn't exist in the old options, fill it with the schema's default
+          if (mergedOptions[key] === undefined) {
+            mergedOptions[key] = schema.defaults[key];
+            hasMissingDefaults = true;
+          }
+        });
+      }
+
+      if (hasMissingDefaults && typeof optionsChanged === 'function') {
+        optionsChanged(mergedOptions);
+      }
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    if (isGDS && currentAppEnvironmentId) {
+      orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
+        const constants = {
+          globals: {},
+          secrets: {},
+        };
+        data.constants.forEach((constant) => {
+          if (constant.type === Constants.Secret) {
+            constants.secrets[constant.name] = constant.value;
+          } else {
+            constants.globals[constant.name] = constant.value;
+          }
+        });
+
+        setCurrentOrgEnvironmentConstants(constants);
+      });
+    }
+
+    return () => {
+      setWorkspaceVariables([]);
+      setCurrentOrgEnvironmentConstants([]);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAppEnvironmentId]);
+
+  React.useEffect(() => {
+    const prevDataSourceId = prevDataSourceIdRef.current;
+    prevDataSourceIdRef.current = selectedDataSource?.id;
+    const { properties } = schema;
+    if (!isEmpty(properties)) {
+      let fields = {};
+      let encryptedFieldsProps = {};
+      const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
+
+      if (flipComponentDropdown) {
+        const selector = options?.[flipComponentDropdown?.key]?.value;
+        const commonFieldsFromSslCertificate = properties[selector]?.ssl_certificate?.commonFields;
+        fields = { ...commonFieldsFromSslCertificate, ...flipComponentDropdown?.commonFields, ...properties[selector] };
+      } else {
+        fields = { ...properties };
+      }
+
+      const processFields = (fieldsObject) => {
+        Object.keys(fieldsObject).forEach((key) => {
+          const field = fieldsObject[key];
+          const { type, encrypted, key: propertyKey } = field;
+
+          if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+            encryptedFieldsProps[propertyKey] = {
+              disabled: !!selectedDataSource?.id,
+            };
+          } else if (computedProps[propertyKey] !== undefined && computedProps[propertyKey].disabled === false) {
+            encryptedFieldsProps[propertyKey] = { disabled: false };
+          } else if (!isDataSourceEditing) {
+            if (type === 'password' || encrypted) {
+              encryptedFieldsProps[propertyKey] = {
+                disabled: true,
+              };
+            }
+          } else {
+            if ((type === 'password' || encrypted) && !(propertyKey in computedProps)) {
+              encryptedFieldsProps[propertyKey] = {
+                disabled: !!selectedDataSource?.id,
+              };
+            }
+          }
+
+          // To check for nested dropdown-component-flip
+          if (type === 'dropdown-component-flip') {
+            const selectedOption = options?.[field.key]?.value;
+
+            if (field.commonFields) {
+              processFields(field.commonFields);
+            }
+
+            if (selectedOption && fieldsObject[selectedOption]) {
+              processFields(fieldsObject[selectedOption]);
+            }
+          }
+        });
+      };
+
+      processFields(fields);
+
+      if (properties.renderForm) {
+        Object.keys(properties.renderForm).forEach((sectionKey) => {
+          const section = properties.renderForm[sectionKey];
+          const { inputs } = section;
+          if (inputs) {
+            processFields(inputs);
+          }
+        });
+      }
+
+      if (prevDataSourceId !== selectedDataSource?.id) {
+        setComputedProps({ ...encryptedFieldsProps });
+        const isGoogleSheetsV2 = selectedDataSource?.kind === 'googlesheetsv2';
+        if (isGoogleSheetsV2) {
+          const fieldsWithDependencies = Object.keys(fields).filter((key) => {
+            const field = fields[key];
+            return field?.dependsOn || field?.depends_on;
+          });
+
+          if (fieldsWithDependencies.length > 0 && typeof optionsChanged === 'function') {
+            const clearedOptions = { ...options };
+            fieldsWithDependencies.forEach((fieldKey) => {
+              delete clearedOptions[fieldKey];
+            });
+            optionsChanged(clearedOptions);
+          }
+        }
+      } else {
+        setComputedProps({ ...computedProps, ...encryptedFieldsProps });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDataSource?.id, options, isDataSourceEditing]);
+
+  const getElement = (type) => {
+    switch (type) {
+      case 'password':
+      case 'text':
+        return Input;
+      case 'textarea':
+        return Textarea;
+      case 'dropdown':
+        return Select;
+      case 'toggle':
+        return Toggle;
+      case 'checkbox':
+        return Checkbox;
+      case 'checkbox-group':
+        return CheckboxGroup;
+      case 'tooljetdb-operations':
+        return ToolJetDbOperations;
+      case 'react-component-headers':
+        return Headers;
+      case 'react-component-key-value-tabs':
+        return GraphqlKeyValueTabs;
+      case 'react-component-sort':
+        return Sort;
+      case 'react-component-oauth-authentication':
+        return OAuth;
+      case 'react-component-google-sheets':
+        return GoogleSheets;
+      case 'react-component-slack':
+        return Slack;
+      case 'react-component-oracle-wallet':
+        return OracleWalletPicker;
+      case 'codehinter':
+        return CodeHinter;
+      case 'react-component-openapi-validator':
+        return OpenApi;
+      case 'react-component-zendesk':
+        return Zendesk;
+      case 'columns':
+        return MultiColumn;
+      case 'filters':
+        return ConditionFilter;
+      case 'sorts':
+        return CondtionSort;
+      case 'react-component-api-endpoint':
+        return ApiEndpointInput;
+      case 'react-component-api-endpoint-old':
+        return ApiEndpointInputOld;
+      case 'react-component-sharepoint':
+        return Sharepoint;
+      case 'react-component-oauth':
+        return OAuthWrapper;
+      case 'dynamic-selector':
+        return DynamicSelector;
+      case 'react-component-sql-filters':
+        return SqlFilters;
+      case 'react-component-sql-columns':
+        return SqlColumns;
+      case 'react-component-sql-sort':
+        return SqlSort;
+      case 'react-component-sql-groupby':
+        return SqlGroupBy;
+      case 'react-component-sql-aggregate':
+        return SqlAggregate;
+      default:
+        return <div>Type is invalid</div>;
+    }
+  };
+
+  const handleToggle = (controller) => {
+    if (controller) {
+      return !options?.[controller]?.value ? ' d-none' : '';
+    } else {
+      return '';
+    }
+  };
+
+  const getElementProps = ({
+    key,
+    list,
+    rows = 5,
+    helpText: helpTextProp, // For marketplace compatibility
+    help_text,
+    description,
+    type,
+    placeholder = '',
+    mode = 'sql',
+    lineNumbers = true,
+    initialValue,
+    height = 'auto',
+    width,
+    ignoreBraces = false,
+    className,
+    controller,
+    encrypted,
+    placeholders = {},
+    editorType: editorTypeProp, // For marketplace plugins, it currently receives editorType instead of editor_type
+    editor_type,
+    spec_url = '',
+    disabled = false,
+    buttonText: buttonTextProp,
+    button_text,
+    text,
+    subtext,
+    oauth_configs,
+    operation,
+    dependsOn,
+    depends_on,
+    label,
+    fx_enabled,
+    fxEnabled,
+    isMulti,
+    autoFetch,
+    parse_key,
+    columnSelectorOperation,
+    columnSelectorDependsOn,
+    tabs,
+    pagination,
+    pageSize,
+  }) => {
+    const source = schema?.source?.kind;
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    const workspaceConstant = options?.[key]?.workspace_constant;
+    const isWorkspaceConstant = !!workspaceConstant;
+
+    if (!options) return;
+
+    // Select snake_case for marketplace plugins if camelCase is undefined
+    const buttonText = buttonTextProp || button_text;
+    const editorType = editorTypeProp || editor_type;
+    const helpText = helpTextProp || help_text;
+    const isEncrypted = type === 'password' || encrypted === true;
+    const showEncryptedLockedHelpText = isWorkspaceBranchLocked && isEncrypted;
+    const finalHelpText = showEncryptedLockedHelpText
+      ? 'Encrypted values are not pushed to git and are updated directly in Tooljet'
+      : helpText;
+
+    switch (type) {
+      case 'password':
+      case 'text':
+      case 'textarea': {
+        const useEncrypted =
+          (options?.[key]?.encrypted !== undefined ? options?.[key].encrypted : encrypted) || type === 'password';
+        return {
+          type,
+          placeholder: workspaceConstant ? workspaceConstant : useEncrypted ? '**************' : description,
+          className: `form-control${handleToggle(controller)} ${useEncrypted && 'dynamic-form-encrypted-field'}`,
+          style: { marginBottom: '0px !important' },
+          value: options?.[key]?.value || '',
+          ...(type === 'textarea' && { rows: rows }),
+          // ...(helpText && { finalHelpText }),
+          ...(finalHelpText && { helpText: finalHelpText }),
+          onChange: (e) => optionchanged(key, e.target.value, true), //shouldNotAutoSave is true because autosave should occur during onBlur, not after each character change (in optionchanged).
+          onblur: () => onBlur(),
+          isGDS,
+          workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          encrypted: useEncrypted,
+          isWorkspaceConstant: isWorkspaceConstant,
+          disabled: isWorkspaceBranchLocked && !useEncrypted,
+          isDisabled: isWorkspaceBranchLocked && !useEncrypted,
+        };
+      }
+      case 'toggle':
+        return {
+          defaultChecked: options?.[key],
+          checked: options?.[key]?.value ?? options?.[key],
+          onChange: (e) => optionchanged(key, e.target.checked),
+          text,
+          subtext,
+          disabled: isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+        };
+      case 'dropdown':
+      case 'dropdown-component-flip':
+        return {
+          options: list,
+          value: options?.[key]?.value || options?.[key],
+          onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
+          useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
+          styles: computeSelectStyles ? computeSelectStyles('100%') : {},
+          useCustomStyles: computeSelectStyles ? true : false,
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          encrypted: options?.[key]?.encrypted,
+          customOption: (option) => {
+            const labelText = option?.label || '';
+            const isDeprecated = typeof labelText === 'string' && labelText.includes('(Deprecated)');
+
+            if (isDeprecated) {
+              const baseText = labelText.replace(/\(Deprecated\)/g, '').trim();
+              return (
+                <div className="d-flex align-items-center">
+                  <span>{baseText}</span>
+                  <span
+                    className="badge ms-2"
+                    style={{
+                      backgroundColor: '#F0F4F8', // light grayish-blue background
+                      color: '#111827', // dark gray text
+                      fontSize: '11px',
+                      fontWeight: 500,
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      textTransform: 'none',
+                    }}
+                  >
+                    Deprecated
+                  </span>
+                </div>
+              );
+            }
+            return option?.label;
+          },
+        };
+      case 'checkbox-group':
+        return {
+          options: list,
+          values: options?.[key] ?? [],
+          onChange: (value) => {
+            optionchanged(key, [...value]);
+          },
+        };
+
+      case 'react-component-headers': {
+        let isRenderedAsQueryEditor;
+        if (isGDS) {
+          isRenderedAsQueryEditor = false;
+        } else {
+          isRenderedAsQueryEditor = !isGDS;
+        }
+        return {
+          getter: key,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+          optionchanged,
+          isRenderedAsQueryEditor,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          encrypted: options?.[key]?.encrypted,
+          buttonText,
+          width: width,
+          ...elementsProps?.[key],
+        };
+      }
+      case 'react-component-key-value-tabs': {
+        return {
+          options,
+          optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          tabs: tabs || [],
+        };
+      }
+      case 'react-component-oracle-wallet': {
+        return {
+          value: options?.[key]?.value ?? schema?.defaults?.[key]?.value ?? '',
+          onChange: (val) => optionchanged(key, val),
+          disabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(), // Respects Tooljet's read-only modes
+        };
+      }
+      case 'react-component-sort': {
+        let isRenderedAsQueryEditor;
+        if (isGDS) {
+          isRenderedAsQueryEditor = false;
+        } else {
+          isRenderedAsQueryEditor = !isGDS;
+        }
+        return {
+          getter: key,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+          optionchanged,
+          isRenderedAsQueryEditor,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          encrypted: options?.[key]?.encrypted,
+          buttonText,
+          width: width,
+        };
+      }
+      case 'react-component-oauth-authentication':
+        return {
+          isGrpc: source === 'grpc' || source === 'grpcv2',
+          grant_type: options?.grant_type?.value,
+          auth_type: options?.auth_type?.value,
+          add_token_to: options?.add_token_to?.value,
+          header_prefix: options?.header_prefix?.value,
+          access_token_url: options?.access_token_url?.value,
+          access_token_custom_headers: options?.access_token_custom_headers?.value,
+          client_id: options?.client_id?.value,
+          client_secret: options?.client_secret?.value,
+          client_auth: options?.client_auth?.value,
+          scopes: options?.scopes?.value,
+          username: options?.username?.value,
+          password: options?.password?.value,
+          grpc_apiKey_key: options?.grpc_apikey_key?.value,
+          grpc_apiKey_value: options?.grpc_apikey_value?.value,
+          bearer_token: options?.bearer_token?.value,
+          auth_url: options?.auth_url?.value,
+          auth_key: options?.auth_key?.value,
+          audience: options?.audience?.value,
+          custom_auth_params: options?.custom_auth_params?.value,
+          custom_query_params: options?.custom_query_params?.value,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          optionchanged,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          options,
+          optionsChanged,
+          selectedDataSource,
+          isRestApi: source === 'restapi',
+        };
+      case 'react-component-google-sheets':
+      case 'react-component-slack':
+      case 'react-component-zendesk':
+      case 'react-component-sharepoint':
+      case 'react-component-oauth':
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+          currentAppEnvironmentId,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          // Permission-only — branch-lock is passed separately so the OAuth save button
+          // can still enable when an encrypted field is edited on the default branch.
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          isWorkspaceBranchLocked,
+          optionsChanged,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          scopes: options?.scopes?.value,
+          oauth_configs,
+        };
+      case 'tooljetdb-operations':
+        return {
+          optionchanged,
+          createDataSource,
+          options,
+          isSaving,
+          selectedDataSource,
+          darkMode,
+          optionsChanged,
+          renderCopilot,
+        };
+      case 'codehinter': {
+        let theme;
+        if (darkMode) {
+          theme = 'monokai';
+        } else if (lineNumbers) {
+          theme = 'duotone-light';
+        } else {
+          theme = 'default';
+        }
+        return {
+          type: editorType,
+          initialValue: options[key]
+            ? typeof options[key] === 'string'
+              ? options[key]
+              : JSON.stringify(options[key])
+            : initialValue,
+          lang: mode,
+          lineNumbers,
+          className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
+          onChange: (value) => optionchanged(key, value),
+          theme: theme,
+          placeholder,
+          height,
+          width,
+          componentName: queryName ? `${queryName}::${key ?? ''}` : null,
+          cyLabel: label
+            ? generateCypressDataCy(label)
+            : key
+            ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}`
+            : '',
+          disabled,
+          delayOnChange: false,
+          renderCopilot,
+          ...(helpText && { helpText }),
+        };
+      }
+      case 'react-component-openapi-validator':
+        return {
+          selectedDataSource,
+          isSaving,
+          currentAppEnvironmentId,
+          multiple_auth_enabled: options?.multiple_auth_enabled?.value,
+          format: options.format?.value,
+          definition: options.definition?.value,
+          auth_type: options.auth_type?.value,
+          auth_key: options.auth_key?.value,
+          username: options.username?.value,
+          password: options.password?.value,
+          bearer_token: options.bearer_token?.value,
+          api_keys: options.api_keys?.value,
+          optionchanged,
+          grant_type: options.grant_type?.value,
+          add_token_to: options.add_token_to?.value,
+          header_prefix: options.header_prefix?.value,
+          access_token_url: options.access_token_url?.value,
+          access_token_custom_headers: options.access_token_custom_headers?.value,
+          client_id: options.client_id?.value,
+          client_secret: options.client_secret?.value,
+          client_auth: options.client_auth?.value,
+          scopes: options.scopes?.value,
+          auth_url: options.auth_url?.value,
+          custom_auth_params: options.custom_auth_params?.value,
+          custom_query_params: options.custom_query_params?.value,
+          spec: options.spec?.value,
+          audience: options?.audience?.value,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled:
+            isWorkspaceBranchLocked || (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()),
+          optionsChanged,
+        };
+      case 'filters':
+        return {
+          operators: list || [],
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
+          placeholders,
+        };
+      case 'sorts':
+        return {
+          orders: list || [],
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
+          placeholders,
+        };
+      case 'columns':
+        return {
+          value: options?.[key] ?? {},
+          onChange: (value) => optionchanged(key, value),
+          placeholders,
+        };
+      case 'react-component-api-endpoint':
+        return {
+          specUrl: spec_url,
+          optionsChanged,
+          options,
+          darkMode,
+        };
+      case 'react-component-api-endpoint-old':
+        return {
+          specUrl: spec_url,
+          optionsChanged,
+          options,
+          darkMode,
+        };
+      case 'dynamic-selector':
+        return {
+          operation: operation,
+          dependsOn: dependsOn || depends_on,
+          selectedDataSource,
+          currentAppEnvironmentId,
+          optionchanged,
+          options,
+          label: label,
+          description,
+          disabled,
+          computeSelectStyles,
+          disableMenuPortal,
+          queryName,
+          propertyKey: key,
+          value: options?.[key]?.value || options?.[key],
+          optionsChanged,
+          fxEnabled: fxEnabled || fx_enabled,
+          isMulti: isMulti || false,
+          autoFetch: autoFetch || false,
+          pagination: pagination || false,
+          pageSize: pageSize || 25,
+        };
+      case 'react-component-sql-filters':
+        return {
+          getter: key,
+          parseKey: parse_key,
+          options: options,
+          handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
+          workspaceConstants: currentOrgEnvironmentConstants,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
+        };
+      case 'react-component-sql-columns':
+      case 'react-component-sql-sort':
+      case 'react-component-sql-groupby':
+      case 'react-component-sql-aggregate':
+        return {
+          getter: key,
+          parseKey: parse_key,
+          options: options,
+          handleOptionChange: (changeKey, changeValue) => optionchanged(changeKey, changeValue),
+          workspaceConstants: currentOrgEnvironmentConstants,
+          darkMode,
+          columnSelectorOperation: columnSelectorOperation,
+          columnSelectorDependsOn: columnSelectorDependsOn || [],
+          selectedDataSource,
+          currentAppEnvironmentId,
+          queryName,
+        };
+      default:
+        return {};
+    }
+  };
+
+  const getLayout = (obj) => {
+    if (isEmpty(obj)) return null;
+    const flipComponentDropdown = isFlipComponentDropdown(obj);
+
+    if (flipComponentDropdown) {
+      return flipComponentDropdown;
+    }
+
+    const handleEncryptedFieldsToggle = (event, field) => {
+      if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+        return;
+      }
+      const isEditing = computedProps[field]['disabled'];
+      const workspaceConstant = options?.[field]?.workspace_constant;
+      const isWorkspaceConstant = !!workspaceConstant;
+
+      if (isEditing) {
+        if (isWorkspaceConstant) {
+          optionchanged(field, workspaceConstant);
+        } else {
+          optionchanged(field, '');
+        }
+      } else {
+        const newOptions = { ...options };
+        const oldFieldValue = selectedDataSource?.['options']?.[field];
+        if (oldFieldValue) {
+          optionsChanged({ ...newOptions, [field]: oldFieldValue });
+        } else {
+          delete newOptions[field];
+          optionsChanged({ ...newOptions });
+        }
+      }
+      setComputedProps({
+        ...computedProps,
+        [field]: {
+          ...computedProps[field],
+          disabled: !isEditing,
+        },
+      });
+    };
+
+    const renderLabel = (label, tooltip, fieldType) => {
+      const labelElement = (
+        <label
+          className="form-label"
+          data-cy={
+            fieldType === 'dropdown'
+              ? `${generateCypressDataCy(label)}-dropdown-label`
+              : `${generateCypressDataCy(label)}-label`
+          }
+          style={{
+            textDecoration: tooltip ? 'underline 2px dashed' : 'none',
+            textDecorationColor: 'var(--slate8)',
+            marginBottom: '2px',
+          }}
+        >
+          {label}
+        </label>
+      );
+
+      if (tooltip) {
+        return (
+          <OverlayTrigger
+            placement="top"
+            trigger="click"
+            rootClose
+            overlay={<Tooltip id={`tooltip-${label}`}>{tooltip}</Tooltip>}
+          >
+            {labelElement}
+          </OverlayTrigger>
+        );
+      }
+
+      return labelElement;
+    };
+
+    return (
+      <div className={`${isHorizontalLayout ? '' : 'row'}`}>
+        {Object.keys(obj).map((key) => {
+          const fieldConfig = obj[key];
+          const { label, type, encrypted, className, key: propertyKey, shouldRenderTheProperty = '' } = fieldConfig;
+
+          const Element = getElement(type);
+          const isSpecificComponent = [
+            'tooljetdb-operations',
+            'react-component-api-endpoint',
+            'react-component-api-endpoint-old',
+            'react-component-oauth',
+          ].includes(type);
+          // shouldRenderTheProperty - key is used for Dynamic connection parameters
+          const enabled = shouldRenderTheProperty
+            ? selectedDataSource?.options?.[shouldRenderTheProperty]?.value ?? false
+            : true;
+
+          // const elementProps = getElementProps({
+          //   ...fieldConfig,
+          //   key,
+          //   type,
+          // });
+
+          return (
+            enabled && (
+              <div
+                className={cx({
+                  'my-2': type !== 'react-component-oauth', // Remove my-2 for react-component-oauth to prevent gap
+                  'col-md-12': !className && !isHorizontalLayout && type !== 'react-component-oauth',
+                  [className]: !!className,
+                  'd-flex': isHorizontalLayout,
+                  'dynamic-form-row': isHorizontalLayout,
+                })}
+                data-cy={`${generateCypressDataCy(label ?? key)}-section`}
+                key={key}
+              >
+                {!isSpecificComponent && (
+                  <div
+                    className={cx('d-flex', {
+                      'form-label': isHorizontalLayout,
+                      'align-items-center': !isHorizontalLayout,
+                    })}
+                    style={{ minWidth: '100px', marginBottom: '0' }}
+                  >
+                    {label && renderLabel(label, obj[key].tooltip, type)}
+
+                    {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                      <div className="mx-1 col">
+                        <ButtonSolid
+                          className="datasource-edit-btn mb-2"
+                          type="a"
+                          variant="tertiary"
+                          target="_blank"
+                          rel="noreferrer"
+                          disabled={!canUpdateDataSource() && !canDeleteDataSource()}
+                          onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
+                          data-cy={`${generateCypressDataCy(
+                            computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'
+                          )}-button`}
+                        >
+                          {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
+                        </ButtonSolid>
+                      </div>
+                    )}
+                    {(type === 'password' || encrypted) && (
+                      <div className="col-auto mb-2">
+                        <small className="text-green" data-cy="encrypted-text">
+                          <img
+                            className="mx-2 encrypted-icon"
+                            src="assets/images/icons/padlock.svg"
+                            width="12"
+                            height="12"
+                          />
+                          Encrypted
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div
+                  className={cx(
+                    {
+                      'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                      'w-100': isHorizontalLayout && type !== 'codehinter',
+                    },
+                    'dynamic-form-element'
+                  )}
+                  style={{ width: '100%' }}
+                  data-cy={
+                    type === 'dropdown' || type === 'dropdown-component-flip'
+                      ? `${generateCypressDataCy(label ?? key)}-select-dropdown`
+                      : `${generateCypressDataCy(label ?? key)}-${generateCypressDataCy(type ?? key)}-element`
+                  }
+                >
+                  <Element
+                    key={`${selectedDataSource?.id}-${propertyKey}`}
+                    {...getElementProps(obj[key])}
+                    {...computedProps[propertyKey]}
+                    data-cy={`${generateCypressDataCy(label)}-text-field`}
+                    dataCy={generateCypressDataCy(obj[key].label ?? obj[key].key)}
+                    isHorizontalLayout={isHorizontalLayout}
+                  />
+                </div>
+              </div>
+            )
+          );
+        })}
+      </div>
+    );
+  };
+
+  const FlipComponentDropdown = (obj) => {
+    const flipComponentDropdowns = filter(obj, ['type', 'dropdown-component-flip']);
+
+    const dropdownComponents = flipComponentDropdowns.map((flipComponentDropdown) => {
+      const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
+
+      return (
+        <div key={flipComponentDropdown.key}>
+          <div className={isHorizontalLayout ? '' : 'row'}>
+            {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
+
+            <div
+              className={cx('my-2', {
+                'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
+                'd-flex': isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
+                [flipComponentDropdown.className]: !!flipComponentDropdown.className,
+              })}
+              data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-section`}
+            >
+              {(flipComponentDropdown.label || isHorizontalLayout) && (
+                <label
+                  className={cx('form-label')}
+                  data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-dropdown-label`}
+                  style={{ marginBottom: '2px' }}
+                >
+                  {flipComponentDropdown.label}
+                </label>
+              )}
+
+              <div
+                data-cy={`${generateCypressDataCy(flipComponentDropdown.label)}-select-dropdown`}
+                className={cx({ 'flex-grow-1': isHorizontalLayout })}
+              >
+                <Select
+                  {...getElementProps(flipComponentDropdown)}
+                  styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
+                  useCustomStyles={computeSelectStyles ? true : false}
+                  dataCy={generateCypressDataCy(flipComponentDropdown.label)}
+                />
+              </div>
+              {flipComponentDropdown.helpText && (
+                <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
+              )}
+            </div>
+          </div>
+
+          {getLayout(obj[selector])}
+        </div>
+      );
+    });
+
+    const normalComponents = Object.keys(obj).map((key) => {
+      const component = obj[key];
+
+      if (component.type && component.type !== 'dropdown-component-flip') {
+        return <div key={key}>{getLayout({ [key]: component })}</div>;
+      }
+      return null;
+    });
+
+    return (
+      <>
+        {normalComponents}
+        {dropdownComponents}
+      </>
+    );
+  };
+
+  const isFormComponent = (obj, getLayout) => {
+    const formComponent = find(obj, ['type', 'react-form-component']);
+    if (formComponent) {
+      return <AccordionForm formComponent={formComponent} getLayout={getLayout} />;
+    }
+    return null;
+  };
+
+  const isFlipComponentDropdown = (obj) => {
+    const checkFlipComponents = filter(obj, ['type', 'dropdown-component-flip']);
+    if (checkFlipComponents.length > 0) {
+      return FlipComponentDropdown(obj);
+    } else {
+      return null;
+    }
+  };
+
+  const flipComponentDropdown = isFlipComponentDropdown(schema.properties);
+  const formComponent = isFormComponent(schema.properties, getLayout);
+
+  if (flipComponentDropdown) {
+    return flipComponentDropdown;
+  }
+  if (formComponent) {
+    return formComponent;
+  }
+
+  return getLayout(schema.properties);
+};
+
+export default DynamicForm;

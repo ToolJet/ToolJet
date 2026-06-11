@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Snowflake datasource",
+  "description": "A schema defining Snowflake datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Snowflake",
+    "kind": "snowflake",
+    "type": "database"
+  },
+  "properties": {
+    "account": {
+      "type": "string",
+      "title": "Account",
+      "description": "Enter Snowflake account identifier (e.g. xy12345.us-east-1)"
+    },
+    "auth_type": {
+      "type": "string",
+      "title": "Authentication type",
+      "description": "Select the authentication type",
+      "enum": ["basic", "oauth2", "bearer_token", "key_pair"],
+      "default": "basic"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Enter username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Enter password"
+    },
+    "bearer_token": {
+      "type": "string",
+      "title": "Bearer token",
+      "description": "Enter the OAuth bearer token"
+    },
+    "private_key": {
+      "type": "string",
+      "title": "Private key",
+      "description": "Enter the RSA private key in PEM format"
+    },
+    "private_key_passphrase": {
+      "type": "string",
+      "title": "Private key passphrase",
+      "description": "Enter passphrase (only required if the private key is encrypted)"
+    },
+    "database": {
+      "type": "string",
+      "title": "Database",
+      "description": "Enter database name"
+    },
+    "schema": {
+      "type": "string",
+      "title": "Schema",
+      "description": "Enter schema name"
+    },
+    "warehouse": {
+      "type": "string",
+      "title": "Warehouse",
+      "description": "Enter warehouse name"
+    },
+    "role": {
+      "type": "string",
+      "title": "Role",
+      "description": "Enter role"
+    },
+    "allow_dynamic_connection_parameters": {
+      "type": "boolean",
+      "title": "Allow dynamic connection parameters",
+      "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+      "default": false
+    },
+    "client_id": {
+      "type": "string",
+      "title": "Client ID"
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client secret"
+    },
+    "auth_url": {
+      "type": "string",
+      "title": "Auth URL"
+    },
+    "access_token_url": {
+      "type": "string",
+      "title": "Access token URL"
+    },
+    "grant_type": {
+      "type": "string",
+      "title": "Grant type",
+      "default": "authorization_code"
+    },
+    "custom_auth_params": {
+      "type": "object",
+      "title": "Custom auth parameters"
+    },
+    "custom_query_params": {
+      "type": "object",
+      "title": "Custom query parameters"
+    }
+  },
+  "tj:encrypted": [
+    "password",
+    "bearer_token",
+    "private_key",
+    "private_key_passphrase",
+    "client_secret"
+  ],
+  "required": ["account"],
+  "tj:ui:properties": {
+    "account": {
+      "order": 1,
+      "$ref": "#/properties/account",
+      "key": "account",
+      "label": "Account",
+      "description": "Enter Snowflake account identifier (e.g. xy12345.us-east-1)",
+      "widget": "text-v3",
+      "required": true
+    },
+    "auth_type": {
+      "order": 6,
+      "$ref": "#/properties/auth_type",
+      "key": "auth_type",
+      "label": "Authentication type",
+      "description": "Select the authentication type",
+      "widget": "dropdown-component-flip",
+      "list": [
+        { "value": "basic", "name": "Basic" },
+        { "value": "oauth2", "name": "OAuth 2.0" },
+        { "value": "bearer_token", "name": "Bearer token" },
+        { "value": "key_pair", "name": "Key pair" }
+      ]
+    },
+    "basic": {
+      "username": {
+        "order": 10,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "password": {
+        "order": 20,
+        "$ref": "#/properties/password",
+        "key": "password",
+        "label": "Password",
+        "description": "Enter password",
+        "widget": "password-v3"
+      },
+      "allow_dynamic_connection_parameters": {
+        "order": 30,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default database, warehouse, and role at query runtime"
+      }
+    },
+    "oauth2": {
+      "oauth": {
+        "key": "oauth",
+        "widget": "react-component-oauth",
+        "description": "A component for snowflake",
+        "oauth_configs": {
+          "allowed_auth_types": ["oauth2"],
+          "allowed_grant_types": ["authorization_code"],
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret",
+              "auth_url",
+              "access_token_url",
+              "access_token_custom_headers"
+            ]
+          },
+          "allowed_scope_field": true,
+          "allowed_dynamic_params_field": {
+            "key": "allow_dynamic_connection_parameters",
+            "label": "Allow dynamic connection parameters",
+            "help_text": "Turning this on will allow dynamically setting database, warehouse and role from the application."
+          },
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": ["custom_app"],
+              "ee": ["custom_app"],
+              "cloud": ["custom_app", "tooljet_app"]
+            }
+          }
+        }
+      }
+    },
+    "bearer_token": {
+      "bearer_token": {
+        "order": 10,
+        "$ref": "#/properties/bearer_token",
+        "key": "bearer_token",
+        "label": "Bearer token",
+        "description": "Enter the OAuth bearer token",
+        "widget": "password-v3"
+      },
+      "allow_dynamic_connection_parameters": {
+        "order": 20,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default database, warehouse, and role at query runtime"
+      }
+    },
+    "key_pair": {
+      "username": {
+        "order": 10,
+        "$ref": "#/properties/username",
+        "key": "username",
+        "label": "Username",
+        "description": "Enter username",
+        "widget": "text-v3"
+      },
+      "private_key": {
+        "order": 20,
+        "$ref": "#/properties/private_key",
+        "key": "private_key",
+        "label": "Private key",
+        "description": "Enter the RSA private key in PEM format",
+        "widget": "password-v3-textarea"
+      },
+      "private_key_passphrase": {
+        "order": 30,
+        "$ref": "#/properties/private_key_passphrase",
+        "key": "private_key_passphrase",
+        "label": "Private key passphrase",
+        "description": "Enter passphrase (only required if the private key is encrypted)",
+        "widget": "password-v3"
+      },
+      "allow_dynamic_connection_parameters": {
+        "order": 40,
+        "$ref": "#/properties/allow_dynamic_connection_parameters",
+        "key": "allow_dynamic_connection_parameters",
+        "label": "Allow dynamic connection parameters",
+        "description": "Turning this on will allow dynamically setting database, warehouse and role from the application",
+        "widget": "toggle-v2",
+        "help_text": "Enable this to override the default database, warehouse, and role at query runtime"
+      }
+    },
+    "database": {
+      "order": 2,
+      "$ref": "#/properties/database",
+      "key": "database",
+      "label": "Database",
+      "description": "Enter database name",
+      "widget": "text-v3"
+    },
+    "schema": {
+      "order": 3,
+      "$ref": "#/properties/schema",
+      "key": "schema",
+      "label": "Schema",
+      "description": "Enter schema name",
+      "widget": "text-v3"
+    },
+    "warehouse": {
+      "order": 4,
+      "$ref": "#/properties/warehouse",
+      "key": "warehouse",
+      "label": "Warehouse",
+      "description": "Enter warehouse name",
+      "widget": "text-v3"
+    },
+    "role": {
+      "order": 5,
+      "$ref": "#/properties/role",
+      "key": "role",
+      "label": "Role",
+      "description": "Enter role",
+      "widget": "text-v3"
+    }
+  }
+}

@@ -1,0 +1,377 @@
+import React, { useEffect, useState } from 'react';
+import useRouter from '@/_hooks/use-router';
+import { aiOnboardingService, appService, authenticationService } from '@/_services';
+import { Navigate } from 'react-router-dom';
+import Configs from './Configs/Config.json';
+import { getCookie } from '@/_helpers';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+// import pako from 'pako';
+
+export function Authorize({ navigate }) {
+  const [error, setError] = useState('');
+  const [inviteeEmail, setInviteeEmail] = useState();
+  const router = useRouter();
+  const organizationId = authenticationService.getLoginOrganizationId();
+  const organizationSlug = authenticationService.getLoginOrganizationSlug();
+  const redirectUrl = getCookie('redirectPath');
+  const signupOrganizationSlug = authenticationService.getSignupOrganizationSlug();
+  const inviteFlowIdentifier = authenticationService.getInviteFlowIndetifier();
+
+  useEffect(() => {
+    const errorMessage = router.query.error_description || router.query.error;
+
+    if (errorMessage) {
+      return setError(errorMessage);
+    }
+
+    if (!(router.query.origin && Configs[router.query.origin])) {
+      return setError('Login failed');
+    }
+
+    const configs = Configs[router.query.origin];
+    const authParams = {};
+    const utmParams = extractUtmParams(router);
+    // const prompt = extractPromptFromState(router);
+
+    // Set AI cookie if prompt is available
+    // if (prompt) {
+    //   aiOnboardingService
+    //     .setAiCookie({ tj_ai_prompt: prompt })
+    //     .then(() => {
+    //       console.log('AI prompt cookie set successfully');
+    //     })
+    //     .catch((error) => {
+    //       console.warn('Failed to set AI prompt cookie:', error);
+    //     });
+    // }
+
+    if (configs.responseType === 'hash') {
+      if (!window.location.hash) {
+        return setError('Login failed');
+      }
+      const params = new Proxy(new URLSearchParams(window.location.hash.substr(1)), {
+        get: (searchParams, prop) => searchParams.get(prop),
+      });
+      authParams.token = params[configs.params.token];
+      authParams.state = params[configs.params.state];
+    } else {
+      authParams.token = router.query[configs.params.token];
+      authParams.state = router.query[configs.params.state];
+      authParams.iss = router.query[configs.params.iss];
+    }
+
+    /* If the params has SAMLResponse the SAML auth is success */
+    if (router.query.saml_response_id) {
+      authParams.samlResponseId = router.query.saml_response_id;
+    }
+
+    let subsciption;
+    if (organizationId) {
+      subsciption = authenticationService.currentSession.subscribe((session) => {
+        //logged users should send tj-workspace-id when login to unauthorized workspace
+        if (session.authentication_status === false || session.current_organization_id) {
+          signIn(authParams, configs, utmParams);
+          subsciption.unsubscribe();
+        }
+      });
+    } else {
+      signIn(authParams, configs, utmParams);
+    }
+
+    // Disabled for useEffect not being called for updation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const extractUtmParams = (router) => {
+    const UTM_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+    const utmParams = {};
+
+    // Check URL hash parameters first
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      UTM_FIELDS.forEach((param) => {
+        const value = hashParams.get(param);
+        if (value) {
+          utmParams[param] = value;
+        }
+      });
+    }
+
+    // Check query parameters if no UTM params found in hash
+    if (Object.keys(utmParams).length === 0) {
+      UTM_FIELDS.forEach((param) => {
+        if (router.query[param]) {
+          utmParams[param] = router.query[param];
+        }
+      });
+    }
+
+    // If still no UTM params, check inside the 'state' parameter (both in hash and query)
+    if (Object.keys(utmParams).length === 0) {
+      let stateParam = window.location.hash
+        ? new URLSearchParams(window.location.hash.substring(1)).get('state')
+        : router.query.state;
+
+      if (stateParam) {
+        try {
+          const decodedState = decodeURIComponent(stateParam);
+          const stateParams = new URLSearchParams(decodedState);
+
+          UTM_FIELDS.forEach((param) => {
+            const value = stateParams.get(param);
+            if (value) {
+              utmParams[param] = value;
+            }
+          });
+        } catch (error) {
+          console.warn('Error parsing state parameter:', error);
+        }
+      }
+    }
+
+    return utmParams;
+  };
+
+  // const base64UrlToBytes = (base64Url) => {
+  //   // Convert base64url to base64
+  //   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  //   // Add padding if needed
+  //   const padded = base64 + '===='.substring(0, (4 - (base64.length % 4)) % 4);
+  //   // Convert to bytes
+  //   const binary = atob(padded);
+  //   return new Uint8Array(binary.split('').map((char) => char.charCodeAt(0)));
+  // };
+
+  // const extractPromptFromState = (router) => {
+  //   let compressedPrompt = null;
+
+  //   // Check URL hash parameters first
+  //   if (window.location.hash) {
+  //     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  //     compressedPrompt = hashParams.get('tj_ai_prompt');
+  //   }
+
+  //   // Check query parameters if no prompt found in hash
+  //   if (!compressedPrompt && router.query.tj_ai_prompt) {
+  //     compressedPrompt = router.query.tj_ai_prompt;
+  //   }
+
+  //   // If still no prompt, check inside the 'state' parameter (both in hash and query)
+  //   if (!compressedPrompt) {
+  //     let stateParam = window.location.hash
+  //       ? new URLSearchParams(window.location.hash.substring(1)).get('state')
+  //       : router.query.state;
+
+  //     if (stateParam) {
+  //       try {
+  //         const decodedState = decodeURIComponent(stateParam);
+  //         const stateParams = new URLSearchParams(decodedState);
+  //         compressedPrompt = stateParams.get('tj_ai_prompt');
+  //       } catch (error) {
+  //         console.warn('Error parsing state parameter for prompt:', error);
+  //       }
+  //     }
+  //   }
+
+  //   // Decompress the prompt if found
+  //   if (compressedPrompt) {
+  //     try {
+  //       const compressedBytes = base64UrlToBytes(compressedPrompt);
+  //       const decompressed = pako.inflate(compressedBytes, { to: 'string' });
+  //       return decompressed;
+  //     } catch (error) {
+  //       console.warn('Error decompressing prompt:', error);
+  //     }
+  //   }
+
+  //   return null;
+  // };
+  function getAttributionFromState() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm = {
+        utm_source: urlParams.get('utm_source') || '',
+        utm_medium: urlParams.get('utm_medium') || '',
+        utm_campaign: urlParams.get('utm_campaign') || '',
+        utm_term: urlParams.get('utm_term') || '',
+        utm_content: urlParams.get('utm_content') || '',
+      };
+
+      const hutk =
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('hubspotutk='))
+          ?.split('=')[1] || '';
+
+      const referrer = document.referrer || '';
+      const pageUri = window.location.href;
+      const pageName = document.title;
+
+      const attribution = {
+        hutk,
+        referrer,
+        pageUri,
+        pageName,
+        utm,
+      };
+      return attribution;
+    } catch (err) {
+      return {};
+    }
+  }
+
+  const hubspotFormSubmissionForSSO = (email) => {
+    if (!email) return;
+    try {
+      const attribution = getAttributionFromState();
+      if (!attribution) return;
+
+      const { SSO_HUBSPOT_PORTAL_ID: portalId, SSO_HUBSPOT_FORM_ID: formId } = window.public_config || {};
+
+      if (!portalId || !formId) return;
+
+      window.__hs_original_source_submitted = true;
+
+      const fields = [
+        { name: 'email', value: email },
+        ...Object.entries(attribution.utm || {}).map(([key, value]) => ({ name: key, value })),
+      ];
+
+      const payload = {
+        fields,
+        context: {
+          hutk: attribution.hutk,
+          pageUri: attribution.pageUri || location.href,
+          pageName: attribution.pageName || document.title,
+        },
+      };
+
+      fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      /* empty */
+    }
+  };
+  const signIn = (authParams, configs, utmParams) => {
+    const handleAuthResponse = ({ redirect_url, ...restResponse }) => {
+      const { organization_id, current_organization_id, email } = restResponse;
+      // Submit a lightweight HubSpot form submission with hutk + page context to set Original source from web
+      hubspotFormSubmissionForSSO(email);
+
+      const event = `${redirect_url ? 'signup' : 'signin'}_${
+        router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
+      }`;
+      posthogHelper.initPosthog(restResponse);
+      posthogHelper.captureEvent(event, {
+        email,
+        workspace_id: organization_id || current_organization_id,
+      });
+
+      /* Precaution code to not take any previous values since there are two entry point to the app now (site and tooljet-app) */
+      authenticationService.deleteAllSSOCookies();
+      if (redirect_url) {
+        localStorage.setItem('ph-sso-type', router.query.origin); //for posthog event
+        window.location.href = redirect_url;
+        return;
+      }
+      if (restResponse?.organizationInviteUrl) onInvitedUserSignUpSuccess(restResponse, navigate);
+      else {
+        updateCurrentSession({
+          isUserLoggingIn: true,
+        });
+        onLoginSuccess(restResponse, navigate);
+      }
+      posthogHelper.initPosthog({ redirect_url, ...restResponse });
+      posthogHelper.captureEvent(event, {
+        email,
+        workspace_id: organization_id || current_organization_id,
+      });
+    };
+
+    const handleAuthError = (err) => {
+      console.log('SSO login error', err);
+      const details = err?.data?.message;
+      const inviteeEmail = details?.inviteeEmail;
+      if (inviteeEmail) setInviteeEmail(inviteeEmail);
+      let errorMessage = '';
+      if (details?.error && details?.data) {
+        errorMessage = `${details.error} ${details.data.join(', ')}`;
+      }
+      const errMessage = errorMessage || details?.error || details?.message || err?.error || 'something went wrong';
+      if (!inviteeEmail && inviteFlowIdentifier) {
+        /* Some unexpected error happened from the provider side. Need to retreive email to continue */
+        appService
+          .getInviteeDetails(inviteFlowIdentifier)
+          .then((response) => {
+            setInviteeEmail(response.email);
+          })
+          .catch(() => {
+            console.error('Error while fetching invitee details');
+          })
+          .finally(() => {
+            setError(`${configs.name} login failed - ${errMessage}`);
+          });
+      } else {
+        setError(`${configs.name} login failed - ${errMessage}`);
+      }
+    };
+
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+    // FIXME: later create different component/login for cloud and ce/ee
+    const edition = fetchEdition();
+    if (edition === 'cloud') {
+      const isAiOnboarding =
+        hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
+        router.query.state?.includes('tj_api_source=ai_onboarding');
+      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      if (isNormalFlow) {
+        /* For workspace signup and signin */
+        authenticationService
+          .signInViaOAuth(router.query.configId, router.query.origin, authParams)
+          .then(handleAuthResponse)
+          .catch(handleAuthError);
+      } else {
+        /* For ai onboarding */
+        aiOnboardingService
+          .signInViaOAuth(router.query.origin, authParams, utmParams)
+          .then(handleAuthResponse)
+          .catch(handleAuthError);
+      }
+      return;
+    } else {
+      authenticationService
+        .signInViaOAuth(router.query.configId, router.query.origin, authParams)
+        .then(handleAuthResponse)
+        .catch(handleAuthError);
+    }
+  };
+
+  const baseRoute = signupOrganizationSlug ? '/signup' : '/login';
+  const slug = signupOrganizationSlug ? signupOrganizationSlug : organizationSlug;
+  const errorURL = `${baseRoute}${error && slug ? `/${slug}` : '/'}${
+    !signupOrganizationSlug && redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+  }`;
+  return (
+    <div>
+      <TJLoader />
+      {error && (
+        <Navigate
+          replace
+          to={errorURL}
+          state={{
+            errorMessage: error && error,
+            ...(inviteFlowIdentifier ? { organizationToken: inviteFlowIdentifier, inviteeEmail } : {}),
+          }}
+        />
+      )}
+    </div>
+  );
+}

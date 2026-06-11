@@ -1,0 +1,61 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Twilio datasource",
+  "description": "A schema defining Twilio datasource",
+  "type": "api",
+  "source": {
+    "name": "Twilio",
+    "kind": "twilio",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "account_sid": {
+        "type": "string"
+      },
+      "auth_token": {
+        "type": "string",
+        "encrypted": true
+      },
+      "messaging_service_sid": {
+        "type": "string"
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "auth_token": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "auth_token": {
+      "label": "Auth token",
+      "key": "auth_token",
+      "type": "password",
+      "description": "Auth Token for Twilio",
+      "helpText": "For generating Auth Token, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
+    },
+    "account_sid": {
+      "label": "Account SID",
+      "key": "account_sid",
+      "type": "text",
+      "description": "Account SID for Twilio",
+      "helpText": "For generating Account SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
+    },
+    "messaging_service_sid": {
+      "label": "Messaging service SID",
+      "key": "messaging_service_sid",
+      "type": "text",
+      "description": "Messaging Service SID for Twilio",
+      "helpText": "For generating Messaging Service SID, visit: <a href='https://console.twilio.com/' target='_blank' rel='noreferrer'>Twilio Console</a>"
+    }
+  },
+  "required": [
+    "auth_token",
+    "account_sid",
+    "messaging_service_sid"
+  ]
+}

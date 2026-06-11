@@ -1,0 +1,16 @@
+{
+  "name": "Promo code management",
+  "description": "Create, track, and manage promotional codes and discounts with customizable rules, limits, and automated reporting.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "promo-code-management",
+  "category": "sales-and-marketing"
+}

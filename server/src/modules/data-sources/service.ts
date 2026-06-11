@@ -1,0 +1,499 @@
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { DataSourcesRepository } from './repository';
+import { DataSourcesUtilService } from './util.service';
+import { DataQueriesUtilService } from '@modules/data-queries/util.service';
+import { User } from '@entities/user.entity';
+import { decode } from 'js-base64';
+import { AppEnvironmentUtilService } from '@modules/app-environments/util.service';
+import { decamelizeKeys } from 'humps';
+import { DataSourceScopes, DataSourceTypes } from './constants';
+import {
+  AuthorizeDataSourceOauthDto,
+  CreateDataSourceDto,
+  GetDataSourceOauthUrlDto,
+  TestDataSourceDto,
+  TestSampleDataSourceDto,
+  UpdateDataSourceDto,
+} from './dto';
+import { GetQueryVariables, UpdateOptions } from './types';
+import { DataSource } from '@entities/data_source.entity';
+import { PluginsServiceSelector } from './services/plugin-selector.service';
+import { IDataSourcesService } from './interfaces/IService';
+import { RequestContext } from '@modules/request-context/service';
+import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
+import * as fs from 'fs';
+import { UserPermissions } from '@modules/ability/types';
+import { QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { dbTransactionWrap } from '@helpers/database.helper';
+import { EntityManager } from 'typeorm';
+
+@Injectable()
+export class DataSourcesService implements IDataSourcesService {
+  constructor(
+    protected readonly dataSourcesRepository: DataSourcesRepository,
+    protected readonly dataSourcesUtilService: DataSourcesUtilService,
+    protected readonly dataQueriesUtilService: DataQueriesUtilService,
+    protected readonly appEnvironmentsUtilService: AppEnvironmentUtilService,
+    protected readonly pluginsServiceSelector: PluginsServiceSelector
+  ) {}
+
+  async getForApp(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
+    const shouldIncludeWorkflows = query.shouldIncludeWorkflows ?? true;
+
+    // Removed: appVersionId-based branchId derivation (app_version_id dropped from data_source_versions).
+    // Released versions now use is_default DSV; branch editors pass branchId directly.
+    // if (!query.branchId && query.appVersionId) { ... }
+
+    let dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, query ?? {});
+
+    if (!shouldIncludeWorkflows) {
+      // remove workflowsdefault data source from static data sources
+      dataSources = dataSources.filter((dataSource) => dataSource.kind !== 'workflows');
+    }
+    const decamelizedDatasources = decamelizeKeys(dataSources);
+    return { data_sources: decamelizedDatasources };
+  }
+
+  async getAll(
+    query: GetQueryVariables,
+    user: User,
+    userPermissions: UserPermissions
+  ): Promise<{ data_sources: object[] }> {
+    const selectedEnvironmentId =
+      query.environmentId || (await this.appEnvironmentsUtilService.get(user.organizationId, null, true))?.id;
+
+    const dataSources = await this.dataSourcesRepository.allGlobalDS(userPermissions, user.organizationId, {
+      environmentId: selectedEnvironmentId,
+      types: [DataSourceTypes.DEFAULT, DataSourceTypes.SAMPLE],
+      branchId: query.branchId,
+    });
+    for (const dataSource of dataSources) {
+      const parseIfNeeded = (data: any) => {
+        if (typeof data === 'object' && data !== null) return data;
+        if (Buffer.isBuffer(data) || typeof data === 'string') {
+          return JSON.parse(decode(data.toString('utf8')));
+        }
+        return data;
+      };
+      try {
+        if (dataSource.pluginId) {
+          if (Buffer.isBuffer(dataSource.plugin.iconFile.data)) {
+            dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+          }
+          dataSource.plugin.manifestFile.data = parseIfNeeded(dataSource.plugin.manifestFile.data);
+          dataSource.plugin.operationsFile.data = parseIfNeeded(dataSource.plugin.operationsFile.data);
+        }
+      } catch (error) {
+        throw new BadRequestException(
+          `Error parsing plugin data for dataSourceId: ${dataSource.id}. Details: ${error.message}`
+        );
+      }
+    }
+
+    const decamelizedDatasources = dataSources.map((dataSource) => {
+      if (dataSource.pluginId) {
+        return dataSource;
+      }
+
+      if (dataSource.kind === 'openapi') {
+        const { options, ...objExceptOptions } = dataSource;
+        const tempDs = decamelizeKeys(objExceptOptions);
+        const { spec, ...objExceptSpec } = options;
+        const decamelizedOptions = decamelizeKeys(objExceptSpec);
+        decamelizedOptions['spec'] = spec;
+        tempDs['options'] = decamelizedOptions;
+        return tempDs;
+      }
+
+      if (dataSource.type === DataSourceTypes.SAMPLE) {
+        delete dataSource.options;
+      }
+      return decamelizeKeys(dataSource);
+    });
+
+    return { data_sources: decamelizedDatasources };
+  }
+
+  async create(createDataSourceDto: CreateDataSourceDto, user: User, branchId?: string): Promise<DataSource> {
+    const { kind, name, options, plugin_id: pluginId, environment_id } = createDataSourceDto;
+
+    if (kind === 'grpc') {
+      const rootDir = process.cwd().split('/').slice(0, -1).join('/');
+      const protoFilePath = `${rootDir}/protos/service.proto`;
+
+      const filecontent = fs.readFileSync(protoFilePath, 'utf8');
+      const rcps = await this.dataSourcesUtilService.getServiceAndRpcNames(filecontent);
+      options.find((option) => option['key'] === 'protobuf').value = JSON.stringify(rcps, null, 2);
+    }
+    const dataSource = await this.dataSourcesUtilService.create(
+      {
+        name,
+        kind,
+        options,
+        pluginId,
+        environmentId: environment_id,
+      },
+      user,
+      branchId
+    );
+
+    // Setting data for audit logs
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: dataSource?.id,
+      resourceName: dataSource?.name,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environment_id,
+        pluginId: pluginId,
+      },
+      metadata: {
+        createdAt: dataSource?.createdAt,
+      },
+    });
+
+    return dataSource;
+  }
+
+  async update(updateDataSourceDto: UpdateDataSourceDto, user: User, updateOptions: UpdateOptions, branchId?: string) {
+    const { name, options } = updateDataSourceDto;
+    const { dataSourceId, environmentId } = updateOptions;
+
+    // Fetch datasource details for audit log
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
+
+    await this.dataSourcesUtilService.update(
+      dataSourceId,
+      user.organizationId,
+      user.id,
+      name,
+      options,
+      environmentId,
+      branchId
+    );
+
+    // Setting data for audit logs
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: dataSourceId,
+      resourceName: name,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+        environmentId: environmentId,
+        updatedFields: Object.keys(updateDataSourceDto),
+      },
+      metadata: updateDataSourceDto,
+    });
+    return;
+  }
+
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ) {
+    return await this.dataSourcesUtilService.validateOptions(
+      dataSourceId,
+      organizationId,
+      environmentId,
+      options,
+      schema
+    );
+  }
+
+  async delete(dataSourceId: string, user: User, branchId?: string) {
+    const dataSource = await this.dataSourcesRepository.findById(dataSourceId, user.organizationId);
+    if (!dataSource) {
+      return;
+    }
+    if (dataSource.type === DataSourceTypes.SAMPLE) {
+      throw new BadRequestException('Cannot delete sample data source');
+    }
+
+    const result = await this.findQueriesLinkedToDatasource(dataSourceId, user.organizationId, branchId);
+    if (result.dependent_queries) {
+      throw new BadRequestException(`Datasource can't be deleted, queries are in use`);
+    }
+
+    // Branch-aware: soft-delete via DataSourceVersion.isActive = false
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
+    if (effectiveBranchId) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        await manager.update(
+          DataSourceVersion,
+          { dataSourceId, branchId: effectiveBranchId },
+          { isActive: false, updatedAt: new Date() }
+        );
+      });
+    } else {
+      await this.dataSourcesRepository.delete(dataSourceId);
+    }
+
+    // Setting data for audit logs
+    RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+      userId: user.id,
+      organizationId: user.organizationId,
+      resourceId: dataSourceId,
+      resourceName: dataSource.name,
+      resourceData: {
+        dataSourceKind: dataSource?.kind,
+        dataSourceScope: dataSource?.scope,
+        appId: dataSource?.app?.id || null,
+        appVersionId: dataSource?.appVersionId,
+      },
+      metadata: {
+        deletedAt: new Date().toISOString(),
+      },
+    });
+    return;
+  }
+
+  async changeScope(dataSourceId: string, user: User) {
+    await this.dataSourcesRepository.convertToGlobalSource(dataSourceId, user.organizationId);
+  }
+
+  async findOneByEnvironment(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId?: string,
+    branchId?: string
+  ): Promise<DataSource> {
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      environmentId,
+      organizationId,
+      branchId
+    );
+    return dataSource;
+  }
+
+  async testConnection(testDataSourceDto: TestDataSourceDto, organization_id: string): Promise<object> {
+    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, organization_id);
+  }
+
+  async testSampleDBConnection(testDataSourceDto: TestSampleDataSourceDto, user: User) {
+    const { environment_id, dataSourceId } = testDataSourceDto;
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      environment_id,
+      user.defaultOrganizationId
+    );
+    testDataSourceDto.options = dataSource.options;
+    return await this.dataSourcesUtilService.testConnection(testDataSourceDto, user.organizationId);
+  }
+
+  async getAuthUrl(getDataSourceOauthUrlDto: GetDataSourceOauthUrlDto): Promise<{ url: string }> {
+    return this.dataSourcesUtilService.getAuthUrl(getDataSourceOauthUrlDto);
+  }
+
+  async authorizeOauth2(
+    dataSourceId: string,
+    environmentId: string,
+    authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto,
+    user: User
+  ) {
+    const { code } = authorizeDataSourceOauthDto;
+
+    const dataSource = await this.dataSourcesUtilService.findOneByEnvironment(
+      dataSourceId,
+      environmentId,
+      user.organizationId
+    );
+
+    if (!dataSource) {
+      throw new UnauthorizedException();
+    }
+    // TODO: add privilege if user has data source privilege or user should have app read privilege of the apps using the data source
+
+    await this.dataSourcesUtilService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
+    return;
+  }
+
+  async findQueriesLinkedToDatasource(datasourceId: string, organizationId?: string, branchId?: string) {
+    const dataSourceDetails = await this.dataSourcesRepository.getQueriesByDatasourceId(datasourceId, branchId || null);
+    if (dataSourceDetails.length == 0) return { datasources: 0, dependent_queries: 0 };
+
+    const queries = [];
+    dataSourceDetails.forEach((datasourceDetail) => {
+      const { dataQueries = [] } = datasourceDetail;
+      if (dataQueries.length) queries.push(...dataQueries);
+    });
+
+    return { datasources: dataSourceDetails.length, dependent_queries: queries.length };
+  }
+
+  async findDatasourcesAndQueriesOfMarketplacePlugin(pluginId: string) {
+    const dataSourcesByMarketplacePlugin = await this.dataSourcesRepository.getDatasourceByPluginId(pluginId);
+    if (!dataSourcesByMarketplacePlugin.length) return { dependent_queries: 0 };
+
+    const queries = [];
+    dataSourcesByMarketplacePlugin?.forEach((datasource) => {
+      if (datasource.dataQueries.length) queries.push(...datasource.dataQueries);
+    });
+    return {
+      dependent_queries: queries.length,
+    };
+  }
+
+  async invokeMethod(
+    dataSource: DataSource,
+    methodName: string,
+    user: User,
+    environmentId: string,
+    args?: any,
+    branchId?: string,
+    resolvedOptions?: object
+  ): Promise<QueryResult> {
+    const service = await this.pluginsServiceSelector.getService(dataSource.pluginId, dataSource.kind);
+
+    if (!service.invokeMethod) {
+      throw new BadRequestException(`Plugin ${dataSource.kind} does not support method invocation`);
+    }
+
+    // Branch-aware: pass branchId for global DS option resolution
+    const effectiveBranchId = dataSource.scope === DataSourceScopes.GLOBAL ? branchId || null : null;
+
+    const dataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+      dataSource.id,
+      user.organizationId,
+      environmentId,
+      effectiveBranchId
+    );
+
+    const sourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+      dataSourceOptions.options,
+      user.organizationId,
+      dataSourceOptions.environmentId,
+      user
+    );
+
+    const resolvedArgs = resolvedOptions
+      ? await this.dataQueriesUtilService.parseQueryOptions(
+          args,
+          resolvedOptions,
+          user.organizationId,
+          environmentId,
+          user
+        )
+      : args;
+
+    try {
+      const result = await service.invokeMethod(
+        methodName,
+        {
+          user: { id: user?.id },
+          app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+          dataSourceDetails: {
+            datasourceId: dataSource?.id,
+            datasourcekind: dataSource?.kind,
+            datasourceUpdatedAt: dataSourceOptions?.updatedAt,
+            dataSourceOptionsEnvironmentId: dataSourceOptions?.environmentId,
+          },
+        },
+        sourceOptions,
+        resolvedArgs
+      );
+      return { status: 'ok', data: result };
+    } catch (error) {
+      if (error.constructor.name === 'OAuthUnauthorizedClientError') {
+        const currentUserToken = sourceOptions['refresh_token']
+          ? sourceOptions
+          : this.getCurrentUserToken(sourceOptions['multiple_auth_enabled'], sourceOptions['tokenData'], user?.id);
+
+        if (currentUserToken && currentUserToken['refresh_token']) {
+          try {
+            const accessTokenDetails = await service.refreshToken(sourceOptions);
+
+            await this.dataSourcesUtilService.updateOAuthAccessToken(
+              accessTokenDetails,
+              dataSourceOptions.options,
+              dataSource.id,
+              user?.id,
+              user?.organizationId,
+              environmentId
+            );
+
+            // Re-fetch options to use the new token
+            const updatedDataSourceOptions = await this.appEnvironmentsUtilService.getOptions(
+              dataSource.id,
+              user.organizationId,
+              environmentId,
+              branchId
+            );
+
+            const updatedSourceOptions = await this.dataSourcesUtilService.parseSourceOptions(
+              updatedDataSourceOptions.options,
+              user.organizationId,
+              updatedDataSourceOptions.environmentId,
+              user
+            );
+
+            // Retry invoke
+            const result = await service.invokeMethod(
+              methodName,
+              {
+                user: { id: user?.id },
+                app: { id: dataSource?.app?.id, isPublic: dataSource?.app?.isPublic },
+              },
+              updatedSourceOptions,
+              resolvedArgs
+            );
+            return { status: 'ok', data: result };
+          } catch (refreshError) {
+            // If refresh fails or retry fails, return original or new error data
+            if (refreshError.constructor.name === 'QueryError') {
+              return {
+                status: 'failed',
+                data: refreshError.data,
+                errorMessage: refreshError.message,
+                metadata: refreshError.metadata,
+              };
+            }
+
+            return {
+              status: 'failed',
+              data: error.data,
+              errorMessage: error.message,
+              metadata: error.metadata,
+            };
+          }
+        }
+      }
+
+      if (error.constructor.name === 'QueryError') {
+        return {
+          status: 'failed',
+          data: error.data,
+          errorMessage: error.message,
+          metadata: error.metadata,
+        };
+      }
+      throw error;
+    }
+  }
+
+  protected getCurrentUserToken = (isMultiAuthEnabled: boolean, tokenData: any, userId: string) => {
+    if (isMultiAuthEnabled) {
+      if (!tokenData || !Array.isArray(tokenData)) return null;
+      return userId ? tokenData.find((token: any) => token.user_id === userId) : tokenData[0];
+    } else {
+      return tokenData;
+    }
+  };
+}

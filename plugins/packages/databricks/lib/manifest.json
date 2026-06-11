@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Databricks datasource",
+  "description": "A schema defining Databricks datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Databricks",
+    "kind": "databricks",
+    "type": "database"
+  },
+  "properties": {
+    "authentication_type": {
+      "type": "string",
+      "title": "Authentication type",
+      "description": "Single select dropdown for choosing authentication type",
+      "enum": ["personal_access_token", "oauth_u2m"],
+      "default": "personal_access_token"
+    },
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "host.cloud.databricks.com"
+    },
+    "port": {
+      "type": "string",
+      "title": "Port",
+      "description": "443"
+    },
+    "http_path": {
+      "type": "string",
+      "title": "HTTP path",
+      "description": "/sql/2.0/warehouse/id"
+    },
+    "default_catalog": {
+      "type": "string",
+      "title": "Default catalog",
+      "description": "tooljet_metastore"
+    },
+    "default_schema": {
+      "type": "string",
+      "title": "Default schema",
+      "description": "default"
+    },
+    "personal_access_token": {
+      "type": "string",
+      "title": "Personal access token",
+      "description": "Databricks personal access token"
+    },
+    "auth_type": {
+      "type": "string",
+      "default": "oauth2"
+    },
+    "grant_type": {
+      "type": "string",
+      "default": "authorization_code"
+    },
+    "oauth_type": {
+      "type": "string",
+      "default": "custom_app"
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client secret"
+    },
+    "connection_options": {
+      "type": "array",
+      "title": "Connection options",
+      "description": "Additional connection options as key-value pairs (e.g. default_catalog, default_schema)"
+    }
+  },
+  "tj:encrypted": [
+    "personal_access_token",
+    "client_secret"
+  ],
+  "required": ["authentication_type"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "authentication_type": { "const": "personal_access_token" }
+        }
+      },
+      "then": {
+        "required": ["host", "http_path", "personal_access_token"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "authentication_type": { "const": "oauth_u2m" }
+        }
+      },
+      "then": {
+        "required": ["host", "http_path"]
+      }
+    }
+  ],
+  "tj:ui:properties": {
+    "authentication_type": {
+      "order": 1,
+      "$ref": "#/properties/authentication_type",
+      "key": "authentication_type",
+      "label": "Authentication type",
+      "description": "Single select dropdown for choosing authentication type",
+      "widget": "dropdown-component-flip",
+      "list": [
+        { "value": "personal_access_token", "name": "Personal Access Token" },
+        { "value": "oauth_u2m", "name": "OAuth U2M (per-user)" }
+      ]
+    },
+    "personal_access_token": {
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "host.cloud.databricks.com",
+        "widget": "text-v3",
+        "required": true
+      },
+      "port": {
+        "order": 20,
+        "$ref": "#/properties/port",
+        "key": "port",
+        "label": "Port",
+        "description": "443",
+        "widget": "text-v3",
+        "help_text": "Default Databricks port is 443"
+      },
+      "http_path": {
+        "order": 30,
+        "$ref": "#/properties/http_path",
+        "key": "http_path",
+        "label": "HTTP path",
+        "description": "/sql/2.0/warehouse/id",
+        "widget": "text-v3",
+        "required": true
+      },
+      "default_catalog": {
+        "order": 40,
+        "$ref": "#/properties/default_catalog",
+        "key": "default_catalog",
+        "label": "Default catalog",
+        "description": "tooljet_metastore",
+        "widget": "text-v3"
+      },
+      "default_schema": {
+        "order": 50,
+        "$ref": "#/properties/default_schema",
+        "key": "default_schema",
+        "label": "Default schema",
+        "description": "default",
+        "widget": "text-v3"
+      },
+      "personal_access_token": {
+        "order": 60,
+        "$ref": "#/properties/personal_access_token",
+        "key": "personal_access_token",
+        "label": "Personal access token",
+        "description": "Databricks personal access token",
+        "widget": "password-v3",
+        "required": true,
+        "help_text": "Supports secrets (e.g., {{secrets.databricks_token}})"
+      }
+    },
+    "oauth_u2m": {
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "e.g. 1234567890123456.7.gcp.databricks.com",
+        "widget": "text-v3",
+        "required": true
+      },
+      "http_path": {
+        "order": 20,
+        "$ref": "#/properties/http_path",
+        "key": "http_path",
+        "label": "HTTP path",
+        "description": "/sql/1.0/warehouses/abc123",
+        "widget": "text-v3",
+        "required": true
+      },
+      "connection_options": {
+        "order": 25,
+        "$ref": "#/properties/connection_options",
+        "key": "connection_options",
+        "label": "Connection options",
+        "widget": "react-component-headers"
+      },
+      "oauth": {
+        "order": 30,
+        "key": "oauth",
+        "widget": "react-component-oauth",
+        "description": "Databricks OAuth U2M — each user authenticates independently",
+        "oauth_configs": {
+          "allowed_auth_types": [
+            "oauth2"
+          ],
+          "allowed_grant_types": [
+            "authorization_code"
+          ],
+          "allowed_field_groups": {
+            "authorization_code": [
+              "client_id",
+              "client_secret"
+            ]
+          },
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": [
+                "custom_app"
+              ],
+              "ee": [
+                "custom_app"
+              ],
+              "cloud": [
+                "custom_app"
+              ]
+            }
+          },
+          "allowed_scope_field": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  server:
+    ports:
+      - 9229:9229
+    command: npm run --prefix server start:debug -- --debug 0.0.0.0:9229

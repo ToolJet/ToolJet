@@ -1,0 +1,155 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Elastic search datasource",
+  "description": "A schema defining elastic search datasource",
+  "type": "database",
+  "source": {
+    "name": "Elasticsearch",
+    "kind": "elasticsearch",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 9200
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "ssl_enabled": {
+      "value": true
+    },
+    "ssl_certificate": {
+      "value": "none"
+    }
+  },
+  "properties": {
+    "ssl_certificate": {
+      "label": "SSL certificate",
+      "key": "ssl_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "client_certificate",
+          "name": "Client certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "ssl_enabled": {
+          "label": "SSL",
+          "key": "ssl_enabled",
+          "type": "toggle",
+          "description": "Toggle for ssl_enabled"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        }
+      }
+    },
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
+    },
+    "client_certificate": {
+      "client_key": {
+        "label": "Client key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "root_cert": {
+        "label": "Root cert",
+        "key": "root_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter root certificate"
+      }
+    }
+  },
+  "required": [
+    "scheme",
+    "ssl_enabled",
+    "host",
+    "port",
+    "password"
+  ]
+}

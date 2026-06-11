@@ -1,0 +1,54 @@
+// Panel Header - shared across all right sidebar panels
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px 16px; // top right bottom left - 8px bottom for gap before tabs
+  min-height: 40px;
+  gap: 8px;
+
+  .panel-header-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--text-default, #1b1f24);
+  }
+
+  .panel-header-name {
+    flex: 1;
+    min-width: 0; // Allow shrinking below content size
+
+    .input-icon {
+      width: 100%;
+    }
+
+    input {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
+  .panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0; // No gap - Button component handles its own spacing
+    flex-shrink: 0; // Prevent buttons from shrinking
+  }
+}
+
+.components-container {
+  // Tab content styling only - tab header styles come from base tabs.scss
+  .tab-content {
+    border-top: none;
+  }
+}
+
+.custom-component-inspector-multiline {
+  .codehinter-container {
+    .cm-editor {
+      max-height: 400px !important;
+    }
+  }
+}

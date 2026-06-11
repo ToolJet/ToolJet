@@ -1,0 +1,36 @@
+import { FEATURE_KEY } from '../constants';
+import { FeatureConfig } from '@modules/app/types';
+import { MODULES } from '@modules/app/constants/modules';
+import { ClientMetadata } from 'openid-client';
+
+export interface Features {
+  [FEATURE_KEY.LOGIN]: FeatureConfig;
+  [FEATURE_KEY.SUPER_ADMIN_LOGIN]: FeatureConfig;
+  [FEATURE_KEY.ORGANIZATION_LOGIN]: FeatureConfig;
+  [FEATURE_KEY.AUTHORIZE]: FeatureConfig;
+  [FEATURE_KEY.SWITCH_WORKSPACE]: FeatureConfig;
+  [FEATURE_KEY.SETUP_ADMIN]: FeatureConfig;
+  [FEATURE_KEY.FORGOT_PASSWORD]: FeatureConfig;
+  [FEATURE_KEY.RESET_PASSWORD]: FeatureConfig;
+  [FEATURE_KEY.OAUTH_COMMON_SIGN_IN]: FeatureConfig;
+  [FEATURE_KEY.OAUTH_OPENID_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.OAUTH_SAML_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.OAUTH_SAML_RESPONSE]: FeatureConfig;
+  [FEATURE_KEY.OAUTH_SIGN_IN]: FeatureConfig;
+  [FEATURE_KEY.AI_ONBOARDING]: FeatureConfig;
+  [FEATURE_KEY.AI_ONBOARDING_SSO]: FeatureConfig;
+  [FEATURE_KEY.AI_COOKIE_SET]: FeatureConfig;
+  [FEATURE_KEY.AI_COOKIE_DELETE]: FeatureConfig;
+  [FEATURE_KEY.AI_MFA_REQUEST_OTP]: FeatureConfig;
+  [FEATURE_KEY.AI_MFA_VERIFY_OTP]: FeatureConfig;
+}
+
+export interface FeaturesConfig {
+  [MODULES.AUTH]: Features;
+}
+
+export interface OidcClientConfig extends Partial<ClientMetadata> {
+  client_id: string;
+  client_secret?: string;
+  redirect_uris: string[];
+}

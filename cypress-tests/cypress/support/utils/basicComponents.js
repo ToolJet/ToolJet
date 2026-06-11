@@ -1,0 +1,84 @@
+import { commonWidgetSelector, commonSelectors } from "Selectors/common";
+import {
+  openAccordion,
+  verifyAndModifyParameter,
+  openEditorSidebar,
+  editAndVerifyWidgetName,
+} from "Support/utils/commonWidget";
+import { resizeQueryPanel } from "Support/utils/dataSource";
+
+export const verifyComponent = (widgetName) => {
+  cy.get(commonWidgetSelector.draggableWidget(widgetName), {
+    timeout: 10000,
+  }).should("be.visible");
+};
+
+export const verifyComponentinrightpannel = (widgetName) => {
+  cy.get("body")
+    .then(($body) => {
+      const isSearchVisible = $body
+        .find(commonSelectors.searchField)
+        .is(":visible");
+
+      if (!isSearchVisible) {
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        cy.wait(500);
+      }
+    })
+    .then(() => {
+      cy.get(commonWidgetSelector.widgetBox(widgetName), {
+        timeout: 10000,
+      }).should("be.visible");
+    });
+};
+
+export const deleteComponentAndVerify = (widgetName) => {
+  cy.waitForElement(commonWidgetSelector.draggableWidget(widgetName));
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .realHover()
+    .realHover();
+
+  cy.get(commonWidgetSelector.draggableWidget(widgetName))
+    .realHover()
+    .then(() => {
+      cy.get(`[data-cy="${widgetName}-delete-component-button"]`)
+        .realHover({ position: "topRight" })
+        .last()
+        .realClick();
+    });
+  cy.get('[data-cy="modal-component"]').should("be.visible");
+  cy.get(commonSelectors.yesButton).click();
+  // cy.verifyToastMessage(
+  //   `[class=go3958317564]`,
+  //   "Component deleted! (Ctrl + Z to undo)"
+  // );
+  cy.wait(1000);
+  cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
+};
+
+export const verifyComponentWithOutLabel = (
+  component,
+  defaultName,
+  fakeName,
+  appName,
+  properties = []
+) => {
+  cy.dragAndDropWidget(component, 300, 300);
+  cy.get(`[data-cy="draggable-widget-${defaultName}"]`).click({ force: true });
+  verifyComponent(defaultName);
+
+  cy.resizeWidget(defaultName, 650, 600, false);
+
+  openEditorSidebar(defaultName);
+  editAndVerifyWidgetName(fakeName, properties);
+
+  cy.forceClickOnCanvas();
+  cy.waitForAutoSave();
+
+  cy.openInCurrentTab(commonWidgetSelector.previewButton);
+  verifyComponent(fakeName);
+
+  cy.go("back");
+  resizeQueryPanel(0);
+  deleteComponentAndVerify(fakeName);
+};

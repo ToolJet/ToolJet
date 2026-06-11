@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Manifest schema",
+  "description": "Tooljet manifest schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "path to the JSON-schema to use for this file"
+    },
+    "title": {
+      "type": "string",
+      "description": "title of datasource"
+    },
+    "description": {
+      "type": "string",
+      "description": "description of datasource"
+    },
+    "type": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/type"
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "exposedVariables": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "isLoading": {
+              "type": "string"
+            },
+            "data": {
+              "type": "string"
+            },
+            "rawData": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "type": {
+      "enum": [
+        "api",
+        "cloud-storage",
+        "database"
+      ]
+    }
+  }
+}

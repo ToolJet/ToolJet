@@ -1,0 +1,10 @@
+/node_modules
+/cypress.env.json
+/cypress/reports
+/cypress/screenshots
+/cypress/downloads
+/cypress/videos
+/coverage
+/.nyc_output
+/cypress/.webpack_cache
+/.claude

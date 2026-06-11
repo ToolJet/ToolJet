@@ -1,0 +1,374 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { isEmpty } from 'lodash';
+import { SearchBox } from '@/_components/SearchBox';
+import Search from '@/_ui/Icon/solidIcons/Search';
+import Skeleton from 'react-loading-skeleton';
+import { QueryCard } from './QueryCard';
+import { QueryFolderTree as QueryFolderTreeBase } from './QueryFolderTree';
+import Fuse from 'fuse.js';
+import cx from 'classnames';
+import FilterandSortPopup from './FilterandSortPopup';
+import { ToolTip } from '@/_components';
+import { Button } from '@/components/ui/Button/Button';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Plus from '@/_ui/Icon/solidIcons/Plus';
+import useShowPopover from '@/_hooks/useShowPopover';
+import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { shallow } from 'zustand/shallow';
+import { appPermissionService } from '@/_services';
+import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+import QueryCardMenuBase from './QueryCardMenu';
+import { withEditionSpecificComponent } from '@/modules/common/helpers';
+
+const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
+const QueryCardMenu = withEditionSpecificComponent(QueryCardMenuBase, 'Appbuilder');
+
+export const QueryDataPane = ({ darkMode }) => {
+  const { t } = useTranslation();
+
+  const loadingDataQueries = useStore((state) => state.queryPanel.loadingDataQueries);
+  const setQueryPanelSearchTerm = useStore((state) => state.queryPanel.setQueryPanelSearchTerm);
+  const storedSearchTerm = useStore((state) => state.queryPanel.queryPanelSearchTem);
+
+  const dataQueries = useStore((state) => state.dataQuery.queries.modules.canvas);
+  const dataSources = useStore((state) => state.dataSources);
+  const [filteredQueries, setFilteredQueries] = useState(dataQueries);
+  const [showSearchBox, setShowSearchBox] = useState(!!storedSearchTerm);
+  const searchBoxRef = useRef(null);
+  const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
+  const [searchTermForFilters, setSearchTermForFilters] = useState(storedSearchTerm ?? '');
+  function isDataSourceLocal(dataQuery) {
+    return dataSources.some((dataSource) => dataSource.id === dataQuery.data_source_id);
+  }
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  const showQueryPermissionModal = useStore((state) => state.queryPanel.showQueryPermissionModal);
+  const toggleQueryPermissionModal = useStore((state) => state.queryPanel.toggleQueryPermissionModal);
+  const setQueries = useStore((state) => state.dataQuery.setQueries);
+  const sortBy = useStore((state) => state.dataQuery.sortBy);
+  const allFolders = useStore((state) => state.queryFolders?.folders ?? []);
+  const folders = allFolders;
+  const { isModuleEditor } = useModuleContext();
+  const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+
+  useEffect(() => {
+    setQueryPanelSearchTerm(searchTermForFilters);
+    // Create a copy of the dataQueries array to perform filtering without modifying the original data.
+    let filteredDataQueries = [...dataQueries];
+
+    // Filter the dataQueries based on the selected data sources (dataSourcesForFilters).
+    if (!isEmpty(dataSourcesForFilters)) {
+      const excludedDataSources = ['runjs', 'runpy'];
+      filteredDataQueries = dataQueries.filter((query) => {
+        const queryDSId = excludedDataSources.includes(query.data_source_id) ? null : query.data_source_id;
+        return dataSourcesForFilters.some((source) => source.id == queryDSId && source.kind === query.kind);
+      });
+    }
+
+    // Apply additional filtering based on the search term (searchTermForFilters).
+    filterQueries(searchTermForFilters, filteredDataQueries);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(dataQueries), dataSourcesForFilters, searchTermForFilters]);
+
+  const handleFilterDatasourcesChange = (source) => {
+    const { id, kind } = source;
+    setDataSourcesForFilters((dataSourcesForFilters) => {
+      const exists = dataSourcesForFilters.some((item) => item.id === id && item.kind === kind);
+      return exists
+        ? dataSourcesForFilters.filter((item) => item.id !== id && item.kind !== kind)
+        : [...dataSourcesForFilters, source];
+    });
+  };
+
+  const filterQueries = (value, queries) => {
+    if (value) {
+      const fuse = new Fuse(queries, { keys: ['name'], shouldSort: true, threshold: 0.3 });
+      const results = fuse.search(value);
+      let filterDataQueries = [];
+      results.every((result) => {
+        if (result.item.name === value) {
+          filterDataQueries = [];
+          filterDataQueries.push(result.item);
+          return false;
+        }
+        filterDataQueries.push(result.item);
+        return true;
+      });
+      setFilteredQueries(filterDataQueries);
+    } else {
+      setFilteredQueries(queries);
+    }
+  };
+
+  useEffect(() => {
+    showSearchBox && !storedSearchTerm && searchBoxRef.current.focus();
+  }, [showSearchBox]);
+
+  return (
+    <div className="data-pane">
+      <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
+        <div className="queries-header">
+          <AddDataSourceButton darkMode={darkMode} />
+          <div className="queries-header-actions">
+            <AutoSortButton darkMode={darkMode} />
+            <FilterandSortPopup
+              onFilterDatasourcesChange={handleFilterDatasourcesChange}
+              selectedDataSources={dataSourcesForFilters}
+              clearSelectedDataSources={() => setDataSourcesForFilters([])}
+              darkMode={darkMode}
+            />
+            <ToolTip message="Open quick search" placement="bottom">
+              <Button
+                isLucid
+                iconOnly
+                size="medium"
+                variant="ghost"
+                leadingIcon="search"
+                onClick={() => {
+                  showSearchBox && setSearchTermForFilters('');
+                  setShowSearchBox((showSearchBox) => !showSearchBox);
+                }}
+                className={cx({ 'tw-bg-button-outline-pressed': showSearchBox })}
+                data-tooltip-id="tooltip-for-query-panel-header-btn"
+                data-tooltip-content="Open quick search"
+                data-cy="query-search-button"
+              />
+            </ToolTip>
+          </div>
+        </div>
+        <div
+          className={cx('queries-header', {
+            'd-none': !showSearchBox,
+          })}
+        >
+          <div className="col-auto w-100">
+            <div className={`queries-search d-flex ${darkMode && 'theme-dark'}`}>
+              <SearchBox
+                ref={searchBoxRef}
+                dataCy={`query-manager`}
+                width="100%"
+                initialValue={searchTermForFilters}
+                callBack={(val) => {
+                  setSearchTermForFilters(val.target.value);
+                }}
+                onClearCallback={() => setSearchTermForFilters('')}
+                placeholder={t('globals.search', 'Search')}
+                customClass="query-manager-search-box-wrapper flex-grow-1"
+                showClearButton
+                clearTextOnBlur={false}
+              />
+              <ButtonSolid
+                size="sm"
+                variant="ghostBlue"
+                className="ms-1"
+                onClick={() => {
+                  setSearchTermForFilters('');
+                  setShowSearchBox(false);
+                }}
+                data-cy={`query-search-close-button`}
+              >
+                Close
+              </ButtonSolid>
+            </div>
+          </div>
+        </div>
+
+        {loadingDataQueries ? (
+          <div className="p-2">
+            <Skeleton height={'36px'} className="skeleton mb-2" />
+            <Skeleton height={'36px'} className="skeleton" />
+          </div>
+        ) : (
+          <div
+            className={`query-list tj-scrollbar overflow-auto ${
+              filteredQueries.length === 0 && folders.length === 0
+                ? 'flex-grow-1 align-items-center justify-content-center'
+                : ''
+            }`}
+          >
+            <div className="query-list-inner">
+              <QueryFolderTree
+                filteredQueries={filteredQueries}
+                searchActive={!!searchTermForFilters}
+                filteredQueryIds={dataSourcesForFilters.length > 0 ? new Set(filteredQueries.map((q) => q.id)) : null}
+                darkMode={darkMode}
+                isDataSourceLocal={isDataSourceLocal}
+                allowFolders
+                shouldFreeze={isFreezed}
+              />
+              {!isFreezed && <QueryCardMenu darkMode={darkMode} />}
+              {licenseValid && (
+                <AppPermissionsModal
+                  modalType="query"
+                  resourceId={selectedQuery?.id}
+                  resourceName={selectedQuery?.name}
+                  showModal={showQueryPermissionModal}
+                  toggleModal={toggleQueryPermissionModal}
+                  darkMode={darkMode}
+                  fetchPermission={(id, appId) => appPermissionService.getQueryPermission(appId, id)}
+                  createPermission={(id, appId, body) => appPermissionService.createQueryPermission(appId, id, body)}
+                  updatePermission={(id, appId, body) => appPermissionService.updateQueryPermission(appId, id, body)}
+                  deletePermission={(id, appId) => appPermissionService.deleteQueryPermission(appId, id)}
+                  onSuccess={(data) => {
+                    const updatedDataQueries = dataQueries.map((query) => {
+                      if (query.id === selectedQuery.id) {
+                        return {
+                          ...query,
+                          permissions: data.length === 0 || data.length === undefined ? [] : [data[0]],
+                        };
+                      }
+                      return query;
+                    });
+                    setQueries(updatedDataQueries);
+                  }}
+                />
+              )}
+            </div>
+            {filteredQueries.length === 0 &&
+              (folders.length === 0 || dataSourcesForFilters.length > 0 || !!searchTermForFilters) && (
+                <div className="query-empty-state-wrapper">
+                  <EmptyDataSource />
+                </div>
+              )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const EmptyDataSource = () => (
+  <div className="empty-data-source">
+    <div className="empty-data-source__icon">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--text-placeholder, #6a727c)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+        <path d="m5 12-3 3 3 3" />
+        <path d="m9 18 3-3-3-3" />
+      </svg>
+    </div>
+    <span data-cy="label-no-queries" className="empty-data-source__label">
+      No queries yet
+    </span>
+  </div>
+);
+
+const AutoSortButton = ({ darkMode: _darkMode }) => {
+  const isAutoSorting = useStore((state) => state.queryFolders?.isAutoSorting ?? false);
+  const autoSort = useStore((state) => state.queryFolders?.autoSort);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+
+  if (!featureAccess?.ai) return null;
+
+  const disabled = shouldFreeze || isAutoSorting;
+
+  const tooltipMsg = isAutoSorting ? 'Auto-sorting in progress...' : 'Auto-sort unsorted queries into folders';
+
+  return (
+    <ToolTip message={tooltipMsg} placement="bottom">
+      <span>
+        <Button
+          isLucid
+          iconOnly
+          size="medium"
+          variant="ghost"
+          disabled={disabled}
+          onClick={() => !disabled && autoSort?.()}
+          data-cy="query-autosort-button"
+          style={!disabled ? { color: '#F3A53C' } : undefined}
+        >
+          {isAutoSorting ? (
+            <span className="spinner-border spinner-border-sm" style={{ width: '14px', height: '14px' }} />
+          ) : (
+            <AITripleSparkles width="16" height="16" />
+          )}
+        </Button>
+      </span>
+    </ToolTip>
+  );
+};
+
+const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
+  const { isModuleEditor } = useModuleContext();
+  const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
+  const selectRef = useRef();
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  // const { isVersionReleased, isEditorFreezed } = useStore(
+  //   (state) => ({
+  //     isVersionReleased: state.isVersionReleased,
+  //     isEditorFreezed: state.isEditorFreezed,
+  //     editingVersionId: state.editingVersion?.id,
+  //   }),
+  //   shallow
+  // );
+
+  useEffect(() => {
+    if (showMenu) {
+      selectRef.current.focus();
+    }
+  }, [showMenu]);
+
+  const disabled = _disabled || shouldFreeze;
+
+  return (
+    <OverlayTrigger
+      show={showMenu && !disabled}
+      placement="right-end"
+      arrowOffsetTop={90}
+      arrowOffsetLeft={90}
+      overlay={
+        <Popover
+          key={'page.i'}
+          id="query-add-ds-popover"
+          className={`ds-select-popover transparent-popover ${
+            darkMode && 'popover-dark-themed dark-theme tj-dark-mode'
+          }`}
+        >
+          <DataSourceSelect
+            selectRef={selectRef}
+            closePopup={() => setShowMenu(false)}
+            allowNewFolder
+            queryFoldersLicensed
+          />
+        </Popover>
+      }
+    >
+      <span className="col-auto" id="query-add-ds-popover-btn">
+        <Button
+          isLucid
+          iconOnly
+          size="medium"
+          variant="outline"
+          leadingIcon="plus"
+          disabled={disabled}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (disabled) {
+              return;
+            }
+            setShowMenu((show) => !show);
+          }}
+          data-cy={`show-ds-popover-button`}
+        />
+      </span>
+    </OverlayTrigger>
+  );
+};

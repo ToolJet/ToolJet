@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tooljet-server-loadbalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: <certificate-arn>
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+spec:
+  type: LoadBalancer
+  selector:
+    component: tooljet
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 3000
+      name: https

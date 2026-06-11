@@ -1,0 +1,115 @@
+@import "../../_styles/colors.scss";
+
+.group-sync-header {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  height: 30px;
+  align-items: center;
+
+  .main-title {
+    font-size: 12px;
+    color: var(--slate11);
+    font-weight: 500;
+  }
+
+
+}
+
+.enabled-tag {
+  padding: 4px 16px;
+  gap: 10px;
+  width: 77px;
+  height: 28px;
+  background: var(--grass3);
+  border-radius: 100px;
+  color: var(--grass9);
+  font-weight: 500;
+}
+
+.disabled-tag {
+  padding: 4px 16px;
+  gap: 10px;
+  color: var(--tomato9);
+  width: 81px;
+  height: 28px;
+  background: var(--tomato3);
+  border-radius: 100px;
+  font-weight: 500;
+}
+
+.toggle-switch-container {
+  margin-top: 0px;
+  display: flex;
+  margin-bottom: 16px !important;
+
+  .switch {
+    margin-top: 3px;
+    margin-right: 10px;
+  }
+
+  .toggle-label {
+    .main-text {
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      text-align: left;
+    }
+
+    .helper-text {
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 20px;
+      text-align: left;
+      color: var(--slate11);
+
+    }
+  }
+}
+
+.open-id-group-sync-container {
+  border-top: 1px solid var(--slate5) !important;
+  margin-top: 12px !important;
+
+  .custom-card-body {
+    padding-top: 12px !important;
+    padding-bottom: 0px !important;
+    border-bottom: none !important;
+  }
+}
+
+// Close button for OIDC config modal
+.oidc-close-button-wrapper {
+  display: flex;
+  align-items: center;
+
+  .oidc-close-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 24px;
+    padding-right: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    svg {
+      path {
+        fill: #ACB2B9 !important;
+      }
+    }
+  }
+}
+
+// Dark mode support for close button
+.dark-theme {
+  .oidc-close-button-wrapper {
+    .oidc-close-button {
+      svg {
+        path {
+          fill: #CBD5E0 !important;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Portkey datasource",
+  "description": "A schema defining Portkey datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "completion",
+          "name": "Completion"
+        },
+        {
+          "value": "chat",
+          "name": "Chat"
+        },
+        {
+          "value": "prompt_completion",
+          "name": "Prompt Completion"
+        },
+        {
+          "value": "create_embedding",
+          "name": "Create Embedding"
+        }
+      ]
+    },
+    "completion": {
+      "prompt": {
+        "label": "Prompt",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "Enter prompt",
+        "height": "150px"
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter model",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 1 to 2048",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 0 to 1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "stop_sequences": {
+        "label": "Stop Sequence",
+        "key": "stop_sequences",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter stop sequence",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "key": "metadata",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter metadata",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "other_parameters": {
+        "label": "Other Parameters",
+        "key": "other_parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter other parameters",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "config": {
+        "label": "Config",
+        "key": "config",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter config",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "virtualKey": {
+        "label": "Virtual Key",
+        "key": "virtualKey",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter virtual key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "chat": {
+      "messages": {
+        "label": "Message",
+        "key": "messages",
+        "type": "codehinter",
+        "description": "Enter messages",
+        "placeholder": "[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi\"]}",
+        "height": "150px"
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter model",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 1 to 2048",
+        "placeholder": "256",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 0 to 1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "stop_sequence": {
+        "label": "Stop Sequence",
+        "key": "stop_sequence",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter stop sequence",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "key": "metadata",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter metadata",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "other_parameters": {
+        "label": "Other Parameters",
+        "key": "other_parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter other parameters",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "config": {
+        "label": "Config",
+        "key": "config",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter config",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "virtualKey": {
+        "label": "Virtual Key",
+        "key": "virtualKey",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter virtual key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "prompt_completion": {
+      "promptId": {
+        "label": "Prompt ID",
+        "key": "promptId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter prompt ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "variables": {
+        "label": "Variables",
+        "key": "variables",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter variables",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "key": "metadata",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter metadata",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "parameters": {
+        "label": "Parameters",
+        "key": "prompt_parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter parameters",
+        "height": "120px",
+        "width": "320px",
+        "className": "codehinter-plugins"
+      },
+      "config": {
+        "label": "Config",
+        "key": "config",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter config",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "virtualKey": {
+        "label": "Virtual Key",
+        "key": "virtualKey",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter virtual key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "create_embedding": {
+      "input": {
+        "label": "Input",
+        "key": "input",
+        "type": "codehinter",
+        "description": "Enter input",
+        "height": "150px"
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter model",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "key": "metadata",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter metadata",
+        "width": "320px",
+        "height": "120px",
+        "className": "codehinter-plugins"
+      },
+      "config": {
+        "label": "Config",
+        "key": "config",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter config",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "virtualKey": {
+        "label": "Virtual Key",
+        "key": "virtualKey",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter virtual key",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}

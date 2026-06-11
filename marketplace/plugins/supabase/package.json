@@ -1,0 +1,27 @@
+{
+  "name": "@tooljet-marketplace/supabase",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
+  },
+  "homepage": "https://github.com/tooljet/tooljet#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.41.1",
+    "@tooljet-marketplace/common": "^1.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4"
+  }
+}

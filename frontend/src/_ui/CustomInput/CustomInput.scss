@@ -1,0 +1,19 @@
+.form-text {
+    position: relative;
+    margin: 0px !important;
+    height: 32px;
+
+
+    input {
+        height: 32px;
+        margin: 0px !important;
+
+    }
+}
+
+.static-value {
+    position: absolute;
+    right: 10px;
+    color: var(--slate9);
+    top: 6px;
+}

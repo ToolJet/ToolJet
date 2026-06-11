@@ -1,0 +1,160 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Redis datasource",
+  "description": "A schema defining redis datasource",
+  "type": "database",
+  "source": {
+    "name": "Redis",
+    "kind": "redis",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "database": {
+        "type": "string"
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "host": {
+      "value": "localhost"
+    },
+    "port": {
+      "value": 6379
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "tls_enabled": {
+      "value": false
+    },
+    "tls_certificate": {
+      "value": "none"
+    }
+  },
+  "properties": {
+    "tls_certificate": {
+      "label": "TLS certificate",
+      "key": "tls_certificate",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "ca_certificate",
+          "name": "CA certificate"
+        },
+        {
+          "value": "client_certificate",
+          "name": "Client certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
+        }
+      ],
+      "commonFields": {
+        "host": {
+          "label": "Host",
+          "key": "host",
+          "type": "text",
+          "description": "Enter host"
+        },
+        "port": {
+          "label": "Port",
+          "key": "port",
+          "type": "text",
+          "description": "Enter port"
+        },
+        "database": {
+          "label": "Database",
+          "key": "database",
+          "type": "text",
+          "description": "Enter database name"
+        },
+        "username": {
+          "label": "Username",
+          "key": "username",
+          "type": "text",
+          "description": "Enter username"
+        },
+        "password": {
+          "label": "Password",
+          "key": "password",
+          "type": "password",
+          "description": "Enter password"
+        },
+        "tls_enabled": {
+          "label": "TLS",
+          "key": "tls_enabled",
+          "type": "toggle",
+          "description": "Toggle for TLS"
+        }
+      }
+    },
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
+    },
+    "client_certificate": {
+      "client_key": {
+        "label": "Client key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "ca_cert": {
+        "label": "CA cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
+      }
+    }
+  },
+  "required": [
+    "scheme",
+    "host",
+    "port",
+    "password"
+  ]
+}

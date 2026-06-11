@@ -1,0 +1,303 @@
+:root {
+  --file-picker-primary-brand: var(--primary-brand);
+  --file-picker-error-strong: var(--status-error-strong);
+  --file-picker-text-primary: var(--text-primary);
+  --file-picker-border-radius: 6px;
+  --file-picker-background-color: var(--color-surface-1);
+  --file-picker-border: transparent;
+  --file-picker-box-shadow: none;
+  --file-picker-padding: 16px;
+}
+
+// File List Item
+.file-list-item {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  border-radius: 8px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--surfaces-surface-01);
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  color: var(--cc-primary-text);
+
+  &:hover {
+    background: var(--surfaces-surface-02);
+
+    .delete-button {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  &.error {
+    .file-error-message {
+      color: var(--status-error-strong);
+    }
+  }
+
+  &.uploading {
+    opacity: 0.7;
+  }
+
+  .file-details {
+    display: flex;
+    align-items: end;
+    gap: 4px;
+    flex-grow: 1;
+    overflow: hidden;
+
+    .file-name {
+      font-weight: 500;
+      color: var(--file-picker-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta {
+      color: var(--cc-placeholder-text);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+  }
+
+  .delete-button {
+    width: 20px;
+    flex-shrink: 0;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    background-color: var(--cc-surface1-surface);
+    border-color: var(--cc-default-border);
+
+    &:hover {
+      background-color: var(--file-picker-delete-button-hover-bg) !important;
+    }
+  }
+}
+
+// File Picker Dropzone
+.file-picker-dropzone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--file-picker-padding);
+  border: 1px dashed var(--cc-default-border);
+  outline: none;
+  border-radius: var(--file-picker-border-radius);
+  transition-property: border-color, background-color, box-shadow, color;
+  transition-duration: 0.18s;
+  transition-timing-function: ease-in-out;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: 52px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+
+  &:hover {
+    border-color: var(--cc-primary-brand);
+    color: var(--cc-primary-text);
+    border-width: 2px;
+  }
+
+  &:focus,
+  &:active {
+    border-color: var(--cc-primary-brand);
+    color: var(--cc-primary-text);
+  }
+
+  &.is-dragging {
+    border-color: var(--cc-primary-brand);
+    border-width: 2px;
+  }
+
+  &.is-accepting {
+    border-color: var(--cc-primary-brand);
+    border-width: 2px;
+  }
+
+  &.is-rejecting {
+    border-color: var(--status-error-strong);
+  }
+
+  &.is-focused {
+    // border-style: solid;
+    // border-color: var(--primary-accent-strong);
+    box-shadow: 0 0 0 2px var(--surfaces-surface-01),
+      0 0 0 4px var(--interactive-overlays-focus-outline);
+  }
+
+  &.is-disabled {
+    background-color: var(--cc-surface2-surface);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .dropzone {
+
+    &-instruction,
+    &-message {
+      text-align: center;
+      margin: 0;
+      font-size: 14px;
+      line-height: 20px;
+      color: var(--cc-placeholder-text);
+    }
+
+    &-instruction-link {
+      color: var(--cc-primary-brand);
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Validation Bar
+.validation-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--text-placeholder);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0;
+
+  .validation-info {
+    color: var(--cc-placeholder-text);
+  }
+
+  .validation-separator {
+    margin: 0 8px;
+    color: var(--borders-default);
+  }
+}
+
+// File Picker Widget
+.file-picker {
+  &-title {
+    color: var(--cc-primary-text);
+    text-align: left;
+    width: 100%;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: 0;
+    margin: 0;
+  }
+
+  &-widget-wrapper {
+    // padding: var(--file-picker-padding);
+    display: flex;
+    flex-direction: column;
+    // gap: 12px;
+    background-color: var(--file-picker-background-color);
+    border-radius: var(--file-picker-border-radius);
+    border: var(--file-picker-border);
+    box-shadow: var(--file-picker-box-shadow);
+  }
+
+  &-files-pane {
+    margin: 0;
+    min-height: 0;
+    padding: 0 0.75rem;
+    padding-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+
+    &:only-child {
+      height: auto;
+    }
+  }
+}
+
+.file-list-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: 100%;
+  height: auto;
+}
+
+// Error Message
+.file-picker-error-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 0;
+  color: var(--status-error-strong);
+
+  .error-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--status-error-strong);
+  }
+
+  .error-text {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--status-error-strong);
+  }
+}
+
+.files-pane-scrollable {
+  overflow-y: auto;
+  // scroll-padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  // Show scrollbar on hover
+  &:hover {
+    scrollbar-color: var(--utilities-scrollbar) transparent;
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--utilities-scrollbar);
+      border-radius: 8px;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+
+    &::-webkit-scrollbar-thumb:active {
+      background: var(--utilities-scrollbar);
+    }
+  }
+}
+
+.files-pane-auto-height {
+  height: auto;
+  overflow-y: visible;
+}

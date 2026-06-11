@@ -1,0 +1,54 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/Button/Button';
+import ExportAppModal from '@/HomePage/ExportAppModal';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import cx from 'classnames';
+
+const AppExport = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
+  const { app } = useStore(
+    (state) => ({
+      app: state.appStore.modules[moduleId].app,
+    }),
+    shallow
+  );
+
+  const [isExportingApp, setIsExportingApp] = React.useState(false);
+
+  return (
+    <>
+      {isExportingApp && app.hasOwnProperty('appId') && (
+        <ExportAppModal
+          show={isExportingApp}
+          closeModal={() => {
+            setIsExportingApp(false);
+          }}
+          customClassName="modal-version-lists"
+          title={'Select a version to export'}
+          app={app}
+          darkMode={darkMode}
+        />
+      )}
+      <div className={cx({ 'dark-theme': darkMode })}>
+        <Button
+          fill="rgb(172, 178, 185)"
+          leadingIcon="fileupload"
+          variant="tertiary"
+          className={cx('app-export-btn')}
+          onClick={() => {
+            setIsExportingApp(true);
+            document.getElementById('maintenance-app-modal').click();
+          }}
+          data-cy="export-app-button"
+        >
+          Export app
+        </Button>
+      </div>
+      {/* {isExportingApp && <ExportAppModal app={app} setIsExportingApp={toggleExportingApp} darkMode={darkMode} />} */}
+    </>
+  );
+};
+
+export default AppExport;

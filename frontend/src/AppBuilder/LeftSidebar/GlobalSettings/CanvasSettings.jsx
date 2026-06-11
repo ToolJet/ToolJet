@@ -1,0 +1,184 @@
+// components/CanvasSettings.js
+import React, { useState } from 'react';
+import _ from 'lodash';
+import useStore from '@/AppBuilder/_stores/store';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/_helpers/utils';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import { useTranslation } from 'react-i18next';
+import ColorSwatches from '@/modules/Appbuilder/components/ColorSwatches';
+import { shallow } from 'zustand/shallow';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
+
+const CanvasSettings = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
+  const { globalSettings, globalSettingsChanged, resolveOthers, getCanvasBackgroundColor } = useStore(
+    (state) => ({
+      globalSettings: state.globalSettings,
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
+      globalSettingsChanged: state.globalSettingsChanged,
+      resolveOthers: state.resolveOthers,
+      getCanvasBackgroundColor: state.getCanvasBackgroundColor,
+    }),
+    shallow
+  );
+  const canvasBackgroundColor = getCanvasBackgroundColor('canvas', darkMode);
+  // const { canvasBackgroundColor, backgroundFxQuery } = useEditorStore(
+  //   (state) => ({
+  //     canvasBackgroundColor: state.canvasBackground?.canvasBackgroundColor,
+  //     backgroundFxQuery: state.canvasBackground?.backgroundFxQuery,
+  //   }),
+  //   shallow
+  // );
+  const [showPicker, setShowPicker] = useState(false);
+  const [forceCodeBox, setForceCodeBox] = useState(true);
+  const [showConfirmation, setConfirmationShow] = useState(false);
+  const { t } = useTranslation();
+
+  const handleColorChange = (color) => {
+    // updateGlobalSettings({
+    //   canvasBackgroundColor: [color.hex, color.rgb],
+    //   backgroundFxQuery: '',
+    // });
+  };
+
+  const coverStyles = {
+    position: 'fixed',
+    top: '0px',
+    right: '0px',
+    bottom: '0px',
+    left: '0px',
+  };
+
+  const outerStyles = {
+    width: '142px',
+    height: '32px',
+    borderRadius: ' 6px',
+    display: 'flex',
+    paddingLeft: '4px',
+    alignItems: 'center',
+    gap: '4px',
+    background: showPicker && 'var(--indigo2)',
+    outline: showPicker && '1px solid var(--indigo9)',
+    boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
+  };
+
+  const { canvasMaxWidth, canvasMaxWidthType, backgroundFxQuery } = globalSettings ?? {};
+
+  return (
+    <>
+      {/* Max canvas width row */}
+      <div className="canvas-settings-row">
+        <span className="canvas-settings-label" data-cy={`label-max-canvas-width`}>
+          {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max canvas width')}
+        </span>
+        <div className="canvas-settings-input-wrapper">
+          <div className="canvas-width-input-container">
+            <input
+              data-cy="maximum-canvas-width-input-field"
+              type="text"
+              className="canvas-width-input"
+              placeholder={'0'}
+              onChange={(e) => {
+                const width = e.target.value;
+                if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
+              }}
+              value={canvasMaxWidth}
+            />
+            <select
+              data-cy={`dropdown-max-canvas-width-type`}
+              className="canvas-width-type-select"
+              aria-label="Select canvas width type"
+              onChange={(event) => {
+                const newCanvasMaxWidthType = event.currentTarget.value;
+                const options = {
+                  canvasMaxWidthType: newCanvasMaxWidthType,
+                };
+
+                if (newCanvasMaxWidthType === '%') {
+                  options.canvasMaxWidth = 100;
+                } else if (newCanvasMaxWidthType === 'px') {
+                  options.canvasMaxWidth = 1292;
+                }
+                globalSettingsChanged(options);
+              }}
+            >
+              <option value="%" selected={canvasMaxWidthType === '%'}>
+                %
+              </option>
+              <option value="px" selected={canvasMaxWidthType === 'px' || _.isUndefined(canvasMaxWidthType)}>
+                px
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Canvas background row */}
+      <div className="canvas-settings-row">
+        <span className="canvas-settings-label" data-cy={`label-bg-canvas`}>
+          {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Canvas background')}
+        </span>
+        <div className="canvas-settings-input-wrapper">
+          <div className="canvas-color-input-container">
+            <div className={`fx-canvas`}>
+              <FxButton
+                dataCy={`canvas-bg-color`}
+                active={!forceCodeBox ? true : false}
+                onPress={async () => {
+                  if (typeof canvasBackgroundColor === 'string' && canvasBackgroundColor?.includes('var(')) {
+                    const value = getCssVarValue(document.documentElement, canvasBackgroundColor);
+                    const options = {
+                      canvasBackgroundColor: value,
+                      backgroundFxQuery: value,
+                    };
+                    await Promise.resolve(globalSettingsChanged(options));
+                    await Promise.resolve(resolveOthers('canvas', true, { canvasBackgroundColor: value }));
+                  }
+                  setForceCodeBox(!forceCodeBox);
+                }}
+              />
+            </div>
+            {forceCodeBox && (
+              <ColorSwatches
+                data-cy={`color-picker-canvas`}
+                outerWidth="120px"
+                value={canvasBackgroundColor}
+                onChange={(color) => {
+                  const options = {
+                    canvasBackgroundColor: resolveReferences(color),
+                    backgroundFxQuery: color,
+                  };
+                  globalSettingsChanged(options);
+                  resolveOthers('canvas', true, { canvasBackgroundColor: color });
+                }}
+              />
+            )}
+            {!forceCodeBox && (
+              <div className="canvas-hinter-wrap-container">
+                <CodeHinter
+                  cyLabel={`canvas-bg-colour`}
+                  initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
+                  lang="javascript"
+                  className="canvas-hinter-wrap"
+                  lineNumbers={false}
+                  onChange={(color) => {
+                    const options = {
+                      canvasBackgroundColor: resolveReferences(color),
+                      backgroundFxQuery: color,
+                    };
+                    globalSettingsChanged(options);
+                    resolveOthers('canvas', true, { canvasBackgroundColor: color });
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default CanvasSettings;

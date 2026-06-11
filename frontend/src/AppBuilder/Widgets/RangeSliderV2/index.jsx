@@ -1,0 +1,1 @@
+export { RangeSliderV2 } from './RangeSliderV2';

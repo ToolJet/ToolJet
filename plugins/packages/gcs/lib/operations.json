@@ -1,0 +1,226 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "GCS datasource",
+  "description": "A schema defining GCS datasource",
+  "type": "cloud-storage",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_file",
+          "name": "Read file"
+        },
+        {
+          "value": "upload_file",
+          "name": "Upload file"
+        },
+        {
+          "value": "list_buckets",
+          "name": "List buckets"
+        },
+        {
+          "value": "list_files",
+          "name": "List files in a bucket"
+        },
+        {
+          "value": "signed_url_for_get",
+          "name": "Signed url for download"
+        },
+        {
+          "value": "signed_url_for_put",
+          "name": "Signed url for upload"
+        }
+      ]
+    },
+    "get_file": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "file": {
+        "label": "File name",
+        "key": "file",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter file",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter file"
+      }
+    },
+    "upload_file": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "file": {
+        "label": "File name",
+        "key": "file",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter file",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter file"
+      },
+      "contentType": {
+        "label": "Content Type",
+        "key": "contentType",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter content type",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter content type"
+      },
+      "data": {
+        "label": "Upload data",
+        "key": "data",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter upload data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter upload data"
+      },
+      "encoding": {
+        "label": "Encoding",
+        "key": "encoding",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter upload data",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "utf8"
+      }
+    },
+    "list_files": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "prefix": {
+        "label": "Prefix (optional)",
+        "key": "prefix",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter prefix",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter prefix"
+      }
+    },
+    "signed_url_for_get": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "file": {
+        "label": "File name",
+        "key": "file",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter file",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter file"
+      },
+      "expiresIn": {
+        "label": "Expires in",
+        "key": "expiresIn",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "initialValue": "3600",
+        "description": "Enter expires in",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "signed_url_for_put": {
+      "bucket": {
+        "label": "Bucket",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter bucket"
+      },
+      "file": {
+        "label": "File name",
+        "key": "file",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter file",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter file"
+      },
+      "expiresIn": {
+        "label": "Expires in",
+        "key": "expiresIn",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "initialValue": "3600",
+        "description": "Enter expires in",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "contentType": {
+        "label": "Content Type",
+        "key": "contentType",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter content type",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}

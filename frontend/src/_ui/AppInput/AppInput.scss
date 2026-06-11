@@ -1,0 +1,74 @@
+.tj-app-input {
+    display: flex;
+    flex-direction: column;
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+
+    label {
+        font-family: 'IBM Plex Sans';
+        font-style: normal;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 20px;
+        display: flex;
+        align-items: center;
+        color: var(--slate12);
+        margin-bottom: 4px;
+    }
+
+    input,
+    textarea {
+        gap: 16px;
+        background: var(--base);
+        border: 1px solid var(--slate7);
+        border-radius: 6px;
+        margin-bottom: 4px;
+
+        &:hover {
+            background: var(--slate1);
+            border: 1px solid var(--slate8);
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            outline: none;
+        }
+
+        &:focus-visible {
+            background: var(--slate1);
+            border: 1px solid var(--slate8);
+            outline: none;
+        }
+
+        &:active {
+            background: var(--indigo2);
+            border: 1px solid var(--indigo9);
+            box-shadow: none;
+        }
+    }
+}
+
+
+.tj-sub-helper-text {
+    font-weight: 400;
+    font-size: 10px;
+    line-height: 16px;
+}
+
+.tj-input-success {
+    color: var(--grass10);
+}
+
+.tj-input-warning {
+    color: var(--orange10);
+}
+
+.tj-input-helper {
+    color: var(--slate11);
+}
+
+.tj-input-error {
+    color: var(--tomato10);
+}
+
+.tj-input-error-state {
+    border: 1px solid var(--tomato9);
+}

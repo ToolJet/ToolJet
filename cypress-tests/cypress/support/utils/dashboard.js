@@ -1,0 +1,65 @@
+import { commonSelectors } from "Selectors/common";
+import { dashboardSelector } from "Selectors/dashboard";
+import {
+  cancelModal,
+  closeModal,
+  verifyModal,
+  viewAppCardOptions,
+} from "Support/utils/common";
+import { commonText } from "Texts/common";
+import { dashboardText } from "Texts/dashboard";
+
+export const modifyAndVerifyAppCardIcon = (appName) => {
+  var random = function (obj) {
+    var keys = Object.keys(obj);
+    return obj[keys[(keys.length * Math.random()) << 0]];
+  };
+  const randomIcon = random(dashboardText.iconText);
+
+  cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
+
+  verifyModal(dashboardText.changeIconTitle, dashboardText.changeButton);
+  for (const icons in dashboardText.iconText) {
+    cy.get(dashboardSelector.appIcon(dashboardText.iconText[icons])).should(
+      "be.visible"
+    );
+  }
+  closeModal(commonText.closeButton);
+
+  viewAppCardOptions(appName);
+  cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
+  cy.get(".modal-body")
+    .parent().parent()
+    .within(() => {
+      cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
+    });
+  cancelModal(commonText.cancelButton);
+
+  viewAppCardOptions(appName);
+  cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
+
+  cy.get(".modal-body")
+    .parent()
+    .within(() => {
+      cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
+    });
+  cy.get(dashboardSelector.changeButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    dashboardText.iconUpdatedToast
+  );
+  cy.get(commonSelectors.appCard(appName)).should("exist");
+  cy.get(dashboardText.modalComponent).should("not.exist");
+};
+
+export const verifyAppDelete = (appName) => {
+  cy.get("body").should("exist").and("be.visible");
+  cy.get('[data-cy="dashboard-section-header"]').should("be.visible");
+  cy.get("body").then(($title) => {
+    if (!$title.text().includes(commonText.introductionMessage)) {
+      cy.clearAndType(commonSelectors.homePageSearchBar, appName);
+      cy.get(commonSelectors.appCard(appName)).should("not.exist");
+      cy.get(commonSelectors.homePageSearchBar).clear();
+    }
+  });
+};

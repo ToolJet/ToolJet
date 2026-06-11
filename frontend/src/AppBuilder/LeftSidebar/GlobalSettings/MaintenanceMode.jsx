@@ -1,0 +1,52 @@
+import React, { useState } from 'react';
+import useStore from '@/AppBuilder/_stores/store';
+import SwitchComponent from '@/components/ui/Switch/Index';
+import { shallow } from 'zustand/shallow';
+import { Confirm } from '@/AppBuilder/Viewer/Confirm';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+
+const MaintenanceMode = ({ darkMode }) => {
+  const { moduleId } = useModuleContext();
+  const [showConfirmation, setConfirmationShow] = useState(false);
+  const { isMaintenanceOn, toggleAppMaintenance } = useStore(
+    (state) => ({
+      isMaintenanceOn: state.appStore.modules[moduleId].app.isMaintenanceOn,
+      toggleAppMaintenance: state.toggleAppMaintenance,
+    }),
+    shallow
+  );
+  const currentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
+  const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+
+  if (isOnFeatureBranch) return null;
+
+  return (
+    <>
+      <Confirm
+        show={showConfirmation}
+        message={
+          isMaintenanceOn
+            ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
+            : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
+        }
+        onConfirm={() => toggleAppMaintenance()}
+        onCancel={() => setConfirmationShow(false)}
+        darkMode={darkMode}
+      />
+      <div className="tw-flex">
+        <SwitchComponent
+          align="right"
+          label="Maintenance mode"
+          size="default"
+          checked={isMaintenanceOn}
+          onCheckedChange={() => setConfirmationShow(true)}
+          data-cy={`toggle-maintenance-mode`}
+          className="tw-w-full field-name"
+        />
+      </div>
+    </>
+  );
+};
+
+export default MaintenanceMode;

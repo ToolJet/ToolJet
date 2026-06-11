@@ -1,0 +1,16 @@
+{
+  "name": "Inventory management (ToolJet Database)",
+  "description": "Easily manage, control, and optimise your inventory with our single-page Inventory Management Template.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "inventory-management-tooljet-db",
+  "category": "operations"
+}

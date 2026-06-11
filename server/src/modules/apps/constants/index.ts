@@ -1,0 +1,28 @@
+export enum FEATURE_KEY {
+  CREATE = 'APP_CREATE',
+  UPDATE = 'APP_UPDATE',
+  UPDATE_ICON = 'updateIcon',
+  DELETE = 'APP_DELETE',
+  GET = 'get',
+  VALIDATE_PRIVATE_APP_ACCESS = 'validate_private_app_access',
+  VALIDATE_RELEASED_APP_ACCESS = 'validate_released_app_access',
+  GET_ASSOCIATED_TABLES = 'get_associated_tables',
+  GET_ONE = 'get_one',
+  GET_BY_SLUG = 'APP_VIEW',
+  RELEASE = 'release',
+  APP_PUBLIC_UPDATE = 'app_public_update',
+  GET_APP_AUTHENTICATION_CONFIG = 'get_app_authentication_config',
+}
+
+export enum APP_TYPES {
+  FRONT_END = 'front-end',
+  WORKFLOW = 'workflow',
+  MODULE = 'module',
+}
+
+export const APPS_PAGE_SIZE = 9;
+
+export enum LayoutDimensionUnits {
+  COUNT = 'count',
+  PERCENT = 'percent',
+}

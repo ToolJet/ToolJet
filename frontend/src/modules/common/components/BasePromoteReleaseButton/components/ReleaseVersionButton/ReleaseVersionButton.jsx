@@ -1,0 +1,155 @@
+import React, { useState } from 'react';
+import cx from 'classnames';
+import { appsService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import ReleaseConfirmation from '@/AppBuilder/Header/ReleaseConfirmation';
+import { shallow } from 'zustand/shallow';
+import '@/_styles/versions.scss';
+
+import { Globe } from 'lucide-react';
+import { Button } from '@/components/ui/Button/Button';
+import useStore from '@/AppBuilder/_stores/store';
+import { ToolTip } from '@/_components/ToolTip';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+
+const ReleaseVersionButton = function DeployVersionButton({ version = null, variant = 'default', darkMode = false }) {
+  const { moduleId } = useModuleContext();
+  const [isReleasing, setIsReleasing] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
+  const { isReleaseVersionEnabled } = getCanPromoteAndRelease();
+  const { isVersionReleased, updateReleasedVersionId, appId, versionToBeReleased, name } = useStore(
+    (state) => ({
+      isVersionReleased: version
+        ? state.releasedVersionId === version.id
+        : state.releasedVersionId === state.selectedVersion?.id,
+      name: version?.name || state?.selectedVersion?.name,
+      isEditorFreezed: state.isEditorFreezed,
+      updateReleasedVersionId: state.updateReleasedVersionId,
+      appId: state.appStore.modules[moduleId]?.app?.appId ?? state.appId,
+      versionToBeReleased: version?.id || state.currentVersionId,
+      // selectedVersionId: state.selectedVersion.id,
+    }),
+    shallow
+  );
+  const { t } = useTranslation();
+
+  const releaseVersion = () => {
+    setIsReleasing(true);
+    appsService
+      .releaseVersion(appId, versionToBeReleased)
+      .then(() => {
+        toast(`Version ${name} released`, {
+          icon: '🚀',
+        });
+
+        updateReleasedVersionId(versionToBeReleased);
+
+        setIsReleasing(false);
+        setShowConfirmation(false);
+      })
+      .catch((error) => {
+        const rawError = error?.error || error?.message;
+        const errorMessage =
+          typeof rawError === 'object'
+            ? rawError.error
+            : rawError || `${name} could not be released. Please try again!`;
+        const errorDetails = typeof rawError === 'object' ? rawError.details : errorMessage;
+        toast.error(errorMessage);
+        setIsReleasing(false);
+        setShowConfirmation(false);
+        try {
+          useStore.getState().debugger.log({
+            logLevel: 'error',
+            type: 'component',
+            key: 'Release Failed',
+            message: errorMessage,
+            description: errorDetails || errorMessage,
+            error: { message: errorMessage, description: errorDetails || errorMessage },
+            errorTarget: 'Version',
+            timestamp: new Date().toISOString(),
+          });
+        } catch (_) {
+          // debugger may not be available
+        }
+      });
+  };
+
+  const onReleaseButtonClick = (e) => {
+    if (e) e.stopPropagation();
+    setShowConfirmation(true);
+  };
+
+  const onReleaseConfirm = () => {
+    releaseVersion();
+  };
+
+  // Inline variant for dropdown
+  if (variant === 'inline') {
+    return (
+      <>
+        <ReleaseConfirmation
+          show={showConfirmation}
+          onClose={() => setShowConfirmation(false)}
+          onConfirm={onReleaseConfirm}
+        />
+        <ToolTip
+          message={
+            !isReleaseVersionEnabled
+              ? "You don't have access to release application. Contact admin to know more."
+              : 'Release this version'
+          }
+          placement="left"
+          width="280px"
+        >
+          <span>
+            <button
+              className={cx('btn btn-sm version-action-btn', { 'dark-theme theme-dark': darkMode })}
+              disabled={isVersionReleased || !isReleaseVersionEnabled || isReleasing}
+              onClick={onReleaseButtonClick}
+              data-cy="release-version-button"
+            >
+              {isReleasing ? 'Releasing...' : 'Release'}
+            </button>
+          </span>
+        </ToolTip>
+      </>
+    );
+  }
+
+  // Default variant (header button)
+  return (
+    <>
+      <ReleaseConfirmation
+        show={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        onConfirm={onReleaseConfirm}
+      />
+      <div>
+        <ToolTip
+          message="You don't have access to release application. Contact admin to know more."
+          placement="bottom"
+          show={!isReleaseVersionEnabled}
+          width="280px"
+        >
+          <Button
+            variant="secondary"
+            data-cy={`button-release`}
+            className={cx('tw-text-text-default', {
+              'released-button': isVersionReleased,
+            })}
+            isLoading={isReleasing}
+            disabled={isVersionReleased}
+            onClick={onReleaseButtonClick}
+          >
+            <Globe width="16" height="16" className="tw-text-icon-accent" />
+            {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+          </Button>
+        </ToolTip>
+      </div>
+    </>
+  );
+};
+
+export default ReleaseVersionButton;

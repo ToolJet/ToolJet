@@ -1,0 +1,36 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Notion datasource",
+  "description": "A schema defining Notion datasource",
+  "type": "api",
+  "source": {
+    "name": "Notion",
+    "kind": "notion",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "token":{
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "token":{
+      "value": ""
+    }
+  },
+  "properties": {
+    "token": {
+      "label": "Token",
+      "key": "token",
+      "type": "text",
+      "description": "Enter token here",
+      "encrypted": true
+    }
+  },
+  "required": []
+}

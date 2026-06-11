@@ -1,0 +1,86 @@
+import React, { useState, useEffect } from 'react';
+import CustomInput from '@/_ui/CustomInput';
+// eslint-disable-next-line import/no-unresolved
+import * as Slider from '@radix-ui/react-slider';
+import './Slider.scss';
+import { debounce } from 'lodash';
+
+function Slider1(props) {
+  const { value, onChange, component, styleDefinition, meta } = props;
+  const {
+    min = 0,
+    max = 100,
+    step = 1,
+    parseType = 'number',
+    staticInputText = '%',
+    skipAutoConditionCheck = false,
+  } = meta;
+  const [sliderValue, setSliderValue] = useState(value ? value : 33); // Initial value of the slider
+  const isDisabled =
+    skipAutoConditionCheck || styleDefinition?.auto?.value === '{{false}}'
+      ? false
+      : styleDefinition?.auto?.value === '{{true}}'
+      ? true
+      : false;
+  useEffect(() => {
+    setSliderValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [component?.id]);
+
+  const debouncedOnChange = debounce((value) => {
+    onChange(value);
+  }, 150);
+
+  const handleSliderChange = (value) => {
+    setSliderValue(value);
+  };
+
+  // debounce function to handle input changes
+  const onInputChange = (e) => {
+    let inputValue = 0;
+    if (parseType === 'float') {
+      inputValue = parseFloat(e.target.value) || 0;
+    } else {
+      inputValue = parseInt(e.target.value, 10) || 0;
+    }
+    inputValue = Math.min(inputValue, max);
+    setSliderValue(inputValue);
+    debouncedOnChange(inputValue);
+  };
+
+  return (
+    <div className="d-flex flex-column" style={{ width: '142px', marginBottom: '16px', position: 'relative' }}>
+      <CustomInput
+        disabled={isDisabled}
+        value={sliderValue}
+        staticText={staticInputText}
+        onInputChange={onInputChange}
+        dataCy="width"
+        type="number"
+        min={min}
+      />
+      <div style={{ position: 'absolute', top: '34px' }}>
+        <Slider.Root
+          className="SliderRoot"
+          defaultValue={sliderValue ? [sliderValue] : [33]}
+          min={min}
+          max={max}
+          step={step}
+          value={[sliderValue]}
+          onValueChange={handleSliderChange}
+          onValueCommit={(value) => {
+            onChange(`{{${value}}}`);
+          }}
+          disabled={isDisabled}
+        >
+          <Slider.Track className="SliderTrack">
+            <Slider.Range className="SliderRange" />
+          </Slider.Track>
+          <Slider.Thumb className="SliderThumb" aria-label="Volume" />
+        </Slider.Root>
+      </div>
+    </div>
+  );
+}
+
+export default Slider1;

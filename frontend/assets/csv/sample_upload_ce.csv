@@ -1,0 +1,2 @@
+First Name,Last Name,Email,User Role,Group
+test,user,test@gmail.com,"Assign each user a role: Admin, Builder or End User. User role value should be exact same","For multiple groups separate using pipe (|) operator e.g. Groups1|Group2 or leave blank if no group assign"

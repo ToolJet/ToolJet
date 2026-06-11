@@ -1,0 +1,390 @@
+import { ConflictException, Injectable } from '@nestjs/common';
+import { EntityManager, In, Not } from 'typeorm';
+import { User } from 'src/entities/user.entity';
+import { DataSource } from 'src/entities/data_source.entity';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { Response } from 'express';
+import { DataQueryRepository } from './repository';
+import { decode } from 'js-base64';
+import { decamelizeKeys } from 'humps';
+import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
+import { AppAbility } from '@modules/app/decorators/ability.decorator';
+import { FEATURE_KEY } from './constants';
+import { isEmpty } from 'lodash';
+import { DataQuery } from '@entities/data_query.entity';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
+import { IDataQueriesService, QueryCreateContext, QueryUpdateContext, QueryDeleteContext } from './interfaces/IService';
+import { App } from '@entities/app.entity';
+import { RequestContext } from '@modules/request-context/service';
+import { DataQueriesUtilService } from '@modules/data-queries/util.service';
+
+@Injectable()
+export class DataQueriesService implements IDataQueriesService {
+  constructor(
+    protected readonly dataQueryRepository: DataQueryRepository,
+    protected readonly dataQueryUtilService: DataQueriesUtilService,
+    protected readonly dataSourceRepository: DataSourcesRepository
+  ) {}
+
+  /**
+   * Hook called before query creation - override in EE to capture state for history
+   */
+  protected async beforeQueryCreate(
+    user: User,
+    dataSource: DataSource,
+    dataQueryDto: CreateDataQueryDto
+  ): Promise<QueryCreateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query creation - override in EE to queue history
+   */
+  protected async afterQueryCreate(
+    context: QueryCreateContext | null,
+    createdQuery: any,
+    user: User,
+    appVersionId: string,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before query update - override in EE to capture state for history
+   */
+  protected async beforeQueryUpdate(
+    user: User,
+    versionId: string,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto
+  ): Promise<QueryUpdateContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query update - override in EE to queue history
+   */
+  protected async afterQueryUpdate(
+    context: QueryUpdateContext | null,
+    user: User,
+    versionId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  /**
+   * Hook called before query deletion - override in EE to capture state for history
+   */
+  protected async beforeQueryDelete(dataQueryId: string): Promise<QueryDeleteContext | null> {
+    return null; // No-op in CE, EE overrides
+  }
+
+  /**
+   * Hook called after query deletion - override in EE to queue history
+   */
+  protected async afterQueryDelete(
+    context: QueryDeleteContext | null,
+    dataQueryId: string,
+    appVersionId: string | null,
+    userId?: string,
+    operationTimestamp?: number
+  ): Promise<void> {
+    // No-op in CE, EE overrides to capture history
+  }
+
+  // Serialises name checks per app version so two concurrent creates/renames cannot
+  // both pass the existence check. Lock auto-releases at txn end.
+  protected async assertUniqueQueryName(
+    manager: EntityManager,
+    appVersionId: string,
+    name: string,
+    excludeQueryId?: string
+  ): Promise<void> {
+    if (!appVersionId || !name) return;
+
+    await manager.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [`data_query_name:${appVersionId}`]);
+
+    const where: any = { appVersionId, name };
+    if (excludeQueryId) where.id = Not(excludeQueryId);
+
+    const conflict = await manager.findOne(DataQuery, { where, select: ['id'] });
+    if (conflict) {
+      throw new ConflictException(`A query named "${name}" already exists in this app version`);
+    }
+  }
+
+  async getAll(user: User, app: App, versionId: string, mode?: string) {
+    const queries = await this.dataQueryRepository.getAll(versionId);
+    const serializedQueries = [];
+
+    // serialize
+    for (const query of queries) {
+      delete query['dataSource'];
+
+      const decamelizeQuery = decamelizeKeys(query);
+
+      decamelizeQuery['options'] = query.options;
+
+      if (query.plugin) {
+        decamelizeQuery['plugin'].manifest_file.data = JSON.parse(
+          decode(query.plugin.manifestFile.data.toString('utf8'))
+        );
+        decamelizeQuery['plugin'].icon_file.data = query.plugin.iconFile.data.toString('utf8');
+      }
+
+      serializedQueries.push(decamelizeQuery);
+    }
+
+    const response = { data_queries: serializedQueries };
+
+    return response;
+  }
+
+  async create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto) {
+    const { kind, name, options, app_version_id: appVersionId } = dataQueryDto;
+
+    await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
+      user.organizationId,
+      appVersionId,
+      'You cannot create queries in the promoted version.'
+    );
+
+    const context = await this.beforeQueryCreate(user, dataSource, dataQueryDto);
+
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.assertUniqueQueryName(manager, appVersionId, name);
+
+      const dataQuery = await this.dataQueryRepository.createOne(
+        {
+          name,
+          options,
+          dataSourceId: dataSource.id,
+          appVersionId,
+        },
+        manager
+      );
+
+      const decamelizedQuery = decamelizeKeys({ ...dataQuery, kind });
+
+      decamelizedQuery['options'] = dataQuery.options;
+
+      return decamelizedQuery;
+    });
+
+    const operationTimestamp = Date.now();
+    this.afterQueryCreate(context, result, user, appVersionId, user?.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryCreate failed:', err.message)
+    );
+
+    return result;
+  }
+
+  async update(user: User, versionId: string, dataQueryId: string, updateDataQueryDto: UpdateDataQueryDto) {
+    const { name, options } = updateDataQueryDto;
+
+    await this.dataQueryUtilService.validateQueryActionsAgainstEnvironment(
+      user.organizationId,
+      versionId,
+      'You cannot update queries in the promoted version.'
+    );
+
+    const context = await this.beforeQueryUpdate(user, versionId, dataQueryId, updateDataQueryDto);
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      if (name !== undefined) {
+        const existing = await manager.findOne(DataQuery, {
+          where: { id: dataQueryId },
+          select: ['id', 'appVersionId', 'name'],
+        });
+        if (existing && existing.name !== name) {
+          await this.assertUniqueQueryName(manager, existing.appVersionId, name, dataQueryId);
+        }
+      }
+      await this.dataQueryRepository.updateOne(dataQueryId, { name, options }, manager);
+    });
+
+    const operationTimestamp = Date.now();
+    this.afterQueryUpdate(context, user, versionId, updateDataQueryDto, user?.id, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryUpdate failed:', err.message)
+    );
+  }
+
+  async delete(dataQueryId: string) {
+    const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
+    const context = await this.beforeQueryDelete(dataQueryId);
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await this.dataQueryRepository.deleteDataQueryEvents(dataQueryId, manager);
+      await this.dataQueryRepository.deleteOne(dataQueryId);
+    });
+
+    const operationTimestamp = Date.now();
+    const appVersionId = (context as any)?.appVersionId || null;
+    this.afterQueryDelete(context, dataQueryId, appVersionId, historyUserId, operationTimestamp).catch((err) =>
+      console.error('[AppHistory] Fire-and-forget afterQueryDelete failed:', err.message)
+    );
+  }
+
+  async bulkUpdateQueryOptions(user: User, dataQueriesOptions: IUpdatingReferencesOptions[]) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      for (const { id, options } of dataQueriesOptions) {
+        await this.dataQueryRepository.findOneOrFail({
+          where: { id, dataSource: { organizationId: user.organizationId } },
+          relations: ['dataSource'],
+        });
+        await this.dataQueryRepository.updateOne(id, { options }, manager);
+      }
+      if (!dataQueriesOptions.length) {
+        return [];
+      }
+      return await this.dataQueryRepository.getMany(
+        { id: In(dataQueriesOptions.map((query) => query.id)) },
+        [],
+        manager
+      );
+    });
+  }
+
+  async runQueryOnBuilder(
+    user: User,
+    dataQueryId: string,
+    environmentId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    ability: AppAbility,
+    dataSource: DataSource,
+    response: Response,
+    mode?: string,
+    app?: App
+  ) {
+    const { options, resolvedOptions } = updateDataQueryDto;
+
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+      appVersion: true,
+    });
+
+    if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
+      await this.dataQueryRepository.updateOne(dataQueryId, { options });
+      dataQuery['options'] = options;
+    }
+
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, environmentId, mode, app);
+  }
+
+  async runQueryForApp(
+    user: User,
+    dataQueryId: string,
+    updateDataQueryDto: UpdateDataQueryDto,
+    response: Response,
+    app?: App
+  ) {
+    const { resolvedOptions } = updateDataQueryDto;
+
+    const dataQuery = await this.dataQueryRepository.getOneById(dataQueryId, {
+      dataSource: true,
+      appVersion: true,
+    });
+
+    return this.runAndGetResult(user, dataQuery, resolvedOptions, response, undefined, 'view', app);
+  }
+
+  async preview(user: User, dataQuery: DataQuery, environmentId: string, options: any, response: Response, app?: App) {
+    return this.runAndGetResult(user, dataQuery, options, response, environmentId, undefined, app);
+  }
+
+  protected async runAndGetResult(
+    user: User,
+    dataQuery: DataQuery,
+    resolvedOptions: object,
+    response: Response,
+    environmentId?: string,
+    mode?: string,
+    app?: App
+  ): Promise<object> {
+    let result = {};
+
+    try {
+      result = await this.dataQueryUtilService.runQuery(
+        user,
+        dataQuery,
+        resolvedOptions,
+        response,
+        environmentId,
+        mode,
+        app,
+        undefined // opts parameter
+      );
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        result = {
+          status: 'failed',
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
+          metadata: error?.metadata,
+        };
+      } else {
+        console.error(error);
+        result = {
+          status: 'failed',
+          message: error?.message || 'Internal server error',
+          description: error?.message,
+          data: error?.data || {},
+        };
+      }
+    }
+
+    return result;
+  }
+
+  async listTablesForApp(
+    user: User,
+    dataSource: DataSource,
+    environmentId: string,
+    branchId?: string,
+    listTablesOptions?: ListTablesDto
+  ) {
+    let result = {};
+    try {
+      result = await this.dataQueryUtilService.listTables(user, dataSource, environmentId, branchId, listTablesOptions);
+    } catch (error) {
+      if (error.constructor.name === 'QueryError') {
+        result = {
+          status: 'failed',
+          message: error?.message,
+          description: error?.description,
+          data: error?.data,
+        };
+      } else {
+        console.error(error);
+        result = {
+          status: 'failed',
+          message: 'Internal server error',
+          description: error?.message,
+          data: {},
+        };
+      }
+    }
+    return result;
+  }
+
+  async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const newDataSource = await this.dataSourceRepository.findOneOrFail({
+        where: { id: newDataSourceId, organizationId: user.organizationId },
+      });
+      // FIXME: Disabling this check as workflows can change data source of a query with different kind
+      // if (dataSource.kind !== newDataSource.kind && dataSource) {
+      //   throw new BadRequestException();
+      // }
+      return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);
+
+      // TODO: Audit logs
+    });
+  }
+}

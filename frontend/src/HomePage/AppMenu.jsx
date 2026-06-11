@@ -1,0 +1,192 @@
+import React from 'react';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
+import { useTranslation } from 'react-i18next';
+import { authenticationService } from '@/_services';
+import { hasBuilderRole } from '@/_helpers/utils';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+
+export const AppMenu = function AppMenu({
+  appId,
+  appUserId,
+  deleteApp,
+  exportApp,
+  canCreateApp,
+  canDeleteApp,
+  canUpdateApp,
+  onMenuOpen,
+  openAppActionModal,
+  darkMode,
+  currentFolder,
+  popoverVisible,
+  setMenuOpen,
+  appType,
+  ownedFolders,
+}) {
+  const { t } = useTranslation();
+
+  const currentSession = authenticationService.currentSessionValue;
+  const currentUserId = currentSession?.current_user?.id;
+
+  const { orgGitConfig, currentBranch, isInitialized } = useWorkspaceBranchesStore();
+  const isBranchingEnabled =
+    isInitialized && orgGitConfig && (appType === 'front-end' || appType === 'module')
+      ? orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled
+      : false;
+  const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
+  const isWorkspaceBranchLocked = !!(isBranchingEnabled && isDefaultBranch);
+
+  // ─── Ownership ────────────────────────────────────────────────────────────────
+  const isAppOwner = !!(appUserId && currentUserId && appUserId === currentUserId);
+
+  // ─── App-level edit access ────────────────────────────────────────────────────
+  // Backend resolves folder-derived permissions into editable_apps_id, so canEditApp
+  // already covers apps in folders owned by or explicitly shared with the user.
+  const canEditApp =
+    currentSession?.app_group_permissions?.is_all_editable ||
+    currentSession?.app_group_permissions?.editable_apps_id?.includes(appId);
+
+  const canModifyApp = canEditApp || isAppOwner;
+
+  const folderGroupPermissions = currentSession?.folder_group_permissions;
+
+  const canEditAnyFolderViaGroup =
+    folderGroupPermissions?.is_all_editable || folderGroupPermissions?.editable_folders_id?.length > 0;
+
+  const isBuilder = hasBuilderRole(currentSession?.role ?? {});
+  // Builders have implicit admin-level access to module folders.
+  const isModuleBuilder = appType === 'module' && isBuilder;
+
+  // canAddAppToFolder: user can modify the app AND has at least one folder available in the dropdown.
+  const hasOwnedFolders = isAppOwner && Array.isArray(ownedFolders) && ownedFolders.length > 0;
+
+  const canAddAppToFolder =
+    !isWorkspaceBranchLocked &&
+    (canModifyApp || isModuleBuilder) &&
+    (currentSession?.admin ||
+      currentSession?.super_admin ||
+      canEditAnyFolderViaGroup ||
+      hasOwnedFolders ||
+      isModuleBuilder);
+
+  // canRemoveFromFolder: only when inside a specific folder AND user has folder-edit access.
+  const canRemoveFromFolder =
+    !isWorkspaceBranchLocked &&
+    !!currentFolder?.id &&
+    (canModifyApp || isModuleBuilder) &&
+    (currentSession?.admin ||
+      currentSession?.super_admin ||
+      folderGroupPermissions?.is_all_editable ||
+      folderGroupPermissions?.editable_folders_id?.includes(currentFolder.id) ||
+      currentFolder?.created_by === currentUserId ||
+      isModuleBuilder);
+
+  const Field = ({ text, onClick, customClass }) => {
+    const closeMenu = () => {
+      document.body.click();
+      onClick();
+    };
+    return (
+      <div className={`field mb-3${customClass ? ` ${customClass}` : ''}`}>
+        <span
+          role="button"
+          onClick={() => {
+            closeMenu();
+          }}
+          data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
+        >
+          {text}
+        </span>
+      </div>
+    );
+  };
+
+  return (
+    <OverlayTrigger
+      trigger="click"
+      placement="top-start"
+      rootClose
+      onToggle={onMenuOpen}
+      onExit={() => setMenuOpen(false)}
+      show={popoverVisible}
+      container={document.getElementsByClassName('home-page-content')[0]}
+      overlay={
+        <div>
+          <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
+            <Popover.Body bsPrefix="popover-body">
+              <div data-cy="card-options">
+                {canUpdateApp && (
+                  <Field
+                    text={t(
+                      'homePage.appCard.renameApp',
+                      appType === 'workflow' ? 'Rename workflow' : appType === 'module' ? 'Rename module' : 'Rename app'
+                    )}
+                    onClick={() => openAppActionModal('rename-app')}
+                  />
+                )}
+                {canUpdateApp && (
+                  <Field
+                    text={t('homePage.appCard.changeIcon', 'Change Icon')}
+                    onClick={() => openAppActionModal('change-icon')}
+                  />
+                )}
+                {canAddAppToFolder && (
+                  <Field
+                    text={t('homePage.appCard.addToFolder', 'Add to folder')}
+                    onClick={() => openAppActionModal('add-to-folder')}
+                  />
+                )}
+                {canRemoveFromFolder && (
+                  <Field
+                    text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+                    onClick={() => openAppActionModal('remove-app-from-folder')}
+                  />
+                )}
+                {canUpdateApp && canCreateApp && appType !== 'workflow' && (
+                  <>
+                    <Field
+                      text={
+                        appType === 'workflow' ? 'Clone workflow' : appType === 'module' ? 'Clone module' : 'Clone app'
+                      }
+                      onClick={() => openAppActionModal('clone-app')}
+                    />
+                    <Field text={appType === 'module' ? 'Export module' : 'Export app'} onClick={exportApp} />
+                  </>
+                )}
+                {canUpdateApp && canCreateApp && appType === 'workflow' && (
+                  <>
+                    <Field text={'Export workflow'} onClick={exportApp} />
+                  </>
+                )}
+                {canDeleteApp && (
+                  <Field
+                    text={
+                      appType === 'workflow'
+                        ? t('homePage.appCard.deleteWorkflow', 'Delete workflow')
+                        : appType === 'front-end'
+                        ? t('homePage.appCard.deleteApp', 'Delete app')
+                        : 'Delete module'
+                    }
+                    customClass="field__danger"
+                    onClick={deleteApp}
+                  />
+                )}
+              </div>
+            </Popover.Body>
+          </Popover>
+        </div>
+      }
+    >
+      <div className={'cursor-pointer menu-ico menu-icon--trigger'} data-cy={`app-card-menu-icon`}>
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M12.8335 9.91667C12.8335 9.27233 13.3558 8.75 14.0002 8.75C14.6445 8.75 15.1668 9.27233 15.1668 9.91667C15.1668 10.561 14.6445 11.0833 14.0002 11.0833C13.3558 11.0833 12.8335 10.561 12.8335 9.91667ZM12.8335 14C12.8335 13.3557 13.3558 12.8333 14.0002 12.8333C14.6445 12.8333 15.1668 13.3557 15.1668 14C15.1668 14.6443 14.6445 15.1667 14.0002 15.1667C13.3558 15.1667 12.8335 14.6443 12.8335 14ZM12.8335 18.0833C12.8335 17.439 13.3558 16.9167 14.0002 16.9167C14.6445 16.9167 15.1668 17.439 15.1668 18.0833C15.1668 18.7277 14.6445 19.25 14.0002 19.25C13.3558 19.25 12.8335 18.7277 12.8335 18.0833Z"
+            fill="#11181C"
+          />
+        </svg>
+      </div>
+    </OverlayTrigger>
+  );
+};

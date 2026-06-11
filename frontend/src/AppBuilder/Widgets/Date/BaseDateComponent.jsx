@@ -1,0 +1,227 @@
+import React from 'react';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
+import { useTranslation } from 'react-i18next';
+import { DatepickerInput } from './DatepickerInput';
+import TimepickerInput from './TimepickerInput';
+import cx from 'classnames';
+import Label from '@/_ui/Label';
+import DatePickerComponent from 'react-datepicker';
+import CustomDatePickerHeader from './CustomDatePickerHeader';
+import { flip, offset } from '@floating-ui/dom';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import {
+  getLabelFontSize,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from '../BaseComponents/hooks/useInput';
+import { getDateLocale } from './localeUtils';
+
+const tinycolor = require('tinycolor2');
+
+export const BaseDateComponent = ({
+  styles,
+  height,
+  disable,
+  loading,
+  darkMode,
+  label,
+  focus,
+  visibility,
+  isMandatory,
+  componentName,
+  datePickerRef,
+  componentProps,
+  customHeaderProps,
+  customTimeInputProps,
+  customDateInputProps,
+  id,
+  showClearBtn,
+  dataCy,
+}) => {
+  const { i18n } = useTranslation();
+  const currentLocale = getDateLocale(i18n.language);
+
+  const {
+    selectedTextColor,
+    fieldBorderRadius,
+    borderRadius,
+    boxShadow,
+    labelColor,
+    alignment,
+    direction,
+    iconDirection,
+    fieldBorderColor,
+    fieldBackgroundColor,
+    labelWidth,
+    iconVisibility,
+    auto: labelAutoWidth,
+    iconColor,
+    accentColor,
+    padding,
+    errTextColor,
+    widthType,
+    labelFontSize,
+  } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
+
+  const rightPaddingBase = iconVisibility && iconDirection === 'right' ? '30px' : undefined;
+  const paddingRight = showClearBtn ? (rightPaddingBase ? '52px' : '32px') : rightPaddingBase;
+  const computedStyles = {
+    height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    borderColor: focus
+      ? accentColor != '#4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : fieldBorderColor != '#CCD1D5'
+      ? fieldBorderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
+    '--tblr-input-border-color-darker': getModifiedColor(fieldBorderColor, 24),
+    borderRadius: `${fieldBorderRadius || borderRadius}px`,
+    color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
+      ? selectedTextColor
+      : disable || loading
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
+    boxShadow: boxShadow,
+    backgroundColor:
+      fieldBackgroundColor != '#fff'
+        ? fieldBackgroundColor
+        : disable || loading
+        ? darkMode
+          ? 'var(--surfaces-app-bg-default)'
+          : 'var(--surfaces-surface-03)'
+        : 'var(--surfaces-surface-01)',
+    paddingLeft: '10px',
+    ...(iconVisibility && {
+      ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
+    }),
+    ...(paddingRight && { paddingRight }),
+  };
+
+  const loaderStyles = {
+    right:
+      direction === 'right' &&
+      alignment === 'side' &&
+      ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+        ? `${labelWidth + 11}px`
+        : '11px',
+    top: `${
+      alignment === 'top'
+        ? ((label?.length > 0 && labelWidth > 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
+          '50%'
+        : 'calc(50% - 7px)'
+    }`,
+    transform:
+      alignment === 'top' &&
+      ((label?.length > 0 && labelWidth > 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0)) &&
+      ' translateY(-50%)',
+    zIndex: 3,
+  };
+
+  const iconStyles = {
+    width: '16px',
+    height: '16px',
+    transform: ' translateY(-50%)',
+    color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
+    zIndex: 3,
+    display: iconVisibility ? 'block' : 'none',
+    [iconDirection]: '10px',
+  };
+
+  const _width = getLabelWidthOfInput(widthType, labelWidth);
+
+  const iconName = styles.icon;
+  const IconElement = (props) => <TablerIcon iconName={iconName} {...props} />;
+
+  return (
+    <div
+      className={cx('d-flex datetimepicker-component', {
+        [alignment === 'top' &&
+        ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+          ? 'flex-column'
+          : 'align-items-center']: true,
+        'flex-row-reverse': direction === 'right' && alignment === 'side',
+        'text-right': direction === 'right' && alignment === 'top',
+        invisible: !visibility,
+        visibility: visibility,
+      })}
+      style={{
+        position: 'relative',
+        whiteSpace: 'nowrap',
+        width: '100%',
+      }}
+    >
+      <Label
+        label={label}
+        width={labelWidth}
+        darkMode={darkMode}
+        color={labelColor}
+        defaultAlignment={alignment}
+        direction={direction}
+        auto={labelAutoWidth}
+        isMandatory={isMandatory}
+        _width={_width}
+        widthType={widthType}
+        inputId={`component-${id}`}
+        dataCy={dataCy}
+        fontSize={labelFontSizeValue}
+      />
+      <div
+        className="px-0 h-100"
+        style={{
+          ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+        }}
+      >
+        <DatePickerComponent
+          className={`input-field form-control validation-without-icon px-2`}
+          popperClassName={cx('tj-table-datepicker tj-datepicker-widget', {
+            'theme-dark dark-theme': darkMode,
+          })}
+          ref={datePickerRef}
+          locale={currentLocale}
+          showMonthDropdown
+          showYearDropdown
+          dropdownMode="select"
+          showPopperArrow={false}
+          shouldCloseOnSelect={false}
+          popperPlacement="bottom-start"
+          popperModifiers={[
+            flip({ flipAlignment: false, mainAxis: false, crossAxis: false }),
+            offset({ mainAxis: -7 }),
+          ]}
+          portalId="component-portal"
+          {...componentProps}
+          customInput={
+            <DatepickerInput
+              IconElement={IconElement}
+              iconStyles={iconStyles}
+              inputStyles={computedStyles}
+              loaderStyles={loaderStyles}
+              loading={loading}
+              disable={disable}
+              visibility={visibility}
+              errTextColor={errTextColor}
+              direction={direction}
+              isMandatory={isMandatory}
+              labelWidth={labelWidth}
+              auto={labelAutoWidth}
+              label={label}
+              {...customDateInputProps}
+              inputId={id}
+              clearButtonRightOffset={iconVisibility && iconDirection === 'right' ? 20 : 0}
+              dataCy={dataCy}
+            />
+          }
+          customTimeInput={<TimepickerInput darkMode={darkMode} {...customTimeInputProps} />}
+          renderCustomHeader={(headerProps) => (
+            <CustomDatePickerHeader {...headerProps} {...customHeaderProps} darkMode={darkMode} />
+          )}
+        />
+      </div>
+    </div>
+  );
+};

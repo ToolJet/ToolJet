@@ -1,0 +1,391 @@
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import cx from 'classnames';
+import { AppMenu } from './AppMenu';
+import moment from 'moment';
+import { ToolTip } from '@/_components/index';
+import useHover from '@/_hooks/useHover';
+import configs from './Configs/AppIcon.json';
+import { Link, useNavigate } from 'react-router-dom';
+import urlJoin from 'url-join';
+import queryString from 'query-string';
+import { useTranslation } from 'react-i18next';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import BulkIcon from '@/_ui/Icon/BulkIcons';
+import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
+import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
+import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
+import posthogHelper from '@/modules/common/helpers/posthogHelper';
+import { authenticationService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+const { defaultIcon } = configs;
+
+export default function AppCard({
+  app,
+  canCreateApp,
+  canDeleteApp,
+  deleteApp,
+  exportApp,
+  appActionModal,
+  canUpdateApp,
+  canViewApp,
+  currentFolder,
+  appType,
+  ownedFolders,
+  ...props
+}) {
+  const canUpdate = canUpdateApp(app);
+  const canView = canViewApp ? canViewApp(app) : false;
+  const [hoverRef, isHovered] = useHover();
+  const [focused, setFocused] = useState(false);
+  const [isMenuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { wsCurrentBranch, wsActions } = useWorkspaceBranchesStore((state) => ({
+    wsCurrentBranch: state.currentBranch,
+    wsActions: state.actions,
+  }));
+  const cardRef = useRef();
+  const [popoverVisible, setPopoverVisible] = useState(false);
+  const [isNameOverflowing, setIsNameOverflowing] = useState(false);
+  const tooltipRef = useRef(null);
+
+  const handleEditClick = async (e) => {
+    // When workspace branching is active, verify current branch still exists on remote
+    if (wsCurrentBranch) {
+      e.preventDefault();
+      try {
+        const existsOnRemote = await wsActions.checkBranchExistsOnRemote(wsCurrentBranch.name);
+        if (!existsOnRemote) {
+          toast.error(
+            'Branch does not exist in git. Delete this branch and create a new one to continue to make changes.'
+          );
+          return;
+        }
+      } catch (_err) {
+        // check failed (network error, etc.) — allow navigation
+      }
+      navigate(getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }));
+    }
+    posthogHelper.captureEvent('click_edit_button_on_card', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      app_id: app?.id,
+      folder_id: currentFolder?.id,
+    });
+  };
+
+  const onMenuToggle = useCallback(
+    (status) => {
+      setMenuOpen(!!status);
+      !status && !isHovered && setFocused(false);
+    },
+    [isHovered]
+  );
+
+  const appActionModalCallBack = useCallback(
+    (action) => {
+      appActionModal(app, currentFolder, action);
+      if (action === 'add-to-folder') {
+        posthogHelper.captureEvent('click_add_to_folder_option', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: app?.id,
+        });
+      }
+    },
+    [app, appActionModal, currentFolder]
+  );
+
+  const isValidSlug = (slug) => {
+    const validate = validateName(slug, 'slug', true, false, false, false);
+    return validate.status;
+  };
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (tooltipRef.current) {
+        setIsNameOverflowing(tooltipRef.current.scrollWidth > tooltipRef.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
+
+  useEffect(() => {
+    !isMenuOpen && setFocused(!!isHovered);
+  }, [isHovered, isMenuOpen]);
+
+  useEffect(() => {
+    const callBackFunction = (entries) => {
+      const [entry] = entries;
+      setPopoverVisible(isMenuOpen && entry.isIntersecting);
+    };
+
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0,
+    };
+
+    const currentCardRef = cardRef.current;
+    const observer = new IntersectionObserver(callBackFunction, options);
+    if (currentCardRef) {
+      observer.observe(currentCardRef);
+    }
+
+    return () => {
+      if (currentCardRef) {
+        observer.unobserve(currentCardRef);
+      }
+    };
+  }, [isMenuOpen]);
+
+  const updated_at = app?.editing_version?.updated_at || app?.updated_at;
+  const updated = moment(updated_at).fromNow(true);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  let AppIcon;
+  try {
+    AppIcon = <BulkIcon fill={'#3E63DD'} name={app?.icon || defaultIcon} />;
+  } catch (e) {
+    console.error('App icon not found', app.icon);
+  }
+
+  // Calculate released app access before LaunchButton definition
+  const session = authenticationService.currentSessionValue;
+  const appPerms = session?.app_group_permissions;
+
+  // Backend resolves all folder-derived permissions into editable_apps_id, viewable_apps_id,
+  // and appSpecificEnvironmentAccess at session time — no frontend folder checks needed.
+  const environmentAccess = getEnvironmentAccessFromPermissions(appPerms, app.id);
+
+  // Check if user is a builder based on role, not just editable apps
+  const isBuilder = hasBuilderRole(session?.role ?? {});
+
+  const hasNonReleasedPreviewAccess =
+    environmentAccess.development || environmentAccess.staging || environmentAccess.production;
+
+  // Builders need explicit released access. End users can launch if the app is released.
+  const canAccessReleased = !isBuilder || environmentAccess.released;
+
+  const LaunchButton =
+    appType === 'workflow' ? (
+      <div>
+        <ToolTip
+          message={t(
+            'homePage.appCard.launchingWorkflowNotAvailable',
+            'Launching workflows is not currently available'
+          )}
+        >
+          <button
+            type="button"
+            className={cx(`launch-button tj-text-xsm tj-disabled-btn`)}
+            disabled
+            data-cy="launch-button"
+          >
+            <SolidIcon name="rightarrrow" width="14" fill="#4C5155" />
+            {t('homePage.appCard.launch', 'Launch')}
+          </button>
+        </ToolTip>
+      </div>
+    ) : (
+      <div>
+        <ToolTip
+          message={
+            app?.current_version_id === null
+              ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+              : !canAccessReleased
+              ? t('homePage.appCard.noReleasedAccess', 'You do not have permission to access released apps')
+              : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+          }
+        >
+          <button
+            type="button"
+            className={cx(
+              ` launch-button tj-text-xsm ${
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
+                  ? 'tj-disabled-btn '
+                  : 'tj-tertiary-btn'
+              }`
+            )}
+            disabled={app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased}
+            onClick={() => {
+              if (app?.current_version_id && canAccessReleased) {
+                window.open(urlJoin(getHostURL(), `/applications/${app.slug}`));
+              } else {
+                navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
+              }
+            }}
+            data-cy="launch-button"
+          >
+            <SolidIcon
+              name="rightarrrow"
+              width="14"
+              fill={
+                app?.current_version_id === null || app?.is_maintenance_on || !canAccessReleased
+                  ? '#4C5155'
+                  : darkMode
+                  ? '#FDFDFE'
+                  : '#11181C'
+              }
+            />
+
+            {app?.is_maintenance_on
+              ? t('homePage.appCard.maintenance', 'Maintenance')
+              : t('homePage.appCard.launch', 'Launch')}
+          </button>
+        </ToolTip>
+      </div>
+    );
+
+  const ViewButton = (
+    <div>
+      <button
+        type="button"
+        className="tj-primary-btn tj-text-xsm edit-button"
+        style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+        onClick={() => {
+          const pageHandle = app.home_page_handle || 'home';
+          const slugOrId = isValidSlug(app.slug) ? app.slug : app.id;
+
+          // For preview, use first available environment from user's actual permissions.
+          const defaultEnv = getDefaultEnvironment(environmentAccess, isBuilder, true);
+          // Don't add env param if license is invalid or multi-environment feature is not available
+          const queryParams = props.basicPlan ? {} : { env: defaultEnv };
+          const previewQuery = queryString.stringify(queryParams);
+
+          const previewUrl = `/applications/${slugOrId}/${pageHandle}${previewQuery ? `?${previewQuery}` : ''}`;
+
+          window.open(previewUrl, '_blank');
+        }}
+        data-cy="preview-button"
+      >
+        {t('globals.preview', 'Preview')}
+      </button>
+    </div>
+  );
+
+  function AppNameDisplay({ tooltipRef }) {
+    const AppName = (
+      <h3
+        ref={tooltipRef}
+        className="app-card-name font-weight-500 tj-text-md"
+        data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-title`}
+      >
+        {decodeEntities(app?.name)}
+      </h3>
+    );
+
+    return isNameOverflowing ? (
+      <ToolTip trigger={['hover']} message={app.name}>
+        {AppName}
+      </ToolTip>
+    ) : (
+      AppName
+    );
+  }
+  const isStub = app?.app_versions?.[0]?.is_stub;
+  return (
+    <ToolTip
+      message="Modules are not available on your current plan."
+      placement="bottom"
+      show={appType === 'module' && !props.moduleEnabled}
+    >
+      <div className="card homepage-app-card card--clickable" ref={cardRef}>
+        <div
+          className={appType === 'module' && !props.moduleEnabled ? 'disabled-module' : ''}
+          key={app?.id}
+          ref={hoverRef}
+          data-cy={`${app?.name?.toLowerCase().replace(/\s+/g, '-')}-card`}
+        >
+          <div className="row home-app-card-header">
+            <div className="col-12 d-flex justify-content-between">
+              <div>
+                <div className="app-icon-main">
+                  <div className="app-icon d-flex" data-cy={`app-card-${app?.icon}-icon`}>
+                    {AppIcon && AppIcon}
+                  </div>
+                </div>
+              </div>
+              <div visible={focused ? true : undefined}>
+                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                  <AppMenu
+                    appId={app?.id}
+                    appUserId={app?.user_id}
+                    onMenuOpen={onMenuToggle}
+                    openAppActionModal={appActionModalCallBack}
+                    canCreateApp={canCreateApp()}
+                    canDeleteApp={canDeleteApp(app)}
+                    canUpdateApp={canUpdateApp(app)}
+                    deleteApp={() => deleteApp(app)}
+                    exportApp={() => {
+                      if (isStub && appType !== 'workflow') {
+                        toast.error(
+                          'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                          { position: 'top-center' }
+                        );
+                        return;
+                      }
+                      exportApp(app);
+                    }}
+                    isMenuOpen={setMenuOpen}
+                    popoverVisible={popoverVisible}
+                    setMenuOpen={setMenuOpen}
+                    darkMode={darkMode}
+                    currentFolder={currentFolder}
+                    appType={appType}
+                    appCreationMode={app?.creation_mode || app?.creationMode}
+                    ownedFolders={ownedFolders}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <AppNameDisplay tooltipRef={tooltipRef} />
+          </div>
+          <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
+            {canUpdate && (
+              <div className="app-creation-time tj-text-xsm" data-cy="app-creation-details">
+                <ToolTip message={app.created_at && moment(app.created_at).format('dddd, MMMM Do YYYY, h:mm:ss a')}>
+                  <span>{updated === 'just now' ? `Edited ${updated}` : `Edited ${updated} ago`}</span>
+                </ToolTip>
+              </div>
+            )}
+          </div>
+          <div className="appcard-buttons-wrap">
+            {(canUpdate || appType === 'module') && (
+              <div>
+                <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
+                  <Link
+                    to={getPrivateRoute('editor', {
+                      slug: isValidSlug(app.slug) ? app.slug : app.id,
+                    })}
+                    onClick={handleEditClick}
+                  >
+                    <button
+                      type="button"
+                      className="tj-primary-btn tj-text-xsm edit-button"
+                      style={{ color: darkMode ? '#FFFFFF' : '#FDFDFE' }}
+                      data-cy="edit-button"
+                    >
+                      <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                      &nbsp;{t('globals.edit', 'Edit')}
+                    </button>
+                  </Link>
+                </ToolTip>
+              </div>
+            )}
+            {!canUpdate && canView && appType !== 'module' && hasNonReleasedPreviewAccess && ViewButton}
+            {!isStub && appType !== 'module' && LaunchButton}
+          </div>
+        </div>
+      </div>
+    </ToolTip>
+  );
+}

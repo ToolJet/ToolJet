@@ -1,0 +1,115 @@
+.tj-table-datepicker .react-datepicker__day--keyboard-selected {
+    background-color: var(--cc-surface1-surface) !important;
+}
+
+.react-datepicker__day:not([aria-disabled=true]):hover {
+    border-radius: 0.3rem;
+    background-color: var(--cc-surface1-surface) !important;
+    filter: brightness(0.92);
+}
+
+.react-datepicker__day--keyboard-selected {
+    background-color: var(--cc-surface1-surface) !important;
+}
+
+.daterangepicker-header {
+    .react-select__menu .react-select__menu-list {
+        background-color: var(--cc-surface1-surface) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option {
+        background-color: var(--cc-surface1-surface) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option:hover {
+        background-color: var(--cc-date-dropdown-hover) !important;
+    }
+
+    .react-select__menu .react-select__menu-list .react-select__option:active {
+        background-color: var(--cc-date-dropdown-active) !important;
+    }
+
+}
+
+.daterangepicker-header {
+    .react-select__menu .react-select__menu-list .react-select__option > div > span{
+        color: var(--cc-primary-text) !important;
+    }
+}
+
+#component-portal {
+    .react-datepicker-popper {
+        z-index: 10000 !important;
+    }
+
+    // DatePickerV2 Component
+    .datepicker-component {
+        width: auto !important;
+
+        .react-datepicker {
+            .react-datepicker__month-container {
+                border-radius: 0.5rem !important;
+            }
+
+            .react-datepicker__header {
+                border-top-left-radius: 0.5rem;
+                border-top-right-radius: 0.5rem;
+            }
+        }
+    }
+
+    // TimePicker Component
+    .cc-timepicker-widget {
+        width: fit-content !important;
+        border-radius: 0.5rem !important;
+        overflow-x: hidden;
+
+        .react-datepicker--time-only {
+            width: auto;
+        }
+    }
+
+    // DateTimePickerV2 Component
+    .datetimepicker-widget {
+        width: auto !important;
+        border-radius: 0.5rem !important;
+        overflow-x: hidden;
+
+        .react-datepicker {
+            width: auto;
+        }
+    }
+
+    // DaterangePicker Component
+    .tj-daterange-widget {
+        border: 1px solid var(--slate5) !important;
+
+        .react-datepicker {
+            border-radius: 0.5rem !important;
+
+            .react-datepicker__month-container:nth-of-type(1) {
+                border-top-left-radius: 0.5rem !important;
+                border-bottom-left-radius: 0.5rem !important;
+
+                .react-datepicker__header {
+                    border-top-left-radius: 0.5rem;
+                    background-color: var(--cc-surface1-surface);
+                }
+            }
+
+            .react-datepicker__month-container:nth-of-type(2) {
+                border-top-right-radius: 0.5rem !important;
+                border-bottom-right-radius: 0.5rem !important;
+
+                .react-datepicker__header {
+                    border-top-right-radius: 0.5rem;
+                    background-color: var(--cc-surface1-surface);
+                }
+            }
+
+            .react-select__menu {
+                width: auto;
+            }
+        }
+    }
+}

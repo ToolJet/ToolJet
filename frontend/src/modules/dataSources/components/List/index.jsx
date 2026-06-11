@@ -1,0 +1,267 @@
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
+import { ListItem } from '../LIstItem';
+import { ConfirmDialog } from '@/_components';
+import { globalDatasourceService } from '@/_services';
+import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { SearchBox } from '@/_components/SearchBox';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
+import Modal from '@/HomePage/Modal';
+import { Button } from '@/components/ui/Button/Button';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+
+export const List = ({ updateSelectedDatasource }) => {
+  const {
+    dataSources,
+    fetchDataSources,
+    selectedDataSource,
+    setSelectedDataSource,
+    toggleDataSourceManagerModal,
+    isLoading,
+    environments,
+    setCurrentEnvironment,
+    setActiveDatasourceList,
+    setLoading,
+  } = useContext(GlobalDataSourcesContext);
+
+  const [isDeletingDatasource, setDeletingDatasource] = useState(false);
+  const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
+  const [filteredData, setFilteredData] = useState(dataSources);
+  const [showInput, setShowInput] = useState(false);
+  const [showDependentQueriesInfo, setShowDependentQueriesInfo] = useState(false);
+  const [showSwitchBranchModal, setShowSwitchBranchModal] = useState(false);
+  const [pendingDeleteSource, setPendingDeleteSource] = useState(null);
+  const pendingDeleteAfterSwitchRef = useRef(null);
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  const isBranchingEnabled = useWorkspaceBranchesStore((state) => {
+    if (!state.isInitialized || !state.orgGitConfig) return false;
+    return !!(state.orgGitConfig?.is_branching_enabled || state.orgGitConfig?.isBranchingEnabled);
+  });
+
+  const isOnDefaultBranch = useWorkspaceBranchesStore((state) => {
+    return !!(state.currentBranch?.is_default || state.currentBranch?.isDefault);
+  });
+
+  useEffect(() => {
+    environments?.length &&
+      fetchDataSources(false).catch(() => {
+        toast.error('Failed to fetch datasources');
+        return;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [environments]);
+
+  useEffect(() => {
+    setFilteredData([...dataSources]);
+  }, [dataSources]);
+
+  // After branch switch + refetch, trigger the deferred delete flow
+  useEffect(() => {
+    if (pendingDeleteAfterSwitchRef.current && !isLoading && dataSources.length) {
+      const source = pendingDeleteAfterSwitchRef.current;
+      pendingDeleteAfterSwitchRef.current = null;
+      deleteDataSource(source);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources, isLoading]);
+
+  const deleteDataSource = (selectedSource) => {
+    if (isBranchingEnabled && isOnDefaultBranch) {
+      setPendingDeleteSource(selectedSource);
+      setShowSwitchBranchModal(true);
+      return;
+    }
+    setActiveDatasourceList('');
+    setSelectedDataSource(selectedSource);
+    setCurrentEnvironment(environments[0]);
+    toggleDataSourceManagerModal(true);
+    updateSelectedDatasource(selectedSource?.name);
+    getQueriesLinkedToDatasource(selectedSource);
+  };
+
+  const executeDataSourceDeletion = () => {
+    setDeletingDatasource(true);
+    setLoading(true);
+    globalDatasourceService
+      .deleteDataSource(selectedDataSource.id)
+      .then(() => {
+        setDeleteModalVisibility(false);
+        toast.success('Data Source Deleted');
+        setDeletingDatasource(false);
+        setSelectedDataSource(null);
+        fetchDataSources(true);
+      })
+      .catch(({ error }) => {
+        setDeleteModalVisibility(false);
+        setDeletingDatasource(false);
+        setSelectedDataSource(null);
+        setLoading(false);
+        toast.error(error);
+      });
+  };
+
+  const getQueriesLinkedToDatasource = (selectedSource) => {
+    globalDatasourceService
+      .getQueriesLinkedToDatasource(selectedSource.id)
+      .then((data) => {
+        if (data?.dependent_queries) {
+          setShowDependentQueriesInfo(true);
+        } else {
+          setDeleteModalVisibility(true);
+        }
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
+  const cancelDeleteDataSource = () => {
+    setDeleteModalVisibility(false);
+  };
+
+  const handleSearch = (e) => {
+    const value = e?.target?.value;
+    const filtered = dataSources.filter((item) => item?.name?.toLowerCase().includes(value?.toLowerCase()));
+    setFilteredData(filtered);
+  };
+
+  function handleClose() {
+    setShowInput(false);
+    setFilteredData(dataSources);
+  }
+
+  const EmptyState = () => {
+    return (
+      <div
+        style={{
+          transform: 'translateY(80%)',
+        }}
+        className="d-flex justify-content-center align-items-center flex-column mt-3"
+      >
+        <div className="mb-4">
+          <EmptyFoldersIllustration />
+        </div>
+        <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
+          {filteredData?.length === 0 && dataSources?.length !== 0 ? 'No results found' : 'No datasources added'}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div style={{ overflow: 'hidden' }}>
+        <div className="w-100 datasource-inner-sidebar-wrap" data-cy="datasource-Label">
+          {isLoading ? (
+            <div className="p-2">
+              <FolderSkeleton />
+            </div>
+          ) : (
+            <>
+              <div className="d-flex justify-content-between datasources-search" style={{ marginBottom: '8px' }}>
+                {!showInput ? (
+                  <>
+                    <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
+                      Data sources added{' '}
+                      {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
+                    </div>
+                    <Button
+                      size="medium"
+                      variant="ghost"
+                      iconOnly
+                      ariaLabel="Search for folders"
+                      onClick={() => {
+                        setShowInput(true);
+                      }}
+                      data-cy="added-ds-search-icon"
+                    >
+                      <SolidIcon name="search" width="14" fill={darkMode ? '#CFD3D8E6' : '#6A727C'} />
+                    </Button>
+                  </>
+                ) : (
+                  <SearchBox
+                    width="248px"
+                    callBack={handleSearch}
+                    placeholder={'Search for Data sources'}
+                    customClass="tj-common-search-input"
+                    onClearCallback={handleClose}
+                    autoFocus={true}
+                    dataCy={'added-ds'}
+                  />
+                )}
+              </div>
+
+              {!isLoading && filteredData?.length ? (
+                <div className="list-group">
+                  {filteredData?.map((source, idx) => {
+                    const sanpleDBtoolTipText =
+                      source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
+                    return (
+                      <ListItem
+                        dataSource={source}
+                        key={idx}
+                        toolTipText={sanpleDBtoolTipText}
+                        active={selectedDataSource?.id === source?.id}
+                        onDelete={deleteDataSource}
+                        updateSelectedDatasource={updateSelectedDatasource}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState />
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      <Modal
+        title="Dependent queries found!"
+        show={showDependentQueriesInfo}
+        closeModal={() => setShowDependentQueriesInfo(false)}
+      >
+        <div className="mt-3 mb-3">
+          Cannot delete <b>{selectedDataSource?.name ? selectedDataSource.name : 'datasource'}</b> as it is used in the
+          apps
+        </div>
+      </Modal>
+      <ConfirmDialog
+        show={isDeleteModalVisible}
+        title={isBranchingEnabled ? 'Delete datasource' : undefined}
+        message={
+          isBranchingEnabled
+            ? "Deleting this data source will only apply changes to the selected branch. To reflect these changes on master, you'll need to push and commit your changes, then merge them."
+            : 'Do you want to delete?'
+        }
+        confirmButtonText={isBranchingEnabled ? 'Delete' : undefined}
+        confirmButtonLoading={isDeletingDatasource}
+        onConfirm={() => executeDataSourceDeletion()}
+        onCancel={() => cancelDeleteDataSource()}
+        darkMode={darkMode}
+        backdropClassName="delete-modal"
+      />
+      {showSwitchBranchModal && (
+        <WorkspaceSwitchBranchModal
+          show={showSwitchBranchModal}
+          onClose={() => {
+            setShowSwitchBranchModal(false);
+            setPendingDeleteSource(null);
+          }}
+          onBranchSwitch={() => {
+            if (pendingDeleteSource) {
+              pendingDeleteAfterSwitchRef.current = pendingDeleteSource;
+              setPendingDeleteSource(null);
+            }
+            setShowSwitchBranchModal(false);
+          }}
+        />
+      )}
+    </>
+  );
+};

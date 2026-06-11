@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bigquery datasource",
+  "description": "A schema defining BigQuery datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "BigQuery",
+    "kind": "bigquery",
+    "type": "api"
+  },
+  "properties": {
+    "authentication_type": {
+      "type": "string",
+      "title": "Authentication type",
+      "enum": ["oauth2", "service_account"],
+      "default": "oauth2"
+    },
+    "access_type": {
+      "type": "string",
+      "title": "Access type",
+      "enum": ["read", "write"],
+      "default": "read"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "location": {
+      "type": "string",
+      "title": "Region"
+    },
+    "private_key": {
+      "type": "string",
+      "title": "Private key"
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client secret"
+    },
+    "scope": {
+      "type": "string",
+      "title": "Scope"
+    },
+    "oauth_type": {
+      "type": "string",
+      "title": "OAuth type",
+      "default": "custom_app"
+    },
+    "auth_url": {
+      "type": "string",
+      "title": "Authorization URL",
+      "default": "https://accounts.google.com/o/oauth2/v2/auth"
+    },
+    "access_token_url": {
+      "type": "string",
+      "title": "Access token URL",
+      "default": "https://oauth2.googleapis.com/token"
+    },
+    "redirect_url": {
+      "type": "string",
+      "title": "Redirect URL",
+      "default": "http://localhost:8082/oauth2/authorize"
+    },
+    "auth_type": {
+      "type": "string",
+      "title": "Auth type",
+      "default": "oauth2"
+    },
+    "grant_type": {
+      "type": "string",
+      "title": "Grant type",
+      "default": "authorization_code"
+    },
+    "allowed_auth_types": {
+      "type": "string",
+      "title": "Allowed auth types",
+      "default": "oauth2"
+    }
+  },
+  "tj:encrypted": ["private_key", "client_secret"],
+  "required": ["authentication_type"],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "authentication_type": { "const": "service_account" }
+        }
+      },
+      "then": {
+        "required": ["private_key"]
+      }
+    }
+  ],
+  "tj:ui:properties": {
+    "authentication_type": {
+      "order": 1,
+      "$ref": "#/properties/authentication_type",
+      "key": "authentication_type",
+      "label": "Authentication type",
+      "description": "Single select dropdown for choosing authentication type",
+      "widget": "dropdown-component-flip",
+      "list": [
+        { "value": "oauth2", "name": "OAuth 2.0" },
+        { "value": "service_account", "name": "Service Account" }
+      ]
+    },
+    "oauth2": {
+      "access_type": {
+        "order": 10,
+        "$ref": "#/properties/access_type",
+        "key": "access_type",
+        "label": "Access type",
+        "description": "Select read or read/write access",
+        "widget": "dropdown",
+        "list": [
+          { "value": "read", "name": "Read only" },
+          { "value": "write", "name": "Read and Write" }
+        ]
+      },
+      "project_id": {
+        "order": 20,
+        "$ref": "#/properties/project_id",
+        "key": "project_id",
+        "label": "Project ID",
+        "description": "Enter your Google Cloud Project ID",
+        "widget": "text-v3"
+      },
+      "location": {
+        "order": 30,
+        "$ref": "#/properties/location",
+        "key": "location",
+        "label": "Region",
+        "description": "Geographic location of datasets. Leave empty for default.",
+        "widget": "dropdown",
+        "list": [
+          { "name": "Multi-region: United States (US)", "value": "US" },
+          { "name": "Multi-region: European Union (EU)", "value": "EU" },
+          { "name": "Iowa (us-central1)", "value": "us-central1" },
+          { "name": "South Carolina (us-east1)", "value": "us-east1" },
+          { "name": "Northern Virginia (us-east4)", "value": "us-east4" },
+          { "name": "Columbus (us-east5)", "value": "us-east5" },
+          { "name": "Dallas (us-south1)", "value": "us-south1" },
+          { "name": "Oregon (us-west1)", "value": "us-west1" },
+          { "name": "Los Angeles (us-west2)", "value": "us-west2" },
+          { "name": "Salt Lake City (us-west3)", "value": "us-west3" },
+          { "name": "Las Vegas (us-west4)", "value": "us-west4" },
+          { "name": "Montréal (northamerica-northeast1)", "value": "northamerica-northeast1" },
+          { "name": "Toronto (northamerica-northeast2)", "value": "northamerica-northeast2" },
+          { "name": "Querétaro (northamerica-south1)", "value": "northamerica-south1" },
+          { "name": "São Paulo (southamerica-east1)", "value": "southamerica-east1" },
+          { "name": "Santiago (southamerica-west1)", "value": "southamerica-west1" },
+          { "name": "Belgium (europe-west1)", "value": "europe-west1" },
+          { "name": "London (europe-west2)", "value": "europe-west2" },
+          { "name": "Frankfurt (europe-west3)", "value": "europe-west3" },
+          { "name": "Netherlands (europe-west4)", "value": "europe-west4" },
+          { "name": "Zürich (europe-west6)", "value": "europe-west6" },
+          { "name": "Milan (europe-west8)", "value": "europe-west8" },
+          { "name": "Paris (europe-west9)", "value": "europe-west9" },
+          { "name": "Berlin (europe-west10)", "value": "europe-west10" },
+          { "name": "Turin (europe-west12)", "value": "europe-west12" },
+          { "name": "Warsaw (europe-central2)", "value": "europe-central2" },
+          { "name": "Finland (europe-north1)", "value": "europe-north1" },
+          { "name": "Stockholm (europe-north2)", "value": "europe-north2" },
+          { "name": "Madrid (europe-southwest1)", "value": "europe-southwest1" },
+          { "name": "Taiwan (asia-east1)", "value": "asia-east1" },
+          { "name": "Hong Kong (asia-east2)", "value": "asia-east2" },
+          { "name": "Tokyo (asia-northeast1)", "value": "asia-northeast1" },
+          { "name": "Osaka (asia-northeast2)", "value": "asia-northeast2" },
+          { "name": "Seoul (asia-northeast3)", "value": "asia-northeast3" },
+          { "name": "Mumbai (asia-south1)", "value": "asia-south1" },
+          { "name": "Delhi (asia-south2)", "value": "asia-south2" },
+          { "name": "Singapore (asia-southeast1)", "value": "asia-southeast1" },
+          { "name": "Jakarta (asia-southeast2)", "value": "asia-southeast2" },
+          { "name": "Sydney (australia-southeast1)", "value": "australia-southeast1" },
+          { "name": "Melbourne (australia-southeast2)", "value": "australia-southeast2" },
+          { "name": "Doha (me-central1)", "value": "me-central1" },
+          { "name": "Dammam (me-central2)", "value": "me-central2" },
+          { "name": "Tel Aviv (me-west1)", "value": "me-west1" },
+          { "name": "Johannesburg (africa-south1)", "value": "africa-south1" }
+        ]
+      },
+      "oauth": {
+        "order": 40,
+        "key": "oauth",
+        "widget": "react-component-oauth",
+        "description": "A component for BigQuery OAuth",
+        "oauth_configs": {
+          "allowed_auth_types": ["oauth2"],
+          "allowed_grant_types": ["authorization_code"],
+          "allowed_field_groups": {
+            "authorization_code": ["client_id", "client_secret"]
+          },
+          "oauthTypes": {
+            "required": true,
+            "default_value": "custom_app",
+            "editions": {
+              "ce": ["custom_app"],
+              "ee": ["custom_app"],
+              "cloud": ["custom_app", "tooljet_app"]
+            }
+          },
+          "allowed_scope_field": false
+        }
+      }
+    },
+    "service_account": {
+      "private_key": {
+        "order": 10,
+        "$ref": "#/properties/private_key",
+        "key": "private_key",
+        "label": "Private key",
+        "description": "Enter JSON private key for service account",
+        "widget": "password-v3-textarea"
+      },
+      "scope": {
+        "order": 20,
+        "$ref": "#/properties/scope",
+        "key": "scope",
+        "label": "Scope",
+        "description": "Enter required scopes",
+        "widget": "text-v3"
+      },
+      "location": {
+        "order": 30,
+        "$ref": "#/properties/location",
+        "key": "location",
+        "label": "Region",
+        "description": "Geographic location of datasets. Leave empty for default.",
+        "widget": "dropdown",
+        "list": [
+          { "name": "Multi-region: United States (US)", "value": "US" },
+          { "name": "Multi-region: European Union (EU)", "value": "EU" },
+          { "name": "Iowa (us-central1)", "value": "us-central1" },
+          { "name": "South Carolina (us-east1)", "value": "us-east1" },
+          { "name": "Northern Virginia (us-east4)", "value": "us-east4" },
+          { "name": "Columbus (us-east5)", "value": "us-east5" },
+          { "name": "Dallas (us-south1)", "value": "us-south1" },
+          { "name": "Oregon (us-west1)", "value": "us-west1" },
+          { "name": "Los Angeles (us-west2)", "value": "us-west2" },
+          { "name": "Salt Lake City (us-west3)", "value": "us-west3" },
+          { "name": "Las Vegas (us-west4)", "value": "us-west4" },
+          { "name": "Montréal (northamerica-northeast1)", "value": "northamerica-northeast1" },
+          { "name": "Toronto (northamerica-northeast2)", "value": "northamerica-northeast2" },
+          { "name": "Querétaro (northamerica-south1)", "value": "northamerica-south1" },
+          { "name": "São Paulo (southamerica-east1)", "value": "southamerica-east1" },
+          { "name": "Santiago (southamerica-west1)", "value": "southamerica-west1" },
+          { "name": "Belgium (europe-west1)", "value": "europe-west1" },
+          { "name": "London (europe-west2)", "value": "europe-west2" },
+          { "name": "Frankfurt (europe-west3)", "value": "europe-west3" },
+          { "name": "Netherlands (europe-west4)", "value": "europe-west4" },
+          { "name": "Zürich (europe-west6)", "value": "europe-west6" },
+          { "name": "Milan (europe-west8)", "value": "europe-west8" },
+          { "name": "Paris (europe-west9)", "value": "europe-west9" },
+          { "name": "Berlin (europe-west10)", "value": "europe-west10" },
+          { "name": "Turin (europe-west12)", "value": "europe-west12" },
+          { "name": "Warsaw (europe-central2)", "value": "europe-central2" },
+          { "name": "Finland (europe-north1)", "value": "europe-north1" },
+          { "name": "Stockholm (europe-north2)", "value": "europe-north2" },
+          { "name": "Madrid (europe-southwest1)", "value": "europe-southwest1" },
+          { "name": "Taiwan (asia-east1)", "value": "asia-east1" },
+          { "name": "Hong Kong (asia-east2)", "value": "asia-east2" },
+          { "name": "Tokyo (asia-northeast1)", "value": "asia-northeast1" },
+          { "name": "Osaka (asia-northeast2)", "value": "asia-northeast2" },
+          { "name": "Seoul (asia-northeast3)", "value": "asia-northeast3" },
+          { "name": "Mumbai (asia-south1)", "value": "asia-south1" },
+          { "name": "Delhi (asia-south2)", "value": "asia-south2" },
+          { "name": "Singapore (asia-southeast1)", "value": "asia-southeast1" },
+          { "name": "Jakarta (asia-southeast2)", "value": "asia-southeast2" },
+          { "name": "Sydney (australia-southeast1)", "value": "australia-southeast1" },
+          { "name": "Melbourne (australia-southeast2)", "value": "australia-southeast2" },
+          { "name": "Doha (me-central1)", "value": "me-central1" },
+          { "name": "Dammam (me-central2)", "value": "me-central2" },
+          { "name": "Tel Aviv (me-west1)", "value": "me-west1" },
+          { "name": "Johannesburg (africa-south1)", "value": "africa-south1" }
+        ]
+      }
+    }
+  }
+}

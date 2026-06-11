@@ -1,0 +1,118 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Salesforce datasource",
+  "description": "A schema defining Salesforce datasource",
+  "version": "1.0.1",
+  "type": "api",
+  "source": {
+    "name": "Salesforce",
+    "kind": "salesforce",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "code": {
+        "type": "string",
+        "encrypted": true
+      },
+      "redirect_url": {
+        "type": "string"
+      },
+      "api_version": {
+        "type": "string"
+      },
+      "provider": {
+        "type": "string"
+      },
+      "oauth2": {
+        "type": "boolean"
+      },
+      "plugin_id": {
+        "type": "string"
+      }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "redirect_url": {
+      "value": ""
+    },
+    "auth_type": {
+      "value": "oauth2"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "scopes": {
+      "value": "full"
+    },
+    "oauth_type": {
+      "value": "custom_app"
+    }
+  },
+  "properties": {
+    "api_version": {
+      "label": "API version",
+      "key": "api_version",
+      "type": "dropdown",
+      "description": "Single select dropdown for api version",
+      "list": [
+        {
+          "name": "v1",
+          "value": "v1"
+        },
+        {
+          "name": "v2",
+          "value": "v2"
+        }
+      ]
+    },
+    "oauth": {
+      "label": "",
+      "key": "oauth",
+      "type": "react-component-oauth",
+      "description": "A component for Salesforce",
+      "oauth_configs": {
+        "allowed_auth_types": [
+          "oauth2"
+        ],
+        "allowed_grant_types": [
+          "authorization_code"
+        ],
+        "allowed_field_groups": {
+          "authorization_code": [
+            "client_id",
+            "client_secret"
+          ]
+        },
+        "oauthTypes": {
+          "required": true,
+          "default_value": "custom_app",
+          "editions": {
+            "ce": [
+              "custom_app"
+            ],
+            "ee": [
+              "custom_app"
+            ],
+            "cloud": [
+              "custom_app",
+              "tooljet_app"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": []
+}

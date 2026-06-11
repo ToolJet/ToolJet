@@ -1,0 +1,47 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Zendesk datasource",
+  "description": "A schema defining Zendesk datasource",
+  "type": "api",
+  "source": {
+    "name": "Zendesk",
+    "kind": "zendesk",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "access_type": {
+      "value": "read"
+    }, 
+    "subdomain": {
+      "value": ""
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "zendesk": {
+      "label": "",
+      "key": "zendesk",
+      "type": "react-component-zendesk",
+      "description": "A component for Zendesk"
+    }
+  },
+  "required": [] 
+}

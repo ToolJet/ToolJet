@@ -1,0 +1,76 @@
+// .active-target::after{
+//     content: "";
+//     position: absolute;
+//     top: 0px;
+//     left: 0px;
+//     right: 0px;
+//     bottom: 0px;
+//     border: 1px solid #4af !important;
+//     pointer-events: none; /* So it doesn't block clicks */
+//     box-sizing: border-box;
+//     inset: -1px;
+//     &.dynamic-height-target::after{
+//         border-bottom: 1px dashed #4af !important;
+//         border-top: 1px dashed #4af !important;
+//     }
+// }
+// .main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {
+//     z-index: 4 !important;
+//     &::after{
+//         content: "";
+//         position: absolute;
+//         top: 0px;
+//         left: 0px;
+//         right: 0px;
+//         bottom: 0px;
+//         border: 1px solid #4af !important;
+//         pointer-events: none; /* So it doesn't block clicks */
+//         box-sizing: border-box;
+//         inset: -1px;
+//     }
+// }
+// .main-editor-canvas .widget-target:not(:has(.widget-target:hover)).dynamic-height-target::after{
+//     border-bottom: 1px dashed #4af !important;
+//     border-top: 1px dashed #4af !important;
+// }
+// .main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {
+//     // outline: 1px solid #4af;
+//     z-index: 4 !important;
+// }
+// .main-editor-canvas .widget-target.module-container {
+//     border: dotted 2px #CCD1D5 !important;
+// }
+// // .main-editor-canvas .widget-target:hover {
+// //     outline: 1px solid #4af;
+// //   }
+
+
+
+
+.active-target {
+    outline: 1px solid #4af !important;
+    &.dynamic-height-target {
+        outline: 1px solid #9747FF !important;
+    }
+}
+
+.main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {
+    outline: 1px solid #4af;
+    z-index: 4 !important;
+    &.dynamic-height-target {
+        outline: 1px solid #9747FF !important;
+    }
+}
+
+.main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {
+    // outline: 1px solid #4af;
+    z-index: 4 !important;
+}
+
+.main-editor-canvas .widget-target.module-container {
+    outline: dotted 2px #CCD1D5 !important;
+}
+
+// .main-editor-canvas .widget-target:hover {
+//     outline: 1px solid #4af;
+//   }

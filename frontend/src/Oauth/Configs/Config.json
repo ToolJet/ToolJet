@@ -1,0 +1,30 @@
+{
+  "git": {
+    "name": "GitHub",
+    "responseType": "query",
+    "params": {
+      "token": "code"
+    }
+  },
+  "google": {
+    "name": "Google",
+    "responseType": "hash",
+    "params": {
+      "token": "id_token"
+    }
+  },
+  "openid": {
+    "name": "Open ID",
+    "params": {
+      "token": "code",
+      "iss": "iss"
+    }
+  },
+  "saml": {
+    "name": "SAML",
+    "responseType": "query",
+    "params": {
+      "token": "code"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Operations schema",
+  "description": "Tooljet Operations schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "path to the JSON-schema to use for this file"
+    },
+    "title": {
+      "type": "string",
+      "description": "title of datasource"
+    },
+    "description": {
+      "type": "string",
+      "description": "description of datasource"
+    },
+    "type": {
+      "type": "string",
+      "items": {
+        "$ref": "#/definitions/type"
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
+    }
+  },
+  "definitions": {
+    "type": {
+      "enum": [
+        "api",
+        "cloud-storage",
+        "database"
+      ]
+    }
+  }
+}

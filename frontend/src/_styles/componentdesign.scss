@@ -1,0 +1,354 @@
+:root {
+    //page
+    --page-default: #F6F8FA;
+    --page-weak: #FFFFFF;
+
+
+    //background
+    --background-surface-layer-01: #FFFFFF;
+    --background-surface-layer-02: #F6F8FA;
+    --background-surface-layer-03: #E4E7EB;
+    --background-accent-strong: #4368E3;
+    --background-accent-weak: #ECF0FE;
+    --background-success-strong: #1E823B;
+    --background-success-weak: #E8F3EB;
+    --background-error-strong: #D72D39;
+    --background-error-weak: #FCEEEF;
+    --background-warning-strong: #BF4F03;
+    --background-warning-weak: #FAEFE7;
+    --background-inverse: #1B1F24;
+    --background-premium: #FCA23F;
+
+
+    //text
+    --text-default: #1B1F24;
+    --text-medium: #2D343B;
+    --text-placeholder: #6A727C;
+    --text-inverse: #F6F8FA;
+    --text-tooltip: #FAFCFF;
+    --text-brand: #4368E3;
+    --text-selected: #4368E3;
+    --text-success: #1E823B;
+    --text-warning: #BF4F03;
+    --text-danger: #D72D39;
+    --text-on-solid: #FFFFFF;
+    --text-disabled: #ACB2B9;
+    --text-disabled-on-solid: #FFFFFF99;
+
+
+    //icon
+    --icon-strong: #6A727C;
+    --icon-default: #ACB2B9;
+    --icon-weak: #CCD1D5;
+    --icon-inverse: #FFFFFF;
+    --icon-on-solid: #FFFFFF;
+    --icon-accent: #4368E3;
+    --icon-brand: #4368E3;
+    --icon-success: #1E823B;
+    --icon-warning: #BF4F03;
+    --icon-danger: #D72D39;
+    --icon-disabled: #E4E7EB;
+
+
+    //border
+    --border-strong: #ACB2B9;
+    --border-default: #CCD1D5;
+    --border-weak: #E4E7EB;
+    --border-accent-strong: #4368E3;
+    --border-accent-weak: #97AEFC;
+    --border-success-strong: #1E823B;
+    --border-success-weak: #7FBF92;
+    --border-warning-strong: #BF4F03;
+    --border-warning-weak: #E7A274;
+    --border-danger-strong: #D72D39;
+    --border-danger-weak: #F4979E;
+    --border-disabled: #F6F8FA;
+
+
+    //interactive overlays 
+    --interactive-weak: rgba(255, 255, 255, 0);
+    --interactive-default: rgba(136, 144, 153, 0.08);
+    --interactive-hover: rgba(136, 144, 153, 0.12);
+    --interactive-selected: rgba(136, 144, 153, 0.18);
+    --interactive-disabled: rgba(255, 255, 255, 0);
+    --interactive-focus-outline: #4368E3;
+    --interactive-focus-active: #4368E3;
+    --interactive-focus-inner-shadow: #FFFFFF;
+
+
+    //button
+    --button-primary: #4368E3;
+    --button-primary-hover: #2D50C5;
+    --button-primary-pressed: #1E3C9E;
+    --button-primary-disabled: #C2CFFD;
+    --button-secondary: #FFFFFF;
+    --button-secondary-hover: #ECF0FE;
+    --button-secondary-pressed: #DEE5FE;
+    --button-secondary-disabled: #FFFFFF;
+    --button-outline: #FFFFFF;
+    --button-outline-hover: rgba(136, 144, 153, 0.12);
+    --button-outline-pressed: rgba(136, 144, 153, 0.18);
+    --button-outline-disabled: #FFFFFF;
+    --button-danger-primary: #D72D39;
+    --button-danger-primary-hover: #B5121D;
+    --button-danger-primary-pressed: #8E0811;
+    --button-danger-primary-disabled: #F9C2C6;
+    --button-danger-secondary: #FFFFFF;
+    --button-danger-secondary-hover: #FCEEEF;
+    --button-danger-secondary-pressed: #FBDFE1;
+    --button-danger-secondary-disabled: #FFFFFF;
+
+
+    //controls
+    --switch-tab: #ffffff;
+    --switch-tag: #CCD1D54D;
+    --switch-background-off: #FFFFFF;
+    --switch-background-on: #4368E3;
+    --slider-handle: #FFFFFF;
+    --slider-track: #E4E7EB;
+    --slider-fill: #4368E3;
+
+    //upgrade
+    --upgrade-default: #FFAF41;
+    --upgrade-weak: #FFAF4140;
+
+    // Radius
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-full: 9999px;
+
+    // Overlay
+    --overlay-backdrop: rgba(0, 0, 0, 0.5);
+
+    // shadcn semantic bridges — point to ToolJet tokens so Radix internals get correct colours
+    --background: var(--background-surface-layer-01);
+    --foreground: var(--text-default);
+    --primary: var(--button-primary);
+    --primary-foreground: var(--text-on-solid);
+    --secondary: var(--background-surface-layer-02);
+    --secondary-foreground: var(--text-default);
+    --muted: var(--background-surface-layer-02);
+    --muted-foreground: var(--text-placeholder);
+    --accent: var(--background-accent-weak);
+    --accent-foreground: var(--text-brand);
+    --destructive: var(--background-error-strong);
+    --destructive-foreground: var(--text-on-solid);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--interactive-focus-outline);
+    --radius: var(--radius-md);
+    --popover: var(--background-surface-layer-01);
+    --popover-foreground: var(--text-default);
+    --card: var(--background-surface-layer-01);
+    --card-foreground: var(--text-default);
+    --sidebar: var(--background-surface-layer-02);
+    --sidebar-foreground: var(--text-default);
+    --sidebar-primary: var(--button-primary);
+    --sidebar-primary-foreground: var(--text-on-solid);
+    --sidebar-accent: var(--background-accent-weak);
+    --sidebar-accent-foreground: var(--text-brand);
+    --sidebar-border: var(--border-default);
+    --sidebar-ring: var(--interactive-focus-outline);
+
+    // Shadows
+    --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
+    --elevation-100-box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05), 0px 1px 1px 0px rgba(48, 50, 51, 0.10);    
+    --elevation-200-box-shadow: 0px 2px 4px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-300-box-shadow: 0px 4px 8px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-400-box-shadow: 0px 8px 16px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-500-box-shadow: 0px 16px 24px 0px rgba(48, 50, 51, 0.09), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-600-box-shadow: 0px 24px 40px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-700-box-shadow: 0px 32px 50px 0px rgba(48, 50, 51, 0.08), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+    --elevation-100-box-shadow: 0px 1px 1px 0px rgba(48, 50, 51, 0.10), 0px 0px 1px 0px rgba(48, 50, 51, 0.05);
+
+    // Illustration tokens (empty-state SVGs)
+    --illu-surface: #EAF1FA;
+    --illu-card: #FFFFFF;
+    --illu-dot: #D8E6FF;
+    --illu-accent: #CFE1FF;
+    --illu-accent-strong: #BCD2F5;
+    --illu-placeholder: #E6EFFF;
+    --illu-border: #D4DEFF;
+    --illu-node: #CECBDE;
+    --illu-cursor: #282828;
+    --illu-ring-1: #F9FBFF;
+    --illu-ring-2: #F2F7FF;
+    --illu-ring-3: #E4EEFF;
+
+}
+
+.dark-theme {
+    //page
+    --page-default: #181B1F;
+    --page-weak: #1E2226;
+
+
+    //background
+    --background-surface-layer-01: #1E2226;
+    --background-surface-layer-02: #2B3036;
+    --background-surface-layer-03: #3C434B;
+    --background-accent-strong: #4A6DD9;
+    --background-accent-weak: #0D183C;
+    --background-success-strong: #318344;
+    --background-success-weak: #05200B;
+    --background-warning-strong: #BA5722;
+    --background-warning-weak: #301100;
+    --background-error-strong: #D03F43;
+    --background-error-weak: #390809;
+    --background-inverse: #FAFCFF;
+
+
+    //text
+    --text-default: #FAFCFF;
+    --text-medium: #CFD3D8;
+    --text-placeholder: #858C94;
+    --text-inverse: #181B1F;
+    --text-tooltip: #1B1F24;
+    --text-accent: #4A6DD9;
+    --text-success: #318344;
+    --text-warning: #BA5722;
+    --text-danger: #D03F43;
+    --text-on-solid: #FFFFFF;
+    --text-disabled: #545B64;
+    --text-disabled-on-solid: #FAFCFF66;
+
+
+    //icon
+    --icon-strong: #CFD3D8E5;
+    --icon-default: #CFD3D8A6;
+    --icon-weak: #CFD3D859;
+    --icon-inverse: #181B1F;
+    --icon-on-solid: #FAFCFF;
+    --icon-accent: #4A6DD9;
+    --icon-brand: #4A6DD9;
+    --icon-success: #1E823B;
+    --icon-warning: #BA5722;
+    --icon-danger: #D03F43;
+    --icon-disabled: #CFD3D833;
+
+
+    //border
+    --border-strong: #545B64;
+    --border-default: #3C434B;
+    --border-weak: #2B3036;
+    --border-accent-strong: #4A6DD9;
+    --border-accent-weak: #4A6DD966;
+    --border-success-strong: #519B62;
+    --border-success-weak: #31834466;
+    --border-warning-strong: #BA5722;
+    --border-warning-weak: #BA572266;
+    --border-danger-strong: #E26367;
+    --border-danger-weak: #D03F4366;
+    --border-disabled: #2B3036B2;
+
+
+    //interactive overlays 
+    --interactive-weak: rgba(0, 0, 0, 0);
+    --interactive-default: rgba(133, 140, 148, 0.08);
+    --interactive-hover: rgba(133, 140, 148, 0.12);
+    --interactive-selected: rgba(133, 140, 148, 0.18);
+    --interactive-disabled: rgba(0, 0, 0, 0);
+    --interactive-focus-outline: #4A6DD9;
+    --interactive-focus-inner-shadow: #121518;
+
+
+    //button
+    //button
+    --button-primary: #4A6DD9;
+    --button-primary-hover: #6787E8;
+    --button-primary-pressed: #8AA3F2;
+    --button-primary-disabled: #162A69;
+    --button-secondary: #1E2226;
+    --button-secondary-hover: #162A69;
+    --button-secondary-pressed: #213C90;
+    --button-secondary-disabled: #121518;
+    --button-outline: rgba(30, 34, 38, 1);
+    --button-outline-hover: rgba(133, 140, 148, 0.12);
+    --button-outline-pressed: rgba(133, 140, 148, 0.18);
+    --button-outline-disabled: #121518;
+    --button-danger-primary: #D03F43;
+    --button-danger-primary-hover: #E26367;
+    --button-danger-primary-pressed: #EC8B8E;
+    --button-danger-primary-disabled: #620D0F;
+    --button-danger-secondary: #121518;
+    --button-danger-secondary-hover: #620D0F;
+    --button-danger-secondary-pressed: #841417;
+    --button-danger-secondary-disabled: #121518;
+
+
+    //controls
+    --switch-tab: #2B3036;
+    --switch-tag: #121518;
+    --switch-background-off: #121518;
+    --switch-background-on: #4A6DD9;
+    --slider-handle: #121518;
+    --slider-track: #2B3036;
+    --slider-fill: #4A6DD9;
+
+
+    //upgrade
+    --upgrade-default: #FFAF41;
+    --upgrade-weak: #FFAF4140;
+
+    // shadcn semantic bridges — dark overrides
+    --background: var(--background-surface-layer-01);
+    --foreground: var(--text-default);
+    --primary: var(--button-primary);
+    --primary-foreground: var(--text-on-solid);
+    --secondary: var(--background-surface-layer-02);
+    --secondary-foreground: var(--text-default);
+    --muted: var(--background-surface-layer-02);
+    --muted-foreground: var(--text-placeholder);
+    --accent: var(--background-accent-weak);
+    --accent-foreground: var(--icon-brand);
+    --destructive: var(--background-error-strong);
+    --destructive-foreground: var(--text-on-solid);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: var(--interactive-focus-outline);
+    --popover: var(--background-surface-layer-01);
+    --popover-foreground: var(--text-default);
+    --card: var(--background-surface-layer-01);
+    --card-foreground: var(--text-default);
+    --sidebar: var(--background-surface-layer-02);
+    --sidebar-foreground: var(--text-default);
+    --sidebar-primary: var(--button-primary);
+    --sidebar-primary-foreground: var(--text-on-solid);
+    --sidebar-accent: var(--background-accent-weak);
+    --sidebar-accent-foreground: var(--icon-brand);
+    --sidebar-border: var(--border-default);
+    --sidebar-ring: var(--interactive-focus-outline);
+
+    //box-shadow
+    --elevation-000-box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.40);
+    --elevation-100-box-shadow: 0px 1px 1px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-200-box-shadow: 0px 2px 4px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-300-box-shadow: 0px 4px 8px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-400-box-shadow: 0px 8px 16px 0px #000, 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-500-box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.99), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-600-box-shadow: 0px 24px 40px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+    --elevation-700-box-shadow: 0px 32px 50px 0px rgba(0, 0, 0, 0.98), 0px 0px 1px 0px rgba(0, 0, 0, 0.90);
+
+    // Illustration tokens (empty-state SVGs)
+    --illu-surface: #1F2937;
+    --illu-card: #111827;
+    --illu-dot: #374151;
+    --illu-accent: #4B5563;
+    --illu-accent-strong: #4B5563;
+    --illu-placeholder: #374151;
+    --illu-border: #4B5563;
+    --illu-node: #6B7280;
+    --illu-cursor: #FFFFFF;
+    --illu-ring-1: #262A2E;
+    --illu-ring-2: #24272A;
+    --illu-ring-3: #2D3034;
+
+}
+
+// Rocket resets — override legacy theme.scss `input[type="text"] { outline-color: !important }`
+// Specificity: input.tw-appearance-none[type="text"] (0-1-2) > input[type="text"] (0-1-1)
+input.tw-appearance-none[type="text"] {
+  outline: none !important;
+}

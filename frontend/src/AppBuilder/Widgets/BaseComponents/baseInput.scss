@@ -1,0 +1,21 @@
+.tj-text-input-widget-container {
+  &:hover:not(:focus-within) {
+    border: 1px solid var(--tblr-input-border-color-darker) !important;
+  }
+
+  .tj-text-input-widget {
+    border: none !important;
+
+    &:hover:not(:focus):not([data-ignore-hover="true"]) {
+      border: none !important;
+    }
+
+    &.is-invalid {
+      border: none !important;
+    }
+
+    &:focus {
+      border: none !important;
+    }
+  }
+}

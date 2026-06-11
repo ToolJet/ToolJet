@@ -1,0 +1,68 @@
+export const dashboardText = {
+  emptyPageHeader: "Welcome to your new ToolJet workspace",
+  emptyPageDescription:
+    "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+  createAppButton: "Create new application",
+  importAppButton: "Import an app",
+  chooseFromTemplate: "Choose from template",
+  darkMode: "#808080",
+  lightMode: "#fff",
+  dropdownText: "My workspace",
+  editButton: "Edit",
+  manageUsers: "Manage Users",
+  manageGroups: "Manage Groups",
+  manageSSO: "Manage SSO",
+  profileLink: "Profile",
+  logoutLink: "Logout",
+  changeIconTitle: "Change Icon",
+  changeButton: "Change",
+  iconUpdatedToast: "Icon updated.",
+  iconText: {
+    appsIcon: "apps",
+    archiveIcon: "archive",
+    floppyIcon: "floppy",
+    layerIcon: "layer",
+    folderUpload: "folder-upload",
+    gridIcon: "grid",
+    homeIcon: "home",
+    sentFastIcon: "sent-fast",
+    serverIcon: "server",
+    globeIcon: "globe",
+    shareIcon: "share",
+    shieldIcon: "shield",
+    sunIcon: "sun",
+    tableIcon: "table",
+    menuHomeIcon: "menu-home",
+    dragHandleIcon: "drag-handle",
+  },
+  seeAllAppsTemplateButton: "See all templates",
+  updateFolderTitle: "Update folder",
+  appClonedToast: "App cloned successfully!",
+  darkModeText: "Dark Mode",
+  lightModeText: "Light Mode",
+  dashboardAppsHeaderLabel: "All apps",
+
+  moveAppText: (appName) => {
+    return `Update ${appName}'s folderto`;
+  },
+  addToFolderButton: "Add to folder",
+  folderName: (folderName) => {
+    return folderName;
+  },
+  homePageDividerText: "OR START WITH",
+  homePagePromptHeader: "What do you want to build today?",
+  appCardTitle: "Create a blank app",
+  appCardDescription:
+    "Build custom apps that make internal processes efficient",
+  datasourceCardTitle: "Connect to a data source",
+  datasourceCardDescription:
+    "Link your tools to existing databases, spreadsheets, APIs, and more",
+  workflowCardTitle: "Create a workflow",
+  workflowCardDescription:
+    "Automate repetitive tasks to streamline business process",
+  exploreTemplateCardTitle: "Explore templates",
+  exploreTemplateCardDescription:
+    "Get started quickly with ready-to-deploy applications",
+  bulkMoveSuccessToast: (folderName) =>
+    `Apps moved to "${folderName}" folder successfully!`,
+};

@@ -1,0 +1,240 @@
+import React, { useRef } from 'react';
+import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components/ToolTip';
+import { toast } from 'react-hot-toast';
+import { shallow } from 'zustand/shallow';
+import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
+import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import useStore from '@/AppBuilder/_stores/store';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
+import { Modal } from 'react-bootstrap';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { QueryRenameInput } from './QueryRenameInput';
+import { EllipsisVerticalIcon } from 'lucide-react';
+
+const DeleteQueryModal = ({ show, queryName, onCancel, onDelete, darkMode }) => (
+  <Modal
+    show={show}
+    onHide={onCancel}
+    animation={false}
+    centered
+    contentClassName={`query-folder-delete-modal ${darkMode ? 'dark-theme' : ''}`}
+    dialogClassName="query-folder-delete-modal-dialog"
+    backdropClassName="query-delete-modal-backdrop"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <Modal.Header>
+      <Modal.Title>Delete {decodeEntities(queryName)}?</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>Are you sure you want to delete this query? This action is irreversible.</Modal.Body>
+    <Modal.Footer>
+      <ButtonSolid size="sm" variant="tertiary" onClick={onCancel} data-cy="cancel-delete-query">
+        Cancel
+      </ButtonSolid>
+      <ButtonSolid size="sm" variant="dangerPrimary" onClick={onDelete} data-cy="confirm-delete-query">
+        <SolidIcon name="trash" width="14" fill="#fff" />
+        Delete
+      </ButtonSolid>
+    </Modal.Footer>
+  </Modal>
+);
+
+export const QueryCard = ({ dataQuery, darkMode = false, localDs }) => {
+  const { isModuleEditor } = useModuleContext();
+  const queryNameEleRef = useRef(null);
+
+  const isQuerySelected = useStore((state) => state.queryPanel.isQuerySelected(dataQuery.id), shallow);
+  const setSelectedQuery = useStore((state) => state.queryPanel.setSelectedQuery);
+  const checkExistingQueryName = useStore((state) => state.dataQuery.checkExistingQueryName);
+  const selectedDataSourceScope = useStore((state) => state.queryPanel.selectedDataSource?.scope);
+  const hasQueryFolders = useStore((state) => Boolean(state.queryFolders));
+  const renameQuery = useStore((state) => state.dataQuery.renameQuery);
+  const deleteDataQueries = useStore((state) => state.dataQuery.deleteDataQueries);
+  const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+
+  const renamingQueryId = useStore((state) => state.queryPanel.renamingQueryId);
+  const deletingQueryId = useStore((state) => state.queryPanel.deletingQueryId);
+  const setRenamingQuery = useStore((state) => state.queryPanel.setRenamingQuery);
+  const deleteDataQuery = useStore((state) => state.queryPanel.deleteDataQuery);
+  const isRenaming = renamingQueryId === dataQuery.id;
+  const isDeleting = deletingQueryId === dataQuery.id;
+
+  const hasPermissions =
+    selectedDataSourceScope === 'global'
+      ? canUpdateDataSource(dataQuery?.data_source_id) ||
+        canReadDataSource(dataQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
+
+  const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
+
+  const toggleQueryHandlerMenu = useStore((state) => state.queryPanel.toggleQueryHandlerMenu);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const isRestricted = dataQuery.permissions && dataQuery.permissions.length !== 0;
+
+  const updateQueryName = (dataQuery, newName) => {
+    const { name } = dataQuery;
+    if (name === newName) {
+      return setRenamingQuery(null);
+    }
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+    if (newName && !isNewQueryNameAlreadyExists) {
+      renameQuery(dataQuery?.id, newName);
+      setRenamingQuery(null);
+      updateQuerySuggestions(name, newName);
+    } else {
+      if (isNewQueryNameAlreadyExists) {
+        toast.error('Query name already exists');
+      }
+      setRenamingQuery(null);
+    }
+  };
+
+  const executeDataQueryDeletion = () => {
+    deleteDataQuery(null);
+    deleteDataQueries(dataQuery?.id);
+    setPreviewData(null);
+  };
+
+  const getTooltip = () => {
+    const permission = dataQuery.permissions?.[0];
+    if (!permission) return 'Access restricted';
+
+    const users = permission.groups || permission.users || [];
+    if (users.length === 0) return 'Access restricted';
+
+    const isSingle = permission.type === 'SINGLE';
+    const isGroup = permission.type === 'GROUP';
+
+    if (isSingle) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].user.email}`
+        : `Access restricted to ${users.length} users`;
+    }
+
+    if (isGroup) {
+      return users.length === 1
+        ? `Access restricted to ${users[0].permission_group?.name || users[0].permissionGroup?.name} group`
+        : `Access restricted to ${users.length} user groups`;
+    }
+
+    return 'Access restricted';
+  };
+
+  return (
+    <>
+      <div
+        className={
+          `query-row pe-2 ${hasQueryFolders ? 'mb-0' : 'mb-1'} ${darkMode && 'dark-theme'}` +
+          (isQuerySelected ? ' query-row-selected' : '')
+        }
+        key={dataQuery.id}
+        onClick={(e) => {
+          if (isQuerySelected) return;
+          if (!shouldFreeze) {
+            const menuBtn = document.getElementById(`query-handler-menu-${dataQuery?.id}`);
+            if (menuBtn && menuBtn.contains(e.target)) {
+              e.stopPropagation();
+            } else {
+              toggleQueryHandlerMenu(false);
+            }
+          }
+          setTimeout(() => {
+            setSelectedQuery(dataQuery?.id);
+            setPreviewData(null);
+          }, 0);
+        }}
+        role="button"
+      >
+        <div className="query-card-leading">
+          <div className="query-icon d-flex">
+            <DataSourceIcon source={dataQuery} height={16} />
+          </div>
+          <div className="query-row-query-name">
+            {isRenaming ? (
+              <QueryRenameInput dataQuery={dataQuery} darkMode={darkMode} onUpdate={updateQueryName} />
+            ) : (
+              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+                <ToolTip
+                  message={decodeEntities(dataQuery.name)}
+                  show={queryNameEleRef.current?.offsetWidth > 150}
+                  tooltipClassName="[&_.tooltip-inner]:tw-max-w-3xl"
+                >
+                  <span
+                    ref={queryNameEleRef}
+                    className="text-truncate"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      if (!shouldFreeze) setRenamingQuery(dataQuery.id);
+                    }}
+                  >
+                    {decodeEntities(dataQuery.name)}
+                  </span>
+                </ToolTip>
+                <ToolTip message={getTooltip()} show={licenseValid && isRestricted}>
+                  <div className="d-flex align-items-center query-card-lock-wrapper">
+                    {licenseValid && isRestricted && <SolidIcon width="16" name="lock" fill="var(--icon-strong)" />}
+                  </div>
+                </ToolTip>{' '}
+                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
+                {localDs && (
+                  <>
+                    <a
+                      className="text-truncate"
+                      data-tooltip-id="query-card-local-ds-info"
+                      href="https://docs.tooljet.com/docs/data-sources/overview/#changing-scope-of-data-sources-on-an-app-created-on-older-versions-of-tooljet"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <img src={`assets/images/icons/warning.svg`} className="query-card-local-ds-icon" alt="Warning" />
+                    </a>{' '}
+                    <Tooltip id="query-card-local-ds-info" className="tooltip" place="right" style={{ width: '200px' }}>
+                      Important <br />
+                      Local Data sources will be deprecated soon. Switch to Global Data sources for continued support
+                    </Tooltip>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        {!shouldFreeze && hasPermissions && (
+          <div
+            className={`col-auto query-rename-delete-btn ${isQuerySelected ? 'd-flex' : 'd-none'}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ButtonComponent
+              iconOnly
+              onClick={(e) => {
+                if (!isQuerySelected) {
+                  setSelectedQuery(dataQuery?.id);
+                  setPreviewData(null);
+                }
+                toggleQueryHandlerMenu(true, `query-handler-menu-${dataQuery?.id}`);
+              }}
+              size="small"
+              variant="outline"
+              className=""
+              id={`query-handler-menu-${dataQuery?.id}`}
+              data-cy={`query-handler-menu-${dataQuery.name.toLowerCase()}`}
+            >
+              <EllipsisVerticalIcon color="var(--icon-strong)" size={12} />
+            </ButtonComponent>
+          </div>
+        )}
+      </div>
+      <DeleteQueryModal
+        show={isDeleting}
+        queryName={dataQuery.name}
+        darkMode={darkMode}
+        onCancel={() => deleteDataQuery(null)}
+        onDelete={executeDataQueryDeletion}
+      />
+    </>
+  );
+};

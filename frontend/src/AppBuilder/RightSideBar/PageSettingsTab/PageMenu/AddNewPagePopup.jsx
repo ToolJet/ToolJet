@@ -1,0 +1,720 @@
+import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import cx from 'classnames';
+import { Popover } from 'react-bootstrap';
+import useStore from '@/AppBuilder/_stores/store';
+import { Icon } from '@/AppBuilder/CodeBuilder/Elements/Icon';
+import { EventManager } from '../../Inspector/EventManager';
+import { kebabCase } from 'lodash';
+import Select from '@/_ui/Select';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
+import { appService } from '@/_services';
+import { ToolTip } from '@/_components';
+import { ToolTip as LicenseTooltip } from '@/_components/ToolTip';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import { resolveReferences, validateKebabCase } from '@/_helpers/utils';
+import { ToolTip as InspectorTooltip } from '../../Inspector/Elements/Components/ToolTip';
+import { shallow } from 'zustand/shallow';
+import { Button } from '@/components/ui/Button/Button';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+
+const POPOVER_TITLES = {
+  add: {
+    default: 'New page',
+    app: 'New nav item with app',
+    url: 'New nav item with URL',
+    custom: 'New custom nav item',
+    group: 'New nav group',
+  },
+  edit: {
+    default: 'Edit page',
+    app: 'Edit nav item',
+    url: 'Edit nav item',
+    custom: 'Edit nav item',
+    group: 'Edit nav group',
+  },
+};
+
+const OPEN_APP_MODES = [
+  { label: 'New tab', value: 'new_tab' },
+  { label: 'Same tab', value: 'same_tab' },
+];
+
+export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChange, ...props }, ref) => {
+  const { moduleId } = useModuleContext();
+  const { show, mode, type } = useStore((state) => state.newPagePopupConfig);
+  const editingPage = useStore((state) => state.editingPage);
+  const pages = useStore((state) => state?.modules?.canvas?.pages ?? []);
+  const addNewPage = useStore((state) => state.addNewPage);
+  const updatePageName = useStore((state) => state.updatePageName);
+  const updatePageHandle = useStore((state) => state.updatePageHandle);
+  const updatePageTarget = useStore((state) => state.updatePageTarget);
+  const updatePageURL = useStore((state) => state.updatePageURL);
+  const updatePageIcon = useStore((state) => state.updatePageIcon);
+  const markAsHomePage = useStore((state) => state.markAsHomePage);
+  const clonePage = useStore((state) => state.clonePage);
+  const cloneGroup = useStore((state) => state.cloneGroup);
+  const toggleDeleteConfirmationModal = useStore((state) => state.toggleDeleteConfirmationModal);
+  const switchPage = useStore((state) => state.switchPage);
+
+  const isPageGroup = useStore((state) => state.isPageGroup);
+  const homePageId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+  const updatePageVisibility = useStore((state) => state.updatePageVisibility);
+  const disableOrEnablePage = useStore((state) => state.disableOrEnablePage);
+  const togglePageHeader = useStore((state) => state.togglePageHeader);
+  const togglePageFooter = useStore((state) => state.togglePageFooter);
+  const updatePageAppId = useStore((state) => state.updatePageAppId);
+  const currentPageId = useStore((state) => state.modules[moduleId].currentPageId);
+  const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
+  const openPageEditPopover = useStore((state) => state.openPageEditPopover);
+  const appId = useStore((state) => state.appStore.modules[moduleId].app.homePageId);
+
+  const [page, setPage] = useState(editingPage || props?.page);
+
+  const showPageHeaderOnDesktop = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnDesktop,
+    shallow
+  );
+
+  const showPageHeaderOnMobile = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageHeader?.showOnMobile,
+    shallow
+  );
+
+  const showPageFooterOnDesktop = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageFooter?.showOnDesktop,
+    shallow
+  );
+
+  const showPageFooterOnMobile = useStore(
+    (state) => state.modules[moduleId].pages.find((p) => p.id === page?.id)?.pageFooter?.showOnMobile,
+    shallow
+  );
+  const hasCanvasPageHeaderEnabled = useStore((state) => state.license?.featureAccess?.canvasPageHeaderEnabled);
+
+  const hasCanvasPageFooterEnabled = useStore((state) => state.license?.featureAccess?.canvasPageFooterEnabled);
+  const [pageName, setPageName] = useState('');
+  const [handle, setHandle] = useState('');
+  const [pageURL, setPageURL] = useState('');
+  const [hasAutoSaved, setHasAutoSaved] = useState(false);
+  const [error, setError] = useState(null);
+
+  const isHomePage = page?.id === homePageId;
+
+  //Nav item with app
+  const [appOptions, setAppOptions] = useState([]);
+  const [appOptionsLoading, setAppOptionsLoading] = useState(true);
+
+  useEffect(() => {
+    setError(null);
+  }, [show]);
+
+  useEffect(() => {
+    if (mode === 'add' && type === 'default' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `Page ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `Page ${index}`;
+      }
+      const pageObj = { type: 'default' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+        setHandle(data?.handle);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+      setHandle(editingPage.handle);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
+
+  //Nav item with URL hooks
+  useEffect(() => {
+    if (mode === 'add' && type === 'url' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `URL ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `URL ${index}`;
+      }
+      const pageObj = { type: 'url', openIn: 'new_tab', url: 'https://www.tooljet.com' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+        setPageURL(data?.url);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+      setPageURL(editingPage.url);
+    }
+  }, [addNewPage, appOptions, editingPage, hasAutoSaved, isPageGroup, mode, pages, type]);
+
+  //Nav item with app hooks
+  useEffect(() => {
+    const fetchApps = async (page) => {
+      const { apps } = await appService.getAll(page);
+      return apps;
+    };
+
+    // eslint-disable-next-line no-inner-declarations
+    async function getAllApps() {
+      const apps = await fetchApps(0);
+      let appsOptionsList = [];
+      apps
+        .filter((item) => item.slug !== undefined && item.id !== appId && item.current_version_id)
+        .forEach((item) => {
+          appsOptionsList.push({
+            name: item.name,
+            value: item.slug,
+          });
+        });
+      return appsOptionsList;
+    }
+
+    getAllApps()
+      .then((apps) => {
+        setAppOptions(apps);
+      })
+      .finally(() => {
+        setAppOptionsLoading(false);
+      });
+    if (mode === 'add' && type === 'app' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `App ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `App ${index}`;
+      }
+      const pageObj = { type: 'app', openIn: 'new_tab' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
+  //Custom nav item
+  useEffect(() => {
+    if (mode === 'add' && type === 'custom' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `Custom ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `Custom ${index}`;
+      }
+      const pageObj = { type: 'custom' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), isPageGroup, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type]);
+
+  //Nav item with group
+  useEffect(() => {
+    if (mode === 'add' && type === 'group' && !hasAutoSaved) {
+      const existingNames = pages.map((p) => p.name.toLowerCase());
+      let index = 1;
+      let newName = `Group ${index}`;
+      while (existingNames.includes(newName.toLowerCase())) {
+        index++;
+        newName = `Group ${index}`;
+      }
+      const pageObj = { type: 'group', openIn: 'new_tab' };
+      addNewPage(newName, kebabCase(newName.toLowerCase()), true, pageObj).then((data) => {
+        setPage(data);
+        setPageName(newName);
+      });
+
+      setHasAutoSaved(true);
+    } else if (editingPage) {
+      setPage(editingPage);
+      setPageName(editingPage.name);
+    }
+  }, [mode, hasAutoSaved, pages, editingPage, addNewPage, isPageGroup, type, appId]);
+
+  const handlePageSwitch = useCallback(() => {
+    if (currentPageId === page.id) {
+      return;
+    }
+    switchPage(page.id, page.handle);
+    setCurrentPageHandle(page.handle);
+  }, [currentPageId, page?.id, page?.handle, switchPage, setCurrentPageHandle]);
+
+  const onChangePageHandleValue = (event) => {
+    setError(null);
+    const newHandle = event.target.value;
+
+    if (newHandle === '') setError('Page handle cannot be empty');
+    if (newHandle === handle) setError('Page handle cannot be same as the existing page handle');
+    const isValidKebabCase = validateKebabCase(newHandle);
+    if (!isValidKebabCase.isValid) {
+      setError(isValidKebabCase.error);
+    }
+    setHandle(newHandle);
+  };
+
+  const handleSave = () => {
+    if (handle === page.handle) {
+      setError(null);
+      return;
+    }
+    const { isValid, error } = validateKebabCase(handle);
+    if (!isValid) {
+      setError(error);
+      return;
+    }
+    const transformedPageHandle = kebabCase(handle);
+    updatePageHandle(page.id, transformedPageHandle);
+    setError(null);
+  };
+
+  return (
+    <Popover
+      id="add-new-page-popup"
+      ref={ref}
+      {...props}
+      className={`add-new-page-popup ${darkMode && 'dark-theme theme-dark'}`}
+    >
+      <Popover.Header>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="tj-text-xsm font-weight-500 text-default">{POPOVER_TITLES?.[mode]?.[type]}</div>
+          <div className="actions-container">
+            {!['group', 'custom'].includes(type) && (
+              <>
+                <ToolTip message={'Go to page'} placement="bottom">
+                  <Button
+                    key="go-to-page-btn"
+                    fill="var(--icon-strong)"
+                    leadingIcon="arrowright01"
+                    iconOnly
+                    variant="ghost"
+                    size="medium"
+                    onClick={handlePageSwitch}
+                  />
+                </ToolTip>
+              </>
+            )}
+
+            <ToolTip message={`Duplicate ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+              <Button
+                key="duplicate-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="duplicatepage"
+                iconOnly
+                variant="ghost"
+                size="medium"
+                onClick={() => (type === 'group' ? cloneGroup(page?.id) : clonePage(page?.id))}
+              />
+            </ToolTip>
+
+            <ToolTip message={`Delete ${type === 'group' ? 'group' : 'page'}`} placement="bottom">
+              <Button
+                key="delete-page-btn"
+                fill="var(--icon-strong)"
+                leadingIcon="delete01"
+                iconOnly
+                variant="ghost"
+                size="medium"
+                onClick={() => {
+                  openPageEditPopover(page);
+                  toggleDeleteConfirmationModal(true);
+                }}
+              />
+            </ToolTip>
+          </div>
+        </div>
+      </Popover.Header>
+      <Popover.Body className={`${darkMode && 'dark-theme'}`}>
+        <div className="pb-2">
+          <div className="col">
+            <label className="form-label">{type === 'default' ? 'Page name' : 'Label'}</label>
+            <input
+              type="text"
+              className="form-control"
+              value={pageName}
+              autoFocus={true}
+              onChange={(e) => setPageName(e.target.value)}
+              onBlur={() => {
+                pageName && pageName !== page?.name && updatePageName(page?.id, pageName);
+              }}
+              minLength="1"
+              maxLength="32"
+            />
+          </div>
+        </div>
+        {type === 'default' && (
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">Handle</label>
+              <input
+                type="text"
+                className={`form-control ${error ? 'is-invalid' : ''}`}
+                onChange={(e) => onChangePageHandleValue(e)}
+                onBlur={() => handleSave()}
+                value={handle}
+                minLength="1"
+                maxLength="32"
+              />
+              <div className="invalid-feedback" data-cy={'page-handle-invalid-feedback'}>
+                {error}
+              </div>
+            </div>
+          </div>
+        )}
+        {type === 'url' && (
+          <div className="pb-2">
+            <div className="col">
+              <label className="form-label">URL</label>
+              <textarea
+                onChange={(e) => setPageURL(e.target.value)}
+                className="form-control"
+                value={pageURL}
+                onBlur={(e) => page?.url !== e.target.value && updatePageURL(page?.id, pageURL)}
+                minLength="1"
+              />
+            </div>
+          </div>
+        )}
+        {type === 'app' && (
+          <div className="pb-2">
+            <div className="col d-flex justify-content-between align-items-center">
+              <label className="form-label">Select app</label>
+              <Select
+                options={appOptions}
+                search={true}
+                value={page?.appId}
+                onChange={(value) => {
+                  updatePageAppId(page?.id, value);
+                }}
+                isLoading={appOptionsLoading}
+                placeholder={'Select...'}
+                useMenuPortal={false}
+                width={'168px'}
+                borderRadius="6px"
+                styles={{ border: '1px solid var(--border-default) !important' }}
+                className={`app-select ${darkMode ? 'select-search-dark' : 'select-search'}`}
+              />
+            </div>
+          </div>
+        )}
+        {['url', 'app'].includes(type) && (
+          <div className="d-flex justify-content-between align-items-center pb-2">
+            <label className="form-label">Open {type === 'url' ? 'URL' : 'app'} in</label>
+            <div className="ms-auto position-relative app-mode-switch">
+              <ToggleGroup
+                onValueChange={(value) => {
+                  updatePageTarget(page?.id, value);
+                }}
+                defaultValue={page?.openIn}
+              >
+                {OPEN_APP_MODES.map((mode) => (
+                  <ToggleGroupItem key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          </div>
+        )}
+        <div className="pb-3">
+          <div className="d-flex justify-content-between align-items-center">
+            <label className="form-label font-weight-400 mb-0">Icon</label>
+            <Icon
+              isVisibilityEnabled={false}
+              onChange={(value) => updatePageIcon(page?.id, value)}
+              value={page?.icon || 'IconFile'}
+            />
+          </div>
+        </div>
+        <div className={`${['default', 'custom'].includes(type) ? 'pb-3' : ''}`}>
+          {type === 'default' && (
+            <div className=" d-flex justify-content-between align-items-center pb-2">
+              <label className="form-label font-weight-400 mb-0">Mark as home</label>
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={isHomePage}
+                  onChange={() => markAsHomePage(page?.id)}
+                  disabled={isHomePage || resolveReferences(page?.hidden?.value) || page?.disabled}
+                />
+              </label>
+            </div>
+          )}
+          <HidePageOnNavigation
+            hidden={page?.hidden}
+            disabled={['default', 'custom'].includes(type) ? page?.disabled : false}
+            page={page}
+            updatePageVisibility={updatePageVisibility}
+            darkMode={darkMode}
+            isHomePage={isHomePage}
+          />
+          {type === 'default' && (
+            <div className=" d-flex justify-content-between align-items-center pb-2">
+              <label className="form-label font-weight-400 mb-0">Disable page</label>
+              <label className={`form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={page?.disabled}
+                  onChange={() => disableOrEnablePage(page?.id, !page.disabled)}
+                  disabled={isHomePage}
+                />
+              </label>
+            </div>
+          )}
+        </div>
+        <div className="pb-3">
+          <div className="section-header pb-2">Page header</div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on desktop
+              <LicenseTooltip
+                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageHeaderEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageHeaderOnDesktop ?? false}
+                disabled={!hasCanvasPageHeaderEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageHeader(page?.id, checked, 'desktop');
+                }}
+              />
+            </label>
+          </div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on mobile
+              <LicenseTooltip
+                message={"You don't have access to page headers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageHeaderEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageHeaderEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageHeaderOnMobile ?? false}
+                disabled={!hasCanvasPageHeaderEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageHeader(page?.id, checked, 'mobile');
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        <div className="pb-3">
+          <div className="section-header pb-2">Page footer</div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on desktop
+              <LicenseTooltip
+                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageFooterEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageFooterOnDesktop ?? false}
+                disabled={!hasCanvasPageFooterEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageFooter(page?.id, checked, 'desktop');
+                }}
+              />
+            </label>
+          </div>
+          <div className=" d-flex justify-content-between align-items-center pb-2">
+            <label style={{ gap: '6px' }} className="form-label font-weight-400 mb-0 d-flex">
+              Show on mobile
+              <LicenseTooltip
+                message={"You don't have access to page footers. Upgrade your plan to access this feature."}
+                placement="bottom"
+                show={!hasCanvasPageFooterEnabled}
+              >
+                <div className="d-flex align-items-center">
+                  {!hasCanvasPageFooterEnabled && <SolidIcon name="enterprisecrown" />}
+                </div>
+              </LicenseTooltip>
+            </label>
+            <label className={`form-switch`}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={showPageFooterOnMobile ?? false}
+                disabled={!hasCanvasPageFooterEnabled}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  togglePageFooter(page?.id, checked, 'mobile');
+                }}
+              />
+            </label>
+          </div>
+        </div>
+        {['default', 'custom'].includes(type) && (
+          <PageEvents type={type} page={page} allPages={pages} onNestedPopoverOpenChange={onNestedPopoverOpenChange} />
+        )}
+      </Popover.Body>
+    </Popover>
+  );
+});
+
+const PageEvents = ({ type, page, allPages, onNestedPopoverOpenChange }) => {
+  const getComponents = useStore((state) => state.getCurrentPageComponents);
+  const components = getComponents();
+
+  const eventMapping = {
+    default: {
+      title: 'Page events',
+      event: { onPageLoad: { displayName: 'On page load' } },
+    },
+    custom: {
+      title: 'Events',
+      event: { onClick: { displayName: 'On click' } },
+    },
+  };
+
+  return (
+    <div className="page-events">
+      <div className="section-header pb-2">{eventMapping[type].title}</div>
+      <div>
+        <EventManager
+          component={{
+            component: {
+              definition: {
+                events: page?.events ?? [],
+              },
+            },
+          }}
+          sourceId={page?.id}
+          eventSourceType="page"
+          eventMetaDefinition={{ events: eventMapping[type].event, name: 'page' }}
+          components={components}
+          pages={allPages}
+          popOverCallback={(showing) => onNestedPopoverOpenChange?.(showing)}
+        />
+      </div>
+    </div>
+  );
+};
+
+const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, isHomePage, disabled }) => {
+  const resolvePageHiddenValue = useStore((state) => state.resolvePageHiddenValue);
+  const [forceCodeBox, setForceCodeBox] = useState(hidden?.fxActive);
+
+  return (
+    <div className={cx({ 'codeShow-active': forceCodeBox, disabled: disabled }, 'wrapper-div-code-editor pb-2')}>
+      <div className={cx('d-flex align-items-center justify-content-between')}>
+        <div className={`field`}>
+          <InspectorTooltip
+            label={`${page?.type === 'default' ? 'Hide this page on navigation' : 'Hide this item on navigation'}`}
+            labelClass={`tj-text-xsm color-slate12 ${forceCodeBox ? 'mb-2' : 'mb-0'} ${
+              darkMode && 'color-whitish-darkmode'
+            }`}
+          />
+        </div>
+        <div className={`flex-grow-1`}>
+          <div
+            style={{ marginBottom: forceCodeBox ? '0.5rem' : '0px' }}
+            className={`d-flex align-items-center justify-content-end`}
+          >
+            {!isHomePage && (
+              <div className={`col-auto pt-0 mx-1 fx-button-container ${forceCodeBox && 'show-fx-button-container'}`}>
+                <FxButton
+                  disabled={isHomePage}
+                  active={forceCodeBox}
+                  onPress={() => {
+                    if (forceCodeBox) {
+                      setForceCodeBox(false);
+                    } else {
+                      setForceCodeBox(true);
+                    }
+                  }}
+                />
+              </div>
+            )}
+            {!forceCodeBox && (
+              <div className="form-switch m-0">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={resolveReferences(hidden?.value)}
+                  disabled={isHomePage}
+                  onChange={(e) => {
+                    updatePageVisibility(page?.id, {
+                      value: `{{${e.target.checked}}}`,
+                      fxActive: forceCodeBox,
+                    });
+
+                    resolvePageHiddenValue('canvas', true, page?.id, `{{${e.target.checked}}}`);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {forceCodeBox && (
+        <CodeHinter
+          initialValue={hidden?.value}
+          lang="javascript"
+          lineNumbers={false}
+          onChange={(value) => {
+            updatePageVisibility(page?.id, {
+              value: value,
+              fxActive: forceCodeBox,
+            });
+            resolvePageHiddenValue('canvas', true, page?.id, value);
+          }}
+        />
+      )}
+    </div>
+  );
+};

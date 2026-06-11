@@ -1,0 +1,104 @@
+.drawer-container {
+  --transition-speed: 0.3s;
+}
+
+.drawer {
+  background: var(--surfaces-surface-01);
+  width: 540px;
+  height: 100%;
+  position: fixed;
+  border: 1px solid var(--border-weak);
+  box-shadow: var(--elevation-400-box-shadow);
+  transition: transform var(--transition-speed) ease;
+  z-index: 1000;
+  overflow-y: auto;
+
+  &.left {
+    top: 0;
+    left: 0;
+    transform: translateX(-105%);
+  }
+
+  &.right {
+    top: 0;
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  &.top {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    transform: translateY(-100%);
+    height: 40%;
+  }
+
+  &.bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    transform: translateY(100%);
+    height: 40%;
+  }
+}
+
+#tooljet-drawer-root{
+  ::-webkit-scrollbar{
+    display: none !important;
+  }
+}
+
+.drawer-container.in.open {
+
+  .left,
+  .right {
+    transform: translateX(0);
+  }
+
+  .top,
+  .bottom {
+    transform: translateY(0);
+  }
+}
+
+.backdrop {
+  visibility: hidden;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+
+}
+
+.drawer-container.in.open .backdrop {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 999;
+}
+
+.drawer-container.in.open {
+  .foreignKeyDrawerRight {
+    z-index: 1002;
+  }
+
+  .foreignKeyBackdrop {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1001;
+  }
+}
+.tj-db-drawer{
+  .backdrop{
+    transition: opacity 0.3s ease;
+
+  }
+}

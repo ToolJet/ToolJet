@@ -1,0 +1,22 @@
+{
+  "iconList": [
+    "apps",
+    "archive",
+    "floppydisk",
+    "layers",
+    "folderupload",
+    "grid",
+    "home",
+    "sentfast",
+    "server",
+    "globe",
+    "share",
+    "shield",
+    "sun",
+    "table",
+    "menuhome",
+    "draghandle"
+
+  ],
+  "defaultIcon": "apps"
+}

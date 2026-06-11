@@ -1,0 +1,16 @@
+{
+  "name": "Inventory management (PostgreSQL)",
+  "description": "Track inventory levels, orders, and shipments using a PostgreSQL database to monitor and optimize stock.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "PostgreSQL",
+      "id": "postgresql"
+    }
+  ],
+  "id": "inventory-management-postgresql",
+  "category": "operations"
+}

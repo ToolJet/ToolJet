@@ -1,0 +1,20 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tooljet
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tooljet
+  minReplicas: {{ .Values.apps.tooljet.hpa.min }}
+  maxReplicas: {{ .Values.apps.tooljet.hpa.max }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageValue: {{ .Values.apps.tooljet.hpa.threshold.cpu }}
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageValue: {{ .Values.apps.tooljet.hpa.threshold.ram }}

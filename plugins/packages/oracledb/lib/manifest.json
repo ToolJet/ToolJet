@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Oracle DB datasource",
+  "description": "A schema defining Oracle DB datasource",
+  "type": "object",
+  "tj:version": "1.0.0",
+  "tj:source": {
+    "name": "Oracle DB",
+    "kind": "oracledb",
+    "type": "database",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    }
+  },
+  "properties": {
+    "use_tns_alias": {
+      "type": "string",
+      "title": "Connection mode",
+      "description": "Select the connection mode to use",
+      "enum": ["no", "thick", "thin"],
+      "default": "no"
+    },
+    "username": {
+      "type": "string",
+      "title": "Username",
+      "description": "Enter username"
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "description": "Enter password"
+    },
+    "host": {
+      "type": "string",
+      "title": "Host",
+      "description": "Enter host",
+      "default": "localhost"
+    },
+    "port": {
+      "type": "number",
+      "title": "Port",
+      "description": "Enter port",
+      "default": 1521
+    },
+    "database_type": {
+      "type": "string",
+      "title": "SID / Service name",
+      "description": "Type of the database",
+      "enum": ["SID", "SERVICE_NAME"],
+      "default": "SID"
+    },
+    "database": {
+      "type": "string",
+      "title": "Database name",
+      "description": "Name of the database"
+    },
+    "ssl_enabled": {
+      "type": "boolean",
+      "title": "SSL",
+      "description": "Toggle for ssl_enabled",
+      "default": true
+    },
+    "ssl_certificate": {
+      "type": "string",
+      "title": "SSL certificate",
+      "enum": ["none", "ca_certificate", "client_certificate"],
+      "default": "none"
+    },
+    "ca_cert": {
+      "type": "string",
+      "title": "CA Cert"
+    },
+    "client_cert": {
+      "type": "string",
+      "title": "Client Cert"
+    },
+    "client_key": {
+      "type": "string",
+      "title": "Client Key"
+    },
+    "client_path_type": {
+      "type": "string",
+      "title": "Client library location",
+      "description": "Single select dropdown for client library",
+      "enum": ["default", "custom"],
+      "default": "default"
+    },
+    "instant_client_version": {
+      "type": "string",
+      "title": "Instant client version",
+      "description": "Select Instant Client version",
+      "enum": ["21_10", "11_2"],
+      "default": "21_10"
+    },
+    "path": {
+      "type": "string",
+      "title": "Path",
+      "description": "Enter path"
+    },
+    "tns_alias": {
+      "type": "string",
+      "title": "TNS alias",
+      "description": "Enter the TNS Alias (e.g., ORCL)"
+    },
+    "config_dir": {
+      "type": "string",
+      "title": "Configuration directory",
+      "description": "Enter the directory containing Oracle client configuration files (e.g., tnsnames.ora)"
+    },
+    "wallet_file_path": {
+      "type": "string",
+      "title": "Oracle wallet path",
+      "description": "Enter the Oracle Wallet directory path"
+    },
+    "wallet_password": {
+      "type": "string",
+      "title": "Wallet password",
+      "description": "Enter the wallet password (if required)"
+    },
+    "wallet_file": {
+      "type": "string",
+      "title": "Oracle wallet (.zip)",
+      "description": "Upload the Oracle Wallet (.zip format) for Thin mode"
+    }
+  },
+  "tj:encrypted": [
+    "password",
+    "wallet_password",
+    "ca_cert", "client_cert", "client_key"
+  ],
+  "required": ["use_tns_alias", "username", "password"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "use_tns_alias": { "const": "no" } }
+      },
+      "then": {
+        "required": ["host", "port"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "use_tns_alias": { "const": "thick" } }
+      },
+      "then": {
+        "required": ["tns_alias"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "use_tns_alias": { "const": "thin" } }
+      },
+      "then": {
+        "required": ["tns_alias"]
+      }
+    }
+  ],
+  "tj:ui:properties": {
+    "use_tns_alias": {
+      "order": 1,
+      "$ref": "#/properties/use_tns_alias",
+      "key": "use_tns_alias",
+      "label": "Connection mode",
+      "description": "Select the connection mode to use",
+      "widget": "dropdown-component-flip",
+      "list": [
+        { "name": "Basic Connection", "value": "no" },
+        { "name": "Thick Mode (TNS/Wallet File Path)", "value": "thick" },
+        { "name": "Thin Mode (TNS/Wallet Zip Upload)", "value": "thin" }
+      ],
+      "commonFields": {
+        "username": {
+          "order": 2,
+          "$ref": "#/properties/username",
+          "key": "username",
+          "label": "Username",
+          "description": "Enter username",
+          "widget": "text-v3",
+          "required": true
+        },
+        "password": {
+          "order": 3,
+          "$ref": "#/properties/password",
+          "key": "password",
+          "label": "Password",
+          "description": "Enter password",
+          "widget": "password-v3"
+        }
+      }
+    },
+    "no": {
+      "host": {
+        "order": 10,
+        "$ref": "#/properties/host",
+        "key": "host",
+        "label": "Host",
+        "description": "Enter host",
+        "widget": "text-v3",
+        "required": true
+      },
+      "port": {
+        "order": 20,
+        "$ref": "#/properties/port",
+        "key": "port",
+        "label": "Port",
+        "description": "Enter port",
+        "widget": "text-v3",
+        "required": true,
+        "help_text": "Default Oracle port is 1521"
+      },
+      "database_type": {
+        "order": 30,
+        "$ref": "#/properties/database_type",
+        "key": "database_type",
+        "label": "SID / Service name",
+        "description": "Type of the database",
+        "widget": "dropdown",
+        "list": [
+          { "name": "SID", "value": "SID" },
+          { "name": "Service name", "value": "SERVICE_NAME" }
+        ]
+      },
+      "database": {
+        "order": 40,
+        "$ref": "#/properties/database",
+        "key": "database",
+        "label": "Database name",
+        "description": "Name of the database",
+        "widget": "text-v3"
+      },
+      "client_path_type": {
+        "order": 50,
+        "$ref": "#/properties/client_path_type",
+        "key": "client_path_type",
+        "label": "Client library location",
+        "description": "Single select dropdown for client library",
+        "widget": "dropdown-component-flip",
+        "list": [
+          { "value": "default", "name": "Default" },
+          { "value": "custom", "name": "Custom" }
+        ]
+      },
+      "default": {
+        "instant_client_version": {
+          "order": 60,
+          "$ref": "#/properties/instant_client_version",
+          "key": "instant_client_version",
+          "label": "Instant client version",
+          "description": "Select Instant Client version",
+          "widget": "dropdown",
+          "list": [
+            { "name": "21.10", "value": "21_10" },
+            { "name": "11.2", "value": "11_2" }
+          ]
+        }
+      },
+      "custom": {
+        "path": {
+          "order": 70,
+          "$ref": "#/properties/path",
+          "key": "path",
+          "label": "Path",
+          "description": "Enter path",
+          "widget": "text-v3"
+        }
+      },
+      "ssl_enabled": {
+        "order": 80,
+        "$ref": "#/properties/ssl_enabled",
+        "key": "ssl_enabled",
+        "label": "SSL",
+        "description": "Connect using SSL",
+        "widget": "toggle-v2",
+        "help_text": "Enable encrypted connections to Oracle server"
+      }
+    },
+    "thick": {
+      "tns_alias": {
+        "order": 10,
+        "$ref": "#/properties/tns_alias",
+        "key": "tns_alias",
+        "label": "TNS alias",
+        "description": "Enter the TNS Alias (e.g., ORCL)",
+        "widget": "text-v3",
+        "required": true
+      },
+      "config_dir": {
+        "order": 20,
+        "$ref": "#/properties/config_dir",
+        "key": "config_dir",
+        "label": "Configuration directory",
+        "description": "Enter the directory containing Oracle client configuration files (e.g., tnsnames.ora)",
+        "widget": "text-v3"
+      },
+      "wallet_file_path": {
+        "order": 30,
+        "$ref": "#/properties/wallet_file_path",
+        "key": "wallet_file_path",
+        "label": "Oracle wallet path",
+        "description": "Enter the Oracle Wallet directory path",
+        "widget": "text-v3"
+      },
+      "wallet_password": {
+        "order": 40,
+        "$ref": "#/properties/wallet_password",
+        "key": "wallet_password",
+        "label": "Wallet password",
+        "description": "Enter the wallet password (if required)",
+        "widget": "password-v3"
+      },
+      "client_path_type": {
+        "order": 50,
+        "$ref": "#/properties/client_path_type",
+        "key": "client_path_type",
+        "label": "Client library location",
+        "description": "Single select dropdown for client library",
+        "widget": "dropdown-component-flip",
+        "list": [
+          { "value": "default", "name": "Default" },
+          { "value": "custom", "name": "Custom" }
+        ]
+      },
+      "default": {
+        "instant_client_version": {
+          "order": 60,
+          "$ref": "#/properties/instant_client_version",
+          "key": "instant_client_version",
+          "label": "Instant client version",
+          "description": "Select Instant Client version",
+          "widget": "dropdown",
+          "list": [
+            { "name": "21.10", "value": "21_10" },
+            { "name": "11.2", "value": "11_2" }
+          ]
+        }
+      },
+      "custom": {
+        "path": {
+          "order": 60,
+          "$ref": "#/properties/path",
+          "key": "path",
+          "label": "Path",
+          "description": "Enter path",
+          "widget": "text-v3"
+        }
+      }
+    },
+    "thin": {
+      "tns_alias": {
+        "order": 10,
+        "$ref": "#/properties/tns_alias",
+        "key": "tns_alias",
+        "label": "TNS alias",
+        "description": "Enter the TNS Alias (e.g., ORCL)",
+        "widget": "text-v3",
+        "required": true
+      },
+      "wallet_file": {
+        "order": 20,
+        "$ref": "#/properties/wallet_file",
+        "key": "wallet_file",
+        "label": "Oracle wallet (.zip)",
+        "description": "Upload the Oracle Wallet (.zip format) for Thin mode",
+        "widget": "react-component-oracle-wallet"
+      },
+      "wallet_password": {
+        "order": 30,
+        "$ref": "#/properties/wallet_password",
+        "key": "wallet_password",
+        "label": "Wallet password",
+        "description": "Enter the wallet password (if required)",
+        "widget": "password-v3"
+      }
+    }
+  }
+}

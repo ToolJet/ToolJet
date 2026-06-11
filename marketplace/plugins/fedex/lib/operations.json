@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "FedEx datasource",
+  "description": "A schema defining FedEx datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "fedex_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "spec_url": {
+        "Address Validation": "@spec/fedex/address-validation",
+        "Ground End of Day Close": "@spec/fedex/ground-end-of-day-close",
+        "Ship Consolidation": "@spec/fedex/ship-consolidation",
+        "Open Ship": "@spec/fedex/open-ship",
+        "Pickup Request": "@spec/fedex/pickup-request",
+        "Postal Code Validation": "@spec/fedex/postal-code-validation",
+        "Rates and Transit Times": "@spec/fedex/rates-and-transit-times",
+        "Ship": "@spec/fedex/ship",
+        "Tracking (Basic Integrated Visibility)": "@spec/fedex/tracking-basic-integrated-visibility-",
+        "Trade Documents Upload": "@spec/fedex/trade-documents-upload",
+        "FedEx Location Search": "@spec/fedex/fedex-location-search",
+        "Freight LTL": "@spec/fedex/freight-ltl",
+        "Service Availability": "@spec/fedex/service-availability"
+      }
+    }
+  }
+}

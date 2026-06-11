@@ -1,0 +1,17 @@
+// AvatarGroup Component Styles
+// Only keeping styles that can't be easily moved to JSX
+
+.tw-custom-popover {
+  @apply tw-border tw-border-border-default;
+}
+
+// Responsive adjustments for multiplayer variant
+@media (max-width: 768px) {
+  .avatar-group-multiplayer {
+    @apply tw-gap-px;
+
+    .avatar {
+      @apply tw-border;
+    }
+  }
+}

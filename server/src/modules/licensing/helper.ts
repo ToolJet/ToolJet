@@ -1,0 +1,181 @@
+import LicenseBase from './configs/LicenseBase';
+import { LICENSE_FIELD, LICENSE_LIMIT } from './constants';
+
+export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
+  return totalCount !== LICENSE_LIMIT.UNLIMITED
+    ? {
+      percentage: (currentCount / totalCount) * 100,
+      total: totalCount,
+      current: currentCount,
+      licenseStatus,
+      label,
+      canAddUnlimited: false,
+    }
+    : {
+      canAddUnlimited: true,
+      licenseStatus,
+      label,
+    };
+}
+
+export function getLicenseFieldValue(type: LICENSE_FIELD, licenseInstance: LicenseBase): any {
+  switch (type) {
+    case LICENSE_FIELD.ALL:
+      return licenseInstance.terms;
+
+    case LICENSE_FIELD.APP_COUNT:
+      return licenseInstance.apps;
+
+    case LICENSE_FIELD.TABLE_COUNT:
+      return licenseInstance.tables;
+
+    case LICENSE_FIELD.TOTAL_USERS:
+      return licenseInstance.users;
+
+    case LICENSE_FIELD.EDITORS:
+      return licenseInstance.editorUsers;
+
+    case LICENSE_FIELD.VIEWERS:
+      return licenseInstance.viewerUsers;
+
+    case LICENSE_FIELD.IS_EXPIRED:
+      return licenseInstance.isExpired;
+
+    case LICENSE_FIELD.OIDC:
+      return licenseInstance.oidc;
+
+    case LICENSE_FIELD.LDAP:
+      return licenseInstance.ldap;
+
+    case LICENSE_FIELD.SAML:
+      return licenseInstance.saml;
+
+    case LICENSE_FIELD.GIT_SYNC:
+      return licenseInstance.gitSync;
+
+    case LICENSE_FIELD.WORKSPACE_ENV:
+      return licenseInstance.workspaceEnv;
+
+    case LICENSE_FIELD.CUSTOM_STYLE:
+      return licenseInstance.customStyling;
+
+    case LICENSE_FIELD.CUSTOM_THEMES:
+      return licenseInstance.customThemes;
+
+    case LICENSE_FIELD.SERVER_SIDE_GLOBAL:
+      return licenseInstance.serverSideGlobalResolve;
+    case LICENSE_FIELD.EXTERNAL_API:
+      return licenseInstance.externalApis;
+
+    case LICENSE_FIELD.AUDIT_LOGS:
+      return licenseInstance.auditLogs;
+
+    case LICENSE_FIELD.MAX_DURATION_FOR_AUDIT_LOGS:
+      return licenseInstance.maxDurationForAuditLogs;
+
+    case LICENSE_FIELD.MULTI_ENVIRONMENT:
+      return licenseInstance.multiEnvironment;
+
+    case LICENSE_FIELD.MULTIPLAYER_EDIT:
+      return licenseInstance.multiPlayerEdit;
+
+    case LICENSE_FIELD.VALID:
+      return licenseInstance.isValid && !licenseInstance.isExpired;
+
+    case LICENSE_FIELD.WORKSPACES:
+      return licenseInstance.workspaces;
+
+    case LICENSE_FIELD.WHITE_LABEL:
+      return licenseInstance.whiteLabelling;
+
+    case LICENSE_FIELD.USER:
+      return {
+        total: licenseInstance?.users,
+        editors: licenseInstance?.editorUsers,
+        viewers: licenseInstance?.viewerUsers,
+        superadmins: licenseInstance?.superadminUsers,
+      };
+
+    case LICENSE_FIELD.FEATURES:
+      return licenseInstance.features;
+
+    case LICENSE_FIELD.DOMAINS:
+      return licenseInstance.domains;
+
+    case LICENSE_FIELD.STATUS:
+      return {
+        isLicenseValid: licenseInstance.isValid,
+        isExpired: licenseInstance.isExpired,
+        licenseType: licenseInstance.licenseType,
+        expiryDate: licenseInstance.expiry,
+      };
+
+    case LICENSE_FIELD.META:
+      return licenseInstance.metaData;
+
+    case LICENSE_FIELD.WORKFLOWS:
+      return licenseInstance.workflows;
+
+    case LICENSE_FIELD.AI_FEATURE:
+      return licenseInstance.aiFeature;
+
+    case LICENSE_FIELD.AI_PLAN:
+      return licenseInstance.aiPlan;
+
+    case LICENSE_FIELD.AI:
+      return licenseInstance.ai;
+
+    case LICENSE_FIELD.SCIM:
+      return licenseInstance.scim;
+
+    case LICENSE_FIELD.PLAN:
+      return licenseInstance.plan;
+    case LICENSE_FIELD.MODULES:
+      return licenseInstance.moduleEnabled;
+    case LICENSE_FIELD.CUSTOM_GROUPS:
+      return licenseInstance.customGroups;
+    case LICENSE_FIELD.APP_PERMISSIONS_COMPONENT:
+      return licenseInstance.appPermissionComponent;
+    case LICENSE_FIELD.APP_PERMISSIONS_QUERY:
+      return licenseInstance.appPermissionQuery;
+    case LICENSE_FIELD.APP_PERMISSIONS_PAGES:
+      return licenseInstance.appPermissionPages;
+    case LICENSE_FIELD.APP_PAGES_ENABLED:
+      return licenseInstance.appPagesEnabled;
+    case LICENSE_FIELD.APP_PAGES_HEADER_AND_LOGO:
+      return licenseInstance.appPagesHeaderAndLogoEnabled;
+    case LICENSE_FIELD.APP_PAGES_NAV_GROUP:
+      return licenseInstance.appPagesAddNavGroupEnabled;
+    case LICENSE_FIELD.CANVAS_PAGE_HEADER:
+      return licenseInstance.canvasPageHeaderEnabled;
+    case LICENSE_FIELD.CANVAS_PAGE_FOOTER:
+      return licenseInstance.canvasPageFooterEnabled;
+
+    case LICENSE_FIELD.CUSTOM_DOMAINS:
+      return licenseInstance.customDomains;
+
+    case LICENSE_FIELD.GOOGLE:
+      return licenseInstance.google;
+
+    case LICENSE_FIELD.GITHUB:
+      return licenseInstance.github;
+
+    case LICENSE_FIELD.APP_PAGES_LIMIT:
+      return licenseInstance.appPagesLimit;
+
+    case LICENSE_FIELD.OBSERVABILITY_ENABLED:
+      return licenseInstance.observabilityEnabled;
+
+    case LICENSE_FIELD.APP_HISTORY:
+      return licenseInstance.appHistory;
+
+    case LICENSE_FIELD.QUERY_FOLDERS:
+      return licenseInstance.queryFolders;
+
+    case LICENSE_FIELD.APP_JS_LIBRARIES:
+      return licenseInstance.appJsLibraries;
+
+    default:
+      return licenseInstance.terms;
+  }
+}

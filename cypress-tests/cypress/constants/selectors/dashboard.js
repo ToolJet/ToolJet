@@ -1,0 +1,78 @@
+import { cyParamName } from "./common";
+
+export const dashboardSelector = {
+  emptyPageImage: '[data-cy="empty-home-page-image"]',
+  emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
+  emptyPageDescription: "[data-cy=empty-homepage-description]",
+  createAppButton: "[data-cy=create-new-application]",
+  importAppButton: '[data-cy="button-import-an-app"]',
+  chooseFromTemplate: "[data-cy=choose-from-template]",
+  modeToggle: '[data-cy="mode-switch-button"]',
+  dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
+  dropdown: "[data-cy=dropdown-organization-list]",
+  editButton: "[data-cy=edit-workspace-name]",
+  manageUsers: "[data-cy=manage-users]",
+  manageGroups: "[data-cy=manage-groups]",
+  ManageSSO: "[data-cy=manage-sso]",
+  userMenu: "[data-cy=user-menu]",
+  profileLink: "[data-cy=profile-link]",
+  logoutLink: '[data-cy="logout-link"]',
+  changeIconTitle: "[data-cy=change-icon-title]",
+  appCardDefaultIcon: "[data-cy=app-card-apps-icon]",
+  changeButton: "[data-cy=change-button]",
+  updateFolderTitle: "[data-cy=update-folder-title]",
+  moveAppText: "[data-cy=move-selected-app-to-text]",
+  selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
+  addToFolderButton: "[data-cy=add-to-folder-button]",
+  appTemplateRow: '[data-cy="app-template-row"]',
+  homePageContent: '[data-cy="home-page-content"]',
+  seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
+  folderLabel: '[data-cy="folder-info"]',
+  dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
+  versionLabel: '[data-cy="version-label"]',
+
+  appCardIcon: (iconName) => {
+    return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
+  },
+  appIcon: (iconName) => {
+    return `[data-cy="${cyParamName(iconName)}-icon"]`;
+  },
+  folderName: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-name"]`;
+  },
+
+  createWorkspaceTitle: '[data-cy="create-workspace-title"]',
+  workspaceNameLabel: '[data-cy="workspace-name-label"]',
+  workspaceNameInfoLabel: '[data-cy="workspace-name-info-label"]',
+  slugNameInputLabel: '[data-cy="slug-input-label"]',
+  workspaceSlugInputField: '[data-cy="workspace-slug-input-field"]',
+  slugInfoLabel: '[data-cy="slug-info-label"]',
+  workspaceLinkLabel: '[data-cy="workspace-link-label"]',
+  slugField: '[data-cy="slug-field"]',
+  createWorkspaceButton: '[data-cy="create-workspace-button"]',
+  workspaceErrorLabel: '[data-cy="workspace-error-label"]',
+  inputLabelError: '[data-cy="input-label-error"]',
+  slugSuccessLabel: '[data-cy="slug-sucess-label"]',
+  slugErrorLabel: '[data-cy="slug-error-label"]',
+  editWorkspaceTitle: '[data-cy="edit-workspace-title"]',
+
+  homePagePromptHeader: '[data-cy="home-page-prompt-header"]',
+  promptInput: '[data-cy="prompt-input"]',
+  homePageDividerText: '[data-cy="divider-text"]',
+  appCardWidget: '[data-cy="getstarted-app-widget"]',
+  templateCardWidget: '[data-cy="getstarted-templates-widget"]',
+  databaseCardWidget: '[data-cy="getstarted-datasource-widget"]',
+  workflowCardWidget: '[data-cy="getstarted-workflow-widget"]',
+
+  widgetCardName: (cardType) => {
+    return `[data-cy="getstarted-${cardType}-widget"]`;
+  },
+  widgetCardTitle: '[data-cy="widget-card-title"]',
+  widgetCardDescription: '[data-cy="widget-card-description"]',
+  homePagePromptTextArea: '[data-cy="prompt-textarea"]',
+  promptEnterButton: '[data-cy="prompt-enter-button"]',
+  aiIcon: '[data-cy="ai-icon"]',
+  homePageIcon: (iconName) => {
+    return `[data-cy="${iconName}s-icon"]`;
+  }
+};

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Sendgrid datasource",
+  "description": "A schema defining SendGrid datasource",
+  "type": "api",
+  "source": {
+    "name": "SendGrid",
+    "kind": "sendgrid",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      }
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_key": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "api_key": {
+      "label": "API key",
+      "key": "api_key",
+      "type": "password",
+      "description": "Api key for SendGrid",
+      "helpText": "For generating API key, visit: <a href='https://app.sendgrid.com/settings/api_keys' target='_blank' rel='noreferrer'>SendGrid Account</a>"
+    }
+  },
+  "required": [
+    "api_key"
+  ]
+}

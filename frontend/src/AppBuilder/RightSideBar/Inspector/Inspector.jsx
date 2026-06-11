@@ -1,0 +1,957 @@
+import React, { useState, useEffect } from 'react';
+import { Table } from './Components/Table/Table.jsx';
+import { TabsLayout } from './Components/TabComponent';
+import { Chart } from './Components/Chart';
+import Form from './Components/Form/index.js';
+import { renderElement, renderCustomStyles } from './Utils';
+import { toast } from 'react-hot-toast';
+import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { DefaultComponent } from './Components/DefaultComponent';
+import { FilePicker } from './Components/FilePicker';
+import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
+import { CurrencyInput } from './Components/CurrencyInput/CurrencyInput.jsx';
+import { Modal } from './Components/Modal';
+import { ModalV2 } from './Components/ModalV2';
+import { CustomComponent } from './Components/CustomComponent';
+import { Icon } from './Components/Icon';
+import useFocus from '@/_hooks/use-focus';
+import Accordion from '@/_ui/Accordion';
+import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
+import { useMounted } from '@/_hooks/use-mount';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { shallow } from 'zustand/shallow';
+import Tabs from '@/ToolJetUI/Tabs/Tabs';
+import Tab from '@/ToolJetUI/Tabs/Tab';
+import Student from '@/_ui/Icon/solidIcons/Student';
+import ArrowRight from '@/_ui/Icon/solidIcons/ArrowRight';
+import ArrowLeft from '@/_ui/Icon/solidIcons/ArrowLeft';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import Edit from '@/_ui/Icon/bulkIcons/Edit';
+import Copy from '@/_ui/Icon/solidIcons/Copy';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
+import Inspect from '@/_ui/Icon/solidIcons/Inspect';
+import classNames from 'classnames';
+import { EMPTY_ARRAY } from '@/_stores/editorStore';
+import { Select } from './Components/Select';
+import { Steps } from './Components/Steps.jsx';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import useStore from '@/AppBuilder/_stores/store';
+import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
+import { copyComponents } from '@/AppBuilder/AppCanvas/copyPasteWidgetsUtils';
+import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
+import { ToolTip } from '@/_components/ToolTip';
+import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
+import { appPermissionService } from '@/_services';
+import { Chat } from './Components/Chat.jsx';
+import { Tags } from './Components/Tags.jsx';
+import { ModuleContainerInspector, ModuleViewerInspector, ModuleEditorBanner } from '@/modules/Modules/components';
+import { PopoverMenu } from './Components/PopoverMenu/PopoverMenu.jsx';
+import { KeyValuePair } from './Components/KeyValuePair/KeyValuePair.jsx';
+import { Navigation } from './Components/Navigation';
+import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/ui/Button/Button';
+import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import '../ComponentManagerTab/styles.scss';
+
+const INSPECTOR_HEADER_OPTIONS = [
+  {
+    label: 'Inspect',
+    value: 'inspect',
+    icon: <Inspect width={16} />,
+  },
+  {
+    label: 'Rename',
+    value: 'rename',
+    icon: <Edit width={16} />,
+  },
+  {
+    label: 'Duplicate',
+    value: 'duplicate',
+    icon: <Copy width={16} />,
+  },
+  {
+    label: 'Component permission',
+    value: 'permission',
+    icon: (
+      <img
+        alt="permission-icon"
+        src="assets/images/icons/editor/left-sidebar/authorization.svg"
+        width="16"
+        height="16"
+      />
+    ),
+    trailingIcon: <SolidIcon width={16} name="enterprisecrown" className="mx-1" />,
+  },
+  {
+    label: 'Delete',
+    value: 'delete',
+    icon: <Trash width={16} fill={'#E54D2E'} />,
+  },
+];
+
+export const NEW_REVAMPED_COMPONENTS = [
+  'Text',
+  'TextInput',
+  'TextArea',
+  'PasswordInput',
+  'EmailInput',
+  'PhoneInput',
+  'CurrencyInput',
+  'NumberInput',
+  'Table',
+  'ToggleSwitchV2',
+  'Checkbox',
+  'DatetimePickerV2',
+  'DatePickerV2',
+  'TimePicker',
+  'DaterangePicker',
+  'DropdownV2',
+  'MultiselectV2',
+  'RadioButtonV2',
+  'TagsInput',
+  'Button',
+  'Icon',
+  'Image',
+  'Container',
+  'Divider',
+  'VerticalDivider',
+  'ModalV2',
+  'Tabs',
+  'RangeSliderV2',
+  'Link',
+  'Steps',
+  'FilePicker',
+  'FileInput',
+  'Tags',
+  'Chat',
+  'PopoverMenu',
+  'Statistics',
+  'StarRating',
+  'CircularProgressBar',
+  'ProgressBar',
+  'CustomComponent',
+  'Html',
+  'AudioRecorder',
+  'Camera',
+  'CodeEditor',
+  'Form',
+  'JSONExplorer',
+  'JSONEditor',
+  'KeyValuePair',
+  'IFrame',
+  'Navigation',
+  'TreeSelect',
+  'Accordion',
+  'ReorderableList',
+  'ColorPicker',
+  'FileButton',
+  'ButtonGroupV2',
+];
+
+export const Inspector = ({
+  componentDefinitionChanged,
+  darkMode,
+  pages,
+  selectedComponentId,
+  handleRightSidebarToggle,
+}) => {
+  const { isModuleEditor } = useModuleContext();
+  const allComponents = useStore((state) => state.getCurrentPageComponents());
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const setComponentName = useStore((state) => state.setComponentName, shallow);
+  const shouldFreeze = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
+  const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
+  const isVersionReleased = useStore((state) => state.isVersionReleased);
+  const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
+  const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const hasAppPermissionComponent = useStore((state) => state?.license?.featureAccess?.appPermissionComponent);
+  const showComponentPermissionModal = useStore((state) => state.showComponentPermissionModal);
+  const toggleComponentPermissionModal = useStore((state) => state.toggleComponentPermissionModal);
+  const setComponentPermission = useStore((state) => state.setComponentPermission);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const [tabsPropertiesPanelKey, setTabsPropertiesPanelKey] = useState(uuidv4());
+  const dataQueries = useDataQueries();
+
+  const currentState = useCurrentState();
+
+  const tempComponentMeta = deepClone(
+    componentTypes.find((comp) => allComponents?.[selectedComponentId]?.component.component === comp.component)
+  );
+
+  const componentMeta = {
+    ...tempComponentMeta,
+    ...allComponents?.[selectedComponentId]?.component,
+    definition: allComponents?.[selectedComponentId]?.component.definition,
+  };
+
+  const isModuleContainer = componentMeta.component === 'ModuleContainer';
+
+  const component = {
+    id: selectedComponentId,
+    component: JSON.parse(JSON.stringify(componentMeta)),
+    layouts: allComponents?.[selectedComponentId]?.layouts,
+    parent: allComponents?.[selectedComponentId]?.parent,
+  };
+  // eslint-disable-next-line no-unused-vars
+  const [newComponentName, setNewComponentName] = useState('');
+  const [inputRef, setInputFocus] = useFocus();
+
+  const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
+  const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+
+  const { t } = useTranslation();
+
+  const isMounted = useMounted();
+
+  useEffect(() => {
+    setNewComponentName(allComponents[selectedComponentId]?.component?.name);
+  }, [selectedComponentId, allComponents]);
+
+  const validateComponentName = (name) => {
+    const isValid = !Object.values(allComponents)
+      .map((component) => component?.component?.name)
+      .includes(name);
+
+    if (component?.component.name === name) {
+      return true;
+    }
+    return isValid;
+  };
+
+  function handleComponentNameChange(newName) {
+    if (component.component.name === newName) return;
+
+    if (newName.length === 0) {
+      toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
+      return setInputFocus();
+    }
+    if (!validateComponentName(newName)) {
+      toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
+      return setInputFocus();
+    }
+    if (validateQueryName(newName)) {
+      setComponentName(selectedComponentId, newName);
+    } else {
+      toast.error(
+        t(
+          'widget.common.invalidWidgetName',
+          'Invalid widget name. Should be unique and only include letters, numbers and underscore.'
+        )
+      );
+      setInputFocus();
+    }
+  }
+
+  const getDefaultValue = (val) => {
+    if (componentMeta?.definition?.defaults) {
+      return componentMeta.definition.defaults.find((el) => el.type === val);
+    }
+    return null;
+  };
+
+  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false, props = {}) {
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = deepClone(newComponent.component.definition);
+    let allParams = newDefinition[paramType] || {},
+      oldValue = '';
+    const paramObject = allParams[param.name];
+    if (!paramObject) {
+      allParams[param.name] = {};
+    }
+    if (attr) {
+      oldValue = allParams[param.name][attr];
+      allParams[param.name][attr] = value;
+
+      // When commonBackgroundColor changes for Tabs component, sync to all tab items if dynamic options are disabled
+      if (
+        component.component.component === 'Tabs' &&
+        param.name === 'commonBackgroundColor' &&
+        paramType === 'styles'
+      ) {
+        const useDynamicOptions = getResolvedValue(newDefinition.properties?.useDynamicOptions?.value);
+        if (!useDynamicOptions && newDefinition.properties?.tabItems?.value) {
+          const updatedTabItems = newDefinition.properties.tabItems.value.map((tabItem) => ({
+            ...tabItem,
+            fieldBackgroundColor: { value },
+          }));
+          newDefinition.properties.tabItems.value = updatedTabItems;
+          // // Also update the store for tabItems
+          setComponentProperty(selectedComponentId, 'tabItems', updatedTabItems, 'properties', 'value', false);
+          setTabsPropertiesPanelKey(uuidv4());
+        }
+      }
+      const defaultValue = getDefaultValue(value);
+      // This is needed to have enable pagination in Table as backward compatible
+      // Whenever enable pagination is false, we turn client and server side pagination as false
+      if (component.component.component === 'Table' && param.name === 'enablePagination' && !resolveReferences(value)) {
+        if (allParams?.['clientSidePagination']?.[attr]) {
+          allParams['clientSidePagination'][attr] = value;
+        }
+        if (allParams['serverSidePagination']?.[attr]) {
+          allParams['serverSidePagination'][attr] = value;
+        }
+      }
+      // This case is required to handle for older apps when serverSidePagination is connected to Fx
+      if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
+        allParams = {
+          ...allParams,
+          enablePagination: {
+            value: true,
+          },
+        };
+      }
+      if (param.type === 'select' && defaultValue) {
+        allParams[defaultValue.paramName]['value'] = defaultValue.value;
+      }
+    } else {
+      oldValue = allParams[param.name];
+      allParams[param.name] = value;
+    }
+
+    if (
+      component.component.component === 'Table' &&
+      param.name === 'contentWrap' &&
+      !resolveReferences(value) &&
+      newDefinition.properties.columns.value.some((item) => item.columnType === 'image' && item.height !== '')
+    ) {
+      const updatedColumns = newDefinition.properties.columns.value.map((item) => {
+        return item.columnType === 'image' ? { ...item, height: '' } : item; // Create a new object for image columns
+      });
+
+      // Update the columns value with the updated columns
+      newDefinition.properties.columns.value = updatedColumns;
+      isParamFromTableColumn = true;
+    }
+
+    newDefinition[paramType] = allParams;
+    newComponent.component.definition = newDefinition;
+
+    if (oldValue !== value) {
+      const skipResolve =
+        component.component.component === 'CustomComponent' && param.name === 'code' && paramType === 'properties';
+      setComponentProperty(selectedComponentId, param.name, value, paramType, attr, skipResolve);
+    }
+
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn: isParamFromTableColumn,
+      ...props,
+    });
+  }
+
+  // use following function when more than one property needs to be updated
+
+  function paramsUpdated(array, isParamFromTableColumn = false) {
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
+    array.map((item) => {
+      const { param, attr, value, paramType } = item;
+      let allParams = newDefinition[paramType] || {};
+      const paramObject = allParams[param.name];
+      if (!paramObject) {
+        allParams[param.name] = {};
+      }
+      if (attr) {
+        allParams[param.name][attr] = value;
+        const defaultValue = getDefaultValue(value);
+        // This is needed to have enable pagination in Table as backward compatible
+        // Whenever enable pagination is false, we turn client and server side pagination as false
+        if (
+          component.component.component === 'Table' &&
+          param.name === 'enablePagination' &&
+          !resolveReferences(value, currentState)
+        ) {
+          if (allParams?.['clientSidePagination']?.[attr]) {
+            allParams['clientSidePagination'][attr] = value;
+          }
+          if (allParams['serverSidePagination']?.[attr]) {
+            allParams['serverSidePagination'][attr] = value;
+          }
+        }
+        // This case is required to handle for older apps when serverSidePagination is connected to Fx
+        if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
+          allParams = {
+            ...allParams,
+            enablePagination: {
+              value: true,
+            },
+          };
+        }
+        if (param.type === 'select' && defaultValue) {
+          allParams[defaultValue.paramName]['value'] = defaultValue.value;
+        }
+      } else {
+        allParams[param.name] = value;
+      }
+      newDefinition[paramType] = allParams;
+      newComponent.component.definition = newDefinition;
+    });
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn,
+    });
+  }
+
+  function layoutPropertyChanged(param, attr, value, paramType) {
+    paramUpdated(param, attr, value, paramType);
+
+    // User wants to show the widget on mobile devices
+    if (param.name === 'showOnMobile' && value === true) {
+      let newComponent = JSON.parse(JSON.stringify(component));
+
+      const { width, height } = newComponent.layouts['desktop'];
+
+      newComponent['layouts'] = {
+        ...newComponent.layouts,
+        mobile: {
+          top: 100,
+          left: 0,
+          width: Math.min(width, 445),
+          height: height,
+        },
+      };
+
+      componentDefinitionChanged(newComponent, { layoutPropertyChanged: true });
+
+      //  Child components should also have a mobile layout
+      const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component?.id);
+
+      childComponents.forEach((componentId) => {
+        let newChild = {
+          id: componentId,
+          ...allComponents[componentId],
+        };
+
+        const { width, height } = newChild.layouts['desktop'];
+
+        newChild['layouts'] = {
+          ...newChild.layouts,
+          mobile: {
+            top: 100,
+            left: 0,
+            width: Math.min(width, 445),
+            height: height,
+          },
+        };
+
+        componentDefinitionChanged(newChild, { withChildLayout: true });
+      });
+    }
+  }
+
+  const handleInspectorHeaderActions = (value) => {
+    if (value === 'inspect') {
+      setComponentToInspect(component.component.name);
+    }
+    if (value === 'rename') {
+      setTimeout(() => setInputFocus(), 0);
+    }
+    if (value === 'delete') {
+      setWidgetDeleteConfirmation(true, isModuleEditor);
+    }
+    if (value === 'permission') {
+      if (!hasAppPermissionComponent) return;
+      toggleComponentPermissionModal(true);
+    }
+    if (value === 'duplicate') {
+      copyComponents({ isCloning: true });
+    }
+    setShowHeaderActionsMenu(false);
+  };
+  const buildGeneralStyle = () => {
+    if (
+      !componentMeta?.definition?.generalStyles ||
+      componentMeta?.styles?.boxShadow ||
+      ['ModuleContainer', 'ModuleViewer'].includes(componentMeta?.component)
+    ) {
+      return null;
+    }
+    const items = [];
+
+    items.push({
+      title: `${t('widget.common.general', 'General')}`,
+      isOpen: true,
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            layoutPropertyChanged,
+            dataQueries,
+            'boxShadow',
+            'generalStyles',
+            currentState,
+            allComponents
+          )}
+        </>
+      ),
+    });
+
+    return <Accordion items={items} />;
+  };
+
+  const renderDocumentationLink = () => {
+    return (
+      <span className="widget-documentation-link">
+        <a href={getDocsLink(componentMeta)} target="_blank" rel="noreferrer" data-cy="widget-documentation-link">
+          <span>
+            <Student width={13} fill={'#3E63DD'} />
+            <small className="widget-documentation-link-text">
+              {t('widget.common.documentation', 'Read documentation for {{componentMeta}}', {
+                componentMeta:
+                  componentMeta.displayName === 'Toggle Switch (Legacy)'
+                    ? 'Toggle (Legacy)'
+                    : componentMeta.displayName === 'Toggle Switch'
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
+              })}
+            </small>
+          </span>
+          <span>
+            <ArrowRight width={20} fill={'#3E63DD'} />
+          </span>
+        </a>
+      </span>
+    );
+  };
+
+  const propertiesTab = isMounted && (
+    <div className={`${shouldFreeze && 'disabled'}`}>
+      <GetAccordion
+        tabsPropertiesPanelKey={tabsPropertiesPanelKey}
+        componentName={componentMeta.component}
+        layoutPropertyChanged={layoutPropertyChanged}
+        component={component}
+        paramUpdated={paramUpdated}
+        paramsUpdated={paramsUpdated}
+        dataQueries={dataQueries}
+        componentMeta={componentMeta}
+        components={allComponents}
+        currentState={currentState}
+        darkMode={darkMode}
+        pages={pages}
+        allComponents={allComponents}
+      />
+    </div>
+  );
+  const stylesTab = (
+    <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
+      <div style={{ ...(!isRevampedComponent && { padding: '1rem' }) }}>
+        <Inspector.RenderStyleOptions
+          componentMeta={componentMeta}
+          component={component}
+          paramUpdated={paramUpdated}
+          dataQueries={dataQueries}
+          currentState={currentState}
+          allComponents={allComponents}
+        />
+      </div>
+      {!isRevampedComponent && buildGeneralStyle()}
+    </div>
+  );
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showHeaderActionsMenu && event.target.closest('#list-menu') === null) {
+        setShowHeaderActionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ showHeaderActionsMenu })]);
+
+  const renderAppNameInput = () => {
+    if (isModuleContainer) {
+      return <ModuleEditorBanner title="Module Container" customStyles={{ height: 28, width: 150, marginTop: 3 }} />;
+    }
+
+    return (
+      <div className="input-icon">
+        <input
+          onChange={(e) => setNewComponentName(e.target.value)}
+          type="text"
+          onBlur={() => handleComponentNameChange(newComponentName)}
+          className="w-100 inspector-edit-widget-name"
+          value={newComponentName}
+          ref={inputRef}
+          data-cy="edit-widget-name"
+        />
+      </div>
+    );
+  };
+
+  const renderTabs = () => {
+    return (
+      <Tabs defaultActiveKey={'properties'} id="inspector" hidden={isModuleContainer}>
+        <Tab eventKey="properties" title="Properties">
+          {propertiesTab}
+        </Tab>
+        <Tab eventKey="styles" title="Styles">
+          {stylesTab}
+        </Tab>
+      </Tabs>
+    );
+  };
+
+  return (
+    <div className={`inspector ${isModuleContainer && 'module-editor-inspector'}`}>
+      <div>
+        <div className={`panel-header ${shouldFreeze && 'disabled'}`}>
+          <div className={`panel-header-name ${shouldFreeze && 'disabled'}`}>{renderAppNameInput()}</div>
+          <div className="panel-header-actions">
+            {!isModuleContainer && (
+              <>
+                <div data-cy={'component-inspector-options'}>
+                  <OverlayTrigger
+                    trigger={'click'}
+                    placement={'bottom-end'}
+                    rootClose={false}
+                    show={showHeaderActionsMenu}
+                    overlay={
+                      <Popover
+                        id="list-menu"
+                        className={classNames({ 'dark-theme': darkMode }, 'inspector-header-actions-menu')}
+                      >
+                        <Popover.Body bsPrefix="list-item-popover-body">
+                          {INSPECTOR_HEADER_OPTIONS.map((option) => {
+                            const optionBody = (
+                              <div
+                                data-cy={`component-inspector-${String(option?.value).toLowerCase()}-button`}
+                                className="list-item-popover-option"
+                                key={option?.value}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleInspectorHeaderActions(option.value);
+                                }}
+                              >
+                                <div className="list-item-popover-menu-option-icon">{option.icon}</div>
+                                <div
+                                  className={classNames('list-item-option-menu-label', {
+                                    'color-tomato9': option.value === 'delete',
+                                    'color-disabled': option.value === 'permission' && !hasAppPermissionComponent,
+                                  })}
+                                >
+                                  {option?.label}
+                                </div>
+                                {option.value === 'permission' &&
+                                  !hasAppPermissionComponent &&
+                                  option.trailingIcon &&
+                                  option.trailingIcon}
+                              </div>
+                            );
+
+                            return option.value === 'permission' ? (
+                              <ToolTip
+                                key={option.value}
+                                message={
+                                  "You don't have access to component permissions. Upgrade your plan to access this feature."
+                                }
+                                placement="left"
+                                show={!hasAppPermissionComponent}
+                              >
+                                {optionBody}
+                              </ToolTip>
+                            ) : (
+                              optionBody
+                            );
+                          })}
+                        </Popover.Body>
+                      </Popover>
+                    }
+                  >
+                    <Button
+                      iconOnly
+                      leadingIcon="ellipsis-vertical"
+                      onClick={() => setShowHeaderActionsMenu(true)}
+                      variant="ghost"
+                      size="medium"
+                      isLucid={true}
+                      data-cy="menu-icon"
+                    />
+                  </OverlayTrigger>
+                </div>
+                <AppPermissionsModal
+                  modalType="component"
+                  resourceId={selectedComponentId}
+                  resourceName={allComponents[selectedComponentId]?.component?.name}
+                  showModal={showComponentPermissionModal}
+                  toggleModal={toggleComponentPermissionModal}
+                  darkMode={darkMode}
+                  fetchPermission={(id, appId) => appPermissionService.getComponentPermission(appId, id)}
+                  createPermission={(id, appId, body) =>
+                    appPermissionService.createComponentPermission(appId, id, body)
+                  }
+                  updatePermission={(id, appId, body) =>
+                    appPermissionService.updateComponentPermission(appId, id, body)
+                  }
+                  deletePermission={(id, appId) => appPermissionService.deleteComponentPermission(appId, id)}
+                  onSuccess={(data) => setComponentPermission(selectedComponentId, data)}
+                />
+              </>
+            )}
+            <Button
+              iconOnly
+              leadingIcon="x"
+              onClick={handleRightSidebarToggle}
+              variant="ghost"
+              size="medium"
+              isLucid={true}
+              data-cy="inspector-close-button"
+            />
+          </div>
+        </div>
+
+        <div className={`${shouldFreeze && 'disabled'}`} key={selectedComponentId}>
+          {renderTabs()}
+        </div>
+      </div>
+      {renderDocumentationLink()}
+    </div>
+  );
+};
+
+const getDocsLink = (componentMeta) => {
+  const component = componentMeta?.component ?? '';
+  switch (component) {
+    case 'ToggleSwitchV2':
+      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+    case 'DropdownV2':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'DropDown':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'MultiselectV2':
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
+    case 'DaterangePicker':
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    case 'RangeSliderV2':
+      return 'https://docs.tooljet.com/docs/widgets/range-slider';
+    default:
+      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
+  }
+};
+const widgetsWithStyleConditions = {
+  Modal: {
+    conditions: [
+      {
+        definition: 'properties', //expecting properties or styles
+        property: 'useDefaultButton', //expecting a property name
+        conditionStyles: ['triggerButtonBackgroundColor', 'triggerButtonTextColor'], //expecting an array of style definitions names
+      },
+    ],
+  },
+  Table: {
+    conditions: [
+      {
+        definition: 'styles',
+        property: 'contentWrap',
+        conditionStyles: ['maxRowHeight', 'autoHeight'],
+        type: 'toggle',
+      },
+    ],
+  },
+};
+
+const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+  // Initialize an object to group properties by "accordian"
+  const groupedProperties = {};
+  if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
+    // Iterate over the properties in componentMeta.styles
+    for (const key in componentMeta.styles) {
+      const property = componentMeta.styles[key];
+      const accordian = property.accordian;
+
+      // Check if the "accordian" key exists in groupedProperties
+      if (!groupedProperties[accordian]) {
+        groupedProperties[accordian] = {}; // Create an empty object for the "accordian" key if it doesn't exist
+      }
+
+      // Add the property to the corresponding "accordian" object
+      groupedProperties[accordian][key] = property;
+    }
+  }
+  // Return early if componentMeta.styles is not defined or null :: on version swtich
+  if (!componentMeta.styles) {
+    return null;
+  }
+
+  return Object.keys(
+    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
+  ).map((style) => {
+    const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
+    const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
+
+    if (conditionWidget && conditionWidget.conditions.find((condition) => condition.conditionStyles.includes(style))) {
+      const propertyConditon = condition?.property;
+      const widgetPropertyDefinition = condition?.definition;
+
+      return handleRenderingConditionalStyles(
+        component,
+        componentMeta,
+        dataQueries,
+        paramUpdated,
+        currentState,
+        allComponents,
+        style,
+        propertyConditon,
+        component?.component?.definition[widgetPropertyDefinition]
+      );
+    }
+
+    const items = [];
+
+    if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
+      items.push({
+        title: `${style}`,
+        children: Object.entries(groupedProperties[style]).map(([key, value]) => ({
+          ...renderCustomStyles(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            key,
+            'styles',
+            currentState,
+            allComponents,
+            value.accordian
+          ),
+        })),
+      });
+      return <Accordion key={style} items={items} />;
+    } else {
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        style,
+        'styles',
+        currentState,
+        allComponents
+      );
+    }
+  });
+};
+
+const resolveConditionalStyle = (definition, condition, currentState) => {
+  const conditionExistsInDefinition = definition[condition] ?? false;
+  if (conditionExistsInDefinition) {
+    switch (condition) {
+      case 'cellSize': {
+        const cellSize = resolveReferences(definition[condition]?.value ?? false) === 'hugContent';
+        return cellSize;
+      }
+      default:
+        return resolveReferences(definition[condition]?.value ?? false);
+    }
+  }
+};
+
+const handleRenderingConditionalStyles = (
+  component,
+  componentMeta,
+  dataQueries,
+  paramUpdated,
+  currentState,
+  allComponents,
+  style,
+  renderingPropertyCondition,
+  definition
+) => {
+  return resolveConditionalStyle(definition, renderingPropertyCondition, currentState)
+    ? renderElement(component, componentMeta, paramUpdated, dataQueries, style, 'styles', currentState, allComponents)
+    : null;
+};
+
+const GetAccordion = React.memo(
+  ({ componentName, tabsPropertiesPanelKey, ...restProps }) => {
+    switch (componentName) {
+      case 'Table':
+        return <Table {...restProps} />;
+
+      case 'Tabs':
+        return <TabsLayout {...restProps} key={tabsPropertiesPanelKey} />;
+
+      case 'Chart':
+        return <Chart {...restProps} />;
+
+      case 'FileButton': // fall-through to FilePicker
+      case 'FilePicker':
+      case 'FileInput':
+        return <FilePicker {...restProps} />;
+
+      case 'ModalV2':
+        return <ModalV2 {...restProps} />;
+
+      case 'Modal':
+        return <Modal {...restProps} />;
+
+      case 'CustomComponent':
+        return <CustomComponent {...restProps} />;
+
+      case 'Icon':
+        return <Icon {...restProps} />;
+
+      case 'Form':
+        return <Form {...restProps} key={restProps.component?.id} />;
+
+      case 'DropdownV2':
+      case 'MultiselectV2':
+      case 'RadioButtonV2':
+      case 'TagsInput':
+        return <Select {...restProps} />;
+
+      case 'Tags':
+        return <Tags {...restProps} />;
+
+      case 'Chat':
+        return <Chat {...restProps} />;
+
+      case 'DatetimePickerV2':
+      case 'DaterangePicker':
+      case 'DatePickerV2':
+      case 'TimePicker':
+        return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+      case 'Steps':
+        return <Steps {...restProps} />;
+      case 'PhoneInput':
+        return <PhoneInput {...restProps} />;
+      case 'CurrencyInput':
+        return <CurrencyInput {...restProps} componentName={componentName} />;
+
+      case 'ModuleContainer':
+        return <ModuleContainerInspector {...restProps} />;
+
+      case 'ModuleViewer':
+        return <ModuleViewerInspector {...restProps} />;
+
+      case 'ButtonGroupV2':
+      case 'PopoverMenu':
+      case 'ReorderableList':
+        return <PopoverMenu {...restProps} />;
+      case 'KeyValuePair':
+        return <KeyValuePair {...restProps} />;
+      case 'Navigation':
+        return <Navigation {...restProps} />;
+      case 'TreeSelect':
+        return <TreeSelect {...restProps} />;
+
+      default: {
+        return <DefaultComponent {...restProps} />;
+      }
+    }
+  },
+  (prevProps, nextProps) => {
+    prevProps.componentName === nextProps.componentName;
+  }
+);
+
+Inspector.RenderStyleOptions = RenderStyleOptions;

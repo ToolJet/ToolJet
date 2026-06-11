@@ -1,0 +1,106 @@
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  BaseEntity,
+  JoinTable,
+  ManyToMany,
+  AfterLoad,
+  OneToMany,
+} from 'typeorm';
+import { AppVersion } from './app_version.entity';
+import { DataSource } from './data_source.entity';
+import { Plugin } from './plugin.entity';
+import { QueryPermission } from './query_permissions.entity';
+import { AppBase } from './app_base.entity';
+
+@Entity({ name: 'data_queries' })
+export class DataQuery extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'name' })
+  name: string;
+
+  @Column('simple-json', { name: 'options' })
+  options;
+
+  @Column({ name: 'data_source_id' })
+  dataSourceId: string;
+
+  @Column({ name: 'app_version_id' })
+  appVersionId: string;
+
+  @Column({ name: 'co_relation_id', nullable: true })
+  co_relation_id: string;
+
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
+
+  @ManyToOne(() => DataSource, (dataSource) => dataSource.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'data_source_id' })
+  dataSource: DataSource;
+
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'app_version_id' })
+  appVersion: AppVersion;
+
+  @ManyToMany(() => Plugin)
+  @JoinTable({
+    name: 'data_sources',
+    joinColumn: {
+      name: 'id',
+      referencedColumnName: 'dataSourceId',
+    },
+    inverseJoinColumn: {
+      name: 'plugin_id',
+      referencedColumnName: 'id',
+    },
+  })
+  plugins: Plugin[];
+
+  plugin: Plugin;
+
+  kind: string;
+
+  @ManyToMany(() => AppBase)
+  @JoinTable({
+    name: 'app_versions',
+    joinColumn: {
+      name: 'id',
+      referencedColumnName: 'appVersionId',
+    },
+    inverseJoinColumn: {
+      name: 'app_id',
+      referencedColumnName: 'id',
+    },
+  })
+  apps: AppBase[];
+
+  app: AppBase;
+
+  @OneToMany(() => QueryPermission, (permission) => permission.query)
+  permissions: QueryPermission[];
+
+  @AfterLoad()
+  updatePlugin() {
+    if (this.plugins?.length) this.plugin = this.plugins[0];
+  }
+
+  @AfterLoad()
+  updateKind() {
+    this.kind = this.dataSource?.kind;
+  }
+
+  @AfterLoad()
+  updateApp() {
+    if (this.apps?.length) this.app = this.apps[0];
+  }
+}

@@ -1,0 +1,1237 @@
+{
+  "tooljet_database": [],
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "b4b91cff-4694-4b09-a38c-596769f91c95",
+          "type": "front-end",
+          "name": "Lorem ipsum generator",
+          "slug": "b4b91cff-4694-4b09-a38c-596769f91c95",
+          "isPublic": false,
+          "isMaintenanceOn": false,
+          "icon": "sentfast",
+          "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
+          "currentVersionId": null,
+          "userId": "ccf51822-9d82-4d82-81dd-22df9f3cfcfc",
+          "workflowApiToken": null,
+          "workflowEnabled": false,
+          "createdAt": "2024-04-25T07:37:02.309Z",
+          "creationMode": "DEFAULT",
+          "updatedAt": "2024-04-25T07:37:02.948Z",
+          "editingVersion": {
+            "id": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+            "name": "v1",
+            "definition": null,
+            "globalSettings": {
+              "hideHeader": true,
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "#edeff5",
+              "backgroundFxQuery": "#edeff5"
+            },
+            "showViewerNavigation": false,
+            "homePageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+            "appId": "b4b91cff-4694-4b09-a38c-596769f91c95",
+            "currentEnvironmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+            "promotedFrom": null,
+            "createdAt": "2024-04-25T07:37:02.336Z",
+            "updatedAt": "2024-05-01T00:01:30.906Z"
+          },
+          "components": [
+            {
+              "id": "0b5b8177-7984-4937-8e51-d334cce9561c",
+              "name": "generateButton",
+              "type": "Button",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "text": {
+                  "value": "Generate"
+                },
+                "loadingState": {
+                  "value": "{{queries.generateCompanyNames.isLoading || queries.generateCompanyUrls.isLoading || queries.generateEmails.isLoading || queries.generateFullNames.isLoading || queries.generateParagraphs.isLoading || queries.generateSentences.isLoading || queries.generateTitles.isLoading || queries.generateWords.isLoading || queries.getRandomItem.isLoading || queries.handleContentGeneration.isLoading}}",
+                  "fxActive": true
+                }
+              },
+              "general": {},
+              "styles": {
+                "backgroundColor": {
+                  "value": "#3e63ddff",
+                  "fxActive": false
+                },
+                "borderRadius": {
+                  "value": "{{5}}"
+                },
+                "borderColor": {
+                  "value": "#ffffff00"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "7a98b529-1836-48c9-a2c0-d616f0b351ce",
+                  "type": "desktop",
+                  "top": 50,
+                  "left": 41.86046073576237,
+                  "width": 5,
+                  "height": 40,
+                  "componentId": "0b5b8177-7984-4937-8e51-d334cce9561c"
+                },
+                {
+                  "id": "1680d86d-77ad-4d7c-9a04-75d66b074706",
+                  "type": "mobile",
+                  "top": 50,
+                  "left": 88.37209302325581,
+                  "width": 6.976744186046512,
+                  "height": 30,
+                  "componentId": "0b5b8177-7984-4937-8e51-d334cce9561c"
+                }
+              ]
+            },
+            {
+              "id": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "name": "container2",
+              "type": "Container",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": null,
+              "properties": {},
+              "general": {},
+              "styles": {
+                "borderRadius": {
+                  "value": "10"
+                },
+                "borderColor": {
+                  "value": "#ffffff00",
+                  "fxActive": false
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "be23d79d-7831-4230-81e5-fd85c6d02a40",
+                  "type": "desktop",
+                  "top": 100,
+                  "left": 2.3255813953488373,
+                  "width": 41,
+                  "height": 690,
+                  "componentId": "d75c4dcf-a326-42a1-8589-f6d27a5eab37"
+                },
+                {
+                  "id": "3cd59369-a1f7-4a33-b3c5-b341e42b0d38",
+                  "type": "mobile",
+                  "top": 300,
+                  "left": 2.3255813953488373,
+                  "width": 5,
+                  "height": 200,
+                  "componentId": "d75c4dcf-a326-42a1-8589-f6d27a5eab37"
+                }
+              ]
+            },
+            {
+              "id": "dc0b7c38-3956-4beb-b0bb-b8a76b265695",
+              "name": "text1",
+              "type": "Text",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "f74c6cbf-ebbb-49b7-aa86-3cc1a2b91b91",
+              "properties": {
+                "text": {
+                  "value": "B R A N D"
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "#ffffffff"
+                },
+                "textSize": {
+                  "value": "{{24}}"
+                },
+                "fontWeight": {
+                  "value": "bold"
+                },
+                "letterSpacing": {
+                  "value": "{{0}}"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "isScrollRequired": {
+                  "value": "disabled"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "f54260e6-b608-4868-af99-c7fb9d354649",
+                  "type": "desktop",
+                  "top": 10,
+                  "left": 2.3255811827776833,
+                  "width": 6,
+                  "height": 40,
+                  "componentId": "dc0b7c38-3956-4beb-b0bb-b8a76b265695"
+                }
+              ]
+            },
+            {
+              "id": "f74c6cbf-ebbb-49b7-aa86-3cc1a2b91b91",
+              "name": "container1",
+              "type": "Container",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": null,
+              "properties": {},
+              "general": {},
+              "styles": {
+                "backgroundColor": {
+                  "value": "#3e63ddff"
+                },
+                "borderRadius": {
+                  "value": "10"
+                },
+                "borderColor": {
+                  "value": "#ffffff00",
+                  "fxActive": false
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "261803f2-55d7-4702-b0be-55be1684d849",
+                  "type": "desktop",
+                  "top": 20,
+                  "left": 2.3255831109355123,
+                  "width": 41,
+                  "height": 70,
+                  "componentId": "f74c6cbf-ebbb-49b7-aa86-3cc1a2b91b91"
+                }
+              ]
+            },
+            {
+              "id": "3f79e9d3-63bc-4fff-9584-52ddec73fb9a",
+              "name": "dataset_type",
+              "type": "DropDown",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "label": {
+                  "value": ""
+                },
+                "value": {
+                  "value": "{{\"sentence\"}}"
+                },
+                "values": {
+                  "value": "{{[\"sentence\", \"paragraph\", \"title\", \"word\", \"fullName\", \"email\", \"companyURL\", \"companyName\"]}}"
+                },
+                "display_values": {
+                  "value": "{{[\"Sentence \", \"Paragraph\", \"Title\", \"Word\", \"Full Name\", \"Email\", \"Company URL\", \"Company Name\"]}}"
+                }
+              },
+              "general": {},
+              "styles": {
+                "borderRadius": {
+                  "value": "5"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "829999d4-fd2a-4c56-b60d-07ca310aff0c",
+                  "type": "desktop",
+                  "top": 50,
+                  "left": 2.325580329133963,
+                  "width": 8,
+                  "height": 40,
+                  "componentId": "3f79e9d3-63bc-4fff-9584-52ddec73fb9a"
+                },
+                {
+                  "id": "2f9f638c-c989-40f2-a9cf-c33ff88fb1c1",
+                  "type": "mobile",
+                  "top": 80,
+                  "left": 65.11627906976744,
+                  "width": 18.6046511627907,
+                  "height": 30,
+                  "componentId": "3f79e9d3-63bc-4fff-9584-52ddec73fb9a"
+                }
+              ]
+            },
+            {
+              "id": "6f8c642e-28e6-4f53-a1e2-1dd0afbac112",
+              "name": "dataset_count",
+              "type": "NumberInput",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "value": {
+                  "value": "1"
+                },
+                "label": {
+                  "value": ""
+                },
+                "placeholder": {
+                  "value": "1"
+                },
+                "decimalPlaces": {
+                  "value": "{{0}}"
+                }
+              },
+              "general": {},
+              "styles": {
+                "borderRadius": {
+                  "value": "{{5}}",
+                  "fxActive": false
+                },
+                "backgroundColor": {
+                  "value": "",
+                  "fxActive": true
+                },
+                "borderColor": {
+                  "value": "",
+                  "fxActive": true
+                },
+                "color": {
+                  "fxActive": false
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {
+                "minValue": {
+                  "value": "1"
+                },
+                "maxValue": {
+                  "value": "100"
+                },
+                "mandatory": {
+                  "fxActive": false
+                }
+              },
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "32af2cf5-308c-4bf9-a102-3a666f87d9b5",
+                  "type": "desktop",
+                  "top": 50,
+                  "left": 25.581397130966927,
+                  "width": 6,
+                  "height": 40,
+                  "componentId": "6f8c642e-28e6-4f53-a1e2-1dd0afbac112"
+                },
+                {
+                  "id": "47310070-bac2-47f4-a58a-3a104ce4826b",
+                  "type": "mobile",
+                  "top": 40,
+                  "left": 18.6046511627907,
+                  "width": 23.25581395348837,
+                  "height": 40,
+                  "componentId": "6f8c642e-28e6-4f53-a1e2-1dd0afbac112"
+                }
+              ]
+            },
+            {
+              "id": "0a996e67-250f-4aad-907f-79d879d834bd",
+              "name": "text2",
+              "type": "Text",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "f74c6cbf-ebbb-49b7-aa86-3cc1a2b91b91",
+              "properties": {
+                "text": {
+                  "value": "<div style=\"font-weight: 600;\">Lorem ipsum generator</div>"
+                }
+              },
+              "general": {},
+              "styles": {
+                "textColor": {
+                  "value": "#ffffffff",
+                  "fxActive": false
+                },
+                "textSize": {
+                  "value": "{{20}}"
+                },
+                "textAlign": {
+                  "value": "right"
+                },
+                "fontWeight": {
+                  "value": "normal"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "isScrollRequired": {
+                  "value": "disabled"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "01f8ca61-b4f2-4896-9834-bf2b5294ed88",
+                  "type": "desktop",
+                  "top": 10,
+                  "left": 69.7674389063173,
+                  "width": 12,
+                  "height": 40,
+                  "componentId": "0a996e67-250f-4aad-907f-79d879d834bd"
+                }
+              ]
+            },
+            {
+              "id": "1da2a31d-53a7-4c41-a71c-27abeb255ef0",
+              "name": "text3",
+              "type": "Text",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "text": {
+                  "value": "Dataset type"
+                }
+              },
+              "general": {},
+              "styles": {
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040",
+                  "fxActive": true
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "fontWeight": {
+                  "value": "bold"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "d25f79bc-aca4-44e0-851c-a983c9623ca7",
+                  "type": "mobile",
+                  "top": 40,
+                  "left": 0,
+                  "width": 13.953488372093023,
+                  "height": 40,
+                  "componentId": "1da2a31d-53a7-4c41-a71c-27abeb255ef0"
+                },
+                {
+                  "id": "6bb4e2fe-5237-4851-a34d-6783e9198c1d",
+                  "type": "desktop",
+                  "top": 20,
+                  "left": 2.3255797106465375,
+                  "width": 7,
+                  "height": 30,
+                  "componentId": "1da2a31d-53a7-4c41-a71c-27abeb255ef0"
+                }
+              ]
+            },
+            {
+              "id": "49ece817-9e78-45af-afb6-1ee7c37a05bb",
+              "name": "text4",
+              "type": "Text",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "text": {
+                  "value": "Dataset count"
+                }
+              },
+              "general": {},
+              "styles": {
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040",
+                  "fxActive": true
+                },
+                "fontWeight": {
+                  "value": "bold"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "bf4bc46a-0b41-4ade-a236-9a709e64f93c",
+                  "type": "mobile",
+                  "top": 40,
+                  "left": 0,
+                  "width": 13.953488372093023,
+                  "height": 40,
+                  "componentId": "49ece817-9e78-45af-afb6-1ee7c37a05bb"
+                },
+                {
+                  "id": "af2429bf-a4ca-436f-8445-d97f3069e37a",
+                  "type": "desktop",
+                  "top": 20,
+                  "left": 25.58139534883721,
+                  "width": 6,
+                  "height": 30,
+                  "componentId": "49ece817-9e78-45af-afb6-1ee7c37a05bb"
+                }
+              ]
+            },
+            {
+              "id": "4ddc073c-bc88-4e5c-b2dd-5a576546d53b",
+              "name": "text6",
+              "type": "Text",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "text": {
+                  "value": "Generated content"
+                }
+              },
+              "general": {},
+              "styles": {
+                "fontWeight": {
+                  "value": "bold"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040",
+                  "fxActive": true
+                },
+                "isScrollRequired": {
+                  "value": "disabled"
+                },
+                "textSize": {
+                  "value": "16"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "b3d23427-c8e3-410f-ada9-8728f88d62cd",
+                  "type": "mobile",
+                  "top": 40,
+                  "left": 0,
+                  "width": 13.953488372093023,
+                  "height": 40,
+                  "componentId": "4ddc073c-bc88-4e5c-b2dd-5a576546d53b"
+                },
+                {
+                  "id": "418cc5df-7deb-4d1e-b644-626730bae041",
+                  "type": "desktop",
+                  "top": 130,
+                  "left": 2.3255789764927424,
+                  "width": 7,
+                  "height": 40,
+                  "componentId": "4ddc073c-bc88-4e5c-b2dd-5a576546d53b"
+                }
+              ]
+            },
+            {
+              "id": "e9509478-abab-4238-bad7-8b7d767be434",
+              "name": "button2",
+              "type": "Button",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "text": {
+                  "value": "Copy to clipboard 📋"
+                }
+              },
+              "general": {},
+              "styles": {
+                "backgroundColor": {
+                  "value": "#ffffff00"
+                },
+                "borderColor": {
+                  "value": "#3e63ddff"
+                },
+                "textColor": {
+                  "value": "#3e63ddff"
+                },
+                "loaderColor": {
+                  "value": "#3e63ddff"
+                },
+                "borderRadius": {
+                  "value": "{{5}}"
+                }
+              },
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "a16bd5d6-97fe-4290-9a4b-00178c0d2aa7",
+                  "type": "desktop",
+                  "top": 130,
+                  "left": 81.39534640247103,
+                  "width": 7,
+                  "height": 40,
+                  "componentId": "e9509478-abab-4238-bad7-8b7d767be434"
+                },
+                {
+                  "id": "abd171fd-5514-4cbd-8be8-77fa1da31dda",
+                  "type": "mobile",
+                  "top": 130,
+                  "left": 69.76744186046511,
+                  "width": 6.976744186046512,
+                  "height": 30,
+                  "componentId": "e9509478-abab-4238-bad7-8b7d767be434"
+                }
+              ]
+            },
+            {
+              "id": "b16c2a83-cdbe-499c-9be2-7fb42627794a",
+              "name": "richtexteditor1",
+              "type": "RichTextEditor",
+              "pageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "parent": "d75c4dcf-a326-42a1-8589-f6d27a5eab37",
+              "properties": {
+                "defaultValue": {
+                  "value": "{{queries.handleContentGeneration.data.generatedData}}"
+                }
+              },
+              "general": {},
+              "styles": {},
+              "generalStyles": {},
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "layouts": [
+                {
+                  "id": "d1061ca8-253c-4750-b714-985a7f6fd98d",
+                  "type": "mobile",
+                  "top": 0,
+                  "left": 0,
+                  "width": 16,
+                  "height": 210,
+                  "componentId": "b16c2a83-cdbe-499c-9be2-7fb42627794a"
+                },
+                {
+                  "id": "2629c4c0-3865-449d-8a47-f1c05cea54a5",
+                  "type": "desktop",
+                  "top": 170,
+                  "left": 2.325587786338283,
+                  "width": 41,
+                  "height": 490,
+                  "componentId": "b16c2a83-cdbe-499c-9be2-7fb42627794a"
+                }
+              ]
+            }
+          ],
+          "pages": [
+            {
+              "id": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": false,
+              "hidden": false,
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db"
+            }
+          ],
+          "events": [
+            {
+              "id": "9bb12bee-04eb-4162-98ff-b67c9cb0bc03",
+              "name": "onDataQuerySuccess",
+              "index": 0,
+              "event": {
+                "key": "generatedText",
+                "value": "{{queries.generateSentences.data}}",
+                "eventId": "onDataQuerySuccess",
+                "message": "Hello world!",
+                "actionId": "set-custom-variable",
+                "alertType": "info",
+                "runOnlyIf": ""
+              },
+              "sourceId": "15af8223-e2de-4eac-851a-6865a207d4aa",
+              "target": "data_query",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "89b33ab2-6758-4d63-a5f3-f043cfbcc92c",
+              "name": "onDataQuerySuccess",
+              "index": 0,
+              "event": {
+                "key": "item",
+                "value": "{{queries.getRandomItem.data}}",
+                "eventId": "onDataQuerySuccess",
+                "message": "Hello world!",
+                "actionId": "set-custom-variable",
+                "alertType": "info"
+              },
+              "sourceId": "3f39e7a1-9fec-4759-b1f7-8e4d853f7df6",
+              "target": "data_query",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "bc51d4ee-faea-48b1-ae5e-91452dc36c7d",
+              "name": "onClick",
+              "index": 0,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "queryId": "c456083e-9f11-4161-91a9-346f640a8210",
+                "actionId": "run-query",
+                "alertType": "info",
+                "queryName": "handleGenerateButtonClick",
+                "parameters": {}
+              },
+              "sourceId": "0b5b8177-7984-4937-8e51-d334cce9561c",
+              "target": "component",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.893Z"
+            },
+            {
+              "id": "495b936f-20a5-4b13-8d32-15aa4545293f",
+              "name": "onClick",
+              "index": 0,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "actionId": "copy-to-clipboard",
+                "alertType": "info",
+                "contentToCopy": "{{queries.handleContentGeneration.data.generatedData}}"
+              },
+              "sourceId": "e9509478-abab-4238-bad7-8b7d767be434",
+              "target": "component",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-26T07:50:48.101Z"
+            }
+          ],
+          "dataQueries": [
+            {
+              "id": "febf0c7f-c7b9-4bd3-a710-e01994e1117d",
+              "name": "generateCompanyNames",
+              "options": {
+                "code": "// Set of 20 first names for companies\nconst firstCompanyNames = [\n  \"Alpha\",\n  \"Beta\",\n  \"Gamma\",\n  \"Delta\",\n  \"Omega\",\n  \"Nova\",\n  \"Zenith\",\n  \"Spectrum\",\n  \"Horizon\",\n  \"Apex\",\n  \"Vertex\",\n  \"Pinnacle\",\n  \"Infinite\",\n  \"Eclipse\",\n  \"Nimbus\",\n  \"Quantum\",\n  \"Orbit\",\n  \"Aurora\",\n  \"Vortex\",\n  \"Cascade\",\n];\n\n// Set of 20 second names for companies\nconst secondCompanyNames = [\n  \"Technologies\",\n  \"Solutions\",\n  \"Innovations\",\n  \"Systems\",\n  \"Enterprises\",\n  \"Global\",\n  \"International\",\n  \"Group\",\n  \"Consulting\",\n  \"Services\",\n  \"Dynamics\",\n  \"Digital\",\n  \"Networks\",\n  \"Ventures\",\n  \"Partners\",\n  \"Enterprises\",\n  \"Solutions\",\n  \"Industries\",\n  \"Labs\",\n  \"Strategies\",\n];\n\n// Array to hold generated company names\nconst companyNames = [];\n\n// Loop to generate specified count of company names\nfor (let i = 0; i < parameters.count; i++) {\n  // Retrieve a random first name from the firstCompanyNames array\n  await queries.getRandomItem.run({ arr: firstCompanyNames });\n  let firstName = `${queries.getRandomItem.getData()}`;\n\n  // Retrieve a random second name from the secondCompanyNames array\n  await queries.getRandomItem.run({ arr: secondCompanyNames });\n  let secondName = `${queries.getRandomItem.getData()}`;\n\n  // Concatenate first and second names to form a company name\n  let companyName = `${firstName} ${secondName}`;\n\n  // Add generated company name to the array\n  companyNames.push(companyName);\n}\n\n// Join the generated company names into a comma-separated string and return\nreturn companyNames.join(\", \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "a0c1ad89-51f1-48b1-aea8-3e3ad123db65",
+              "name": "generateCompanyUrls",
+              "options": {
+                "code": "// Set of 20 first names for companies\nconst firstCompanyNames = [\n  \"Alpha\",\n  \"Beta\",\n  \"Gamma\",\n  \"Delta\",\n  \"Omega\",\n  \"Nova\",\n  \"Zenith\",\n  \"Spectrum\",\n  \"Horizon\",\n  \"Apex\",\n  \"Vertex\",\n  \"Pinnacle\",\n  \"Infinite\",\n  \"Eclipse\",\n  \"Nimbus\",\n  \"Quantum\",\n  \"Orbit\",\n  \"Aurora\",\n  \"Vortex\",\n  \"Cascade\",\n];\n\n// Set of 20 second names for companies\nconst secondCompanyNames = [\n  \"Technologies\",\n  \"Solutions\",\n  \"Innovations\",\n  \"Systems\",\n  \"Enterprises\",\n  \"Global\",\n  \"International\",\n  \"Group\",\n  \"Consulting\",\n  \"Services\",\n  \"Dynamics\",\n  \"Digital\",\n  \"Networks\",\n  \"Ventures\",\n  \"Partners\",\n  \"Enterprises\",\n  \"Solutions\",\n  \"Industries\",\n  \"Labs\",\n  \"Strategies\",\n];\n\n// Array to hold generated company URLs\nconst companyUrls = [];\n\n// Loop to generate specified count of company URLs\nfor (let i = 0; i < parameters.count; i++) {\n  // Retrieve a random first name from the firstCompanyNames array\n  await queries.getRandomItem.run({ arr: firstCompanyNames });\n  let firstName = `${queries.getRandomItem.getData()}`;\n\n  // Retrieve a random second name from the secondCompanyNames array\n  await queries.getRandomItem.run({ arr: secondCompanyNames });\n  let secondName = `${queries.getRandomItem.getData()}`;\n\n  // Create a URL-friendly string by concatenating first and second names and converting to lowercase\n  let urlFriendlyName = `${firstName}-${secondName}`.toLowerCase();\n\n  // Construct the company URL\n  let companyUrl = `https://www.${urlFriendlyName}.com`;\n\n  // Add generated company URL to the array\n  companyUrls.push(companyUrl);\n}\n\n// Join the generated company URLs into a comma-separated string and return\nreturn companyUrls.join(\", \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "c456083e-9f11-4161-91a9-346f640a8210",
+              "name": "handleContentGeneration",
+              "options": {
+                "code": "// Retrieve selected options from the UI\nconst datasetType = components.dataset_type.value;\nconst datasetCount = parseInt(components.dataset_count.value);\n\n// Check if datasetCount exceeds the maximum limit\nif (datasetCount > 100) {\n  // Show an error alert if the maximum limit is exceeded\n  actions.showAlert(\"error\", \"Maximum number of datasets is 100\");\n  return;\n}\n\n// Check if datasetCount is less than or equal to zero\nif (datasetCount <= 0) {\n  // Show an error alert if datasetCount is less than or equal to zero\n  actions.showAlert(\"error\", \"Minimum number of datasets is 1\");\n  return;\n}\n\n// Generate dummy text based on the selected dataset type\nlet generatedData;\nswitch (datasetType) {\n  case \"paragraph\":\n    // Generate paragraphs based on the specified count\n    await queries.generateParagraphs.run({ count: datasetCount });\n    generatedData = queries.generateParagraphs.getData();\n    break;\n  case \"sentence\":\n    // Generate sentences based on the specified count\n    await queries.generateSentences.run({ count: datasetCount });\n    generatedData = queries.generateSentences.getData();\n    break;\n  case \"title\":\n    // Generate titles based on the specified count\n    await queries.generateTitles.run({ count: datasetCount });\n    generatedData = queries.generateTitles.getData();\n    break;\n  case \"word\":\n    // Generate words based on the specified count\n    await queries.generateWords.run({ count: datasetCount });\n    generatedData = queries.generateWords.getData();\n    break;\n  case \"fullName\":\n    // Generate full names based on the specified count\n    await queries.generateFullNames.run({ count: datasetCount });\n    generatedData = queries.generateFullNames.getData();\n    break;\n  case \"email\":\n    // Generate email addresses based on the specified count\n    await queries.generateEmails.run({ count: datasetCount });\n    generatedData = queries.generateEmails.getData();\n    break;\n  case \"companyURL\":\n    // Generate company URLs based on the specified count\n    await queries.generateCompanyUrls.run({ count: datasetCount });\n    generatedData = queries.generateCompanyUrls.getData();\n    break;\n  case \"companyName\":\n    // Generate company names based on the specified count\n    await queries.generateCompanyNames.run({ count: datasetCount });\n    generatedData = queries.generateCompanyNames.getData();\n    break;\n}\n\n// Return the generated dummy text\nreturn { generatedData };",
+                "parameters": [],
+                "runOnPageLoad": false
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "15af8223-e2de-4eac-851a-6865a207d4aa",
+              "name": "generateSentences",
+              "options": {
+                "code": "// Array to hold generated sentences\nconst sentences = [];\n\n// Loop to generate specified count of sentences\nfor (let i = 0; i < parameters.count; i++) {\n  // Generate a random count of words for this sentence (between 8 and 24)\n  let randomCount = Math.floor(Math.random() * 17) + 8;\n\n  // Generate words using the query with the random count\n  await queries.generateWords.run({ count: randomCount });\n  let sentence = queries.generateWords.getData();\n\n  // Capitalize the first letter of the sentence and make the rest lowercase\n  sentence = sentence[0].toUpperCase() + sentence.slice(1).toLowerCase();\n\n  // Append punctuation to the end of the sentence\n  sentence += \".\";\n\n  // Append the generated sentence to the sentences array\n  sentences.push(sentence);\n}\n\n// Join the generated sentences into a single string separated by spaces and return\nreturn sentences.join(\" \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "3f39e7a1-9fec-4759-b1f7-8e4d853f7df6",
+              "name": "getRandomItem",
+              "options": {
+                "code": "// Generate a random index within the range of the array length\nconst randomIndex = parseInt(Math.random() * parameters.arr.length);\n\n// Return the element at the randomly generated index from the array\nreturn parameters.arr[randomIndex];",
+                "parameters": [
+                  {
+                    "name": "arr",
+                    "defaultValue": "[\n    \"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.\",\n    \"Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.\"]"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "4001beb7-bc79-407b-923a-ec3f65434daa",
+              "name": "generateParagraphs",
+              "options": {
+                "code": "// Generate a random size for each paragraph, ranging from 3 to 7 sentences\nconst randomSize = parseInt(Math.random() * 5) + 3;\n\n// Array to hold generated paragraphs\nconst paragraphs = [];\n\n// Loop to generate specified count of paragraphs\nfor (let i = 0; i < parameters.count; i++) {\n  // Generate a paragraph with a random number of sentences\n  await queries.generateSentences.run({ count: randomSize });\n  paragraphs.push(queries.generateSentences.getData());\n}\n\n// Join the generated paragraphs into a string separated by two newlines and return\nreturn paragraphs.join(\"\\n\\n\");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "a70fa010-6e1a-4193-83d4-4864f4ae7c33",
+              "name": "generateWords",
+              "options": {
+                "code": "// Set of 30 words\nconst wordSet = [\n  \"Lorem\",\n  \"ipsum\",\n  \"dolor\",\n  \"sit\",\n  \"amet\",\n  \"consectetur\",\n  \"adipiscing\",\n  \"elit\",\n  \"sed\",\n  \"auctor\",\n  \"magna\",\n  \"non\",\n  \"bibendum\",\n  \"efficitur\",\n  \"ipsum\",\n  \"velit\",\n  \"Suspendisse\",\n  \"potenti\",\n  \"Donec\",\n  \"enim\",\n  \"ex\",\n  \"faucibus\",\n  \"placerat\",\n  \"Cras\",\n  \"felis\",\n  \"magna\",\n  \"vestibulum\",\n  \"commodo\",\n  \"Nullam\",\n  \"auctor\",\n];\n\n// Array to hold generated words\nconst words = [];\n\n// Loop to generate specified count of words\nfor (let i = 0; i < parameters.count; i++) {\n  // Retrieve a random word from the wordSet array\n  await queries.getRandomItem.run({ arr: wordSet });\n  words.push(queries.getRandomItem.getData());\n}\n\n// Join the generated words into a single string separated by spaces and return\nreturn words.join(\" \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "5ea3c213-9e17-4553-9ca1-0b4c097f4c61",
+              "name": "generateTitles",
+              "options": {
+                "code": "// Array to hold generated titles\nconst titles = [];\n\n// Loop to generate specified count of titles\nfor (let i = 0; i < parameters.count; i++) {\n  // Generate a random count of words for this title (between 3 and 4)\n  let randomCount = Math.floor(Math.random() * 2) + 3;\n\n  // Generate words using the query with the random count\n  await queries.generateWords.run({ count: randomCount });\n\n  // Append the generated words to the titles array\n  titles.push(queries.generateWords.getData());\n}\n\n// Join the generated titles into a single string separated by commas and return\nreturn titles.join(\", \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "02f9b53b-339e-4111-94d8-ec16042a0ead",
+              "name": "generateFullNames",
+              "options": {
+                "code": "// Set of 20 first names\nconst firstNames = [\n  \"John\",\n  \"Jane\",\n  \"Michael\",\n  \"Emily\",\n  \"David\",\n  \"Emma\",\n  \"Daniel\",\n  \"Olivia\",\n  \"James\",\n  \"Sophia\",\n  \"William\",\n  \"Isabella\",\n  \"Benjamin\",\n  \"Mia\",\n  \"Jacob\",\n  \"Charlotte\",\n  \"Ethan\",\n  \"Amelia\",\n  \"Alexander\",\n  \"Harper\",\n];\n\n// Set of 20 last names\nconst lastNames = [\n  \"Smith\",\n  \"Johnson\",\n  \"Williams\",\n  \"Jones\",\n  \"Brown\",\n  \"Davis\",\n  \"Miller\",\n  \"Wilson\",\n  \"Moore\",\n  \"Taylor\",\n  \"Anderson\",\n  \"Thomas\",\n  \"Jackson\",\n  \"White\",\n  \"Harris\",\n  \"Martin\",\n  \"Thompson\",\n  \"Garcia\",\n  \"Martinez\",\n  \"Robinson\",\n];\n\n// Array to hold generated full names\nlet fullNames = [];\n\n// Loop to generate specified count of full names\nfor (let i = 0; i < parameters.count; i++) {\n  // Retrieve a random first name from the firstNames array\n  await queries.getRandomItem.run({ arr: firstNames });\n  let firstName = `${queries.getRandomItem.getData()}`;\n\n  // Retrieve a random last name from the lastNames array\n  await queries.getRandomItem.run({ arr: lastNames });\n  let lastName = `${queries.getRandomItem.getData()}`;\n\n  // Concatenate first and last names to form a full name\n  let fullName = `${firstName} ${lastName}`;\n\n  // Add generated full name to the array\n  fullNames.push(fullName);\n}\n\n// Join the generated full names into a comma-separated string and return\nreturn fullNames.join(\", \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            },
+            {
+              "id": "b062e3a9-4277-428a-b809-25b3f08071a7",
+              "name": "generateEmails",
+              "options": {
+                "code": "// Set of 20 first names for email generation\nconst firstNames = [\n  \"John\",\n  \"Jane\",\n  \"Michael\",\n  \"Emily\",\n  \"David\",\n  \"Sarah\",\n  \"James\",\n  \"Emma\",\n  \"Daniel\",\n  \"Olivia\",\n  \"Christopher\",\n  \"Sophia\",\n  \"Matthew\",\n  \"Ava\",\n  \"Andrew\",\n  \"Isabella\",\n  \"William\",\n  \"Mia\",\n  \"Joseph\",\n  \"Charlotte\",\n];\n\n// Set of 20 last names for email generation\nconst lastNames = [\n  \"Smith\",\n  \"Johnson\",\n  \"Brown\",\n  \"Taylor\",\n  \"Anderson\",\n  \"Wilson\",\n  \"Miller\",\n  \"Davis\",\n  \"White\",\n  \"Clark\",\n  \"Walker\",\n  \"Hall\",\n  \"Allen\",\n  \"Young\",\n  \"Hill\",\n  \"Scott\",\n  \"Green\",\n  \"Adams\",\n  \"Baker\",\n  \"Ross\",\n];\n\n// Set of common email domains\nconst emailDomains = [\n  \"gmail.com\",\n  \"yahoo.com\",\n  \"hotmail.com\",\n  \"outlook.com\",\n  \"icloud.com\",\n  \"aol.com\",\n  \"mail.com\",\n  \"protonmail.com\",\n  \"zoho.com\",\n  \"yandex.com\",\n];\n\n// Array to hold generated email addresses\nconst emails = [];\n\n// Loop to generate specified count of email addresses\nfor (let i = 0; i < parameters.count; i++) {\n  // Retrieve a random first name from the firstNames array\n  await queries.getRandomItem.run({ arr: firstNames });\n  let urlFriendlyfirstName =\n    `${queries.getRandomItem.getData()}`.toLocaleLowerCase();\n\n  // Retrieve a random last name from the lastNames array\n  await queries.getRandomItem.run({ arr: lastNames });\n  let urlFriendlylastName =\n    `${queries.getRandomItem.getData()}`.toLocaleLowerCase();\n\n  // Retrieve a random email domain from the emailDomains array\n  await queries.getRandomItem.run({ arr: emailDomains });\n  let domain = `${queries.getRandomItem.getData()}`;\n\n  // Generate a random number for email address variation\n  let randomNum = parseInt(Math.random() * 1000);\n\n  // Construct the email address\n  let emailAddress = `${urlFriendlyfirstName}.${urlFriendlylastName}${randomNum}@${domain}`;\n\n  // Add generated email address to the array\n  emails.push(emailAddress);\n}\n\n// Join the generated email addresses into a comma-separated string and return\nreturn emails.join(\", \");",
+                "parameters": [
+                  {
+                    "name": "count",
+                    "defaultValue": "1"
+                  }
+                ]
+              },
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "createdAt": "2024-04-25T07:37:02.346Z",
+              "updatedAt": "2024-04-25T07:37:02.346Z"
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "41aff3d4-fbb7-4871-a975-db6c6f4bdf8a",
+              "name": "restapidefault",
+              "kind": "restapi",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "organizationId": null,
+              "scope": "local",
+              "createdAt": "2024-04-25T07:37:02.361Z",
+              "updatedAt": "2024-04-25T07:37:02.361Z"
+            },
+            {
+              "id": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "name": "runjsdefault",
+              "kind": "runjs",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "organizationId": null,
+              "scope": "local",
+              "createdAt": "2024-04-25T07:37:02.377Z",
+              "updatedAt": "2024-04-25T07:37:02.377Z"
+            },
+            {
+              "id": "894a758d-ebfc-4fb1-a83c-45aa15ff07e1",
+              "name": "runpydefault",
+              "kind": "runpy",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "organizationId": null,
+              "scope": "local",
+              "createdAt": "2024-04-25T07:37:02.397Z",
+              "updatedAt": "2024-04-25T07:37:02.397Z"
+            },
+            {
+              "id": "dc0e55ba-6b83-43c8-85ab-db2efefd64f5",
+              "name": "tooljetdbdefault",
+              "kind": "tooljetdb",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "organizationId": null,
+              "scope": "local",
+              "createdAt": "2024-04-25T07:37:02.418Z",
+              "updatedAt": "2024-04-25T07:37:02.418Z"
+            },
+            {
+              "id": "9aa808cc-ed65-4a32-9685-6a194f35e37b",
+              "name": "workflowsdefault",
+              "kind": "workflows",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "organizationId": null,
+              "scope": "local",
+              "createdAt": "2024-04-25T07:37:02.434Z",
+              "updatedAt": "2024-04-25T07:37:02.434Z"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "b75b6272-9f15-4940-8efd-be6faec4a5db",
+              "name": "v1",
+              "definition": null,
+              "globalSettings": {
+                "hideHeader": true,
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "#edeff5",
+                "backgroundFxQuery": "#edeff5"
+              },
+              "showViewerNavigation": false,
+              "homePageId": "dda125ae-5c5d-470a-9c17-d8397aa88399",
+              "appId": "b4b91cff-4694-4b09-a38c-596769f91c95",
+              "currentEnvironmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "promotedFrom": null,
+              "createdAt": "2024-04-25T07:37:02.336Z",
+              "updatedAt": "2024-05-01T00:01:30.906Z"
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
+              "name": "development",
+              "isDefault": false,
+              "priority": 1,
+              "enabled": true,
+              "createdAt": "2023-04-26T19:44:06.852Z",
+              "updatedAt": "2023-04-26T19:44:06.852Z"
+            },
+            {
+              "id": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
+              "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
+              "name": "staging",
+              "isDefault": false,
+              "priority": 2,
+              "enabled": true,
+              "createdAt": "2023-04-26T19:44:06.852Z",
+              "updatedAt": "2023-04-26T19:44:06.852Z"
+            },
+            {
+              "id": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
+              "organizationId": "f2a832bb-fc39-49c5-be7f-7037ebb79b84",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true,
+              "createdAt": "2023-04-26T19:44:06.852Z",
+              "updatedAt": "2023-04-26T19:44:06.852Z"
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "bcae2e2c-eb2c-4f26-a023-395dd86ab457",
+              "dataSourceId": "41aff3d4-fbb7-4871-a975-db6c6f4bdf8a",
+              "environmentId": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.373Z",
+              "updatedAt": "2024-04-25T07:37:02.373Z"
+            },
+            {
+              "id": "00ac6eb5-7387-4dba-9067-6f953af5d2ad",
+              "dataSourceId": "41aff3d4-fbb7-4871-a975-db6c6f4bdf8a",
+              "environmentId": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.373Z",
+              "updatedAt": "2024-04-25T07:37:02.373Z"
+            },
+            {
+              "id": "b8c29ce2-aafd-4248-babc-6d9d1285ac79",
+              "dataSourceId": "41aff3d4-fbb7-4871-a975-db6c6f4bdf8a",
+              "environmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.373Z",
+              "updatedAt": "2024-04-25T07:37:02.373Z"
+            },
+            {
+              "id": "a976f647-ea95-4067-a505-72acd8299b63",
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "environmentId": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.392Z",
+              "updatedAt": "2024-04-25T07:37:02.392Z"
+            },
+            {
+              "id": "a47cf867-a1e9-409b-94b1-5a87f5841afd",
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "environmentId": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.392Z",
+              "updatedAt": "2024-04-25T07:37:02.392Z"
+            },
+            {
+              "id": "6c2fcf31-919e-41ad-b6de-a9d75bca0bf2",
+              "dataSourceId": "66ea122c-62fa-42bb-9b5b-ea97aa20f991",
+              "environmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.392Z",
+              "updatedAt": "2024-04-25T07:37:02.392Z"
+            },
+            {
+              "id": "023d9221-a740-486f-98cc-6a9f337cc504",
+              "dataSourceId": "894a758d-ebfc-4fb1-a83c-45aa15ff07e1",
+              "environmentId": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.414Z",
+              "updatedAt": "2024-04-25T07:37:02.414Z"
+            },
+            {
+              "id": "4db019ef-66e1-4041-b8d4-d0876df09fa2",
+              "dataSourceId": "894a758d-ebfc-4fb1-a83c-45aa15ff07e1",
+              "environmentId": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.414Z",
+              "updatedAt": "2024-04-25T07:37:02.414Z"
+            },
+            {
+              "id": "afc17d15-ab19-44fb-b239-ccd2861894e4",
+              "dataSourceId": "894a758d-ebfc-4fb1-a83c-45aa15ff07e1",
+              "environmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.414Z",
+              "updatedAt": "2024-04-25T07:37:02.414Z"
+            },
+            {
+              "id": "005cdfbe-7b31-4377-a17f-a557c49d700d",
+              "dataSourceId": "dc0e55ba-6b83-43c8-85ab-db2efefd64f5",
+              "environmentId": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.430Z",
+              "updatedAt": "2024-04-25T07:37:02.430Z"
+            },
+            {
+              "id": "026c4fc4-561b-4858-9c6b-264554c1b126",
+              "dataSourceId": "dc0e55ba-6b83-43c8-85ab-db2efefd64f5",
+              "environmentId": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.430Z",
+              "updatedAt": "2024-04-25T07:37:02.430Z"
+            },
+            {
+              "id": "e176aa78-6a6e-401f-bce7-eaa4b50f8809",
+              "dataSourceId": "dc0e55ba-6b83-43c8-85ab-db2efefd64f5",
+              "environmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.430Z",
+              "updatedAt": "2024-04-25T07:37:02.430Z"
+            },
+            {
+              "id": "497c58e2-8b63-4c71-9069-a872c3af2ae4",
+              "dataSourceId": "9aa808cc-ed65-4a32-9685-6a194f35e37b",
+              "environmentId": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.448Z",
+              "updatedAt": "2024-04-25T07:37:02.448Z"
+            },
+            {
+              "id": "cb4e5d82-1d85-4fbf-8a12-10385dd489ff",
+              "dataSourceId": "9aa808cc-ed65-4a32-9685-6a194f35e37b",
+              "environmentId": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.448Z",
+              "updatedAt": "2024-04-25T07:37:02.448Z"
+            },
+            {
+              "id": "d5afd133-1777-4a6a-a53c-1a8d9af872fe",
+              "dataSourceId": "9aa808cc-ed65-4a32-9685-6a194f35e37b",
+              "environmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
+              "options": null,
+              "createdAt": "2024-04-25T07:37:02.448Z",
+              "updatedAt": "2024-04-25T07:37:02.448Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          }
+        }
+      }
+    }
+  ],
+  "tooljet_version": "2.35.4-ee2.15.26-cloud2.3.10"
+}

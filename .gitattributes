@@ -1,0 +1,6 @@
+# Set default behavior to automatically normalize line endings.
+# All files are checked into the repo and cloned with LF
+* text=auto
+# Force bash scripts to always use LF line endings so that if a repo is accessed
+# in Unix via a file share from Windows, the scripts will work.
+*.sh text eol=lf

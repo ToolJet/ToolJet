@@ -1,0 +1,194 @@
+name: Grype - Docker Image Vulnerability Scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 1"
+
+jobs:
+  PeriodicVulnerability-CheckOn-docker-image-lts:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo docker system prune -af
+          sudo apt-get clean
+          echo "=== Disk space after cleanup ==="
+          df -h
+
+      - name: Pull ToolJet LTS Docker image
+        run: docker pull tooljet/tooljet:ee-lts-latest
+
+      - name: Grype Scan - Table Output (visible in logs)
+        uses: anchore/scan-action@v7
+        with:
+          image: 'tooljet/tooljet:ee-lts-latest'
+          fail-build: false
+          severity-cutoff: high
+          output-format: table
+          only-fixed: true
+
+      - name: Grype Scan - JSON Output (for report)
+        uses: anchore/scan-action@v7
+        with:
+          image: 'tooljet/tooljet:ee-lts-latest'
+          fail-build: false
+          severity-cutoff: high
+          output-format: json
+          output-file: grype-lts-results.json
+          only-fixed: true
+
+      - name: Parse Results
+        id: parse-grype
+        run: |
+          if [ -f grype-lts-results.json ]; then
+            critical=$(jq '[.matches[]? | select(.vulnerability.severity=="Critical")] | length' grype-lts-results.json)
+            high=$(jq '[.matches[]? | select(.vulnerability.severity=="High")] | length' grype-lts-results.json)
+          else
+            critical=0
+            high=0
+          fi
+          total=$((critical + high))
+          echo "critical=$critical" >> $GITHUB_OUTPUT
+          echo "high=$high" >> $GITHUB_OUTPUT
+          echo "total=$total" >> $GITHUB_OUTPUT
+          echo "=== Vulnerability Summary ==="
+          echo "Critical: $critical"
+          echo "High: $high"
+          echo "Total: $total"
+
+      - name: Upload JSON Report as Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grype-lts-scan-report
+          path: grype-lts-results.json
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Determine notification color
+        id: determine-color
+        run: |
+          critical=${{ steps.parse-grype.outputs.critical }}
+          high=${{ steps.parse-grype.outputs.high }}
+
+          if [ "$critical" -gt 0 ]; then
+            echo "color=#FF0000" >> $GITHUB_OUTPUT
+          elif [ "$high" -gt 0 ]; then
+            echo "color=#FFA500" >> $GITHUB_OUTPUT
+          else
+            echo "color=#36A64F" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack Notification
+        run: |
+          payload=$(cat <<EOF
+          {
+            "attachments": [
+              {
+                "color": "${{ steps.determine-color.outputs.color }}",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "🐳 Docker Image Vulnerability Scan Report",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Repository:*\n${{ github.repository }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Image:*\ntooljet/tooljet:ee-lts-latest"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Scanner:*\nGrype"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Scan Time:*\n$(date -u +"%Y-%m-%d %H:%M UTC")"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Docker Image Vulnerabilities (fixable only):*"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "🔴 *Critical:*\n${{ steps.parse-grype.outputs.critical }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "🟠 *High:*\n${{ steps.parse-grype.outputs.high }}"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "📊 *Total:*\n${{ steps.parse-grype.outputs.total }}"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "📥 Download Full Report",
+                          "emoji": true
+                        },
+                        "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                        "style": "primary"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          response=$(curl -s -w "%{http_code}" -X POST \
+            -H 'Content-type: application/json' \
+            --data "$payload" \
+            "${{ secrets.SLACK_WEBHOOK_URL_VUR }}")
+
+          http_code="${response: -3}"
+          if [ "$http_code" != "200" ]; then
+            echo "Slack notification failed with HTTP $http_code"
+            exit 1
+          fi
+
+          echo "Slack notification sent successfully"

@@ -1,0 +1,577 @@
+import React, { useRef, useState, useEffect, useMemo, useContext } from 'react';
+import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
+import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+// eslint-disable-next-line import/no-unresolved
+import _, { debounce, omit } from 'lodash';
+import { generateUIComponents, getBodyHeight } from './FormUtils';
+import { useMounted } from '@/_hooks/use-mount';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { deepClone, deepCloneWithFunctions } from '@/_helpers/utilities/utils.helpers';
+import RenderSchema from './RenderSchema';
+import useStore from '@/AppBuilder/_stores/store';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { shallow } from 'zustand/shallow';
+import {
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { HorizontalSlot } from './Components/HorizontalSlot';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
+import Spinner from '@/_ui/Spinner';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
+
+import './form.scss';
+import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import FormValidationContext from './FormValidationContext';
+
+const FormComponent = (props) => {
+  const {
+    id,
+    component,
+    width,
+    height,
+    styles,
+    setExposedVariable,
+    setExposedVariables,
+    darkMode,
+    fireEvent,
+    properties,
+    resetComponent = () => {},
+    dataCy,
+    currentLayout,
+    componentCount,
+    onComponentClick,
+    subContainerIndex,
+    currentMode,
+    componentType,
+  } = props;
+
+  const { moduleId } = useModuleContext();
+  const isJSONSchema = useStore((state) => state.isJsonSchemaInGenerateFormFrom(id, moduleId), shallow);
+  const themeChanged = useStore((state) => state.themeChanged);
+
+  const {
+    borderRadius,
+    borderColor,
+    boxShadow,
+    footerBackgroundColor,
+    headerBackgroundColor,
+    headerDividerColor,
+    footerDividerColor,
+  } = styles;
+
+  const {
+    buttonToSubmit,
+    advanced: _deprecatedAdvanced,
+    JSONSchema: _deprecatedJSONSchema,
+    showHeader = false,
+    showFooter = false,
+    headerHeight = 80,
+    footerHeight = 80,
+    canvasHeight,
+    validateOnSubmit = true,
+    resetOnSubmit = true,
+    newJsonSchema,
+  } = properties;
+
+  const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
+  const advanced = _deprecatedAdvanced || isJSONSchema;
+  const JSONSchema = _deprecatedAdvanced ? _deprecatedJSONSchema : newJsonSchema;
+
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.visibility,
+    properties.disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
+  const backgroundColor =
+    ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+
+  const activeColor = getModifiedColor(backgroundColor, 'active');
+  const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+  const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
+
+  const computedStyles = {
+    backgroundColor,
+    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
+    height: isDynamicHeightEnabled ? '100%' : height,
+    display: isVisible ? 'flex' : 'none',
+    position: 'relative',
+    boxShadow,
+    flexDirection: 'column',
+    clipPath: `inset(0 round ${computedBorderRadius})`,
+    '--cc-form-scroll-bar-color': activeColor,
+    '--cc-form-header-divider-color': headerDividerColor,
+    '--cc-form-footer-divider-color': footerDividerColor,
+  };
+
+  const formContent = {
+    display: 'flex',
+    height: canHeight || '100%',
+    paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingBottom: showFooter ? '3px' : '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    borderRadius: 'inherit',
+  };
+
+  const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
+
+  const formFooter = {
+    flexShrink: 0,
+    paddingTop: '3px',
+    paddingBottom: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${footerMaxHeight}px`,
+    borderBottomLeftRadius: `${borderRadius}px`,
+    borderBottomRightRadius: `${borderRadius}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
+  };
+  const formHeader = {
+    flexShrink: 0,
+    paddingBottom: '3px',
+    paddingTop: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${headerMaxHeight}px`,
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderTopRightRadius: `${borderRadius}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+    overflow: 'hidden',
+  };
+  useDynamicHeight({
+    isDynamicHeightEnabled,
+    id,
+    height,
+    currentLayout,
+    isContainer: true,
+    componentCount,
+    // Refire reflow when slot visibility/heights change — resizing the form's
+    // header or footer must recompute the container's dynamic height.
+    value: `${isJSONSchema}|${showHeader ? 1 : 0}|${showFooter ? 1 : 0}|${headerHeight}|${footerHeight}`,
+    visibility: isVisible,
+    subContainerIndex,
+    componentType,
+  });
+
+  const parentRef = useRef(null);
+
+  const { contextPath } = useSubcontainerContext();
+  const indices = useMemo(() => contextPath.map((s) => s.index), [contextPath]);
+
+  // Lightweight selector: returns raw exposed value references (no spreading).
+  // shallow comparison works because immer only creates new references for mutated paths.
+  const childExposedMap = useStore((state) => {
+    const childIds = state.containerChildrenMapping?.[id] || [];
+    const exposedComponents = state.resolvedStore.modules[moduleId]?.exposedValues?.components;
+    const result = {};
+    childIds.forEach((childId) => {
+      let val = exposedComponents?.[childId];
+      // If per-row (Form is inside a ListView), navigate to correct row
+      if (Array.isArray(val) && indices.length > 0) {
+        for (const idx of indices) {
+          val = val?.[idx];
+          if (!val) break;
+        }
+      }
+      result[childId] = val || null;
+    });
+    return result;
+  }, shallow);
+
+  useExposedValueBatch(componentCount);
+
+  // Derive childrenData from raw exposed values + component definitions (read imperatively).
+  // Only recomputes when childExposedMap actually changes.
+  const childrenData = useMemo(() => {
+    const state = useStore.getState();
+    const result = {};
+    Object.entries(childExposedMap).forEach(([childId, exposed]) => {
+      const componentDef = state.getComponentDefinition(childId, moduleId)?.component;
+      result[childId] = {
+        ...(exposed || {}),
+        name: componentDef?.name,
+        formKey: componentDef?.formKey,
+      };
+    });
+    return result;
+  }, [childExposedMap, moduleId]);
+  // JSON schema form callbacks for RenderSchema (advanced mode only — not used by SubContainer)
+  const jsonSchemaChildDataRef = useRef({});
+  const [jsonSchemaChildrenData, setJsonSchemaChildrenData] = useState({});
+
+  const onComponentOptionChangedForSubcontainer = useMemo(() => {
+    return (component, key, value, schemaId = '') => {
+      const optionData = {
+        ...(jsonSchemaChildDataRef.current[schemaId] ?? {}),
+        name: component?.name,
+        [key]: value,
+        formKey: component?.formKey,
+      };
+      jsonSchemaChildDataRef.current = { ...jsonSchemaChildDataRef.current, [schemaId]: optionData };
+      setJsonSchemaChildrenData(jsonSchemaChildDataRef.current);
+    };
+  }, []);
+
+  const onComponentOptionsChangedForSubcontainer = useMemo(() => {
+    return (component, exposedValues, schemaId) => {
+      Object.entries(exposedValues).forEach(([key, value]) => {
+        const optionData = {
+          name: component?.name,
+          ...(jsonSchemaChildDataRef.current[schemaId] ?? {}),
+          [key]: value,
+          formKey: component?.formKey,
+        };
+        jsonSchemaChildDataRef.current = { ...jsonSchemaChildDataRef.current, [schemaId]: optionData };
+      });
+      setJsonSchemaChildrenData(jsonSchemaChildDataRef.current);
+    };
+  }, []);
+
+  // Use JSON schema children data for advanced path, store-derived data for normal path
+  const effectiveChildrenData = advanced ? jsonSchemaChildrenData : childrenData;
+
+  const [isValid, setValidation] = useState(true);
+  const [submitAttemptCount, setSubmitAttemptCount] = useState(0);
+  const [uiComponents, setUIComponents] = useState([]);
+  const mounted = useMounted();
+
+  // When this Form is nested inside another Form, inherit the parent's submit
+  // attempts. A failed submit on the parent must surface validation errors on
+  // this child form's inputs too, even though they live under this form's own
+  // FormValidationContext.Provider (which would otherwise shadow the parent's).
+  const parentSubmitAttemptCount = useContext(FormValidationContext);
+  const effectiveSubmitAttemptCount = submitAttemptCount + parentSubmitAttemptCount;
+
+  useEffect(() => {
+    const exposedVariables = {
+      resetForm: async function () {
+        setSubmitAttemptCount(0);
+        resetComponent();
+      },
+      submitForm: async function () {
+        if (validateOnSubmit) {
+          if (!isValid) {
+            setSubmitAttemptCount((n) => n + 1);
+            return fireEvent('onInvalid');
+          }
+        }
+        fireEvent('onSubmit').then(() => {
+          setSubmitAttemptCount(0);
+          if (resetOnSubmit) resetComponent();
+        });
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetOnSubmit, validateOnSubmit, isValid]);
+
+  const extractData = (data) => {
+    const result = {};
+
+    for (const key in data) {
+      const item = data[key];
+
+      if (item.name === 'Text') {
+        const textKey = item?.formKey ?? item?.text;
+        const nextItem = data[parseInt(key) + 1];
+
+        if (nextItem && nextItem.name !== 'Text') {
+          result[textKey] = { ...nextItem };
+          delete result[textKey].name;
+        }
+      }
+    }
+
+    return result;
+  };
+
+  useEffect(() => {
+    if (mounted) {
+      setSubmitAttemptCount(0);
+      resetComponent();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(JSONSchema)]);
+
+  useEffect(() => {
+    advanced && setExposedVariable('children', []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced]);
+
+  useEffect(() => {
+    if (advanced) setUIComponents(generateUIComponents(JSONSchema, advanced, component?.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSONSchema, advanced]);
+
+  const checkJsonChildrenValidtion = () => {
+    const isValid = Object.values(effectiveChildrenData).every((item) => item?.isValid !== false);
+    return isValid;
+  };
+
+  useEffect(() => {
+    let formattedChildData = {};
+    let childValidation = true;
+    let formData = {}; // New object to store form data
+
+    const childIds = Object.keys(effectiveChildrenData || {});
+    if (childIds.length === 0) {
+      const exposedVariables = {
+        data: formattedChildData,
+        isValid: childValidation,
+        formData, // Expose formData
+        ...(!advanced && { children: formattedChildData }),
+      };
+
+      setExposedVariables(exposedVariables);
+      return setValidation(childValidation);
+    }
+
+    if (advanced) {
+      formattedChildData = extractData(effectiveChildrenData);
+      childValidation = checkJsonChildrenValidtion();
+    } else {
+      childIds.forEach((childId) => {
+        const childData = effectiveChildrenData[childId];
+        const componentName = childData?.name;
+        if (componentName) {
+          const componentValue = (() => {
+            if (!childData) return null;
+
+            if (childData.hasOwnProperty('value')) return childData.value;
+            if (childData.hasOwnProperty('values')) return childData.values;
+            if (childData.hasOwnProperty('file')) return childData.file;
+            if (childData.hasOwnProperty('selectedDateRange')) return childData.selectedDateRange;
+
+            return null;
+          })();
+
+          if (componentValue !== null) {
+            formData[componentName] = componentValue;
+          }
+          formattedChildData[componentName] = { ...omit(childData, 'name'), id: childId };
+          childValidation = childValidation && (childData?.isValid ?? true);
+        }
+      });
+    }
+
+    formattedChildData = Object.fromEntries(
+      Object.entries(formattedChildData).map(([key, { formKey, ...rest }]) => [key, rest]) // removing formKey from final exposed data
+    );
+
+    const exposedVariables = {
+      ...(!advanced && { children: deepCloneWithFunctions(formattedChildData) }),
+      data: removeFunctionObjects(deepClone(formattedChildData)),
+      isValid: childValidation,
+      formData, // Expose formData
+    };
+
+    setExposedVariables(exposedVariables);
+    setValidation(childValidation);
+  }, [effectiveChildrenData, advanced]);
+
+  useEffect(() => {
+    document.addEventListener('submitForm', handleFormSubmission);
+    return () => document.removeEventListener('submitForm', handleFormSubmission);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents), resetOnSubmit, validateOnSubmit]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+  };
+  const fireSubmissionEvent = () => {
+    if (validateOnSubmit) {
+      if (!isValid) {
+        setSubmitAttemptCount((n) => n + 1);
+        return fireEvent('onInvalid');
+      }
+    }
+    fireEvent('onSubmit').then(() => {
+      setSubmitAttemptCount(0);
+      if (resetOnSubmit) {
+        debounce(() => resetComponent(), 100)();
+      }
+    });
+  };
+
+  const handleFormSubmission = ({ detail: { buttonComponentId, buttonModuleId } }) => {
+    if (!advanced) {
+      if (buttonToSubmit === buttonComponentId && buttonModuleId === moduleId) {
+        fireSubmissionEvent();
+      }
+    } else if (buttonComponentId == uiComponents.length - 1 && JSONSchema.hasOwnProperty('submitButton')) {
+      fireSubmissionEvent();
+    }
+  };
+
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+
+  const updateHeaderSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
+  };
+
+  const updateFooterSizeInStore = ({ newHeight }) => {
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
+  };
+
+  const [canHeight, setCanHeight] = useState('100%');
+  useEffect(() => {
+    // const newHeight = parseInt(height, 10) - 14;
+
+    // const autoCanvasHeight = document.querySelector(`#canvas-${id}`)?.scrollHeight;
+    const wrapHeight = parseInt(computedFormBodyHeight, 10);
+    // Set height to the larger value between computed body height and canvas scroll height
+    const maxHeight = Math.max(wrapHeight, canvasHeight || 10);
+
+    const roundedHeight = Math.round(maxHeight / 10) * 10;
+    setCanHeight(`${roundedHeight}px`);
+  }, [computedFormBodyHeight, canvasHeight]);
+
+  return (
+    <form
+      className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
+      id={id}
+      data-cy={dataCy}
+      ref={parentRef}
+      style={computedStyles}
+      onSubmit={handleSubmit}
+      onClick={(e) => {
+        if (e.target.className === 'real-canvas') onComponentClick(id, component);
+      }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
+    >
+      {!advanced && showHeader && !isLoading && (
+        <HorizontalSlot
+          slotName="header"
+          slotStyle={formHeader}
+          id={`${id}-header`}
+          height={headerHeight}
+          width={width}
+          darkMode={darkMode}
+          isDisabled={isDisabled}
+          isActive={activeSlot === `${id}-header`}
+          onResize={updateHeaderSizeInStore}
+          componentType="Form"
+          dataCy={dataCy}
+        />
+      )}
+      <div
+        className={`jet-form-body sub-container-overflow-wrap hide-scrollbar show-scrollbar-on-hover ${
+          isDynamicHeightEnabled && `dynamic-${id}`
+        }`}
+        data-cy={`${dataCy}-body-section`}
+        style={formContent}
+      >
+        {isLoading ? (
+          <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
+            <Spinner />
+          </div>
+        ) : (
+          <fieldset disabled={isDisabled} style={{ width: '100%', height: '100%' }}>
+            <FormValidationContext.Provider value={effectiveSubmitAttemptCount}>
+              {!advanced && (
+                <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
+                  <SubContainer
+                    id={id}
+                    canvasHeight={parseInt(computedFormBodyHeight, 10)}
+                    canvasWidth={width}
+                    styles={{
+                      backgroundColor: computedStyles.backgroundColor,
+                      height: '100%',
+                      // Suppress the transient scrollbar that flashes for a
+                      // frame while children grow ahead of the parent reflow.
+                      // Dynamic mode is view-only, so static-height authoring
+                      // still gets the default scroll behavior.
+                      overflowY: isDynamicHeightEnabled ? 'hidden' : undefined,
+                    }}
+                    darkMode={darkMode}
+                    componentType="Form"
+                  />
+                </div>
+              )}
+              {advanced &&
+                uiComponents?.map((item, index) => {
+                  return (
+                    <div
+                      //check to avoid labels for these widgets as label is already present for them
+                      className={
+                        ![
+                          'Checkbox',
+                          'StarRating',
+                          'Multiselect',
+                          'DropDown',
+                          'RadioButton',
+                          'ToggleSwitch',
+                          'ToggleSwitchV2',
+                        ].includes(uiComponents?.[index + 1]?.component)
+                          ? `json-form-wrapper json-form-wrapper-disabled`
+                          : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
+                      }
+                      key={index}
+                    >
+                      <div style={{ position: 'relative' }} className={`form-ele form-${id}-${index}`}>
+                        <RenderSchema
+                          component={item}
+                          parent={id}
+                          id={index}
+                          darkMode={darkMode}
+                          onOptionChange={onComponentOptionChangedForSubcontainer}
+                          onOptionsChange={onComponentOptionsChangedForSubcontainer}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </FormValidationContext.Provider>
+          </fieldset>
+        )}
+      </div>
+      {!advanced && showFooter && !isLoading && (
+        <HorizontalSlot
+          slotName="footer"
+          slotStyle={formFooter}
+          id={`${id}-footer`}
+          height={footerHeight}
+          width={width}
+          darkMode={darkMode}
+          isDisabled={isDisabled}
+          onResize={updateFooterSizeInStore}
+          isActive={activeSlot === `${id}-footer`}
+          componentType="Form"
+          dataCy={dataCy}
+        />
+      )}
+    </form>
+  );
+};
+
+// Avoid rendering the Form component if there are no changes in properties or
+// changes are only in `generateFormFrom` as it is not required to re-render
+export const Form = React.memo(FormComponent, (prevProps, nextProps) => {
+  const diffInProps = diff(prevProps, nextProps) ?? {};
+
+  if (Object.keys(diffInProps).length === 0) return true; // No changes detected, no need to re-render
+  if (Object.keys(diffInProps).length === 1) {
+    if (
+      diffInProps['properties'] &&
+      diffInProps['properties']['generateFormFrom'] &&
+      diffInProps['properties']['generateFormFrom'] !== 'jsonSchema'
+    ) {
+      return true; // No changes detected in childrenData, no need to re-render
+    }
+  }
+  return false; // Changes detected, re-render the component
+});

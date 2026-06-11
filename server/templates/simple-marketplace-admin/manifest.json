@@ -1,0 +1,15 @@
+{
+  "name": "Simple marketplace - Admin",
+  "description": "Take complete control of your online marketplace with our comprehensive admin interface.",
+  "widgets": [
+    "Listview"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "simple-marketplace-admin",
+  "category": "operations"
+}

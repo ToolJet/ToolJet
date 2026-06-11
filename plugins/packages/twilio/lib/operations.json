@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Twilio datasource",
+  "description": "A schema defining Twilio datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "send_sms",
+          "name": "Send SMS"
+        }
+      ]
+    },
+    "send_sms": {
+      "to_number": {
+        "label": "To Number",
+        "key": "to_number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter to number",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "body": {
+        "label": "Body",
+        "key": "body",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter message body",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter message body"
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Slack datasource",
+  "description": "A schema defining slack datasource",
+  "type": "api",
+  "source": {
+    "name": "Slack",
+    "kind": "slack",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_key": {
+        "type": "string",
+        "encrypted": true
+      },
+      "provider": {
+        "type": "string"
+      },
+      "oauth2": {
+        "type": "boolean"
+      },
+      "code": {
+        "type": "string",
+        "encrypted": true
+      },
+      "access_type": {
+        "type": "string"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "credential_source": {
+        "type": "string"
+      }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "access_type": {
+      "value": "read"
+    }
+  },
+  "properties": {
+    "sheets": {
+      "label": "",
+      "key": "slack",
+      "type": "react-component-slack",
+      "description": "A component for slack"
+    }
+  }
+}

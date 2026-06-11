@@ -1,0 +1,96 @@
+---
+name: 📝 Documentation Report
+description: Use this template for reporting a documentation issue or submitting a feature request for documentation
+title: "[docs]: "
+labels: ["documentation"]
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      **Thank you for wanting to report a problem with ToolJet documentation!**
+        Please fill out your suggestions below.
+        
+        ⚠ Verify first that your issue is not [already reported on GitHub][issue search].
+        **Tip:** If you are seeking community support, please consider [joining Slack community][Slack community].
+        
+        [Slack community]: https://tooljet.com/slack
+        
+        [issue search]: ../search?q=is%3Aissue&type=issues
+        
+- type: textarea
+  attributes:
+    label: Summary
+    description: >
+      Explain the problem briefly below, add suggestions to wording or structure.
+      
+      **HINT:** Did you know the documentation has a `Edit this page` link at the bottom of every doc? Feel free to use it to start a pull request right from the GitHub UI!
+    placeholder: >-
+      I was reading the ToolJet documentation of Google Sheet data source, and I found the wrong syntax for expected value `{{xyz}}`. The value should be `{{abc}}`.
+  validations:
+    required: true
+
+- type: dropdown
+  attributes:
+    label: Issue Type
+    description: >
+        Please select the type of the issue from the drop-down.
+    options:
+      - Documentation bug
+      - Documentation feature/update
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: The entire URL of the documentation with the issue
+    description: >
+      Please provide a link to the documentation entry:
+    placeholder: https://docs.tooljet.com/docs/intro
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce the issue
+    description: >-
+      Provide step by step instructions to reproduce the issue
+    placeholder: >-
+      1. Open docs, 2. Go to Google Sheet datasource, 3. click on right sidebar...
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: >-
+      Describe how this improves the documentation, e.g. before/after situation or screenshots.
+    placeholder: >-
+      When the improvement is applied, it makes it more straightforward to understand X.
+  validations:
+    required: false
+    
+- type: dropdown
+  attributes:
+    label: If the issue is confirmed, would you be willing to submit a pull request?
+    options:
+      - 'Yes'
+      - 'No'
+  validations:
+    required: true
+- type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: |
+      Read the [ToolJet Code of Conduct][CoC] first.
+      
+      [CoC]: https://docs.tooljet.com/docs/contributing-guide/code-of-conduct
+    options:
+      - label: I agree to follow the ToolJet Code of Conduct
+        required: true
+        
+- type: markdown
+  attributes:
+    value: >
+      Thank you for your collaboration!
+...

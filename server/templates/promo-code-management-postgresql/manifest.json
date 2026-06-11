@@ -1,0 +1,20 @@
+{
+  "name": "Promo code management (PostgreSQL)",
+  "description": "Efficiently manage and track promotional codes using our robust PostgreSQL powered application.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "PostgreSQL",
+      "id": "postgresql"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "promo-code-management-postgresql",
+  "category": "sales-and-marketing"
+}

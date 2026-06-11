@@ -1,0 +1,108 @@
+@import '../colors.scss';
+
+.mentioned-user {
+  color: #218DE3;
+}
+
+.comments {
+  z-index: 2;
+  display: inline-block;
+  position: absolute;
+  margin: 0.2rem;
+
+  &.open {
+    z-index: 3;
+  }
+
+  .mentioned-user {
+    color: #218DE3;
+  }
+
+  .comment {
+    border: 2.5px solid #FCAA0D;
+  }
+
+  .comment-open {
+    border: 2.5px solid #218DE3 !important;
+  }
+
+  .comment-body {
+    max-height: 400px;
+  }
+
+  .resolved {
+    border: 2px solid #8991A0;
+  }
+
+  .comment-popover {
+    top: 40px;
+    width: 20rem;
+    max-width: 30rem;
+  }
+
+  .open-left {
+    right: 0;
+    left: auto;
+  }
+
+  .open-right {
+    right: 0;
+  }
+
+  .comment-actions-popover {
+    width: 110px;
+    border-radius: 4px;
+    left: -85px;
+    top: 20px;
+  }
+
+  .comment-action {
+    font-size: 12px;
+    padding: 12px !important;
+    font-weight: 500;
+  }
+
+  .comment-author {
+    font-size: 14px;
+  }
+  .comment-time {
+    font-size: 12px;
+  }
+  .comment-body {
+    font-size: 14px;
+  }
+}
+
+.comment-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: transparent;
+  height: 1000vh;
+}
+
+.comment-preview-bubble {
+  opacity: 0.5;
+  display: inline !important;
+}
+
+.comment-preview-bubble-border {
+  border: 2.5px solid #FCAA0D;
+}
+.theme-dark{
+  .comment-action-component{
+    .comment-option{
+      svg{
+        path{
+          stroke: white;
+        }
+      }
+    }
+    .card.popover.comment-actions-popover.show{
+      border-color: #ffffff17; 
+    }
+  
+  }
+}

@@ -1,0 +1,865 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Mongodb datasource",
+  "description": "A schema defining Mongodb datasource",
+  "type": "database",
+  "defaults": {
+    "document": "{ }"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "name": "List collections",
+          "value": "list_collections"
+        },
+        {
+          "name": "Create a collection",
+          "value": "create_collection"
+        },
+        {
+          "name": "Find One",
+          "value": "find_one"
+        },
+        {
+          "name": "Find Many",
+          "value": "find_many"
+        },
+        {
+          "name": "Total Count",
+          "value": "count_total"
+        },
+        {
+          "name": "Count",
+          "value": "count"
+        },
+        {
+          "name": "Distinct",
+          "value": "distinct"
+        },
+        {
+          "name": "Insert One",
+          "value": "insert_one"
+        },
+        {
+          "name": "Insert Many",
+          "value": "insert_many"
+        },
+        {
+          "name": "Update One",
+          "value": "update_one"
+        },
+        {
+          "name": "Update Many",
+          "value": "update_many"
+        },
+        {
+          "name": "Replace One",
+          "value": "replace_one"
+        },
+        {
+          "name": "Find One and Update",
+          "value": "find_one_update"
+        },
+        {
+          "name": "Find One and Replace",
+          "value": "find_one_replace"
+        },
+        {
+          "name": "Find One and Delete",
+          "value": "find_one_delete"
+        },
+        {
+          "name": "Aggregate",
+          "value": "aggregate"
+        },
+        {
+          "name": "Delete One",
+          "value": "delete_one"
+        },
+        {
+          "name": "Delete Many",
+          "value": "delete_many"
+        },
+        {
+          "name": "Bulk Operations",
+          "value": "bulk_write"
+        }
+      ]
+    },
+    "insert_one": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ name: 'Steve', 'hobbies: [ 'hiking', 'tennis', 'fly fishing' ] }",
+        "description": "Enter document",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ checkKeys: true }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "insert_many": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "documents": {
+        "label": "Documents",
+        "key": "documents",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "[ { _id: 1, name: 'Steve' }, { _id: 2, name: 'Sally' } ]",
+        "description": "Enter document",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ checkKeys: true }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "find_one": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ projection: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "find_many": {
+      "collection": {
+          "label": "Collection",
+          "key": "collection",
+          "type": "dynamic-selector",
+          "fxEnabled": false,
+          "autoFetch": true,
+          "operation": {
+            "invokeMethod": "listCollections",
+            "label": "Fetch Collections"
+          },
+          "pagination": true,
+          "pageSize": 6,
+          "description": "Select a collection from the dropdown",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Select or enter collection name",
+          "order": 20
+        },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ projection: { _id: 0, 'name.first': 0, birth: 1 }, sort: { birth: -1 }, limit: 10, skip: 2 }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "count_total": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ fullResponse: true }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "count": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ birth: { $lt: 'new Date({{new Date('01/01/1990').getTime()}})' } }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ skip: 2 }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "distinct": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "field": {
+        "label": "Field",
+        "key": "field",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter field name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter field name"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "update_one": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "update": {
+        "label": "Update",
+        "key": "update",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ $set: { status: 'Modified' } }",
+        "description": "Enter update",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "update_many": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "update": {
+        "label": "Update",
+        "key": "update",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ $set: { status: 'Modified' } }",
+        "description": "Enter update",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "replace_one": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ title: { $regex: 'The Cat from' } } }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "replacement": {
+        "label": "Replacement",
+        "key": "replacement",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ title: { $regex: 'The Cat from some sector' } }",
+        "description": "Enter replacement",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "find_one_replace": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ title: { $regex: 'The Cat from' } } }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "replacement": {
+        "label": "Replacement",
+        "key": "replacement",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ title: { $regex: 'The Cat from some sector' } }",
+        "description": "Enter replacement",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "find_one_update": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "update": {
+        "label": "Update",
+        "key": "update",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ $set: { status: 'Modified' } }",
+        "description": "Enter update",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ upsert: true }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "find_one_delete": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ sort: { field: -1 } }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete_one": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{  comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "delete_many": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ directors: 'Barbra Streisand', }",
+        "description": "Enter filter",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "bulk_write": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "operations": {
+        "label": "Operations",
+        "key": "operations",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "[{ insertOne: { document: { directors: 'Barbra Streisand' } } }]",
+        "description": "Enter operations",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "aggregate": {
+      "collection": {
+        "label": "Collection",
+        "key": "collection",
+        "type": "dynamic-selector",
+        "fxEnabled": false,
+        "autoFetch": true,
+        "operation": {
+          "invokeMethod": "listCollections",
+          "label": "Fetch Collections"
+        },
+        "pagination": true,
+        "pageSize": 6,
+        "description": "Select a collection from the dropdown",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Select or enter collection name",
+        "order": 20
+      },
+      "pipeline": {
+        "label": "Pipeline",
+        "key": "pipeline",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "[{ $match: { categories: 'Bakery' } }, { $group: { _id: '$stars', count: { $sum: 1 } } }]",
+        "description": "Enter pipeline",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      },
+      "options": {
+        "label": "Options",
+        "key": "options",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{ comment: 'some comment' }",
+        "description": "Enter options",
+        "height": "150px",
+        "editorType": "extendedSingleLine"
+      }
+    },
+    "create_collection": {
+  "collection": {
+    "label": "Name",
+    "key": "collection",
+    "type": "codehinter",
+    "lineNumbers": false,
+    "description": "Enter the name of the new collection",
+    "height": "36px",
+    "className": "codehinter-plugins",
+    "placeholder": "sensorData"
+  },
+  "options": {
+    "label": "Options",
+    "key": "options",
+    "type": "codehinter",
+    "mode": "javascript",
+    "placeholder": "{\n  \"capped\": true,\n  \"timeseries\": {\n    \"timeField\": \"timestamp\",\n    \"metaField\": \"sensorInfo\",\n    \"granularity\": \"seconds\",\n    \"bucketMaxSpanSeconds\": 3600,\n    \"bucketRoundingSeconds\": 60\n  },\n  \"expireAfterSeconds\": 86400,\n  \"clusteredIndex\": {\n    \"key\": { \"_id\": 1 },\n    \"unique\": true\n  },\n  \"changeStreamPreAndPostImages\": {\n    \"enabled\": true\n  },\n  \"size\": 10485760,\n  \"max\": 1000,\n  \"storageEngine\": {\n    \"wiredTiger\": {}\n  },\n  \"validator\": {\n    \"$jsonSchema\": {\n      \"bsonType\": \"object\",\n      \"required\": [\"timestamp\", \"sensorInfo\", \"reading\"],\n      \"properties\": {\n        \"timestamp\": { \"bsonType\": \"date\" },\n        \"sensorInfo\": { \"bsonType\": \"object\" },\n        \"reading\": { \"bsonType\": \"number\", \"minimum\": 0 }\n      }\n    }\n  },\n  \"validationLevel\": \"moderate\",\n  \"validationAction\": \"warn\",\n  \"indexOptionDefaults\": {\n    \"storageEngine\": {\n      \"wiredTiger\": {\n        \"configString\": \"block_compressor=zlib\"\n      }\n    }\n  },\n  \"viewOn\": \"rawSensorData\",\n  \"pipeline\": [\n    { \"$match\": { \"sensorInfo.location\": { \"$exists\": true } } },\n    { \"$project\": { \"timestamp\": 1, \"reading\": 1 } }\n  ],\n  \"collation\": {\n    \"locale\": \"en\",\n    \"strength\": 2\n  },\n  \"writeConcern\": {\n    \"w\": \"majority\",\n    \"j\": true,\n    \"wtimeout\": 5000\n  }\n}",
+    "description": "Enter collection options (e.g., capped, size, max)",
+    "height": "150px",
+    "editorType": "extendedSingleLine"
+  }
+}
+ }
+}

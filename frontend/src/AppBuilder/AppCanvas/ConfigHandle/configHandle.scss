@@ -1,0 +1,109 @@
+.config-handle {
+    position: fixed;
+    z-index: 100;
+    min-width: 108px;
+    display: block;
+    visibility: hidden;
+    transition: all .15s ease-in-out;
+
+}
+
+.config-handle-visible {
+  visibility: visible !important;
+}
+
+.multiple-components-config-handle {
+  position: absolute;
+  left: 54px;
+  top: -26px;
+  transform: translate(-50%, 0px);
+  width: 110px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.config-handle,
+.multiple-components-config-handle {
+  .handle-content {
+    cursor: move;
+    color: #ffffff;
+    background: rgb(77, 114, 250);
+  }
+
+  .badge {
+    font-size: 9px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+
+    .delete-part {
+      margin-left: 10px;
+      float: right;
+    }
+
+    .delete-part::before {
+      height: 12px;
+      display: inline-block;
+      width: 2px;
+      background-color: rgba(255, 255, 255, 0.8);
+      opacity: 0.5;
+      content: "";
+      vertical-align: middle;
+    }
+  }
+}
+
+
+.canvas-area #modal-container .modal-component>.config-handle {
+  visibility: visible !important;
+}
+
+.modal-content {
+  .config-handle {
+    position: absolute;
+    top: 0px;
+  }
+}
+
+.dynamic-height-info-popover {
+  width: 290px !important;
+  // height: 220px;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border-weak, #E4E7EB) !important;
+  color: var(--text-default, #1B1F24) !important;
+  box-shadow: var(--elevation-300-box-shadow) !important;
+
+
+  .dynamic-height-info-body {
+    margin-top: 24px;
+    margin-bottom: 15px;
+
+    .dynamic-height-info-text-title {
+      font-size: 12px;
+      font-weight: 500;
+      height: 18px;
+      margin-bottom: 0px;
+    }
+
+    .dynamic-height-info-text-description {
+      font-size: 12px;
+      font-weight: 400;
+      height: 36px;
+      margin-bottom: 0px;
+    }
+  }
+
+  .dynamic-height-info-button {
+      display: flex;
+      justify-content: flex-end;
+  }
+
+}
+
+.config-handle-button {
+  .badge {  
+    font-size: 11px;
+  }
+}

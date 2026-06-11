@@ -1,0 +1,107 @@
+import React, { useEffect, useState } from 'react';
+import { ReleaseVersionButton } from './ReleaseVersionButton';
+import { Link } from 'react-router-dom';
+import { ManageAppUsers } from './ManageAppUsers';
+import { shallow } from 'zustand/shallow';
+import queryString from 'query-string';
+import { isEmpty } from 'lodash';
+import GitSyncManager from '../GitSyncManager';
+import LifecycleCTAButton from '../LifecycleCTAButton';
+import useStore from '@/AppBuilder/_stores/store';
+import PromoteReleaseButton from '@/modules/Appbuilder/components/PromoteReleaseButton';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+
+const RightTopHeaderButtons = ({ isModuleEditor }) => {
+  const { moduleId } = useModuleContext();
+  const { selectedVersion, selectedEnvironment, creationMode } = useStore((state) => ({
+    selectedVersion: state.selectedVersion,
+    selectedEnvironment: state.selectedEnvironment,
+    creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
+  }));
+
+  const isNotPromotedOrReleased = selectedEnvironment?.name === 'development' && !selectedVersion?.isReleased;
+  const isWorkspaceGitApp = creationMode === 'GIT';
+
+  return (
+    <div className="d-flex justify-content-end navbar-right-section">
+      <div className=" release-buttons">
+        <GitSyncManager />
+        <div className="tw-hidden navbar-seperator" />
+        {/* <PreviewAndShareIcons /> */}
+        {(isNotPromotedOrReleased || isWorkspaceGitApp) && <LifecycleCTAButton />}
+        {/* need to review if we need this or not */}
+        {/* {!isModuleEditor && <PromoteReleaseButton />} */}
+      </div>
+    </div>
+  );
+};
+
+export const PreviewAndShareIcons = () => {
+  const { moduleId } = useModuleContext();
+  const {
+    featureAccess,
+    currentPageHandle,
+    selectedEnvironment,
+    editingVersion,
+    appId,
+    app,
+    slug,
+    isPublic,
+    currentVersionId,
+    selectedVersion,
+  } = useStore(
+    (state) => ({
+      featureAccess: state.license?.featureAccess,
+      currentPageHandle: state?.modules[moduleId].currentPageHandle,
+      selectedEnvironment: state.selectedEnvironment,
+      editingVersion: state.editingVersion,
+      appId: state.appStore.modules[moduleId].app.appId,
+      app: state.appStore.modules[moduleId].app.app,
+      slug: state.appStore.modules[moduleId].app.slug,
+      isPublic: state.appStore.modules[moduleId].app.isPublic,
+      currentVersionId: state.currentVersionId,
+      selectedVersion: state.selectedVersion,
+    }),
+    shallow
+  );
+
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  const setCurrentMode = useStore((state) => state.setCurrentMode);
+  const [appPreviewLink, setAppPreviewLink] = useState();
+
+  useEffect(() => {
+    const previewQuery = queryString.stringify({
+      version: selectedVersion?.name,
+      ...(featureAccess?.multiEnvironment ? { env: selectedEnvironment?.name } : {}),
+    });
+    setAppPreviewLink(
+      editingVersion
+        ? `/applications/${slug || appId}/${currentPageHandle}${!isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+        : ''
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, currentVersionId, editingVersion, selectedEnvironment?.id, currentPageHandle]);
+
+  return (
+    <>
+      <div className="preview-share-wrap navbar-nav flex-row">
+        <div className="nav-item">
+          {appId && (
+            <ManageAppUsers
+              currentEnvironment={selectedEnvironment}
+              multiEnvironmentEnabled={featureAccess?.multiEnvironment}
+              app={app}
+              appId={appId}
+              slug={slug}
+              pageHandle={currentPageHandle}
+              darkMode={darkMode}
+              isPublic={isPublic ?? false}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default RightTopHeaderButtons;

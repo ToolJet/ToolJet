@@ -1,0 +1,172 @@
+import config from 'config';
+import { authHeader, handleResponse } from '@/_helpers';
+import { authenticationService } from '@/_services';
+
+export const workflowExecutionsService = {
+  create,
+  triggerEditor,
+  getStatus,
+  getWorkflowExecution,
+  execute,
+  all,
+  enableWebhook,
+  previewQueryNode,
+  getPaginatedExecutions,
+  getPaginatedNodes,
+  trigger,
+  streamSSE,
+  terminate,
+  getExecutionStates,
+};
+
+function previewQueryNode(queryId, appVersionId, nodeId, state = {}, environmentId) {
+  const currentSession = authenticationService.currentSessionValue;
+  const body = {
+    appVersionId,
+    userId: currentSession.current_user?.id,
+    queryId,
+    nodeId,
+    state,
+    appEnvId: environmentId,
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/previewQueryNode`, requestOptions).then(handleResponse);
+}
+
+function create(appVersionId, testJson, environmentId, extraProps = {}) {
+  const { injectedState = {}, startNodeId } = extraProps;
+  const currentSession = authenticationService.currentSessionValue;
+  const body = {
+    environmentId,
+    appVersionId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'version',
+    params: testJson,
+    injectedState,
+    startNodeId,
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions`, requestOptions).then(handleResponse);
+}
+
+function getStatus(workflowExecutionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/status`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getWorkflowExecution(workflowExecutionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${workflowExecutionId}`, requestOptions).then(handleResponse);
+}
+
+function all(appVersionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/all/${appVersionId}`, requestOptions).then(handleResponse);
+}
+
+function execute(workflowAppId, params, appId = undefined, environmentId) {
+  const currentSession = authenticationService.currentSessionValue;
+  const body = {
+    appId: workflowAppId,
+    app: appId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'app',
+    params: Object.fromEntries(params.map((param) => [param.key, param.value])),
+    environmentId,
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions`, requestOptions).then(handleResponse);
+}
+
+function enableWebhook(appId, value) {
+  const body = {
+    isEnable: value,
+  };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/webhooks/workflows/${appId}`, requestOptions).then(handleResponse);
+}
+
+function getPaginatedExecutions(appVersionId, page = 1, perPage = 10) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workflow_executions?appVersionId=${appVersionId}&page=${page}&per_page=${perPage}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function getPaginatedNodes(executionId, page = 1, perPage = 20) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workflow_executions/${executionId}/nodes?page=${page}&per_page=${perPage}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+function trigger(workflowAppId, params, environmentId, queryId, syncExecution = true, workflowVersionId = null) {
+  const currentSession = authenticationService.currentSessionValue;
+  const body = {
+    appId: workflowAppId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'app',
+    params: Array.isArray(params)
+      ? Object.fromEntries(params.filter((param) => param.key !== '').map((param) => [param.key, param.value]))
+      : params || {},
+    environmentId,
+    queryId,
+    syncExecution,
+    ...(workflowVersionId ? { appVersionId: workflowVersionId } : {}),
+  };
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${workflowAppId}/trigger`, requestOptions).then(handleResponse);
+}
+
+function triggerEditor(appVersionId, testJson, environmentId, extraProps = {}) {
+  const { injectedState = {}, startNodeId } = extraProps;
+  const currentSession = authenticationService.currentSessionValue;
+
+  const body = {
+    appVersionId: appVersionId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'version',
+    params: testJson || {},
+    environmentId,
+    injectedState,
+    startNodeId,
+    syncExecution: true, // Workflow builder always runs synchronously
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+
+  // Use appVersionId in URL path for trigger endpoint
+  return fetch(`${config.apiUrl}/workflow_executions/${appVersionId}/trigger`, requestOptions).then(handleResponse);
+}
+
+function terminate(executionId) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/workflow_executions/${executionId}/terminate`, requestOptions).then(handleResponse);
+}
+
+function streamSSE(workflowExecutionId) {
+  return new EventSource(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/stream`, {
+    withCredentials: true,
+  });
+}
+
+function getExecutionStates(appVersionId, executionIds) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ executionIds }),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/workflow_executions/states?appVersionId=${appVersionId}`, requestOptions).then(
+    handleResponse
+  );
+}

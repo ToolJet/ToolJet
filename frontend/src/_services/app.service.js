@@ -1,0 +1,221 @@
+import config from 'config';
+import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
+
+export const appService = {
+  getConfig,
+  getAll,
+  getAllAddableApps,
+  createApp,
+  cloneApp,
+  exportApp,
+  importApp,
+  exportResource,
+  importResource,
+  cloneResource,
+  changeIcon,
+  deleteApp,
+  getApp,
+  fetchApp,
+  fetchAppBySlug,
+  getAppByVersion,
+  fetchAppByVersion,
+  saveApp,
+  getAppUsers,
+  createAppUser,
+  setPasswordFromToken,
+  acceptInvite,
+  getInviteeDetails,
+};
+
+function getConfig() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
+}
+
+function getAll(page, folder, searchKey) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+  else
+    return fetch(
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      requestOptions
+    ).then(handleResponse);
+}
+
+function getAllAddableApps() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
+}
+
+function createApp(body = {}) {
+  if (body.type === 'workflow') {
+    return createWorkflow(body);
+  }
+  // Include active branch ID so backend creates the app on the correct branch
+  const branchId = getActiveBranchId();
+  const payload = { ...body, ...(branchId && { branchId }) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  };
+  return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+}
+
+function createWorkflow(body = {}) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/workflows`, requestOptions).then(handleResponse);
+}
+
+function cloneApp(id) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/clone`, requestOptions).then(handleResponse);
+}
+
+function exportApp(id, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/export${versionId ? `?versionId=${versionId}` : ''}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function exportResource(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(handleResponse);
+}
+
+function importResource(body) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
+}
+
+function cloneResource(body) {
+  // Include active branch ID so clones land on the correct workspace branch
+  // (applies to both apps and modules now that modules are branch-aware).
+  const branchId = getActiveBranchId();
+  const payload = { ...body, ...(branchId && !body.branchId && { branchId }) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  };
+
+  return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
+}
+
+function importApp(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
+}
+
+function changeIcon(icon, appId) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ icon }),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
+}
+
+function getApp(id, accessType) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}${accessType ? `?access_type=${accessType}` : ''}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+// v2 api for fetching app
+function fetchApp(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function deleteApp(id) {
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function fetchAppBySlug(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then((resp) => handleResponse(resp, true));
+}
+
+function getAppByVersion(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+function fetchAppByVersion(appId, versionId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
+function saveApp(id, attributes) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ app: attributes }),
+  };
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
+}
+
+function getAppUsers(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/users`, requestOptions).then(handleResponse);
+}
+
+function createAppUser(app_id, org_user_id, role) {
+  const body = {
+    app_id,
+    org_user_id,
+    role,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/app_users`, requestOptions).then(handleResponse);
+}
+
+function setPasswordFromToken({ token, password, organization, role, firstName, lastName, organizationToken }) {
+  const body = {
+    token,
+    organizationToken,
+    password,
+    organization,
+    role,
+    first_name: firstName,
+    last_name: lastName,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/set-password-from-token`, requestOptions).then(handleResponse);
+}
+
+function acceptInvite({ token, password }) {
+  const body = {
+    token,
+    password,
+  };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/onboarding/accept-invite`, requestOptions).then(handleResponseWithoutValidation);
+}
+
+function getInviteeDetails(token) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/onboarding/invitee-details?token=${token}`, requestOptions).then(handleResponse);
+}

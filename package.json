@@ -1,0 +1,65 @@
+{
+  "name": "tooljet",
+  "version": "1.18.0",
+  "description": "ToolJet is an open-source low-code framework to build and deploy internal tools.",
+  "engines": {
+    "node": "22.15.1",
+    "npm": "10.9.2"
+  },
+  "lint-staged": {
+    "./frontend/src/**/*.{js,jsx}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "@tooljet/cli": "^0.0.13",
+    "eslint": "^9.26.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0"
+  },
+  "scripts": {
+    "prebuild:plugins": "npm run install:plugins",
+    "install:plugins": "npm --prefix plugins install",
+    "build:plugins": "npm --prefix plugins run build",
+    "prebuild:plugins:prod": "npm run install:plugins",
+    "build:plugins:prod": "NODE_ENV=production npm run build:plugins",
+    "postbuild:plugins:prod": "npm --prefix plugins prune --production",
+    "prebuild:frontend": "npm --prefix frontend install --production=false",
+    "build:frontend": "NODE_ENV=production npm --prefix frontend run build",
+    "prebuild:frontend:cloud": "npm --prefix frontend install --production=false",
+    "build:frontend:cloud": "NODE_ENV=production TOOLJET_EDITION=cloud npm --prefix frontend run build:cloud",
+    "postbuild:frontend:cloud": "npm --prefix frontend prune --production",
+    "postbuild:frontend": "npm --prefix frontend prune --production",
+    "prebuild:server": "npm --prefix server install --production=false",
+    "build:server": "NODE_ENV=production npm --prefix server run build",
+    "postbuild:server": "npm --prefix server prune --production",
+    "build": "npm run build:plugins:prod && npm run build:frontend && npm run build:server",
+    "start:prod": "npm --prefix server run start:prod",
+    "cloud:setup": "npm run db:setup && npm run plugins:install && npm run plugins:uninstall && npm run plugins:reload",
+    "cloud:setup:prod": "npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod && npm run plugins:reload:prod",
+    "db:create": "npm --prefix server run db:create",
+    "db:create:prod": "npm --prefix server run db:create:prod",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:migrate:prod": "npm --prefix server run db:migrate:prod",
+    "db:seed": "npm --prefix server run db:seed",
+    "db:seed:prod": "npm --prefix server run db:seed:prod",
+    "db:setup": "npm --prefix server run db:setup",
+    "db:setup:prod": "npm --prefix server run db:setup:prod",
+    "db:reset": "npm --prefix server run db:reset",
+    "db:drop": "npm --prefix server run db:drop",
+    "deploy": "cp -a frontend/build/. public/",
+    "worker:prod": "npm --prefix server run worker:prod",
+    "plugins:install": "npm --prefix server run plugins:install",
+    "plugins:install:prod": "npm --prefix server run plugins:install:prod",
+    "plugins:uninstall": "npm --prefix server run plugins:uninstall",
+    "plugins:uninstall:prod": "npm --prefix server run plugins:uninstall:prod",
+    "plugins:reload": "npm --prefix server run plugins:reload",
+    "plugins:reload:prod": "npm --prefix server run plugins:reload:prod",
+    "rotate:keys": "npm --prefix server run rotate:keys --",
+    "rotate:keys:prod": "npm --prefix server run rotate:keys:prod --",
+    "heroku-postbuild": "./heroku-postbuild.sh",
+    "prepare": "husky install",
+    "update-version": "node update-version.js"
+  },
+  "dependencies": {}
+}

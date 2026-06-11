@@ -1,0 +1,639 @@
+import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
+import { getHostURL } from '@/_helpers/routes';
+import { appVersionService } from '@/_services';
+import { toast } from 'react-hot-toast';
+import { v4 as uuid } from 'uuid';
+import Fuse from 'fuse.js';
+import _ from 'lodash';
+import { decimalToHex } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+
+const createUpdateObject = (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => ({
+  appId,
+  versionId,
+  diff,
+  isComponentCutProcess: false,
+  isUserSwitchedVersion: false,
+  operation,
+  pageId,
+  type,
+});
+
+const didItemChangePosition = (originalArr, sortedArry) => {
+  return originalArr.some((item, index) => {
+    return item.id !== sortedArry[index].id;
+  });
+};
+
+export const savePageChanges = async (appId, versionId, pageId, diff, operation = 'update', type = 'pages') => {
+  const updateObj = createUpdateObject(appId, versionId, pageId, diff, operation, type);
+  try {
+    const res = await appVersionService.autoSaveApp(
+      updateObj.appId,
+      updateObj.versionId,
+      updateObj.diff,
+      updateObj.type,
+      updateObj.pageId,
+      updateObj.operation
+    );
+  } catch (error) {
+    toast.error('App could not be saved.');
+    console.error('Error updating page:', error);
+  }
+};
+
+const createPageUpdateCommand =
+  (updatePaths, afterUpdateFn = () => {}, enableSave = true) =>
+  (pageId, values) => {
+    return (set, get) => {
+      set((state) => {
+        const page = state.modules.canvas.pages.find((p) => p.id === pageId);
+        if (page) {
+          updatePaths.forEach((path, index) => {
+            _.set(page, path, values[index]);
+          });
+          state.editingPage = page;
+          afterUpdateFn(state);
+        }
+      });
+
+      const { appStore, currentVersionId } = get();
+      const app = appStore.modules.canvas.app;
+      const diff = _.zipObject(updatePaths, values);
+      if (enableSave) savePageChanges(app.appId, currentVersionId, pageId, diff);
+    };
+  };
+
+export const createPageMenuSlice = (set, get) => {
+  const updatePageVisibility = createPageUpdateCommand(['hidden']);
+
+  const disableOrEnablePage = createPageUpdateCommand(['disabled']);
+
+  const _togglePageHeaderCmd = createPageUpdateCommand(['pageHeader']);
+  const _togglePageFooterCmd = createPageUpdateCommand(['pageFooter']);
+
+  const updatePageName = createPageUpdateCommand(['name'], (state) => {
+    state.showEditPageNameInput = false;
+    state.showEditingPopover = false;
+    state.editingPage = null;
+  });
+
+  const updatePageIcon = createPageUpdateCommand(['icon']);
+  const updatePageURL = createPageUpdateCommand(['url']);
+  const updatePageTarget = createPageUpdateCommand(['openIn']);
+  const updatePageAppId = createPageUpdateCommand(['appId']);
+
+  const updatePageGroupName = createPageUpdateCommand(['name'], (state) => {});
+
+  const updatePageHandle = createPageUpdateCommand(['handle'], (state) => {
+    state.showRenamePageHandleModal = false;
+    state.showEditingPopover = false;
+    state.editingPage = null;
+  });
+
+  const updatePageWithPermissions = createPageUpdateCommand(['permissions'], (state) => {}, false);
+
+  return {
+    editingPage: null,
+    showEditingPopover: false,
+    showRenamePageHandleModal: false,
+    showEditPageEventsModal: false,
+    showDeleteConfirmationModal: false,
+    showEditPageNameInput: false,
+    popoverTargetId: null,
+    showAddNewPageInput: false,
+    showSearch: false,
+    pageSearchResults: null,
+    isPageGroup: false,
+    pageSettings: {},
+    showPagePermissionModal: false,
+    newPagePopupConfig: {
+      show: false,
+      type: null,
+    },
+    navRef: null,
+    moreNavBtnRef: null,
+    linkRefs: null,
+
+    toggleSearch: (show) =>
+      set((state) => {
+        state.showSearch = show;
+        if (!show) state.pageSearchResults = null;
+      }),
+
+    openPageEditPopover: (page, ref) =>
+      set((state) => {
+        state.editingPage = page;
+        if (ref) {
+          state.popoverTargetId = ref?.current?.id;
+          state.showEditingPopover = true;
+        }
+      }),
+
+    closePageEditPopover: () =>
+      set((state) => {
+        state.showEditingPopover = false;
+        state.showEditPageEventsModal = false;
+        state.showRenamePageHandleModal = false;
+        state.showEditPageNameInput = false;
+        state.showDeleteConfirmationModal = false;
+      }),
+
+    setNewPagePopupConfig: (config) =>
+      set((state) => {
+        state.newPagePopupConfig = {
+          ...state.newPagePopupConfig,
+          ...config,
+        };
+      }),
+
+    toggleEditPageHandleModal: (show) =>
+      set((state) => {
+        state.showRenamePageHandleModal = show;
+        state.showEditingPopover = !show;
+      }),
+
+    toggleShowAddNewPageInput: (show, isPageGroup = false) =>
+      set((state) => {
+        state.showAddNewPageInput = show;
+        if (show) state.isPageGroup = isPageGroup;
+        else state.isPageGroup = false;
+      }),
+
+    toggleDeleteConfirmationModal: (show) =>
+      set((state) => {
+        state.showDeleteConfirmationModal = show;
+        if (!state?.editingPage?.isPageGroup) state.showEditingPopover = !show;
+      }),
+
+    togglePageEventsModal: (show) =>
+      set((state) => {
+        state.showEditPageEventsModal = show;
+        state.showEditingPopover = !show;
+      }),
+
+    toggleEditPageNameInput: (show) =>
+      set((state) => {
+        state.showEditPageNameInput = show;
+        state.showEditingPopover = false;
+        if (!show) state.editingPage = null;
+      }),
+
+    // page actions
+    updatePageVisibility: (pageId, value) => updatePageVisibility(pageId, [value])(set, get),
+    disableOrEnablePage: (pageId, value) => disableOrEnablePage(pageId, [value])(set, get),
+    togglePageHeader: (pageId, checked, mode) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    updatePageHeaderStyle: (pageId, styleName, value) => {
+      const pageHeaderDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageHeader;
+      const updated = {
+        ...pageHeaderDetails,
+        [styleName]: value,
+      };
+      _togglePageHeaderCmd(pageId, [updated])(set, get);
+    },
+    togglePageFooter: (pageId, checked, mode) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        ...(mode === 'mobile' ? { showOnMobile: checked } : { showOnDesktop: checked }),
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageFooterStyle: (pageId, styleName, value) => {
+      const pageFooterDetails = get().modules.canvas.pages.find((p) => p.id === pageId)?.pageFooter;
+      const updated = {
+        ...pageFooterDetails,
+        [styleName]: value,
+      };
+      _togglePageFooterCmd(pageId, [updated])(set, get);
+    },
+    updatePageAppId: (pageId, value) => updatePageAppId(pageId, [value])(set, get),
+    updatePageName: (pageId, value) => {
+      const page = get().modules.canvas.pages.find((p) => p.id === pageId);
+      const pages = get().modules.canvas.pages;
+      const pageWithSameName = pages.some((page) => page.name === value && !page.isPageGroup);
+      const pageGroupWithSameName = pages.some((page) => page.name === value && page.isPageGroup);
+      // if page group is being added and a page group with same name already exists display error
+      if (page?.isPageGroup && pageGroupWithSameName) {
+        return toast('Page group with same name already exists', {
+          icon: '⚠️',
+        });
+      }
+      // if page is being added and a page with same name already exists display error
+      if (!page?.isPageGroup && pageWithSameName) {
+        return toast('Page with same name already exists', {
+          icon: '⚠️',
+        });
+      }
+      updatePageName(pageId, [value])(set, get);
+    },
+    updatePageURL: (pageId, value) => updatePageURL(pageId, [value])(set, get),
+    updatePageTarget: (pageId, value) => updatePageTarget(pageId, [value])(set, get),
+    updatePageIcon: (pageId, value) => updatePageIcon(pageId, [value])(set, get),
+    updatePageHandle: (pageId, value) => {
+      const pageWithSameHandle = get().modules.canvas.pages.some((page) => page.handle === value);
+      if (pageWithSameHandle) {
+        return toast('Page with same handle already exists', {
+          icon: '⚠️',
+        });
+      }
+      updatePageHandle(pageId, [value])(set, get);
+    },
+    updatePageGroupName: (pageId, value) => updatePageGroupName(pageId, [value])(set, get),
+    updatePageWithPermissions: (pageId, value) => updatePageWithPermissions(pageId, [value])(set, get),
+    // unsure about this one
+    clonePage: async (pageId) => {
+      const { getAppId, currentVersionId } = get();
+      const appId = getAppId('canvas');
+      const pages = get().modules.canvas.pages;
+      const data = await appVersionService.clonePage(appId, currentVersionId, pageId);
+      const newPages = data?.pages;
+      const newEvents = data?.events;
+      const pageAdded = newPages.find((p) => !pages.some((p2) => p2.id === p.id));
+      if (Object.keys(pageAdded).length) {
+        const currentComponents = buildComponentMetaDefinition(JSON.parse(JSON.stringify(pageAdded?.components)));
+
+        pageAdded.components = currentComponents;
+        set((state) => {
+          state.modules.canvas.pages.push(pageAdded);
+          state.eventsSlice.module.canvas.events = newEvents;
+        });
+        get().switchPage(pageAdded.id, pageAdded.handle);
+      }
+    },
+    cloneGroup: async (pageId) => {
+      const { getAppId, currentVersionId, resolvePageHiddenValue } = get();
+      const appId = getAppId('canvas');
+      const pages = get().modules.canvas.pages;
+      const data = await appVersionService.cloneGroup(appId, currentVersionId, pageId);
+      const newPages = data?.pages;
+      const newEvents = data?.events;
+      const pageIdsBefore = new Set(pages.map((p) => p.id));
+      const addedPages = newPages.filter((p) => !pageIdsBefore.has(p.id));
+
+      if (addedPages.length) {
+        const processedPages = addedPages.map((page) => {
+          const cloned = JSON.parse(JSON.stringify(page));
+          const currentComponents = cloned?.components ? buildComponentMetaDefinition(cloned.components) : undefined;
+          resolvePageHiddenValue('canvas', true, cloned?.id, cloned?.hidden?.value);
+
+          return { ...cloned, components: currentComponents };
+        });
+
+        set((state) => {
+          state.modules.canvas.pages.push(...processedPages);
+          state.eventsSlice.module.canvas.events = newEvents;
+        });
+      }
+    },
+    deletePage: async (pageId, { saveAfterAction = true } = {}) => {
+      const { getAppId, getHomePageId, currentVersionId } = get();
+      const appId = getAppId('canvas');
+      const homePageId = getHomePageId('canvas');
+      const diff = {
+        pageId: pageId,
+      };
+      const pages = get().modules.canvas.pages;
+      const currentPageId = get().getCurrentPageId('canvas');
+      const switchPage = get().switchPage;
+      if (pages.length === 1) {
+        toast.error('You cannot delete the only page in your app.');
+        return;
+      }
+      if (currentPageId === pageId) {
+        const homePage = pages.find((p) => p.id === homePageId);
+        switchPage(homePage.id, homePage.handle);
+      }
+      set((state) => {
+        state.modules.canvas.pages = pages.filter((p) => p.id !== pageId);
+        state.showDeleteConfirmationModal = false;
+        state.showEditingPopover = false;
+        state.editingPage = null;
+      });
+
+      if (saveAfterAction) {
+        await savePageChanges(appId, currentVersionId, pageId, diff, 'delete');
+      }
+
+      toast.success('Page deleted successfully');
+    },
+    /*
+     * @param {string} pageGroupId - id of the page group to be deleted
+     * @param {boolean} deleteAssociatedPages - if true, all pages in the group will be deleted
+     *  If home page is in the group, the group cannot be deleted
+     * If current page is in the group, the page will be switched to home page
+     */
+    deletePageGroup: async (pageGroupId, deleteAssociatedPages = false, moduleId = 'canvas') => {
+      const { getAppId, getHomePageId, currentVersionId } = get();
+      const appId = getAppId(moduleId);
+      const homePageId = getHomePageId(moduleId);
+      const pages = get().modules.canvas.pages;
+      const diff = {
+        pageId: pageGroupId,
+        deleteAssociatedPages,
+      };
+      if (deleteAssociatedPages) {
+        // check if homepage is in the group or current page is in the group
+        let isHomePageInGroup = false;
+        let isCurrentPageInGroup = false;
+        for (let i = 0; i < pages.length; i++) {
+          if (pages[i].id === homePageId && pages[i].pageGroupId === pageGroupId) {
+            isHomePageInGroup = true;
+          }
+          if (pages[i].id === get().getCurrentPageId('canvas') && pages[i].pageGroupId === pageGroupId) {
+            isCurrentPageInGroup = true;
+          }
+        }
+        if (isHomePageInGroup) return toast.error('You cannot delete the page group as it contains the home page');
+        set((state) => {
+          const newPages = [];
+          pages.forEach((p) => {
+            if (p.id !== pageGroupId && p.pageGroupId !== pageGroupId) {
+              newPages.push(p);
+            }
+          });
+          state.modules.canvas.pages = newPages;
+          state.showDeleteConfirmationModal = false;
+        });
+        // switch page to home page if current page is in the group
+        if (isCurrentPageInGroup) {
+          const homePage = pages.find((p) => p.id === homePageId);
+          get().switchPage(homePage.id, homePage.handle);
+        }
+        await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete');
+      } else {
+        set((state) => {
+          const pages = get().modules.canvas.pages;
+          const newPages = pages
+            .map((p) => {
+              if (p.id !== pageGroupId) {
+                if (p.pageGroupId === pageGroupId) {
+                  return { ...p, pageGroupId: null };
+                }
+                return p;
+              }
+              return p;
+            })
+            .filter((p) => p.id !== pageGroupId);
+
+          state.modules.canvas.pages = newPages;
+          state.showDeleteConfirmationModal = false;
+        });
+        await savePageChanges(appId, currentVersionId, pageGroupId, diff, 'delete');
+      }
+    },
+    markAsHomePage: async (pageId, moduleId = 'canvas') => {
+      const { getAppId, currentVersionId, editingPage } = get();
+      const appId = getAppId(moduleId);
+      const diff = {
+        homePageId: pageId,
+      };
+
+      set((state) => {
+        state.appStore.modules[moduleId].app.homePageId = pageId;
+        state.showEditingPopover = false;
+      });
+      await savePageChanges(appId, currentVersionId, editingPage.id, diff, 'update', null);
+    },
+    reorderPages: async (reorderdPages) => {
+      const diff = {};
+      const currentPageId = get().getCurrentPageId('canvas');
+      const currentPageIndex = get().getCurrentPageIndex('canvas');
+      let newCurrentPageIndex = null;
+
+      // update index of everything to avoid inconsistencies
+      reorderdPages.forEach((page, index) => {
+        // update currentPageIndex in state in case index of current page was changed
+        if (page?.id === currentPageId && index !== currentPageIndex) {
+          newCurrentPageIndex = index;
+        }
+
+        diff[page.id] = {
+          index,
+          pageGroupId: page.pageGroupId,
+        };
+      });
+
+      // @todo come back to this, components can be segregated which will make this update fast compaaed to the current approach
+      set((state) => {
+        state.modules.canvas.pages = reorderdPages;
+        if (newCurrentPageIndex !== null) {
+          state.modules.canvas.currentPageIndex = newCurrentPageIndex;
+        }
+      });
+      const { getAppId, currentVersionId } = get();
+      const appId = getAppId('canvas');
+      await savePageChanges(appId, currentVersionId, currentPageId, diff, 'update', 'pages/reorder');
+    },
+
+    addNewPage: async (name, handle, isPageGroup = false, pageObj) => {
+      const pages = get().modules.canvas.pages;
+      const pageWithSameName = pages.some((page) => page.name === name && !page.isPageGroup);
+      const pageGroupWithSameName = pages.some((page) => page.name === name && page.isPageGroup);
+      // if page group is being added and a page group with same name already exists display error
+      if (isPageGroup && pageGroupWithSameName) {
+        return toast('Page group with same name already exists', {
+          icon: '⚠️',
+        });
+      }
+      // if page is being added and a page with same name already exists display error
+      if (!isPageGroup && pageWithSameName) {
+        return toast('Page with same name already exists', {
+          icon: '⚠️',
+        });
+      }
+      const pageHandles = pages.map((page) => page.handle);
+      let newHandle = handle;
+
+      for (let handleIndex = 1; pageHandles.includes(newHandle); handleIndex++) {
+        newHandle = `${handle}-${handleIndex}`;
+      }
+      const newPageId = uuid();
+      const pageObject = {
+        id: newPageId,
+        name,
+        handle: newHandle,
+        components: {},
+        index: pages.length + 1,
+        ...pageObj,
+        isPageGroup,
+        ...(isPageGroup
+          ? {
+              icon: `IconFolder`,
+            }
+          : {}),
+      };
+      set((state) => {
+        state.modules.canvas.pages.push(pageObject);
+        state.editingPage = pageObject;
+      });
+      const { getAppId, currentVersionId } = get();
+      const appId = getAppId('canvas');
+      await savePageChanges(appId, currentVersionId, '', pageObject, 'create', 'pages');
+      if (!isPageGroup && pageObj?.type === 'default') get().switchPage(newPageId, newHandle);
+      return pageObject;
+    },
+
+    handleSearch: (value) => {
+      if (!value || value.length === 0) {
+        set((state) => {
+          state.pageSearchResults = null;
+        });
+        return;
+      }
+      const pages = get().modules.canvas.pages;
+      const fuse = new Fuse(pages, { keys: ['name'], threshold: 0.3 });
+      const result = fuse.search(value);
+      set((state) => {
+        state.pageSearchResults = result.map((result) => result.item.id);
+      });
+    },
+
+    pageSettingChanged: async (newOptions, type) => {
+      for (const [key, value] of Object.entries(newOptions)) {
+        if (value?.[1]?.a == undefined) {
+          newOptions[key] = value;
+        } else {
+          const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
+          newOptions[key] = hexCode;
+        }
+      }
+
+      set((state) => {
+        state.pageSettings.definition[type] = { ...state.pageSettings.definition[type], ...newOptions };
+      });
+
+      const { getAppId, currentVersionId, currentPageId } = get();
+      const appId = getAppId('canvas');
+      try {
+        const res = await appVersionService.autoSaveApp(
+          appId,
+          currentVersionId,
+          { pageSettings: { [type]: newOptions } },
+          'page_settings',
+          currentPageId,
+          'update'
+        );
+      } catch (error) {
+        toast.error('Page settings could not be saved.');
+        console.error('Error updating page:', error);
+      }
+    },
+
+    togglePagePermissionModal: (show) => {
+      set((state) => {
+        state.showPagePermissionModal = show;
+      });
+    },
+
+    setEditingPage: (page) =>
+      set((state) => {
+        state.editingPage = page;
+      }),
+
+    switchToHomePage: (currentPageId, moduleId = 'canvas') => {
+      const { appStore, modules, selectedVersion, selectedEnvironment, switchPage, modeStore, isPreviewInEditor } =
+        get();
+
+      const homePageId = appStore.modules[moduleId].app.homePageId;
+      const pages = modules[moduleId].pages;
+      const selectedVersionName = selectedVersion?.name;
+      const selectedEnvironmentName = selectedEnvironment?.name;
+      const currentMode = modeStore.modules[moduleId].currentMode;
+
+      if (currentPageId === homePageId) return;
+
+      const page = pages.find((p) => p.id === homePageId);
+
+      const queryParams = {
+        version: selectedVersionName,
+        env: selectedEnvironmentName,
+      };
+
+      switchPage(
+        page?.id,
+        pages.find((p) => page.id === p?.id)?.handle,
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+      );
+    },
+
+    switchPageWrapper: (page, currentPageId, moduleId = 'canvas') => {
+      const {
+        modules,
+        selectedVersion,
+        selectedEnvironment,
+        switchPage,
+        modeStore,
+        isPreviewInEditor,
+        setCurrentPageHandle,
+        eventsSlice,
+      } = get();
+      const pages = modules[moduleId].pages;
+      const selectedVersionName = selectedVersion?.name;
+      const selectedEnvironmentName = selectedEnvironment?.name;
+      const currentMode = modeStore.modules[moduleId].currentMode;
+      const { fireEvent } = eventsSlice;
+
+      if (page?.type === 'url') {
+        if (page?.url) {
+          const finalUrl =
+            page.url.startsWith('http://') || page.url.startsWith('https://') ? page.url : `https://${page.url}`;
+          if (finalUrl) {
+            if (page.openIn === 'new_tab') {
+              window.open(finalUrl, '_blank');
+            } else {
+              window.location.href = finalUrl;
+            }
+          }
+        } else {
+          toast.error('No URL provided');
+          return false;
+        }
+        return true;
+      }
+
+      if (page?.type === 'app') {
+        if (page?.appId) {
+          const appUrl = `${getHostURL()}/applications/${page.appId}`;
+          if (page.openIn === 'new_tab') {
+            window.open(appUrl, '_blank');
+          } else {
+            window.location.href = appUrl;
+          }
+        } else {
+          toast.error('No app selected');
+          return false;
+        }
+        return true;
+      }
+
+      if (page?.type === 'custom') {
+        fireEvent('onClick', page?.id, moduleId, {}, {});
+        return;
+      }
+
+      if (currentPageId === page?.id) {
+        return false;
+      }
+
+      const queryParams = {
+        version: selectedVersionName,
+        env: selectedEnvironmentName,
+      };
+
+      switchPage(
+        page?.id,
+        pages.find((p) => page.id === p?.id)?.handle,
+        currentMode === 'view' && !isPreviewInEditor ? Object.entries(queryParams) : []
+      );
+      currentMode !== 'view' && setCurrentPageHandle(page.handle);
+      return true;
+    },
+  };
+};

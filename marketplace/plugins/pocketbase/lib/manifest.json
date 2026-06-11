@@ -1,0 +1,39 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "PocketBase datasource",
+  "description": "A schema defining PocketBase datasource",
+  "type": "api",
+  "source": {
+    "name": "PocketBase",
+    "kind": "pocketbase",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter PocketBase host api - e.g -> http://127.0.0.1:8090"
+    },
+    "email": {
+      "label": "Email",
+      "key": "email",
+      "type": "text",
+      "description": "Enter PocketBase admin email"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter PocketBase admin password"
+    }
+  },
+  "required": ["host", "email", "password"]
+}

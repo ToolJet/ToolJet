@@ -1,0 +1,26 @@
+.instance-logout-wrapper{
+    background: var(--page-weak);
+    .instance-logout-header{
+      padding: 24px 24px;
+      gap: 12px;
+      height: 72px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      border-bottom: 1px solid var(--border-weak);
+      padding-bottom: 1rem;
+
+      .instance-logout-title{
+        font-size: 18px;
+        line-height: 28px;
+        font-weight: 500;
+      }
+    }
+    .instance-logout-body{
+      padding: 24px;
+      .custom-logout-content{
+        .form-group{
+          width: 472px !important;
+        }
+      }
+    }
+  }

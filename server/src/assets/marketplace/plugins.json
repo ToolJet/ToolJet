@@ -1,0 +1,367 @@
+[
+  {
+    "name": "Plivo",
+    "description": "Plugin for Plivo APIs",
+    "version": "1.0.0",
+    "id": "plivo",
+    "author": "Tooljet",
+    "timestamp": "Thu, 02 Mar 2023 10:40:06 GMT"
+  },
+  {
+    "name": "GitHub",
+    "description": "Plugin for GitHub APIs",
+    "version": "1.0.0",
+    "id": "github",
+    "author": "Tooljet",
+    "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
+  },
+  {
+    "name": "OpenAI",
+    "description": "Plugin for OpenAI APIs",
+    "version": "1.0.0",
+    "id": "openai",
+    "author": "Tooljet",
+    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "AWS Textract",
+    "description": "Plugin for AWS Textract machine-learning service",
+    "version": "1.0.0",
+    "id": "textract",
+    "author": "Tooljet",
+    "timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
+  },
+  {
+    "name": "HarperDB",
+    "repo": "",
+    "description": "Plugin to store and query data from HarperDB",
+    "version": "1.0.0",
+    "id": "harperdb",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Jun 2023 09:50:05 GMT"
+  },
+  {
+    "name": "AWS Redshift",
+    "description": "Plugin for Amazon Redshift data warehouse",
+    "version": "1.0.0",
+    "id": "awsredshift",
+    "author": "Tooljet",
+    "timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
+  },
+  {
+    "name": "AWS Lambda",
+    "description": "Plugin for AWS Lambda",
+    "version": "1.0.0",
+    "id": "aws-lambda",
+    "author": "Tooljet",
+    "timestamp": "Tue, 05 Dec 2023 00:27:16 GMT"
+  },
+  {
+    "name": "PocketBase",
+    "description": "API plugin from PocketBase",
+    "version": "1.0.0",
+    "id": "pocketbase",
+    "author": "Tooljet",
+    "timestamp": "Mon, 18 Mar 2024 14:39:34 GMT"
+  },
+  {
+    "name": "Supabase",
+    "description": "Plugin for Supabase",
+    "version": "1.0.0",
+    "id": "supabase",
+    "author": "Tooljet",
+    "timestamp": "Mon, 25 Mar 2024 20:05:16 GMT"
+  },
+  {
+    "name": "Engagespot",
+    "description": "Plugin for Engagespot APIs",
+    "version": "1.0.0",
+    "id": "engagespot",
+    "author": "Tooljet",
+    "timestamp": "Thu, 29 Feb 2024 09:46:21 GMT"
+  },
+  {
+    "name": "Salesforce",
+    "description": "API plugin from Salesforce",
+    "version": "1.0.0",
+    "id": "salesforce",
+    "author": "Tooljet",
+    "timestamp": "Wed, 06 Mar 2024 11:34:26 GMT"
+  },
+  {
+    "name": "Presto",
+    "description": "Plugin for open source SQL query engine",
+    "version": "1.0.0",
+    "id": "presto",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  },
+  {
+    "name": "SharePoint",
+    "description": "Plugin for SharePoint API",
+    "version": "1.0.0",
+    "id": "sharepoint",
+    "author": "Tooljet",
+    "timestamp": "Wed, 04 Sep 2024 20:18:30 GMT"
+  },
+  {
+    "name": "Jira",
+    "description": "Integrate with Jira for projects management",
+    "version": "1.0.0",
+    "id": "jira",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  },
+  {
+    "name": "Portkey",
+    "description": "Plugin for Portkey APIs",
+    "version": "1.0.0",
+    "id": "portkey",
+    "author": "Portkey",
+    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Pinecone",
+    "description": "Plugin to store and manage data in Vector DB",
+    "version": "1.0.0",
+    "id": "pinecone",
+    "author": "Tooljet",
+    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Cohere",
+    "description": "Integrate with Cohere API to use its AI models for chat and text generation.",
+    "version": "1.0.0",
+    "id": "cohere",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 05:09:30 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Mistral",
+    "description": "Integrate with Mistral API to use its AI models for chat completion capabilities",
+    "version": "1.0.0",
+    "id": "mistral_ai",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 06:35:01 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Hugging Face",
+    "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
+    "version": "1.0.0",
+    "id": "hugging_face",
+    "author": "Tooljet",
+    "timestamp": "Thu, 23 Jan 2025 06:44:25 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Gemini",
+    "description": "Integrate with Gemini AI models for text generation.",
+    "version": "1.0.0",
+    "id": "gemini",
+    "author": "Tooljet",
+    "timestamp": "Fri, 17 Jan 2025 18:04:48 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Anthropic",
+    "description": "Integrate with Anthropic API to use Claude AI models.",
+    "version": "1.0.0",
+    "id": "anthropic",
+    "author": "Tooljet",
+    "timestamp": "Mon, 20 Jan 2025 08:04:46 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Qdrant",
+    "description": "Plugin to store and manage data in Vector DB",
+    "version": "1.0.0",
+    "id": "qdrant",
+    "author": "Tooljet",
+    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Weaviate DB",
+    "description": "Integrate with Weaviate DB to store and query vectors.",
+    "version": "1.0.0",
+    "id": "weaviate",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 16:55:28 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "Azure Repos",
+    "description": "Plugin for managing Azure repositories",
+    "version": "1.0.0",
+    "id": "azurerepos",
+    "author": "Tooljet",
+    "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
+  },
+  {
+    "name": "ClickUp",
+    "description": "ClickUp plugin for task, list, and doc management",
+    "version": "1.0.0",
+    "id": "clickup",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Apr 2025 15:31:38 GMT"
+  },
+  {
+    "name": "AWS Bedrock",
+    "description": "Plugin to use AI foundation models available on AWS",
+    "version": "1.0.0",
+    "id": "aws-bedrock",
+    "author": "Tooljet",
+    "timestamp": "Fri, 04 Jul 2025 05:17:22 GMT",
+    "tags": [
+      "AI"
+    ]
+  },
+  {
+    "name": "EasyPost",
+    "description": "Integrate with EasyPost to use shipping APIs with multiple carriers",
+    "version": "1.0.0",
+    "id": "easypost",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 04:38:28 GMT"
+  },
+  {
+    "name": "Prometheus",
+    "description": "Plugin to query metrics using PromQL",
+    "version": "1.0.0",
+    "id": "prometheus",
+    "author": "Tooljet",
+    "timestamp": "Wed, 11 Jun 2025 11:28:54 GMT"
+  },
+  {
+    "name": "Google Calendar",
+    "description": "Integrate with Google Calendar API for event management",
+    "version": "1.0.0",
+    "id": "googlecalendar",
+    "author": "Tooljet",
+    "timestamp": "Sat, 12 Jul 2025 14:33:45 GMT"
+  },
+  {
+    "name": "Google Cloud Spanner",
+    "description": "Plugin to query relational database using GoogleSQL or PostgreSQL.",
+    "version": "1.0.0",
+    "id": "spanner",
+    "author": "Tooljet",
+    "timestamp": "Mon, 14 Jul 2025 07:03:25 GMT"
+  },
+  {
+    "name": "AfterShip",
+    "description": " Plugin for E-commerce operations management (Shipping, Tracking, Returns)",
+    "version": "1.0.0",
+    "id": "aftership",
+    "author": "Tooljet",
+    "timestamp": "Thu, 15 Jul 2025 14:33:00 GMT"
+  },
+  {
+    "name": "UPS",
+    "description": "Integrate with UPS API to create and track shipments",
+    "version": "1.0.0",
+    "id": "ups",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Jul 2025 18:44:28 GMT"
+  },
+  {
+    "name": "Gmail",
+    "description": "Integrate with Gmail API to organise and manage emails",
+    "version": "1.0.0",
+    "id": "gmail",
+    "author": "Tooljet",
+    "timestamp": "Mon, 21 Jul 2025 07:17:51 GMT"
+  },
+  {
+    "name": "Microsoft Graph",
+    "description": "Plugin to use Microsoft 365 services (Outlook, Calendars, OneDrive etc)",
+    "version": "1.0.0",
+    "id": "microsoft_graph",
+    "author": "Tooljet",
+    "timestamp": "Thu, 31 Jul 2025 08:56:30 GMT"
+  },
+  {
+    "name": "Xero",
+    "description": "Integrate with Xero API to manage financial accounting data",
+    "version": "1.0.0",
+    "id": "xero",
+    "author": "Tooljet",
+    "timestamp": "Mon, 18 Aug 2025 11:22:39 GMT"
+  },
+  {
+    "name": "HubSpot",
+    "description": "Integrate with HubSpot API for CRM and sales automation",
+    "version": "1.0.0",
+    "id": "hubspot",
+    "author": "Tooljet",
+    "timestamp": "Tue, 19 Aug 2025 08:08:38 GMT"
+  },
+  {
+    "name": "FedEx",
+    "description": "Plugin to integrate shipping data from FedEx - pickups, tracking, rates, freight, etc.",
+    "version": "1.0.0",
+    "id": "fedex",
+    "author": "Tooljet",
+    "timestamp": "Fri, 05 Sep 2025 05:46:39 GMT"
+  },
+  {
+    "name": "Authorize.Net",
+    "description": "Plugin for payment processing and customer profile management",
+    "version": "1.0.0",
+    "id": "authorizenet",
+    "author": "Tooljet",
+    "timestamp": "Tue, 25 Nov 2025 16:27:22 GMT",
+    "tags": [
+      "Payment"
+    ]
+  },
+  {
+    "name": "Couchbase",
+    "description": "Couchbase is a high-performance, distributed NoSQL document database",
+    "version": "1.0.0",
+    "id": "couchbase",
+    "author": "Tooljet",
+    "timestamp": "Fri, 20 Jun 2025 06:46:04 GMT"
+  },
+  {
+    "name": "QuickBooks",
+    "description": "Integrate with QuickBooks Online Accounting API",
+    "version": "1.0.0",
+    "id": "quickbooks",
+    "author": "Tooljet",
+    "timestamp": "Wed, 09 Apr 2026 09:30:00 GMT"
+  },
+  {
+    "name": "Intercom",
+    "description": "Connect to Intercom API to manage contacts, conversations, tickets, companies, articles, and more",
+    "version": "1.0.0",
+    "id": "intercom",
+    "author": "Tooljet",
+    "timestamp": "Wed, 16 Apr 2026 10:00:00 GMT"
+  }
+]

@@ -1,0 +1,41 @@
+import { App } from '../../src/entities/app.entity';
+import { Folder } from '../../src/entities/folder.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+  ManyToOne,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity({ name: 'folder_apps' })
+export class FolderApp {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'folder_id' })
+  folderId: string;
+
+  @Column({ name: 'app_id' })
+  appId: string;
+
+  @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
+  updatedAt: Date;
+
+  @ManyToOne(() => Folder, (folder) => folder.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'folder_id' })
+  folder: Folder;
+
+  // null = non-git org (instance-wide); uuid = git org (scoped to that branch only)
+  @Column({ name: 'branch_id', nullable: true, default: null })
+  branchId?: string;
+
+  @ManyToOne(() => App, (folder) => folder.id, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'app_id' })
+  app: App;
+}

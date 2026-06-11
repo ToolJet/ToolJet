@@ -1,0 +1,497 @@
+import React, { useEffect, useRef, useState } from 'react';
+import cx from 'classnames';
+import moment from 'moment-timezone';
+// import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
+
+export const TIMEZONE_OPTIONS = [
+  { name: 'UTC', value: 'Etc/UTC' },
+  { name: '-12:00', value: 'Etc/GMT+12' },
+  { name: '-11:00', value: 'Etc/GMT+11' },
+  { name: '-10:00', value: 'Pacific/Honolulu' },
+  { name: '-09:00', value: 'America/Anchorage' },
+  { name: '-08:00', value: 'America/Santa_Isabel' },
+  { name: '-07:00', value: 'America/Chihuahua' },
+  { name: '-06:00', value: 'America/Guatemala' },
+  { name: '-05:00', value: 'America/Bogota' },
+  { name: '-04:00', value: 'America/Halifax' },
+  { name: '-03:30', value: 'America/St_Johns' },
+  { name: '-03:00', value: 'America/Sao_Paulo' },
+  { name: '-02:00', value: 'Etc/GMT+2' },
+  { name: '-01:00', value: 'Atlantic/Cape_Verde' },
+  { name: '+00:00', value: 'UTC' },
+  { name: '+01:00', value: 'Europe/Berlin' },
+  { name: '+02:00', value: 'Africa/Gaborone' },
+  { name: '+03:00', value: 'Asia/Baghdad' },
+  { name: '+04:00', value: 'Asia/Muscat' },
+  { name: '+04:30', value: 'Asia/Kabul' },
+  { name: '+05:00', value: 'Asia/Tashkent' },
+  { name: '+05:30', value: 'Asia/Colombo' },
+  { name: '+05:45', value: 'Asia/Kathmandu' },
+  { name: '+06:00', value: 'Asia/Almaty' },
+  { name: '+06:30', value: 'Asia/Yangon' },
+  { name: '+07:00', value: 'Asia/Bangkok' },
+  { name: '+08:00', value: 'Asia/Makassar' },
+  { name: '+09:00', value: 'Asia/Seoul' },
+  { name: '+09:30', value: 'Australia/Darwin' },
+  { name: '+10:00', value: 'Pacific/Chuuk' },
+  { name: '+11:00', value: 'Pacific/Pohnpei' },
+  { name: '+12:00', value: 'Etc/GMT-12' },
+  { name: '+13:00', value: 'Pacific/Auckland' },
+];
+
+export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
+  acc[curr.name] = curr.value;
+  return acc;
+}, {});
+
+import {
+  convertToIsoWithTimezoneOffset,
+  getFormattedSelectTimestamp,
+  getSelectedTimestampFromUnixTimestampV2,
+  getUnixTime,
+  getUnixTimestampFromSelectedTimestamp,
+  getUnixTimeFromParsedDate,
+  is24HourFormat,
+  isDateValid,
+} from './utils';
+
+import { BaseDateComponent } from './BaseDateComponent';
+import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
+import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+
+export const DatetimePickerV2 = ({
+  height,
+  properties,
+  validation = {},
+  styles,
+  setExposedVariable,
+  setExposedVariables,
+  componentName,
+  id,
+  darkMode,
+  fireEvent,
+  dataCy,
+  resetComponent,
+}) => {
+  const isInitialRender = useRef(true);
+  const dateInputRef = useRef(null);
+  const datePickerRef = useRef(null);
+  const {
+    label,
+    defaultValue,
+    dateFormat,
+    timeFormat,
+    placeholder: placeholderProp,
+    isTimezoneEnabled,
+    showClearBtn,
+  } = properties;
+  const placeholder = placeholderProp ?? 'Select date and time';
+  const inputProps = {
+    properties,
+    setExposedVariable,
+    setExposedVariables,
+    validation,
+    fireEvent,
+    dateInputRef,
+    datePickerRef,
+    timeFormat,
+    dateFormat,
+  };
+  const dateTimeLogic = useDatetimeInput(inputProps);
+  const dateLogic = useDateInput(inputProps);
+  const timeLogic = useTimeInput(inputProps);
+
+  const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
+    dateTimeLogic;
+  const { minDate, maxDate, excludedDates } = dateLogic;
+  const { minTime, maxTime } = timeLogic;
+
+  const { customRule } = validation;
+
+  const displayFormat = `${dateFormat} ${timeFormat}`;
+
+  // Display Timezone
+  const [displayTimezone, setDisplayTimezone] = useState(
+    isTimezoneEnabled ? properties.displayTimezone : moment.tz.guess()
+  );
+
+  // Parsing Timezone
+  const [storeTimezone, setStoreTimezone] = useState(isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess());
+
+  // Unix Timestamp single source of truth
+  const isISOString = defaultValue.includes('T');
+  const [unixTimestamp, setUnixTimestamp] = useState(
+    defaultValue
+      ? isISOString
+        ? moment(defaultValue).valueOf()
+        : getUnixTimeFromParsedDate(defaultValue, storeTimezone, displayFormat)
+      : null
+  );
+
+  // Selected Date = unixTimestamp + displayTimezone offset
+  // But moment(selectedDate) = SelectedTimestamp + local timezone offset
+  // SelectedTimestamp + local timezone offset = unixTimestamp + displayTimezone offset
+  // SelectedTimestamp = unixTimestamp + displayTimezone offset - local timezone offset
+
+  const [selectedTimestamp, setSelectedTimestamp] = useState(
+    defaultValue ? getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone) : null
+  );
+
+  const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
+  const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
+  const { isValid, validationError } = validationStatus;
+  const [displayTimestamp, setDisplayTimestamp] = useState(
+    selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : ''
+  );
+  const [datepickerMode, setDatePickerMode] = useState('date');
+
+  const setInputValue = (date, format, propStoreTimezone, skipFireEvent = false) => {
+    const isISOString = typeof date === 'string' && date.includes('T');
+    const unixTimestamp = isISOString
+      ? moment(date).valueOf()
+      : getUnixTimeFromParsedDate(
+          date,
+          propStoreTimezone ? propStoreTimezone : storeTimezone,
+          format ? format : displayFormat
+        );
+    const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
+    setUnixTimestamp(unixTimestamp);
+    setSelectedTimestamp(selectedTimestamp);
+    setExposedDateVariables(unixTimestamp, selectedTimestamp);
+    if (skipFireEvent) return;
+    fireEvent('onSelect');
+  };
+
+  const handleClear = () => {
+    setInputValue(null);
+    setDisplayTimestamp('');
+  };
+
+  const onDateSelect = (date) => {
+    const selectedTime = getUnixTime(date, displayFormat);
+    setSelectedTimestamp(selectedTime);
+    const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTime, displayTimezone);
+    setUnixTimestamp(unixTimestamp);
+    setExposedDateVariables(unixTimestamp, selectedTime);
+    fireEvent('onSelect');
+  };
+
+  const onTimeChange = (time, type) => {
+    let updatedSelectedTimestamp = moment(selectedTimestamp);
+    if (!updatedSelectedTimestamp.isValid()) {
+      updatedSelectedTimestamp = moment();
+    }
+    updatedSelectedTimestamp.set(type, time);
+    const updatedUnixTimestamp = getUnixTimestampFromSelectedTimestamp(
+      updatedSelectedTimestamp.valueOf(),
+      displayTimezone
+    );
+    setUnixTimestamp(updatedUnixTimestamp);
+    setSelectedTimestamp(updatedSelectedTimestamp.valueOf());
+    setExposedDateVariables(updatedUnixTimestamp, updatedSelectedTimestamp.valueOf());
+    fireEvent('onSelect');
+  };
+
+  const setExposedDateVariables = (unixTimestamp, selectedTimestamp) => {
+    const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
+    const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
+    const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
+    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
+    setExposedVariables({
+      selectedTime: selectedTime,
+      selectedDate: selectedDate,
+      unixTimestamp: unixTimestamp,
+      displayValue: displayValue,
+      value: value,
+    });
+  };
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    resetComponent();
+  }, [isTimezoneEnabled]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('dateFormat', dateFormat);
+  }, [dateFormat]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('timeFormat', timeFormat);
+  }, [timeFormat]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const val = isTimezoneEnabled ? properties.displayTimezone : moment.tz.guess();
+    setDisplayTimezone(val);
+    setExposedVariable('displayTimezone', val);
+  }, [properties.displayTimezone, isTimezoneEnabled]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const val = isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess();
+    setStoreTimezone(val);
+    setExposedVariable('storeTimezone', val);
+  }, [properties.storeTimezone, isTimezoneEnabled]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setInputValue(defaultValue, displayFormat, isTimezoneEnabled ? properties.storeTimezone : moment.tz.guess(), true);
+  }, [defaultValue, displayFormat, properties.storeTimezone]);
+
+  useEffect(() => {
+    if (isInitialRender.current || textInputFocus) return;
+    setDisplayTimestamp(selectedTimestamp ? getFormattedSelectTimestamp(selectedTimestamp, displayFormat) : '');
+  }, [selectedTimestamp, displayFormat, textInputFocus]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(unixTimestamp, displayTimezone);
+    const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
+    const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
+    const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
+    setSelectedTimestamp(selectedTimestamp);
+    setExposedVariables({
+      selectedTime,
+      selectedDate,
+      displayValue,
+    });
+  }, [isTimezoneEnabled, displayTimezone, displayFormat]);
+
+  useEffect(() => {
+    const unixTimestamp = getUnixTimestampFromSelectedTimestamp(selectedTimestamp, displayTimezone);
+    setUnixTimestamp(unixTimestamp);
+  }, [storeTimezone]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
+    setExposedVariable('value', value);
+  }, [isTimezoneEnabled, storeTimezone]);
+
+  useEffect(() => {
+    const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
+    const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
+    const displayValue = getFormattedSelectTimestamp(selectedTimestamp, displayFormat);
+    const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
+    const exposedVariables = {
+      value: value,
+      selectedTime: selectedTime,
+      selectedDate: selectedDate,
+      unixTimestamp: unixTimestamp,
+      displayValue: displayValue,
+      dateFormat: dateFormat,
+      timeFormat: timeFormat,
+      storeTimezone: isTimezoneEnabled ? storeTimezone : moment.tz.guess(),
+      displayTimezone: isTimezoneEnabled ? displayTimezone : moment.tz.guess(),
+      isValid: isValid,
+    };
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+  }, []);
+
+  useEffect(() => {
+    setExposedVariables({
+      setValue: (value, format) => {
+        setInputValue(value, format);
+      },
+      clearValue: () => {
+        setInputValue(null);
+      },
+      setValueInTimestamp: (timeStamp) => {
+        setInputValue(timeStamp);
+      },
+      setDate: (date, format) => {
+        const momentObj = moment(date, [format ? format : dateFormat, displayFormat]);
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!updatedUnixTimestamp.isValid()) {
+          updatedUnixTimestamp = moment();
+        }
+        updatedUnixTimestamp.set('year', momentObj.year());
+        updatedUnixTimestamp.set('month', momentObj.month());
+        updatedUnixTimestamp.set('date', momentObj.date());
+        const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(
+          updatedUnixTimestamp.valueOf(),
+          displayTimezone
+        );
+        setUnixTimestamp(updatedUnixTimestamp.valueOf());
+        setSelectedTimestamp(selectedTimestamp);
+        setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
+        fireEvent('onSelect');
+      },
+      setTime: (time, format) => {
+        const momentObj = moment(time, [format ? format : timeFormat, displayFormat]);
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!updatedUnixTimestamp.isValid()) {
+          updatedUnixTimestamp = moment();
+        }
+        updatedUnixTimestamp.set('hour', momentObj.hour());
+        updatedUnixTimestamp.set('minute', momentObj.minute());
+        const selectedTimestamp = getSelectedTimestampFromUnixTimestampV2(
+          updatedUnixTimestamp.valueOf(),
+          displayTimezone
+        );
+        setUnixTimestamp(updatedUnixTimestamp.valueOf());
+        setSelectedTimestamp(selectedTimestamp);
+        setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
+        fireEvent('onSelect');
+      },
+    });
+  }, [
+    selectedTimestamp,
+    unixTimestamp,
+    displayTimezone,
+    isTimezoneEnabled,
+    dateFormat,
+    timeFormat,
+    displayFormat,
+    unixTimestamp,
+  ]);
+
+  useEffect(() => {
+    setExposedVariables({
+      setDisplayTimezone: (timezone) => {
+        const value = TIMEZONE_OPTIONS_MAP[timezone];
+        if (value) {
+          const val = isTimezoneEnabled ? value : moment.tz.guess();
+          setDisplayTimezone(val);
+          setExposedVariable('displayTimezone', val);
+        }
+      },
+      setStoreTimezone: (timezone) => {
+        const value = TIMEZONE_OPTIONS_MAP[timezone];
+        if (value) {
+          const val = isTimezoneEnabled ? value : moment.tz.guess();
+          setStoreTimezone(val);
+          setExposedVariable('storeTimezone', val);
+        }
+      },
+    });
+  }, [isTimezoneEnabled]);
+
+  useEffect(() => {
+    setValidationStatus(
+      isDateValid(selectedTimestamp, {
+        minDate,
+        maxDate,
+        minTime,
+        maxTime,
+        customRule,
+        isMandatory,
+        excludedDates,
+        timeFormat,
+        dateFormat,
+      })
+    );
+  }, [
+    minTime,
+    maxTime,
+    minDate,
+    maxDate,
+    customRule,
+    isMandatory,
+    selectedTimestamp,
+    excludedDates,
+    timeFormat,
+    dateFormat,
+  ]);
+
+  const isTwentyFourHourMode = is24HourFormat(displayFormat);
+
+  const componentProps = {
+    popperClassName: cx('tj-table-datepicker tj-datepicker-widget datetimepicker-widget !tw-mt-0', {
+      'theme-dark dark-theme': darkMode,
+      'react-datepicker-month-component': datepickerMode === 'month',
+      'react-datepicker-year-component': datepickerMode === 'year',
+    }),
+    onSelect: (date, event) => {
+      let updatedDate = date;
+      if (event.target.classList.contains('react-datepicker__year-text')) {
+        const modifiedDate = moment(selectedTimestamp).year(date.getFullYear());
+        updatedDate = modifiedDate.toDate();
+      } else if (event.target.classList.contains('react-datepicker__month-text')) {
+        const modifiedDate = moment(selectedTimestamp).month(date.getMonth());
+        updatedDate = modifiedDate.toDate();
+      }
+      onDateSelect(updatedDate);
+      setDatePickerMode('date');
+    },
+
+    selected: selectedTimestamp ? moment(selectedTimestamp).toDate() : null,
+    value: displayTimestamp,
+    dateFormat,
+    displayFormat,
+    timeFormat,
+    excludeDates: excludedDates,
+    showTimeInput: datepickerMode === 'date',
+    showMonthYearPicker: datepickerMode === 'month',
+    showYearPicker: datepickerMode === 'year',
+    minDate: moment(minDate).isValid() ? minDate : null,
+    maxDate: moment(maxDate).isValid() ? maxDate : null,
+    onCalendarClose: () => {
+      setDatePickerMode('date');
+      setIsCalendarOpen(false);
+    },
+    onCalendarOpen: () => {
+      setIsCalendarOpen(true);
+    },
+  };
+
+  const customHeaderProps = {
+    datepickerMode,
+    setDatePickerMode,
+  };
+
+  const customTimeInputProps = {
+    isTwentyFourHourMode,
+    currentTimestamp: selectedTimestamp,
+    onTimeChange,
+    minTime,
+    maxTime,
+  };
+
+  const customDateInputProps = {
+    dateInputRef,
+    onInputChange: onDateSelect,
+    displayFormat,
+    setDisplayTimestamp,
+    setTextInputFocus,
+    setShowValidationError,
+    showValidationError,
+    isValid,
+    validationError,
+    showClearBtn,
+    onClear: handleClear,
+    inputPlaceholder: placeholder,
+  };
+
+  return (
+    <BaseDateComponent
+      styles={styles}
+      height={height}
+      disable={disable}
+      loading={loading}
+      darkMode={darkMode}
+      label={label}
+      focus={focus}
+      visibility={visibility}
+      isMandatory={isMandatory}
+      componentName={componentName}
+      datePickerRef={datePickerRef}
+      componentProps={componentProps}
+      customHeaderProps={customHeaderProps}
+      customTimeInputProps={customTimeInputProps}
+      customDateInputProps={customDateInputProps}
+      id={id}
+      showClearBtn={showClearBtn}
+      dataCy={dataCy}
+    />
+  );
+};

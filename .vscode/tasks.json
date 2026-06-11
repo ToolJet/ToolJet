@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "docker-compose",
+      "label": "docker-compose: debug:client",
+      "dockerCompose": {
+        "up": {
+          "detached": true,
+          "services": [
+            "client"
+          ]
+        },
+        "files": [
+          "${workspaceFolder}/docker-compose.yaml",
+          "${workspaceFolder}/docker-compose-debug.yaml"
+        ]
+      }
+    },
+    {
+      "type": "docker-compose",
+      "label": "docker-compose: debug:server",
+      "dockerCompose": {
+        "up": {
+          "detached": true,
+          "services": [
+            "server"
+          ]
+        },
+        "files": [
+          "${workspaceFolder}/docker-compose.yaml",
+          "${workspaceFolder}/docker-compose-debug.yaml"
+        ]
+      }
+    }
+  ]
+}

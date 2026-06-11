@@ -1,0 +1,155 @@
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import Icon from '@/_ui/Icon/solidIcons/index';
+import { OverlayTrigger, Navbar, Offcanvas } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import classNames from 'classnames';
+import Cross from '@/_ui/Icon/solidIcons/Cross';
+import HeaderActions from '@/AppBuilder/Header/HeaderActions';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { useAppType } from '@/AppBuilder/_contexts/ModuleContext';
+import Loader from '@/ToolJetUI/Loader/Loader';
+// import { AppEnvironments } from '@/modules/Appbuilder/components';
+// import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
+// Lazy load editor-only components to reduce viewer bundle size
+const AppVersionsManager = lazy(() =>
+  import('@/AppBuilder/Header/AppVersionsManager').then((m) => ({ default: m.AppVersionsManager }))
+);
+const AppEnvironments = lazy(() =>
+  import('@/modules/Appbuilder/components').then((m) => ({ default: m.AppEnvironments }))
+);
+
+const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
+  const appType = useAppType();
+  const { setShowUndoRedoBtn, editingVersion, selectedVersion } = useStore(
+    (state) => ({
+      setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
+      editingVersion: state?.editingVersion,
+      selectedVersion: state?.selectedVersion,
+    }),
+    shallow
+  );
+
+  // In sub-branch preview, lock version and env selectors so user cannot switch
+  const isSubBranch = selectedVersion?.versionType === 'branch';
+
+  const [previewNavbar, togglePreviewNavbar] = useState(false);
+
+  useEffect(() => {
+    setShowUndoRedoBtn(false);
+    return () => setShowUndoRedoBtn(true);
+  }, [setShowUndoRedoBtn]);
+
+  const renderOverlay = () => (
+    <div className={classNames({ 'dark-theme theme-dark': darkMode })} style={{ borderRadius: '6px' }}>
+      <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
+        <span className="preview-settings-text" data-cy="preview-settings-text">
+          Preview settings
+        </span>
+        {editingVersion && appType !== 'module' && (
+          <Suspense
+            fallback={
+              <div className="d-flex justify-content-center" style={{ width: '304px' }}>
+                <div className="d-flex align-items-center" style={{ width: '16px', height: '16px' }}>
+                  <Loader width={16} height={16} />
+                </div>
+              </div>
+            }
+          >
+            <AppVersionsManager darkMode={darkMode} disabled={isSubBranch} />
+            <div className="navbar-seperator"></div>
+            <AppEnvironments darkMode={darkMode} disabled={isSubBranch} />
+          </Suspense>
+        )}
+        <span style={{ marginLeft: appType === 'module' && '10px' }}>
+          <HeaderActions showToggleLayoutBtn darkMode={darkMode} showPreviewBtn={false} />
+        </span>
+      </div>
+    </div>
+  );
+
+  if (isMobileLayout) {
+    return (
+      <Navbar
+        key="viewer-preview-navbar"
+        expand={false}
+        expanded={previewNavbar}
+        onToggle={togglePreviewNavbar}
+        as={(props) => <div>{props.children}</div>}
+      >
+        <Navbar.Toggle
+          as={(props) => (
+            <div
+              className="released-version-no-header-mbl-preview"
+              style={{ backgroundColor: 'var(--slate5)', top: '7px', left: showHeader ? '61%' : '41%' }}
+            >
+              <span className="preview-chip" style={{ color: 'var(--slate11)' }} data-cy="preview-chip">
+                Preview
+              </span>
+              <span
+                style={{ marginLeft: '12px', cursor: 'pointer' }}
+                onClick={props.onClick}
+                data-cy="preview-settings"
+              >
+                <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
+              </span>
+            </div>
+          )}
+        />
+        <Navbar.Offcanvas placement="top" className={classNames({ 'dark-theme theme-dark': darkMode })}>
+          <Offcanvas.Header>
+            <div className="w-100 d-flex align-self-start justify-content-between">
+              <Offcanvas.Title>Preview settings</Offcanvas.Title>
+              <div onClick={() => togglePreviewNavbar(false)} className="cursor-pointer">
+                <Cross fill="var(--slate12)" />
+              </div>
+            </div>
+          </Offcanvas.Header>
+          {previewNavbar && (
+            <Offcanvas.Body>
+              {appType !== 'module' && (
+                <Suspense fallback={null}>
+                  <span style={{ marginTop: '4px' }}>
+                    <AppEnvironments darkMode={darkMode} />
+                  </span>
+                  <hr className="m-0" />
+                  <span>
+                    <AppVersionsManager darkMode={darkMode} />
+                  </span>
+                </Suspense>
+              )}
+
+              <div
+                className={classNames('d-flex px-2 pb-2 align-items-center width-100', {
+                  'dark-theme theme-dark': darkMode,
+                })}
+                style={{ backgroundColor: !darkMode && '#fcfcfd' }}
+              >
+                <span style={{ marginRight: '24px' }}>Layout</span>
+                <HeaderActions showToggleLayoutBtn showFullWidth={true} darkMode={darkMode} showPreviewBtn={false} />
+              </div>
+            </Offcanvas.Body>
+          )}
+        </Navbar.Offcanvas>
+      </Navbar>
+    );
+  }
+
+  return (
+    <div
+      className="released-version-no-header-mbl-preview"
+      style={{ backgroundColor: 'var(--slate5)', top: showHeader ? '' : '14px' }}
+    >
+      <span className="preview-chip" style={{ color: 'var(--slate12)' }} data-cy="preview-chip">
+        Preview
+      </span>
+      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={renderOverlay()}>
+        <span style={{ marginLeft: '12px', cursor: 'pointer' }} data-cy="preview-settings">
+          <Icon name="settings" height={12} width={12} fill="var(--icon-weak)" />
+        </span>
+      </OverlayTrigger>
+    </div>
+  );
+};
+
+export default PreviewSettings;

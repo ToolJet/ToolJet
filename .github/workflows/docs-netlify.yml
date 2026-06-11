@@ -1,0 +1,43 @@
+name: Deploy to Netlify
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - documentation
+    paths:
+      - docs/**
+  schedule:
+    - cron: '30 3 * * *'   # 9:00 AM IST
+    - cron: '30 16 * * *'  # 10:00 PM IST
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout documentation branch
+        uses: actions/checkout@v4
+        with:
+          ref: documentation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.18.2
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm install
+
+      - name: Build the project
+        working-directory: docs
+        run: |
+          GTM=${{ secrets.GTM }} ALGOLIA_API_KEY=${{ secrets.ALGOLIA_API_KEY }} npm run build
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          npm install -g netlify-cli
+          netlify deploy --prod --dir=docs/build --site=${{ secrets.NETLIFY_SITE_ID }}

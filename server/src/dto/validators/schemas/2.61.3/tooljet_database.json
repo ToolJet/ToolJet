@@ -1,0 +1,106 @@
+{
+  "type": "object",
+  "required": ["id", "table_name", "schema"],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "table_name": {
+      "type": "string"
+    },
+    "schema": {
+      "type": "object",
+      "required": ["columns", "foreign_keys"],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["column_name", "data_type", "constraints_type"],
+            "properties": {
+              "column_name": {
+                "type": "string"
+              },
+              "data_type": {
+                "type": "string"
+              },
+              "column_default": {
+                "type": ["string", "null"]
+              },
+              "character_maximum_length": {
+                "type": ["integer", "null"]
+              },
+              "numeric_precision": {
+                "type": ["integer", "null"]
+              },
+              "constraints_type": {
+                "type": "object",
+                "required": ["is_not_null", "is_primary_key", "is_unique"],
+                "properties": {
+                  "is_not_null": {
+                    "type": "boolean"
+                  },
+                  "is_primary_key": {
+                    "type": "boolean"
+                  },
+                  "is_unique": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "keytype": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "foreign_keys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "referenced_table_name",
+              "constraint_name",
+              "column_names",
+              "referenced_column_names",
+              "on_update",
+              "on_delete",
+              "referenced_table_id"
+            ],
+            "properties": {
+              "referenced_table_name": {
+                "type": "string"
+              },
+              "constraint_name": {
+                "type": "string"
+              },
+              "column_names": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "referenced_column_names": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "on_update": {
+                "type": "string",
+                "enum": ["CASCADE", "RESTRICT", "SET NULL", "NO ACTION"]
+              },
+              "on_delete": {
+                "type": "string",
+                "enum": ["CASCADE", "RESTRICT", "SET NULL", "NO ACTION"]
+              },
+              "referenced_table_id": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,410 @@
+export const timePickerConfig = {
+  name: 'TimePicker',
+  displayName: 'Time Picker',
+  description: 'Choose date and time',
+  component: 'TimePicker',
+  defaultSize: {
+    width: 10,
+    height: 40,
+  },
+  validation: {
+    minTime: {
+      type: 'code',
+      placeholder: 'HH:mm',
+      displayName: 'Min Time',
+      dynamicType: 'time',
+    },
+    maxTime: {
+      type: 'code',
+      placeholder: 'HH:mm',
+      displayName: 'Max Time',
+      dynamicType: 'time',
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+    },
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+    },
+  },
+  others: {
+    showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+    showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+  },
+  properties: {
+    label: {
+      type: 'code',
+      displayName: 'Label',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Label',
+      },
+      accordian: 'Data',
+    },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Select time',
+      },
+    },
+    defaultValue: {
+      type: 'code',
+      displayName: 'Default value',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '00:00',
+      },
+    },
+    showClearBtn: {
+      type: 'toggle',
+      displayName: 'Enable clear button',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+
+      section: 'additionalActions',
+    },
+
+    collapseWhenHidden: {
+      type: 'toggle',
+      displayName: 'Collapse when hidden',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
+  },
+  events: {
+    onSelect: { displayName: 'On select' },
+    onFocus: { displayName: 'On focus' },
+    onBlur: { displayName: 'On blur' },
+  },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    {
+      handle: 'clearValue',
+      displayName: 'Clear value',
+    },
+    {
+      handle: 'setTime',
+      displayName: 'Set time',
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    {
+      handle: 'setMinTime',
+      displayName: 'Set min time',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    {
+      handle: 'setMaxTime',
+      displayName: 'Set max time',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
+    },
+  ],
+  styles: {
+    labelColor: {
+      type: 'colorSwatches',
+      displayName: 'Color',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'label',
+    },
+    labelFontSize: {
+      type: 'numberInput',
+      displayName: 'Size',
+      validation: { schema: { type: 'number' }, defaultValue: 12 },
+      accordian: 'label',
+    },
+    alignment: {
+      type: 'switch',
+      displayName: 'Alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'top' },
+      options: [
+        { displayName: 'Side', value: 'side' },
+        { displayName: 'Top', value: 'top' },
+      ],
+      accordian: 'label',
+    },
+    direction: {
+      type: 'switch',
+      displayName: 'Direction',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'label',
+      isFxNotRequired: true,
+    },
+    auto: {
+      type: 'checkbox',
+      displayName: 'Width',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      accordian: 'label',
+      conditionallyRender: {
+        key: 'alignment',
+        value: 'side',
+      },
+      isFxNotRequired: true,
+    },
+    labelWidth: {
+      type: 'slider',
+      showLabel: false,
+      accordian: 'label',
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+      isFxNotRequired: true,
+    },
+    widthType: {
+      type: 'select',
+      showLabel: false,
+      options: [
+        { name: 'Of the Component', value: 'ofComponent' },
+        { name: 'Of the Field', value: 'ofField' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'ofComponent',
+      },
+      accordian: 'label',
+      isFxNotRequired: true,
+      conditionallyRender: [
+        {
+          key: 'alignment',
+          value: 'side',
+        },
+        {
+          key: 'auto',
+          value: false,
+        },
+      ],
+    },
+    fieldBackgroundColor: {
+      type: 'colorSwatches',
+      displayName: 'Background',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-surface1-surface)' },
+      accordian: 'field',
+    },
+    fieldBorderColor: {
+      type: 'colorSwatches',
+      displayName: 'Border',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-default-border)' },
+      accordian: 'field',
+    },
+    accentColor: {
+      type: 'colorSwatches',
+      displayName: 'Accent',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-brand)' },
+      accordian: 'field',
+    },
+    selectedTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-primary-text)' },
+      accordian: 'field',
+    },
+    errTextColor: {
+      type: 'colorSwatches',
+      displayName: 'Error text',
+      validation: { schema: { type: 'string' }, defaultValue: 'var(--cc-error-systemStatus)' },
+      accordian: 'field',
+    },
+    icon: {
+      type: 'icon',
+      displayName: 'Icon',
+      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
+      accordian: 'field',
+      visibility: false,
+    },
+    iconColor: {
+      type: 'colorSwatches',
+      displayName: '',
+      showLabel: false,
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'var(--cc-default-icon)',
+      },
+      accordian: 'field',
+    },
+    iconDirection: {
+      type: 'switch',
+      displayName: '',
+      validation: { schema: { type: 'string' } },
+      showLabel: false,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
+      accordian: 'field',
+    },
+    fieldBorderRadius: {
+      type: 'input',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'field',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'field',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
+    },
+  },
+
+  exposedVariables: {
+    value: '',
+  },
+  definition: {
+    others: {
+      showOnDesktop: { value: '{{true}}' },
+      showOnMobile: { value: '{{false}}' },
+    },
+    validation: {
+      minTime: { value: '' },
+      maxTime: { value: '' },
+      customRule: { value: '' },
+      mandatory: { value: '{{false}}' },
+    },
+    properties: {
+      label: { value: 'Label' },
+      defaultValue: { value: '00:00' },
+      placeholder: { value: 'Select time' },
+      timeFormat: { value: 'HH:mm' },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+
+      collapseWhenHidden: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
+      showClearBtn: { value: '{{false}}' },
+    },
+    events: [],
+    styles: {
+      labelColor: { value: 'var(--cc-primary-text)' },
+      labelFontSize: { value: '{{12}}' },
+      alignment: { value: 'side' },
+      direction: { value: 'left' },
+      labelWidth: { value: '20' },
+      auto: { value: '{{true}}' },
+      fieldBackgroundColor: { value: 'var(--cc-surface1-surface)' },
+      fieldBorderColor: { value: 'var(--cc-default-border)' },
+      accentColor: { value: 'var(--cc-primary-brand)' },
+      selectedTextColor: { value: 'var(--cc-primary-text)' },
+      errTextColor: { value: 'var(--cc-error-systemStatus)' },
+      icon: { value: 'IconClock' },
+      iconVisibility: { value: true },
+      iconDirection: { value: 'left' },
+      fieldBorderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
+      padding: { value: 'default' },
+      iconColor: { value: 'var(--cc-default-icon)' },
+      widthType: { value: 'ofComponent' },
+    },
+  },
+};

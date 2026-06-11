@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "InfluxDB datasource",
+  "description": "A schema defining InfluxDB datasource",
+  "type": "database",
+  "source": {
+    "name": "InfluxDB",
+    "kind": "influxdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {},
+      "customTesting": false
+    },
+    "options": {
+      "api_token": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "api_token": {
+      "value": ""
+    },
+    "port": {
+      "value": "8086"
+    },
+    "host": {
+      "value": ""
+    },
+    "protocol": {
+      "value": "http"
+    }
+  },
+  "properties": {
+    "api_token": {
+      "label": "API token",
+      "key": "api_token",
+      "type": "password",
+      "description": "Api token for InfluxDB",
+      "helpText": "For generating API token, visit: <a href='https://docs.influxdata.com/influxdb/cloud/security/tokens/create-token/' target='_blank' rel='noreferrer'>InfluxDB docs</a>"
+    },
+    "host": {
+      "label": "Host",
+      "key": "host",
+      "type": "text",
+      "description": ""
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "8086 ",
+      "helpText": ""
+    },
+    "protocol": {
+      "label": "Protocol",
+      "key": "protocol",
+      "type": "dropdown",
+      "list": [
+        {
+          "name": "HTTP",
+          "value": "http"
+        },
+        {
+          "name": "HTTPS",
+          "value": "https"
+        }
+      ],
+      "description": "Enter protocol"
+    }
+  },
+  "required": [
+    "api_token",
+    "username",
+    "password",
+    "database",
+    "port",
+    "host",
+    "protocol"
+  ]
+}

@@ -1,0 +1,138 @@
+name: AWS AMI build using Packer config
+
+on:
+  release:
+    types: [published]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build from (e.g. lts-3.16)"
+        required: true
+        default: "lts-3.16"
+      version:
+        description: "RELEASE_VERSION"
+        required: true
+      region:
+        description: "AWS region to build AMI in (default: us-west-1)"
+        required: false
+        default: "us-west-1"
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    name: check-version
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: Check if version is AMI-eligible (multiple of 10)
+        id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual dispatch — always build"
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            TAG="${GITHUB_REF#refs/*/}"
+            # Extract patch number: v3.20.100-lts → 100
+            PATCH=$(echo "$TAG" | sed 's/^v//' | cut -d'.' -f3 | cut -d'-' -f1)
+            if (( PATCH % 10 == 0 )); then
+              echo "Version $TAG is AMI-eligible (patch $PATCH is multiple of 10)"
+              echo "should_build=true" >> $GITHUB_OUTPUT
+            else
+              echo "Skipping AMI build — $TAG patch $PATCH is not a multiple of 10"
+              echo "should_build=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  packer-ee:
+    needs: check-version
+    if: needs.check-version.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    name: packer-ee
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: refs/heads/${{ github.event.inputs.branch || 'lts-3.16' }}
+
+      - name: Setting tag
+        if: "${{ github.event.inputs.version != '' }}"
+        run: echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Set evn
+        if: "${{ github.event.release }}"
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.region || 'us-west-1' }}
+
+      # Initialize Packer templates
+      - name: Initialize Packer Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: init
+          target: .
+          working_directory: deploy/ec2/ee
+
+      # validate templates
+      - name: Validate Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: -syntax-only
+          target: .
+          working_directory: deploy/ec2/ee
+
+      # Echo RENDER_GITHUB_PAT
+      - name: Set PACKER_GITHUB_PAT
+        run: echo "PACKER_GITHUB_PAT=${{ secrets.CUSTOM_GITHUB_TOKEN }}" >> $GITHUB_ENV
+
+      # Dynamically update setup_machine.sh with PAT
+      - name: Validate PAT
+        run: |
+          sed -i "s|CUSTOM_GITHUB_TOKEN|${{ secrets.CUSTOM_GITHUB_TOKEN }}|g" ./deploy/ec2/ee/setup_machine.sh
+
+      # build artifact
+      - name: Build Artifact
+        id: packer-build
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          #The the below argument is specific for building EE AMI image
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy -var ami_region=${{ github.event.inputs.region || 'us-west-1' }}
+          target: .
+          working_directory: deploy/ec2/ee
+        env:
+          PACKER_LOG: 1
+
+      - name: Cleanup EC2 instances
+        if: always()
+        run: |
+          echo "Listing all EC2 instances..."
+
+          INSTANCE_IDS=$(aws ec2 describe-instances \
+            --region ${{ github.event.inputs.region || 'us-west-1' }} \
+            --query 'Reservations[*].Instances[*].InstanceId' \
+            --output text)
+
+          if [ -n "$INSTANCE_IDS" ] && [ "$INSTANCE_IDS" != "None" ]; then
+            echo "Found instances: $INSTANCE_IDS"
+            aws ec2 terminate-instances --region ${{ github.event.inputs.region || 'us-west-1' }} --instance-ids $INSTANCE_IDS
+            echo "Terminated instances: $INSTANCE_IDS"
+          else
+            echo "No instances found to cleanup"
+          fi
+
+      - name: Send Slack Notification
+        if: success()
+        run: |
+          ami_name="tooljet_${{ env.RELEASE_VERSION }}.ubuntu_jammy"
+          message="✅ *ToolJet Enterprise AWS AMI Published*\nVersion: \`${{ env.RELEASE_VERSION }}\`\nType: 🔒 LTS Release\nBranch: \`${{ github.event.inputs.branch || 'lts-3.16' }}\`\nRegion: \`${{ github.event.inputs.region || 'us-west-1' }}\`\nAMI Name: \`${ami_name}\`"
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}

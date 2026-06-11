@@ -1,0 +1,27 @@
+# pull official base image
+FROM node:22.15.1-bullseye
+
+ENV NODE_ENV=development
+
+RUN npm i -g npm@10.9.2
+
+# set working directory
+WORKDIR /app
+
+COPY ./package.json ./package.json
+
+# add `/app/frontend/node_modules/.bin` to $PATH
+ENV PATH /app/frontend/node_modules/.bin:$PATH
+
+# Fix for heap limit allocation issue
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# install app dependencies
+COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
+RUN npm --prefix frontend install
+COPY ./frontend/ ./frontend/
+
+# start app
+CMD ["npm", "--prefix", "frontend", "start"]
+
+EXPOSE 8082

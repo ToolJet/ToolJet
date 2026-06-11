@@ -1,0 +1,22 @@
+import { FEATURE_KEY } from '../constants';
+import { FeatureConfig } from '@modules/app/types';
+import { MODULES } from '@modules/app/constants/modules';
+
+interface Features {
+  [FEATURE_KEY.GIT_CREATE_APP]: FeatureConfig;
+  [FEATURE_KEY.GIT_GET_APP]: FeatureConfig;
+  [FEATURE_KEY.GIT_GET_APP_BY_NAME]: FeatureConfig;
+  [FEATURE_KEY.GIT_GET_APPS]: FeatureConfig;
+  [FEATURE_KEY.GIT_GET_APP_CONFIG]: FeatureConfig;
+  [FEATURE_KEY.GIT_SYNC_APP]: FeatureConfig;
+  [FEATURE_KEY.GIT_UPDATE_APP]: FeatureConfig;
+  [FEATURE_KEY.GIT_APP_VERSION_RENAME]: FeatureConfig;
+  [FEATURE_KEY.GIT_FETCH_APP_CONFIGS]: FeatureConfig;
+  [FEATURE_KEY.GET_ALL_BRANCHES]: FeatureConfig;
+  [FEATURE_KEY.CREATE_BRANCH]: FeatureConfig;
+  [FEATURE_KEY.FETCH_PULL_REQUESTS]: FeatureConfig;
+}
+
+export interface FeaturesConfig {
+  [MODULES.APP_GIT]: Features;
+}

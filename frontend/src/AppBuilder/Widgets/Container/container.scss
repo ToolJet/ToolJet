@@ -1,0 +1,19 @@
+.wj-container-header {
+    position: relative;
+    border-bottom: 1px solid var(--cc-container-header-divider-color, var(--border-weak, #e4e7eb));
+  }
+
+
+.viewer {
+    .dynamic-height-target {
+        > .canvas-component {
+            > .jet-container {
+                > .widget-type-container {
+                    > .sub-canvas {
+                        overflow-y: hidden !important;
+                    }
+                }
+            }
+        }
+    }
+}

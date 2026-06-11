@@ -1,0 +1,20 @@
+{
+  "name": "Documentation checklist",
+  "description": "Streamline documentation processes using ToolJet DB, ensuring real-time tracking of tasks and updates.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "documentation-checklist",
+  "category": "human-resources"
+}

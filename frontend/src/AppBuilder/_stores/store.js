@@ -1,0 +1,86 @@
+import { create, zustandDevTools } from './utils';
+import { createUserSlice } from './slices/userSlice';
+import { createOrganizationSlice } from './slices/organizationSlice';
+import { createAppSlice } from './slices/appSlice';
+import { createLoaderSlice } from './slices/loaderSlice';
+import { createLeftSideBarSlice } from './slices/leftSideBarSlice';
+import { createComponentsSlice } from './slices/componentsSlice';
+import { createRightSideBarSlice } from './slices/rightSideBarSlice';
+import { createModeSlice } from './slices/modeSlice';
+import { createQueryPanelSlice } from './slices/queryPanelSlice';
+import { createDataQuerySlice } from './slices/dataQuerySlice';
+import { createDataSourceSlice } from './slices/dataSourceSlice';
+import { createUndoRedoSlice } from './slices/undoRedoSlice';
+import { createLayoutSlice } from './slices/layoutSlice';
+import { immer } from 'zustand/middleware/immer';
+// eslint-disable-next-line import/no-unresolved
+import { enableMapSet } from 'immer';
+import { createResolvedSlice } from './slices/resolvedSlice';
+import { createEnvironmentsAndVersionsSlice } from './slices/environmentsAndVersionsSlice';
+import { createAppVersionSlice } from './slices/appVersionSlice';
+import { createPageMenuSlice } from './slices/pageMenuSlice';
+import { createLicenseSlice } from './slices/licenseSlice';
+import { createDependencySlice } from './slices/dependencySlice';
+import { createGridSlice } from './slices/gridSlice';
+import { createEventsSlice } from './slices/eventsSlice';
+import { createMultiplayerSlice } from './slices/multiplayerSlice';
+import { createCodeHinterSlice } from './slices/codeHinterSlice';
+import { createDebuggerSlice } from './slices/debuggerSlice';
+import { createGitSyncSlice } from './slices/gitSyncSlice';
+import { createAiSlice } from './slices/aiSlice';
+import { createFixWithAiSlice } from './slices/fixWithAi';
+import { createWhiteLabellingSlice } from './slices/whiteLabellingSlice';
+import { createFormComponentSlice } from './slices/componentSlices/formComponentSlice';
+import { createInspectorSlice } from './slices/inspectorSlice';
+import { createModuleSlice } from './slices/moduleSlice';
+import { createLibrarySlice } from './slices/librarySlice';
+import { createDataQueryFolderSlice } from './slices/dataQueryFolderSlice';
+import { listViewComponentSlice } from './slices/componentSlices/listViewComponentSlice';
+import { tableComponentSlice } from './slices/componentSlices/tableComponentSlice';
+import { createBranchSlice } from './slices/branchSlice';
+enableMapSet();
+
+export default create(
+  zustandDevTools(
+    immer((...state) => ({
+      ...createUserSlice(...state),
+      ...createOrganizationSlice(...state),
+      ...createAppSlice(...state),
+      ...createLoaderSlice(...state),
+      ...createLeftSideBarSlice(...state),
+      ...createComponentsSlice(...state),
+      ...createRightSideBarSlice(...state),
+      ...createModeSlice(...state),
+      ...createQueryPanelSlice(...state),
+      ...createDataSourceSlice(...state),
+      ...createDataQuerySlice(...state),
+      ...createUndoRedoSlice(...state),
+      ...createResolvedSlice(...state),
+      ...createLayoutSlice(...state),
+      ...createEnvironmentsAndVersionsSlice(...state),
+      ...createAppVersionSlice(...state),
+      ...createPageMenuSlice(...state),
+      ...createLicenseSlice(...state),
+      ...createDependencySlice(...state),
+      ...createGridSlice(...state),
+      ...createEventsSlice(...state),
+      ...createMultiplayerSlice(...state),
+      ...createCodeHinterSlice(...state),
+      ...createDebuggerSlice(...state),
+      ...createGitSyncSlice(...state),
+      ...createAiSlice(...state),
+      ...createFixWithAiSlice(...state),
+      ...createWhiteLabellingSlice(...state),
+      ...createInspectorSlice(...state),
+      ...createModuleSlice(...state),
+      ...createLibrarySlice(...state),
+      ...createDataQueryFolderSlice(...state),
+      // component slices
+      ...createFormComponentSlice(...state),
+      ...listViewComponentSlice(...state),
+      ...tableComponentSlice(...state),
+      ...createBranchSlice(...state),
+    })),
+    { name: 'App Builder Store', anonymousActionType: 'unknown' }
+  )
+);
