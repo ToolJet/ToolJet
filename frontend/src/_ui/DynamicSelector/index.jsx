@@ -10,6 +10,8 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import { IconAlertTriangle } from '@tabler/icons-react';
 import { components as RSComponents } from 'react-select';
 import Spinner from '@/_ui/Spinner';
+import { PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS } from './constants';
+import { getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 
 const DynamicSelector = ({
   operation,
@@ -37,6 +39,9 @@ const DynamicSelector = ({
   const isDependentField = dependsOn?.length > 0;
 
   const currentUser = useStore((state) => state.user);
+  const getAllExposedValues = useStore((state) => state.getAllExposedValues);
+  const getComponentNameIdMapping = useStore((state) => state.getComponentNameIdMapping);
+  const getQueryNameIdMapping = useStore((state) => state.getQueryNameIdMapping);
 
   const operationLabel = operation?.label || operation?.name || 'Fetch';
 
@@ -103,15 +108,45 @@ const DynamicSelector = ({
 
     try {
       const effectiveSearch = typeof searchOverride === 'string' ? searchOverride : searchTerm;
+
+      const allowDynamicConnectionParameters =
+        selectedDataSource?.options?.allow_dynamic_connection_parameters?.value === true ||
+        selectedDataSource?.options?.allow_dynamic_connection_parameters === true;
+      const pluginDynamicParamKeys = PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS[selectedDataSource?.kind] ?? [];
+      const dynamicConnectionArgs =
+        allowDynamicConnectionParameters && pluginDynamicParamKeys.length > 0
+          ? Object.fromEntries(
+              pluginDynamicParamKeys
+                .map((key) => [key, options?.[key]?.value ?? options?.[key]])
+                .filter(([, value]) => value)
+            )
+          : {};
+      const hasDynamicConnectionArgs = Object.keys(dynamicConnectionArgs).length > 0;
+
+      const queryState = getAllExposedValues();
+      const resolvedOptions = hasDynamicConnectionArgs
+        ? getQueryVariables(dynamicConnectionArgs, queryState, {
+            components: getComponentNameIdMapping(),
+            queries: getQueryNameIdMapping(),
+          })
+        : {};
+
       const args =
-        depKeys.length || pagination || effectiveSearch
+        depKeys.length || pagination || effectiveSearch || hasDynamicConnectionArgs
           ? {
               ...(depKeys.length ? { values: depValues } : {}),
               ...(pagination ? { page: currentPage, limit: pageSize } : {}),
               ...(effectiveSearch ? { search: effectiveSearch } : {}),
+              ...dynamicConnectionArgs,
             }
           : undefined;
-      const response = await dataqueryService.invoke(selectedDataSource.id, invokeMethod, environmentId, args);
+      const response = await dataqueryService.invoke(
+        selectedDataSource.id,
+        invokeMethod,
+        environmentId,
+        args,
+        Object.keys(resolvedOptions).length > 0 ? resolvedOptions : undefined
+      );
       if (response?.status === 'failed') {
         setError(response?.errorMessage || 'Failed to fetch data');
         setFetchedData([]);
