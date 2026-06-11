@@ -123,7 +123,7 @@ export function AppModal({
       setInfoText('Maximum length has been reached');
     } else {
       setInfoText('');
-      const error = validateName(trimmedName, 'App', false);
+      const error = validateName(trimmedName, 'App', false, false, true, true, false, false, 100);
       setErrorText(error?.errorMsg || '');
     }
   };
