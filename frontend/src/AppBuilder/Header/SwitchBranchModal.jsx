@@ -10,6 +10,7 @@ import { setActiveBranch } from '@/_helpers/active-branch';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import '@/_styles/switch-branch-modal.scss';
 import { DeleteBranchConfirmModal } from '@/_ui/WorkspaceBranchDropdown/DeleteBranchConfirmModal';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { Tooltip } from 'react-tooltip';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 
@@ -158,6 +159,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
 
   const [switchingBranchName, setSwitchingBranchName] = useState(null);
   const [branchToDelete, setBranchToDelete] = useState(null);
+  const [pullConflictGroups, setPullConflictGroups] = useState(null);
 
   const handleBranchClick = async (branch) => {
     if (branch.name === currentBranchName) {
@@ -184,6 +186,33 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
       if (wsBranches?.length > 0) {
         const targetWsBranch = wsBranches.find((b) => b.name === branch.name);
         if (targetWsBranch) {
+          // Seeded branches (no createdBy, non-default) were created at git sync config time without
+          // workspace data. Pull FIRST before switching — if pull fails the user stays on the modal
+          // on their current branch rather than landing on an empty workspace.
+          const isSeededBranch = !targetWsBranch.createdBy && !targetWsBranch.isDefault;
+          if (isSeededBranch) {
+            try {
+              await wsActions.pullWorkspace(branch.name, targetWsBranch.id);
+            } catch (pullError) {
+              if (pullError?.statusCode === 409) {
+                try {
+                  const parsed = JSON.parse(pullError?.data?.message || pullError?.error || '{}');
+                  if (parsed?.conflictGroups?.length) {
+                    setSwitchingBranchName(null);
+                    setPullConflictGroups(parsed.conflictGroups);
+                    return;
+                  }
+                } catch {
+                  /* fall through to generic toast */
+                }
+              }
+              toast.error(pullError?.error || pullError?.message || 'Pull failed');
+              setSwitchingBranchName(null);
+              return;
+            }
+          }
+
+          // Pull succeeded (or not a seeded branch) — now switch
           const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
           const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
           const resolvedSlug = result?.slug;
@@ -194,13 +223,6 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
             activeBranchId: targetWsBranch.id,
             currentBranch: branchObj,
           });
-
-          // Seeded branches (no createdBy, non-default) were created at git sync config time without
-          // workspace data — pull before navigating so the user lands on a populated workspace.
-          const isSeededBranch = !targetWsBranch.createdBy && !targetWsBranch.isDefault;
-          if (isSeededBranch) {
-            await wsActions.pullWorkspace(branch.name);
-          }
 
           // Don't close modal — let the dimmed/spinner state persist until page navigates
           const pathParts = window.location.pathname.split('/');
@@ -452,6 +474,13 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           onDelete={(branchId) => wsActions.deleteWorkspaceBranch(branchId)}
         />
       )}
+
+      {/* Pull conflict modal — shown when seeded branch auto-pull detects naming conflicts */}
+      <PullConflictModal
+        show={!!pullConflictGroups}
+        conflictGroups={pullConflictGroups || []}
+        onClose={() => setPullConflictGroups(null)}
+      />
     </>
   );
 }

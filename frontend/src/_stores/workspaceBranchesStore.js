@@ -145,10 +145,10 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async pullWorkspace(sourceBranch) {
+        async pullWorkspace(sourceBranch, targetBranchId) {
           set({ isPulling: true });
           try {
-            const branchId = get().activeBranchId;
+            const branchId = targetBranchId || get().activeBranchId;
             const result = await workspaceBranchesService.pullWorkspace(sourceBranch, branchId);
             set({ isPulling: false });
             return result;
