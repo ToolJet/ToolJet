@@ -13,7 +13,7 @@ You should setup a PostgreSQL database manually to be used by ToolJet. We recomm
 ToolJet runs with **built-in Redis** for multiplayer editing and background jobs. When running **separate worker containers** or **multi-pod setup**, an **external Redis instance** is **required** for job queue coordination.
 
 :::warning
-To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.com` and `https://python-server.tooljet.com` in your network settings.
+To use ToolJet AI features in your deployment, make sure to whitelist `https://api-gateway.tooljet.ai` and `https://python-server.tooljet.ai` in your network settings.
 :::
 
 ## Deploy using CloudFormation
@@ -51,6 +51,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
    - Select your target region and click **Copy AMI**
 
    **Option B: Using AWS CLI**
+
    ```bash
    aws ec2 copy-image \
      --source-region us-west-1 \
@@ -58,6 +59,7 @@ Follow the steps below to manually deploy ToolJet on AWS AMI instances.
      --region <your-preferred-region> \
      --name "ToolJet-<version>"
    ```
+
    The copy process takes 2-5 minutes. Once complete, the AMI will be available in your selected region.
 
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
