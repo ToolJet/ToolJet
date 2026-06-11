@@ -314,7 +314,8 @@
 // instead of bootstrap's cramped 200px default. Rendered in a body portal, so top-level.
 .app-card-name-tooltip {
   .tooltip-inner {
-    max-width: 280px;
+    // ~3/4 of the previous 280px so a 100-char name wraps to a few readable lines
+    max-width: 210px;
     white-space: normal;
     word-break: break-word;
     text-align: left;
