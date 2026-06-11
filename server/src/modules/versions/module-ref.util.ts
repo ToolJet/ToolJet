@@ -1,4 +1,4 @@
-import { EntityManager } from 'typeorm';
+import { EntityManager, IsNull } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
@@ -47,15 +47,32 @@ async function listSavedVersionsOnDefaultBranch(
 ): Promise<AppVersion[]> {
   const defaultBranch = await findDefaultBranch(manager, organizationId);
   if (!defaultBranch) return [];
-  return manager.find(AppVersion, {
-    where: {
-      appId: moduleApp.id,
-      branchId: defaultBranch.id,
-      versionType: AppVersionType.VERSION,
-      isStub: false,
-    },
-    order: { createdAt: 'DESC' },
-  });
+  // Include both the DRAFT on the default branch AND branchless PUBLISHED versions.
+  // Published versions have branch_id = NULL after the metadata migration detached them.
+  const [onBranch, published] = await Promise.all([
+    manager.find(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        branchId: defaultBranch.id,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+      },
+      order: { createdAt: 'DESC' },
+    }),
+    manager.find(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        branchId: IsNull(),
+        versionType: AppVersionType.VERSION,
+        status: AppVersionStatus.PUBLISHED,
+        isStub: false,
+      },
+      order: { createdAt: 'DESC' },
+    }),
+  ]);
+  // Dedupe by id in case any overlap
+  const seen = new Set(onBranch.map((v) => v.id));
+  return [...onBranch, ...published.filter((v) => !seen.has(v.id))];
 }
 
 /**
@@ -129,7 +146,17 @@ export async function resolveModuleRef(
       });
       if (onDefault) return onDefault;
     }
-    // id present but neither branch had a match — orphan fallback below.
+    // Branchless PUBLISHED versions (branch_id = NULL after metadata migration)
+    const branchless = await manager.findOne(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        moduleReferenceId,
+        branchId: IsNull(),
+        isStub: false,
+      },
+    });
+    if (branchless) return branchless;
+    // id present but no branch/branchless match — orphan fallback below.
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
@@ -432,7 +459,7 @@ export async function resolveAllModuleViewersForVersion(
       // Clause 1: id match
       const byId = candidates.find((r) => r.id === pin);
       if (byId) return pickKind(byId, 'pin-hit');
-      // Clause 4: module_reference_id on consumer's branch then default
+      // Clause 4: module_reference_id on consumer's branch then default then branchless
       const onConsumer = parent.branchId
         ? candidates.find(
             (r) =>
@@ -451,6 +478,14 @@ export async function resolveAllModuleViewersForVersion(
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
       }
+      // Clause 4b: module_reference_id on branchless PUBLISHED versions
+      const branchless = candidates.find(
+        (r) =>
+          r.moduleReferenceId === pin &&
+          r.branchId === null &&
+          r.isStub === false
+      );
+      if (branchless) return pickKind(branchless, 'pin-hit');
     } else if (pin) {
       // Clause 2: version name on a version_type='version' row in this module's app
       const byName = candidates.find((r) => r.name === pin && r.versionType === AppVersionType.VERSION);

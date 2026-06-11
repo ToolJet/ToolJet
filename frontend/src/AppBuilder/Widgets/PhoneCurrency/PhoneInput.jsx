@@ -5,7 +5,12 @@ import { getCountryCallingCodeSafe } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
 import 'react-phone-number-input/style.css';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles, useInput } from '../BaseComponents/hooks/useInput';
+import {
+  getLabelFontSize,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+  useInput,
+} from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
@@ -56,7 +61,10 @@ export const PhoneInput = (props) => {
     boxShadow,
     borderRadius,
     widthType,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
@@ -213,6 +221,7 @@ export const PhoneInput = (props) => {
           inputId={`component-${id}`}
           classes={labelClasses}
           dataCy={dataCy}
+          fontSize={labelFontSizeValue}
         />
         <div
           data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}

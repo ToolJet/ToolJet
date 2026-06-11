@@ -16,6 +16,10 @@ import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
 
 export class DataSourcesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       DataSourcesService,
       DataSourcesController,
@@ -30,7 +34,7 @@ export class DataSourcesModule extends SubModule {
       'services/sample-ds.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: DataSourcesModule,
       imports: [
         await AppEnvironmentsModule.register(configs),
@@ -55,6 +59,6 @@ export class DataSourcesModule extends SubModule {
       ],
       controllers: isMainImport ? [DataSourcesController] : [],
       exports: [DataSourcesUtilService, SampleDataSourceService, PluginsServiceSelector],
-    };
+    });
   }
 }

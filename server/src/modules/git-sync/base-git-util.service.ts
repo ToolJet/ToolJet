@@ -8,12 +8,9 @@
  * METHODS: Include only DB interactions and common functionalities applicable to all source controls.
  * No provider-specific logic.
  */
-import { AppGitSync } from 'src/entities/app_git_sync.entity';
 import { OrganizationGitSync } from 'src/entities/organization_git_sync.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
 import { App } from '@entities/app.entity';
 import { User } from '@entities/user.entity';
-import { AppGitPushDto } from '@modules/app-git/dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -24,39 +21,11 @@ export class BaseGitUtilService {
     throw new Error('Method not implemented.');
   }
 
-  async createAppGit(CreateBody: any): Promise<AppGitSync> {
-    throw new Error('Method not implemented.');
-  }
-
-  async WriteAppFile(
-    user: User,
-    appGit: AppGitSync,
-    version: AppVersion,
-    app: App,
-    appPath: string,
-    parentDir: string
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  async writeMetaFile(
-    user: User,
-    repoPath: string,
-    appGit: AppGitSync,
-    appGitPushBody: AppGitPushDto
-  ): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
-
   async readAppJson(user: User, appName: string, versionName: string, gitRepoPath: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
   async UpdateGitApp(schemaUnifiedAppParam: any, app: App, user: User): Promise<App> {
-    throw new Error('Method not implemented.');
-  }
-
-  async updateAppGit(appGitId: string, UpdateBody: any): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

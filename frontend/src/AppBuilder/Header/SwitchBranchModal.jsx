@@ -186,6 +186,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         if (targetWsBranch) {
           const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
           const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
+          const resolvedSlug = result?.slug;
           // Persist branch to localStorage + update store
           const branchObj = targetWsBranch;
           setActiveBranch(branchObj);
@@ -204,13 +205,15 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           // Don't close modal — let the dimmed/spinner state persist until page navigates
           const pathParts = window.location.pathname.split('/');
           if (resolvedAppId) {
-            // Navigate to the corresponding app on the target branch
+            // Navigate to the corresponding app on the target branch using slug for clean URL.
+            // Use location.replace so the previous branch's URL doesn't stay in the back stack
+            // (clicking Back would navigate to a slug that doesn't exist on the new branch).
             toast.success(`Switched to ${branch.name}`);
-            window.location.href = `/${pathParts[1]}/apps/${resolvedAppId}`;
+            window.location.replace(`/${pathParts[1]}/apps/${resolvedSlug || resolvedAppId}`);
           } else {
             // App doesn't exist on target branch — go to dashboard
             sessionStorage.setItem('git_sync_toast', `${appName || 'This app'} does not exist on this branch`);
-            window.location.href = `/${pathParts[1]}`;
+            window.location.replace(`/${pathParts[1]}`);
           }
           return;
         }

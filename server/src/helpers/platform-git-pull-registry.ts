@@ -5,6 +5,36 @@
  * The EE PlatformGitPullService registers itself on init; AppsService reads it here.
  */
 
+import { BadRequestException } from '@nestjs/common';
+
+/**
+ * Error thrown by hydrateStubApp. `gitPhase` marks failures that happened while talking
+ * to GitHub (auth or a remote git command). Those messages can echo the authenticated
+ * clone URL — which embeds the installation token — so callers MUST NOT forward the raw
+ * message to clients; surface a generic 'GitHub error' instead. When false, the failure
+ * is local import/DB work and the (token-free) message is safe to forward.
+ *
+ * Extends BadRequestException so existing callers keep the 400 HTTP semantics they had
+ * when hydrateStubApp threw a plain BadRequestException.
+ */
+export class HydrationError extends BadRequestException {
+  constructor(
+    message: string,
+    readonly gitPhase: boolean
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Strip embedded credentials (e.g. `https://x-access-token:<token>@host/...`) from a
+ * message before returning it to a client. Defense-in-depth for the local-phase path in
+ * case a URL carrying a token ever leaks into a non-git error.
+ */
+export function scrubGitCredentials(message: string): string {
+  return (message ?? '').replace(/(\bhttps?:\/\/)[^/@\s]+@/gi, '$1');
+}
+
 export interface IPlatformGitPullService {
   hydrateStubApp(stubApp: any, user: any, branchId?: string, tagSha?: string, tagName?: string): Promise<any>;
   /**
@@ -37,7 +67,14 @@ export interface IPlatformGitPullService {
     branchId: string,
     force?: boolean,
     coRelationIdFilter?: Set<string>
-  ): Promise<{ imported: number; skipped: number; stale: number }>;
+  ): Promise<{
+    imported: number;
+    skipped: number;
+    stale: number;
+    outdated: number;
+    errors?: number;
+    firstErrorMessage?: string | null;
+  }>;
 }
 
 let _pullService: IPlatformGitPullService | null = null;

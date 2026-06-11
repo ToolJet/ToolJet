@@ -10,6 +10,8 @@ export class ValidAppGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { appId } = request.params;
     const user: User = request.user;
+    // Forward x-branch-id so metadata overlay reflects the caller's active branch.
+    const branchId = (request.headers['x-branch-id'] as string) || undefined;
 
     // Check if appId is provided, otherwise throw BadRequestException
     if (!appId) {
@@ -17,7 +19,7 @@ export class ValidAppGuard implements CanActivate {
     }
 
     // Fetch the app based on the id
-    const app = await this.appRepository.findById(appId, user.organizationId);
+    const app = await this.appRepository.findById(appId, user.organizationId, undefined, branchId);
 
     // If app is not found, throw NotFoundException
     if (!app) {
