@@ -55,7 +55,6 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULES } from '@modules/app/constants/modules';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
@@ -82,7 +81,6 @@ export class AppsService implements IAppsService {
     protected readonly aiUtilService: AiUtilService,
     protected readonly componentsService: ComponentsService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository,
     protected readonly abilityService: AbilityService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository,
     protected readonly organizationEnvRegistryService: GitSyncEnvUtilService
@@ -90,9 +88,14 @@ export class AppsService implements IAppsService {
   async create(user: User, appCreateDto: AppCreateDto) {
     const { name, icon, type, prompt } = appCreateDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Use branchId from DTO (passed by frontend from localStorage), or fall back to default branch
-      let branchId = appCreateDto.branchId;
-      if (!branchId) {
+      // Workflows don't participate in branching — their app_versions row must have
+      // branch_id NULL. Drop any DTO-supplied branchId (frontend may send the current
+      // dashboard branch from localStorage even for workflows) and skip the
+      // default-branch auto-fill below. Otherwise the row lands with branch_id set
+      // but app_name/slug NULL (the workflow create path doesn't write those), which
+      // trips chk_app_versions_branch_metadata.
+      let branchId = type === APP_TYPES.WORKFLOW ? undefined : appCreateDto.branchId;
+      if (!branchId && type !== APP_TYPES.WORKFLOW) {
         const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
         if (orgGit) {
           const defaultBranch = await manager.findOne(WorkspaceBranch, {
@@ -102,15 +105,38 @@ export class AppsService implements IAppsService {
         }
       }
 
-      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId);
+      // Reject app creation on the default branch when branching is enabled.
+      // Apps must be authored on feature branches and merged in; creating
+      // directly on main would bypass the git-sync review flow entirely.
+      if (type !== APP_TYPES.WORKFLOW && branchId) {
+        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+        if (orgGit?.isBranchingEnabled) {
+          const targetBranch = await manager.findOne(WorkspaceBranch, {
+            where: { id: branchId, organizationId: user.organizationId },
+            select: ['id', 'isDefault'],
+          });
+          if (targetBranch?.isDefault) {
+            throw new BadRequestException('Apps cannot be created on the default branch. Switch to a feature branch.');
+          }
+        }
+      }
 
-      const appUpdateDto = new AppUpdateDto();
-      appUpdateDto.name = name;
-      appUpdateDto.slug = app.id;
-      appUpdateDto.icon = icon;
-      await this.appsUtilService.update(app, appUpdateDto, user.organizationId, manager);
+      // Metadata (name/slug/icon) is written directly during creation —
+      // appsUtilService.create routes to apps.* for workflows and to app_versions for
+      // non-workflows. No follow-up update call needed.
+      const app = await this.appsUtilService.create(name, user, type as APP_TYPES, !!prompt, manager, branchId, icon);
 
-      //APP_CREATE audit
+      // Mirror the metadata onto the in-memory App so the response carries the values
+      // we just wrote to app_versions (non-workflows leave apps.* fields NULL). For
+      // workflows these fields are already populated on apps.*.
+      if (app.type !== APP_TYPES.WORKFLOW) {
+        app.name = name;
+        app.slug = app.id;
+        app.icon = icon ?? null;
+        app.isPublic = false;
+      }
+
+      //APP_CREATE audit.
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
         userId: user.id,
         organizationId: user.organizationId,
@@ -135,7 +161,11 @@ export class AppsService implements IAppsService {
     user: User,
     validateAppAccessDto: ValidateAppAccessDto
   ) {
-    const { accessType, versionName, environmentName, versionId, envId } = validateAppAccessDto;
+    const { accessType, versionName, environmentName, versionId, envId, branchId } = validateAppAccessDto;
+    // Non-workflow apps carry slug/name/icon/isPublic on app_versions, not apps.* — hydrate
+    // them onto the in-memory App entity using the request's branch context if provided,
+    // otherwise the helper resolves default branch BRANCH (git-sync) / any version (non-git-sync).
+    await this.appsUtilService.overlayAppMetadata(app, branchId);
     const response = {
       id: app.id,
       slug: app.slug,
@@ -270,10 +300,7 @@ export class AppsService implements IAppsService {
       throw new BadRequestException('Invalid app slug');
     }
 
-    const app = await this.appRepository.findOne({
-      where: { slug },
-      select: ['id', 'name', 'slug', 'isPublic', 'organizationId'],
-    });
+    const app = await this.appRepository.findByIdOrSlug(slug);
 
     if (!app) {
       throw new NotFoundException('App not found');
@@ -306,36 +333,52 @@ export class AppsService implements IAppsService {
     const orgGit = await this.organizationGitRepository.findOrgGitByOrganizationId(app.organizationId);
     const isGitSyncEnabled = this.resolveGitSyncEnabled(orgGit);
 
-    // Check if name is being changed - require draft version to exist
-    if (name && name !== app.name) {
-      // Block rename if git sync is enabled and app has been pushed
-      if (isGitSyncEnabled && app.type === APP_TYPES.FRONT_END) {
-        const appGitSync = await this.appGitRepository.findAppGitByAppId(app.id);
-        if (appGitSync) {
-          // Check if on default branch (not a feature branch)
-          const editingVersion = editingVersionId
-            ? await this.versionRepository.findById(editingVersionId, app.id)
-            : app.editingVersion;
+    // Block metadata edits on the default branch when git-sync is enabled. These fields
+    // (name/slug/icon/is_public) must be edited from a feature branch — the change then
+    // flows to the default branch via push + merge. Workflows are exempt because they
+    // keep metadata on apps.* and don't participate in branching. For non-git-sync
+    // workspaces no block applies; util.service.update writes to all VERSION rows.
+    if (isGitSyncEnabled && app.type !== APP_TYPES.WORKFLOW) {
+      const blockedFields: string[] = [];
+      if (appUpdateDto.name !== undefined) blockedFields.push('name');
+      if (appUpdateDto.slug !== undefined) blockedFields.push('slug');
+      if (appUpdateDto.icon !== undefined) blockedFields.push('icon');
+      if (appUpdateDto.is_public !== undefined) blockedFields.push('is_public');
 
-          const isOnDefaultBranch = editingVersion?.versionType !== 'branch';
-
-          if (isOnDefaultBranch) {
-            throw new BadRequestException(
-              "Renaming isn't allowed on master. Switch branch in app builder to update name."
-            );
-          }
+      if (blockedFields.length > 0) {
+        // Require an explicit branch_id (from the x-branch-id header). Without it the
+        // server can't tell whether the request is targeting the default branch or a
+        // sub-branch, and util.service.update would otherwise fan the write out across
+        // every VERSION row of the app — leaking sub-branch edits into the default branch.
+        if (!appUpdateDto.branch_id) {
+          throw new BadRequestException(
+            `Editing ${blockedFields.join(', ')} requires a feature branch context (missing x-branch-id header).`
+          );
+        }
+        const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+          where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
+          select: ['id', 'isDefault'],
+        });
+        // Unknown branch → treat as block. Default branch → block (must edit from a
+        // feature branch and let push + merge flow the change to default).
+        if (!branch || branch.isDefault) {
+          throw new BadRequestException(
+            `Editing ${blockedFields.join(', ')} isn't allowed on the default branch. Switch to a feature branch in app builder to update.`
+          );
         }
       }
+    }
 
+    // Rename additionally requires a draft version when git-sync is on (so the new name
+    // lands on an editable version, not a published one).
+    if (name && name !== app.name && isGitSyncEnabled) {
       const draftVersion = await this.versionRepository.findOne({
         where: {
           appId: app.id,
-          // versionType: AppVersionType.VERSION,
           status: AppVersionStatus.DRAFT,
         },
       });
-
-      if (!draftVersion && isGitSyncEnabled) {
+      if (!draftVersion) {
         throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
       }
     }
@@ -433,16 +476,94 @@ export class AppsService implements IAppsService {
 
   async getAllApps(user: User, appListDto: AppListDto, isGetAll: boolean): Promise<any> {
     const { folderId, page, searchKey, type } = appListDto;
-    const pageNum = parseInt(page || '1');
+    // When no branchId is provided (e.g. end users) and the workspace has git-sync
+    // configured, fall back to the default branch so only default-branch apps surface.
+    // Non-git-sync workspaces have no orgGit; branchId stays undefined and the no-branch
+    // overlay below picks any version row's metadata per app.
     const branchId = await this.resolveDashboardBranchId(user, type, appListDto.branchId);
+    // if (!branchId && type === 'front-end') {
+    //   const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
+    //   if (orgGit) {
+    //     const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+    //       where: { organizationId: user.organizationId, isDefault: true },
+    //       select: ['id'],
+    //     });
+    //     branchId = defaultBranch?.id;
+    //   }
+    // }
+    const pageNum = parseInt(page || '1');
     const manager = this.appRepository.manager;
 
     // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App.
     // hydrateEditingVersionInBulk replaces those with a single IN-list query at the end.
     return skipAppEditingVersionHydration.run(true, async () => {
       const { apps, totalCount, folderCount } = await this.fetchDashboardApps(
-        user, pageNum, searchKey, type, isGetAll, branchId, folderId, manager
+        user,
+        pageNum,
+        searchKey,
+        type,
+        isGetAll,
+        branchId,
+        folderId,
+        manager
       );
+
+      // When a branch is in scope, the loaded `appVersions[0]` is the branch-specific
+      // version. The branch row is the single source of truth for non-workflow metadata
+      // — overlay all four fields unconditionally, including NULLs. Falling back to
+      // apps.* would surface stale or unmigrated values and mask data issues on the
+      // branch. Workflows keep metadata on apps.* and are skipped.
+      if (branchId) {
+        for (const app of apps) {
+          if (app.type === APP_TYPES.WORKFLOW) continue;
+          const branchVersion = app?.appVersions?.[0];
+          if (!branchVersion) continue;
+          app.name = branchVersion.appName;
+          app.slug = branchVersion.slug;
+          app.icon = branchVersion.icon;
+          app.isPublic = branchVersion.isPublic;
+        }
+      } else {
+        // No branch context: route by git-sync state.
+        //   - Git enabled: pull per-app metadata from the default branch row.
+        //   - Git off:     any version row works (every row carries identical metadata).
+        const nonWorkflowAppIds = apps.filter((a) => a.type !== APP_TYPES.WORKFLOW).map((a) => a.id);
+        if (nonWorkflowAppIds.length > 0) {
+          const defaultBranch = await manager.findOne(WorkspaceBranch, {
+            where: { organizationId: user.organizationId, isDefault: true },
+            select: ['id'],
+          });
+          const qb = manager
+            .createQueryBuilder()
+            .select('DISTINCT ON (av.app_id) av.app_id', 'app_id')
+            .addSelect('av.app_name', 'app_name')
+            .addSelect('av.slug', 'slug')
+            .addSelect('av.icon', 'icon')
+            .addSelect('av.is_public', 'is_public')
+            .from('app_versions', 'av')
+            .where('av.app_id IN (:...appIds)', { appIds: nonWorkflowAppIds });
+          if (defaultBranch?.id) {
+            qb.andWhere('av.branch_id = :defaultBranchId', { defaultBranchId: defaultBranch.id });
+          }
+          const rows: {
+            app_id: string;
+            app_name: string | null;
+            slug: string | null;
+            icon: string | null;
+            is_public: boolean | null;
+          }[] = await qb.getRawMany();
+          const metaByAppId = new Map(rows.map((r) => [r.app_id, r]));
+          for (const app of apps) {
+            if (app.type === APP_TYPES.WORKFLOW) continue;
+            const meta = metaByAppId.get(app.id);
+            if (!meta) continue;
+            if (meta.app_name != null) app.name = meta.app_name;
+            if (meta.slug != null) app.slug = meta.slug;
+            if (meta.icon != null) app.icon = meta.icon;
+            if (meta.is_public != null) app.isPublic = meta.is_public;
+          }
+        }
+      }
 
       if (isGetAll) {
         await this.hydrateEditingVersionInBulk(apps, manager);
@@ -469,7 +590,11 @@ export class AppsService implements IAppsService {
   }
 
   // End users with no branchId would otherwise see apps across every branch; default to the org's default branch.
-  private async resolveDashboardBranchId(user: User, type: string, providedBranchId?: string): Promise<string | undefined> {
+  private async resolveDashboardBranchId(
+    user: User,
+    type: string,
+    providedBranchId?: string
+  ): Promise<string | undefined> {
     if (providedBranchId || type !== APP_TYPES.FRONT_END) return providedBranchId;
     const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
     if (!orgGit) return undefined;
@@ -508,16 +633,20 @@ export class AppsService implements IAppsService {
     return { apps, totalCount, folderCount: 0 };
   }
 
-  private async attachModuleContainers(apps: AppListItem[], organizationId: string, manager: EntityManager): Promise<void> {
-    const versionIds = apps
-      .map((app) => app.appVersions?.[0]?.id)
-      .filter((id): id is string => Boolean(id));
+  private async attachModuleContainers(
+    apps: AppListItem[],
+    organizationId: string,
+    manager: EntityManager
+  ): Promise<void> {
+    const versionIds = apps.map((app) => app.appVersions?.[0]?.id).filter((id): id is string => Boolean(id));
     const moduleContainerByVersion = await this.pageService.findModuleContainersForVersions(
-      versionIds, organizationId, manager
+      versionIds,
+      organizationId,
+      manager
     );
     for (const app of apps) {
       const versionId = app.appVersions?.[0]?.id;
-      app.moduleContainer = versionId ? moduleContainerByVersion.get(versionId) ?? null : null;
+      app.moduleContainer = versionId ? (moduleContainerByVersion.get(versionId) ?? null) : null;
     }
   }
 
@@ -568,7 +697,55 @@ export class AppsService implements IAppsService {
     return await this.appsUtilService.findTooljetDbTables(appId); //moved to util
   }
 
+  /**
+   * Set `app.editingVersion` to the right row given the request's branch context.
+   *
+   * The subscriber leaves `editingVersion` undefined for git-enabled non-workflow
+   * apps (branch context is required for a deterministic pick). This method
+   * fills it in:
+   *
+   *   - Workflow or git-disabled: subscriber already picked the row — no-op.
+   *   - Git-enabled, x-branch-id header present: load the BRANCH/VERSION row
+   *     for that branch (DRAFT). On a sub-branch this is the BRANCH-type DRAFT;
+   *     on the default branch this is the VERSION-type DRAFT.
+   *   - Git-enabled, no header: fall back to the default-branch DRAFT.
+   *   - Stub rows still resolve so the caller can decide how to react (the EE
+   *     getOne triggers hydration; CE returns the row as-is).
+   */
+  private async resolveBranchAwareEditingVersion(app: App, branchId?: string): Promise<void> {
+    if (app.editingVersion) return; // subscriber already set it (workflow / git-off)
+    if (app.type === APP_TYPES.WORKFLOW) return;
+
+    const defaultBranch = await this.appRepository.manager.findOne(WorkspaceBranch, {
+      where: { organizationId: app.organizationId, isDefault: true },
+      select: ['id'],
+    });
+    if (!defaultBranch) return; // git off — subscriber should have handled it
+
+    const targetBranchId = branchId ?? defaultBranch.id;
+    const version = await this.versionRepository.findOne({
+      where: { appId: app.id, branchId: targetBranchId, isStub: false },
+      order: { updatedAt: 'DESC' },
+    });
+    if (version) {
+      app.editingVersion = version;
+      (app as any).isStub = false;
+    } else {
+      (app as any).isStub = true;
+    }
+  }
+
   async getOne(app: App, user: User, branchId?: string): Promise<any> {
+    // The subscriber leaves editingVersion undefined for git-enabled non-workflow
+    // apps — branch context is required for a deterministic pick. Resolve it
+    // here from x-branch-id (or fall back to the default branch's DRAFT).
+    // Workflows + git-disabled apps already have editingVersion set by the
+    // subscriber.
+    await this.resolveBranchAwareEditingVersion(app, branchId);
+
+    // Non-workflow apps store name/slug/icon/isPublic on app_versions; project them
+    // onto the in-memory App so the JSON response carries the correct values.
+    await this.appsUtilService.overlayAppMetadata(app, branchId);
     const response = decamelizeKeys(app);
 
     const seralizedQueries = [];
@@ -629,19 +806,6 @@ export class AppsService implements IAppsService {
       response['should_freeze_editor'] = shouldFreezeEditor;
       // Check if editing version is a draft
       const editingVersion = response['editing_version'];
-      const isDraft = editingVersion?.status === 'DRAFT';
-
-      // Modules are now branch-scoped like apps — apply the same git-sync freeze.
-      // AppGitSync may be keyed by app.id (legacy) or co_relation_id (platform git sync).
-      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
-      }
-      if (appGit && !isDraft) {
-        // Only apply git-based freezing for non-draft versions
-        response['should_freeze_editor'] = !appGit.allowEditing || shouldFreezeEditor;
-      }
 
       // Modules also freeze when the editing version is non-draft, regardless of git state
       if (app.type === APP_TYPES.MODULE && editingVersion?.status && editingVersion.status !== AppVersionStatus.DRAFT) {
@@ -675,6 +839,9 @@ export class AppsService implements IAppsService {
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
+      // Unauthenticated access to a public app with no released version must not
+      // fall through to the editing (draft) version — surface a 501 so the FE
+      // redirects to url-unavailable instead of leaking draft content.
       if (!app.currentVersionId && !user) {
         throw new HttpException(
           {
@@ -686,9 +853,18 @@ export class AppsService implements IAppsService {
         );
       }
 
-      const versionToLoad = app.currentVersionId
-        ? await this.versionRepository.findVersion(app.currentVersionId)
-        : await this.versionRepository.findVersion(app.editingVersion?.id);
+      // app.editingVersion is populated by AppSubscriber.afterLoad ONLY when
+      // git sync is off (or when the entity is a workflow). For git-enabled
+      // front-end / module apps the subscriber returns early without
+      // populating it, so we need a hard fallback to currentVersionId. If
+      // neither is available the app has no resolvable version and we can't
+      // serve the slug — throw a clear 404 instead of crashing on a
+      // findVersion(undefined) call further down.
+      const versionId = app.currentVersionId ?? app.editingVersion?.id;
+      if (!versionId) {
+        throw new NotFoundException('No released or editing version found for this app');
+      }
+      const versionToLoad = await this.versionRepository.findVersion(versionId);
 
       const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
       const eventsForVersion = app.editingVersion ? await this.eventService.findEventsForVersion(versionToLoad.id) : [];
@@ -789,6 +965,33 @@ export class AppsService implements IAppsService {
 
       // Get version details for audit log
       const releasedVersion = await this.versionRepository.findVersion(versionToBeReleased);
+
+      // Validate slug uniqueness against other released apps (non-workflow only)
+      if (app.type !== 'workflow') {
+        // Get canonical slug from BRANCH version (git-sync) or any version (non-git-sync)
+        const slugVersion = releasedVersion?.slug
+          ? releasedVersion
+          : await manager
+              .createQueryBuilder(AppVersion, 'av')
+              .where('av.app_id = :appId', { appId })
+              .andWhere('av.slug IS NOT NULL')
+              .select('av.slug')
+              .getOne();
+
+        if (slugVersion?.slug) {
+          const conflictingReleasedApp = await manager
+            .createQueryBuilder(AppVersion, 'av')
+            .innerJoin('apps', 'a', 'a.id = av.app_id')
+            .where('av.slug = :slug', { slug: slugVersion.slug })
+            .andWhere('a.organization_id = :orgId', { orgId: user.organizationId })
+            .andWhere('a.id != :appId', { appId })
+            .andWhere('a.current_version_id IS NOT NULL')
+            .getOne();
+          if (conflictingReleasedApp) {
+            throw new BadRequestException('Cannot release — slug conflicts with another released app.');
+          }
+        }
+      }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
 

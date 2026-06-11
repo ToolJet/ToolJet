@@ -116,6 +116,23 @@ export const listviewConfig = {
         defaultValue: false,
       },
     },
+    // Renders first in the Additional Actions section. Its displayName is the
+    // visible "Tooltip" label for the whole pair; the `tooltip` code field below
+    // hides its own label via showLabel:false so we don't get a duplicate.
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true, // render the switch on its own line below the "Tooltip" label
+      section: 'additionalActions',
+    },
     tooltip: {
       type: 'code',
       displayName: 'Tooltip',
@@ -125,6 +142,7 @@ export const listviewConfig = {
       },
       section: 'additionalActions',
       placeholder: 'Enter tooltip text',
+      showLabel: false,
     },
     mode: {
       type: 'select',
@@ -252,6 +270,7 @@ export const listviewConfig = {
       collapseWhenHidden: { value: '{{false}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
+      tooltipFormat: { value: 'plainText' },
       showBorder: { value: '{{true}}' },
       rowsPerPage: { value: '{{10}}' },
       enablePagination: { value: '{{false}}' },

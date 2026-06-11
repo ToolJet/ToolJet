@@ -111,6 +111,28 @@ export const modalV2Config = {
     hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
     closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
     hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
+    tooltipFormat: {
+      type: 'switch',
+      displayName: 'Tooltip',
+      options: [
+        { displayName: 'Plain text', value: 'plainText' },
+        { displayName: 'Markdown', value: 'markdown' },
+        { displayName: 'HTML', value: 'html' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'plainText' },
+      fullWidth: true,
+      newLine: true,
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+      showLabel: false,
+    },
   },
   events: {
     onOpen: { displayName: 'On open' },
@@ -395,6 +417,8 @@ export const modalV2Config = {
       modalHeight: { value: '{{400}}' },
       headerHeight: { value: 80 },
       footerHeight: { value: 80 },
+      tooltipFormat: { value: 'plainText' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {

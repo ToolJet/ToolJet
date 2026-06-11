@@ -193,9 +193,9 @@ export const createDataQuery = (appName, url, key, value) => {
   let appId, versionId;
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
+    sql: `select app_id from app_versions where app_name='${appName}';`,
   }).then((resp) => {
-    appId = resp.rows[0].id;
+    appId = resp.rows[0].app_id;
 
     cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),

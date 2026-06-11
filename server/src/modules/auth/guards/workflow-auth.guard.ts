@@ -1,12 +1,11 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { maybeSetSubPath } from 'src/helpers/utils.helper';
-import { App } from 'src/entities/app.entity';
-import { DataSource } from 'typeorm';
+import { AppsRepository } from '@modules/apps/repository';
 
 @Injectable()
 export class WorkflowAuthGuard extends AuthGuard('jwt') {
-  constructor(protected readonly _dataSource: DataSource) {
+  constructor(protected readonly appsRepository: AppsRepository) {
     super();
   }
 
@@ -19,11 +18,9 @@ export class WorkflowAuthGuard extends AuthGuard('jwt') {
     if (request.method === 'POST' && request.route.path === apiUrl) {
       const frontEndAppId = request.body?.executeUsing === 'app' && request.body?.app;
 
-      const app = await this._dataSource.manager.findOne(App, {
-        where: {
-          id: frontEndAppId,
-        },
-      });
+      // findOneById applies the branch-aware metadata overlay for non-workflows via
+      // resolveMetadataVersion, so app.isPublic is canonical regardless of app type.
+      const app = await this.appsRepository.findOneById(frontEndAppId);
 
       request.tj_app = app;
       request.headers['tj-workspace-id'] = app.organizationId;

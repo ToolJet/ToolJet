@@ -15,7 +15,9 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
-import { Share2 } from 'lucide-react';
+import { Share2, TriangleAlert } from 'lucide-react';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -178,6 +180,12 @@ class ManageAppUsersComponent extends React.Component {
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
 
+    // Git-sync branch lock: the share config (make-public toggle, slug edit) is locked only
+    // on the default/master branch. When git sync is disabled there is no currentBranch, so
+    // the share config stays interactive — this is the non-git-sync case this PR targets.
+    const { currentBranch } = useWorkspaceBranchesStore.getState();
+    const isShareLocked = !!(currentBranch && (currentBranch.is_default || currentBranch.isDefault));
+
     return (
       <div className="manage-app-users">
         <ToolTip message="Share" placement="bottom">
@@ -206,7 +214,27 @@ class ManageAppUsersComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'dark-theme' : ''}
         >
           <Modal.Header>
-            <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
+            <Modal.Title data-cy="modal-header">
+              <div className="tw-flex tw-items-center tw-gap-2">
+                {this.props.t('editor.share', 'Share')}
+                {(() => {
+                  const { currentBranch } = useWorkspaceBranchesStore.getState();
+                  const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+                  if (!isOnFeatureBranch) return null;
+                  return (
+                    <ToolTip
+                      message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                      placement="top"
+                      width="272px"
+                    >
+                      <span className="tw-flex tw-items-center">
+                        <TriangleAlert size={18} className="tw-text-[var(--icon-warning)]" />
+                      </span>
+                    </ToolTip>
+                  );
+                })()}
+              </div>
+            </Modal.Title>
             <span onClick={this.hideModal} data-cy="modal-close-button">
               <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
             </span>
@@ -216,19 +244,47 @@ class ManageAppUsersComponent extends React.Component {
               <div class="shareable-link-container">
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
-                    <div>
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        onClick={this.toggleAppVisibility}
-                        checked={this?.props?.isPublic}
-                        disabled={this.state.ischangingVisibility}
-                        data-cy="make-application-public-toggle"
-                      />
-                      <span className="form-check-label field-name" data-cy="make-application-public-label">
-                        {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                      </span>
-                    </div>
+                    {!isShareLocked ? (
+                      <div>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          onClick={this.toggleAppVisibility}
+                          checked={this?.props?.isPublic}
+                          disabled={this.state.ischangingVisibility}
+                          data-cy="make-application-public-toggle"
+                        />
+                        <span className="form-check-label field-name" data-cy="make-application-public-label">
+                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
+                        <ToolTip
+                          message="Master branch is locked. Switch branch to make the application public."
+                          placement="top"
+                          width="210px"
+                        >
+                          <div style={{ width: '32px', height: '18px', marginLeft: '-40px' }}>
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={this?.props?.isPublic}
+                              disabled
+                              style={{ opacity: 0.3, cursor: 'default', margin: 0, padding: 0 }}
+                              data-cy="make-application-public-toggle"
+                            />
+                          </div>
+                        </ToolTip>
+                        <span
+                          className="form-check-label field-name"
+                          data-cy="make-application-public-label"
+                          style={{ opacity: 0.6 }}
+                        >
+                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -241,19 +297,27 @@ class ManageAppUsersComponent extends React.Component {
                       {appLink}
                     </span>
                     <div className="input-with-icon">
-                      <input
-                        type="text"
-                        className={`form-control form-control-sm ${slugButtonClass}`}
-                        placeholder={this.props.slug}
-                        maxLength={50}
-                        onChange={(e) => {
-                          e.persist();
-                          this.delayedSlugChange(e);
-                        }}
-                        style={{ maxWidth: '150px' }}
-                        defaultValue={this.props.slug}
-                        data-cy="app-name-slug-input"
-                      />
+                      <ToolTip
+                        message={TOOLTIP_MESSAGES.DEFAULT_BRANCH_LOCKED}
+                        placement="top"
+                        width="210px"
+                        show={isShareLocked}
+                      >
+                        <input
+                          type="text"
+                          className={`form-control form-control-sm ${slugButtonClass}`}
+                          placeholder={this.props.slug}
+                          maxLength={50}
+                          onChange={(e) => {
+                            e.persist();
+                            this.delayedSlugChange(e);
+                          }}
+                          style={{ maxWidth: '150px' }}
+                          defaultValue={this.props.slug}
+                          data-cy="app-name-slug-input"
+                          disabled={isShareLocked}
+                        />
+                      </ToolTip>
                       {isSlugVerificationInProgress && (
                         <div className="icon-container">
                           <div class="spinner-border text-secondary " role="status">

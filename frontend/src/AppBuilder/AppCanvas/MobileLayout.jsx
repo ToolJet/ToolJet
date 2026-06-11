@@ -26,6 +26,7 @@ export const MobileLayout = ({
   mainCanvasContainer,
   gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
+  pageLoader = false,
 }) => {
   const mobileCanvasFrameRef = useRef(null);
   const mobileNavSheetContainerRef = useRef(null);
@@ -74,7 +75,12 @@ export const MobileLayout = ({
           />
         </div>
       )}
-      <CanvasContentTail currentMode={currentMode} appType={appType} isAppDarkMode={isAppDarkMode}>
+      <CanvasContentTail
+        currentMode={currentMode}
+        appType={appType}
+        isAppDarkMode={isAppDarkMode}
+        pageLoader={pageLoader}
+      >
         {mainCanvasContainer}
       </CanvasContentTail>
       <Suspense fallback={null}>

@@ -11,6 +11,10 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 @Module({})
 export class AppHistoryModule extends SubModule {
   static async register(_configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(_configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const importPath = await getImportPath(_configs?.IS_GET_CONTEXT);
 
     const { AppHistoryController } = await import(`${importPath}/app-history/controller`);
@@ -69,12 +73,12 @@ export class AppHistoryModule extends SubModule {
       providers.push(HistoryQueueProcessor);
     }
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppHistoryModule,
       imports,
       controllers: isMainImport ? [AppHistoryController] : [],
       providers,
       exports: [AppHistoryUtilService, EntityChangeService],
-    };
+    });
   }
 }
