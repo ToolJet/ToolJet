@@ -250,7 +250,9 @@ class ManageAppUsersComponent extends React.Component {
                   <div className="form-check form-switch d-flex align-items-center">
                     {(() => {
                       const { currentBranch } = useWorkspaceBranchesStore.getState();
-                      return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+                      // Enabled: git-sync OFF (no branch) or on a non-default branch.
+                      // Disabled only when on the default branch (edits must flow via merge).
+                      return !currentBranch || (!currentBranch.is_default && !currentBranch.isDefault);
                     })() ? (
                       <div>
                         <input
@@ -268,12 +270,7 @@ class ManageAppUsersComponent extends React.Component {
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
                         <ToolTip
-                          message={(() => {
-                            const { currentBranch } = useWorkspaceBranchesStore.getState();
-                            return currentBranch?.is_default || currentBranch?.isDefault
-                              ? 'Master branch is locked. Switch branch to make the application public.'
-                              : TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE;
-                          })()}
+                          message="Master branch is locked. Switch branch to make the application public."
                           placement={'top'}
                           width="210px"
                           show={isHovered}
