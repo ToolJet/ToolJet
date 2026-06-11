@@ -137,6 +137,16 @@
       color: var(--slate11);
     }
 
+    &--local {
+      background-color: var(--orange3);
+      color: var(--orange11);
+    }
+
+    &--remote {
+      background-color: var(--slate3);
+      color: var(--slate11);
+    }
+
     .conflict-badge-corel {
       opacity: 0.75;
       font-size: 10px;
