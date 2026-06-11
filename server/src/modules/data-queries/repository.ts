@@ -53,7 +53,7 @@ export class DataQueryRepository extends Repository<DataQuery> {
       .andWhere(
         `(app.current_version_id = app_version.id
           OR NOT EXISTS (
-            SELECT 1 FROM workspace_branches wb WHERE wb.organization_id = app.organization_id
+            SELECT 1 FROM organization_git_sync_branches wb WHERE wb.organization_id = app.organization_id
           ))`
       )
       .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
