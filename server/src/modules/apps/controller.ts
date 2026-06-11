@@ -16,6 +16,7 @@ import { App as AppEntity } from '@entities/app.entity';
 import { AppAuthGuard } from './guards/app-auth.guard';
 import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
+import { ValidatePublicAppGuard } from './guards/validate-public-app.guard';
 import { IAppsController } from './interfaces/IController';
 import { AiCookies } from '@modules/auth/decorators/ai-cookie.decorator';
 import { Response } from 'express';
@@ -84,7 +85,7 @@ export class AppsController implements IAppsController {
   }
 
   @InitFeature(FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS)
-  @UseGuards(AppAuthGuard, FeatureAbilityGuard)
+  @UseGuards(AppAuthGuard, ValidatePublicAppGuard, FeatureAbilityGuard)
   @Get('validate-released-app-access/:slug')
   validateReleasedAppAccess(@Ability() ability: AppAbility, @App() app: AppEntity) {
     return this.appsService.validateReleasedApp(ability, app);
