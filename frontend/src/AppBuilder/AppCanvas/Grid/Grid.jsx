@@ -41,7 +41,7 @@ import {
   getContainerIdFromSlotId,
 } from './helpers/dragEnd';
 import { handleFlexContainerDragEnd } from './helpers/flexContainerDragEnd';
-import { computeOppositeEdgeResizeTransform, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
+import { computeFlexResizeStyles, computeFlexResizeEndPatch } from './helpers/gridResizeUtils';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 import { useFlexContainerDropTarget } from '@/AppBuilder/Widgets/FlexContainer/useFlexContainerDropTarget';
 import useStore from '@/AppBuilder/_stores/store';
@@ -662,17 +662,16 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
             showGridLines();
             handleActivateTargets(parentId);
             const parentDir = getResolvedComponent(parentId, null, moduleId)?.properties?.direction ?? 'column';
-            const nextW = Math.max(GRID_HEIGHT, Math.round((e.width ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT);
-            const nextH = Math.max(GRID_HEIGHT, Math.round((e.height ?? GRID_HEIGHT) / GRID_HEIGHT) * GRID_HEIGHT);
-            if (parentDir === 'row') {
-              e.target.style.flexBasis = `${nextW}px`;
-              e.target.style.width = `${nextW}px`;
-              e.target.style.height = `${nextH}px`;
-            } else {
-              e.target.style.flexBasis = `${nextH}px`;
-              e.target.style.height = `${nextH}px`;
-              e.target.style.width = `${nextW}px`;
-            }
+            Object.assign(
+              e.target.style,
+              computeFlexResizeStyles({
+                direction: e.direction,
+                parentDirection: parentDir,
+                width: e.width,
+                height: e.height,
+                gridHeight: GRID_HEIGHT,
+              })
+            );
             // Retool-like opposite-edge resize: never translate the element while resizing.
             // (Moveable supplies a translate when resizing from left/top; applying it makes the
             // element "move" instead of shrinking/growing from the opposite edge.)
