@@ -60,6 +60,7 @@ export interface IDataSourcesService {
     user: User,
     environmentId: string,
     args?: any,
-    branchId?: string
+    branchId?: string,
+    resolvedOptions?: object
   ): Promise<QueryResult>;
 }

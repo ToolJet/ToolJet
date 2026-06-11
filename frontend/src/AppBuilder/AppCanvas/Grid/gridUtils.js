@@ -737,7 +737,9 @@ export const updateDashedBordersOnDragResize = (targetId, moveableControlBoxClas
 
 export const isDroppingRestrictedWidget = (target, dragged) => {
   const restrictedWidgetsOnTarget = RESTRICTED_WIDGETS_CONFIG?.[target.widgetType] || [];
-  const restrictedWidgetsOnTargetSlot = RESTRICTED_WIDGET_SLOTS_CONFIG?.[target.slotType] || [];
+  const restrictedWidgetsOnTargetSlot = ['header', 'footer'].includes(target.slotType)
+    ? RESTRICTED_WIDGET_SLOTS_CONFIG
+    : [];
 
   const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
   return restrictedWidgets.includes(dragged.widgetType);
