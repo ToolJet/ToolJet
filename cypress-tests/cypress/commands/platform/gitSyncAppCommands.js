@@ -102,8 +102,13 @@ Cypress.Commands.add("gitHubResetRepo", (defaultBranch = "master") => {
   });
 });
 
-Cypress.Commands.add("apiRenameApp", (appId, newName, editingVersionId = null) => {
+Cypress.Commands.add("apiRenameApp", (appId, newName, editingVersionId = null, branchId = null) => {
   return cy.getAuthHeaders().then((headers) => {
+    // When git-sync is enabled the server requires an x-branch-id header so it
+    // can confirm the rename is happening on a feature branch (not the default
+    // branch). Always include it when a branchId is supplied by the caller.
+    const reqHeaders = branchId ? { ...headers, "x-branch-id": branchId } : headers;
+
     const doRename = (vid) => {
       const body = vid
         ? { app: { name: newName, editingVersionId: vid } }
@@ -112,45 +117,14 @@ Cypress.Commands.add("apiRenameApp", (appId, newName, editingVersionId = null) =
         .request({
           method: "PUT",
           url: `${Cypress.env("server_host")}/api/apps/${appId}`,
-          headers,
+          headers: reqHeaders,
           body,
           failOnStatusCode: false,
         })
         .then((res) => {
-          // Server blocks rename on the default branch when no branch-scoped version is
-          // provided. Retry once using the most recent BRANCH-type version so the guard
-          // sees a feature-branch context and allows the rename.
-          if (
-            res.status === 400 &&
-            !vid &&
-            (res.body?.message || "").includes("Renaming isn't allowed on master")
-          ) {
-            Cypress.log({
-              message: `[gitSync] Rename blocked on master — retrying with branch-scoped version`,
-            });
-            return cy
-              .request({
-                method: "GET",
-                url: `${Cypress.env("server_host")}/api/apps/${appId}/versions`,
-                headers,
-                failOnStatusCode: false,
-              })
-              .then((versionsRes) => {
-                const versions = versionsRes.body?.versions || [];
-                const branchVersion = versions.find(
-                  (v) =>
-                    v.versionType === "branch" ||
-                    v.version_type === "branch" ||
-                    v.type === "branch",
-                );
-                const branchVid = branchVersion?.id;
-                expect(branchVid, "found branch-type version id for rename").to.be.a("string");
-                return doRename(branchVid);
-              });
-          }
           expect(res.status, `Rename app to '${newName}'`).to.be.oneOf([200, 201, 204]);
           Cypress.log({
-            message: `[gitSync] App ${appId} renamed to '${newName}'${vid ? ` (branch-scoped via version ${vid})` : ""}`,
+            message: `[gitSync] App ${appId} renamed to '${newName}'${vid ? ` (via version ${vid})` : ""}${branchId ? ` on branch ${branchId}` : ""}`,
           });
         });
     };
@@ -412,12 +386,15 @@ Cypress.Commands.add("apiGetAppDefinition", (appId, branchName = null) => {
   return cy.getAuthHeaders().then((headers) => {
     const orgId = Cypress.env("workspaceId");
 
-    const exportWithVersionId = (versionId) => {
+    const exportWithVersionId = (versionId, branchId = null) => {
+      const exportHeaders = branchId
+        ? { ...headers, "x-branch-id": branchId }
+        : headers;
       return cy
         .request({
           method: "POST",
           url: `${Cypress.env("server_host")}/api/v2/resources/export`,
-          headers,
+          headers: exportHeaders,
           body: {
             app: [{ id: appId, search_params: { version_id: versionId } }],
             tooljet_database: [],
@@ -478,7 +455,7 @@ Cypress.Commands.add("apiGetAppDefinition", (appId, branchName = null) => {
           }
 
           expect(versionId, "editing_version.id present").to.be.a("string");
-          return exportWithVersionId(versionId);
+          return exportWithVersionId(versionId, branchId);
         });
     };
 
