@@ -227,9 +227,6 @@ export const radiobuttonV2Config = {
         schema: { type: 'string' },
       },
       accordian: 'switch',
-      tip: 'Checked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     switchOffBackgroundColor: {
       type: 'colorSwatches',
@@ -238,9 +235,6 @@ export const radiobuttonV2Config = {
         schema: { type: 'string' },
       },
       accordian: 'switch',
-      tip: 'Unchecked background',
-      tooltipStyle: {},
-      tooltipPlacement: 'bottom',
     },
     handleColor: {
       type: 'colorSwatches',
