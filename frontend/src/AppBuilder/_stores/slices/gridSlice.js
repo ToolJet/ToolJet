@@ -1,6 +1,7 @@
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { debounce } from 'lodash';
 import {
+  bindModuleAwareGetResolvedComponent,
   buildReflowPatch,
   getDynamicElementSelector,
   getDynamicLayoutKey,
@@ -254,7 +255,11 @@ export const createGridSlice = (set, get) => {
 
           if (!changedComponent) return;
 
-          const boundGetResolvedComponent = (id, ctx) => getResolvedComponent(id, ctx, moduleId);
+          const boundGetResolvedComponent = bindModuleAwareGetResolvedComponent(
+            getResolvedComponent,
+            getComponentTypeFromId,
+            moduleId
+          );
           const boundGetComponentDefinition = (id) => getComponentDefinition(id, moduleId);
           const boundGetExposedPropertyForAdditionalActions = (id, ctx, prop) =>
             getExposedPropertyForAdditionalActions(id, ctx, prop, moduleId);
@@ -518,7 +523,11 @@ export const createGridSlice = (set, get) => {
       // Bind moduleId once. Pass these closures to the dynamicHeightReflow
       // utilities so their signatures stay unchanged while every nested slice
       // query carries the correct moduleId.
-      const boundGetResolvedComponent = (id, ctx) => getResolvedComponent(id, ctx, moduleId);
+      const boundGetResolvedComponent = bindModuleAwareGetResolvedComponent(
+        getResolvedComponent,
+        getComponentTypeFromId,
+        moduleId
+      );
       const boundGetComponentDefinition = (id) => getComponentDefinition(id, moduleId);
       const boundGetExposedPropertyForAdditionalActions = (id, ctx, prop) =>
         getExposedPropertyForAdditionalActions(id, ctx, prop, moduleId);

@@ -170,6 +170,19 @@ export const createAppSlice = (set, get) => ({
     const isPagesSidebarHidden = getPagesSidebarVisibility(moduleId);
     const pageMenuHeight = position === 'top' && (!headerHidden || !logoHidden || !isPagesSidebarHidden) ? 60 : 0;
 
+    // Embedded module with dynamic height enabled on its ModuleViewer instance:
+    // size the inner canvas to its content (no 100vh floor / bottom padding) so
+    // the instance widget can be DOM-measured and reflow its outer siblings,
+    // the same way other leaf dynamic-height widgets are measured.
+    if (moduleId !== 'canvas' && get().checkIfComponentIsModule(moduleId, 'canvas')) {
+      const isInstanceDynamicHeight =
+        get().getResolvedComponent(moduleId, null, 'canvas')?.properties?.dynamicHeight === true;
+      if (isInstanceDynamicHeight && get().getCurrentMode('canvas') === 'view') {
+        setCanvasHeight(`${Math.max(maxHeight, 40)}px`, moduleId);
+        return;
+      }
+    }
+
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight =
       currentMode === 'view' ? pageMenuHeight : APP_HEADER_HEIGHT + QUERY_PANE_HEIGHT + pageMenuHeight + 8 * 2; // 8 is padding on each side in edit mode, multiplied by 2 for top & bottom padding
