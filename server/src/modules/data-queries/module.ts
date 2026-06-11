@@ -24,13 +24,17 @@ function parsePositiveInt(raw: unknown, fallback: number): number {
 
 export class DataQueriesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const { DataQueriesController, DataQueriesService, DataQueriesUtilService } = await this.getProviders(
       configs,
       'data-queries',
       ['controller', 'service', 'util.service']
     );
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: DataQueriesModule,
       imports: [
         await AppEnvironmentsModule.register(configs),
@@ -71,6 +75,6 @@ export class DataQueriesModule extends SubModule {
       ],
       exports: [DataQueriesUtilService],
       controllers: isMainImport ? [DataQueriesController] : [],
-    };
+    });
   }
 }

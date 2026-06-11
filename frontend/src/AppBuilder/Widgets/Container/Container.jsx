@@ -22,7 +22,6 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
-  adjustComponentPositions,
   currentLayout,
   componentCount = 0,
   currentMode,
@@ -43,7 +42,6 @@ export const Container = ({
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
@@ -97,6 +95,7 @@ export const Container = ({
     maxHeight: `${headerMaxHeight}px`,
     borderTopLeftRadius: `${borderRadius}px`,
     borderTopRightRadius: `${borderRadius}px`,
+    overflow: 'hidden',
     ...headerBgColor,
   };
   const containerContentStyles = {

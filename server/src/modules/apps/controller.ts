@@ -73,7 +73,8 @@ export class AppsController implements IAppsController {
     @Query('environment_id') envId: string,
     @Ability() ability: AppAbility,
     @App() app: AppEntity,
-    @User() user: UserEntity
+    @User() user: UserEntity,
+    @Headers('x-branch-id') branchId?: string
   ) {
     return this.appsService.validatePrivateAppAccess(app, ability, user, {
       accessType,
@@ -81,6 +82,7 @@ export class AppsController implements IAppsController {
       environmentName,
       versionId,
       envId,
+      branchId,
     });
   }
 
@@ -94,14 +96,26 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
-  update(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+  update(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('app') appUpdateDto: AppUpdateDto,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
     return this.appsService.update(app, appUpdateDto, user);
   }
 
   @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/public')
-  updatePublic(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+  updatePublic(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('app') appUpdateDto: AppUpdateDto,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
     return this.appsService.update(app, appUpdateDto, user);
   }
 
@@ -146,9 +160,15 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE_ICON)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/icons')
-  async updateIcon(@User() user: UserEntity, @App() app: AppEntity, @Body('icon') icon: string) {
+  async updateIcon(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('icon') icon: string,
+    @Headers('x-branch-id') branchId?: string
+  ) {
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
+    if (branchId) appUpdateDto.branch_id = branchId;
     await this.appsService.update(app, appUpdateDto, user);
     return;
   }

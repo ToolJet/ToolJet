@@ -22,12 +22,13 @@ import config from 'config';
 import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
-import { camelizeKeys, decamelizeKeys, decamelize } from 'humps';
+import { camelize, camelizeKeys, decamelizeKeys, decamelize } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { ConfirmDialog, ToolTip } from '@/_components';
+import { TriangleAlert } from 'lucide-react';
 import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
@@ -458,6 +459,12 @@ class DataSourceManagerComponent extends React.Component {
       case 'bigquery': {
         return datasourceOptions?.authentication_type?.value === 'service_account' ? true : false;
       }
+      case 'databricks': {
+        return datasourceOptions?.authentication_type?.value === 'personal_access_token' ? true : false;
+      }
+      case 'quickbooks': {
+        return false;
+      }
       default:
         return true;
     }
@@ -479,16 +486,14 @@ class DataSourceManagerComponent extends React.Component {
       }
       return acc;
     }, {});
-    this.setState({ validationMessages: errorMap });
-    const filteredValidationBanner = interactedFields
-      ? Object.keys(this.state.validationMessages)
-          .filter((key) => interactedFields.has(key))
-          .reduce((result, key) => {
-            result.push(this.state.validationMessages[key]);
-            return result;
-          }, [])
-      : Object.values(this.state.validationMessages);
-    this.setState({ validationError: filteredValidationBanner });
+    this.setState({ validationMessages: errorMap }, () => {
+      const filteredValidationBanner = interactedFields
+        ? Object.keys(this.state.validationMessages)
+            .filter((key) => interactedFields.has(key))
+            .map((key) => this.state.validationMessages[key])
+        : Object.values(this.state.validationMessages);
+      this.setState({ validationError: filteredValidationBanner });
+    });
   };
 
   renderSourceComponent = (kind, isPlugin = false) => {
@@ -1040,13 +1045,37 @@ class DataSourceManagerComponent extends React.Component {
         });
       }
     }
+    // For old-schema plugin DSes that do have dsDefaults, also normalize the current side the same way.
+    const normalizedCurrentOptions = Object.keys(dsDefaults).reduce(
+      (acc, key) => {
+        if (acc[key] === undefined) acc[key] = dsDefaults[key];
+        return acc;
+      },
+      { ...options }
+    );
+    // Plugin DSes (new tj:version schema) have dsDefaults={} so the reduce above is a no-op for them.
+    // Encrypted fields are stripped from git-synced DSVOs, so normalizedSavedOptions may lack those keys
+    // while DynamicForm initializes them as { value: '' } in state.options, causing a false mismatch.
+    // DynamicForm may camelize schema keys (auth_token → authToken), so resolve the active key form
+    // from normalizedCurrentOptions before filling both sides — avoids duplicate snake/camel keys.
+    const schemaOptionFields = dataSourceMeta?.options ?? {};
+    Object.keys(schemaOptionFields).forEach((key) => {
+      if (!schemaOptionFields[key]?.encrypted) return;
+      const activeKey = Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, key)
+        ? key
+        : Object.prototype.hasOwnProperty.call(normalizedCurrentOptions, camelize(key))
+        ? camelize(key)
+        : key;
+      if (normalizedSavedOptions[activeKey] === undefined) normalizedSavedOptions[activeKey] = { value: '' };
+      if (normalizedCurrentOptions[activeKey] === undefined) normalizedCurrentOptions[activeKey] = { value: '' };
+    });
     // Sample datasources are read-only (no DynamicForm, no save button), so they're never "editing".
     // Without this guard, normalizedSavedOptions gets defaults added that state.options never receives
     // (since DynamicForm which fills defaults isn't rendered for sample dbs), causing a false mismatch.
     const isSaveDisabled =
       isSampleDb ||
       (selectedDataSource
-        ? deepEqual(options, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
+        ? deepEqual(normalizedCurrentOptions, normalizedSavedOptions, ['encrypted', 'credential_id']) &&
           selectedDataSource?.name === datasourceName
         : true);
     this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
@@ -1138,6 +1167,25 @@ class DataSourceManagerComponent extends React.Component {
                               </span>
                             )}
                           </div>
+                          {(() => {
+                            const { currentBranch, orgGitConfig, isInitialized } = useWorkspaceBranchesStore.getState();
+                            if (!isInitialized || !orgGitConfig) return null;
+                            const isBranchingEnabled =
+                              orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled;
+                            const isDefault = currentBranch?.is_default || currentBranch?.isDefault;
+                            if (!isBranchingEnabled || isDefault) return null;
+                            return (
+                              <ToolTip
+                                message="This is a global setting which follows the same PR flow but are not version controlled, they apply across all versions once merged."
+                                placement="top"
+                                width="272px"
+                              >
+                                <span className="tw-flex tw-items-center">
+                                  <TriangleAlert size={14} className="tw-text-[var(--icon-warning)]" />
+                                </span>
+                              </ToolTip>
+                            );
+                          })()}
                           {selectedDataSource.is_dummy && (
                             <ToolTip
                               placement="right"

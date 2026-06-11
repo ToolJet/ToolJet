@@ -8,12 +8,15 @@ import { PluginsModule } from '@modules/plugins/module';
 import { EncryptionService } from '@modules/encryption/service';
 import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
 
 export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       GitSyncController,
       GitSyncService,
@@ -46,7 +49,7 @@ export class GitSyncModule extends SubModule {
       'git-object-cache.service',
     ]);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: GitSyncModule,
       imports: [
         await EncryptionModule.register(configs),
@@ -60,7 +63,6 @@ export class GitSyncModule extends SubModule {
       providers: [
         OrganizationGitSyncRepository,
         VersionRepository,
-        AppGitRepository,
         BaseGitUtilService,
         BaseGitSyncService,
         GitSyncService,
@@ -89,6 +91,6 @@ export class GitSyncModule extends SubModule {
         SourceControlProviderService,
         GitObjectCacheService,
       ],
-    };
+    });
   }
 }

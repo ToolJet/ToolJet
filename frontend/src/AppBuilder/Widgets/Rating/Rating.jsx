@@ -4,6 +4,7 @@ import { useTrail } from 'react-spring';
 import Label from '@/_ui/Label';
 import RatingIcon from './RatingIcon';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -50,7 +51,10 @@ export const Rating = ({
     labelColor: labelTextColor,
     selectedBackgroundHearts,
     unselectedBackground,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
     loadingState,
@@ -308,6 +312,7 @@ export const Rating = ({
         widthType={widthType}
         top={alignment !== 'top' && '1px'}
         inputId={`component-${id}`}
+        fontSize={labelFontSizeValue}
       />
 
       <div

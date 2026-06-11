@@ -113,7 +113,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV POSTGREST_VERSION=v12.2.0
 
-RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/download/${POSTGREST_VERSION}/postgrest-v12.2.0-linux-static-x64.tar.xz && \
+RUN curl -fSL --retry 3 --retry-delay 5 -o postgrest.tar.xz "https://github.com/PostgREST/postgrest/releases/download/${POSTGREST_VERSION}/postgrest-${POSTGREST_VERSION}-linux-static-x64.tar.xz" && \
     tar -xf postgrest.tar.xz && \
     mv postgrest /postgrest && \
     rm postgrest.tar.xz && \

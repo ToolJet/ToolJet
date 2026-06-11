@@ -2,6 +2,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
+import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, ILike } from 'typeorm';
@@ -482,6 +483,15 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
+        const isGitEnabled = !!(await manager.findOne(WorkspaceBranch, {
+          where: { organizationId, isDefault: true },
+          select: ['id'],
+        }));
+
+        if (!isGitEnabled && name) {
+          await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
+        }
+
         const updatableParams = {
           id: dataSourceId,
           name,
@@ -492,25 +502,53 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         cleanObject(updatableParams);
 
         await manager.save(DataSource, updatableParams);
+
+        if (shouldUpdateDefault && name) {
+          await manager.update(DataSourceVersion, { dataSourceId, isDefault: true }, { name, updatedAt: new Date() });
+        }
       });
     } finally {
       this.inMemoryCacheService.clear();
     }
   }
 
-  async decrypt(options: Record<string, any>) {
-    const decryptedOptions = { ...options };
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ): Promise<{ valid: boolean; errors: any[] }> {
+    const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
+    const storedOptions: Record<string, any> = dataSource.options || {};
 
+    // Convert options to plain data, decrypting only credential_ids that
+    // belong to this datasource (prevents cross-datasource credential reads).
+    const data: Record<string, any> = {};
     for (const [key, value] of Object.entries(options)) {
       if (value?.credential_id) {
-        decryptedOptions[key] = {
-          ...value,
-          value: await this.credentialService.getValue(value.credential_id),
-        };
+        const stored = storedOptions[key];
+        if (stored?.credential_id === value.credential_id) {
+          const decrypted = await this.credentialService.getValue(value.credential_id);
+          if (decrypted !== undefined && decrypted !== null && decrypted !== '') {
+            data[key] = decrypted;
+          }
+        }
+      } else if (value?.value !== undefined && value?.value !== null && value?.value !== '') {
+        data[key] = value.value;
       }
     }
 
-    return decryptedOptions;
+    const ajv = new Ajv2020({
+      strict: false,
+      allErrors: true,
+      removeAdditional: false,
+      validateSchema: false,
+      coerceTypes: true,
+    });
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
+    return { valid: !!valid, errors: validate.errors || [] };
   }
 
   async parseOptionsForUpdate(
@@ -825,6 +863,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'hubspot',
         'xero',
         'bigquery',
+        'databricks',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(

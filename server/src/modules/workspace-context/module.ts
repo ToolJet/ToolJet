@@ -12,7 +12,11 @@ export class WorkspaceContextModule extends SubModule {
     _configs?: { IS_GET_CONTEXT: boolean },
     isMainImport: boolean = false
   ): Promise<DynamicModule> {
-    return {
+    const cacheKey = this.buildCacheKey(_configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
+    return this.cacheModule(cacheKey, {
       module: WorkspaceContextModule,
       imports: [],
       controllers: isMainImport ? [WorkspaceContextController] : [],
@@ -24,6 +28,6 @@ export class WorkspaceContextModule extends SubModule {
         OrganizationRepository,
       ],
       exports: [],
-    };
+    });
   }
 }

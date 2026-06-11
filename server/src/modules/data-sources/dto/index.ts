@@ -27,7 +27,7 @@ export class CreateDataSourceDto {
   environment_id: string;
 }
 
-export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) { }
+export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
 export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {
   @IsString()
   @IsOptional()
@@ -102,4 +102,16 @@ export class InvokeDataSourceMethodDto {
 }
 
 export type InvokeDataSourceMethodResponseDto = QueryResult;
+
+export class ValidateOptionsDto {
+  @IsDefined()
+  options: Record<string, any>;
+
+  @IsDefined()
+  schema: Record<string, any>;
+
+  @IsUUID()
+  @IsOptional()
+  environment_id?: string;
+}
 
