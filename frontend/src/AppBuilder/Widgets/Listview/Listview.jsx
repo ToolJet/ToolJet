@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
 // import { SubContainer } from '../SubContainer';
 import { Pagination } from '@/_components/Pagination';
 import _ from 'lodash';
@@ -21,7 +22,6 @@ export const Listview = function Listview({
   styles,
   fireEvent,
   setExposedVariables,
-  adjustComponentPositions,
   currentLayout,
   darkMode,
   dataCy,
@@ -188,6 +188,11 @@ export const Listview = function Listview({
       initExposedValueArrayForChildren(id, filteredData.length, moduleId, parentIndices);
     }
   }
+
+  const renderedRowCount = filteredData.length;
+
+  useExposedValueBatch(renderedRowCount);
+
   return (
     <div
       data-disabled={disabledState}
@@ -217,7 +222,6 @@ export const Listview = function Listview({
                 darkMode={darkMode}
                 width={width}
                 isDynamicHeightEnabled={isDynamicHeightEnabled}
-                adjustComponentPositions={adjustComponentPositions}
                 data={data}
                 currentLayout={currentLayout}
                 visibility={visibility}

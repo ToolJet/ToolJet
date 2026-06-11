@@ -16,6 +16,16 @@ export const getLabelWidthOfInput = (widthType, labelWidth) => {
   return (labelWidth / 100) * 70;
 };
 
+export const getLabelFontSize = (labelFontSize, defaultSize = 12) => {
+  const size = Number(labelFontSize);
+  return `${Number.isFinite(size) && size > 0 ? size : defaultSize}px`;
+};
+
+export const getLabelHeight = (labelFontSize, defaultSize = 12) => {
+  const size = Number(labelFontSize);
+  return (Number.isFinite(size) && size > 0 ? size : defaultSize) + 8;
+};
+
 export const checkIfInputWidgetTypeIsDeprecated = (optionValue) => {
   return optionValue === 'ofField';
 };

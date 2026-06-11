@@ -8,12 +8,15 @@ import { ImportExportResourcesModule } from '@modules/import-export-resources/mo
 import { VersionModule } from '@modules/versions/module';
 import { FeatureAbilityFactory } from '@modules/app-git/ability/index';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { AppGitRepository } from './repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 export class AppGitModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       AppGitController,
       AppGitService,
@@ -47,7 +50,7 @@ export class AppGitModule extends SubModule {
       'shared/branching-business.util',
       'shared/datasource-branch.util',
     ]);
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppGitModule,
       imports: [
         await FolderAppsModule.register(configs),
@@ -61,7 +64,6 @@ export class AppGitModule extends SubModule {
       controllers: isMainImport ? [AppGitController] : [],
       providers: [
         OrganizationGitSyncRepository,
-        AppGitRepository,
         AppsRepository,
         AppGitService,
         SourceControlProviderService,
@@ -89,6 +91,6 @@ export class AppGitModule extends SubModule {
         DataSourceBranchUtil,
         HTTPSAppGitService,
       ],
-    };
+    });
   }
 }

@@ -44,6 +44,12 @@ export function setActiveBranch(branch, orgId) {
 }
 
 export function getActiveBranchId(orgId) {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('is_branch') === 'false') return null;
+  } catch {
+    // ignore URL parsing errors
+  }
   const branch = getActiveBranch(orgId);
   return branch?.id || null;
 }

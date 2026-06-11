@@ -24,7 +24,8 @@ export class ImportExportResourcesService {
 
   async export(
     user: User,
-    exportResourcesDto: ExportResourcesDto
+    exportResourcesDto: ExportResourcesDto,
+    branchId?: string
   ): Promise<{
     tooljet_database?: Array<ImportTooljetDatabaseDto>;
     app?: Array<Record<string, any>>; // TODO: Define the type for app
@@ -52,7 +53,7 @@ export class ImportExportResourcesService {
       const exportedApps: Record<string, unknown>[] = [];
       for (const app of exportResourcesDto.app) {
         const exportedApp = {
-          definition: await this.appImportExportService.export(user, app.id, app.search_params),
+          definition: await this.appImportExportService.export(user, app.id, app.search_params, branchId),
         };
         exportedApps.push(exportedApp);
       }
@@ -62,7 +63,7 @@ export class ImportExportResourcesService {
 
     if (exportResourcesDto.app?.length) {
       const appData = await this.appsRepository.findOne({
-        where: { id: exportResourcesDto.app[0].id }
+        where: { id: exportResourcesDto.app[0].id },
       });
       //APP_EXPORT audit
       const auditLogsData = {
@@ -171,12 +172,22 @@ export class ImportExportResourcesService {
     const exportedVersions: any[] = resourceExport.app?.[0]?.definition?.appV2?.appVersions ?? [];
     const hasNonStubVersion = exportedVersions.some((v: any) => !v.isStub);
     if (exportedVersions.length > 0 && !hasNonStubVersion) {
-      throw new BadRequestException('App contents are still syncing from Git. Open the app to finish loading, then try again.');
+      throw new BadRequestException(
+        'App contents are still syncing from Git. Open the app to finish loading, then try again.'
+      );
     }
 
     // TODO: Verify if this is required as we always pass name on imports
     // Without this appImportExportService.import will throw an error
     resourceExport.app[0].definition.appV2.name = newAppName;
+
+    // Clear the source app's slug so the import generates a fresh one from the
+    // new app's id. Without this the (slug, branch_id) unique index is violated
+    // because the source and clone live on the same branch.
+    delete resourceExport.app[0].definition.appV2.slug;
+    for (const ver of exportedVersions) {
+      delete ver.slug;
+    }
 
     const importResourcesDto: ImportResourcesDto = {
       organization_id,

@@ -45,7 +45,10 @@ export class PluginsService implements IPluginsService {
       throw new InternalServerErrorException('Invalid plugin files');
     }
 
-    return shouldCreate && (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles));
+    return (
+      shouldCreate &&
+      (await this.pluginsUtilService.create(body, version, { index, operations, icon, manifest }, specFiles))
+    );
   }
 
   async findAll() {
@@ -213,6 +216,7 @@ export class PluginsService implements IPluginsService {
       if (shouldAutoInstall && pluginsToBeInstalled.length) {
         for (const pluginId of pluginsToBeInstalled) {
           const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          if (!pluginDetails) continue;
           const installedPluginInfo = await this.install(pluginDetails);
           installedPluginsList.push(installedPluginInfo.name);
           installedPluginsInfo.push(installedPluginInfo);

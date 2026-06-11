@@ -5,7 +5,6 @@ export const gitSyncService = {
   create,
   getGitConfig,
   updateConfig,
-  syncAppVersion,
   setFinalizeConfig,
   deleteConfig,
   getAppConfig,
@@ -18,7 +17,6 @@ export const gitSyncService = {
   updateStatus,
   getGitStatus,
   saveProviderConfigs,
-  updateAppEditState,
   getAppGitConfigs,
   // New branch management methods
   getAllBranches,
@@ -102,15 +100,6 @@ function getGitStatus(workspaceId) {
   );
 }
 
-function syncAppVersion(appGitId, versionId) {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  return fetch(`${config.apiUrl}/app-git/${appGitId}/sync/${versionId}`, requestOptions).then(handleResponse);
-}
-
 function deleteConfig(organizationGitId, gitType) {
   const requestOptions = {
     method: 'DELETE',
@@ -122,7 +111,7 @@ function deleteConfig(organizationGitId, gitType) {
   );
 }
 
-function gitPush(body, appGitId, versionId) {
+function gitPush(body, appId, versionId) {
   // body can now include { commitMessage, sourceBranch } when branching is enabled
   const requestOptions = {
     method: 'POST',
@@ -130,7 +119,7 @@ function gitPush(body, appGitId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-git/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -261,18 +250,6 @@ function testProviderConnection(payload = {}) {
   return fetch(`${config.apiUrl}/git-sync/test-connection`, requestOptions).then(handleResponse);
 }
 
-function updateAppEditState(appId, allowEditing) {
-  const body = {
-    allowEditing,
-  };
-  const requestOptions = {
-    method: 'PUT',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify(body),
-  };
-  return fetch(`${config.apiUrl}/app-git/${appId}/configs`, requestOptions).then(handleResponse);
-}
 function getAppGitConfigs(workspaceId, versionId) {
   const requestOptions = {
     method: 'GET',
