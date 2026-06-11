@@ -50,7 +50,12 @@ export class DataQueryRepository extends Repository<DataQuery> {
       .innerJoin(App, 'module_app', 'module_app.id = module_version.app_id')
       .where('component.type = :componentType', { componentType: 'ModuleViewer' })
       .andWhere('app.is_public = true')
-      .andWhere('app.current_version_id = app_version.id')
+      .andWhere(
+        `(app.current_version_id = app_version.id
+          OR NOT EXISTS (
+            SELECT 1 FROM workspace_branches wb WHERE wb.organization_id = app.organization_id
+          ))`
+      )
       .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
       .andWhere('module_version.app_id != app.id')
       .andWhere('app.organization_id = module_app.organization_id')
