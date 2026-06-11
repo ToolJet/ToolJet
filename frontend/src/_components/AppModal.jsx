@@ -43,8 +43,9 @@ export function AppModal({
   }
 
   if (actionButton.includes('Clone')) {
-    if (selectedAppName.length >= 45) {
-      selectedAppName = selectedAppName.slice(0, 45) + '_Copy';
+    // Keep the cloned name within the 100-char limit: 95 + '_Copy' (5) = 100.
+    if (selectedAppName.length >= 95) {
+      selectedAppName = selectedAppName.slice(0, 95) + '_Copy';
     } else {
       selectedAppName = selectedAppName + '_Copy';
     }
