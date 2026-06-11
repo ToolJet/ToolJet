@@ -17,7 +17,6 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
-  const [switchingBranchId, setSwitchingBranchId] = useState(null);
 
   const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, hasMoreRemote, visibleCount } =
     useWorkspaceBranchesStore((state) => ({
