@@ -23,6 +23,7 @@ export function AppModal({
   selectedAppId = null,
   selectedAppName = null,
   title,
+  titleAdornment,
   actionButton,
   actionLoadingButton,
   fetchingOrgGit,
@@ -138,6 +139,7 @@ export function AppModal({
       show={show}
       closeModal={closeModal}
       title={title}
+      titleAdornment={titleAdornment}
       footerContent={
         <>
           <ButtonSolid

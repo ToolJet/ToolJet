@@ -528,10 +528,12 @@ describe("Data source Rest API", () => {
         { key: "tokenData", encrypted: false },
       ]
     );
+    cy.wait(1000);
     cy.reload();
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     data.basicAppName = `${fake.companyName}-restAPI-Basic-App`;
     cy.apiCreateApp(data.basicAppName);
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_basic_auth_valid",
       dsName: `cypress-${data.dataSourceName}-restapi`,
@@ -539,13 +541,16 @@ describe("Data source Rest API", () => {
       urlSuffix: "/basic-auth/user/pass",
       expectedResponseShape: { authenticated: true, user: "user" },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_basic_auth_invalid",
       dsName: `cypress-${data.dataSourceName}-restapi`,
       method: "GET",
       urlSuffix: "/basic-auth/invaliduser/invalidpass",
     });
+    cy.wait(1000);
     cy.apiDeleteApp();
+    cy.wait(1000);
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   it("Should verify response for bearer authentication type connection", () => {
@@ -592,11 +597,14 @@ describe("Data source Rest API", () => {
         { key: "tokenData", encrypted: false },
       ]
     );
+    cy.wait(1000);
     cy.reload();
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     data.bearerAppName = `${fake.companyName}-restAPI-Bearer-App`;
     cy.apiCreateApp(data.bearerAppName);
+    cy.wait(1000);
     cy.openApp();
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_bearer_auth_valid",
       dsName: `cypress-${data.dataSourceName}-restapi`,
@@ -604,7 +612,9 @@ describe("Data source Rest API", () => {
       urlSuffix: "/bearer",
       expectedResponseShape: { authenticated: true, token: "my-token-123" },
     });
+    cy.wait(1000);
     cy.apiDeleteApp();
+    cy.wait(1000);
     cy.intercept("GET", "api/data_sources?**").as("datasource");
     cy.apiCreateDataSource(
       `${Cypress.env("server_host")}/api/data-sources`,
@@ -649,16 +659,21 @@ describe("Data source Rest API", () => {
         { key: "tokenData", encrypted: false },
       ]
     );
+    cy.wait(1000);
     data.bearerInvalidAppName = `${fake.companyName}-restAPI-Bearer-invalid`;
     cy.apiCreateApp(data.bearerInvalidAppName);
+    cy.wait(1000);
     cy.openApp();
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "get_bearer_auth_invalid",
       dsName: `cypress-${data.dataSourceName}-restapi-invalid`,
       method: "GET",
       urlSuffix: "/bearer",
     });
+    cy.wait(1000);
     cy.apiDeleteApp();
+    cy.wait(1000);
     cy.apiDeleteDataSource(`cypress-${data.dataSourceName}-restapi`);
   });
   //might be failing due to rate limit error from auth0, need to investigate and fix
@@ -723,6 +738,7 @@ describe("Data source Rest API", () => {
   });
   it("Should verify response for content-type", () => {
     cy.apiCreateApp(`${fake.companyName}-restAPI-Content-App`);
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_json",
       dsName: "restapidefault",
@@ -734,6 +750,7 @@ describe("Data source Rest API", () => {
       urlSuffix: "",
       expectedResponseShape: { id: true, title: "foo", body: "bar", userId: 1 },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_raw_text",
       dsName: "restapidefault",
@@ -745,6 +762,7 @@ describe("Data source Rest API", () => {
       run: true,
       expectedResponseShape: { data: "This is plain text content" },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_form_urlencoded",
       dsName: "restapidefault",
@@ -760,6 +778,7 @@ describe("Data source Rest API", () => {
         "form.age": "30",
       },
     });
+    cy.wait(1000);
     createAndRunRestAPIQuery({
       queryName: "post_xml_soap",
       dsName: "restapidefault",

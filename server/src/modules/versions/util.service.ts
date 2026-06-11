@@ -1,4 +1,5 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -99,6 +100,15 @@ export class VersionUtilService implements IVersionUtilService {
 
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
+      // chk_app_versions_branched_implies_draft (1779300000000) requires
+      // non-DRAFT rows to be branchless. Detach branch_id in the SAME UPDATE
+      // as the status flip so the row never lands in the violating state
+      // mid-transaction. handleDefaultBranchPublish below still fires for the
+      // default-branch publish path; its own branch_id detach (line 245)
+      // becomes an idempotent no-op once we've done it inline here.
+      if (appVersionUpdateDto.status !== AppVersionStatus.DRAFT && appVersion.branchId) {
+        editableParams['branchId'] = null;
+      }
     }
     if (
       appVersionUpdateDto?.description !== undefined &&
@@ -108,11 +118,134 @@ export class VersionUtilService implements IVersionUtilService {
       editableParams['description'] = appVersionUpdateDto.description;
     }
 
+    // DB write. Wrap in a transaction so the optional post-publish hook below
+    // commits atomically with the status change.
+    const runWrite = async (mgr: EntityManager) => {
+      await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
+
+      // Post-publish hook: when a default-branch DRAFT VERSION row flips to
+      // PUBLISHED, seed a new DRAFT on the same default branch and detach
+      // branch_id from the just-published row. Mirrors the one-shot migration
+      // `EnsureDefaultBranchDraftVersion1777970000000` and keeps the
+      // invariant "every git-enabled app has a DRAFT on its default branch"
+      // alive after every publish.
+      const flippedToPublished =
+        editableParams['status'] === AppVersionStatus.PUBLISHED && appVersion.status !== AppVersionStatus.PUBLISHED;
+      if (flippedToPublished) {
+        await this.handleDefaultBranchPublish(appVersion, mgr);
+      }
+    };
+
     if (manager) {
-      await manager.update(AppVersion, { id: appVersion.id }, editableParams);
+      await runWrite(manager);
     } else {
-      await this.versionRepository.update(appVersion.id, editableParams);
+      await dbTransactionWrap(runWrite);
     }
+  }
+
+  /**
+   * Fires when a VERSION-type DRAFT on the workspace's default branch
+   * transitions to PUBLISHED. Two actions:
+   *
+   *   1. Insert a fresh minimal DRAFT row on the same default branch. Metadata
+   *      (`app_name / slug / icon / is_public` / `co_relation_id`) is sourced
+   *      from the **latest saved version row** for this app (ordered by
+   *      updated_at DESC) — that's the just-published row in the normal flow,
+   *      but querying for it explicitly keeps the hook robust against stale
+   *      in-memory entities. Satisfies `chk_app_versions_branch_metadata` and
+   *      preserves continuity for the user's next edit. No child entities
+   *      (pages / queries / etc.) are cloned — same model as the migration.
+   *   2. NULL out branch_id on the just-published row. Released snapshots
+   *      become branchless in the new model.
+   *
+   * No-op when:
+   *   - row isn't VERSION-type (sub-branch BRANCH publishes have their own flow)
+   *   - row's branchId isn't the workspace's default branch (workflows, git-off
+   *     non-workflow rows, etc.)
+   *   - workspace has no default branch at all (git-off)
+   *
+   * DB operations go through repositories; only the orchestration lives here.
+   */
+  private async handleDefaultBranchPublish(appVersion: AppVersion, manager: EntityManager): Promise<void> {
+    if (appVersion.versionType !== AppVersionType.VERSION) return;
+    if (!appVersion.branchId) return;
+
+    const parentApp = await manager.findOne(App, {
+      where: { id: appVersion.appId },
+      select: ['id', 'organizationId', 'type'],
+    });
+    if (!parentApp?.organizationId) return;
+
+    const defaultBranch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId: parentApp.organizationId, isDefault: true },
+      select: ['id'],
+    });
+    if (!defaultBranch || defaultBranch.id !== appVersion.branchId) return;
+
+    // Source from the latest version row by updated_at — the just-published
+    // row has the freshest updated_at after the UPDATE that triggered this
+    // hook, so this picks it. Relations are eager-loaded because
+    // setupNewVersion below walks `dataSources` + `dataSources.dataQueries`.
+    const sourceVersion = await manager.findOne(AppVersion, {
+      where: { appId: appVersion.appId },
+      relations: ['dataSources', 'dataSources.dataQueries'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    // First-priority environment for the new DRAFT's currentEnvironmentId.
+    // Mirrors `createVersion` (line 311) — every new DRAFT starts on the
+    // org's lowest-priority (development) environment regardless of which
+    // env the source was on. Falls back to the source's env if the lookup
+    // fails so the column is never NULL on the inserted row.
+    const firstPriorityEnv = await this.appEnvironmentUtilService.get(parentApp.organizationId, null, true, manager);
+
+    // Step 1: random UUID name for the new draft. Mirrors branch-version
+    // naming (apps/util.service.ts) — drafts are internal records that the
+    // user names later via the save-version dialog, so any unique value is
+    // fine. UUID is collision-free, so no _N suffix loop is needed.
+    const newDraft = await manager.save(
+      AppVersion,
+      manager.create(AppVersion, {
+        name: uuid(),
+        appId: appVersion.appId,
+        status: AppVersionStatus.DRAFT,
+        versionType: AppVersionType.VERSION,
+        branchId: defaultBranch.id,
+        // Modules pin to a version via module_reference_id. Each new version gets a
+        // fresh uuid (mirrors createVersion line 347) — never leave it NULL for a
+        // module, or ModuleViewer pin resolution against this draft fails.
+        ...(parentApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
+        co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
+        parentVersionId: sourceVersion?.id ?? appVersion.id,
+        currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,
+        isStub: false,
+        appName: (sourceVersion as any)?.appName ?? (appVersion as any)?.appName ?? null,
+        slug: (sourceVersion as any)?.slug ?? (appVersion as any)?.slug ?? null,
+        icon: (sourceVersion as any)?.icon ?? (appVersion as any)?.icon ?? null,
+        isPublic: (sourceVersion as any)?.isPublic ?? (appVersion as any)?.isPublic ?? false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+    );
+
+    // Step 1b: deep-clone content from the source. Mirrors `createVersion` —
+    // copies globalSettings/pageSettings/showViewerNavigation onto the new
+    // DRAFT and clones pages/components/layouts/queries/event handlers (and
+    // workflow bundles for workflow apps) with id remapping. Every cloned
+    // child carries its own `co_relation_id` forward (see
+    // VersionsCreateService — Page line 492, Component line 521, Layout
+    // line 593, DataSource line 130, DataQuery line 144, EventHandler
+    // lines 160/194/512/611). The new row's own co_relation_id was already
+    // inherited from the source above. Without this clone the new DRAFT has
+    // NULL globalSettings/pageSettings, which crashes the editor on
+    // `editingVersion.globalSettings.theme = ...`.
+    if (sourceVersion) {
+      await this.createVersionService.setupNewVersion(newDraft, sourceVersion, parentApp.organizationId, manager);
+    }
+
+    // Step 2: detach branch_id from the just-published row. Delegated via the
+    // repository to keep the DB write centralised.
+    await this.versionRepository.updateVersion(appVersion.id, { branchId: null }, manager);
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -151,7 +284,13 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
-    const { versionName, versionFromId, versionDescription, versionType, branchId } = versionCreateDto;
+    const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
+    // Workflows must always have branch_id NULL — they don't participate in branching.
+    // The controller forwards the x-branch-id header into versionCreateDto.branchId
+    // even for workflows; drop it here so the new row doesn't land with branch_id
+    // set + app_name/slug NULL (which would trip chk_app_versions_branch_metadata,
+    // since workflow versions don't carry those fields).
+    const branchId = app.type === APP_TYPES.WORKFLOW ? undefined : versionCreateDto.branchId;
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
@@ -188,6 +327,12 @@ export class VersionUtilService implements IVersionUtilService {
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
 
+      // Non-workflow metadata (slug/appName/icon/isPublic) lives on app_versions and
+      // every row carries the same values for a given branch. Carry them over from the
+      // parent version so the new row stays consistent with the rest of the app — the
+      // dashboard / overlay helpers can pick any row and get the right metadata.
+      // Workflows keep these on apps.*; their version rows leave them null.
+      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
       const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
@@ -205,6 +350,12 @@ export class VersionUtilService implements IVersionUtilService {
           co_relation_id: app.co_relation_id,
           ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
+          ...(!isWorkflow && {
+            slug: versionFrom?.slug ?? null,
+            appName: versionFrom?.appName ?? null,
+            icon: versionFrom?.icon ?? null,
+            isPublic: versionFrom?.isPublic ?? false,
+          }),
         })
       );
 
@@ -263,11 +414,7 @@ export class VersionUtilService implements IVersionUtilService {
     }
   }
 
-  async checkDraftModulesInApp(
-    versionId: string,
-    organizationId: string,
-    manager: EntityManager
-  ): Promise<void> {
+  async checkDraftModulesInApp(versionId: string, organizationId: string, manager: EntityManager): Promise<void> {
     try {
       // Resolve pins to runtime rows. Strict policy — block:
       //   no-row             — module unusable (zero candidate rows or module app missing)

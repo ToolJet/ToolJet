@@ -70,6 +70,10 @@ export class AppUpdateDto {
   @Transform(({ value }) => sanitizeInput(value))
   icon: string;
 
+  @IsString()
+  @IsOptional()
+  branch_id?: string;
+
   @IsOptional()
   @IsEnum(AppBuilderMode, { message: 'app_builder_mode must be either "ai" or "visual"' })
   app_builder_mode?: AppBuilderMode;
@@ -95,6 +99,10 @@ export class ValidateAppAccessDto {
   @IsString()
   @IsOptional()
   envId: string;
+
+  @IsString()
+  @IsOptional()
+  branchId?: string;
 }
 
 @Exclude()

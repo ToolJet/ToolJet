@@ -28,6 +28,11 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
+export function getDBConnection(): EntityManager {
+  const connection = getConnectionInstance();
+  return connection.manager;
+}
+
 export async function dbTransactionForAppVersionAssociationsUpdate(
   operation: (...args) => any,
   appVersionId: string

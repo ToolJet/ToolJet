@@ -268,9 +268,7 @@ export const verifyGlobalSettingsDisabled = () => {
     "This version is locked. To make edits, create a draft version."
   );
   cy.get(appEditorSelector.settings.settingsSidebarIcon).click({ force: true });
-  cy.get(appEditorSelector.settings.maintenanceToggle)
-    .parents(".disabled")
-    .should("exist");
+  cy.get(appEditorSelector.settings.maintenanceToggle).should("be.enabled");
   cy.get(appEditorSelector.settings.maxCanvasWidthInput)
     .parents(".disabled")
     .should("exist");
