@@ -1,22 +1,22 @@
 /**
  * Returns the inline styles needed while resizing a FlexContainer child.
- * Only the axis being resized is included so a vertical resize cannot replace
- * fill-parent width with Moveable's measured pixel width.
+ * Live dimensions stay unsnapped so the rendered edge remains aligned with
+ * Moveable's control box. Grid snapping is applied when the resize is committed.
  */
 export function computeFlexResizeStyles({ direction, parentDirection, width, height, gridHeight }) {
   const isHorizontalResize = Boolean(direction?.[0]);
   const isVerticalResize = Boolean(direction?.[1]);
-  const snappedWidth = Math.max(gridHeight, Math.round((width ?? gridHeight) / gridHeight) * gridHeight);
-  const snappedHeight = Math.max(gridHeight, Math.round((height ?? gridHeight) / gridHeight) * gridHeight);
+  const liveWidth = Math.max(gridHeight, width ?? gridHeight);
+  const liveHeight = Math.max(gridHeight, height ?? gridHeight);
   const styles = {};
 
   if (isHorizontalResize) {
-    styles.width = `${snappedWidth}px`;
-    if (parentDirection === 'row') styles.flexBasis = `${snappedWidth}px`;
+    styles.width = `${liveWidth}px`;
+    if (parentDirection === 'row') styles.flexBasis = `${liveWidth}px`;
   }
   if (isVerticalResize) {
-    styles.height = `${snappedHeight}px`;
-    if (parentDirection !== 'row') styles.flexBasis = `${snappedHeight}px`;
+    styles.height = `${liveHeight}px`;
+    if (parentDirection !== 'row') styles.flexBasis = `${liveHeight}px`;
   }
 
   return styles;
