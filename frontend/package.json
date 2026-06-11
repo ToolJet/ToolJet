@@ -285,7 +285,10 @@
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
     },
-    "immutable@3": "^3.8.3"
+    "immutable@3": "^3.8.3",
+    "@base-ui/react": {
+      "date-fns": "$date-fns"
+    }
   },
   "scripts": {
     "start": "webpack serve --hot --port 8082 --host 0.0.0.0",
