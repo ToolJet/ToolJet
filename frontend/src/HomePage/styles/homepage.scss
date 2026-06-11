@@ -309,15 +309,3 @@
     max-width: 459px;
   }
 }
-
-// App-card name tooltip: wrap long (up to 100-char) app names in a readable box
-// instead of bootstrap's cramped 200px default. Rendered in a body portal, so top-level.
-.app-card-name-tooltip {
-  .tooltip-inner {
-    // ~3/4 of the previous 280px so a 100-char name wraps to a few readable lines
-    max-width: 210px;
-    white-space: normal;
-    word-break: break-word;
-    text-align: left;
-  }
-}
