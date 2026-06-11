@@ -1,9 +1,6 @@
 name: Weekly Vulnerability Report
 
 on:
-  pull_request:
-    branches: [main]
-    
   schedule:
     # 03:30 UTC = 09:00 IST, every Monday
     - cron: '30 3 * * 1'
@@ -18,7 +15,6 @@ jobs:
     strategy:
       fail-fast: false       # one branch failing must not skip the other
       matrix:
-        # Add/replace branches here. Bump lts-3.16 when the LTS line moves.
         branch: [main, lts-3.16]
     steps:
       - name: Checkout ${{ matrix.branch }}
@@ -34,8 +30,6 @@ jobs:
       - name: Run npm audit across the whole branch
         id: scan
         env:
-          # Excludes any lockfile under a docs/ path (mirrors the Dependabot
-          # dismissals). Set to "" if you ever want to audit docs too.
           EXCLUDE_PATTERN: "/docs/"
         run: |
           set -uo pipefail
@@ -105,12 +99,6 @@ jobs:
             echo "_No vulnerabilities found._" > "$details"
           fi
 
-          # Color from the worst severity on this branch
-          if   [ "$c" -gt 0 ]; then color="#D40E0D"   # red
-          elif [ "$h" -gt 0 ]; then color="#E8912D"   # orange
-          else                      color="#2EB67D"   # green
-          fi
-
           {
             echo "critical=$c"
             echo "high=$h"
@@ -118,39 +106,7 @@ jobs:
             echo "low=$l"
             echo "total=$(( c + h + m + l ))"
             echo "lockfiles=$found"
-            echo "color=$color"
           } >> "$GITHUB_OUTPUT"
-
-      # ---- Output for testing (independent of Slack) -------------------------
-      - name: Write report file
-        run: |
-          SCAN_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
-          report="reports/vuln-report-${{ matrix.branch }}.txt"
-
-          # Summary header
-          cat > "$report" <<EOF
-          Weekly Vulnerability Report
-          ===========================
-          Repository : ${{ github.repository }}
-          Branch     : ${{ matrix.branch }}
-          Scan time  : $SCAN_TIME
-          Lockfiles  : ${{ steps.scan.outputs.lockfiles }} (docs/ excluded)
-
-          Critical : ${{ steps.scan.outputs.critical }}
-          High     : ${{ steps.scan.outputs.high }}
-          Medium   : ${{ steps.scan.outputs.medium }}
-          Low      : ${{ steps.scan.outputs.low }}
-          ---------------------------
-          Total    : ${{ steps.scan.outputs.total }}
-
-          Details (sorted by severity):
-          EOF
-
-          # Detailed table built in the scan step
-          cat "reports/details-${{ matrix.branch }}.md" >> "$report"
-
-          echo "----- Report -----"
-          cat "$report"
 
       - name: Add to run summary
         run: |
@@ -174,108 +130,83 @@ jobs:
             echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: vuln-report-${{ matrix.branch }}
-          path: reports/
-      # ------------------------------------------------------------------------
 
-      # - name: Send Slack Notification
-      #   run: |
-      #     payload=$(cat <<EOF
-      #     {
-      #       "attachments": [
-      #         {
-      #           "color": "${{ steps.scan.outputs.color }}",
-      #           "blocks": [
-      #             {
-      #               "type": "header",
-      #               "text": {
-      #                 "type": "plain_text",
-      #                 "text": "🔒 Weekly Vulnerability Report — ${{ matrix.branch }}",
-      #                 "emoji": true
-      #               }
-      #             },
-      #             {
-      #               "type": "section",
-      #               "fields": [
-      #                 {
-      #                   "type": "mrkdwn",
-      #                   "text": "*Repository:*\\n${{ github.repository }}"
-      #                 },
-      #                 {
-      #                   "type": "mrkdwn",
-      #                   "text": "*Branch:*\\n\`${{ matrix.branch }}\`"
-      #                 },
-      #                 {
-      #                   "type": "mrkdwn",
-      #                   "text": "*Lockfiles scanned:*\\n${{ steps.scan.outputs.lockfiles }}"
-      #                 },
-      #                 {
-      #                   "type": "mrkdwn",
-      #                   "text": "*Scan Time:*\\n$(date -u +"%Y-%m-%d %H:%M UTC")"
-      #                 }
-      #               ]
-      #             },
-      #             {
-      #               "type": "divider"
-      #             },
-      #             {
-      #               "type": "section",
-      #               "text": {
-      #                 "type": "mrkdwn",
-      #                 "text": "*Vulnerabilities (npm audit):*"
-      #               }
-      #             },
-      #             {
-      #               "type": "section",
-      #               "fields": [
-      #                 { "type": "mrkdwn", "text": "🔴 *Critical:*\\n${{ steps.scan.outputs.critical }}" },
-      #                 { "type": "mrkdwn", "text": "🟠 *High:*\\n${{ steps.scan.outputs.high }}" },
-      #                 { "type": "mrkdwn", "text": "🟡 *Medium:*\\n${{ steps.scan.outputs.medium }}" },
-      #                 { "type": "mrkdwn", "text": "⚪ *Low:*\\n${{ steps.scan.outputs.low }}" }
-      #               ]
-      #             },
-      #             {
-      #               "type": "section",
-      #               "fields": [
-      #                 { "type": "mrkdwn", "text": "📊 *Total:*\\n${{ steps.scan.outputs.total }}" }
-      #               ]
-      #             },
-      #             {
-      #               "type": "divider"
-      #             },
-      #             {
-      #               "type": "actions",
-      #               "elements": [
-      #                 {
-      #                   "type": "button",
-      #                   "text": {
-      #                     "type": "plain_text",
-      #                     "text": "📥 View Full Run",
-      #                     "emoji": true
-      #                   },
-      #                   "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-      #                   "style": "primary"
-      #                 }
-      #               ]
-      #             }
-      #           ]
-      #         }
-      #       ]
-      #     }
-      #     EOF
-      #     )
+  notify:
+    needs: vulnerability-report
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Notification
+        run: |
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SCAN_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
 
-      #     response=$(curl -s -w "%{http_code}" -X POST \
-      #       -H 'Content-type: application/json' \
-      #       --data "$payload" \
-      #       "${{ secrets.SLACK_WEBHOOK_URL_DEVOPS }}")
+          if [ "${{ needs.vulnerability-report.result }}" = "success" ]; then
+            COLOR="#2563EB"
+            STATUS_TEXT="✅ Weekly npm audit scan completed for \`main\` and \`lts-3.16\`."
+          else
+            COLOR="#D40E0D"
+            STATUS_TEXT="⚠️ Weekly npm audit scan finished with errors (\`${{ needs.vulnerability-report.result }}\`) for \`main\` and \`lts-3.16\`."
+          fi
 
-      #     http_code="${response: -3}"
-      #     if [ "$http_code" != "200" ]; then
-      #       echo "Slack notification failed with HTTP $http_code"
-      #       exit 1
-      #     fi
-      #     echo "Slack notification sent successfully for ${{ matrix.branch }}"
+          payload=$(cat <<EOF
+          {
+            "attachments": [
+              {
+                "color": "$COLOR",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "🔒 Weekly Vulnerability Report",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "$STATUS_TEXT\\nSeverity counts and every vulnerability with its fix are on the run summary page."
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      { "type": "mrkdwn", "text": "*Repository:*\\n${{ github.repository }}" },
+                      { "type": "mrkdwn", "text": "*Scan Time:*\\n$SCAN_TIME" }
+                    ]
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "📊 View Full Report",
+                          "emoji": true
+                        },
+                        "url": "$RUN_URL",
+                        "style": "primary"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          response=$(curl -s -w "%{http_code}" -X POST \
+            -H 'Content-type: application/json' \
+            --data "$payload" \
+            "${{ secrets.SLACK_WEBHOOK_URL_VUR }}")
+
+          http_code="${response: -3}"
+          if [ "$http_code" != "200" ]; then
+            echo "Slack notification failed with HTTP $http_code"
+            exit 1
+          fi
+          echo "Slack notification sent successfully"
