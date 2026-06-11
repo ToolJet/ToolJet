@@ -16,7 +16,7 @@ export class ValidatePublicAppGuard implements CanActivate {
       return true;
     }
 
-    if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud || getTooljetEdition() === TOOLJET_EDITIONS.EE) {
+    if (getTooljetEdition() === TOOLJET_EDITIONS.Cloud) {
       const licenseTerms = await this.licenseTermsService.getLicenseTerms(
         [LICENSE_FIELD.STATUS, LICENSE_FIELD.PLAN],
         app.organizationId

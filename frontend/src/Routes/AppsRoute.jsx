@@ -101,7 +101,6 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
     if (!isSwitchingPages) {
       const { slug, versionId, environmentId, pageHandle } = params;
       /* Validate the app permissions */
-      console.log('validating app access with slug');
       let accessDetails = await handleAppAccess(componentType, slug, versionId, environmentId);
       const { versionName, environmentName, id: appId, ...restDetails } = accessDetails;
       if (versionName) {
