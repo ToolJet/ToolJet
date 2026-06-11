@@ -45,6 +45,13 @@ function createSSHStream(sourceOptions: SourceOptions): Promise<{ client: Client
             });
           });
 
+          // MariaDB driver calls socket methods that SSH Channel streams don't implement
+          const sshChannel: any = stream;
+          if (typeof sshChannel.unref !== 'function')        sshChannel.unref        = () => {};
+          if (typeof sshChannel.ref !== 'function')          sshChannel.ref          = () => {};
+          if (typeof sshChannel.setKeepAlive !== 'function') sshChannel.setKeepAlive = () => {};
+          if (typeof sshChannel.setNoDelay !== 'function')   sshChannel.setNoDelay   = () => {};
+
           resolve({ client: sshClient, stream });
         }
       );
@@ -414,9 +421,8 @@ export default class Mariadb implements QueryService {
     | { items: Array<{ value: string; label: string }>; totalCount: number }
   > {
     let conn;
-    const pool = await this.buildConnectionPool(sourceOptions);
     try {
-      conn = await pool.getConnection();
+      conn = await this.buildTestConnection(sourceOptions);
       const db = sourceOptions.database;
       const searchPattern = `%${search}%`;
 
@@ -450,8 +456,7 @@ export default class Mariadb implements QueryService {
     } catch (err) {
       throw new QueryError('Could not fetch tables', err.message, {});
     } finally {
-      if (conn) conn.release();
-      try { await pool.end(); } catch (_) { /* ignore */ }
+      if (conn) try { await conn.end(); } catch (_) { /* ignore */ }
     }
   }
 
@@ -460,9 +465,8 @@ export default class Mariadb implements QueryService {
     table: string
   ): Promise<Array<{ value: string; label: string }>> {
     let conn;
-    const pool = await this.buildConnectionPool(sourceOptions);
     try {
-      conn = await pool.getConnection();
+      conn = await this.buildTestConnection(sourceOptions);
       const db = sourceOptions.database;
       const rows: any[] = await conn.query(
         `SELECT COLUMN_NAME FROM information_schema.COLUMNS
@@ -474,8 +478,7 @@ export default class Mariadb implements QueryService {
     } catch (err) {
       throw new QueryError('Could not fetch columns', err.message, {});
     } finally {
-      if (conn) conn.release();
-      try { await pool.end(); } catch (_) { /* ignore */ }
+      if (conn) try { await conn.end(); } catch (_) { /* ignore */ }
     }
   }
 
@@ -491,13 +494,14 @@ export default class Mariadb implements QueryService {
     } catch (error) {
       throw new QueryError(`Connection test failed: ${error.sqlMessage}`, error.message, {});
     } finally {
-      if (conn) conn.end();
+      if (conn) try { await conn.end(); } catch (_) { /* ignore */ }
     }
   }
 
 
-  private buildSSLObject(sourceOptions: SourceOptions): any | null {
+  private buildSSLObject(sourceOptions: SourceOptions, isSSH = false): any | null {
     if (!sourceOptions.ssl_enabled) return null;
+    if (isSSH && (sourceOptions.ssl_certificate ?? 'none') === 'none') return null;
     const sslObject: any = { rejectUnauthorized: (sourceOptions.ssl_certificate ?? 'none') !== 'none' };
     if (sourceOptions.ssl_certificate === 'ca_certificate') {
       sslObject.ca = sourceOptions.ca;
@@ -516,15 +520,21 @@ export default class Mariadb implements QueryService {
         ? sourceOptions.connectionLimit
         : this.defaultConnectionLimit;
 
-    const sslObject = this.buildSSLObject(sourceOptions);
+    const sslObject = this.buildSSLObject(sourceOptions, sourceOptions.ssh_enabled === 'enabled');
 
-    // ── SSH tunnel ────────────────────────────────────────────────────────────
     if (sourceOptions.ssh_enabled === 'enabled') {
       const poolConfig: any = {
         user: sourceOptions.user,
         password: sourceOptions.password,
         database: sourceOptions.database,
-        stream: () => createSSHStream(sourceOptions).then(({ stream }) => stream),
+        stream: (cb: (err: Error | null, stream: any) => void) => {
+          createSSHStream(sourceOptions)
+            .then(({ stream }) => cb(null, stream))
+            .catch((err) => {
+              console.error('[MariaDB][pool][SSH] SSH stream creation failed:', err.message);
+              cb(err, null);
+            });
+        },
         namedPlaceholders: true,
         multipleStatements: true,
         connectionLimit,
@@ -574,16 +584,23 @@ export default class Mariadb implements QueryService {
   }
 
   private async buildTestConnection(sourceOptions: SourceOptions): Promise<any> {
-    const sslObject = this.buildSSLObject(sourceOptions);
+    const sslObject = this.buildSSLObject(sourceOptions, sourceOptions.ssh_enabled === 'enabled');
 
     // ── SSH tunnel ────────────────────────────────────────────────────────────
     if (sourceOptions.ssh_enabled === 'enabled') {
-      const { stream } = await createSSHStream(sourceOptions);
       const connectionConfig: any = {
         user: sourceOptions.user,
         password: sourceOptions.password,
         database: sourceOptions.database,
-        stream,
+        stream: (callback: any) => {
+          createSSHStream(sourceOptions)
+            .then(({ stream }) => {
+              callback(null, stream);
+            })
+            .catch((err) => {
+              callback(err);
+            });
+        },
         namedPlaceholders: true,
         connectTimeout: 60000,
         ...(sslObject ? { ssl: sslObject } : {}),
