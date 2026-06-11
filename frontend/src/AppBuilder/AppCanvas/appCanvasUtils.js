@@ -369,6 +369,9 @@ export const getParentWidgetFromId = (parentType, parentId) => {
   return parentType;
 };
 
+export const getDropTargetLabel = (widgetType, slotType) =>
+  slotType === 'header' || slotType === 'footer' ? slotType : widgetType;
+
 export const getTabId = (parentId) => {
   return parentId.split('-').slice(0, -1).join('-');
 };

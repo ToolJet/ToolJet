@@ -73,6 +73,8 @@ export function handleResponse(
         handleError('', { data });
       } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.RESTRICTED_PREVIEW) {
         handleError('', { data });
+      } else if ([403].indexOf(response.status) !== -1 && data?.message === ERROR_TYPES.PUBLIC_APP_PLAN_RESTRICTED) {
+        handleError('', { data });
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
         const url = response.url;
