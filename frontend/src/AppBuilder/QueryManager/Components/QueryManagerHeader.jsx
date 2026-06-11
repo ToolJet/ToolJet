@@ -26,6 +26,7 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'mssql',
   'snowflake',
   'runjs',
+  'restapi',
 ];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {

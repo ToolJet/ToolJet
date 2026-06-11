@@ -232,7 +232,9 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         </div>
         <ElementToRender
           renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
-          key={selectedQuery?.id}
+          // revision is bumped only on external updates (e.g. AI-generated query changes),
+          // forcing a remount so editors holding options in local state pick up the change
+          key={`${selectedQuery?.id}-${selectedQuery?.revision ?? 0}`}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
           options={selectedQuery?.options}

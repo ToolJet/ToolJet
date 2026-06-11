@@ -614,7 +614,10 @@ export const createDataQuerySlice = (set, get) => ({
 
                 state.modules[moduleId].queryIdNameMapping[query.id] = updatedQuery.name;
 
-                return { ...updatedQuery, options: { ...newOptions } };
+                // Bump the client-side revision so editors keyed on it (QueryManagerBody)
+                // remount and re-read options; editors that snapshot options into local
+                // state (e.g. Restapi, Openapi) would otherwise render stale values.
+                return { ...updatedQuery, options: { ...newOptions }, revision: (query.revision ?? 0) + 1 };
               }
 
               return query;
