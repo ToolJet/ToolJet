@@ -13,14 +13,14 @@ a. Italics are used for names given to Queries, Database Tables, and Components.
 
 **Examples:**
 - Create a new query and rename it to *getEmployees*.
-- Select **ToolJetDB** as the the data source and *Employees* table as the data source.
+- Select **ToolJetDB** as the data source and *Employees* table as the data source.
 - Pass the returned data to the *allEmployees* component.
 
 b. Bold is applied for Workspace Constants, Clickable Buttons, fx, Data Sources, and Components.
 
 **Examples:**
 - Select the **Button** component and change its label to "Save".
-- Drag andn drop a **Table** component and rename it to *todosTable*.
+- Drag and drop a **Table** component and rename it to *todosTable*.
 - Expand the query panel at the bottom and click on the **Add** button to create a new **REST API** query.
 
 
