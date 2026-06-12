@@ -244,14 +244,13 @@ export const createEventsSlice = (set, get) => ({
         });
       }
     },
-    showModal: (modal, show, eventObj, moduleId = 'canvas') => {
+    showModal: (modal, show, eventObj, moduleId = 'canvas', subContainerIndex = null) => {
       try {
-        const { getExposedValueOfComponent } = get();
         const modalId = modal?.id ?? modal;
         if (_.isEmpty(modalId)) {
           throw new Error('No modal is associated with this event.');
         }
-        const exposedValue = getExposedValueOfComponent(modalId, moduleId);
+        const exposedValue = get().getExposedValueOfComponentAtIndex(modalId, subContainerIndex, moduleId);
         show ? exposedValue.open() : exposedValue.close();
 
         return Promise.resolve();
@@ -282,11 +281,12 @@ export const createEventsSlice = (set, get) => ({
     onEvent: async (eventName, events, options = {}, mode = 'edit', moduleId = 'canvas') => {
       const executeActionsForEventId = get().eventsSlice.executeActionsForEventId;
       const customVariables = options?.customVariables ?? {};
+      const subContainerIndex = options?.subContainerIndex ?? null;
       const { setExposedValue } = get();
 
       if (eventName === 'onPageLoad') {
         // for onPageLoad events, we need to execute the actions after the page is loaded
-        executeActionsForEventId('onPageLoad', events, mode, customVariables, moduleId);
+        executeActionsForEventId('onPageLoad', events, mode, customVariables, moduleId, subContainerIndex);
       }
       if (eventName === 'onTrigger') {
         const { queryPanel, dataQuery } = get();
@@ -344,13 +344,13 @@ export const createEventsSlice = (set, get) => ({
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);
-        executeActionsForEventId('onCalendarEventSelect', events, mode, customVariables, moduleId);
+        executeActionsForEventId('onCalendarEventSelect', events, mode, customVariables, moduleId, subContainerIndex);
       }
 
       if (eventName === 'onCalendarSlotSelect') {
         const { id, selectedSlots } = options;
         setExposedValue(id, 'selectedSlots', selectedSlots);
-        executeActionsForEventId('onCalendarSlotSelect', events, mode, customVariables, moduleId);
+        executeActionsForEventId('onCalendarSlotSelect', events, mode, customVariables, moduleId, subContainerIndex);
       }
 
       if (
@@ -424,25 +424,32 @@ export const createEventsSlice = (set, get) => ({
           'onRefresh',
         ].includes(eventName)
       ) {
-        executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        executeActionsForEventId(eventName, events, mode, customVariables, moduleId, subContainerIndex);
       }
       if (eventName === 'onBulkUpdate') {
-        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId, subContainerIndex);
       }
 
       if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
         if (!events || !Array.isArray(events) || events.length === 0) return;
-        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
+        await executeActionsForEventId(eventName, events, mode, customVariables, moduleId, subContainerIndex);
       }
     },
-    executeActionsForEventId: async (eventId, events = [], mode, customVariables, moduleId = 'canvas') => {
+    executeActionsForEventId: async (
+      eventId,
+      events = [],
+      mode,
+      customVariables,
+      moduleId = 'canvas',
+      subContainerIndex = null
+    ) => {
       if (!events || !Array.isArray(events) || events.length === 0) return;
       const filteredEvents = events
         ?.filter((event) => event?.event.eventId === eventId && !event?.event?.disabled)
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
-        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId);
+        await get().eventsSlice.executeAction(event, mode, customVariables, moduleId, subContainerIndex);
       }
     },
     logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error', page) {
@@ -520,7 +527,7 @@ export const createEventsSlice = (set, get) => ({
         timestamp: moment().toISOString(),
       });
     },
-    executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas') => {
+    executeAction: debounce((eventObj, mode, customVariables = {}, moduleId = 'canvas', subContainerIndex = null) => {
       const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
@@ -698,10 +705,10 @@ export const createEventsSlice = (set, get) => ({
           }
 
           case 'show-modal':
-            return get().eventsSlice.showModal(event.modal, true, eventObj, moduleId);
+            return get().eventsSlice.showModal(event.modal, true, eventObj, moduleId, subContainerIndex);
 
           case 'close-modal':
-            return get().eventsSlice.showModal(event.modal, false, eventObj, moduleId);
+            return get().eventsSlice.showModal(event.modal, false, eventObj, moduleId, subContainerIndex);
           case 'copy-to-clipboard': {
             const contentToCopy = getResolvedValue(event.contentToCopy, customVariables, moduleId);
             copyToClipboard(contentToCopy);
@@ -885,9 +892,13 @@ export const createEventsSlice = (set, get) => ({
               const parent = componentDefinition?.component?.parent;
               const parentDefinition = getComponentDefinition(parent, moduleId);
               const parentType = parentDefinition?.component?.component;
-              let component = getExposedValueOfComponent(event.componentId, moduleId);
+              let component;
               if (parentType === 'Form' && componentName) {
                 component = getExposedValueOfComponent(parent, moduleId)?.children?.[componentName];
+              } else if (subContainerIndex != null) {
+                component = get().getExposedValueOfComponentAtIndex(event.componentId, subContainerIndex, moduleId);
+              } else {
+                component = getExposedValueOfComponent(event.componentId, moduleId);
               }
 
               if (!event.componentId || !Object.keys(component).length) {

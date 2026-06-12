@@ -635,6 +635,22 @@ export const createResolvedSlice = (set, get) => ({
       return {};
     }
   },
+  getExposedValueOfComponentAtIndex: (componentId, subContainerIndex = null, moduleId = 'canvas') => {
+    const exposed = get().getExposedValueOfComponent(componentId, moduleId);
+
+    if (subContainerIndex == null || !Array.isArray(exposed)) {
+      return exposed && typeof exposed === 'object' && !Array.isArray(exposed) ? exposed : {};
+    }
+
+    const indices = Array.isArray(subContainerIndex) ? subContainerIndex : [subContainerIndex];
+    let current = exposed;
+    for (const idx of indices) {
+      current = current?.[idx];
+      if (current == null) break;
+    }
+
+    return current && typeof current === 'object' && !Array.isArray(current) ? current : {};
+  },
   getExposedValueOfQuery: (queryId, moduleId = 'canvas') => {
     return get().resolvedStore.modules[moduleId].exposedValues.queries[queryId] || {};
   },
