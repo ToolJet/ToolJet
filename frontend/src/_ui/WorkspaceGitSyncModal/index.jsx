@@ -308,160 +308,100 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   // ---- Pull section content ----
   const renderPullSection = () => (
     <div className="pull-section">
-      <div className="d-flex flex-column align-items-start justify-content-start w-100">
-        <div className="form-group mb-3 w-100">
-          <Dropdown
-            label="Select branch to pull from"
-            data-cy="branch-select"
-            options={dropdownBranches.reduce((acc, branch) => {
-              acc[branch.name] = {
-                value: branch.name,
-                label: branch.name,
-              };
-              return acc;
-            }, {})}
-            value={selectedBranch}
-            onChange={handleBranchChange}
-            width="100%"
-            theme={darkMode ? 'dark' : 'light'}
-            showItemOverflowTooltip
-          />
-        </div>
+      <form noValidate className="d-flex w-100 align-items-start justify-content-start">
+        <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
+          {/* PULL INTO */}
+          <div className="import-in-row">
+            <span className="tj-text-xsm font-weight-500 tj-text">Pull into</span>
+            <span className="branch-name-badge">
+              <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
+              {currentBranchName}
+            </span>
+          </div>
 
-        <div className="w-100">
-          <div className="selected-commit-header">LATEST COMMIT</div>
+          {/* PULL FROM */}
+          <div className="form-group mb-0">
+            <label
+              className="mb-1 tj-text-xsm font-weight-500"
+              style={{ color: 'var(--slate8)' }}
+              data-cy="pull-from-label"
+            >
+              Pull from
+            </label>
+            <Dropdown
+              data-cy="branch-select"
+              options={{ [currentBranchName]: { value: currentBranchName, label: currentBranchName } }}
+              value={currentBranchName}
+              onChange={() => {}}
+              width="100%"
+              theme={darkMode ? 'dark' : 'light'}
+              disabled={true}
+            />
+            <div className="tj-text-xxsm import-from-helper-text">Apps can only be imported from the same branch</div>
+          </div>
 
-          {/* Not fetched: dashed CTA box */}
-          {!latestCommitFetched && !isLatestCommitLoading && (
-            <div onClick={onViewLatestCommit} className="latest-commit-placeholder cursor-pointer">
-              <RefreshCcw width="14" height="14" />
-              <span className="font-weight-500 tj-text-xsm" data-cy="view-latest-commit-label">
-                View latest commit
-              </span>
-            </div>
-          )}
-
-          {/* Loading: same dashed box, spinner only */}
-          {isLatestCommitLoading && (
-            <div className="latest-commit-placeholder">
-              <div className="primary-spin-loader" style={{ width: '18px', height: '18px' }}></div>
-            </div>
-          )}
-
-          {/* Loaded */}
-          {latestCommitFetched && latestCommit && (
-            <div className="selected-commit-info w-100">
-              <div className="commit-icon">
-                <SolidIcon name="commit" width="20" />
-              </div>
-              <div className="commit-content">
-                <OverflowTooltip
-                  className="commit-title"
-                  whiteSpace="normal"
-                  style={{
-                    maxWidth: '100%',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {latestCommit.message || 'No message'}
-                </OverflowTooltip>
-                <div className="commit-metadata">
-                  By {latestCommit.author || 'Unknown'} | {formatCommitDate(latestCommit.date)}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Updates available: new design */}
-          {checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && (
-            <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
-              {/* PULL INTO */}
-              <div className="import-in-row">
-                <span className="tj-text-xsm font-weight-500 tj-text">Pull into</span>
-                <span className="branch-name-badge">
-                  <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
-                  {currentBranchName}
+          {/* LATEST COMMIT */}
+          <div className="w-100">
+            <div className="selected-commit-header">LATEST COMMIT</div>
+            {!latestCommitFetched && !isLatestCommitLoading && (
+              <div onClick={onViewLatestCommit} className="latest-commit-placeholder cursor-pointer">
+                <RefreshCcw width="14" height="14" />
+                <span className="font-weight-500 tj-text-xsm" data-cy="view-latest-commit-label">
+                  View latest commit
                 </span>
               </div>
-
-              {/* PULL FROM */}
-              <div className="form-group mb-0">
-                <label
-                  className="mb-1 tj-text-xsm font-weight-500"
-                  style={{ color: 'var(--slate8)' }}
-                  data-cy="pull-from-label"
-                >
-                  Pull from
-                </label>
-                <Dropdown
-                  data-cy="branch-select"
-                  options={{ [currentBranchName]: { value: currentBranchName, label: currentBranchName } }}
-                  value={currentBranchName}
-                  onChange={() => {}}
-                  width="100%"
-                  theme={darkMode ? 'dark' : 'light'}
-                  disabled={true}
-                />
-                <div className="tj-text-xxsm import-from-helper-text">
-                  Apps can only be imported from the same branch
-                </div>
+            )}
+            {isLatestCommitLoading && (
+              <div className="latest-commit-placeholder">
+                <div className="primary-spin-loader" style={{ width: '18px', height: '18px' }}></div>
               </div>
-
-              {/* LATEST COMMIT */}
-              {latestCommitData && (
-                <div className="w-100">
-                  <div className="selected-commit-header">LATEST COMMIT</div>
-                  <div className="d-flex w-100">
-                    <div className="selected-commit-info">
-                      <div className="commit-icon">
-                        <SolidIcon name="commit" width="20" />
-                      </div>
-                      <div className="commit-content">
-                        <OverflowTooltip
-                          className="commit-title"
-                          whiteSpace="normal"
-                          style={{
-                            maxWidth: '100%',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                          }}
-                        >
-                          {latestCommitData.message || 'No message'}
-                        </OverflowTooltip>
-                        <div className="commit-metadata">
-                          By {latestCommitData.author || 'Unknown'} | {formatCommitDate(latestCommitData.date)}
-                        </div>
-                      </div>
+            )}
+            {latestCommitFetched && latestCommit && (
+              <div className="d-flex w-100">
+                <div className="selected-commit-info">
+                  <div className="commit-icon">
+                    <SolidIcon name="commit" width="20" />
+                  </div>
+                  <div className="commit-content">
+                    <OverflowTooltip
+                      className="commit-title"
+                      whiteSpace="normal"
+                      style={{
+                        maxWidth: '100%',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {latestCommit.message || 'No message'}
+                    </OverflowTooltip>
+                    <div className="commit-metadata">
+                      By {latestCommit.author || 'Unknown'} | {formatCommitDate(latestCommit.date)}
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* INFO ALERT */}
-              <div className="import-dependent-info-alert">
-                <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
-                <span>
-                  The latest commit across <strong>all resources</strong> in this branch will be pulled
-                </span>
               </div>
-            </div>
-          )}
-
-          {/* Empty */}
-          {latestCommitFetched && !latestCommit && (
-            <div className="no-commits-empty-state w-100">
-              <AlertTriangle width="20" height="20" />
-              <div className="empty-state-content">
-                <div className="empty-state-title">No commits yet</div>
-                <div className="empty-state-description">Sync apps to your git repo and never lose progress</div>
+            )}
+            {latestCommitFetched && !latestCommit && (
+              <div className="no-commits-empty-state w-100">
+                <AlertTriangle width="20" height="20" />
+                <div className="empty-state-content">
+                  <div className="empty-state-title">No commits yet</div>
+                  <div className="empty-state-description">Sync apps to your git repo and never lose progress</div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* INFO ALERT */}
+          <div className="import-dependent-info-alert">
+            <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
+            <span>
+              The latest commit across <strong>all resources</strong> in this branch will be pulled
+            </span>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 
@@ -691,7 +631,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         centered={true}
         contentClassName={cx('git-sync-modal', {
           'theme-dark dark-theme': darkMode,
-          'pull-commit-expanded': checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE,
+          'pull-commit-expanded': activeTab === 'pull' || isOnDefaultBranch,
         })}
       >
         <Modal.Header>
