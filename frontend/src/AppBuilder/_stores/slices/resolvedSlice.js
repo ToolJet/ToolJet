@@ -554,6 +554,17 @@ export const createResolvedSlice = (set, get) => ({
             const sibling = current[0];
             template = Array.isArray(sibling) ? sibling[0] : sibling;
           }
+          if (!template) {
+            // No sibling available (e.g. fresh Table expanded-row slot) — walk deepest [0] chain
+            // from root entity to get the original fully-resolved structure (with styles, etc.)
+            let temp = state.resolvedStore.modules[moduleId].components[componentId];
+            while (Array.isArray(temp) && temp[0] !== undefined) {
+              temp = temp[0];
+            }
+            if (temp && typeof temp === 'object' && !Array.isArray(temp)) {
+              template = temp;
+            }
+          }
           for (let i = 0; i < length; i++) {
             if (!nested[i]) {
               nested[i] = template ? { ...template } : { ...DEFAULT_COMPONENT_STRUCTURE };

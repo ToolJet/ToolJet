@@ -2721,6 +2721,17 @@ export const createComponentsSlice = (set, get) => ({
               if (source && Array.isArray(source)) {
                 source = source[0];
               }
+              if (!source) {
+                // No local sibling available (e.g. fresh Table expanded-row slot) — walk the
+                // deepest [0] chain from the root entity to reuse the original resolved shape.
+                let temp = state.resolvedStore.modules[moduleId][entityType][entityId];
+                while (Array.isArray(temp) && temp[0] !== undefined) {
+                  temp = temp[0];
+                }
+                if (temp && typeof temp === 'object' && !Array.isArray(temp)) {
+                  source = temp;
+                }
+              }
               current[lastIdx] = source
                 ? { ...source, [type]: { ...(source[type] || {}), [key]: value } }
                 : { ...DEFAULT_COMPONENT_STRUCTURE, [type]: { [key]: value } };
