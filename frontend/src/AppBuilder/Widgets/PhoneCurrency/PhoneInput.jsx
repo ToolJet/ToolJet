@@ -44,6 +44,7 @@ export const PhoneInput = (props) => {
     handlePhoneCurrencyInputChange,
     country,
     setCountry,
+    setInputValue,
   } = inputLogic;
   const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
 
@@ -81,6 +82,32 @@ export const PhoneInput = (props) => {
     []
   );
 
+  /**
+   * Called when the user selects a new country for the phone input
+   *   - Strips the previously applied calling code prefix from the current value, and prepends the new country's calling code.
+   *   - Updates the country and input value states.
+
+   * This prevents issues where switching the country would leave a stale prefix,
+   * potentially resulting in an invalid or mangled number in the phone input.
+   */
+  const onCountryChange = (nextCountry) => {
+    const newCode = getCountryCallingCodeSafe(nextCountry);
+    if (!newCode) return;
+
+    const oldCode = getCountryCallingCodeSafe(country);
+    const localNumber = `${value ?? ''}`.replace(`+${oldCode}`, '');
+
+    setCountry(nextCountry);
+    setInputValue(`+${newCode}${localNumber}`);
+
+    // setInputValue publishes country/countryCode using the stale `country`(setCountry hasn't applied yet),
+    // so re-publish them here with the new country.
+    setExposedVariables({
+      country: nextCountry,
+      countryCode: `+${newCode}`,
+    });
+  };
+
   const onInputValueChange = (value) => {
     setExposedVariables({
       country: country,
@@ -103,29 +130,31 @@ export const PhoneInput = (props) => {
         countryCode: `+${getCountryCallingCodeSafe(country)}`,
         formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
         value: value,
-        setCountryCode: (code) => {
-          let value = getCountryCallingCodeSafe(code);
-          if (value) {
-            setCountry(code);
-          } else {
-            value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
-            setCountry(value ? value : '');
-          }
-          setExposedVariables({
-            country: country,
-            countryCode: `+${getCountryCallingCodeSafe(country)}`,
-            formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-          });
-        },
       });
       isInitialRender.current = false;
     }
   }, []);
 
+  // Register `setCountryCode` in its own effect keyed on country/value so its closure
+  // always reflects the latest state. Accepts either a country code ('CN') or a calling
+  // code ('+86'), then routes through onCountryChange, which re-bases the value onto the
+  // new calling code and ignores an unresolvable country (avoiding an empty-country crash).
+  useEffect(() => {
+    setExposedVariables({
+      setCountryCode: (code) => {
+        const resolvedCountry = getCountryCallingCodeSafe(code)
+          ? code
+          : getCountries().find((c) => `+${getCountryCallingCode(c)}` === code) || '';
+        onCountryChange(resolvedCountry);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country, value]);
+
   useEffect(() => {
     if (!isInitialRender.current) {
       if (getCountryCallingCodeSafe(defaultCountry)) {
-        setCountry(defaultCountry);
+        onCountryChange(defaultCountry);
       }
     }
   }, [defaultCountry]);
@@ -244,7 +273,7 @@ export const PhoneInput = (props) => {
             darkMode={darkMode}
             onChange={(selectedOption) => {
               if (selectedOption) {
-                setCountry(selectedOption.value);
+                onCountryChange(selectedOption.value);
               }
             }}
             componentId={id}
