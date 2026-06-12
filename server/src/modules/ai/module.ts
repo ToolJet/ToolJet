@@ -22,6 +22,10 @@ import { EncryptionModule } from '@modules/encryption/module';
 
 export class AiModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
     const { AiController } = await import(`${importPath}/ai/controller`);
     const { AiService } = await import(`${importPath}/ai/service`);
@@ -34,7 +38,7 @@ export class AiModule extends SubModule {
     const { AppsUtilService } = await import(`${importPath}/apps/util.service`);
     const { AiCacheService } = await import(`${importPath}/ai/ai-cache`);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: AiModule,
       imports: [
         await TooljetDbModule.register(configs),
@@ -70,6 +74,6 @@ export class AiModule extends SubModule {
         ...(isMainImport ? [AiService, AiCacheService] : []),
       ],
       exports: [AiUtilService],
-    };
+    });
   }
 }

@@ -13,6 +13,7 @@ import { FEATURE_KEY } from './constants';
 import { AbilityDecorator as Ability, AppAbility } from '@modules/app/decorators/ability.decorator';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { AppAuthGuard } from './guards/app-auth.guard';
 import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
@@ -72,7 +73,8 @@ export class AppsController implements IAppsController {
     @Query('environment_id') envId: string,
     @Ability() ability: AppAbility,
     @App() app: AppEntity,
-    @User() user: UserEntity
+    @User() user: UserEntity,
+    @Headers('x-branch-id') branchId?: string
   ) {
     return this.appsService.validatePrivateAppAccess(app, ability, user, {
       accessType,
@@ -80,6 +82,7 @@ export class AppsController implements IAppsController {
       environmentName,
       versionId,
       envId,
+      branchId,
     });
   }
 
@@ -93,14 +96,26 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id')
-  update(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+  update(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('app') appUpdateDto: AppUpdateDto,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
     return this.appsService.update(app, appUpdateDto, user);
   }
 
   @InitFeature(FEATURE_KEY.APP_PUBLIC_UPDATE)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/public')
-  updatePublic(@User() user: UserEntity, @App() app: AppEntity, @Body('app') appUpdateDto: AppUpdateDto) {
+  updatePublic(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('app') appUpdateDto: AppUpdateDto,
+    @Headers('x-branch-id') branchId?: string
+  ) {
+    if (!appUpdateDto.branch_id && branchId) appUpdateDto.branch_id = branchId;
     return this.appsService.update(app, appUpdateDto, user);
   }
 
@@ -145,9 +160,15 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.UPDATE_ICON)
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Put(':id/icons')
-  async updateIcon(@User() user: UserEntity, @App() app: AppEntity, @Body('icon') icon: string) {
+  async updateIcon(
+    @User() user: UserEntity,
+    @App() app: AppEntity,
+    @Body('icon') icon: string,
+    @Headers('x-branch-id') branchId?: string
+  ) {
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
+    if (branchId) appUpdateDto.branch_id = branchId;
     await this.appsService.update(app, appUpdateDto, user);
     return;
   }
@@ -164,7 +185,7 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
   show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
-    return this.appsService.getOne(app, user, branchId);
+    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, branchId));
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

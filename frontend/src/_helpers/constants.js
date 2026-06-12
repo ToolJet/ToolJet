@@ -64,6 +64,13 @@ export const ERROR_MESSAGES = {
     cta: 'Back to home page',
     queryParams: [],
   },
+  'public-app-plan-restricted': {
+    title: 'Feature not available',
+    message: 'Public apps are not available in your plan. Please upgrade to share this app.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
   'no-accessible-pages': {
     title: 'Restricted access',
     message: 'You don’t have access to any page in this app. Kindly contact admin to know more.',
@@ -154,6 +161,7 @@ export const DEFAULT_ERROR_MESSAGE = {
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
   RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
+  DEFAULT_BRANCH_LOCKED: 'Master branch is locked. Switch branch to update app slug.',
 };
 
 export const DATA_SOURCE_TYPE = {

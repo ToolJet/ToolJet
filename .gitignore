@@ -47,3 +47,5 @@ ti-*
 taskfile.*
 .serena/
 docs/superpowers/
+.codegraph/
+contexts/

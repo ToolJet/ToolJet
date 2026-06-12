@@ -7,7 +7,7 @@ import { GranularPermissions } from '@entities/granular_permissions.entity';
 import { AppBase } from '@entities/app_base.entity';
 import { FolderApp } from '@entities/folder_app.entity';
 import { User } from '@entities/user.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
 import { USER_ROLE } from '@modules/group-permissions/constants';
 import { RESOURCE_TO_APP_TYPE_MAP } from './constants';
 import { RolesRepository } from '@modules/roles/repository';
@@ -286,21 +286,24 @@ export class AbilityUtilService {
     // Resolve folder-level permissions (owned folders + granular folder permissions) into app IDs.
     // folderDerivedAppIds tracks only apps that arrived via a folder the user actually has access to,
     // so we can grant them full environment access without leaking to unrelated folders in the org.
-    await dbTransactionWrap(async (manager: EntityManager) => {
+    {
+      const manager = getConnectionInstance().manager;
       const folderDerivedAppIds = new Set<string>();
 
       // 1. Apps in folders owned (created) by this user → always editable
       if (!userAppsPermissions.isAllEditable) {
+        // DISTINCT in SQL — folder_apps replicated per branch; avoids hydrate-then-JS-dedupe
         const ownedFolderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .innerJoin('folderApp.folder', 'folder')
           .where('folder.createdBy = :userId', { userId: user.id })
           .andWhere('folder.organizationId = :orgId', { orgId: user.organizationId })
           .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
-          .select('folderApp.appId')
-          .getMany();
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
 
-        const ownedFolderAppIds = ownedFolderApps.map((fa) => fa.appId);
+        const ownedFolderAppIds = ownedFolderApps.map((row) => row.appId);
         userAppsPermissions.editableAppsId = Array.from(
           new Set([...userAppsPermissions.editableAppsId, ...ownedFolderAppIds])
         );
@@ -342,9 +345,10 @@ export class AbilityUtilService {
           .innerJoin('folderApp.folder', 'folder')
           .where('folder.organizationId = :orgId', { orgId: user.organizationId })
           .andWhere('folder.type = :type', { type: APP_TYPES.FRONT_END })
-          .select('folderApp.appId')
-          .getMany();
-        const allFolderAppIds = allFolderApps.map((fa) => fa.appId);
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
+        const allFolderAppIds = allFolderApps.map((row) => row.appId);
 
         if (allFoldersEditable && !userAppsPermissions.isAllEditable) {
           userAppsPermissions.editableAppsId = Array.from(
@@ -367,9 +371,10 @@ export class AbilityUtilService {
         const folderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .where('folderApp.folderId IN (:...folderIds)', { folderIds: editableFolderIds })
-          .select('folderApp.appId')
-          .getMany();
-        const folderAppIds = folderApps.map((fa) => fa.appId);
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
+        const folderAppIds = folderApps.map((row) => row.appId);
 
         userAppsPermissions.editableAppsId = Array.from(
           new Set([...userAppsPermissions.editableAppsId, ...folderAppIds])
@@ -383,9 +388,10 @@ export class AbilityUtilService {
         const folderApps = await manager
           .createQueryBuilder(FolderApp, 'folderApp')
           .where('folderApp.folderId IN (:...folderIds)', { folderIds: viewableFolderIds })
-          .select('folderApp.appId')
-          .getMany();
-        const folderAppIds = folderApps.map((fa) => fa.appId);
+          .select('folderApp.appId', 'appId')
+          .distinct(true)
+          .getRawMany();
+        const folderAppIds = folderApps.map((row) => row.appId);
 
         userAppsPermissions.viewableAppsId = Array.from(
           new Set([...userAppsPermissions.viewableAppsId, ...folderAppIds])
@@ -403,7 +409,7 @@ export class AbilityUtilService {
           released: true,
         };
       }
-    }, manager);
+    }
 
     return userAppsPermissions;
   }
