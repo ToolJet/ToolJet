@@ -3,6 +3,8 @@ import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { createUser, initTestApp, logout, login, closeTestApp, ensureAppEnvironments } from 'test-helper';
 import * as request from 'supertest';
+import { WorkspaceBranchService } from '@ee/workspace-branches/service';
+import { GitSyncQueueService } from '@ee/workspace-branches/git-sync-queue.service';
 
 // Real configuration pointing at a local Gitea / GitHub Enterprise instance.
 // Tests in the save+retrieve block and the App git life cycle hit this
@@ -77,6 +79,31 @@ describe('GitSyncController', () => {
       const { tokenCookie: tokenCookieData } = await login(app);
       tokenCookie = tokenCookieData;
     });
+
+    // Create/pull/delete-branch git work now runs on the git-sync BullMQ queue.
+    // Tests stay deterministic by running each job INLINE at enqueue time —
+    // request returns only after the worker-side method finished, i.e. the old
+    // synchronous semantics. afterEach resetAllMocks wipes these, hence beforeEach.
+    beforeEach(() => {
+      const branchSvc = app.get(WorkspaceBranchService, { strict: false });
+      const queueSvc = app.get(GitSyncQueueService, { strict: false });
+      jest.spyOn(queueSvc, 'enqueueCreateBranch').mockImplementation((p) => branchSvc.executeCreateBranch(p));
+      jest.spyOn(queueSvc, 'enqueuePullBranch').mockImplementation((p) => branchSvc.executePullBranch(p));
+      jest.spyOn(queueSvc, 'enqueueDeleteBranch').mockImplementation((p) => branchSvc.executeDeleteRemoteBranch(p));
+    });
+
+    // POST /workspace-branches no longer returns the branch row (the job creates
+    // it) — resolve ids from the list endpoint instead.
+    const branchIdByName = async (name: string, xBranchId: string): Promise<string> => {
+      const res = await request
+        .agent(app.getHttpServer())
+        .get('/api/workspace-branches')
+        .set('Cookie', tokenCookie)
+        .set('tj-workspace-id', orgId)
+        .set('x-branch-id', xBranchId)
+        .expect(200);
+      return res.body.branches.find((b: any) => b.name === name)?.id;
+    };
 
     afterEach(async () => {
       await logout(app, tokenCookie, orgId);
@@ -465,16 +492,10 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e', sourceBranchId: mainBranchId })
           .expect(201);
-        expect(createBranchResp.body).toMatchObject({
-          name: 'feat-e2e',
-          isDefault: false,
-          sourceBranchId: mainBranchId,
-          organizationId: orgId,
-          appMetaHash: null,
-          dataSourceMetaHash: null,
-          moduleMetaHash: null,
-        });
-        const featBranchId: string = createBranchResp.body.id;
+        // Response is an enqueue ack — the branch row itself is asserted via the
+        // list endpoint in the next step.
+        expect(createBranchResp.body).toMatchObject({ enqueued: true });
+        const featBranchId: string = await branchIdByName('feat-e2e', mainBranchId);
         expect(featBranchId).toBeDefined();
 
         step(6, 'list workspace branches → main + feat-e2e');
@@ -915,7 +936,7 @@ describe('GitSyncController', () => {
         step(22, 'create feat-e2e-2 branch off main');
         // 22. Spin up another feature branch off main. This branch is where
         //     we'll rename the app and change its slug.
-        const createBranch2Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -923,7 +944,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-2', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat2BranchId: string = createBranch2Resp.body.id;
+        const feat2BranchId: string = await branchIdByName('feat-e2e-2', mainBranchId);
 
         // Fetch the app on feat-e2e-2 to get its editing version id (a fresh
         // branch-type draft pulled in from the source branch).
@@ -1245,7 +1266,7 @@ describe('GitSyncController', () => {
         step(36, 'feat-e2e-3: duplicate app name (testing-app-2) → 400');
         // 36. Create another feature branch. Posting an app with a name that
         //     already exists in the workspace must be rejected.
-        const createBranch3Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -1253,7 +1274,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-3', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat3BranchId: string = createBranch3Resp.body.id;
+        const feat3BranchId: string = await branchIdByName('feat-e2e-3', mainBranchId);
 
         await request
           .agent(app.getHttpServer())
@@ -1397,7 +1418,7 @@ describe('GitSyncController', () => {
 
         step(39, 'create feat-e2e-4 branch off main; create testing-app-4 & testing-app-5');
         // 39. Fresh feature branch + two apps to exercise folder membership.
-        const createBranch4Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -1405,7 +1426,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-4', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat4BranchId: string = createBranch4Resp.body.id;
+        const feat4BranchId: string = await branchIdByName('feat-e2e-4', mainBranchId);
         expect(feat4BranchId).toBeDefined();
 
         const createApp4Resp = await request
@@ -1722,7 +1743,7 @@ describe('GitSyncController', () => {
         //     (is_stub flips to false) and the folder mapping stays intact.
 
         // Fresh feature branch off main.
-        const createBranch5Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -1730,7 +1751,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-5', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat5BranchId: string = createBranch5Resp.body.id;
+        const feat5BranchId: string = await branchIdByName('feat-e2e-5', mainBranchId);
         expect(feat5BranchId).toBeDefined();
 
         // Two more apps on feat-e2e-5.
@@ -1951,7 +1972,7 @@ describe('GitSyncController', () => {
         //     regular main-branch version. Since the repo never saw this
         //     co_relation_id, main's pull should drop both the AppVersion and
         //     the App row (no other branch holds it).
-        const createBranch6Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -1959,7 +1980,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-6', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat6BranchId: string = createBranch6Resp.body.id;
+        const feat6BranchId: string = await branchIdByName('feat-e2e-6', mainBranchId);
         expect(feat6BranchId).toBeDefined();
 
         const orphanAppResp = await request
@@ -2017,7 +2038,7 @@ describe('GitSyncController', () => {
         //     feature branch must NOT delete a locally-created, never-pushed
         //     app. Otherwise a user's in-progress work on a feature branch
         //     would be silently destroyed on every sync.
-        const createBranch7Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -2025,7 +2046,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-7', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat7BranchId: string = createBranch7Resp.body.id;
+        const feat7BranchId: string = await branchIdByName('feat-e2e-7', mainBranchId);
         expect(feat7BranchId).toBeDefined();
 
         const localOnlyAppResp = await request
@@ -2077,7 +2098,7 @@ describe('GitSyncController', () => {
         //     the DB still has the corid1 orphan with the same name. Pull main:
         //     the orphan must be deleted first so the corid2 upsert doesn't trip
         //     the (branch_id, app_name) uniqueness check.
-        const createBranch8Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -2085,7 +2106,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-8', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat8BranchId: string = createBranch8Resp.body.id;
+        const feat8BranchId: string = await branchIdByName('feat-e2e-8', mainBranchId);
         expect(feat8BranchId).toBeDefined();
 
         const orphanCollideResp = await request
@@ -2120,7 +2141,7 @@ describe('GitSyncController', () => {
 
         // Create same-named app on a fresh feature branch — name check is scoped
         // per (branchId, version_type='branch'), so this is allowed.
-        const createBranch9Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -2128,7 +2149,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-9', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat9BranchId: string = createBranch9Resp.body.id;
+        const feat9BranchId: string = await branchIdByName('feat-e2e-9', mainBranchId);
         expect(feat9BranchId).toBeDefined();
 
         const newCollideResp = await request
@@ -2237,7 +2258,7 @@ describe('GitSyncController', () => {
         expect(dsEnvs.length).toBeGreaterThanOrEqual(3);
         const [dsDevEnv, dsStagingEnv, dsProdEnv] = dsEnvs;
 
-        const createBranch10Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -2245,7 +2266,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-10', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat10BranchId: string = createBranch10Resp.body.id;
+        const feat10BranchId: string = await branchIdByName('feat-e2e-10', mainBranchId);
         expect(feat10BranchId).toBeDefined();
 
         // Minimal restapi options — same shape the UI sends, trimmed for the test.
@@ -2447,7 +2468,7 @@ describe('GitSyncController', () => {
         //     The app GET response must (a) include the module in its `modules`
         //     key and (b) carry the module's co_relation_id as
         //     editing_version.pages[].components[].properties.moduleAppId.value.
-        const createBranch11Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -2455,7 +2476,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-11', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat11BranchId: string = createBranch11Resp.body.id;
+        const feat11BranchId: string = await branchIdByName('feat-e2e-11', mainBranchId);
         expect(feat11BranchId).toBeDefined();
 
         // Create module — endpoint reuses the same appsService.create path as apps.
@@ -3047,7 +3068,9 @@ describe('GitSyncController', () => {
         const moduleMetaFolderObj = JSON.parse(originalModuleMetaFolder);
         const realModuleFolderKeys = Object.keys(moduleMetaFolderObj).filter(
           (k) =>
-            moduleMetaFolderObj[k] && typeof moduleMetaFolderObj[k] === 'object' && (moduleMetaFolderObj[k] as any).appPath
+            moduleMetaFolderObj[k] &&
+            typeof moduleMetaFolderObj[k] === 'object' &&
+            (moduleMetaFolderObj[k] as any).appPath
         );
         expect(realModuleFolderKeys.length).toBeGreaterThan(0);
         const sampleModuleFolderEntry = moduleMetaFolderObj[realModuleFolderKeys[0]];
@@ -3134,7 +3157,7 @@ describe('GitSyncController', () => {
         //     orphan-aware conflict detector must exclude the orphan from the
         //     scan so the pull does not raise 409, after which the orphan
         //     sweep deletes the orphan and the incoming module is imported.
-        const createBranch12Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -3142,7 +3165,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-12', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat12BranchId: string = createBranch12Resp.body.id;
+        const feat12BranchId: string = await branchIdByName('feat-e2e-12', mainBranchId);
 
         // Orphan module: create on feat-e2e-12, then SQL-mutate its AppVersion
         // onto main as a 'version' row (mirrors the pattern from steps 49/51).
@@ -3161,7 +3184,7 @@ describe('GitSyncController', () => {
         ]);
 
         // Same-named module on a separate feature branch, push + merge to main.
-        const createBranch13Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -3169,7 +3192,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-13', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat13BranchId: string = createBranch13Resp.body.id;
+        const feat13BranchId: string = await branchIdByName('feat-e2e-13', mainBranchId);
 
         const newModResp = await request
           .agent(app.getHttpServer())
@@ -3262,7 +3285,7 @@ describe('GitSyncController', () => {
         // push from feat15 would re-serialize the orphan into git, and after
         // merge main would no longer treat it as an orphan. Creating feat15
         // first keeps the orphan exclusive to main.
-        const createBranch14Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -3270,9 +3293,9 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-14', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat14BranchId: string = createBranch14Resp.body.id;
+        const feat14BranchId: string = await branchIdByName('feat-e2e-14', mainBranchId);
 
-        const createBranch15Resp = await request
+        await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
@@ -3280,7 +3303,7 @@ describe('GitSyncController', () => {
           .set('x-branch-id', mainBranchId)
           .send({ name: 'feat-e2e-15', sourceBranchId: mainBranchId })
           .expect(201);
-        const feat15BranchId: string = createBranch15Resp.body.id;
+        const feat15BranchId: string = await branchIdByName('feat-e2e-15', mainBranchId);
 
         const orphanDsResp = await request
           .agent(app.getHttpServer())

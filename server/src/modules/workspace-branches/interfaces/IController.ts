@@ -1,9 +1,9 @@
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { WorkspaceBranchListResponse, CheckUpdatesResponse } from './IService';
 
 export interface IWorkspaceBranchController {
   list(user: any): Promise<WorkspaceBranchListResponse>;
-  create(user: any, dto: any): Promise<WorkspaceBranch>;
+  // Create runs as a background job — the response is an enqueue ack
+  create(user: any, dto: any): Promise<{ enqueued: boolean }>;
   switchBranch(user: any, branchId: string): Promise<{ success: boolean }>;
   deleteBranch(user: any, branchId: string): Promise<{ jobId: string }>;
   pushWorkspace(user: any, dto: any): Promise<{ success: boolean }>;

@@ -1,0 +1,318 @@
+import Redis from 'ioredis';
+import { GitSyncQueueService, GIT_SYNC_JOBS } from '@ee/workspace-branches/git-sync-queue.service';
+import { GitSyncQueueProcessor } from '@ee/workspace-branches/git-sync-queue.processor';
+import { RedisService } from '@modules/redis/service';
+
+/**
+ * WHAT IS THIS?
+ * -------------
+ * Create branch / pull branch / delete branch used to run their heavy git work
+ * (clone + hydrate apps/modules/data_sources) inside the HTTP request — the user
+ * stared at a spinner for 12-60s. These tests cover the BullMQ plumbing that
+ * moves that work to a background worker (WORKER=true pods):
+ *
+ *  - GitSyncQueueService: the enqueue side. API pods call this; it adds a job
+ *    with a DETERMINISTIC jobId so double-clicks collapse into one job.
+ *  - GitSyncQueueProcessor: the worker side. Dispatches by job name to the
+ *    workspace-branch service's execute* methods, holding a per-org Redis lease
+ *    so two worker replicas never run git ops for the same org at once.
+ *
+ * Pure unit tests — no real Redis, no real BullMQ, no git, no DB.
+ */
+
+/** The narrow slice of a BullMQ Queue the enqueue service uses. */
+interface QueueLike {
+  add(name: string, data: unknown, opts?: Record<string, unknown>): Promise<unknown>;
+}
+
+/** Records every add() so tests can assert name / payload / jobId / opts. */
+class FakeQueue implements QueueLike {
+  added: { name: string; data: any; opts: any }[] = [];
+  async add(name: string, data: any, opts?: any) {
+    this.added.push({ name, data, opts });
+    return { id: opts?.jobId };
+  }
+}
+
+/**
+ * The narrow slice of an ioredis client the processor's org-lease uses.
+ * set(key, value, 'PX', ttl, 'NX') -> 'OK' when free, null when held.
+ */
+class FakeRedisClient {
+  store = new Map<string, string>();
+  ops: string[] = []; // interleaving log: lease ops + (test-pushed) service calls
+
+  async set(key: string, value: string, _px: string, _ttl: number, _nx: string): Promise<'OK' | null> {
+    if (this.store.has(key)) return null;
+    this.store.set(key, value);
+    this.ops.push(`acquire:${key}`);
+    return 'OK';
+  }
+
+  async get(key: string): Promise<string | null> {
+    return this.store.get(key) ?? null;
+  }
+
+  async del(key: string): Promise<number> {
+    const had = this.store.delete(key);
+    if (had) this.ops.push(`release:${key}`);
+    return had ? 1 : 0;
+  }
+}
+
+class FakeRedisService {
+  client = new FakeRedisClient();
+  getClient() {
+    return this.client;
+  }
+}
+
+/** Records which execute* method the processor dispatched to. */
+class FakeWorkspaceBranchService {
+  calls: { method: string; payload: any }[] = [];
+  executeCreateBranch = async (payload: any) => {
+    this.calls.push({ method: 'executeCreateBranch', payload });
+  };
+  executePullBranch = async (payload: any) => {
+    this.calls.push({ method: 'executePullBranch', payload });
+  };
+  executeDeleteRemoteBranch = async (payload: any) => {
+    this.calls.push({ method: 'executeDeleteRemoteBranch', payload });
+  };
+}
+
+const makeJob = (name: string, data: any) => ({ name, data }) as any;
+
+describe('GitSyncQueueService (enqueue side)', () => {
+  let queue: FakeQueue;
+  let svc: GitSyncQueueService;
+
+  beforeEach(() => {
+    queue = new FakeQueue();
+    svc = new GitSyncQueueService(queue as any);
+  });
+
+  it('should enqueue git-create-branch with a deterministic org+name jobId', async () => {
+    await svc.enqueueCreateBranch({
+      organizationId: 'org1',
+      name: 'feature-x',
+      sourceBranchId: 'src-branch-id',
+      userId: 'user1',
+    });
+
+    expect(queue.added).toHaveLength(1);
+    expect(queue.added[0]).toMatchObject({
+      name: GIT_SYNC_JOBS.CREATE_BRANCH,
+      data: {
+        organizationId: 'org1',
+        name: 'feature-x',
+        sourceBranchId: 'src-branch-id',
+        userId: 'user1',
+      },
+      opts: {
+        jobId: 'git-create-branch:org1:feature-x',
+        attempts: 3,
+        backoff: { type: 'exponential', delay: expect.any(Number) },
+        removeOnComplete: true,
+        // Failed jobs must release their jobId so the user can simply retry.
+        removeOnFail: true,
+      },
+    });
+  });
+
+  it('should enqueue git-pull-branch keyed by org+branchId', async () => {
+    await svc.enqueuePullBranch({
+      organizationId: 'org1',
+      branchId: 'branch-uuid',
+      branchName: 'main',
+      userId: 'user1',
+    });
+
+    expect(queue.added[0]).toMatchObject({
+      name: GIT_SYNC_JOBS.PULL_BRANCH,
+      opts: { jobId: 'git-pull-branch:org1:branch-uuid' },
+    });
+  });
+
+  it('should enqueue git-delete-branch keyed by org+branchName', async () => {
+    await svc.enqueueDeleteBranch({ organizationId: 'org1', branchName: 'feature-x' });
+
+    expect(queue.added[0]).toMatchObject({
+      name: GIT_SYNC_JOBS.DELETE_BRANCH,
+      opts: { jobId: 'git-delete-branch:org1:feature-x' },
+    });
+  });
+
+  it('should produce the same jobId for the same inputs (dedup key)', async () => {
+    // BullMQ ignores add() for a jobId that is already waiting/active —
+    // determinism here IS the double-click guard.
+    await svc.enqueueCreateBranch({ organizationId: 'org1', name: 'b', sourceBranchId: 's', userId: 'u' });
+    await svc.enqueueCreateBranch({ organizationId: 'org1', name: 'b', sourceBranchId: 's', userId: 'u' });
+    expect(queue.added[0].opts.jobId).toBe(queue.added[1].opts.jobId);
+  });
+
+  it('should never put tokens or secrets into a job payload', async () => {
+    // The worker re-resolves git credentials from org config at run time.
+    // Job payloads live in Redis — secrets must not.
+    await svc.enqueueCreateBranch({
+      organizationId: 'org1',
+      name: 'b',
+      sourceBranchId: 's',
+      userId: 'u',
+    } as any);
+    await svc.enqueuePullBranch({ organizationId: 'org1', branchId: 'b1', branchName: 'main', userId: 'u' } as any);
+    await svc.enqueueDeleteBranch({ organizationId: 'org1', branchName: 'b' } as any);
+
+    for (const { data } of queue.added) {
+      const keys = Object.keys(data).map((k) => k.toLowerCase());
+      expect(keys.some((k) => k.includes('token') || k.includes('secret') || k.includes('password'))).toBe(false);
+    }
+  });
+});
+
+describe('GitSyncQueueProcessor dispatch', () => {
+  let service: FakeWorkspaceBranchService;
+  let redis: FakeRedisService;
+  let processor: GitSyncQueueProcessor;
+
+  beforeEach(() => {
+    service = new FakeWorkspaceBranchService();
+    redis = new FakeRedisService();
+    processor = new GitSyncQueueProcessor(service as any, redis as any);
+    (GitSyncQueueProcessor as any).LEASE_RETRY_MS = 1; // fast contention retries in tests
+  });
+
+  afterEach(() => {
+    delete (GitSyncQueueProcessor as any).LEASE_RETRY_MS;
+  });
+
+  it('should route git-create-branch jobs to executeCreateBranch', async () => {
+    const payload = { organizationId: 'org1', name: 'b', sourceBranchId: 's', userId: 'u' };
+    await processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, payload));
+    expect(service.calls).toEqual([{ method: 'executeCreateBranch', payload }]);
+  });
+
+  it('should route git-pull-branch jobs to executePullBranch', async () => {
+    const payload = { organizationId: 'org1', branchId: 'b1', branchName: 'main', userId: 'u' };
+    await processor.process(makeJob(GIT_SYNC_JOBS.PULL_BRANCH, payload));
+    expect(service.calls).toEqual([{ method: 'executePullBranch', payload }]);
+  });
+
+  it('should route git-delete-branch jobs to executeDeleteRemoteBranch', async () => {
+    const payload = { organizationId: 'org1', branchName: 'b' };
+    await processor.process(makeJob(GIT_SYNC_JOBS.DELETE_BRANCH, payload));
+    expect(service.calls).toEqual([{ method: 'executeDeleteRemoteBranch', payload }]);
+  });
+
+  it('should ignore an unknown job name without throwing', async () => {
+    await expect(processor.process(makeJob('not-a-real-job', {}))).resolves.toBeUndefined();
+    expect(service.calls).toEqual([]);
+  });
+});
+
+describe('GitSyncQueueProcessor per-org lease', () => {
+  // Two worker replicas must never run git ops for the SAME org concurrently
+  // (workspace git-sync is one repo per org). The object cache's withLock only
+  // serializes within one process — this Redis lease covers the fleet.
+  let service: FakeWorkspaceBranchService;
+  let redis: FakeRedisService;
+  let processor: GitSyncQueueProcessor;
+
+  beforeEach(() => {
+    service = new FakeWorkspaceBranchService();
+    redis = new FakeRedisService();
+    processor = new GitSyncQueueProcessor(service as any, redis as any);
+    (GitSyncQueueProcessor as any).LEASE_RETRY_MS = 1;
+  });
+
+  afterEach(() => {
+    delete (GitSyncQueueProcessor as any).LEASE_RETRY_MS;
+  });
+
+  it('should acquire the org lease before the service call and release it after', async () => {
+    service.executeCreateBranch = async () => {
+      redis.client.ops.push('service-ran');
+    };
+
+    await processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, { organizationId: 'org1' }));
+
+    const leaseKey = redis.client.ops.find((o) => o.startsWith('acquire:'))?.slice('acquire:'.length);
+    expect(leaseKey).toContain('org1');
+    expect(redis.client.ops).toEqual([`acquire:${leaseKey}`, 'service-ran', `release:${leaseKey}`]);
+  });
+
+  it('should wait for a held lease and run once it is released', async () => {
+    // Simulate another replica holding org1's lease, then releasing it.
+    const leaseKeyOf = (org: string) =>
+      [...redis.client.store.keys()].find((k) => k.includes(org)) ?? `tj:git-sync:lease:${org}`;
+    await redis.client.set(`tj:git-sync:lease:org1`, 'other-replica', 'PX', 60000, 'NX');
+
+    const run = processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, { organizationId: 'org1' }));
+
+    // Give the processor a few retry cycles — it must still be waiting.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(service.calls).toEqual([]);
+
+    await redis.client.del(leaseKeyOf('org1')); // other replica finishes
+    await run;
+    expect(service.calls).toHaveLength(1);
+  });
+
+  it('should release the lease even when the service call throws (job then retries)', async () => {
+    service.executeCreateBranch = async () => {
+      throw new Error('hydrate blew up');
+    };
+
+    // The rejection must propagate (that's what makes BullMQ retry the job)...
+    await expect(processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, { organizationId: 'org1' }))).rejects.toThrow(
+      'hydrate blew up'
+    );
+
+    // ...but the lease must NOT stay held — otherwise every later job for this
+    // org waits out the full TTL.
+    expect(redis.client.store.size).toBe(0);
+  });
+
+  it('should serialize same-org jobs but not block a different org', async () => {
+    let releaseFirst!: () => void;
+    const firstHolds = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    const order: string[] = [];
+
+    service.executeCreateBranch = async (p: any) => {
+      order.push(`start:${p.organizationId}:${p.name}`);
+      if (p.name === 'slow') await firstHolds;
+      order.push(`end:${p.organizationId}:${p.name}`);
+    };
+
+    const slow = processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, { organizationId: 'org1', name: 'slow' }));
+    const sameOrg = processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, { organizationId: 'org1', name: 'queued' }));
+    const otherOrg = processor.process(makeJob(GIT_SYNC_JOBS.CREATE_BRANCH, { organizationId: 'org2', name: 'free' }));
+
+    await otherOrg; // org2 must finish while org1's first job still holds the lease
+    expect(order).toContain('end:org2:free');
+    expect(order).not.toContain('start:org1:queued');
+
+    releaseFirst();
+    await Promise.all([slow, sameOrg]);
+    expect(order.indexOf('start:org1:queued')).toBeGreaterThan(order.indexOf('end:org1:slow'));
+  });
+});
+
+/**
+ * The fakes only help if they mirror the REAL APIs (ts-jest diagnostics are off,
+ * so these RUNTIME checks are what catch drift — same pattern as the
+ * git-object-cache spec).
+ */
+describe('fakes stay faithful to the real APIs', () => {
+  it('RedisService still exposes getClient', () => {
+    expect(typeof RedisService.prototype.getClient).toBe('function');
+  });
+
+  it('an ioredis client exposes every method the lease uses', () => {
+    for (const method of ['set', 'get', 'del']) {
+      expect(typeof (Redis.prototype as any)[method]).toBe('function');
+    }
+  });
+});

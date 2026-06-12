@@ -19,7 +19,8 @@ export interface CheckUpdatesResponse {
 
 export interface IWorkspaceBranchService {
   list(organizationId: string): Promise<WorkspaceBranchListResponse>;
-  createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<WorkspaceBranch>;
+  // Heavy git work runs on the git-sync queue — the request only validates and enqueues
+  createBranch(organizationId: string, dto: CreateBranchDto, user?: User): Promise<{ enqueued: boolean }>;
   switchBranch(
     organizationId: string,
     branchId: string,
