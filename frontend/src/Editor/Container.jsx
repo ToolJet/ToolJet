@@ -373,7 +373,7 @@ export const Container = ({
         }
 
         if (item.name === 'comment') {
-          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+          const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0]?.getBoundingClientRect();
           const offsetFromTopOfWindow = canvasBoundingRect.top;
           const offsetFromLeftOfWindow = canvasBoundingRect.left;
           const currentOffset = monitor.getSourceClientOffset();
@@ -389,7 +389,7 @@ export const Container = ({
           return undefined;
         }
 
-        const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+        const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0]?.getBoundingClientRect();
         const componentMeta = deepClone(
           componentTypes.find((component) => component.component === item.component.component)
         );
@@ -745,7 +745,7 @@ export const Container = ({
   const handleAddThreadOnComponent = async (_, __, e) => {
     e.stopPropogation && e.stopPropogation();
 
-    const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+    const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0]?.getBoundingClientRect();
     const offsetFromTopOfWindow = canvasBoundingRect.top;
     const offsetFromLeftOfWindow = canvasBoundingRect.left;
 
