@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import { StylesTabElements } from './StylesTabElements';
 import { PropertiesTabElements } from './PropertiesTabElements';
@@ -23,8 +23,6 @@ export const ColumnPopoverContent = ({
 }) => {
   const [activeTab, setActiveTab] = useState('propertiesTab');
   const [selectedButtonId, setSelectedButtonId] = useState(null);
-  const [isGoingBelowScreen, setIsGoingBelowScreen] = useState(false);
-  const popoverRef = useRef(null);
 
   const timeZoneOptions = [
     { name: 'UTC', value: 'Etc/UTC' },
@@ -61,26 +59,6 @@ export const ColumnPopoverContent = ({
     { name: '+12:00', value: 'Etc/GMT-12' },
     { name: '+13:00', value: 'Pacific/Auckland' },
   ];
-
-  // Dont remove this useEffect otherwise the popover suggestions will get clipped and cause a scroll this causes a scroll only if the popover is going below the screen
-  useEffect(() => {
-    const checkPopoverPosition = () => {
-      if (popoverRef.current) {
-        const popoverRect = popoverRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const isBelowScreen = popoverRect.bottom > viewportHeight;
-        setIsGoingBelowScreen(isBelowScreen);
-      }
-    };
-
-    const timeoutId = setTimeout(checkPopoverPosition, 100);
-    window.addEventListener('resize', checkPopoverPosition);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', checkPopoverPosition);
-    };
-  }, [index]);
 
   const isButtonColumn = column.columnType === 'button';
   const isButtonDetailView = isButtonColumn && selectedButtonId !== null;
@@ -178,10 +156,7 @@ export const ColumnPopoverContent = ({
           </div>
         </div>
       </Popover.Header>
-      <Popover.Body
-        ref={popoverRef}
-        className={`table-column-popover ${darkMode && 'theme-dark'} ${isGoingBelowScreen ? 'show-scrollbar' : ''}`}
-      >
+      <Popover.Body className={`table-column-popover ${darkMode && 'theme-dark'}`}>
         {activeTab === 'propertiesTab' ? (
           <PropertiesTabElements
             column={column}
