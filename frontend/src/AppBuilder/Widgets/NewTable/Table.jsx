@@ -310,9 +310,10 @@ const Table = memo(
 
     // Transform table data if transformations are present
     const tableData = useMemo(() => {
-      return transformTableData(data, transformations, getResolvedValue);
+      const resolveInModule = (value, customVariables = {}) => getResolvedValue(value, customVariables, moduleId);
+      return transformTableData(data, transformations, resolveInModule);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getResolvedValue, data, transformations, shouldRender]); // TODO: Need to figure out a better way to handle shouldRender.
+    }, [getResolvedValue, data, transformations, shouldRender, moduleId]); // TODO: Need to figure out a better way to handle shouldRender.
     // Added to handle the dynamic value (fx) on the table column properties
 
     // Allow empty-table height recalculation only on visibility changes to avoid flicker during brief null/empty data states.
@@ -373,6 +374,7 @@ const Table = memo(
           fireEvent={fireEvent}
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}
+          moduleId={moduleId}
         />
       </div>
     );

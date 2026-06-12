@@ -510,7 +510,7 @@ export const createComponentsSlice = (set, get) => ({
         lodashSet(
           componentResolvedValues,
           [componentId, idx, paramType, ...keys],
-          getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+          getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
         );
       } else {
         componentResolvedValues[componentId][idx][paramType][property] = resolvedValue;
@@ -538,7 +538,7 @@ export const createComponentsSlice = (set, get) => ({
           lodashSet(
             componentResolvedValues,
             [componentId, paramType, ...keys],
-            getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+            getComponentTypeFromId(componentId, moduleId) === 'Table' ? value : resolvedValue
           );
         } else {
           componentResolvedValues[componentId][paramType][property] = resolvedValue;
@@ -746,11 +746,20 @@ export const createComponentsSlice = (set, get) => ({
     }
 
     if (validationRegex && validationRegex.trim() !== '') {
-      const re = new RegExp(validationRegex, 'g');
-      if (!re.test(widgetValue)) {
+      try {
+        const re = new RegExp(validationRegex, 'g');
+        if (!re.test(widgetValue)) {
+          return {
+            isValid: false,
+            validationError: 'The input should match pattern',
+          };
+        }
+      } catch (err) {
+        // Invalid/faulty regex pattern (eg, unterminated `[123123`). Surface it as a
+        // validation message instead of letting the SyntaxError crash the widget render.
         return {
           isValid: false,
-          validationError: 'The input should match pattern',
+          validationError: 'Invalid regex pattern',
         };
       }
     }
