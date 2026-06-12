@@ -17,6 +17,7 @@ import {
   ComponentLayoutContext,
 } from '../interfaces/services/IComponentService';
 import { RequestContext } from '@modules/request-context/service';
+import { validateComponentCreateDiff, validateComponentDefinitionUpdate } from '../zod-schemas';
 const _ = require('lodash');
 
 @Injectable()
@@ -492,6 +493,8 @@ export class ComponentsService implements IComponentsService {
     appVersionId: string,
     manager: EntityManager
   ) {
+    validateComponentCreateDiff(diff as Record<string, any>);
+
     const page = await manager.findOne(Page, {
       where: { appVersionId, id: pageId },
     });
@@ -568,6 +571,7 @@ export class ComponentsService implements IComponentsService {
       const isComponentDefinitionChanged = component.definition ? true : false;
 
       if (isComponentDefinitionChanged) {
+        validateComponentDefinitionUpdate(componentId, componentData.type, component.definition);
         const updatedDefinition = component.definition;
         const columnsUpdated = Object.keys(updatedDefinition);
 
