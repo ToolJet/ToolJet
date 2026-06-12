@@ -862,6 +862,20 @@ export class AppsService implements IAppsService {
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
+      // Unauthenticated access to a public app with no released version must not
+      // fall through to the editing (draft) version — surface a 501 so the FE
+      // redirects to url-unavailable instead of leaking draft content.
+      if (!app.currentVersionId && !user) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_IMPLEMENTED,
+            error: 'App is not released yet',
+            message: { error: 'App is not released yet' },
+          },
+          HttpStatus.NOT_IMPLEMENTED
+        );
+      }
+
       // app.editingVersion is populated by AppSubscriber.afterLoad ONLY when
       // git sync is off (or when the entity is a workflow). For git-enabled
       // front-end / module apps the subscriber returns early without

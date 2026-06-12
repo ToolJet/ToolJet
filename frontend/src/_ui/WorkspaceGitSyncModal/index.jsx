@@ -10,6 +10,7 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import Dropdown from '@/components/ui/Dropdown/Index.jsx';
+import { AlertTriangle, RefreshCcw } from 'lucide-react';
 import './WorkspaceGitSyncModal.scss';
 
 const UPDATE_STATUS = {
@@ -31,6 +32,9 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const [latestCommitData, setLatestCommitData] = useState(null);
   const [pushLatestCommitData, setPushLatestCommitData] = useState(null);
   const [pushLatestCommitLoading, setPushLatestCommitLoading] = useState(false);
+  const [latestCommit, setLatestCommit] = useState(null);
+  const [isLatestCommitLoading, setIsLatestCommitLoading] = useState(false);
+  const [latestCommitFetched, setLatestCommitFetched] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('');
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
@@ -69,24 +73,16 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBranchName]);
 
-  // Fetch latest commit for push/commit section
+  // Populate remote branches on mount so the pull dropdown has up-to-date options
   useEffect(() => {
-    if (activeTab === 'push' && defaultGitBranch && !pushLatestCommitData && !pushLatestCommitLoading) {
-      setPushLatestCommitLoading(true);
-      actions
-        .checkForUpdates(defaultGitBranch)
-        .then((data) => {
-          setPushLatestCommitData(data?.latestCommit || null);
-        })
-        .catch(() => {
-          setPushLatestCommitData(null);
-        })
-        .finally(() => {
-          setPushLatestCommitLoading(false);
-        });
-    }
+    actions.fetchRemoteBranches();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, defaultGitBranch]);
+  }, []);
+
+  // Push auto-fetch replaced by onViewLatestCommit (user-triggered)
+  // useEffect(() => {
+  //   if (activeTab === 'push' && defaultGitBranch && !pushLatestCommitData && !pushLatestCommitLoading) { ... }
+  // }, [activeTab, defaultGitBranch]);
 
   // Re-check when selected branch changes (only if we already have results and not in action choice)
   useEffect(() => {
@@ -139,6 +135,8 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
 
   const handleBranchChange = (branchName) => {
     setSelectedBranch(branchName);
+    setLatestCommit(null);
+    setLatestCommitFetched(false);
     // If selected branch differs from current, show confirmation
     if (branchName !== currentBranchName) {
       setActionChoiceMode(true);
@@ -284,121 +282,193 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     </div>
   );
 
+  const onViewLatestCommit = () => {
+    const branch = activeTab === 'push' ? currentBranchName : selectedBranch || currentBranchName;
+    setIsLatestCommitLoading(true);
+    actions
+      .checkForUpdates(branch)
+      .then((data) => {
+        setLatestCommit(data?.latestCommit || null);
+        setLatestCommitFetched(true);
+      })
+      .catch((error) => {
+        toast.error(error?.error || error?.message || 'Failed to fetch latest commit');
+        setLatestCommitFetched(false);
+      })
+      .finally(() => {
+        setIsLatestCommitLoading(false);
+      });
+  };
+
+  const resetLatestCommit = () => {
+    setLatestCommit(null);
+    setLatestCommitFetched(false);
+  };
+
   // ---- Pull section content ----
   const renderPullSection = () => (
-    // <div className="pull-section">
-    <div
-      className={cx('pull-section', {
-        'pull-section--centered': checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE,
-      })}
-    >
-      <form
-        noValidate
-        className={`d-flex w-100 ${
-          checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE
-            ? 'align-items-start justify-content-start'
-            : 'align-items-center justify-content-center'
-        }`}
-      >
-        {/* Check for updates button */}
-        {checkingForUpdate?.visible && (
-          <div className="form-group mb-3">
-            <div onClick={() => checkForUpdates()} className="check-for-updates cursor-pointer">
-              {checkingForUpdate?.status === UPDATE_STATUS.FETCHING ? (
-                <div className="loader-container">
-                  <div className="primary-spin-loader"></div>
-                </div>
-              ) : (
-                <SolidIcon name={checkingForUpdate?.status === UPDATE_STATUS.UNAVAILABLE ? 'tick' : 'gitsync'} />
-              )}
-              <div className="font-weight-500 tj-text-xsm" data-cy="check-for-updates-label">
-                {checkingForUpdate?.message}
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="pull-section">
+      <div className="d-flex flex-column align-items-start justify-content-start w-100">
+        <div className="form-group mb-3 w-100">
+          <Dropdown
+            label="Select branch to pull from"
+            data-cy="branch-select"
+            options={dropdownBranches.reduce((acc, branch) => {
+              acc[branch.name] = {
+                value: branch.name,
+                label: branch.name,
+              };
+              return acc;
+            }, {})}
+            value={selectedBranch}
+            onChange={handleBranchChange}
+            width="100%"
+            theme={darkMode ? 'dark' : 'light'}
+            showItemOverflowTooltip
+          />
+        </div>
 
-        {/* Updates available: new design */}
-        {checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && (
-          <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
-            {/* PULL INTO */}
-            <div className="import-in-row">
-              <span className="tj-text-xsm font-weight-500 tj-text">Pull into</span>
-              <span className="branch-name-badge">
-                <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
-                {currentBranchName}
+        <div className="w-100">
+          <div className="selected-commit-header">LATEST COMMIT</div>
+
+          {/* Not fetched: dashed CTA box */}
+          {!latestCommitFetched && !isLatestCommitLoading && (
+            <div onClick={onViewLatestCommit} className="latest-commit-placeholder cursor-pointer">
+              <RefreshCcw width="14" height="14" />
+              <span className="font-weight-500 tj-text-xsm" data-cy="view-latest-commit-label">
+                View latest commit
               </span>
             </div>
+          )}
 
-            {/* PULL FROM */}
-            <div className="form-group mb-0">
-              <label
-                className="mb-1 tj-text-xsm font-weight-500"
-                style={{ color: 'var(--slate8)' }}
-                data-cy="pull-from-label"
-              >
-                Pull from
-              </label>
-              <Dropdown
-                data-cy="branch-select"
-                options={{ [currentBranchName]: { value: currentBranchName, label: currentBranchName } }}
-                value={currentBranchName}
-                onChange={() => {}}
-                width="100%"
-                theme={darkMode ? 'dark' : 'light'}
-                disabled={true}
-              />
-              <div className="tj-text-xxsm import-from-helper-text">Apps can only be imported from the same branch</div>
+          {/* Loading: same dashed box, spinner only */}
+          {isLatestCommitLoading && (
+            <div className="latest-commit-placeholder">
+              <div className="primary-spin-loader" style={{ width: '18px', height: '18px' }}></div>
             </div>
+          )}
 
-            {/* LATEST COMMIT */}
-            {latestCommitData && (
-              <div className="w-100">
-                <div className="selected-commit-header">LATEST COMMIT</div>
-                <div className="d-flex w-100">
-                  <div className="selected-commit-info">
-                    <div className="commit-icon">
-                      <SolidIcon name="commit" width="20" />
-                    </div>
-                    <div className="commit-content">
-                      <OverflowTooltip
-                        className="commit-title"
-                        whiteSpace="normal"
-                        style={{
-                          maxWidth: '100%',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                        }}
-                      >
-                        {latestCommitData.message || 'No message'}
-                      </OverflowTooltip>
-                      <div className="commit-metadata">
-                        By {latestCommitData.author || 'Unknown'} | {formatCommitDate(latestCommitData.date)}
+          {/* Loaded */}
+          {latestCommitFetched && latestCommit && (
+            <div className="selected-commit-info w-100">
+              <div className="commit-icon">
+                <SolidIcon name="commit" width="20" />
+              </div>
+              <div className="commit-content">
+                <OverflowTooltip
+                  className="commit-title"
+                  whiteSpace="normal"
+                  style={{
+                    maxWidth: '100%',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {latestCommit.message || 'No message'}
+                </OverflowTooltip>
+                <div className="commit-metadata">
+                  By {latestCommit.author || 'Unknown'} | {formatCommitDate(latestCommit.date)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Updates available: new design */}
+          {checkingForUpdate?.status === UPDATE_STATUS.AVAILABLE && (
+            <div className="d-flex flex-column w-100" style={{ gap: '12px' }}>
+              {/* PULL INTO */}
+              <div className="import-in-row">
+                <span className="tj-text-xsm font-weight-500 tj-text">Pull into</span>
+                <span className="branch-name-badge">
+                  <SolidIcon name="gitbranch" width="14" fill="var(--indigo9)" />
+                  {currentBranchName}
+                </span>
+              </div>
+
+              {/* PULL FROM */}
+              <div className="form-group mb-0">
+                <label
+                  className="mb-1 tj-text-xsm font-weight-500"
+                  style={{ color: 'var(--slate8)' }}
+                  data-cy="pull-from-label"
+                >
+                  Pull from
+                </label>
+                <Dropdown
+                  data-cy="branch-select"
+                  options={{ [currentBranchName]: { value: currentBranchName, label: currentBranchName } }}
+                  value={currentBranchName}
+                  onChange={() => {}}
+                  width="100%"
+                  theme={darkMode ? 'dark' : 'light'}
+                  disabled={true}
+                />
+                <div className="tj-text-xxsm import-from-helper-text">
+                  Apps can only be imported from the same branch
+                </div>
+              </div>
+
+              {/* LATEST COMMIT */}
+              {latestCommitData && (
+                <div className="w-100">
+                  <div className="selected-commit-header">LATEST COMMIT</div>
+                  <div className="d-flex w-100">
+                    <div className="selected-commit-info">
+                      <div className="commit-icon">
+                        <SolidIcon name="commit" width="20" />
+                      </div>
+                      <div className="commit-content">
+                        <OverflowTooltip
+                          className="commit-title"
+                          whiteSpace="normal"
+                          style={{
+                            maxWidth: '100%',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {latestCommitData.message || 'No message'}
+                        </OverflowTooltip>
+                        <div className="commit-metadata">
+                          By {latestCommitData.author || 'Unknown'} | {formatCommitDate(latestCommitData.date)}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* INFO ALERT */}
-            <div className="import-dependent-info-alert">
-              <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
-              <span>
-                The latest commit across <strong>all resources</strong> in this branch will be pulled
-              </span>
+              {/* INFO ALERT */}
+              <div className="import-dependent-info-alert">
+                <SolidIcon name="warning" width="16" fill="var(--indigo9)" />
+                <span>
+                  The latest commit across <strong>all resources</strong> in this branch will be pulled
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </form>
+          )}
+
+          {/* Empty */}
+          {latestCommitFetched && !latestCommit && (
+            <div className="no-commits-empty-state w-100">
+              <AlertTriangle width="20" height="20" />
+              <div className="empty-state-content">
+                <div className="empty-state-title">No commits yet</div>
+                <div className="empty-state-description">Sync apps to your git repo and never lose progress</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 
   // ---- Push section content ----
   const renderPushSection = () => (
     <form noValidate>
-      <div className="push-section mb-4">
+      <div className="push-section mb-2">
         <div className="d-flex flex-column w-100 align-items-start">
           <div className="form-group mb-2 w-100">
             <label className="mb-1 tj-text-xsm font-weight-500" data-cy="commit-message-label">
@@ -416,52 +486,56 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
               />
             </div>
           </div>
-          {pushLatestCommitLoading && (
-            <div className="d-flex justify-content-center w-100 mt-2">
-              <div className="loader-container">
-                <div className="primary-spin-loader"></div>
-              </div>
-            </div>
-          )}
 
-          {!pushLatestCommitLoading && pushLatestCommitData && (
-            <div className="w-100 mt-2">
-              <div className="selected-commit-header">LATEST COMMIT</div>
-              <div className="d-flex w-100">
-                <div className="selected-commit-info">
-                  <div className="commit-icon">
-                    <SolidIcon name="commit" width="20" />
-                  </div>
-                  <div className="commit-content">
-                    <OverflowTooltip
-                      className="commit-title"
-                      whiteSpace="normal"
-                      style={{
-                        maxWidth: '100%',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {pushLatestCommitData.message || 'No message'}
-                    </OverflowTooltip>
-                    <div className="commit-metadata">
-                      By {pushLatestCommitData.author || 'Unknown'} | {formatCommitDate(pushLatestCommitData.date)}
-                    </div>
+          <div className="w-100 mt-2">
+            <div className="selected-commit-header">LATEST COMMIT</div>
+            {!latestCommitFetched && !isLatestCommitLoading && (
+              <div onClick={onViewLatestCommit} className="latest-commit-placeholder cursor-pointer">
+                <RefreshCcw width="14" height="14" />
+                <span className="font-weight-500 tj-text-xsm" data-cy="view-latest-commit-label">
+                  View latest commit
+                </span>
+              </div>
+            )}
+            {isLatestCommitLoading && (
+              <div className="latest-commit-placeholder">
+                <div className="primary-spin-loader" style={{ width: '18px', height: '18px' }}></div>
+              </div>
+            )}
+            {latestCommitFetched && latestCommit && (
+              <div className="selected-commit-info w-100">
+                <div className="commit-icon">
+                  <SolidIcon name="commit" width="20" />
+                </div>
+                <div className="commit-content">
+                  <OverflowTooltip
+                    className="commit-title"
+                    whiteSpace="normal"
+                    style={{
+                      maxWidth: '100%',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {latestCommit.message || 'No message'}
+                  </OverflowTooltip>
+                  <div className="commit-metadata">
+                    By {latestCommit.author || 'Unknown'} | {formatCommitDate(latestCommit.date)}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {!pushLatestCommitLoading && !pushLatestCommitData && (
-            <div className="no-commits-empty-state w-100 mt-2">
-              <div className="empty-state-content">
-                <div className="empty-state-title">No commits yet</div>
-                <div className="empty-state-description">This will be your first commit to the repository.</div>
+            )}
+            {latestCommitFetched && !latestCommit && (
+              <div className="no-commits-empty-state w-100">
+                <AlertTriangle width="20" height="20" />
+                <div className="empty-state-content">
+                  <div className="empty-state-title">No commits yet</div>
+                  <div className="empty-state-description">This will be your first commit to the repository.</div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </form>
@@ -477,7 +551,10 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             color: activeTab === 'push' ? '#4368E3' : '',
             backgroundColor: darkMode ? '#1E2226' : '#FCFCFD',
           }}
-          onClick={() => setActiveTab('push')}
+          onClick={() => {
+            setActiveTab('push');
+            resetLatestCommit();
+          }}
         >
           <span className="push-icon" style={{ marginRight: '5px', fontWeight: '500' }}>
             <SolidIcon name="push-changes" fill={activeTab === 'push' ? '#4368E3' : '#ACB2B9'} />
@@ -492,7 +569,10 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
             color: activeTab === 'pull' ? '#4368E3' : '',
             backgroundColor: darkMode ? '#1E2226' : '#FCFCFD',
           }}
-          onClick={() => setActiveTab('pull')}
+          onClick={() => {
+            setActiveTab('pull');
+            resetLatestCommit();
+          }}
         >
           <span className="push-icon" style={{ marginRight: '5px', fontWeight: '500' }}>
             <SolidIcon name="pull-changes" fill={activeTab === 'pull' ? '#4368E3' : '#ACB2B9'} />
@@ -560,7 +640,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
           <ButtonSolid
             variant="primary"
             onClick={handlePull}
-            disabled={checkingForUpdate?.status !== UPDATE_STATUS.AVAILABLE || isPulling}
+            disabled={isPulling}
             isLoading={isPulling}
             data-cy="pull-button"
           >
