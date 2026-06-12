@@ -41,21 +41,14 @@ export class DataQueriesModule extends SubModule {
         await DataSourcesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
-        // Endpoints opt in via @SkipThrottle({ <other>: true }) — values stay env-driven.
-        // Single-pod only; multi-pod = per-pod counters until Redis storage added.
+        // 50/s per (user, app). Single-pod counters until Redis storage added.
         ThrottlerModule.forRootAsync({
           imports: [ConfigModule],
           inject: [ConfigService],
           useFactory: (config: ConfigService) => [
             {
-              name: 'editor',
-              ttl: parsePositiveInt(config.get('DATA_QUERY_RUN_EDITOR_TTL'), 10000),
-              limit: parsePositiveInt(config.get('DATA_QUERY_RUN_EDITOR_LIMIT'), 30),
-            },
-            {
-              name: 'viewer',
-              ttl: parsePositiveInt(config.get('DATA_QUERY_RUN_VIEWER_TTL'), 10000),
-              limit: parsePositiveInt(config.get('DATA_QUERY_RUN_VIEWER_LIMIT'), 60),
+              ttl: parsePositiveInt(config.get('DATA_QUERY_RUN_TTL'), 1000),
+              limit: parsePositiveInt(config.get('DATA_QUERY_RUN_LIMIT'), 50),
             },
           ],
         }),

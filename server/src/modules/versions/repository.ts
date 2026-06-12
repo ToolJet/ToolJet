@@ -146,8 +146,7 @@ export class VersionRepository extends Repository<AppVersion> {
    * (definition/queries/plugins) don't surface `app.name` etc.
    */
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
-    // Memo within request — show path resolves the same versionId 3x.
-    // Skip memo when a tx-bound manager is passed (caller owns isolation).
+    // skip memo for tx-bound manager — caller owns isolation
     if (!manager) {
       const ctx = RequestContext.currentContext;
       const memo = ctx?.res?.locals?.[FIND_VERSION_MEMO_KEY] as Record<string, AppVersion> | undefined;
@@ -235,23 +234,22 @@ export class VersionRepository extends Repository<AppVersion> {
   }
 
   async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersion = await manager.findOneOrFail(AppVersion, {
-        where: { id, app: { organizationId } },
-        relations: ['app'],
+    const m = manager ?? this.manager;
+    const appVersion = await m.findOneOrFail(AppVersion, {
+      where: { id, app: { organizationId } },
+      relations: ['app'],
+    });
+    const app = appVersion.app;
+    // Workflows keep metadata on apps.*; non-workflows must overlay from the
+    // canonical version row resolved by git-sync state. Forward the loaded
+    // version's branchId so the overlay picks that branch's row directly.
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
+      const metadataVersion = await this.resolveMetadataVersion(m, app, {
+        branchId: appVersion.branchId ?? undefined,
       });
-      const app = appVersion.app;
-      // Workflows keep metadata on apps.*; non-workflows must overlay from the
-      // canonical version row resolved by git-sync state. Forward the loaded
-      // version's branchId so the overlay picks that branch's row directly.
-      if (app && app.type !== APP_TYPES.WORKFLOW) {
-        const metadataVersion = await this.resolveMetadataVersion(manager, app, {
-          branchId: appVersion.branchId ?? undefined,
-        });
-        this.overlayMetadata(app, metadataVersion);
-      }
-      return app;
-    }, manager || this.manager);
+      this.overlayMetadata(app, metadataVersion);
+    }
+    return app;
   }
 
   // Returns the workspace's default branch id, or null when git-sync is off.
@@ -327,19 +325,17 @@ export class VersionRepository extends Repository<AppVersion> {
    * would default-branch fallback and could mask sub-branch values.
    */
   async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersions = await manager.find(AppVersion, {
-        where: { appId: app.id },
-        relations: [
-          'app',
-          'dataQueries',
-          'dataQueries.dataSource',
-          'dataQueries.plugins',
-          'dataQueries.plugins.manifestFile',
-        ],
-      });
-      return appVersions;
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(AppVersion, {
+      where: { appId: app.id },
+      relations: [
+        'app',
+        'dataQueries',
+        'dataQueries.dataSource',
+        'dataQueries.plugins',
+        'dataQueries.plugins.manifestFile',
+      ],
+    });
   }
 
   /**
@@ -355,26 +351,24 @@ export class VersionRepository extends Repository<AppVersion> {
    *   - branchId absent, git off           → any slug-bearing row (most recent).
    */
   async getAppVersionById(versionId: string, branchId?: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const version = await manager.findOneOrFail(AppVersion, {
-        where: { id: versionId },
-        relations: ['app'],
-      });
-      if (!version) throw new BadRequestException('Wrong version Id');
-
-      const app = version.app;
-      if (app && app.type !== APP_TYPES.WORKFLOW) {
-        // Prefer the caller's explicit branchId; fall back to the loaded version's
-        // own branchId so overlay still picks the right branch when no header was
-        // supplied. versionId is no longer accepted by resolveMetadataVersion.
-        const metadataVersion = await this.resolveMetadataVersion(manager, app, {
-          branchId: branchId ?? version.branchId ?? undefined,
-        });
-        this.overlayMetadata(app, metadataVersion);
-      }
-
-      return version;
+    const version = await this.manager.findOneOrFail(AppVersion, {
+      where: { id: versionId },
+      relations: ['app'],
     });
+    if (!version) throw new BadRequestException('Wrong version Id');
+
+    const app = version.app;
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
+      // Prefer the caller's explicit branchId; fall back to the loaded version's
+      // own branchId so overlay still picks the right branch when no header was
+      // supplied. versionId is no longer accepted by resolveMetadataVersion.
+      const metadataVersion = await this.resolveMetadataVersion(this.manager, app, {
+        branchId: branchId ?? version.branchId ?? undefined,
+      });
+      this.overlayMetadata(app, metadataVersion);
+    }
+
+    return version;
   }
 
   /**
@@ -384,22 +378,20 @@ export class VersionRepository extends Repository<AppVersion> {
    * via `getAppVersionById` (with branchId) or overlay manually.
    */
   async getAppVersionByIdOrName(versionId: string, appId?: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      let version;
-      try {
-        version = await manager.findOneOrFail(AppVersion, {
-          where: { name: versionId, appId: appId },
-          relations: ['app'],
-        });
-      } catch {
-        version = await manager.findOneOrFail(AppVersion, {
-          where: { id: versionId },
-          relations: ['app'],
-        });
-      }
-      if (!version) throw new BadRequestException('Wrong version Id');
-      return version;
-    });
+    let version;
+    try {
+      version = await this.manager.findOneOrFail(AppVersion, {
+        where: { name: versionId, appId },
+        relations: ['app'],
+      });
+    } catch (error) {
+      version = await this.manager.findOneOrFail(AppVersion, {
+        where: { id: versionId },
+        relations: ['app'],
+      });
+    }
+    if (!version) throw new BadRequestException('Wrong version Id');
+    return version;
   }
 
   // Thin DB-level update. Business hooks (e.g. the DRAFT → PUBLISHED transition
@@ -407,16 +399,8 @@ export class VersionRepository extends Repository<AppVersion> {
   // this method pure so it can be reused for plain field updates without
   // dragging in branch / publish lifecycle.
   async updateVersion(versionId: string, editableParams: Partial<AppVersion>, manager?: EntityManager): Promise<void> {
-    await dbTransactionWrap((mgr: EntityManager) => {
-      return mgr.update(
-        AppVersion,
-        { id: versionId },
-        {
-          ...editableParams,
-          updatedAt: new Date(),
-        }
-      );
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    await m.update(AppVersion, { id: versionId }, { ...editableParams, updatedAt: new Date() });
   }
 
   async findParentVersionApps(versionId: string, manager?: EntityManager): Promise<AppVersion[]> {

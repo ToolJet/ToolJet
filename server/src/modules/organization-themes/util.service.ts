@@ -23,7 +23,6 @@ export class OrganizationThemesUtilService implements IOrganizationThemesUtilSer
     return TJDefaultTheme;
   }
   async getTheme(organizationId: string, themeId?: string): Promise<OrganizationThemes> {
-    // Memo within request — show path fetches the same theme 4x.
     const memoKey = `${organizationId}:${themeId ?? '_default'}`;
     const ctx = RequestContext.currentContext;
     const memo = ctx?.res?.locals?.[THEME_MEMO_KEY] as Record<string, OrganizationThemes> | undefined;

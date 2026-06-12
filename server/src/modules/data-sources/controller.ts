@@ -208,7 +208,8 @@ export class DataSourcesController implements IDataSourcesController {
       user,
       invokeDto.environmentId,
       invokeDto.args,
-      branchId
+      branchId,
+      invokeDto.resolvedOptions
     );
 
     return result;
