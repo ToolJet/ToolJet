@@ -28,7 +28,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     extractedMetadata: { moduleName: string; features: string[] },
     request?: any
   ): Promise<void> {
-    const { superAdmin, isAdmin, isBuilder } = UserAllPermissions;
+    const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
     const requestContext = request;
     const dataQueryId = requestContext.headers['data-query-id'];
@@ -45,7 +45,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isPublicAppRequest = isEmpty(organizationId) && !isEmpty(dataQuery) && dataQuery.app.isPublic;
     const isUserLoggedin = !isEmpty(requestContext.user) && !isEmpty(organizationId);
 
-    if (superAdmin || isAdmin || isBuilder) {
+    if (superAdmin || isAdmin || userPermission.tjdbCRUD) {
       can(
         [
           FEATURE_KEY.CREATE_TABLE,
