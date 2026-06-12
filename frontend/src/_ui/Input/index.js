@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
+import DOMPurify from 'dompurify';
 import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
 import SolidIcon from '../Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
@@ -14,7 +15,10 @@ const Input = ({ classes, helpText, onBlur, ...props }) => {
   const iconType = showPassword ? 'eye' : 'eyedisable';
 
   useEffect(() => {
-    if (isWorkspaceConstant || (typeof value === 'string' && value.startsWith('{{') && (type === 'password' || encrypted))) {
+    if (
+      isWorkspaceConstant ||
+      (typeof value === 'string' && value.startsWith('{{') && (type === 'password' || encrypted))
+    ) {
       setShowPassword(true);
     }
   }, [isWorkspaceConstant, value]);
@@ -79,7 +83,7 @@ const Input = ({ classes, helpText, onBlur, ...props }) => {
         isFocused={isFocused}
         value={value}
       />
-      {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: helpText }} />}
+      {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(helpText) }} />}
     </div>
   );
 };
