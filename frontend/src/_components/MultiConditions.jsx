@@ -326,7 +326,7 @@ const RenderFilterFields = ({
   return (
     <div className="mt-1 row-container">
       <div className="d-flex fields-container">
-        <div className="field col">
+        <div className="field" style={{ flex: 1, minWidth: 0 }}>
           <CodeHinter
             initialValue={column ? (typeof column === 'string' ? column : JSON.stringify(column)) : column}
             className="codehinter-plugins"
@@ -336,7 +336,7 @@ const RenderFilterFields = ({
             onChange={(newValue) => handleColumnChange(newValue)}
           />
         </div>
-        <div className="field col mx-1">
+        <div className="field" style={{ flex: 1, minWidth: 0, marginLeft: '4px', marginRight: '4px' }}>
           <Select
             useMenuPortal={true}
             placeholder={placeholders.operator}
@@ -347,7 +347,7 @@ const RenderFilterFields = ({
             width={'auto'}
           />
         </div>
-        <div className="field col-4">
+        <div className="field" style={{ flex: 1, minWidth: 0 }}>
           <CodeHinter
             initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
             className="codehinter-plugins"
@@ -357,7 +357,7 @@ const RenderFilterFields = ({
             onChange={(newValue) => handleValueChange(newValue)}
           />
         </div>
-        <div className="col-1 cursor-pointer m-1 mr-2">
+        <div className="cursor-pointer" style={{ display: 'flex', alignItems: 'center', padding: '0 4px', flexShrink: 0 }}>
           <svg
             onClick={() => removeFilterConditionPair(id)}
             width="12"
