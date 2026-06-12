@@ -11,14 +11,13 @@ import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes
 import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
-import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
-import InfoIcon from '@assets/images/icons/info.svg';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
 import { Share2, TriangleAlert } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -36,7 +35,6 @@ class ManageAppUsersComponent extends React.Component {
         value: null,
         error: '',
       },
-      isHovered: false,
       isSlugUpdated: false,
     };
   }
@@ -174,13 +172,6 @@ class ManageAppUsersComponent extends React.Component {
       });
     }
   };
-  handleMouseEnter = () => {
-    this.setState({ isHovered: true });
-  };
-
-  handleMouseLeave = () => {
-    this.setState({ isHovered: false });
-  };
   render() {
     const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
@@ -188,7 +179,12 @@ class ManageAppUsersComponent extends React.Component {
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
-    const { isHovered } = this.state.isHovered;
+
+    // Git-sync branch lock: the share config (make-public toggle, slug edit) is locked only
+    // on the default/master branch. When git sync is disabled there is no currentBranch, so
+    // the share config stays interactive — this is the non-git-sync case this PR targets.
+    const { currentBranch } = useWorkspaceBranchesStore.getState();
+    const isShareLocked = !!(currentBranch && (currentBranch.is_default || currentBranch.isDefault));
 
     return (
       <div className="manage-app-users">
@@ -248,10 +244,7 @@ class ManageAppUsersComponent extends React.Component {
               <div class="shareable-link-container">
                 <div className="make-public mb-3">
                   <div className="form-check form-switch d-flex align-items-center">
-                    {(() => {
-                      const { currentBranch } = useWorkspaceBranchesStore.getState();
-                      return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
-                    })() ? (
+                    {!isShareLocked ? (
                       <div>
                         <input
                           className="form-check-input"
@@ -268,41 +261,21 @@ class ManageAppUsersComponent extends React.Component {
                     ) : (
                       <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
                         <ToolTip
-                          message={(() => {
-                            const { currentBranch } = useWorkspaceBranchesStore.getState();
-                            return currentBranch?.is_default || currentBranch?.isDefault
-                              ? 'Master branch is locked. Switch branch to make the application public.'
-                              : TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE;
-                          })()}
-                          placement={'top'}
+                          message="Master branch is locked. Switch branch to make the application public."
+                          placement="top"
                           width="210px"
-                          show={isHovered}
                         >
-                          <div
-                            onMouseEnter={this.handleMouseEnter}
-                            onMouseLeave={this.handleMouseLeave}
-                            style={{
-                              width: '32px',
-                              height: '18px',
-                              marginLeft: '-40px',
-                            }}
-                          >
+                          <div style={{ width: '32px', height: '18px', marginLeft: '-40px' }}>
                             <input
                               className="form-check-input"
                               type="checkbox"
                               checked={this?.props?.isPublic}
                               disabled
-                              style={{
-                                opacity: 0.3,
-                                cursor: 'default',
-                                margin: 0,
-                                padding: 0,
-                              }}
+                              style={{ opacity: 0.3, cursor: 'default', margin: 0, padding: 0 }}
                               data-cy="make-application-public-toggle"
                             />
                           </div>
                         </ToolTip>
-
                         <span
                           className="form-check-label field-name"
                           data-cy="make-application-public-label"
@@ -315,94 +288,127 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
 
-                {this.props.isVersionReleased ||
-                (() => {
-                  const { currentBranch } = useWorkspaceBranchesStore.getState();
-                  return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
-                })() ? (
-                  <div className="shareable-link tj-app-input mb-2">
-                    <label data-cy="shareable-app-link-label" className="field-name">
-                      {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text applink-text flex-grow-1 slug-ellipsis" data-cy="app-link">
-                        {appLink}
-                      </span>
+                <div className="shareable-link tj-app-input mb-2">
+                  <label data-cy="shareable-app-link-label" className="field-name">
+                    {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text applink-text flex-grow-1 slug-ellipsis" data-cy="app-link">
+                      {appLink}
+                    </span>
+                    <div className="input-with-icon">
                       <ToolTip
                         message={TOOLTIP_MESSAGES.DEFAULT_BRANCH_LOCKED}
                         placement="top"
                         width="210px"
-                        show={(() => {
-                          const { currentBranch } = useWorkspaceBranchesStore.getState();
-                          return currentBranch?.is_default || currentBranch?.isDefault;
-                        })()}
+                        show={isShareLocked}
                       >
-                        <div className="input-with-icon">
-                          <input
-                            type="text"
-                            className={`form-control form-control-sm ${slugButtonClass}`}
-                            placeholder={this.props.slug}
-                            maxLength={50}
-                            onChange={(e) => {
-                              e.persist();
-                              this.delayedSlugChange(e);
-                            }}
-                            style={{ maxWidth: '150px' }}
-                            defaultValue={this.props.slug}
-                            data-cy="app-name-slug-input"
-                            disabled={(() => {
-                              const { currentBranch } = useWorkspaceBranchesStore.getState();
-                              return currentBranch?.is_default || currentBranch?.isDefault;
-                            })()}
-                          />
-                          {isSlugVerificationInProgress && (
-                            <div className="icon-container">
-                              <div class="spinner-border text-secondary " role="status">
-                                <span class="visually-hidden">Loading...</span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="icon-container">
-                            {newSlug?.error ? (
-                              <svg
-                                width="21"
-                                height="20"
-                                viewBox="0 0 21 20"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  fill-rule="evenodd"
-                                  clip-rule="evenodd"
-                                  d="M3.94252 3.61195C4.31445 3.24003 4.91746 3.24003 5.28939 3.61195L10.3302 8.6528L15.3711 3.61195C15.743 3.24003 16.346 3.24003 16.718 3.61195C17.0899 3.98388 17.0899 4.5869 16.718 4.95882L11.6771 9.99967L16.718 15.0405C17.0899 15.4125 17.0899 16.0155 16.718 16.3874C16.346 16.7593 15.743 16.7593 15.3711 16.3874L10.3302 11.3465L5.28939 16.3874C4.91746 16.7593 4.31445 16.7593 3.94252 16.3874C3.57059 16.0155 3.57059 15.4125 3.94252 15.0405L8.98337 9.99967L3.94252 4.95882C3.57059 4.5869 3.57059 3.98388 3.94252 3.61195Z"
-                                  fill="#E54D2E"
-                                />
-                              </svg>
-                            ) : (
-                              isSlugUpdated &&
-                              !isSlugVerificationInProgress && (
-                                <svg
-                                  width="21"
-                                  height="20"
-                                  viewBox="0 0 21 20"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    fill-rule="evenodd"
-                                    clip-rule="evenodd"
-                                    d="M17.5859 5.24408C17.9114 5.56951 17.9114 6.09715 17.5859 6.42259L9.25259 14.7559C8.92715 15.0814 8.39951 15.0814 8.07407 14.7559L3.90741 10.5893C3.58197 10.2638 3.58197 9.73618 3.90741 9.41074C4.23284 9.08531 4.76048 9.08531 5.08592 9.41074L8.66333 12.9882L16.4074 5.24408C16.7328 4.91864 17.2605 4.91864 17.5859 5.24408Z"
-                                    fill="#46A758"
-                                  />
-                                </svg>
-                              )
-                            )}
+                        <input
+                          type="text"
+                          className={`form-control form-control-sm ${slugButtonClass}`}
+                          placeholder={this.props.slug}
+                          maxLength={50}
+                          onChange={(e) => {
+                            e.persist();
+                            this.delayedSlugChange(e);
+                          }}
+                          style={{ maxWidth: '150px' }}
+                          defaultValue={this.props.slug}
+                          data-cy="app-name-slug-input"
+                          disabled={isShareLocked}
+                        />
+                      </ToolTip>
+                      {isSlugVerificationInProgress && (
+                        <div className="icon-container">
+                          <div class="spinner-border text-secondary " role="status">
+                            <span class="visually-hidden">Loading...</span>
                           </div>
                         </div>
-                      </ToolTip>
-                      <span className="input-group-text">
-                        <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                      )}
+
+                      <div className="icon-container">
+                        {newSlug?.error ? (
+                          <svg
+                            width="21"
+                            height="20"
+                            viewBox="0 0 21 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              clip-rule="evenodd"
+                              d="M3.94252 3.61195C4.31445 3.24003 4.91746 3.24003 5.28939 3.61195L10.3302 8.6528L15.3711 3.61195C15.743 3.24003 16.346 3.24003 16.718 3.61195C17.0899 3.98388 17.0899 4.5869 16.718 4.95882L11.6771 9.99967L16.718 15.0405C17.0899 15.4125 17.0899 16.0155 16.718 16.3874C16.346 16.7593 15.743 16.7593 15.3711 16.3874L10.3302 11.3465L5.28939 16.3874C4.91746 16.7593 4.31445 16.7593 3.94252 16.3874C3.57059 16.0155 3.57059 15.4125 3.94252 15.0405L8.98337 9.99967L3.94252 4.95882C3.57059 4.5869 3.57059 3.98388 3.94252 3.61195Z"
+                              fill="#E54D2E"
+                            />
+                          </svg>
+                        ) : (
+                          isSlugUpdated &&
+                          !isSlugVerificationInProgress && (
+                            <svg
+                              width="21"
+                              height="20"
+                              viewBox="0 0 21 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                clip-rule="evenodd"
+                                d="M17.5859 5.24408C17.9114 5.56951 17.9114 6.09715 17.5859 6.42259L9.25259 14.7559C8.92715 15.0814 8.39951 15.0814 8.07407 14.7559L3.90741 10.5893C3.58197 10.2638 3.58197 9.73618 3.90741 9.41074C4.23284 9.08531 4.76048 9.08531 5.08592 9.41074L8.66333 12.9882L16.4074 5.24408C16.7328 4.91864 17.2605 4.91864 17.5859 5.24408Z"
+                                fill="#46A758"
+                              />
+                            </svg>
+                          )
+                        )}
+                      </div>
+                    </div>
+                    <span className="input-group-text">
+                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                        <svg
+                          className="cursor-pointer"
+                          width="17"
+                          height="18"
+                          viewBox="0 0 17 18"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          data-cy="copy-app-link-button"
+                        >
+                          <path
+                            d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
+                            fill="#889096"
+                          />
+                          <path
+                            d="M8.66502 15.9464H4.49752C2.96309 15.9464 1.71918 14.7025 1.71918 13.168V9.00052C1.71918 7.46609 2.96309 6.22219 4.49752 6.22219H8.66502C10.1994 6.22219 11.4434 7.46609 11.4434 9.00052V13.168C11.4434 14.7025 10.1994 15.9464 8.66502 15.9464Z"
+                            fill="#889096"
+                          />
+                        </svg>
+                      </CopyToClipboard>
+                    </span>
+                  </div>
+                  {newSlug?.error ? (
+                    <label className="label tj-input-error" data-cy="app-slug-error-label">
+                      {newSlug?.error || ''}
+                    </label>
+                  ) : isSlugUpdated ? (
+                    <label className="label label-success" data-cy="app-slug-accepted-label">{`Slug accepted!`}</label>
+                  ) : (
+                    <label
+                      className="label label-info"
+                      data-cy="app-slug-info-label"
+                    >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                  )}
+                </div>
+
+                {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  <div className="tj-app-input">
+                    <label className="field-name" data-cy="iframe-link-label">
+                      Embedded app link
+                    </label>
+                    <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
+                      <span data-cy="iframe-link">{embeddableLink}</span>
+                      <span className="copy-container">
+                        <CopyToClipboard text={embeddableLink} onCopy={() => toast.success('Link copied to clipboard')}>
                           <svg
                             className="cursor-pointer"
                             width="17"
@@ -410,7 +416,7 @@ class ManageAppUsersComponent extends React.Component {
                             viewBox="0 0 17 18"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            data-cy="copy-app-link-button"
+                            data-cy="iframe-link-copy-button"
                           >
                             <path
                               d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
@@ -423,75 +429,9 @@ class ManageAppUsersComponent extends React.Component {
                           </svg>
                         </CopyToClipboard>
                       </span>
-                    </div>
-                    {newSlug?.error ? (
-                      <label className="label tj-input-error" data-cy="app-slug-error-label">
-                        {newSlug?.error || ''}
-                      </label>
-                    ) : isSlugUpdated ? (
-                      <label
-                        className="label label-success"
-                        data-cy="app-slug-accepted-label"
-                      >{`Slug accepted!`}</label>
-                    ) : (
-                      <label
-                        className="label label-info"
-                        data-cy="app-slug-info-label"
-                      >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
-                    )}
-                  </div>
-                ) : (
-                  <div className="shareable-link tj-app-input mb-2">
-                    <label data-cy="shareable-app-link-label" className="field-name">
-                      {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
-                    </label>
-                    <div className="empty-version" data-cy="empty-version-text">
-                      <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
-                      <span>This version has not been released yet</span>
-                    </div>
+                    </span>
                   </div>
                 )}
-
-                {(this?.props?.isVersionReleased ||
-                  (() => {
-                    const { currentBranch } = useWorkspaceBranchesStore.getState();
-                    return currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
-                  })()) &&
-                  (this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
-                    <div className="tj-app-input">
-                      <label className="field-name" data-cy="iframe-link-label">
-                        Embedded app link
-                      </label>
-                      <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
-                        <span data-cy="iframe-link">{embeddableLink}</span>
-                        <span className="copy-container">
-                          <CopyToClipboard
-                            text={embeddableLink}
-                            onCopy={() => toast.success('Link copied to clipboard')}
-                          >
-                            <svg
-                              className="cursor-pointer"
-                              width="17"
-                              height="18"
-                              viewBox="0 0 17 18"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              data-cy="iframe-link-copy-button"
-                            >
-                              <path
-                                d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
-                                fill="#889096"
-                              />
-                              <path
-                                d="M8.66502 15.9464H4.49752C2.96309 15.9464 1.71918 14.7025 1.71918 13.168V9.00052C1.71918 7.46609 2.96309 6.22219 4.49752 6.22219H8.66502C10.1994 6.22219 11.4434 7.46609 11.4434 9.00052V13.168C11.4434 14.7025 10.1994 15.9464 8.66502 15.9464Z"
-                                fill="#889096"
-                              />
-                            </svg>
-                          </CopyToClipboard>
-                        </span>
-                      </span>
-                    </div>
-                  )}
               </div>
             }
           </Modal.Body>
