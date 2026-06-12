@@ -7,8 +7,11 @@ import { useCallback, useRef } from 'react';
  * forces react-codemirror to dispatch a full editor reconfigure, which permanently
  * grows style-mod's shared stylesheet and degrades the whole session.
  */
-export const useStableCallback = (fn) => {
+export const useStableCallback = <Args extends unknown[], Return>(
+  fn: (...args: Args) => Return
+): ((...args: Args) => Return) => {
   const ref = useRef(fn);
   ref.current = fn;
-  return useCallback((...args) => ref.current(...args), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback((...args: Args) => ref.current(...args), []);
 };
