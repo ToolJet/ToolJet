@@ -672,6 +672,10 @@ const useAppData = (
       })
       .catch((_error) => {
         if (cancelled) return;
+        // This catch also receives exceptions thrown by the .then block above (store
+        // init, dependency graph build). Swallowing them renders an empty view-mode
+        // editor with no signal — always log.
+        console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');

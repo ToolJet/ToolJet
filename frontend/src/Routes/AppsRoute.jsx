@@ -124,8 +124,13 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
   };
 
   const handleBrowserNavigation = (e) => {
-    const { id, handle } = e.state;
-    switchPage(id, handle, [], 'canvas', true);
+    // React Router v6 stores the navigate() state under e.state.usr. Entries without
+    // page info (e.g. backing out of the app to the dashboard) must not trigger a
+    // page switch — switchPage's async flow would keep writing into the store after
+    // AppLoader unmounts and resets it.
+    const navState = e.state?.usr;
+    if (!navState?.isSwitchingPage || !navState?.id) return;
+    switchPage(navState.id, navState.handle, [], 'canvas', true);
   };
 
   // Show mobile empty state for protected routes (editor mode)
