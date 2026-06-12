@@ -19,4 +19,5 @@ export const GIT_SYNC_JOBS = {
   CREATE_BRANCH: 'git-create-branch',
   PULL_BRANCH: 'git-pull-branch',
   DELETE_BRANCH: 'git-delete-branch',
+  PUSH_APP_DELETION: 'git-push-app-deletion',
 } as const;

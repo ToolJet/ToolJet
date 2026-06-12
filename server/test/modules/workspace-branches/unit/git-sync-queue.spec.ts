@@ -86,6 +86,9 @@ class FakeWorkspaceBranchService {
   executeDeleteRemoteBranch = async (payload: any) => {
     this.calls.push({ method: 'executeDeleteRemoteBranch', payload });
   };
+  executePushAppDeletion = async (payload: any) => {
+    this.calls.push({ method: 'executePushAppDeletion', payload });
+  };
 }
 
 const makeJob = (name: string, data: any) => ({ name, data }) as any;
@@ -150,6 +153,21 @@ describe('GitSyncQueueService (enqueue side)', () => {
     });
   });
 
+  it('should enqueue git-push-app-deletion with a coalescing delay', async () => {
+    // The worker diffs DB vs git meta, so one delayed job sweeps every app
+    // deleted in a burst — jobId dedup + delay make the coalescing window.
+    await svc.enqueuePushAppDeletion({ organizationId: 'org1', branchId: 'branch-uuid', userId: 'u' });
+
+    expect(queue.added[0]).toMatchObject({
+      name: GIT_SYNC_JOBS.PUSH_APP_DELETION,
+      opts: {
+        jobId: 'git-push-app-deletion:org1:branch-uuid',
+        delay: expect.any(Number),
+      },
+    });
+    expect(queue.added[0].opts.delay).toBeGreaterThan(0);
+  });
+
   it('should produce the same jobId for the same inputs (dedup key)', async () => {
     // BullMQ ignores add() for a jobId that is already waiting/active —
     // determinism here IS the double-click guard.
@@ -209,6 +227,12 @@ describe('GitSyncQueueProcessor dispatch', () => {
     const payload = { organizationId: 'org1', branchName: 'b' };
     await processor.process(makeJob(GIT_SYNC_JOBS.DELETE_BRANCH, payload));
     expect(service.calls).toEqual([{ method: 'executeDeleteRemoteBranch', payload }]);
+  });
+
+  it('should route git-push-app-deletion jobs to executePushAppDeletion', async () => {
+    const payload = { organizationId: 'org1', branchId: 'b1', userId: 'u' };
+    await processor.process(makeJob(GIT_SYNC_JOBS.PUSH_APP_DELETION, payload));
+    expect(service.calls).toEqual([{ method: 'executePushAppDeletion', payload }]);
   });
 
   it('should ignore an unknown job name without throwing', async () => {
