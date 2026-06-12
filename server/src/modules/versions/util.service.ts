@@ -553,7 +553,7 @@ export class VersionUtilService implements IVersionUtilService {
         throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
       }
 
-      if (app.currentVersionId === app.appVersions[0].id) {
+      if (app.currentVersionId === app.appVersions[0].id || app.appVersions[0].status === AppVersionStatus.RELEASED) {
         throw new BadRequestException('You cannot delete a released version');
       }
 

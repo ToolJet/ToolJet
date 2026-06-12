@@ -5,7 +5,7 @@
   .commit-info,
   .pull-container,
   .pushpull-container {
-    height: 300px !important;
+    height: auto !important;
 
     .pull-section,
     .push-section {
@@ -183,19 +183,19 @@
 }
 
 .git-sync-modal {
-  width: 400px !important;
-  height: 470px !important;
+  width: 430px !important;
+  height: auto !important;
 
   .pushpull-container {
-    height: 230px !important;
+    height: auto !important;
   }
 
   .pull-container {
-    height: 260px !important;
+    height: auto !important;
   }
 
   .modal-body {
-    height: 240px !important;
+    height: auto !important;
 
     .loader-container {
       display: flex;
@@ -336,25 +336,58 @@
   }
 }
 
+.git-sync-modal .latest-commit-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px dashed var(--border-default, #ccd1d5);
+  border-radius: 6px;
+  min-height: 56px;
+  width: 100%;
+  color: var(--slate12);
+
+  svg {
+    color: var(--slate11);
+    stroke: var(--slate11);
+  }
+}
+
 .git-sync-modal .no-commits-empty-state {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 12px 16px;
+  margin: 0;
   border: 1px dashed var(--border-default, #ccd1d5);
   border-radius: 6px;
   min-height: 70px;
 
   svg {
-    color: var(--icon-warning, #bf4f03);
     flex-shrink: 0;
+    margin-top: 1px;
+
+    path:first-of-type {
+      fill: var(--icon-warning, #bf4f03);
+      stroke: none !important;
+    }
+
+    path:not(:first-of-type) {
+      stroke: #fff !important;
+      stroke-width: 2;
+      stroke-linecap: round;
+      fill: none;
+    }
   }
 
   .empty-state-content {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 2px;
     flex: 1;
+    min-width: 0;
   }
 
   .empty-state-title {
