@@ -316,9 +316,19 @@ async getConnection(sourceOptions: SourceOptions): Promise<any> {
 
   const finalHosts = hostsList.join(",");
   const finalDb = explicitDb || dbNameFromConn || "";
-  const authSection = needsAuth
-    ? `${encodeURIComponent(finalUser)}:${encodeURIComponent(finalPass)}@`
-    : "";
+  const safeEncode = (value: string) => {
+  try {
+    const decoded = decodeURIComponent(value);
+    if (decoded !== value) {
+      return value;
+    }
+  } catch (e) {}
+  return encodeURIComponent(value);
+};
+
+const authSection = needsAuth
+  ? `${safeEncode(finalUser)}:${safeEncode(finalPass)}@`
+  : "";
 
   let finalUri = `${protocol}://${authSection}${finalHosts}`;
 

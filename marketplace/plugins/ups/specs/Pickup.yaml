@@ -1,0 +1,3687 @@
+openapi: 3.0.3
+info:
+  title: Pickup
+  version: ''
+  description: |
+  
+    Using the Pickup API, applications can schedule pickups, manage previously scheduled pickups, or cancel previously scheduled pickups.
+    # Reference
+    - <a href="https://developer.ups.com/api/reference/pickup/business-rules" target="_blank" rel="noopener">Business Rules</a>
+    - <a href="https://developer.ups.com/api/reference/pickup/appendix" target="_blank" rel="noopener">Appendix</a>
+    - <a href="https://developer.ups.com/api/reference/pickup/errors" target="_blank" rel="noopener">Errors</a>
+
+    </br><p>Try out UPS APIs with example requests using Postman and learn more about the UPS Postman Collection by visiting our <a href="https://developer.ups.com/api/reference/postman/guide"
+    target="_blank" rel="noopener">Postman Guide</a>. Explore API documentation and sample applications through GitHub.</p>
+
+    <a href="https://god.gw.postman.com/run-collection/29542085-d7dd9c32-e6de-47ec-9a91-35312b92931e?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D29542085-d7dd9c32-e6de-47ec-9a91-35312b92931e%26entityType%3Dcollection%26workspaceId%3D7e7595f0-4829-4f9a-aee1-75c126b9d417" target="_blank" rel="noopener noreferrer">
+      <img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;"></a>
+    <a href="https://github.com/UPS-API" target="_blank" rel="noopener noreferrer">
+      <img src="https://www.ups.com/assets/resources/webcontent/images/gitHubButton.svg" alt="Open in GitHub " style="width: 128px; height: 32px;">
+    </a>
+servers:
+  - url: https://wwwcie.ups.com/api
+    description: Customer Integration Environment
+  - url: https://onlinetools.ups.com/api
+    description: Production
+paths:
+  "/shipments/{version}/pickup/{pickuptype}":
+    post:
+      description: Using the POST operation of the pickuptype endpoint within the Pickup API, users can request rates for UPS on-demand package pickup. The endpoint allows users to specify pickup details like address, date/time, and other options, and returns pricing information for booking that pickup.
+      summary: Pickup Rate
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Pickup Rate
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: path
+        name: version
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of the API.
+
+            Valid values:
+            - v2409
+        required: true
+      - in: path
+        name: pickuptype
+        schema:
+          type: string
+          minimum: 1
+        description: |-
+          Type of pickup. Valid values:
+          oncall
+          smart
+          both. Length 6
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PICKUPRequestWrapper"
+            examples:
+              json:
+                summary: A sample JSON request(Standard Example)
+                value:
+                  PickupRateRequest:
+                    PickupAddress:
+                      AddressLine: 315 Saddle Bridge Drive
+                      City: Allendale
+                      StateProvince: NJ
+                      PostalCode: '07401'
+                      CountryCode: US
+                      ResidentialIndicator: Y
+                    AlternateAddressIndicator: N
+                    ServiceDateOption: '02'
+                    PickupDateInfo:
+                      CloseTime: '2000'
+                      ReadyTime: '900'
+                      PickupDate: '20160405'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+    get:
+      description: Using the GET operation of the pickuptype endpoint within the Pickup API, users can retrieve the status of shipments sent via UPS pickup service. The endpoint uses the account number as a required parameter and returns a status of received/dispatched/completed/incomplete/updated ETA, or cancelled.
+      summary: Pickup Pending Status
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Pickup Pending Status
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: header
+        name: AccountNumber
+        schema:
+          type: string
+        description: "The specific account number that belongs to the \nshipper.Length
+          6 or 10"
+        required: true
+      - in: path
+        name: version
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of API
+
+            Valid values:
+            - v2409
+        required: true
+      - in: path
+        name: pickuptype
+        schema:
+          type: string
+          minimum: 1
+        description: |-
+          Type of pickup. Valid values:
+          oncall
+          smart
+          both. Length 6
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPPendingResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/shipments/{version}/pickup/{CancelBy}":
+    delete:
+      description: Using the CancelBy endpoint of the Pickup API, users can request cancellation of a UPS on-demand package pickup. When the PRN (pickup request number), transaction ID, and the transaction source are supplied as required parameters, the endpoint returns confirmation that the pickup has been cancelled.
+      summary: Pickup Cancel
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Pickup Cancel
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: header
+        name: Prn
+        schema:
+          type: string
+        description: "The pickup equest number (PRN) generated by \nUPS pickup system.\nRequired
+          if CancelBy = prn.Length 26"
+        required: false
+      - in: path
+        name: CancelBy
+        schema:
+          type: string
+        description: 'Valid Values: 01 = AccountNumber, 02 = PRN'
+        required: true
+      - in: path
+        name: version
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of API.
+
+            Valid values:
+            - v2409
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPCancelResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/pickupcreation/{version}/pickup":
+    post:
+      description: Using the Pickup API, applications can schedule pickups, manage
+        previously scheduled pickups, or cancel previously scheduled pickups.
+      summary: Pickup Creation
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Pickup Creation
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: path
+        name: version
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of the API.
+
+            Valid values:
+            - v2409
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+             oneOf:
+               - $ref: "#/components/schemas/PICKUPCreationRequestWrapper"
+               - $ref: "#/components/schemas/PICKUPTriggerGWNRequestWrapper"
+            examples:
+              '1':
+                summary: A sample JSON request (Standard Example)
+                value:
+                  PickupCreationRequest:
+                    RatePickupIndicator: N
+                    Shipper:
+                      Account:
+                        AccountNumber: ShipperNumber
+                        AccountCountryCode: US
+                    PickupDateInfo:
+                      CloseTime: '1400'
+                      ReadyTime: '0500'
+                      PickupDate: '20221214'
+                    PickupAddress:
+                      CompanyName: Pickup Proxy
+                      ContactName: Pickup Manager
+                      AddressLine: 123 Main Street
+                      Room: R01
+                      Floor: '2'
+                      City: Allendale
+                      StateProvince: NJ
+                      Urbanization: ''
+                      PostalCode: '07401'
+                      CountryCode: US
+                      ResidentialIndicator: Y
+                      PickupPoint: Lobby
+                      Phone:
+                        Number: '5555555555'
+                        Extension: '911'
+                    AlternateAddressIndicator: Y
+                    PickupPiece:
+                    - ServiceCode: '001'
+                      Quantity: '27'
+                      DestinationCountryCode: US
+                      ContainerCode: '01'
+                    - ServiceCode: '012'
+                      Quantity: '4'
+                      DestinationCountryCode: US
+                      ContainerCode: '01'
+                    TotalWeight:
+                      Weight: '5.5'
+                      UnitOfMeasurement: LBS
+                    OverweightIndicator: N
+                    PaymentMethod: '01'
+                    SpecialInstruction: 'Test '
+                    ReferenceNumber: CreatePickupRef
+              '2':     
+                summary: A sample JSON request (Smart Pickup)
+                value:
+                  PickupTriggerGWNRequest:
+                    Request:
+                      TransactionReference:
+                         CustomerContext: "Smart Pickup Request"
+                      AccountNumber: "1004YY"
+                      ServiceDateOption: "01"        
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: "#/components/schemas/PICKUPCreationResponseWrapper"
+                 - $ref: "#/components/schemas/PICKUPTriggerGWNResponseWrapper"
+              examples:
+                '1': 
+                  summary:  A sample JSON response (Standard Example)
+                  value:
+                    PickupCreationResponse:
+                      Response:
+                        ResponseStatus:
+                          Code: "1"
+                          Description: "Success"
+                        Alert:
+                          - Code: "string"
+                            Description: "string"
+                        TransactionReference:
+                          CustomerContext: "string"
+                      PRN: "stringstrin"
+                      WeekendServiceTerritory:
+                        SatWST: "s"
+                        SunWST: "s"
+                      WeekendServiceTerritoryIndicator: "s"
+                      RateStatus:
+                        Code: "st"
+                        Description: "string"
+                      RateResult:
+                        Disclaimer:
+                          Code: "st"
+                          Description: "string"
+                        RateType: "st"
+                        CurrencyCode: "str"
+                        ChargeDetail:
+                          - ChargeCode: "s"
+                            ChargeDescription: "string"
+                            ChargeAmount: "stringst"
+                            IncentedAmount: "stringst"
+                            TaxAmount: "stringst"
+                        TaxCharges:
+                          - Type: "str"
+                            MonetaryValue: "stringst"
+                        TotalTax: "stringst"
+                        GrandTotalOfAllCharge: "stringst"
+                        GrandTotalOfAllIncentedCharge: "string"
+                        PreTaxTotalCharge: "stringst"
+                        PreTaxTotalIncentedCharge: "string"
+                '2':
+                  summary:  A sample JSON response (Smart Pickup)
+                  value:
+                    PickupTriggerGWNResponse:
+                      Response:
+                        ResponseStatus:
+                          Code: "1"
+                          Description: "Success"
+                        TransactionReference:
+                          CustomerContext: "string"
+                          TransactionIdentifier: "string"
+                        ServiceDate: "20260206"
+                        PRN: "GPD49B1D615"
+                        TriggerStatus:
+                          Code: "02"
+                          Description: "EXISTING"               
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/pickup/{version}/countries/{countrycode}":
+    get:
+      description: The countrycode endpoint of the Pickup API helps retrieve a list of political divisions (states) in a specified country or territory.
+      summary: Pickup Get Political Division1 List
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Pickup Get Political Division1 List
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: true
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: true
+      - in: path
+        name: version
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of API.
+
+            Valid values:
+            - v2409
+        required: true
+      - in: path
+        name: countrycode
+        schema:
+          type: string
+          minimum: 1
+        description: "Country or terrirtory for which the list will \nrepresent.Length
+          2"
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPPolDivResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/pickup/{version}/servicecenterlocations":
+    post:
+      description: The servicecenterlocations endpoint of the Pickup API helps retrieve service center information in a specified area - including location address, phone number, SLIC (Standard Location Identification Code), and hours of operation for pick-up and drop-off requests
+      summary: Pickup Get Service Center Facilities
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Pickup Get Service Center Facilities
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: path
+        name: version
+        schema:
+          type: string
+          default: v2409
+        description: |
+            Version of API.
+
+            Valid values:
+            - v2409
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PICKUPServCenterRequestWrapper"
+            examples:
+              json:
+                summary: A sample JSON request (Standard Example)
+                value:
+                  PickupGetServiceCenterFacilitiesRequest:
+                    PickupPiece:
+                      ServiceCode: '096'
+                      ContainerCode: '03'
+                    DestinationAddress:
+                      City: Allendale
+                      StateProvince: NJ
+                      PostalCode: '07401'
+                      CountryCode: US
+                    ProximitySearchIndicator: ''
+                    Locale: en_HK
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPServCenterResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/shipments/{deprecatedVersion}/pickup/{CancelBy}":
+    delete:
+      deprecated: true
+      description: Using the CancelBy endpoint of the Pickup API, users can request cancellation of a UPS on-demand package pickup. When the PRN (pickup request number), transaction ID, and the transaction source are supplied as required parameters, the endpoint returns confirmation that the pickup has been cancelled.
+      summary: Pickup Cancel
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Deprecated Pickup Cancel
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: header
+        name: Prn
+        schema:
+          type: string
+        description: "The pickup equest number (PRN) generated by \nUPS pickup system.\nRequired
+          if CancelBy = prn.Length 26"
+        required: false
+      - in: path
+        name: CancelBy
+        schema:
+          type: string
+        description: 'Valid Values: 01 = AccountNumber, 02 = PRN'
+        required: true
+      - in: path
+        name: deprecatedVersion
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of API.
+
+            Valid values:
+            - v2409
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPCancelResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+  "/pickupcreation/{deprecatedVersion}/pickup":
+    post:
+      deprecated: true
+      description: Using the Pickup API, applications can schedule pickups, manage
+        previously scheduled pickups, or cancel previously scheduled pickups.
+      summary: Pickup Creation
+      tags:
+        - Pickup
+      security:
+        - OAuth2: []
+      operationId: Deprecated Pickup Creation
+      parameters:
+      - in: header
+        name: transId
+        schema:
+          type: string
+        description: An identifier unique to the request. Length 32
+        required: false
+      - in: header
+        name: transactionSrc
+        schema:
+          type: string
+          default: testing
+        description: An identifier of the client/source application that is making
+          the request.Length 512
+        required: false
+      - in: path
+        name: deprecatedVersion
+        schema:
+          type: string
+          minimum: 1
+          default: v2409
+        description: |
+            Version of the API.
+
+            Valid values:
+            - v1
+            - v1607
+            - v1707
+        required: true
+      requestBody:
+        description: Generate sample code for popular API requests by selecting an
+          example below. To view a full sample request and response, first click "Authorize"
+          and enter your application credentials, then populate the required parameters
+          above and click "Try it out".
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PICKUPCreationRequestWrapper"
+            examples:
+              json:
+                summary: A sample JSON request (Standard Example)
+                value:
+                  PickupCreationRequest:
+                    RatePickupIndicator: N
+                    Shipper:
+                      Account:
+                        AccountNumber: ShipperNumber
+                        AccountCountryCode: US
+                    PickupDateInfo:
+                      CloseTime: '1400'
+                      ReadyTime: '0500'
+                      PickupDate: '20221214'
+                    PickupAddress:
+                      CompanyName: Pickup Proxy
+                      ContactName: Pickup Manager
+                      AddressLine: 123 Main Street
+                      Room: R01
+                      Floor: '2'
+                      City: Allendale
+                      StateProvince: NJ
+                      Urbanization: ''
+                      PostalCode: '07401'
+                      CountryCode: US
+                      ResidentialIndicator: Y
+                      PickupPoint: Lobby
+                      Phone:
+                        Number: '5555555555'
+                        Extension: '911'
+                    AlternateAddressIndicator: Y
+                    PickupPiece:
+                    - ServiceCode: '001'
+                      Quantity: '27'
+                      DestinationCountryCode: US
+                      ContainerCode: '01'
+                    - ServiceCode: '012'
+                      Quantity: '4'
+                      DestinationCountryCode: US
+                      ContainerCode: '01'
+                    TotalWeight:
+                      Weight: '5.5'
+                      UnitOfMeasurement: LBS
+                    OverweightIndicator: N
+                    PaymentMethod: '01'
+                    SpecialInstruction: 'Test '
+                    ReferenceNumber: CreatePickupRef
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PICKUPCreationResponseWrapper"
+        '400':
+            description: Invalid Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '401':
+            description: Unauthorized Request
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '403':
+            description: Blocked Merchant
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+        '429':
+            description: Rate Limit Exceeded
+            content:
+                application/json:
+                  schema:
+                    "$ref": "#/components/schemas/ErrorResponse"
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: |
+        Find your Client ID and Secret on your app info page.
+        1. Select \"Try It\"
+        2. In the Security section enter your Client ID and Secret.
+        3. Select \"Request Token\"
+        4. Enter any additional information in the Body and Parameters sections.
+        5. Select \"Send\" to execute your API request
+      flows:
+        clientCredentials:
+          x-tokenEndpointAuthMethod: client_secret_basic
+          tokenUrl: https://wwwcie.ups.com/security/v1/oauth/token
+          scopes: {}
+  schemas:
+    PICKUPRequestWrapper:
+      xml:
+        name: PickupRateRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupRateRequest
+      properties:
+        PickupRateRequest:
+          "$ref": "#/components/schemas/PickupRateRequest"
+    PICKUPResponseWrapper:
+      xml:
+        name: PickupRateResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupRateResponse
+      properties:
+        PickupRateResponse:
+          "$ref": "#/components/schemas/PickupRateResponse"
+    PickupRateRequest:
+      type: object
+      required:
+      - ServiceDateOption
+      - PickupAddress
+      - Request
+      - AlternateAddressIndicator
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupRateRequest_Request"
+        ShipperAccount:
+          "$ref": "#/components/schemas/PickupRateRequest_ShipperAccount"
+        PickupAddress:
+          "$ref": "#/components/schemas/PickupRateRequest_PickupAddress"
+        AlternateAddressIndicator:
+          description: "Indicates if the pickup address is different than the address
+            specified in the customer's profile.  \nValid values:\nY = Alternate address\nN
+            = Original pickup address (default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        ServiceDateOption:
+          description: |-
+            Indicates the pickup timeframe.
+            - 01 = Same-Day Pickup
+            - 02 = Future-Day Pickup
+            - 03 = A Specific-Day Pickup
+
+            If 03 is selected, then PickupDate, EarliestReadyTime, and LatestClosetime must be specified.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        PickupDateInfo:
+          "$ref": "#/components/schemas/PickupRateRequest_PickupDateInfo"
+        RateChartType:
+          description: |
+            Rate Type with which pickup is rated. Possible RateChart values for different regions will be:
+
+            US 48 origin:
+            1 – Daily Rates
+            3 – Standard List Rates
+            4 – Retail Rates.
+
+             Alaska/Hawaii origin:
+            1 – Daily Rates
+            3 – Standard List Rates
+            4 – Retail Rates.
+
+            All Other origins:
+            1 – Rates
+            5 - Regional Rates
+            6 - General List Rates.
+
+            3 and 4 do not apply
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        TaxInformationIndicator:
+          description: |-
+            Indicates whether to return detailed taxes for on-callpickups.
+            Valid values:
+            - Y = Rate this pickup with taxes
+            - N = Do not rate this pickup with taxes (default)
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        UserLevelDiscountIndicator:
+          description: "Indicates whether to return user level promo discount for
+            the on-callpickups. \nValid values:\nY = Rate this pickup with user level
+            promo discount\nN = Do not rate this pickup with user level promo discount(default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+      xml:
+        name: PickupRateRequest
+      maximum: 1
+      description: This request is used to rate an on-callpickup.
+    PickupRateRequest_Request:
+      type: object
+      properties:
+        RequestOption:
+          description: Not used by pick up
+          type: string
+          minLength: 1
+          maxLength: 15
+        SubVersion:
+          description: "When UPS introduces new elements in the response that are
+            not associated with new request elements, Subversion is used. This ensures
+            backward compatibility.\n\nTo get such elements you need to have the right
+            Subversion. The value of the subversion is explained in the Response element
+            Description. Supported values: 1607, 1707,2007\n\nExample: Itemized Charges
+            are returned only when the Subversion element is present and greater than
+            or equal to '1601'. \n\nFormat: YYMM = Year and month of the release.\nExample:
+            1601 = 2016 January"
+          maximum: 1
+          type: string
+          minLength: 4
+          maxLength: 4
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      maximum: 1
+      description: Common element for all services
+    Request_TransactionReference:
+      type: object
+      maximum: 1
+      properties:
+        CustomerContext:
+          description: The CustomerContext information that is echoed back during
+            response.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 512
+      xml:
+        name: TransactionReference
+      description: Transaction Reference Container
+    PickupRateRequest_ShipperAccount:
+      type: object
+      maximum: 1
+      required:
+      - AccountCountryCode
+      - AccountNumber
+      properties:
+        AccountNumber:
+          description: UPS account number.  Shipper's (requester of the pickup) UPS
+            account number
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 10
+        AccountCountryCode:
+          description: |-
+            Country code as defined by ISO-3166.
+            Refer to Country or Territory Codes in the Appendix for valid values.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: ShipperAccount
+      description: Shipper account information.
+    PickupRateRequest_PickupAddress:
+      type: object
+      maximum: 1
+      properties:
+        AddressLine:
+          description: "Detailed street address. \nFor Jan. 2010 release, only one
+            AddressLine is allowed."
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 73
+        City:
+          description: City or equivalent
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: State province code or equivalent
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Postal code for countries with postal codes.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: "Upper-case two-char long country code as defined by ISO-3166.
+            \nRefer to Country or Territory Codes in the Appendix for valid values."
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ResidentialIndicator:
+          description: |-
+            Indicates if the pickup address is commerical or residential.
+            Valid values:
+            Y = Residential address
+            N = Non-residential (Commercial) address (default)
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+      xml:
+        name: PickupAddress
+      required:
+      - ResidentialIndicator
+      - PostalCode
+      - City
+      - CountryCode
+      description: The address to pickup the packages
+    PickupRateRequest_PickupDateInfo:
+      type: object
+      maximum: 1
+      required:
+      - ReadyTime
+      - CloseTime
+      - PickupDate
+      properties:
+        CloseTime:
+          description: |-
+            The latest local close time. Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 4
+          maxLength: 4
+        ReadyTime:
+          description: |-
+            The earliest local ready Time. Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 4
+          maxLength: 4
+        PickupDate:
+          description: |-
+            The specific local pickup date. Format: yyyyMMdd
+            - yyyy = Year Applicable
+            - MM = 01-12
+            - dd = 01-31
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+      xml:
+        name: PickupDateInfo
+      description: "Required if the ServiceDateOption is: \n03 A Specific-Day Pickup"
+    PickupRateResponse:
+      type: object
+      required:
+      - Response
+      - RateResult
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupRateResponse_Response"
+        RateResult:
+          "$ref": "#/components/schemas/PickupRateResponse_RateResult"
+        WeekendServiceTerritoryIndicator:
+          description: |-
+            Indicates if the pickup address qualifies for WST (Weekend Service Territory). Returned if the pickup date is Saturday and subversion greater or equal to 1607. Valid Values:
+            - Y = WST
+            - N = Non-WST
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        WeekendServiceTerritory:
+          "$ref": "#/components/schemas/PickupRateResponse_WeekendServiceTerritory"
+      xml:
+        name: PickupRateResponse
+      maximum: 1
+      description: The response of rating on-callpickup.
+    PickupRateResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+           type: array
+           items:
+            "$ref": "#/components/schemas/Response_Alert"         
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response Container.
+      maximum: 1
+    Response_ResponseStatus:
+      type: object
+      maximum: 1
+      required:
+      - Description
+      - Code
+      properties:
+        Code:
+          description: |
+            Identifies the success of the transaction.
+            - 1=Success
+            - 0=failed
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        Description:
+          description: Describes Response Status Code.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 35
+      xml:
+        name: ResponseStatus
+      description: Response Status Container.
+    Response_Alert:
+      type: object
+      maximum: 1
+      required:
+      - Description
+      - Code
+      properties:
+        Code:
+          description: Warning code returned by the system.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 10
+        Description:
+          description: Warning messages returned by the system.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 150
+      xml:
+        name: Alert
+      description: Alert Container. There can be zero to many alert containers with
+        code and description.
+    Response_TransactionReference:
+      type: object
+      maximum: 1
+      properties:
+        CustomerContext:
+          description: The CustomerContext information that is echoed back during
+            response.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 512
+      xml:
+        name: TransactionReference
+      description: Transaction Reference Container.
+    PickupRateResponse_RateResult:
+      type: object
+      properties:
+        Disclaimer:
+          "$ref": "#/components/schemas/RateResult_Disclaimer"
+        RateType:
+          description: |-
+            Indicates the pickup is rated as same-day or future-day pickup.
+            - SD = Same-day Pickup
+            - FD = Future-day Pickup
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        CurrencyCode:
+          description: IATA currency codes for the pickup charge. Such as USD
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        ChargeDetail:
+           type: array
+           items:
+            "$ref": "#/components/schemas/RateResult_ChargeDetail"
+        TaxCharges:
+           type: array
+           items:
+            "$ref": "#/components/schemas/RateResult_TaxCharges"
+        TotalTax:
+          description: The sum of all taxes.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        GrandTotalOfAllCharge:
+          description: The grand total of each charge and applied tax.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        GrandTotalOfAllIncentedCharge:
+          description: The grand total of each incented charge and applied tax. Only
+            present if 1. UserLevelDiscountIndicator = Y and User Level Promotion
+            is applied to the pickup or 2 .if any incentive rate is applied to the
+            pickup and SubVersion on the request is greater than or equal to 1707.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 8
+        PreTaxTotalCharge:
+          description: Total of charges before taxes. Only present when tax details
+            requested in input.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        PreTaxTotalIncentedCharge:
+          description: Total of incented charges before taxes. Only present if 1.
+            UserLevelDiscountIndicator = Y and User Level Promotion is applied to
+            the pickup or 2 .if any incentive rate is applied to the pickup and SubVersion
+            on the request is greater than or equal to 1707.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 8
+      xml:
+        name: RateResult
+      maximum: 1
+      required:
+      - CurrencyCode
+      description: The result of rating an on-callpickup.
+    RateResult_ChargeDetail:
+      type: object
+      maximum: 1
+      required:
+      - ChargeCode
+      - ChargeAmount
+      properties:
+        ChargeCode:
+          description: |-
+            Indicates the general charge type
+            - A = ACCESSORIAL TYPE
+            - B = BASE CHARGE TYPE
+            - S = SURCHARGE TYPE
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        ChargeDescription:
+          description: |-
+            Description of each charge.The possible descriptions are:
+            - BASE CHARGE
+            - EXTENDED AREA SURCHARGE
+            - FUEL SURCHARGE
+            - REMOTE AREA SURCHARGE
+            - RESIDENTIAL SURCHARGE
+            - SATURDAY ON-CALL STOP CHARGE
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 100
+        ChargeAmount:
+          description: Monetary value of the charge.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        IncentedAmount:
+          description: Monetary value of the incented charge. Only present if 1. UserLevelDiscountIndicator
+            = Y and User Level Promotion is applied to the pickup or 2 .if any incentive
+            rate is applied to the pickup and SubVersion on the request is greater
+            than or equal to 1707.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        TaxAmount:
+          description: Monetary value of the tax if apply.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+      xml:
+        name: ChargeDetail
+      description: Detailed charges.
+    RateResult_TaxCharges:
+      type: object
+      maximum: 1
+      required:
+      - Type
+      - MonetaryValue
+      properties:
+        Type:
+          description: "Type of Tax code. \nValid values: ALV, BTW, DDS, DDV, DPH,
+            FPA, GST, IVA, IVA1, IVA2, IVA3, KM, MOMS, MWST, PDV, PST, PVM, PVN, QST,
+            TVA, VAT, VSK."
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        MonetaryValue:
+          description: Monetary value of the tax.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+      xml:
+        name: TaxCharges
+      description: Container to hold taxes when, detailed taxes are request via RateTaxIndicator.
+    PickupRateResponse_WeekendServiceTerritory:
+      type: object
+      maximum: 1
+      required:
+      - SunWST
+      - SatWST
+      properties:
+        SatWST:
+          description: |
+            Indicates if the pickup address qualifies for WST (Weekend Service Territory). Returned if the pickup date is Saturday and subversion greater or equal to 2007. Valid Values:
+            - Y = Saturday WST
+            - N = Non-Saturday WST
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        SunWST:
+          description: |
+            Indicates if the pickup address qualifies for WST (Weekend Service Territory). Returned if the pickup date is Sunday and subversion greater or equal to 2007. Valid Values:
+            - Y = Sunday WST
+            - N = Non-Sunday WST
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+      xml:
+        name: WeekendServiceTerritory
+      description: WeekendServiceTerritory Container.Returned if the  subversion greater
+        or equal to 2007.
+    PICKUPCancelRequestWrapper:
+      xml:
+        name: PickupCancelRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupCancelRequest
+      properties:
+        PickupCancelRequest:
+          "$ref": "#/components/schemas/PickupCancelRequest"
+    PICKUPCancelResponseWrapper:
+      xml:
+        name: PickupCancelResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupCancelResponse
+      properties:
+        PickupCancelResponse:
+          "$ref": "#/components/schemas/PickupCancelResponse"
+    PickupCancelRequest:
+      type: object
+      required:
+      - CancelBy
+      - Request
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupCancelRequest_Request"
+        CancelBy:
+          description: |-
+            Cancel pickup by Pickup Request Number (PRN).
+            - 01= Account Number
+            - 02 = PRN
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        PRN:
+          description: |-
+            The pickup request number (PRN) generated by UPS pickup system.
+            Required if CancelBy = 02
+          maximum: 1
+          type: string
+          minLength: 11
+          maxLength: 11
+      xml:
+        name: PickupCancelRequest
+      maximum: 1
+      description: This request is to cancel an on-callpickup.
+    PickupCancelRequest_Request:
+      type: object
+      properties:
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      description: Request Container.
+      maximum: 1
+    PickupCancelResponse:
+      type: object
+      required:
+      - Response
+      - PickupType
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupCancelResponse_Response"
+        PickupType:
+          description: |-
+            The type of pickup that has been cancelled.
+            - 01 = On-Call Pickup
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        GWNStatus:
+          "$ref": "#/components/schemas/PickupCancelResponse_GWNStatus"
+      xml:
+        name: PickupCancelResponse
+      maximum: 1
+      description: The response for cancelling pickup(s)
+    PickupCancelResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+           type: array
+           items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response Container
+      maximum: 1
+    PickupCancelResponse_GWNStatus:
+      type: object
+      maximum: 1
+      required:
+      - Code
+      properties:
+        Code:
+          description: |-
+            The status code defined by operation system.
+            - 001 = User Triggered
+            - 002 = User Cancelled
+            - 003 = Completed
+            - 004 = Missed
+            - 005 = Not In
+            - 006 = Not Ready
+            - 007 = Closed
+            - 008 = Cancelled By Driver
+            - 999 = Unknown
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        Description:
+          description: Please refer to /PickupPendingStatusResponse/PendingStatus/PickupStatusMessage
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 150
+      xml:
+        name: GWNStatus
+      description: The status of Smart Pickup that has been cancelled.
+    PICKUPCreationRequestWrapper:
+      xml:
+        name: PickupCreationRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupCreationRequest
+      properties:
+        PickupCreationRequest:
+          "$ref": "#/components/schemas/PickupCreationRequest"
+    PICKUPCreationResponseWrapper:
+      xml:
+        name: PickupCreationResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupCreationResponse
+      properties:
+        PickupCreationResponse:
+          "$ref": "#/components/schemas/PickupCreationResponse"
+    PickupCreationRequest:
+      type: object
+      required:
+      - PickupDateInfo
+      - PickupAddress
+      - Request
+      - PaymentMethod
+      - PickupPiece
+      - RatePickupIndicator
+      - AlternateAddressIndicator
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupCreationRequest_Request"
+        RatePickupIndicator:
+          description: "Indicates whether to rate the on-callpickup or not. \nValid
+            values:\nY = Rate this pickup\nN = Do not rate this pickup (default)"
+          type: string
+          maximum: 1
+          minLength: 1
+          maxLength: 1
+        RateChartType:
+          description: |
+            Rate Type with which pickup is rated. Possible RateChart values for different regions will be:
+
+            US 48 origin:
+            - 1 – Daily Rates
+            - 3 – Standard List Rates
+            - 4 – Retail Rates.
+
+             Alaska/Hawaii origin:
+            - 1 – Daily Rates
+            - 3 – Standard List Rates
+            - 4 – Retail Rates.
+
+            All Other origins:
+            - 1 – Rates
+            - 5 - Regional Rates
+            - 6 - General List Rates.
+
+            3 and 4 do not apply
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        TaxInformationIndicator:
+          description: "Indicates whether to return detailed taxes for the on-callpickups.
+            \nValid values:\nY = Rate this pickup with taxes\nN = Do not rate this
+            pickup with taxes (default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        UserLevelDiscountIndicator:
+          description: "Indicates whether to return user level promo discount for
+            the on-callpickups. \nValid values:\nY = Rate this pickup with user level
+            promo discount\nN = Do not rate this pickup with user level promo discount(default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        Shipper:
+          "$ref": "#/components/schemas/PickupCreationRequest_Shipper"
+        PickupDateInfo:
+          "$ref": "#/components/schemas/PickupCreationRequest_PickupDateInfo"
+        PickupAddress:
+          "$ref": "#/components/schemas/PickupCreationRequest_PickupAddress"
+        AlternateAddressIndicator:
+          description: "Indicates if pickup address is a different address than that
+            specified in a customer's profile. \nValid values:\nY = Alternate address\nN
+            = Original pickup address (default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        PickupPiece:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PickupCreationRequest_PickupPiece"
+        TotalWeight:
+          "$ref": "#/components/schemas/PickupCreationRequest_TotalWeight"
+        OverweightIndicator:
+          description: "Indicates if at least any package is over 70 lbs or 32 kgs.
+            \nValid values: \nY = Over weight \nN = Not over weight (default)  Not
+            required for WWEF service."
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        TrackingData:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PickupCreationRequest_TrackingData"
+        TrackingDataWithReferenceNumber:
+          "$ref": "#/components/schemas/PickupCreationRequest_TrackingDataWithReferenceNumber"
+        PaymentMethod:
+          description: "The payment method to pay for this on call pickup.\n00 = No
+            payment needed\n01 = Pay by shipper account\n03 = Pay by charge card\n04
+            = Pay by 1Z tracking number\n05 = Pay by check or money order\n06 = Cash(applicable
+            only for these countries - BE,FR,DE,IT,MX,NL,PL,ES,GB,CZ,HU,FI,NO)\n07=Pay
+            by PayPal\nRefer to Appendix # for valid payment methods for CZ, HU, FI
+            and NO\n  For countries and (or) zip codes where pickup is free of charge,
+            please submit 00, means no payment needed as payment method. \n- If 01
+            is the payment method, then ShipperAccountNumber and ShipperAccount CountryCode
+            must be provided.\n- If 03 is selected, then CreditCard information should
+            be provided.\n- If 04 is selected, then the shipper agreed to pay for
+            the pickup packages.\n- If 05 is selected, then the shipper will pay for
+            the pickup packages with a check or money order."
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        SpecialInstruction:
+          description: Special handling instruction from the customer
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 57
+        ReferenceNumber:
+          description: Information entered by a customer for Privileged reference
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 35
+        FreightOptions:
+          "$ref": "#/components/schemas/PickupCreationRequest_FreightOptions"
+        ServiceCategory:
+          description: "Service Category.\nApplicable to the following countries:\nBE,
+            FR, DE, IT, MX, NL, PL, ES, GB \nValid values: \n01 - domestic (default)\n02
+            - international\n03 - transborder"
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        CashType:
+          description: "Describes the type of cash funds that the driver will collect.\nApplicable
+            to the following countries:\nBE,FR,DE,IT,MX,NL,PL,ES,GB\nValid values:
+            \n01 - Pickup only (default)\n02 - Transportation only\n03 - Pickup and
+            Transportation"
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ShippingLabelsAvailable:
+          description: This element should be set to "Y" in the request to indicate that user has pre-printed shipping labels for all the packages, otherwise this will be treated as false.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        Notification:
+          "$ref": "#/components/schemas/PickupCreationRequest_Notification"
+      xml:
+        name: PickupCreationRequest
+      maximum: 1
+      description: This request is for scheduling an on-call pickup
+    PickupCreationRequest_Request:
+      type: object
+      maximum: 1
+      properties:
+        SubVersion:
+          description: "When UPS introduces new elements in the response that are
+            not associated with new request elements, Subversion is used. This ensures
+            backward compatibility.\n\nTo get such elements you need to have the right
+            Subversion. The value of the subversion is explained in the Response element
+            Description. Supported values: 1607, 1707,2007\n\nExample: Itemized Charges
+            are returned only when the Subversion element is present and greater than
+            or equal to '1601'. \n\nFormat: YYMM = Year and month of the release.\nExample:
+            1601 = 2016 January"
+          maximum: 1
+          type: string
+          minLength: 4
+          maxLength: 4
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      description: Common element for all services
+    PickupCreationRequest_Shipper:
+      type: object
+      properties:
+        Account:
+          "$ref": "#/components/schemas/Shipper_Account"
+        ChargeCard:
+          "$ref": "#/components/schemas/Shipper_ChargeCard"
+      xml:
+        name: Shipper
+      description: "On-call pickup shipper or requestor information.   Must provide
+        when choose to pay the pickup by shipper account number, BillThirdParty account
+        number, or BillReceiver account number. \nIt is optional if the shipper chooses
+        any other payment method. However, it is highly recommended to provide if
+        available."
+      maximum: 1
+    Shipper_Account:
+      type: object
+      maximum: 1
+      required:
+      - AccountCountryCode
+      - AccountNumber
+      properties:
+        AccountNumber:
+          description: UPS account number.  Shipper's (requester of the pickup) UPS
+            account number
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 10
+        AccountCountryCode:
+          description: |-
+            Country or territory code as defined by ISO-3166.
+            Refer to Country or Terriotry Codes in the Appendix for valid values.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: Account
+      description: "Shipper account information. \nMust provide when choose to pay
+        the pickup by shipper account number"
+    Shipper_ChargeCard:
+      type: object
+      maximum: 1
+      properties:
+        CardHolderName:
+          description: Charge card holder name. If the name is not provided, defaults
+            to "No Name Provided".
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 22
+        CardType:
+          description: |-
+            Charge card type. Valid values:
+            - 01 = American Express
+            - 03 = Discover
+            - 04 = Mastercard
+            - 06 = VISA  Discover card Pickup country US only.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        CardNumber:
+          description: Charge card number.  For Privileged clients, this element must
+            be tokenized card number.
+          maximum: 1
+          type: string
+          minLength: 9
+          maxLength: 16
+        ExpirationDate:
+          description: |-
+            Credit card expiration date.
+            Format: yyyyMM
+            yyyy = 4 digit year, valid value current year - 10 years.
+            MM = 2 digit month, valid values 01-12
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 6
+        SecurityCode:
+          description: "Three or four digits that can be found either on top of credit
+            card number or on the back of credit card. \nNumber of digits varies for
+            different type of credit card.  Valid values are 3 or 4 digits.\nSecurity
+            code is required if credit card information is provided."
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 4
+        CardAddress:
+          "$ref": "#/components/schemas/ChargeCard_CardAddress"
+      xml:
+        name: ChargeCard
+      required:
+      - CardNumber
+      - ExpirationDate
+      - CardType
+      - CardAddress
+      - SecurityCode
+      description: Container for Charge Card payment method  Required if Payment method
+        is 03. Credit/Charge card payment is valid for US, CA, PR and GB origin pickups.
+    ChargeCard_CardAddress:
+      type: object
+      maximum: 1
+      properties:
+        AddressLine:
+          description: Address Lines of the credit card billing address.  Max of three
+            address lines can be provided.
+          type: array
+          items:
+            type: string
+          maximum: 3
+          minLength: 1
+          maxLength: 35
+        City:
+          description: Charge card billing city
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: Charge card billing State province code
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Charge card billing address postal code.  This is a required
+            field for postal countries.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: |-
+            Charge card billing address country or territory code defined by ISO-3166.
+
+            Upper-case two letter string. For Discover card it should be US.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: CardAddress
+      required:
+      - CountryCode
+      description: Container to hold the Charge card address.
+    PickupCreationRequest_PickupDateInfo:
+      type: object
+      maximum: 1
+      required:
+      - ReadyTime
+      - CloseTime
+      - PickupDate
+      properties:
+        CloseTime:
+          description: |
+            Pickup location's local close time.
+            - User provided Close Time must be later than the Earliest Allowed Customer Close Time.
+            - Earliest Allowed Customer Close Time is defined by UPS pickup operation system.
+            - CloseTime minus ReadyTime must be greater than the LeadTime.
+            - LeadTime is determined by UPS pickup operation system. LeadTime is the minimum amount of time UPS requires between customer's request for a pickup and driver arriving at the location for the pickup.
+
+            Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 4
+          maxLength: 4
+        ReadyTime:
+          description: "Pickup location's local ready time. \nReadyTime means the
+            time when your shipment(s) can be ready for UPS to pick up. \n- User provided
+            ReadyTime must be earlier than CallByTime. \n- CallByTime is determined
+            by UPS pickup operation system. CallByTime is the Latest time a Customer
+            can call UPS or self-serve on UPS.com and complete a Pickup Request and
+            UPS can still make the Pickup service request. \n- If ReadyTime is earlier
+            than current local time, UPS uses the current local time as the ReadyTime.
+            \ Format: HHmm\nHour: 0-23\nMinute: 0-59"
+          type: string
+        PickupDate:
+          description: |
+            Local pickup date of the location. Format: yyyyMMdd
+            - yyyy = Year Appliable
+            - MM = 01–12
+            - dd = 01–31
+          maximum: 1
+          type: string
+          minLength: 4
+          maxLength: 4
+      xml:
+        name: PickupDateInfo
+      description: The container of desired pickup date
+    PickupCreationRequest_PickupAddress:
+      type: object
+      maximum: 1
+      required:
+      - CompanyName
+      - AddressLine
+      - ResidentialIndicator
+      - Phone
+      - City
+      - CountryCode
+      - ContactName
+      properties:
+        CompanyName:
+          description: Company name
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 27
+        ContactName:
+          description: Name of contact person
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 22
+        AddressLine:
+          description: Detailed street address. For Jan. 2010 release, only one AddressLine
+            is allowed
+          type: array
+          items:
+              maximum: 1
+              type: string
+              minLength: 1
+              maxLength: 73
+        Room:
+          description: Room number
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        Floor:
+          description: Floor number
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 3
+        City:
+          description: City or equivalent
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: State or province for postal countries; county for Ireland
+            (IE) and district code for Hong Kong (HK)
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        Urbanization:
+          description: |-
+            - Barrio for Mexico (MX)
+            - Urbanization for Puerto Rico (PR)
+            - Shire for United Kingdom (UK)
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Postal code or equivalent for postal countries
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: "The pickup country or territory code as defined by ISO-3166.
+            \nRefer to Country or Territory Codes in the Appendix for valid values."
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ResidentialIndicator:
+          description: "Indicates if the pickup address is commercial or residential.
+            \nValid values:\nY = Residential address\nN = Non-residential (Commercial)
+            address (default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        PickupPoint:
+          description: The specific spot to pickup at the address.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 11
+        Phone:
+          "$ref": "#/components/schemas/PickupAddress_Phone"
+      xml:
+        name: PickupAddress
+      description: The container of pickup address.
+    PickupAddress_Phone:
+      type: object
+      maximum: 1
+      required:
+      - Number
+      properties:
+        Number:
+          description: Phone number
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 25
+        Extension:
+          description: Phone extension
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 10
+      xml:
+        name: Phone
+      description: Contact telephone number.
+    PickupCreationRequest_PickupPiece:
+      type: object
+      maximum: 1
+      required:
+      - ServiceCode
+      - DestinationCountryCode
+      - Quantity
+      - ContainerCode
+      properties:
+        ServiceCode:
+          description: Refer to Service Codes in the Appendix for valid values.
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        Quantity:
+          description: "Number of pieces to be picked up. \nMax per service: 999"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 3
+        DestinationCountryCode:
+          description: |-
+            The destination country code as defined by ISO-3166.
+            Refer to Country or Territory Codes in the Appendix for valid values.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ContainerCode:
+          description: |
+            Container type. Valid values:
+            - 01 = PACKAGE
+            - 02 = UPS LETTER
+            - 03 = PALLET
+
+            Note: 03 is used for only WWEF services
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: PickupPiece
+      description: "The container providing the information about how many items should
+        be picked up. \nThe total number of return and forwarding packages cannot
+        exceed 9,999."
+    PickupCreationRequest_TotalWeight:
+      type: object
+      maximum: 1
+      required:
+      - UnitOfMeasurement
+      - Weight
+      properties:
+        Weight:
+          description: "The weight of the package. \nOne decimal digit is allowed.
+            Example: 10.9"
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 6
+        UnitOfMeasurement:
+          description: |-
+            The code representing the unit of measurement associated with the package.
+            LBS = Pounds
+            KGS = Kilograms
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+      xml:
+        name: TotalWeight
+      description: Container for the total weight of all the items.
+    PickupCreationRequest_TrackingData:
+      type: object
+      maximum: 1
+      properties:
+        TrackingNumber:
+          description: Tracking number for return shipment or forward shipment packages.  Tracking
+            number(s) that have been previously used to pay for on-call pickup cannot
+            be used again.
+          maximum: 1
+          type: string
+          minLength: 18
+          maxLength: 18
+      xml:
+        name: TrackingData
+      description: |-
+        Container for Return Service and Forward Tracking Numbers.  Accept no more than 30 TrackingData.
+
+        TrackingDataWithReferenceNumber and TrackingData container cannot be present at the same time.
+    PickupCreationRequest_TrackingDataWithReferenceNumber:
+      type: object
+      maximum: 3
+      required:
+      - TrackingNumber
+      properties:
+        TrackingNumber:
+          description: Tracking number for shipment packages.
+          maximum: 1
+          type: string
+          minLength: 18
+          maxLength: 18
+        ReferenceNumber:
+          description: The reference number associated with the tracking number.
+          maximum: 3
+          type: array
+          items:
+            type: string
+          minLength: 1
+          maxLength: 35
+      xml:
+        name: TrackingDataWithReferenceNumber
+      description: Container for Tracking Number with its associated reference numbers.  This
+        container should be populated to provide visibility into shipment tied to
+        pickup being scheduled.  TrackingDataWithReferenceNumber and TrackingData
+        container cannot be present at the same time.
+    PickupCreationRequest_FreightOptions:
+      type: object
+      properties:
+        ShipmentServiceOptions:
+          "$ref": "#/components/schemas/FreightOptions_ShipmentServiceOptions"
+        OriginServiceCenterCode:
+          description: Origin SLIC. This will be obtained from submitting a pickup
+            service center request. See PickupGetFacilitiesServiceCenterRequest.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 5
+        OriginServiceCountryCode:
+          description: Country or territory of Service Center SLIC chosen to drop
+            off.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        DestinationAddress:
+          "$ref": "#/components/schemas/FreightOptions_DestinationAddress"
+        ShipmentDetail:
+          "$ref": "#/components/schemas/FreightOptions_ShipmentDetail"
+      xml:
+        name: FreightOptions
+      maximum: 1
+      required:
+      - ShipmentDetail
+      description: Container will be used to indicate Service options, add optional
+        Original service center, destination address and shipment details related
+        to the UPS Worldwide Express Freight and UPS Worldwide Express Freight Midday.
+    FreightOptions_ShipmentServiceOptions:
+      type: object
+      maximum: 1
+      properties:
+        OriginLiftGateIndicator:
+          description: Presence indicates OriginLiftGateRequiredIndicator is present.  Conditionally
+            requirements. Must not be present if DropOffAtUPSFacilityIndicator is
+            true
+          maximum: 1
+          type: string
+        DropoffAtUPSFacilityIndicator:
+          description: Identifies service center location information for Origin List
+            of UPS Facilities.
+          maximum: 1
+          type: string
+        HoldForPickupIndicator:
+          description: Identifies service center location information for Destination
+            of UPS Facilities.
+          maximum: 1
+          type: string
+      xml:
+        name: ShipmentServiceOptions
+      description: Supports various optional indicators
+    FreightOptions_DestinationAddress:
+      type: object
+      maximum: 1
+      properties:
+        City:
+          description: The city of pickup address if available.  It is required for
+            non-postal country Ireland (IE).
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: |-
+            1. It means district code for Hong Kong (HK)
+            2. It means county for Ireland (IE)
+            3. It means state or province for all the postal countries  It is required for non-postal countries including HK and IE.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Postal Code for postal countries.  It does not apply to non-postal
+            countries such as IE and HK
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: "The pickup country or territory code as defined by ISO-3166.
+            \nRefer to Country or Territory Codes in the Appendix for valid values.
+            \ Upper-case two-letter string."
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 3
+      xml:
+        name: DestinationAddress
+      required:
+      - CountryCode
+      description: Destination Address Container.
+    FreightOptions_ShipmentDetail:
+      type: object
+      maximum: 1
+      properties:
+        HazmatIndicator:
+          description: Indicates hazardous materials
+          maximum: 1
+          type: string
+        PalletInformation:
+          "$ref": "#/components/schemas/ShipmentDetail_PalletInformation"
+      xml:
+        name: ShipmentDetail
+      description: Refers to the ShipmentDetail Container under Freight Options
+    PickupCreationRequest_Notification:
+      type: object
+      properties:
+        ConfirmationEmailAddress:
+          description: Email address where the pickup notification is sent.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        UndeliverableEmailAddress:
+          description: Email address for used exceptions.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+      xml:
+        name: Notification
+      maximum: 1
+      description: Container for pickup notification  
+    ShipmentDetail_PalletInformation:
+      type: object
+      properties:
+        Dimensions:
+          "$ref": "#/components/schemas/PalletInformation_Dimensions"
+      xml:
+        name: PalletInformation
+      description: Pallet Details.
+      maximum: 1
+    PalletInformation_Dimensions:
+      type: object
+      required:
+      - UnitOfMeasurement
+      - Length
+      - Height
+      - Width
+      properties:
+        UnitOfMeasurement:
+          "$ref": "#/components/schemas/Dimensions_UnitOfMeasurement"
+        Length:
+          description: Dimension length of pallet.
+          maximum: 1
+          type: string
+        Width:
+          description: Dimension width of pallet.
+          maximum: 1
+          type: string
+        Height:
+          description: Dimension height of pallet.
+          maximum: 1
+          type: string
+      xml:
+        name: Dimensions
+      maximum: 1
+      description: Dimensions of largest pallet
+    Dimensions_UnitOfMeasurement:
+      type: object
+      maximum: 1
+      required:
+      - Code
+      properties:
+        Code:
+          description: |-
+            - IN = Inches
+            - CM = Centimeters
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        Description:
+          description: See Code above.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 35
+      xml:
+        name: UnitOfMeasurement
+      description: The code representing the unit of measurement associated with the
+        package.
+    PickupCreationResponse:
+      type: object
+      required:
+      - Response
+      - RateStatus
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupCreationResponse_Response"
+        PRN:
+          description: Pickup Request Number generated by UPS pickup system when a
+            successful pickup is scheduled.Same PRN will be returned if a pickup request
+            already exists for a pickup address/ point.
+          maximum: 1
+          type: string
+          minLength: 11
+          maxLength: 11
+        WeekendServiceTerritory:
+          "$ref": "#/components/schemas/PickupCreationResponse_WeekendServiceTerritory"
+        WeekendServiceTerritoryIndicator:
+          description: |-
+            Indicates if the pickup address qualifies for WST (Weekend Service Territory). Returned if the pickup date is Saturday and subversion greater or equal to 1607. Valid Values:
+            - Y = WST
+            - N = Non-WST
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        RateStatus:
+          "$ref": "#/components/schemas/PickupCreationResponse_RateStatus"
+        RateResult:
+          "$ref": "#/components/schemas/PickupCreationResponse_RateResult"
+      xml:
+        name: PickupCreationResponse
+      maximum: 1
+      description: The response for scheduling an on-callpickup.
+    PickupCreationResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+           type: array
+           items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response Container.
+      maximum: 1
+    PickupCreationResponse_WeekendServiceTerritory:
+      type: object
+      maximum: 1
+      required:
+      - SunWST
+      - SatWST
+      properties:
+        SatWST:
+          description: |
+            Indicates if the pickup address qualifies for WST (Weekend Service Territory). Returned if the pickup date is Saturday and subversion greater or equal to 2007. Valid Values:
+            - Y = Saturday WST
+            - N = Non-Saturday WST
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+        SunWST:
+          description: "Indicates if the pickup address qualifies for WST (Weekend Service Territory). Returned if the pickup date is Sunday and subversion greater or equal to 2007. Valid Values:
+            - Y = Sunday WST
+            - N = Non-Sunday WST"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+      xml:
+        name: WeekendServiceTerritory
+      description: WeekendServiceTerritory Container.Returned if the  subversion greater
+        or equal to 2007.
+    PickupCreationResponse_RateStatus:
+      type: object
+      maximum: 1
+      required:
+      - Code
+      properties:
+        Code:
+          description: |-
+            The rating status.
+            - 01 = Rate available
+            - 02 = Rate not available
+            - 03 = Rate not apply
+            - 04 = Rate not requested
+
+            - If 01 is returned, then OnCallPickupRateResult will also be returned with rate details.
+            - If 02 is returned, then OnCallPickupRateResult will not be returned.
+            - If 03 is returned, then OnCallPickupRateResult will not be returned. The rate option is not appliable to this return pickup. The requester will not be charged.
+            - If 04 is returned, then OnCallPickupRateResult will not be returned. The requester did not ask for rating this on-callpickup.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        Description:
+          description: The matching description of rating status code (see above).
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 35
+      xml:
+        name: RateStatus
+      description: The rating result of on-callpickup
+    PickupCreationResponse_RateResult:
+      type: object
+      properties:
+        Disclaimer:
+          "$ref": "#/components/schemas/RateResult_Disclaimer"
+        RateType:
+          description: |-
+            Indicates this pickup is rated as same-day or future-day pickup.
+            - SD = Same-day Pickup
+            - FD = Future-day Pickup
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        CurrencyCode:
+          description: IATA currency codes for the pickup charge. Such as USD
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        ChargeDetail:
+          description: |
+              Container to hold taxes when, detailed taxes are request via RateTaxIndicator.
+
+              **NOTE:** For versions >= v2403, this element will always be returned as an array. For requests using versions < v2403, this element will be returned as an array if there is more than one object and a single object if there is only 1.
+          type: array
+          items:
+            "$ref": "#/components/schemas/RateResult_ChargeDetail"
+        TaxCharges:
+          description: |
+              Container to hold taxes when, detailed taxes are request via RateTaxIndicator.
+
+              **NOTE:** For versions >= v2403, this element will always be returned as an array. For requests using versions < v2403, this element will be returned as an array if there is more than one object and a single object if there is only 1.
+          type: array
+          items:
+            "$ref": "#/components/schemas/RateResult_TaxCharges"
+        TotalTax:
+          description: The sum of all taxes.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        GrandTotalOfAllCharge:
+          description: The grand total of each charge and applied tax.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        GrandTotalOfAllIncentedCharge:
+          description: The grand total of each incented charge and applied tax. Only
+            present if 1. UserLevelDiscountIndicator = Y and User Level Promotion
+            is applied to the pickup or 2 .if any incentive rate is applied to the
+            pickup and SubVersion on the request is greater than or equal to 1707.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 8
+        PreTaxTotalCharge:
+          description: Total of charges before taxes. Only present when tax details
+            requested in input.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        PreTaxTotalIncentedCharge:
+          description: Total of incented charges before taxes. Only present if 1.
+            UserLevelDiscountIndicator = Y and User Level Promotion is applied to
+            the pickup or 2 .if any incentive rate is applied to the pickup and SubVersion
+            on the request is greater than or equal to 1707.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 8
+      xml:
+        name: RateResult
+      maximum: 1
+      required:
+      - GrandTotalOfAllCharge
+      description: The result of rating on-callpickup. It correlates to rate status
+        code 01
+    RateResult_Disclaimer:
+      type: object
+      maximum: 1
+      required:
+      - Description
+      - Code
+      properties:
+        Code:
+          description: |
+            Disclaimer code. Valid values:
+            - 01 = Taxes are included in the shipping cost and apply to the transportation charges but additional duties/taxes may apply and are not reflected in the total amount due.
+            - 02 = Additional duties/taxes may apply and are not reflected in the total amount due.
+            - 03 = Additional duties/taxes may apply and are not reflected in the total amount due.
+            - 04 = Taxes were unable to be determined and may apply to the shipment.
+            - 05 = Rate excludes VAT. Rate includes a fuel surcharge, but excludes taxes, duties and other charges that may apply to the shipment.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        Description:
+          description: Description of Disclaimer.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 512
+      xml:
+        name: Disclaimer
+      description: Container to hold Disclaimer message applicable to taxes and charges.
+        Available only when tax information is requested.
+    PICKUPTriggerGWNRequestWrapper:
+      xml:
+        name: PickupTriggerGWNRequest
+      description:
+      maximum: 1
+      type: object
+      required:
+      - PickupTriggerGWNRequest
+      properties:
+        PickupTriggerGWNRequest:
+           "$ref": "#/components/schemas/PickupTriggerGWNRequest"
+    PICKUPTriggerGWNResponseWrapper:
+      xml:
+        name: PickupTriggerGWNResponse
+      description:
+      maximum: 1
+      type: object
+      required:
+      - PickupTriggerGWNResponse
+      properties:
+        PickupTriggerGWNResponse:
+           "$ref": "#/components/schemas/PickupTriggerGWNResponse"
+    PickupTriggerGWNRequest:
+      type: object
+      description: Request to trigger a Smart Pickup (GWN - Green When Needed).
+       This flow applies to accounts enabled for Smart Pickup and supports
+       same-day or future-day pickup requests. Unlike regular Pickup Creation,
+       Smart Pickup does not require a separate Shipper object - it uses
+       the pickup address pre-configured on the UPS account.
+      required:
+      - Request
+      - AccountNumber
+      - ServiceDateOption
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupCreationRequest_Request"
+        AccountNumber:
+          type: string
+          description: The UPS account number configured for Smart Pickup.
+             Must be a valid 6-character alphanumeric UPS account number
+             associated with the authenticated user. The pickup address
+             and notification preferences are retrieved from this account.
+          example: "1004YY"
+          minLength: 6
+          maxLength: 6
+        ServiceDateOption:
+          type: string
+          description: |
+           Specifies when the pickup should be scheduled.
+           - 01 -- Same Day - Request pickup for today 
+           - 02 -- Future Day - Request pickup for next available business day 
+           
+            If same-day is requested but cutoff time has passed,the pickup will be automatically scheduled for the next business day. 
+          example: "01"
+      xml:
+        name: PickupTriggerGWNRequest
+    PickupTriggerGWNResponse:
+      type: object
+      description: Response from Smart Pickup trigger request.
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupCreationResponse_Response"
+        ServiceDate:
+          type: string
+          description: The scheduled pickup date.
+          example: "20260128"
+        NextBusinessDayIndicator:
+          type: string
+          description: |
+           Indicates if the pickup was scheduled for the next business day instead 
+           of the requested same-day pickup. Present only when same-day cutoff time has passed.
+           - Y -- Pickup scheduled for next business day.
+          example: "Y"
+        PRN:
+          type: string
+          description: Pickup Reference Number - unique identifier for the scheduled pickup.
+            Use this number to track or cancel the pickup.
+          example: "GPE58AB041C"
+        TriggerStatus:
+            "$ref": "#/components/schemas/PickupTriggerGWNResponse_TriggerStatus"
+      xml:
+        name: PickupTriggerGWNResponse
+    PickupTriggerGWNResponse_TriggerStatus:
+      type: object
+      description: Status of the Smart Pickup trigger operation
+      properties:
+        Code:
+          type: string
+          description: |
+           Status code indicating the result.
+           - 01 -- NEW - New pickup scheduled
+           - 02 -- EXISTING - Pickup already exists for this date
+          example: "01"
+        Description:
+          type: string
+          description: Human readable description of the trigger status.
+          example: "NEW"
+    PICKUPPolDivRequestWrapper:
+      xml:
+        name: PickupGetPoliticalDivision1ListRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupGetPoliticalDivision1ListRequest
+      properties:
+        PickupGetPoliticalDivision1ListRequest:
+          "$ref": "#/components/schemas/PickupGetPoliticalDivision1ListRequest"
+    PICKUPPolDivResponseWrapper:
+      xml:
+        name: PickupGetPoliticalDivision1ListResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupGetPoliticalDivision1ListResponse
+      properties:
+        PickupGetPoliticalDivision1ListResponse:
+          "$ref": "#/components/schemas/PickupGetPoliticalDivision1ListResponse"
+    PickupGetPoliticalDivision1ListRequest:
+      type: object
+      required:
+      - Request
+      - CountryCode
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupGetPoliticalDivision1ListRequest_Request"
+        CountryCode:
+          description: Specifies the country for which the list of Political Division
+            1 will be returned if available.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: PickupGetPoliticalDivision1ListRequest
+      maximum: 1
+      description: This request is for client to get a list of valid Political Division
+        1s/State field for a specific country or territory
+    PickupGetPoliticalDivision1ListRequest_Request:
+      type: object
+      properties:
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      description: Common element for all services
+      maximum: 1
+    PickupGetPoliticalDivision1ListResponse:
+      type: object
+      required:
+      - Response
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupGetPoliticalDivision1ListResponse_Response"
+        PoliticalDivision1:
+          description: The Political Division 1/State Field.
+          minLength: 1
+          maxLength: 50
+          type: array
+          items:
+            type: string
+      xml:
+        name: PickupGetPoliticalDivision1ListResponse
+      description: The response for getting a list of valid Political Division 1 or
+        State field in the specified country or territory.
+      maximum: 1
+    PickupGetPoliticalDivision1ListResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+          type: array
+          items:
+           "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response Container.
+      maximum: 1
+    PICKUPServCenterRequestWrapper:
+      xml:
+        name: PickupGetServiceCenterFacilitiesRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupGetServiceCenterFacilitiesRequest
+      properties:
+        PickupGetServiceCenterFacilitiesRequest:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesRequest"
+    PICKUPServCenterResponseWrapper:
+      xml:
+        name: PickupGetServiceCenterFacilitiesResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupGetServiceCenterFacilitiesResponse
+      properties:
+        PickupGetServiceCenterFacilitiesResponse:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesResponse"
+    PickupGetServiceCenterFacilitiesRequest:
+      type: object
+      required:
+      - Locale
+      - Request
+      - PickupPiece
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesRequest_Request"
+        PickupPiece:
+          items:
+            "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesRequest_PickupPiece"
+        OriginAddress:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesRequest_OriginAddress"
+        DestinationAddress:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesRequest_DestinationAddress"
+        Locale:
+          description: "Origin Country or Territory Locale.  Locale should be Origin
+            Country. Example: en_US. \nThe Last 50 instruction will be send based
+            on this locale. Locale is required if PoximityIndicator is present for
+            Drop Off facilities."
+          maximum: 1
+          type: string
+          minLength: 5
+          maxLength: 5
+        ProximitySearchIndicator:
+          description: Proximity Indicator. Indicates the user requested the proximity search for UPS Worldwide Express Freight and UPS Worldwide Express Freight Midday locations for the origin address and/or the airport code, and the sort code for destination address.
+          maximum: 1
+          type: string
+      xml:
+        name: PickupGetServiceCenterFacilitiesRequest
+      maximum: 1
+      description: This request is to retrieve UPS Facility location information including
+        location address, phone number, SLIC, and hours of operation for pick-up and
+        drop-off requests
+    PickupGetServiceCenterFacilitiesRequest_Request:
+      type: object
+      properties:
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      description: Container for the Request.
+      maximum: 1
+    PickupGetServiceCenterFacilitiesRequest_PickupPiece:
+      type: object
+      maximum: 1
+      required:
+      - ServiceCode
+      - ContainerCode
+      properties:
+        ServiceCode:
+          description: |-
+            The service code.
+            96 = WWEF  Required for WWEF shipments.
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        ContainerCode:
+          description: |-
+            The container type
+            03 = PALLET  Required for WWEF shipments.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: PickupPiece
+      description: Pickup Piece Container.
+    PickupGetServiceCenterFacilitiesRequest_OriginAddress:
+      type: object
+      maximum: 1
+      properties:
+        StreetAddress:
+          description: Indicates the address of the shipper to allow for the nearest
+            Drop off facility Search.  Conditionally required if proximitySearchIndicator
+            is present.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 73
+        City:
+          description: Indicates the address of the shipper to allow for the nearest
+            Drop off facility Search  Conditionally required if proximitySearchIndicator
+            is present.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: Indicates the address of the shipper to allow for the nearest
+            Drop off facility Search.  Conditionally required if proximitySearchIndicator
+            is present and if country or territory is US/CA/IE/HK.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Indicates the address of the shipper to allow for the nearest
+            Drop off facility Search  Conditionally required if proximitySearchIndicator
+            is present and if country or territory has postal code.It does not apply
+            to non-postal countries such as IE and HK.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: Indicates the address of the shipper to allow for the nearest
+            Drop off facility Search
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        OriginSearchCriteria:
+          "$ref": "#/components/schemas/OriginAddress_OriginSearchCriteria"
+      xml:
+        name: OriginAddress
+      required:
+      - CountryCode
+      description: Indicates the address of the shipper to allow for the nearest Drop
+        off facility Search.  Conditionally required for drop off location search.
+    OriginAddress_OriginSearchCriteria:
+      type: object
+      maximum: 1
+      properties:
+        SearchRadius:
+          description: |-
+            Search Request range. Valied values:
+            - 1 to 200
+
+            Default: 200
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        DistanceUnitOfMeasure:
+          description: 'Unit of Measure  Required if ProximitySearchIndicator is present.
+            Example: MI or KM'
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        MaximumLocation:
+          description: |-
+            Maximum Number of locations. Valied values:
+            - 1 to 100
+
+            Default: 100
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+      xml:
+        name: OriginSearchCriteria
+      required:
+      - DistanceUnitOfMeasure
+      description: Origin Search Criteria Container  Required if Proximity SearchIndicator
+        is present.
+    PickupGetServiceCenterFacilitiesRequest_DestinationAddress:
+      type: object
+      maximum: 1
+      properties:
+        City:
+          description: Indicates the address of the consignee to allow for the nearest
+            Pickup facility Search.  Required for non-postal country Ireland (IE).
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: |-
+            Indicates the address of the consignee to allow for the nearest Pickup facility Search.
+            1 = District code for Hong Kong (HK)
+            2 = County for Ireland (IE)
+            3 = State or province for all the postal countries  Required for non-postal countries including HK and IE.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: 'Indicates the address of the consignee to allow for the nearest
+            Pickup facility Search  It does not apply to non-postal countries. Example:
+            IE and HK.'
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: The pickup country or territory code as defined by ISO-3166.
+            Please check check separate pickup country or territory list to find out
+            all the pickup eligible countries.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 3
+      xml:
+        name: DestinationAddress
+      required:
+      - CountryCode
+      description: DestinationAddress container.  Conditionally required for pickup
+        location search.
+    PickupGetServiceCenterFacilitiesResponse:
+      type: object
+      required:
+      - Response
+      - ServiceCenterLocation
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesResponse_Response"
+        ServiceCenterLocation:
+          "$ref": "#/components/schemas/PickupGetServiceCenterFacilitiesResponse_ServiceCenterLocation"
+      xml:
+        name: PickupGetServiceCenterFacilitiesResponse
+      description: Returns service center location information for Origin UPS Facilities
+        and Destination Facilities
+      maximum: 1
+    PickupGetServiceCenterFacilitiesResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+           type: array
+           items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Container for response.
+      maximum: 1
+    PickupGetServiceCenterFacilitiesResponse_ServiceCenterLocation:
+      type: object
+      properties:
+        DropOffFacilities:
+          type: array
+          items:
+           "$ref": "#/components/schemas/ServiceCenterLocation_DropOffFacilities"
+        PickupFacilities:
+          "$ref": "#/components/schemas/ServiceCenterLocation_PickupFacilities"
+      xml:
+        name: ServiceCenterLocation
+      description: Locations of the nearest Service Center for Dropoff and Pickup
+      maximum: 1
+    ServiceCenterLocation_DropOffFacilities:
+      type: object
+      maximum: 1
+      required:
+      - Timezone
+      - Type
+      - Address
+      - SLIC
+      - Phone
+      - OriginOrDestination
+      - Fax
+      - Name
+      properties:
+        Name:
+          description: Name of the Facility.
+          maximum: 1
+          type: string
+        Address:
+          "$ref": "#/components/schemas/DropOffFacilities_Address"
+        SLIC:
+          description: SLIC code for the UPS Drop off facility.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 5
+        Type:
+          description: FRT for Freight or PKG for Package
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        Timezone:
+          description: |-
+            Facility's Timezone. Format:
+            - America/New_York
+            - Asia/Hong_Kong
+            - Europe/London
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        Phone:
+          description: Phone Number of the Drop off Facility
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        Fax:
+          description: Drop off Facilities Fax Number
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        FacilityTime:
+          "$ref": "#/components/schemas/DropOffFacilities_FacilityTime"
+        OriginOrDestination:
+          description: Type of Facility.
+          maximum: 1
+          type: string
+        LocalizedInstruction:
+          type: array
+          items:
+           "$ref": "#/components/schemas/DropOffFacilities_LocalizedInstruction"
+        Distance:
+          "$ref": "#/components/schemas/DropOffFacilities_Distance"
+      xml:
+        name: DropOffFacilities
+      description: Returns information for DropOff Facilities. This includes name
+        of facility, address, business hours, and SLIC.
+    DropOffFacilities_Address:
+      type: object
+      maximum: 1
+      required:
+      - AddressLine
+      - StateProvince
+      - ResidentialIndicator
+      - PostalCode
+      - City
+      - CountryCode
+      properties:
+        AddressLine:
+          description: Address Line of the Facility.
+          maximum: 3
+          type: string
+          oneOf:
+          - items:
+              type: string
+            type: array
+          - type: string
+        City:
+          description: Facilities City.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: Facility state or province code.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Facility Postal Code.
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        CountryCode:
+          description: UPS Drop Off facility country or territory code.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 3
+        ResidentialIndicator:
+          description: "Indicates if the pickup address is a residential place or
+            not. \nValid Values:\nY = Residential address\nN = Non-residential (Commercial)
+            address (default)"
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+      xml:
+        name: Address
+      description: Address of the facility.
+    DropOffFacilities_FacilityTime:
+      type: object
+      required:
+      - DayOfWeek
+      properties:
+        DayOfWeek:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FacilityTime_DayOfWeek"
+      xml:
+        name: FacilityTime
+      description: Facility Time Container
+      maximum: 1
+    FacilityTime_DayOfWeek:
+      type: object
+      maximum: 1
+      required:
+      - OpenHours
+      - Day
+      - CloseHours
+      properties:
+        Day:
+          description: Day of the week. Mon-Sun
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        EarliestDropOfforPickup:
+          description: Earliest time that a customer can drop-off a package.
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        LatestDropOfforPickup:
+          description: Latest time that a customer can drop-off a package.
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        OpenHours:
+          description: |-
+            Facility Open Hours. The latest local open time. Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+        CloseHours:
+          description: |-
+            Facility Close Hours. The latest local close time. Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+        PrepTime:
+          description: Time required by the facility to prepare your shipment for movement
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+        LastDrop:
+          description: Cut-off time for drop off that day.
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+      xml:
+        name: DayOfWeek
+      description: Facility Hours of Operation Container
+    DropOffFacilities_LocalizedInstruction:
+      type: object
+      maximum: 1
+      properties:
+        Locale:
+          description: 'Locale. Example: en_US'
+          maximum: 1
+          type: string
+          minLength: 5
+          maxLength: 5
+        Last50ftInstruction:
+          description: |-
+            Last 50ft instructions that relates to an available facility and depend on the locale passing in request.
+            Last 50 feet instruction in the language asked in request or the English for that country.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 750
+      xml:
+        name: LocalizedInstruction
+      description: Localized Instruction Container.  Localized Instructions will be
+        returned for drop off location search by proximity order.
+    DropOffFacilities_Distance:
+      type: object
+      maximum: 1
+      properties:
+        Value:
+          description: |-
+            Distance from origin address. Distance based on distance UOM in request.
+
+            Numeric value up to 200 and .2 decimal positions. Distance will be retuned for drop off location search by proximity order.
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 6
+        UnitOfMeasurement:
+          description: |-
+            Unit Of Measure.
+            Example: MI or KM
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: Distance
+      description: Distance from origin  Distance will be retuned for drop off location search by proximity order.
+    ServiceCenterLocation_PickupFacilities:
+      type: object
+      maximum: 1
+      required:
+      - Timezone
+      - Type
+      - Address
+      - SLIC
+      - Phone
+      - Fax
+      - Name
+      properties:
+        Name:
+          description: Name of the facility
+          maximum: 1
+          type: string
+        Address:
+          "$ref": "#/components/schemas/PickupFacilities_Address"
+        SLIC:
+          description: SLIC code for the UPS Pickup facility
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 5
+        Type:
+          description: Freight or Package.
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        Timezone:
+          description: |-
+            Facility's Timezone. Format:
+            - America/New_York
+            - Asia/Hong_Kong
+            - Europe/London
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        Phone:
+          description: Phone Number of the Pickup Facility
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        Fax:
+          description: Pickup Facilities Fax Number
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        FacilityTime:
+          "$ref": "#/components/schemas/PickupFacilities_FacilityTime"
+        AirportCode:
+          description: "AirPort Code for destination/pickup facility. \nExample: ATL
+            (Atlanta)\nIf Airport code is not present \"---\" will be returned."
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        SortCode:
+          description: "Sort Code for destination/pickup facility. \nExample: V1"
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+      xml:
+        name: PickupFacilities
+      description: Returns information for Pickup Facilities. This includes name of
+        facility, address, and business hours.
+    PickupFacilities_Address:
+      type: object
+      maximum: 1
+      required:
+      - AddressLine
+      - StateProvince
+      - ResidentialIndicator
+      - PostalCode
+      - City
+      - CountryCode
+      properties:
+        AddressLine:
+          description: Address Line of the Facility.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 73
+        City:
+          description: Facilities City.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        StateProvince:
+          description: Facility state or province code.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 50
+        PostalCode:
+          description: Facility Postal Code.
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 8
+        CountryCode:
+          description: UPS Pickup facility country or territory code.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ResidentialIndicator:
+          description: |-
+            Indicates if the pickup location is commerical or residential.
+            Valid values:
+            Y = Residential address
+            N = Non-residential (Commercial) address (default)
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 1
+      xml:
+        name: Address
+      description: Address of the facility
+    PickupFacilities_FacilityTime:
+      type: object
+      required:
+      - DayOfWeek
+      properties:
+        DayOfWeek:
+           type: array
+           items:
+            "$ref": "#/components/schemas/PickupFacilities_FacilityTime_DayOfWeek"
+      xml:
+        name: FacilityTime
+      description: Facility Time Container
+      maximum: 1
+    PickupFacilities_FacilityTime_DayOfWeek:
+      type: object
+      maximum: 1
+      required:
+      - OpenHours
+      - Day
+      - CloseHours
+      properties:
+        Day:
+          description: Day of the week. Mon-Sun
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        EarliestDropOfforPickup:
+          description: Earliest time that a customer can pick up a package.
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        LatestDropOfforPickup:
+          description: Latest time that a customer can pick up a package.
+          maximum: 1
+          type: string
+          minLength: 10
+          maxLength: 10
+        OpenHours:
+          description: |-
+            Facility Open Hours. The latest local open time. Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+        CloseHours:
+          description: |-
+            Facility Close Hours. The latest local close time. Format: HHmm
+            - Hour: 0-23
+            - Minute: 0-59
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+        PrepTime:
+          description: Preparation time for hold for pickup  Conditionally required if request is for hold for pickup.
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+        LastDrop:
+          description: Latest time a package, requiring preparation can be dropped off (Close time - Prep time).
+          maximum: 1
+          type: string
+          minLength: 20
+          maxLength: 20
+      xml:
+        name: DayOfWeek
+      description: Facility Hours of Operation Container
+    PICKUPPendingRequestWrapper:
+      xml:
+        name: PickupPendingStatusRequest
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupPendingStatusRequest
+      properties:
+        PickupPendingStatusRequest:
+          "$ref": "#/components/schemas/PickupPendingStatusRequest"
+    PICKUPPendingResponseWrapper:
+      xml:
+        name: PickupPendingStatusResponse
+      description: 'N/A  '
+      maximum: 1
+      type: object
+      required:
+      - PickupPendingStatusResponse
+      properties:
+        PickupPendingStatusResponse:
+          "$ref": "#/components/schemas/PickupPendingStatusResponse"
+    PickupPendingStatusRequest:
+      type: object
+      required:
+      - Request
+      - PickupType
+      - AccountNumber
+      properties:
+        Request:
+          "$ref": "#/components/schemas/PickupPendingStatusRequest_Request"
+        PickupType:
+          description: |-
+            Specify the type of pending pickup.
+            01 = On-Call Pickup
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        AccountNumber:
+          description: The specific account number belongs to the shipper
+          maximum: 1
+          type: string
+          minLength: 6
+          maxLength: 10
+      xml:
+        name: PickupPendingStatusRequest
+      maximum: 1
+      description: This request is used to get the pending pickup status.
+    PickupPendingStatusRequest_Request:
+      type: object
+      properties:
+        TransactionReference:
+          "$ref": "#/components/schemas/Request_TransactionReference"
+      xml:
+        name: Request
+      description: Common element for all services.
+      maximum: 1
+    PickupPendingStatusResponse:
+      type: object
+      required:
+      - Response
+      - PendingStatus
+      properties:
+        Response:
+          "$ref": "#/components/schemas/PickupPendingStatusResponse_Response"
+        PendingStatus:
+          type: array
+          items:            
+           "$ref": "#/components/schemas/PickupPendingStatusResponse_PendingStatus"
+      xml:
+        name: PickupPendingStatusResponse
+      description: The response of the pending status for on-callpickup.
+      maximum: 1
+    PickupPendingStatusResponse_Response:
+      type: object
+      required:
+      - ResponseStatus
+      properties:
+        ResponseStatus:
+          "$ref": "#/components/schemas/Response_ResponseStatus"
+        Alert:
+           type: array
+           items:
+            "$ref": "#/components/schemas/Response_Alert"
+        TransactionReference:
+          "$ref": "#/components/schemas/Response_TransactionReference"
+      xml:
+        name: Response
+      description: Response Container.
+      maximum: 1
+    PickupPendingStatusResponse_PendingStatus:
+      type: object
+      maximum: 1
+      required:
+      - ServiceDate
+      - PickupType
+      - PRN
+      - PickupStatusMessage
+      properties:
+        PickupType:
+          description: |-
+            Specify the type of pending pickup.
+            - 01 = on-callPickup
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ServiceDate:
+          description: |-
+            Local service date. Format: yyyyMMdd
+            - yyyy = Year applicable
+            - MM = 01-12
+            - dd = 01-31
+          maximum: 1
+          type: string
+          minLength: 8
+          maxLength: 8
+        PRN:
+          description: Returned PRN
+          maximum: 1
+          type: string
+          minLength: 11
+          maxLength: 11
+        GWNStatusCode:
+          description: Status code for Smart Pickup.
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        OnCallStatusCode:
+          description: A unique string identifier to identify a success pre-notification
+            processing. Only available if end result is success.
+          maximum: 1
+          type: string
+          minLength: 3
+          maxLength: 3
+        PickupStatusMessage:
+          description: |
+            The status for on-callpickup.
+
+            PickupPendingStatusResponse will only display incomplete status for today and tomorrow only.
+            - 002 and 012 are the most common responses.
+            - 001 = Received at dispatch
+            - 002 = Dispatched to driver
+            - 003 = Order successfully completed
+            - 004 = Order unsuccessfully completed
+            - 005 = Missed commit – Updated ETA supplied by driver
+            - 007 = Cancelled
+            - 008 = Order has invalid order status
+            - 012 = Your pickup request is being processed
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 500
+        BillingCode:
+          description: |-
+            Pickup billing classification for on call
+            - 01 = Regular
+            - 02 = Return
+            - 03 = Alternate Address (Not supported for now)
+          maximum: 1
+          type: string
+          minLength: 2
+          maxLength: 2
+        ContactName:
+          description: on-callpickup contact name
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 22
+        ReferenceNumber:
+          description: Customer provided reference number for on-call pickup
+          maximum: 1
+          type: string
+          minLength: 1
+          maxLength: 35
+      xml:
+        name: PendingStatus
+      description: The result of retrieving pending pickups.
+    ErrorResponse:
+      type: object
+      properties:
+        response:
+          "$ref": "#/components/schemas/CommonErrorResponse"
+    CommonErrorResponse:
+      type: object
+      description: The error response containing any errors that occurred.
+      properties:
+        errors:
+          type: array
+          description: The error array containing any errors that occurred.
+          items:
+            "$ref": "#/components/schemas/ErrorMessage"
+    ErrorMessage:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The error code.
+        message:
+          type: string
+          description: The error message.
+      description: The error response containing any errors that occurred.
