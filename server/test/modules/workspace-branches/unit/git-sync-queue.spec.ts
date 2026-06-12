@@ -1,6 +1,8 @@
 import Redis from 'ioredis';
+import { Queue } from 'bullmq';
 import { GitSyncQueueService, GIT_SYNC_JOBS } from '@ee/workspace-branches/git-sync-queue.service';
 import { GitSyncQueueProcessor } from '@ee/workspace-branches/git-sync-queue.processor';
+import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { RedisService } from '@modules/redis/service';
 
 /**
@@ -23,14 +25,19 @@ import { RedisService } from '@modules/redis/service';
 /** The narrow slice of a BullMQ Queue the enqueue service uses. */
 interface QueueLike {
   add(name: string, data: unknown, opts?: Record<string, unknown>): Promise<unknown>;
+  getWorkers(): Promise<unknown[]>;
 }
 
 /** Records every add() so tests can assert name / payload / jobId / opts. */
 class FakeQueue implements QueueLike {
   added: { name: string; data: any; opts: any }[] = [];
+  workers: unknown[] = [{}]; // default: one worker present, no warning path
   async add(name: string, data: any, opts?: any) {
     this.added.push({ name, data, opts });
     return { id: opts?.jobId };
+  }
+  async getWorkers() {
+    return this.workers;
   }
 }
 
@@ -300,6 +307,61 @@ describe('GitSyncQueueProcessor per-org lease', () => {
   });
 });
 
+describe('GitSyncQueueProcessor failed-event hook', () => {
+  // removeOnFail erases dead jobs from Bull Board — the onFailed log line is the
+  // only durable trail. It must never itself throw, even with a missing job.
+  it('should survive a failed event with an undefined job', () => {
+    const processor = new GitSyncQueueProcessor(new FakeWorkspaceBranchService() as any, new FakeRedisService() as any);
+    expect(() => processor.onFailed(undefined, new Error('worker died'))).not.toThrow();
+  });
+});
+
+describe('WorkspaceBranchService.executeDeleteRemoteBranch (worker side)', () => {
+  // Retries on an already-deleted remote branch would loop pointlessly —
+  // "gone" must count as success. Only the first two constructor deps
+  // (provider, logger) are touched by this method.
+  const makeService = (deleteGitBranch?: (orgId: string, name: string) => Promise<void>) => {
+    const provider = {
+      getSourceControlService: async () => (deleteGitBranch ? { deleteGitBranch } : {}),
+    };
+    const logger = { log: jest.fn() };
+    const rest = Array(12).fill({});
+    return new (WorkspaceBranchService as any)(provider, logger, ...rest) as InstanceType<
+      typeof WorkspaceBranchService
+    >;
+  };
+
+  it('should treat a 404 from the provider as success', async () => {
+    const svc = makeService(async () => {
+      const err: any = new Error('Branch not found');
+      err.status = 404;
+      throw err;
+    });
+    await expect(svc.executeDeleteRemoteBranch({ organizationId: 'org1', branchName: 'b' })).resolves.toBeUndefined();
+  });
+
+  it('should treat "Reference does not exist" as success', async () => {
+    const svc = makeService(async () => {
+      throw new Error('Reference does not exist');
+    });
+    await expect(svc.executeDeleteRemoteBranch({ organizationId: 'org1', branchName: 'b' })).resolves.toBeUndefined();
+  });
+
+  it('should rethrow other errors so BullMQ retries', async () => {
+    const svc = makeService(async () => {
+      throw new Error('rate limited');
+    });
+    await expect(svc.executeDeleteRemoteBranch({ organizationId: 'org1', branchName: 'b' })).rejects.toThrow(
+      'rate limited'
+    );
+  });
+
+  it('should no-op when the provider has no deleteGitBranch', async () => {
+    const svc = makeService(undefined);
+    await expect(svc.executeDeleteRemoteBranch({ organizationId: 'org1', branchName: 'b' })).resolves.toBeUndefined();
+  });
+});
+
 /**
  * The fakes only help if they mirror the REAL APIs (ts-jest diagnostics are off,
  * so these RUNTIME checks are what catch drift — same pattern as the
@@ -308,6 +370,12 @@ describe('GitSyncQueueProcessor per-org lease', () => {
 describe('fakes stay faithful to the real APIs', () => {
   it('RedisService still exposes getClient', () => {
     expect(typeof RedisService.prototype.getClient).toBe('function');
+  });
+
+  it('a BullMQ Queue exposes every method the enqueue service uses', () => {
+    for (const method of ['add', 'getWorkers']) {
+      expect(typeof (Queue.prototype as any)[method]).toBe('function');
+    }
   });
 
   it('an ioredis client exposes every method the lease uses', () => {
