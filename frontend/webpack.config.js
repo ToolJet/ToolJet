@@ -111,6 +111,33 @@ if (process.env.ANALYZE === 'true') {
 
 module.exports = {
   mode: environment,
+  // Persistent filesystem cache (webpack 5 native). After the first build,
+  // dev-server restarts reuse the cached module graph and are dramatically
+  // faster. Cached under node_modules/.cache/webpack (gitignored).
+  //
+  // `name` = mode, so at most two buckets exist (development, production).
+  // `version` = edition, so a CE build never reuses EE-built modules (or vice
+  // versa) — webpack invalidates and overwrites the bucket when edition changes.
+  // webpack's per-module content hashing handles ordinary source changes
+  // (branch switches, pulls) automatically. If you ever bounce between very
+  // divergent branches and see CSS "weak map key" errors, clear the cache:
+  // rm -rf node_modules/.cache
+  cache: {
+    type: 'filesystem',
+    name: environment,
+    version: edition || 'ce',
+    // Begin persisting the cache 1s after the first compile instead of the 5s
+    // default, so it survives quick dev-server restarts. The store itself takes
+    // ~7.5s for this ~1.7GB cache, so it fully persists ~8.5s after "compiled".
+    idleTimeoutForInitialStore: 1000,
+    // No gzip: uncompressed packs write fastest (gzip is smaller on disk but
+    // slower to serialize, which would make the store less likely to finish
+    // before a quick restart).
+    compression: false,
+    buildDependencies: {
+      config: [__filename, path.resolve(__dirname, '../.env')],
+    },
+  },
   optimization: {
     minimize: environment === 'production',
     usedExports: true,
@@ -248,7 +275,22 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
+    extensions: [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.png',
+      '.wasm',
+      '.tar',
+      '.data',
+      '.svg',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.json',
+    ],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
@@ -269,7 +311,12 @@ module.exports = {
   //   (sentryWebpackPlugin uploads then deletes the .map files from the build dir).
   // In production without Sentry: skip map generation entirely — nothing consumes
   //   them and they push individual chunks past Cloudflare Pages' 25 MiB limit.
-  devtool: environment === 'development' ? 'eval-source-map' : process.env.APM_VENDOR === 'sentry' ? 'hidden-source-map' : false,
+  devtool:
+    environment === 'development'
+      ? 'eval-source-map'
+      : process.env.APM_VENDOR === 'sentry'
+      ? 'hidden-source-map'
+      : false,
   module: {
     rules: [
       {
@@ -344,6 +391,10 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
+            // Cache transpiled output (node_modules/.cache/babel-loader) so
+            // unchanged files skip Babel on rebuilds — complements the webpack
+            // filesystem cache above.
+            cacheDirectory: true,
             plugins: [
               isDevEnv && require.resolve('react-refresh/babel'),
               [
