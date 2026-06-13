@@ -114,12 +114,16 @@ module.exports = {
   // Ratcheting size budget: limits sit just above the current bundle size so
   // the build is quiet today but warns on regressions. Lower these as the
   // bundle shrinks — never raise them without a review.
-  // Current (2026-06): initial JS ≈ 24 MiB (CE), largest single chunk ≈ 11 MiB.
-  performance: {
-    hints: 'warning',
-    maxEntrypointSize: 26 * 1024 * 1024,
-    maxAssetSize: 12 * 1024 * 1024,
-  },
+  // Disabled in development: dev assets are unminified and carry inline
+  // eval-source-maps, so they're 2-4x larger than production and would warn
+  // constantly against budgets calibrated for production sizes.
+  performance: isProductionMode
+    ? {
+        hints: 'warning',
+        maxEntrypointSize: 26 * 1024 * 1024,
+        maxAssetSize: 26 * 1024 * 1024,
+      }
+    : false,
   optimization: {
     minimize: environment === 'production',
     usedExports: true,
