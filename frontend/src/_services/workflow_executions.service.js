@@ -1,6 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 
 export const workflowExecutionsService = {
   create,

@@ -3,7 +3,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 
 export default function UsersActionMenu({
   toggleEditUserDrawer,

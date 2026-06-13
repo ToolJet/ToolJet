@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEAppEnvironments from '@ee/modules/Appbuilder/components/AppEnvironments';
 
 const AppEnvironments = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(AppEnvironments, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppEnvironments : EEAppEnvironments;

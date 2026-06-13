@@ -1,5 +1,8 @@
 import React from 'react';
-import { authenticationService, organizationUserService, userService, groupPermissionV2Service } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { organizationUserService } from '@/_services/organization_user.service';
+import { userService } from '@/_services/user.service';
+import { groupPermissionV2Service } from '@/_services/groupPermission.v2.service';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';

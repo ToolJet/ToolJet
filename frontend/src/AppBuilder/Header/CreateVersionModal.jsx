@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { appVersionService, authenticationService, gitSyncService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { gitSyncService } from '@/_services/git_sync.service';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';

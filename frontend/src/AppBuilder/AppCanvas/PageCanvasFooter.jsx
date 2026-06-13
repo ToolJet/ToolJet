@@ -1,6 +1,6 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEPageCanvasFooter from '@ee/modules/Appbuilder/components/PageCanvasFooter';
 
 const PageCanvasFooter = () => null;
 
-export default withEditionSpecificComponent(PageCanvasFooter, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? PageCanvasFooter : EEPageCanvasFooter;

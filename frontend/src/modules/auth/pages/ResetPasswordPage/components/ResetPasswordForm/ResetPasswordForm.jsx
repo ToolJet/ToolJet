@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { PasswordInput, SubmitButton, FormHeader } from '@/modules/common/components';
 import './resources/styles/reset-password-form.styles.scss';

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import InputComponent from '@/components/ui/Input/Index';
-import { appsService } from '@/_services';
+import { appsService } from '@/_services/apps.service';
 import { getWorkspaceId, validateName } from '@/_helpers/utils';
 import { getHostURL, replaceEditorURL } from '@/_helpers/routes';
 import useStore from '@/AppBuilder/_stores/store';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CloudCheck, CloudAlert } from 'lucide-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 const SaveIndicator = ({ isSaving, saveError }) => {
   if (isSaving) {

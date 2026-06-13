@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEGitSyncManager from '@ee/modules/Appbuilder/components/GitSyncManager';
 
 const GitSyncManager = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(GitSyncManager, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? GitSyncManager : EEGitSyncManager;

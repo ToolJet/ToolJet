@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';

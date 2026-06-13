@@ -1,6 +1,6 @@
 import React from 'react';
-import { ToolTip } from '@/_components';
-import { authenticationService } from '@/_services';
+import { ToolTip } from '@/_components/ToolTip';
+import { authenticationService } from '@/_services/authentication.service';
 
 const LicenseTooltip = ({
   feature,

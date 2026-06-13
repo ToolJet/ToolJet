@@ -185,6 +185,7 @@ export default [
       react: pluginReact,
       'react-hooks': pluginReactHooks,
       prettier: pluginPrettier,
+      import: pluginImportX,
     },
 
     settings: {
@@ -207,7 +208,8 @@ export default [
       // @typescript-eslint recommended
       '@typescript-eslint/adjacent-overload-signatures': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/ban-types': 'error',
+      // '@typescript-eslint/ban-types' was removed in @typescript-eslint v8 —
+      // referencing it makes ESLint throw whenever a TS file is linted.
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-extra-non-null-assertion': 'error',
@@ -270,4 +272,53 @@ export default [
 
   // Storybook config
   ...pluginStorybook.configs['flat/recommended'],
+
+  // Bundle-size guards. NOTE: flat config does not merge rule options — a later
+  // 'no-restricted-imports' entry replaces the earlier one for matching files,
+  // hence the base-config + widget-override structure below.
+  //
+  // 1) Everywhere: no barrel imports (defeat tree-shaking), no static heavy libs.
+  {
+    files: ['src/**/*.{js,jsx,ts,tsx}', 'ee/**/*.{js,jsx,ts,tsx}', 'cloud/**/*.{js,jsx,ts,tsx}'],
+    ignores: [
+      // Pre-existing dead import of a deleted service (orgEnvironmentVariableService)
+      // kept on the barrel until the EE Copilot page is removed or fixed.
+      'ee/modules/WorkspaceSettings/pages/Copilot/CopilotSetting.jsx',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: '@/_services', message: 'Import the service file directly: @/_services/<name>.service' },
+            { name: '@/_components', message: 'Import the component directly: @/_components/<Name>' },
+          ],
+          patterns: [
+            {
+              group: ['xlsx', 'zipcelx', 'jspdf', 'jspdf-autotable', 'react-pdf', 'pdfjs-dist', 'plotly.js*', 'read-excel-file*'],
+              message:
+                'Heavy library — only widget code may use it, via dynamic import() at the point of use (see src/AppBuilder/Widgets/NewTable/_utils/exportData.js).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // 2) Widget code: keep the barrel restriction, allow heavy-lib references
+  //    (they must still be dynamic import() — static imports show up in the
+  //    bundle analyzer and review).
+  {
+    files: ['src/AppBuilder/Widgets/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: '@/_services', message: 'Import the service file directly: @/_services/<name>.service' },
+            { name: '@/_components', message: 'Import the component directly: @/_components/<Name>' },
+          ],
+        },
+      ],
+    },
+  },
 ];

@@ -1,8 +1,10 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEWorkflowPermissionActionContainer from '@ee/modules/WorkspaceSettings/components/WorkflowPermissionActionContainer';
 
 function WorkflowPermissionActionContainer() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(WorkflowPermissionActionContainer, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce'
+  ? WorkflowPermissionActionContainer
+  : EEWorkflowPermissionActionContainer;

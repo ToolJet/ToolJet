@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEModuleWidgetBox from '@ee/modules/Modules/components/ModuleWidgetBox';
 
 const ModuleWidgetBox = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(ModuleWidgetBox, 'Modules');
+export default process.env.TOOLJET_EDITION === 'ce' ? ModuleWidgetBox : EEModuleWidgetBox;

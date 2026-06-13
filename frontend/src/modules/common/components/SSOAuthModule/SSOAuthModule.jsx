@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseSSOAuthModule from './components/BaseSSOAuthModule/index.js';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EESSOAuthModule from '@ee/modules/common/components/SSOAuthModule';
 
 const SSOAuthModule = (props) => {
   return (
@@ -10,4 +10,4 @@ const SSOAuthModule = (props) => {
   );
 };
 
-export default withEditionSpecificComponent(SSOAuthModule, 'common');
+export default process.env.TOOLJET_EDITION === 'ce' ? SSOAuthModule : EESSOAuthModule;

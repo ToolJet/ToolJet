@@ -1,7 +1,10 @@
 import React, { createContext, useMemo, useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, appEnvironmentService, authenticationService, licenseService } from '@/_services';
+import { globalDatasourceService } from '@/_services/globalDatasource.service';
+import { appEnvironmentService } from '@/_services/app_environment.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { licenseService } from '@/_services/license.service';
 import { GlobalDataSources } from '../../components/GlobalDataSources';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';

@@ -14,7 +14,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { DynamicIcon } from 'lucide-react/dynamic.mjs';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 const ITEM_HEIGHTS = {
   'defaults-header': 40,

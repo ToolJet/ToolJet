@@ -13,7 +13,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Overlay, Popover } from 'react-bootstrap';
 import PageOptions from './PageOptions';
 import { AddEditPagePopup } from './AddNewPagePopup';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import Skip from '@/_ui/Icon/solidIcons/Skip';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers.js';
 

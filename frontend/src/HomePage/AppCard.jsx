@@ -15,7 +15,7 @@ import { getPrivateRoute, getSubpath, getHostURL } from '@/_helpers/routes';
 import { validateName, decodeEntities, hasBuilderRole } from '@/_helpers/utils';
 import { getEnvironmentAccessFromPermissions, getDefaultEnvironment } from '@/_helpers/environmentAccess';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 const { defaultIcon } = configs;

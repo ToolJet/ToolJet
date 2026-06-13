@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
-import { appsService } from '@/_services';
+import { appsService } from '@/_services/apps.service';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from '@/AppBuilder/Header/ReleaseConfirmation';

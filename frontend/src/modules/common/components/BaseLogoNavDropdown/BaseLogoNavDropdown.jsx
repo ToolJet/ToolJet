@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { getPrivateRoute, redirectToDashboard, routes } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import AppLogo from '@/_components/AppLogo';

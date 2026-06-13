@@ -9,7 +9,7 @@ import VersionDropdownItem from './VersionDropdownItem';
 import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';

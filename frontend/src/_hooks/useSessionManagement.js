@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { retrieveWhiteLabelFavicon, retrieveWhiteLabelText, setFaviconAndTitle } from '@white-label/whiteLabelling';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { datasourceService } from '@/_services';
+import { datasourceService } from '@/_services/datasource.service';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';

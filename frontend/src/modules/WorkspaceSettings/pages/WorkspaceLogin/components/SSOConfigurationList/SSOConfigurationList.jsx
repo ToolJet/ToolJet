@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import BaseSSOConfigurationList from '@/modules/WorkspaceSettings/components/BaseSSOConfigurationList';
 import GoogleSSOModal from '../GoogleSSOModal';
 import GithubSSOModal from '../GithubSSOModal';
+import EESSOConfigurationList from '@ee/modules/WorkspaceSettings/components/SSOConfigurationList';
 
 const SSOConfigurationList = (props) => {
   const ssoHelperText = 'Display default SSO for workspace URL login';
@@ -20,4 +20,4 @@ const SSOConfigurationList = (props) => {
   return <BaseSSOConfigurationList {...mergedProps} />;
 };
 
-export default withEditionSpecificComponent(SSOConfigurationList, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? SSOConfigurationList : EESSOConfigurationList;

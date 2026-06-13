@@ -3,7 +3,7 @@ import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import EditRowForm from '../../Forms/EditRowForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { listAllPrimaryKeyColumns } from '../../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';

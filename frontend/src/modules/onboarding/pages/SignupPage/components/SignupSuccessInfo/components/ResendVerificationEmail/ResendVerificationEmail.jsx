@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import cx from 'classnames';
 import './resources/resend-email-verification.styles.scss';

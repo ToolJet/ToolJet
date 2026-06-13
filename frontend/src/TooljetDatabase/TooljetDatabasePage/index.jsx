@@ -8,7 +8,7 @@ import WarningDark from '../Icons/warning-dark.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../Forms/TableForm';

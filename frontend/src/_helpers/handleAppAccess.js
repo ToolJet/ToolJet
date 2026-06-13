@@ -1,4 +1,6 @@
-import { organizationService, authenticationService, appsService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { appsService } from '@/_services/apps.service';
 import { safelyParseJSON } from '@/_helpers/utils';
 import { getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';

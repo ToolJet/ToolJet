@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import _ from 'lodash';
 import { renderDatatypeIcon, listAllPrimaryKeyColumns, postgresErrorCode } from '../constants';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { LEGACY_ITEMS, IGNORED_ITEMS } from './constants';
 import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import Fuse from 'fuse.js';
-import { SearchBox } from '@/_components';
+import { SearchBox } from '@/_components/SearchBox';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
 import Accordion from '@/_ui/Accordion';

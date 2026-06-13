@@ -9,7 +9,7 @@ import { QueryFolderTree as QueryFolderTreeBase } from './QueryFolderTree';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
 import FilterandSortPopup from './FilterandSortPopup';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { Button } from '@/components/ui/Button/Button';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
@@ -20,13 +20,16 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import AppPermissionsModal from '@/modules/Appbuilder/components/AppPermissionsModal';
 import { shallow } from 'zustand/shallow';
-import { appPermissionService } from '@/_services';
+import { appPermissionService } from '@/_services/appPermission.service';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
 import QueryCardMenuBase from './QueryCardMenu';
-import { withEditionSpecificComponent } from '@/modules/common/helpers';
+import EEQueryFolderTree from '@ee/modules/Appbuilder/components/QueryDataPane';
+import EEQueryCardMenu from '@ee/modules/Appbuilder/components/QueryDataPane/QueryCardMenu';
 
-const QueryFolderTree = withEditionSpecificComponent(QueryFolderTreeBase, 'Appbuilder');
-const QueryCardMenu = withEditionSpecificComponent(QueryCardMenuBase, 'Appbuilder');
+// The old registry matched these by function name (QueryFolderTree/QueryCardMenu),
+// not by the local *Base identifiers — both have EE overrides.
+const QueryFolderTree = process.env.TOOLJET_EDITION === 'ce' ? QueryFolderTreeBase : EEQueryFolderTree;
+const QueryCardMenu = process.env.TOOLJET_EDITION === 'ce' ? QueryCardMenuBase : EEQueryCardMenu;
 
 export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();

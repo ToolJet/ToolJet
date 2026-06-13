@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
-import { gitSyncService } from '@/_services';
+import { gitSyncService } from '@/_services/git_sync.service';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';

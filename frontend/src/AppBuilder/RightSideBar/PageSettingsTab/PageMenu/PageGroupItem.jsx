@@ -7,7 +7,7 @@ import PageOptions from './PageOptions';
 import { Overlay, Popover } from 'react-bootstrap';
 import { AddEditPagePopup } from './AddNewPagePopup';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 
 export const PageGroupItem = memo(({ page, highlight, darkMode }) => {

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { redirectToDashboard } from '@/_helpers/routes';
+import EESuperAdminLoginPage from '@ee/modules/auth/components/SuperAdminLoginPage';
 
 const SuperAdminLoginPage = () => {
   useEffect(() => {
@@ -10,4 +10,4 @@ const SuperAdminLoginPage = () => {
   return null;
 };
 
-export default withEditionSpecificComponent(SuperAdminLoginPage, 'auth');
+export default process.env.TOOLJET_EDITION === 'ce' ? SuperAdminLoginPage : EESuperAdminLoginPage;

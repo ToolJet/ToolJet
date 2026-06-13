@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { datasourceService } from '@/_services';
+import { datasourceService } from '@/_services/datasource.service';
 import { getHostURL } from '@/_helpers/routes';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';

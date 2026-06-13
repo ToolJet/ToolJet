@@ -1,4 +1,4 @@
-import { appVersionService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import { componentTypes, componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import {
   resolveDynamicValues,

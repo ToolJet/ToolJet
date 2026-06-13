@@ -1,5 +1,5 @@
 import React from 'react';
-import { commentNotificationsService } from '@/_services';
+import { commentNotificationsService } from '@/_services/commentNotifications.service';
 import { Notification } from './Notification';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';

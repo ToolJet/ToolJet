@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { getAvatar, decodeEntities, stripTrailingSlash } from '@/_helpers/utils';
 import { appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { useCurrentSessionStore } from '@/_stores/currentSessionStore';
 import { shallow } from 'zustand/shallow';
 import { EditOrganization } from '@/modules/common/components/OrganizationManager';

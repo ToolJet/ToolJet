@@ -1,4 +1,4 @@
-import { sessionService } from '@/_services';
+import { sessionService } from '@/_services/session.service';
 import useStore from '@/AppBuilder/_stores/store';
 
 // Track pending SSO info refresh to avoid duplicate requests

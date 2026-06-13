@@ -1,5 +1,6 @@
 import { create, zustandDevTools } from './utils';
-import { licenseService, appsService } from '@/_services';
+import { licenseService } from '@/_services/license.service';
+import { appsService } from '@/_services/apps.service';
 import { shallow } from 'zustand/shallow';
 import { authenticationService } from '@/_services/authentication.service';
 

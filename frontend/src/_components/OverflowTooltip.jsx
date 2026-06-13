@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 const isTextOverflowing = (element, maxLetters, children, verticalTolerance = 4) => {
   if (!element) return false;

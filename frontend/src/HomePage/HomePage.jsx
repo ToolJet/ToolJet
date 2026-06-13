@@ -1,17 +1,17 @@
 import React from 'react';
 import cx from 'classnames';
 import moment from 'moment';
-import {
-  appsService,
-  folderService,
-  authenticationService,
-  libraryAppService,
-  gitSyncService,
-  licenseService,
-  pluginsService,
-  aiOnboardingService,
-} from '@/_services';
-import { ConfirmDialog, AppModal, ToolTip } from '@/_components';
+import { appsService } from '@/_services/apps.service';
+import { folderService } from '@/_services/folder.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { libraryAppService } from '@/_services/library-app.service';
+import { gitSyncService } from '@/_services/git_sync.service';
+import { licenseService } from '@/_services/license.service';
+import { pluginsService } from '@/_services/plugins.service';
+import { aiOnboardingService } from '@/_services/ai-onboarding.service';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { AppModal } from '@/_components/AppModal';
+import { ToolTip } from '@/_components/ToolTip';
 import Select from '@/_ui/Select';
 import { AppsMultiSelect } from '@/_ui/Modal/AppsMultiSelect';
 import _, { sample, isEmpty, capitalize, has } from 'lodash';

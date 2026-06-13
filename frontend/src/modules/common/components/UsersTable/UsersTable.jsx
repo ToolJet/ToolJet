@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Avatar from '@/_ui/Avatar';
 import cx from 'classnames';
-import { Pagination } from '@/_components';
+import { Pagination } from '@/_components/Pagination';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import UsersActionMenu from './components/UsersActionMenu';

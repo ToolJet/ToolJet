@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from '@/HomePage/Modal';
 import { useTranslation } from 'react-i18next';
 import { getHostURL } from '@/_helpers/routes';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';

@@ -6,7 +6,7 @@ import { DataSourceTypes } from '../../../common/components/DataSourceComponents
 import { getSvgIcon } from '@/_helpers/appUtils';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
 

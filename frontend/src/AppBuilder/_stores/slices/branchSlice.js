@@ -1,4 +1,4 @@
-import { gitSyncService } from '@/_services';
+import { gitSyncService } from '@/_services/git_sync.service';
 import { setActiveBranch } from '@/_helpers/active-branch';
 import useStore from '@/AppBuilder/_stores/store';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';

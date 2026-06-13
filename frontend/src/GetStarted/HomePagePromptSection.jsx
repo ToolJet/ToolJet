@@ -1,9 +1,8 @@
 import React from 'react';
-
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEHomePagePromptSection from '@ee/modules/AiBuilder/components/CreateAppWithPrompt/HomePagePromptSection';
 
 const HomePagePromptSection = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(HomePagePromptSection, 'AiBuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? HomePagePromptSection : EEHomePagePromptSection;

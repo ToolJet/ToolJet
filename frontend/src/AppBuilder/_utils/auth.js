@@ -1,6 +1,6 @@
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
-import { sessionService } from '@/_services';
+import { sessionService } from '@/_services/session.service';
 import { unregisterBranchFocusSync } from '@/_helpers/active-branch';
 
 export function fetchOAuthToken(authUrl, dataSourceId) {

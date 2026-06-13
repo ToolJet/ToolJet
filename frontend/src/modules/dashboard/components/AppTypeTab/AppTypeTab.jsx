@@ -1,7 +1,7 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEAppTypeTab from '@ee/modules/Dashboard/components/AppTypeTab';
 
 const AppTypeTab = () => {
   return <></>;
 };
-export default withEditionSpecificComponent(AppTypeTab, 'Dashboard');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppTypeTab : EEAppTypeTab;

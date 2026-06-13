@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  appEnvironmentService,
-  appService,
-  appsService,
-  appVersionService,
-  dataqueryService,
-  dataQueryFolderService,
-  orgEnvironmentConstantService,
-  authenticationService,
-  customStylesService,
-} from '@/_services';
+import { appEnvironmentService } from '@/_services/app_environment.service';
+import { appService } from '@/_services/app.service';
+import { appsService } from '@/_services/apps.service';
+import { appVersionService } from '@/_services/appVersion.service';
+import { dataqueryService } from '@/_services/dataquery.service';
+import { dataQueryFolderService } from '@/_services/dataQueryFolder.service';
+import { orgEnvironmentConstantService } from '@/_services/organization_constants.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { customStylesService } from '@/_services/custom_styles.service';
 import useStore from '@/AppBuilder/_stores/store';
 import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';

@@ -3,7 +3,7 @@ import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { getColumnDataType } from '../../constants';
 
 const CreateColumnDrawer = ({

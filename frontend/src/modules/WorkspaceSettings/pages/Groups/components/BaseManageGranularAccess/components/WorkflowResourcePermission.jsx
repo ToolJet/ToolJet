@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEWorkflowResourcePermissions from '@ee/modules/WorkspaceSettings/components/WorkflowResourcePermissions';
 
 function WorkflowResourcePermissions() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(WorkflowResourcePermissions, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? WorkflowResourcePermissions : EEWorkflowResourcePermissions;

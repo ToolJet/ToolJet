@@ -1,9 +1,9 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers';
 import BaseComponentModuleTab from '@/modules/common/components/BaseComponentModuleTab';
+import EEComponentModuleTab from '@ee/modules/Appbuilder/components/ComponentModuleTab';
 
 const ComponentModuleTab = (props) => {
   return <BaseComponentModuleTab {...props} />;
 };
 
-export default withEditionSpecificComponent(ComponentModuleTab, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? ComponentModuleTab : EEComponentModuleTab;

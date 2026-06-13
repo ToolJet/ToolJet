@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import useRouter from '@/_hooks/use-router';
-import { aiOnboardingService, appService, authenticationService } from '@/_services';
+import { aiOnboardingService } from '@/_services/ai-onboarding.service';
+import { appService } from '@/_services/app.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { getCookie } from '@/_helpers';

@@ -1,5 +1,8 @@
-import { getEditionSpecificSlice } from '../../../modules/common/helpers/getEditionSpecificSlice';
+import * as eeSlices from '@ee/modules/_slices';
 
-const createModuleSlice = getEditionSpecificSlice('createModuleSlice');
+// Namespace import (not named) so the CE build — where @ee/* resolves to the
+// empty module — doesn't emit "export not found" warnings. The ternary folds
+// at build time via DefinePlugin.
+const createModuleSlice = process.env.TOOLJET_EDITION === 'ce' ? () => ({}) : eeSlices.createModuleSlice;
 
 export { createModuleSlice };

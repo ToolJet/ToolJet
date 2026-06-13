@@ -1,5 +1,7 @@
 import React from 'react';
-import { appService, appsService, authenticationService } from '@/_services';
+import { appService } from '@/_services/app.service';
+import { appsService } from '@/_services/apps.service';
+import { authenticationService } from '@/_services/authentication.service';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';

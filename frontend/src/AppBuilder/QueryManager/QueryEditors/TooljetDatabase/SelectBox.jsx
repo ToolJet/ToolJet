@@ -1,7 +1,8 @@
 import React, { isValidElement, useCallback, useState, useRef, useEffect } from 'react';
 import Select, { components } from 'react-select';
 import { isEmpty, debounce, throttle } from 'lodash';
-import { authenticationService, tooljetDatabaseService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { toast } from 'react-hot-toast';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';

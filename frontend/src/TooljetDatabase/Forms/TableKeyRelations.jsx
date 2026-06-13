@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import TableDetailsDropdown from './TableDetailsDropdown';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { TooljetDatabaseContext } from '../index';
 import Source from '../Icons/Source.svg';
 import Setting from '../Icons/setting.svg';

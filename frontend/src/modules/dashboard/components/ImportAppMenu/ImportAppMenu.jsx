@@ -1,7 +1,7 @@
 import React from 'react';
 import BaseImportAppMenu from '@/modules/common/components/BaseImportAppMenu';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEImportAppMenu from '@ee/modules/Dashboard/components/ImportAppMenu';
 const ImportAppMenu = (props) => {
   return <BaseImportAppMenu {...props} />;
 };
-export default withEditionSpecificComponent(ImportAppMenu, 'Dashboard');
+export default process.env.TOOLJET_EDITION === 'ce' ? ImportAppMenu : EEImportAppMenu;

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getAvatar, stripTrailingSlash } from '@/_helpers/utils';
 import { appendWorkspaceId, getQueryParams, getTargetDomainURL, isCustomDomain } from '@/_helpers/routes';
 import cx from 'classnames';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 import { useSessionTransferRedirect } from '@/_helpers/useSessionTransferRedirect';
 import { useLocation } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';

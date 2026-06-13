@@ -1,7 +1,7 @@
 import React from 'react';
 import FolderList from '@/_ui/FolderList/FolderList';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 const categoryTitles = {
   all: 'All categories',
   'customer-support': 'Customer support',

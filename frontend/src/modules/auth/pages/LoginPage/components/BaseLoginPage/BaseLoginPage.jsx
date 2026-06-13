@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';

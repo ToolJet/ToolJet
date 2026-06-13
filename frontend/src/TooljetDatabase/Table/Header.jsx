@@ -11,7 +11,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { AddNewDataPopOver } from './ActionsPopover/AddNewDataPopOver';
 import { pluralize } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 import config from 'config';

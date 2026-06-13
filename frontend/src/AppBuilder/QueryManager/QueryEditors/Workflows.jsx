@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
-import { appsService } from '@/_services';
+import { appsService } from '@/_services/apps.service';
 import { appVersionService } from '@/_services/appVersion.service';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import './workflows-query.scss';

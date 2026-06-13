@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
-import { authenticationService, appService, sessionService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { appService } from '@/_services/app.service';
+import { sessionService } from '@/_services/session.service';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { getPrivateRoute } from '@/_helpers/routes';

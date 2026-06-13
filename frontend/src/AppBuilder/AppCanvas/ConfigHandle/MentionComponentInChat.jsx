@@ -1,9 +1,8 @@
 import React from 'react';
-
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEMentionComponentInChat from '@ee/modules/Appbuilder/components/MentionComponentInChat';
 
 function MentionComponentInChat() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(MentionComponentInChat, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? MentionComponentInChat : EEMentionComponentInChat;

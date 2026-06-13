@@ -1,6 +1,6 @@
 import React from 'react';
 import BaseManageGroupPermissions from './components/BaseManageGroupPermissions';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEManageGroupPermissions from '@ee/modules/WorkspaceSettings/components/ManageGroupPermissions';
 
 const GROUP_DUPLICATE_OPTIONS = { addPermission: true, addApps: true, addUsers: true };
 
@@ -15,4 +15,4 @@ const ManageGroupPermissions = (props) => {
   );
 };
 
-export default withEditionSpecificComponent(ManageGroupPermissions, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? ManageGroupPermissions : EEManageGroupPermissions;

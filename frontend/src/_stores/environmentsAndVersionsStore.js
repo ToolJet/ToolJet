@@ -1,6 +1,7 @@
 import create from 'zustand';
 import { zustandDevTools } from './utils';
-import { appEnvironmentService, appVersionService } from '@/_services';
+import { appEnvironmentService } from '@/_services/app_environment.service';
+import { appVersionService } from '@/_services/appVersion.service';
 import { useAppDataStore } from './appDataStore';
 import { useAppVersionStore } from './appVersionStore';
 import { useEditorStore } from './editorStore';

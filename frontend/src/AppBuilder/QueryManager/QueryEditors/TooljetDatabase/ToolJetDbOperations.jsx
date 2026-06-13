@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import cx from 'classnames';
-import { tooljetDatabaseService, authenticationService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { ListRows } from './ListRows';
 import { CreateRow } from './CreateRow';

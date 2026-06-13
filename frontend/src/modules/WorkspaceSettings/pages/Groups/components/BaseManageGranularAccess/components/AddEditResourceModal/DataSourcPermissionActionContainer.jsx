@@ -1,8 +1,10 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEDataSourcPermissionActionContainer from '@ee/modules/WorkspaceSettings/components/DataSourcPermissionActionContainer';
 
 function DataSourcPermissionActionContainer() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(DataSourcPermissionActionContainer, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce'
+  ? DataSourcPermissionActionContainer
+  : EEDataSourcPermissionActionContainer;

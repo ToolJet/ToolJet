@@ -1,4 +1,4 @@
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 
 const BRANCH_KEY_PREFIX = 'tj_active_branch_';
 

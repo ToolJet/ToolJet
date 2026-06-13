@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEFolderResourcePermissions from '@ee/modules/WorkspaceSettings/components/FolderResourcePermissions';
 
 function FolderResourcePermissions() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(FolderResourcePermissions, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? FolderResourcePermissions : EEFolderResourcePermissions;

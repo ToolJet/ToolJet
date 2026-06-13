@@ -1,17 +1,14 @@
-import customWebpackConfig from "../webpack.config";
-import path from "path";
+import customWebpackConfig from '../webpack.config';
+import path from 'path';
+import webpack from 'webpack';
 
 const config = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
 
-  addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-onboarding",
-    "@storybook/addon-docs",
-  ],
+  addons: ['@storybook/addon-links', '@storybook/addon-onboarding', '@storybook/addon-docs'],
 
   framework: {
-    name: "@storybook/react-webpack5",
+    name: '@storybook/react-webpack5',
     options: {},
   },
 
@@ -22,7 +19,7 @@ const config = {
     // loader throws when NODE_ENV=production (e.g. during build-storybook).
     const customRules = customWebpackConfig.module.rules
       .filter((rule) => {
-        if (rule.test && rule.test.toString().includes("js|jsx")) {
+        if (rule.test && rule.test.toString().includes('js|jsx')) {
           return false; // Skip babel-loader rule that includes react-refresh
         }
         return true;
@@ -31,16 +28,16 @@ const config = {
         if (!rule.use) return rule;
         const use = Array.isArray(rule.use) ? rule.use : [rule.use];
         const isMiniCssEntry = (u) => {
-          if (typeof u === "string") return u.includes("mini-css-extract-plugin");
-          if (typeof u === "object" && u !== null) {
-            return (u.loader ?? "").includes("mini-css-extract-plugin");
+          if (typeof u === 'string') return u.includes('mini-css-extract-plugin');
+          if (typeof u === 'object' && u !== null) {
+            return (u.loader ?? '').includes('mini-css-extract-plugin');
           }
           return false;
         };
         if (!use.some(isMiniCssEntry)) return rule;
         return {
           ...rule,
-          use: use.map((u) => (isMiniCssEntry(u) ? { loader: "style-loader" } : u)),
+          use: use.map((u) => (isMiniCssEntry(u) ? { loader: 'style-loader' } : u)),
         };
       });
 
@@ -49,18 +46,18 @@ const config = {
       test: /\.(js|jsx)$/,
       exclude: /node_modules/,
       use: {
-        loader: "babel-loader",
+        loader: 'babel-loader',
         options: {
-          presets: ["@babel/preset-env", "@babel/preset-react"],
+          presets: ['@babel/preset-env', '@babel/preset-react'],
           plugins: [
             [
-              "import",
+              'import',
               {
-                libraryName: "lodash",
-                libraryDirectory: "",
+                libraryName: 'lodash',
+                libraryDirectory: '',
                 camel2DashComponentName: false,
               },
-              "lodash",
+              'lodash',
             ],
           ],
         },
@@ -69,6 +66,15 @@ const config = {
 
     return {
       ...storybookConfig,
+      plugins: [
+        ...storybookConfig.plugins,
+        // Keep edition semantics identical to the app build: without this,
+        // process.env.TOOLJET_EDITION is undefined in Storybook and inline
+        // edition checks would evaluate as non-CE.
+        new webpack.DefinePlugin({
+          'process.env.TOOLJET_EDITION': JSON.stringify(process.env.TOOLJET_EDITION || 'ce'),
+        }),
+      ],
       module: {
         ...storybookConfig.module,
         rules: [...storybookConfig.module.rules, ...customRules, babelRule],
@@ -77,19 +83,16 @@ const config = {
         ...storybookConfig.resolve,
         alias: {
           ...storybookConfig.resolve.alias,
-          "@": path.resolve(__dirname, "../src/"),
-          "@ee": path.resolve(__dirname, "../ee/"),
-          "@cloud": path.resolve(__dirname, "../cloud/"),
-          "@assets": path.resolve(__dirname, "../assets/"),
-          "@white-label": path.resolve(
-            __dirname,
-            "../src/_helpers/white-label"
-          ),
+          '@': path.resolve(__dirname, '../src/'),
+          '@ee': path.resolve(__dirname, '../ee/'),
+          '@cloud': path.resolve(__dirname, '../cloud/'),
+          '@assets': path.resolve(__dirname, '../assets/'),
+          '@white-label': path.resolve(__dirname, '../src/_helpers/white-label'),
         },
         fallback: {
           ...storybookConfig.resolve.fallback,
-          process: require.resolve("process/browser.js"),
-          path: require.resolve("path-browserify"),
+          process: require.resolve('process/browser.js'),
+          path: require.resolve('path-browserify'),
         },
       },
     };

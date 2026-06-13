@@ -3,7 +3,7 @@ import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditVersionModal } from './EditVersionModal';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';

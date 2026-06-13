@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EESupportButton from '@ee/modules/Appbuilder/components/SupportButton';
 
 const SupportButton = () => {
   return null;
 };
 
-export default withEditionSpecificComponent(SupportButton, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? SupportButton : EESupportButton;

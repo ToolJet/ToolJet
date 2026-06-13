@@ -9,7 +9,7 @@ import Tick from '@/_ui/Icon/solidIcons/Tick';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { PillButton } from '../QueryManager/Components/ParameterDetails';
 import useStore from '@/AppBuilder/_stores/store';
 

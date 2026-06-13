@@ -1,5 +1,6 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService } from '@/_services/app.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';

@@ -3,7 +3,7 @@ import Fuse from 'fuse.js';
 import { Tab, ListGroup, Row, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import cx from 'classnames';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { dataqueryService } from '@/_services';
+import { dataqueryService } from '@/_services/dataquery.service';
 import { toast } from 'react-hot-toast';
 import ArrowUpDown from '@/_ui/Icon/solidIcons/ArrowUpDown';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';

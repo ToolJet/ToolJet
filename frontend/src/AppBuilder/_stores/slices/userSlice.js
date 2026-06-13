@@ -1,4 +1,4 @@
-import { licenseService } from '@/_services';
+import { licenseService } from '@/_services/license.service';
 
 const initialState = {
   user: {},

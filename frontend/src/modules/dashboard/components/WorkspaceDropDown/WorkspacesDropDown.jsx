@@ -1,7 +1,7 @@
 import React from 'react';
 import BaseWorkspaceDropDown from '@/modules/common/components/BaseWorkspaceDropDown';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEWorkspaceDropDown from '@ee/modules/Dashboard/components/WorkspaceDropDown';
 const WorkspaceDropDown = (props) => {
   return <BaseWorkspaceDropDown {...props} />;
 };
-export default withEditionSpecificComponent(WorkspaceDropDown, 'Dashboard');
+export default process.env.TOOLJET_EDITION === 'ce' ? WorkspaceDropDown : EEWorkspaceDropDown;

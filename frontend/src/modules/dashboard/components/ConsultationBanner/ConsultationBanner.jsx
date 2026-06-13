@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEConsultationBanner from '@ee/modules/Dashboard/components/ConsultationBanner';
 
 const ConsultationBanner = (props) => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(ConsultationBanner, 'Dashboard');
+export default process.env.TOOLJET_EDITION === 'ce' ? ConsultationBanner : EEConsultationBanner;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Drawer from '@/_ui/Drawer';
 import InviteUsersForm from './InviteUsersForm';
-import { groupPermissionV2Service } from '@/_services';
+import { groupPermissionV2Service } from '@/_services/groupPermission.v2.service';
 import { authenticationService } from '@/_services/authentication.service';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 

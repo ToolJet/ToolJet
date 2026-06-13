@@ -1,7 +1,7 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import BaseCreateDraftVersionModal from '@/modules/common/components/BaseCreateDraftVersionModal';
+import EECreateDraftVersionModal from '@ee/modules/Appbuilder/components/CreateDraftVersionModal';
 const CreateDraftVersionModal = (props) => {
   return <BaseCreateDraftVersionModal {...props} />;
 };
-export default withEditionSpecificComponent(CreateDraftVersionModal, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? CreateDraftVersionModal : EECreateDraftVersionModal;

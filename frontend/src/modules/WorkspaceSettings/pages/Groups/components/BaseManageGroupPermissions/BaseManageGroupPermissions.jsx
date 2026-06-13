@@ -1,7 +1,8 @@
 import React from 'react';
-import { groupPermissionV2Service, authenticationService } from '@/_services';
+import { groupPermissionV2Service } from '@/_services/groupPermission.v2.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { Tooltip } from 'react-tooltip';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { toast } from 'react-hot-toast';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';

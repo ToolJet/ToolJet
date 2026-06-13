@@ -4,7 +4,7 @@ import Select from '@/_ui/Select';
 import { TooljetDatabaseContext } from '../index';
 import { operators } from '../constants';
 import { debounce } from 'lodash';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const FilterForm = ({ filters, setFilters, index, column = '', operator = '', value = '', generateMessage }) => {

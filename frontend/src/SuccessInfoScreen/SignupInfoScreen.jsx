@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 

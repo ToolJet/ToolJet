@@ -1,6 +1,6 @@
 import React from 'react';
 import queryString from 'query-string';
-import { datasourceService } from '@/_services';
+import { datasourceService } from '@/_services/datasource.service';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { withTranslation } from 'react-i18next';
 import { getCookie } from '@/_helpers/cookie';

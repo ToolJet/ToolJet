@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import { CreateBranchModal } from './CreateBranchModal';
 import { SwitchBranchModal } from './SwitchBranchModal';
 import { Tooltip } from 'react-tooltip';
-import { gitSyncService } from '@/_services';
+import { gitSyncService } from '@/_services/git_sync.service';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import { AlertTriangle } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';

@@ -111,6 +111,15 @@ if (process.env.ANALYZE === 'true') {
 
 module.exports = {
   mode: environment,
+  // Ratcheting size budget: limits sit just above the current bundle size so
+  // the build is quiet today but warns on regressions. Lower these as the
+  // bundle shrinks — never raise them without a review.
+  // Current (2026-06): initial JS ≈ 24 MiB (CE), largest single chunk ≈ 11 MiB.
+  performance: {
+    hints: 'warning',
+    maxEntrypointSize: 26 * 1024 * 1024,
+    maxAssetSize: 12 * 1024 * 1024,
+  },
   optimization: {
     minimize: environment === 'production',
     usedExports: true,
@@ -143,104 +152,74 @@ module.exports = {
     ],
     splitChunks: {
       chunks: 'all',
-      // chunks: 'all',
-      // maxInitialRequests: 10, // Reduced from 25 - limits initial load chunks
-      // maxAsyncRequests: 10,   // Limits async chunks (lazy loaded)
-      // minSize: 50000,         // Increased from 20KB - only split if >50KB
-      // maxSize: 1244000,        // Max chunk size ~244KB (helps with parallel downloads)
+      minSize: 30000,
       cacheGroups: {
-        // CRITICAL: React core - always loaded (enforce: true means always split)
-        // react: {
-        //   test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
-        //   name: 'vendor-react',
-        //   priority: 50,
-        //   reuseExistingChunk: true,
-        //   enforce: true, // Always split React, even if small
-        // },
-
-        // // HEAVY EDITORS GROUP - Split these out as they're HUGE and editor-only
-        // // ~2MB+ combined, almost never needed on viewer pages
-        // editors: {
-        //   test: /[\\/]node_modules[\\/](@codemirror|@uiw\/react-codemirror|@uiw\/codemirror-theme-github|@uiw\/codemirror-theme-okaidia|draft-js|draft-js-export-html|draft-js-import-html|@mdxeditor)[\\/]/,
-        //   name: 'vendor-editors',
-        //   priority: 40,
-        //   reuseExistingChunk: true,
-        //   enforce: true, // Always split - too large
-        // },
-
-        // // CHARTS - Plotly is MASSIVE (~3MB), split separately
-        // plotly: {
-        //   test: /[\\/]node_modules[\\/](plotly\.js|plotly\.js-dist-min|react-plotly\.js)[\\/]/,
-        //   name: 'vendor-plotly',
-        //   priority: 40,
-        //   reuseExistingChunk: true,
-        //   enforce: true, // Always split - very large
-        // },
-
-        // // PDF - Large libraries, only for PDF features
-        // pdf: {
-        //   test: /[\\/]node_modules[\\/](pdfjs-dist|react-pdf|jspdf|jspdf-autotable)[\\/]/,
-        //   name: 'vendor-pdf',
-        //   priority: 40,
-        //   reuseExistingChunk: true,
-        //   enforce: true, // Always split - large
-        // },
-
-        // // EXCEL - XLSX is huge (~1MB), only for spreadsheet features
-        // excel: {
-        //   test: /[\\/]node_modules[\\/](xlsx|read-excel-file|papaparse|zipcelx)[\\/]/,
-        //   name: 'vendor-excel',
-        //   priority: 40,
-        //   reuseExistingChunk: true,
-        //   enforce: true, // Always split - large
-        // },
-
-        // // UI FRAMEWORK - Combine related UI libraries to reduce requests
-        // // Radix + Bootstrap + DnD + Forms together
-        // uiFramework: {
-        //   test: /[\\/]node_modules[\\/](@radix-ui|bootstrap|react-bootstrap|@dnd-kit|react-dnd|react-dnd-html5-backend|react-beautiful-dnd|react-select|react-select-search|react-multi-select-component|react-color|rc-slider)[\\/]/,
-        //   name: 'vendor-ui',
-        //   priority: 35,
-        //   reuseExistingChunk: true,
-        // },
-
-        // // DATA VISUALIZATION - Tables + ReactFlow + Maps (used together often)
-        // dataViz: {
-        //   test: /[\\/]node_modules[\\/](react-table|react-table-plugins|@tanstack\/react-table|@tanstack\/react-virtual|react-virtuoso|reactflow|react-zoom-pan-pinch|@react-google-maps)[\\/]/,
-        //   name: 'vendor-dataviz',
-        //   priority: 35,
-        //   reuseExistingChunk: true,
-        // },
-
-        // // UTILITIES & COMMON - Lodash, Axios, Moment, etc. (frequently used together)
-        // // Combine small utility libraries to reduce HTTP requests
-        // common: {
-        //   test: /[\\/]node_modules[\\/](lodash|axios|classnames|clsx|moment|moment-timezone|humps|uuid|semver|fuse\.js|dompurify|superstruct|rfdc|flatted|zustand|immer|rxjs|i18next|react-i18next|i18next-http-backend)[\\/]/,
-        //   name: 'vendor-common',
-        //   priority: 30,
-        //   reuseExistingChunk: true,
-        // },
-
-        // // FEATURES - Combine feature-specific libraries
-        // // Date pickers, phone inputs, markdown, icons, monitoring
-        // features: {
-        //   test: /[\\/]node_modules[\\/](react-datepicker|react-datetime|react-dates|@wojtekmaj|react-big-calendar|react-currency-input-field|react-phone-input-2|react-phone-number-input|react-mentions|react-markdown|rehype-raw|remark-gfm|react-syntax-highlighter|@tabler\/icons-react|lucide-react|emoji-mart|@emoji-mart|@sentry|posthog-js|yjs|y-websocket|@y-presence|react-moveable|react-rnd|react-selecto)[\\/]/,
-        //   name: 'vendor-features',
-        //   priority: 25,
-        //   reuseExistingChunk: true,
-        // },
-
-        defaultVendors: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          priority: -10,
+        // React core: small, stable, long-cacheable — always its own chunk.
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+          name: 'vendor-react',
+          priority: 50,
           reuseExistingChunk: true,
-          chunks: 'initial',
+          enforce: true,
+        },
+        // Heavy library groups. No `enforce` — if nothing in the graph
+        // references them statically they simply don't emit. After the lazy
+        // boundaries (editor, widgets, exports) these are async-only chunks
+        // shared between editor and viewer widget loads.
+        editors: {
+          test: /[\\/]node_modules[\\/](@codemirror|@uiw[\\/]|draft-js|draft-js-export-html|draft-js-import-html|@mdxeditor)[\\/]/,
+          name: 'vendor-editors',
+          priority: 40,
+          reuseExistingChunk: true,
+        },
+        plotly: {
+          test: /[\\/]node_modules[\\/](plotly\.js|plotly\.js-dist-min|react-plotly\.js)[\\/]/,
+          name: 'vendor-plotly',
+          priority: 40,
+          reuseExistingChunk: true,
+        },
+        pdf: {
+          test: /[\\/]node_modules[\\/](pdfjs-dist|react-pdf|jspdf|jspdf-autotable)[\\/]/,
+          name: 'vendor-pdf',
+          priority: 40,
+          reuseExistingChunk: true,
+        },
+        // papaparse deliberately NOT in this group — it's small and eagerly
+        // used, and including it would promote the whole chunk to initial.
+        excel: {
+          test: /[\\/]node_modules[\\/](xlsx|read-excel-file|zipcelx)[\\/]/,
+          name: 'vendor-excel',
+          priority: 40,
+          reuseExistingChunk: true,
+        },
+        // lucide's DynamicIcon references all ~1,800 icons via per-icon
+        // dynamic import(). chunks:'async' merges those into ONE lazy chunk
+        // fetched on first DynamicIcon render. Icons imported statically
+        // (import { X } from 'lucide-react') don't match an async-only group
+        // and tree-shake into normal vendor chunks instead. Do NOT widen this
+        // to the whole package or make it initial — that's how 4.7MB of icons
+        // ended up in the entry bundle.
+        lucideIcons: {
+          test: /[\\/]node_modules[\\/]lucide-react[\\/]dist[\\/]esm[\\/]icons[\\/]/,
+          name: 'lucide-icons',
+          chunks: 'async',
+          priority: 30,
+          reuseExistingChunk: true,
         },
         lucideReact: {
-          test: /[\\/]node_modules[\\/]lucide-react/,
+          test: /[\\/]node_modules[\\/]lucide-react[\\/](?!dist[\\/]esm[\\/]icons[\\/])/,
           name: 'lucide-react',
-          priority: 20, // Higher priority than vendors
+          priority: 20,
+          reuseExistingChunk: true,
+        },
+        // No fixed `name` here: a named catch-all with chunks:'all' would
+        // merge the vendors of every async chunk into ONE chunk that the
+        // entrypoint depends on (initial JS balloons to the union of all
+        // vendors). Unnamed, webpack emits per-chunk-group vendor chunks —
+        // shared/deduped between chunk groups but loaded only when needed.
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
           reuseExistingChunk: true,
         },
       },
@@ -248,7 +227,22 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
+    extensions: [
+      '.ts',
+      '.tsx',
+      '.js',
+      '.jsx',
+      '.png',
+      '.wasm',
+      '.tar',
+      '.data',
+      '.svg',
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.gif',
+      '.json',
+    ],
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
@@ -260,8 +254,6 @@ module.exports = {
       process: require.resolve('process/browser.js'),
       path: require.resolve('path-browserify'),
       util: require.resolve('util/'),
-      '@ee/modules': emptyModulePath,
-      '@cloud/modules': emptyModulePath,
     },
   },
   // In development: fast inline maps.
@@ -269,7 +261,12 @@ module.exports = {
   //   (sentryWebpackPlugin uploads then deletes the .map files from the build dir).
   // In production without Sentry: skip map generation entirely — nothing consumes
   //   them and they push individual chunks past Cloudflare Pages' 25 MiB limit.
-  devtool: environment === 'development' ? 'eval-source-map' : process.env.APM_VENDOR === 'sentry' ? 'hidden-source-map' : false,
+  devtool:
+    environment === 'development'
+      ? 'eval-source-map'
+      : process.env.APM_VENDOR === 'sentry'
+      ? 'hidden-source-map'
+      : false,
   module: {
     rules: [
       {

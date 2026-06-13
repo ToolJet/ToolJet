@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { appService } from '@/_services';
+import { appService } from '@/_services/app.service';
 // RootRouter now handles route splitting for viewer isolation
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved

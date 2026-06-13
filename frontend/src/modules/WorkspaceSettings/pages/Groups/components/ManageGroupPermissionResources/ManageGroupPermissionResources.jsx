@@ -1,9 +1,9 @@
 import React from 'react';
 import BaseManageGroupPermissionResources from '../BaseManageGroupPermissionResources';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEManageGroupPermissionResources from '@ee/modules/WorkspaceSettings/components/ManageGroupPermissionResources';
 
 const ManageGroupPermissionResources = (props) => {
   return <BaseManageGroupPermissionResources {...props} />;
 };
 
-export default withEditionSpecificComponent(ManageGroupPermissionResources, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? ManageGroupPermissionResources : EEManageGroupPermissionResources;

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { userService } from '@/_services';
+import { userService } from '@/_services/user.service';
 import EyeHide from '@/../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '@/../assets/images/onboardingassets/Icons/EyeShow';
 import CopyToClipboardComponent from './CopyToClipboard';

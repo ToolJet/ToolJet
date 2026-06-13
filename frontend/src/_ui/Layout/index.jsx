@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { getPrivateRoute } from '@/_helpers/routes';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import './styles.scss';

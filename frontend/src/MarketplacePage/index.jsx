@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import Layout from '@/_ui/Layout';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';

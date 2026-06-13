@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import Information from '../Icons/information.svg';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 import ForeignKeyTableForm from './ForeignKeyTableForm';
 import EditIcon from '../Icons/EditColumn.svg';
 import _, { isEmpty } from 'lodash';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { Tooltip } from 'react-tooltip';
 import { getColumnDataType, dataTypes } from '../constants';
 import { TooljetDatabaseContext } from '../index';

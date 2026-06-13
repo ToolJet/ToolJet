@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { useNavigate } from 'react-router-dom';
+import EERenderWorkflow from '@ee/modules/RenderWorkflow/components/RenderWorkflow';
 
 const RenderWorkflow = () => {
   const navigate = useNavigate();
@@ -12,4 +12,4 @@ const RenderWorkflow = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(RenderWorkflow, 'RenderWorkflow');
+export default process.env.TOOLJET_EDITION === 'ce' ? RenderWorkflow : EERenderWorkflow;

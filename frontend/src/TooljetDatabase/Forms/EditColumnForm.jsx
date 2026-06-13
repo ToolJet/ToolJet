@@ -3,7 +3,7 @@ import Select, { components } from 'react-select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import defaultStyles from '@/_ui/Select/styles';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { TooljetDatabaseContext } from '../index';
 import tjdbDropdownStyles, {
   dataTypes,
@@ -21,7 +21,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import ForeignKeyRelationIcon from '../Icons/Fk-relation.svg';
 import EditIcon from '../Icons/EditColumn.svg';
 import { ToolTip } from '@/_components/ToolTip';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import DropDownSelect from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';

@@ -1,7 +1,7 @@
 import React from 'react';
 import BasePromoteReleaseButton from '@/modules/common/components/BasePromoteReleaseButton';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEPromoteReleaseButton from '@ee/modules/Appbuilder/components/PromoteReleaseButton';
 const PromoteReleaseButton = (props) => {
   return <BasePromoteReleaseButton {...props} />;
 };
-export default withEditionSpecificComponent(PromoteReleaseButton, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? PromoteReleaseButton : EEPromoteReleaseButton;

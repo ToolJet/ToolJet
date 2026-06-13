@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 import posthog from 'posthog-js';
 import { toast } from 'react-hot-toast';
 import { appendWorkspaceId } from '@/_helpers/routes';

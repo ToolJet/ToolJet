@@ -3,13 +3,13 @@ import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { WorkspaceBranchDropdown } from '@/_ui/WorkspaceBranchDropdown';
 import { WorkspaceGitCTA } from '@/_ui/WorkspaceGitCTA';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 
 function Header({
   featureAccess,

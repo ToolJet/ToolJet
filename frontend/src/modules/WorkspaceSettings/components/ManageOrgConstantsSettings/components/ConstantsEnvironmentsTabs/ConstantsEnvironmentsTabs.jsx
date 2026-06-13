@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEConstantsEnvironmentsTabs from '@ee/modules/WorkspaceSettings/components/ConstantsEnvironmentsTabs';
 
 const ConstantsEnvironmentsTabs = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(ConstantsEnvironmentsTabs, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? ConstantsEnvironmentsTabs : EEConstantsEnvironmentsTabs;

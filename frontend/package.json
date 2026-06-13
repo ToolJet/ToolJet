@@ -2,6 +2,17 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "sideEffects": [
+    "*.css",
+    "*.scss",
+    "*.sass",
+    "./src/index.jsx",
+    "./src/wdyr.js",
+    "./src/_styles/**",
+    "./src/AppBuilder/_stores/store.js",
+    "./src/_helpers/requestIdleCallbackPolyfill.js",
+    "./src/modules/common/resources/styles/**"
+  ],
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.7.3",
     "@base-ui/react": "^1.3.0",
@@ -312,8 +323,13 @@
       "node_modules/(?!(react|mpx-error-boundary)/)"
     ],
     "moduleNameMapper": {
+      "^@ee/(.*)$": "<rootDir>/src/modules/emptyModule/index.js",
+      "^@cloud/(.*)$": "<rootDir>/src/modules/emptyModule/index.js",
       "@/(.*)": "<rootDir>/src/$1"
     },
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
     "testEnvironment": "jest-environment-jsdom",
     "moduleDirectories": [
       "node_modules",

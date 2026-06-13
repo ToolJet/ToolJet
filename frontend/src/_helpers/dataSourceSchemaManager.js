@@ -1,4 +1,4 @@
-import { datasourceService } from '@/_services';
+import { datasourceService } from '@/_services/datasource.service';
 import Ajv2020 from 'ajv';
 
 const ajvOptions = {

@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EECreateAppWithPrompt from '@ee/modules/AiBuilder/components/CreateAppWithPrompt';
 
 const CreateAppWithPrompt = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(CreateAppWithPrompt, 'AiBuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? CreateAppWithPrompt : EECreateAppWithPrompt;
