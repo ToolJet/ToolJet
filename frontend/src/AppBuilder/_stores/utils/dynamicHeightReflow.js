@@ -52,7 +52,7 @@ const TABS_TAB_BAR_HEIGHT = 50;
 //
 // ── Pipeline ────────────────────────────────────────────────────────────────
 //   useDynamicHeight (hook)
-//     → adjustComponentPositions (gridSlice)
+//     → scheduleReflow → flushReflows (gridSlice)
 //       → resolveWidgetVisibility / resolveContainerHeight /
 //         resolveWidgetMeasuredHeight (this file)
 //       → buildReflowPatch (this file) — returns temporary layout patch
