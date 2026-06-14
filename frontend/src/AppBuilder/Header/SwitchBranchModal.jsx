@@ -480,6 +480,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         show={!!pullConflictGroups}
         conflictGroups={pullConflictGroups || []}
         onClose={() => setPullConflictGroups(null)}
+        context="branch-switch"
       />
     </>
   );

@@ -377,6 +377,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
         show={!!pullConflictGroups}
         conflictGroups={pullConflictGroups || []}
         onClose={() => setPullConflictGroups(null)}
+        context="branch-switch"
       />
     </>
   );
