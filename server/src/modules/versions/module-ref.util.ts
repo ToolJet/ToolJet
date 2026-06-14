@@ -100,6 +100,7 @@ export async function listModuleVersions(
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DRAFT_SENTINEL = '__default_branch_draft__';
 
 /**
  * Resolve a ModuleViewer reference to an actual AppVersion row.
@@ -123,6 +124,28 @@ export async function resolveModuleRef(
   consumerBranchId: string | undefined,
   organizationId: string
 ): Promise<AppVersion | null> {
+  // Tier D — default-branch draft sentinel. Resolves to the DRAFT on the default branch
+  // at query time, ignoring consumerBranchId entirely. Stored when the user explicitly
+  // pins to "main draft" in the inspector. Follows default branch renames automatically
+  // because findDefaultBranch uses isDefault:true, not a hardcoded name.
+  if (moduleReferenceId === DRAFT_SENTINEL) {
+    const defaultBranchForDraft = await findDefaultBranch(manager, organizationId);
+    if (defaultBranchForDraft) {
+      const draftOnDefault = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          branchId: defaultBranchForDraft.id,
+          status: AppVersionStatus.DRAFT,
+          versionType: AppVersionType.VERSION,
+          isStub: false,
+        },
+        order: { createdAt: 'DESC' },
+      });
+      if (draftOnDefault) return draftOnDefault;
+    }
+    // Default branch or draft not found — fall through to unpinned.
+  }
+
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
   // Branchless PUBLISHED is checked first: by constraint chk_app_versions_branched_implies_draft,
   // any branched row MUST be DRAFT — so onConsumer/onDefault can only ever return a DRAFT.
@@ -260,13 +283,15 @@ export async function reconcileModuleViewerPinsFromDefault(
     co_relation_id: string | null;
     moduleAppId: string | null;
     moduleVersionId: string | null;
+    moduleVersionName: string | null;
   };
 
   const readViewers = (appVersionId: string): Promise<ViewerRow[]> =>
     manager.query(
       `SELECT c.id, c.co_relation_id,
               c.properties->'moduleAppId'->>'value' AS "moduleAppId",
-              c.properties->'moduleVersionId'->>'value' AS "moduleVersionId"
+              c.properties->'moduleVersionId'->>'value' AS "moduleVersionId",
+              c.properties->'moduleVersionId'->>'versionName' AS "moduleVersionName"
        FROM components c
        JOIN pages p ON p.id = c.page_id
        WHERE p.app_version_id = $1
@@ -287,7 +312,7 @@ export async function reconcileModuleViewerPinsFromDefault(
     if (!feat.co_relation_id) continue;
     const def = defaultByCoRel.get(feat.co_relation_id);
     if (!def?.moduleVersionId) continue; // nothing to inherit
-    if (feat.moduleVersionId === def.moduleVersionId) continue; // already matches
+    if (feat.moduleVersionId === def.moduleVersionId && feat.moduleVersionName === def.moduleVersionName) continue;
 
     const moduleApp = def.moduleAppId
       ? await manager.findOne(App, {
@@ -299,9 +324,12 @@ export async function reconcileModuleViewerPinsFromDefault(
 
     await manager.query(
       `UPDATE components
-       SET properties = jsonb_set(properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
-       WHERE id = $2`,
-      [def.moduleVersionId, feat.id]
+       SET properties = jsonb_set(
+                          jsonb_set(properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text)),
+                          '{moduleVersionId,versionName}', to_jsonb($2::text)
+                        )
+       WHERE id = $3`,
+      [def.moduleVersionId, def.moduleVersionName ?? '', feat.id]
     );
   }
 }
@@ -345,6 +373,7 @@ export interface ResolvedModuleViewer {
 /**
  * Resolve every ModuleViewer under parentVersionId to the row runtime renders.
  * Priority (mirrors resolveModuleRef):
+ *   0. __default_branch_draft__ sentinel → DRAFT on default branch
  *   1. UUID pin → row.module_reference_id on consumer branch
  *   2. UUID pin → row.module_reference_id on default branch
  *   3. legacy version name → version_type='version' row
@@ -537,6 +566,16 @@ export async function resolveAllModuleViewersForVersion(
       );
       if (branchless) return pickKind(branchless, 'pin-hit');
     } else if (pin) {
+      // Clause 0: default-branch draft sentinel
+      if (pin === DRAFT_SENTINEL && defaultBranch) {
+        const draftOnDefault = candidates.find(
+          (r) =>
+            r.branchId === defaultBranch.id &&
+            r.status === AppVersionStatus.DRAFT &&
+            r.versionType === AppVersionType.VERSION
+        );
+        if (draftOnDefault) return pickKind(draftOnDefault, 'pin-hit');
+      }
       // Clause 2: version name on a version_type='version' row in this module's app
       const byName = candidates.find((r) => r.name === pin && r.versionType === AppVersionType.VERSION);
       if (byName) return pickKind(byName, 'pin-hit');
