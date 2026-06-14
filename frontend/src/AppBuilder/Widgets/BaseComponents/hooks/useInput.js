@@ -228,14 +228,17 @@ export const useInput = ({
     isInitialRender.current = false;
   }, []);
 
-  const setInputValue = (value) => {
+  const setInputValue = (value, activeCountry = country) => {
     setValue(value);
     setExposedVariable('value', value);
     let validationStatus;
+
     if (inputType === 'phone') {
-      const countryCode = getCountryCallingCodeSafe(country);
+      // `activeCountry` lets a country switch validate/publish against the new country,
+      // since the `country` state closure isn't updated yet in the same tick.
+      const countryCode = getCountryCallingCodeSafe(activeCountry);
       setExposedVariables({
-        country: country,
+        country: activeCountry,
         countryCode: `+${countryCode}`,
         formattedValue: `${value}`,
       });
@@ -243,6 +246,7 @@ export const useInput = ({
     } else {
       validationStatus = validate(value);
     }
+
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
   };

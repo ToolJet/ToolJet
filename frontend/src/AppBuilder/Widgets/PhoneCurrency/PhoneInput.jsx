@@ -119,14 +119,9 @@ export const PhoneInput = (props) => {
     if (nextCountry === country && nextValue === value) return;
 
     setCountry(nextCountry);
-    setInputValue(nextValue);
-
-    // setInputValue publishes country/countryCode using the stale `country`(setCountry hasn't applied yet),
-    // so re-publish them here with the new country to keep the exposed variables correct.
-    setExposedVariables({
-      country: nextCountry,
-      countryCode: `+${newCode}`,
-    });
+    // Pass nextCountry so setInputValue validates and publishes country/countryCode against the new country,
+    // since its own `country` closure isn't updated until the re-render.
+    setInputValue(nextValue, nextCountry);
   };
 
   const onInputValueChange = (value) => {
