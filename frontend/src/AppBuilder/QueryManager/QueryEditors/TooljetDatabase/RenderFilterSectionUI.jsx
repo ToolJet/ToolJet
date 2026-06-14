@@ -67,6 +67,7 @@ const RenderFilterSectionUI = ({
                       enablePreview={false}
                       height="30"
                       placeholder="->>key"
+                      componentName={'TJDB Filter JSONPath'}
                     />
                   </span>
                 </ToolTip>
@@ -111,6 +112,7 @@ const RenderFilterSectionUI = ({
                   placeholder="key"
                   onChange={(newValue) => handleValueChange(newValue)}
                   height="28"
+                  componentName={'TJDB Filter Value'}
                 />
               )}
             </div>

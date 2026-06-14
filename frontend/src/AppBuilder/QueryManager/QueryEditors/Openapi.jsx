@@ -339,6 +339,7 @@ class OpenapiComponent extends React.Component {
                             initialValue={this.state.options.params.header[param.name]}
                             placeholder={'Value'}
                             onChange={(value) => this.changeParam('header', param.name, value)}
+                            componentName={'OpenAPI Header Value'}
                           />
                         </div>
                         <span
@@ -385,6 +386,7 @@ class OpenapiComponent extends React.Component {
                             placeholder={'Value'}
                             lineNumbers={false}
                             onChange={(value) => this.changeParam('path', param.name, value)}
+                            componentName={'OpenAPI Path Value'}
                           />
                         </div>
                         <span
@@ -430,6 +432,7 @@ class OpenapiComponent extends React.Component {
                             initialValue={this.state.options.params?.query[param.name] ?? ''}
                             placeholder={'Value'}
                             onChange={(value) => this.changeParam('query', param.name, value)}
+                            componentName={'OpenAPI Query Value'}
                           />
                         </div>
                         <span
@@ -479,6 +482,7 @@ class OpenapiComponent extends React.Component {
                             initialValue={this.state.options.params?.request[param] ?? ''}
                             placeholder={'Value'}
                             onChange={(value) => this.changeParam('request', param, value)}
+                            componentName={'OpenAPI Request Value'}
                           />
                         </div>
                         <span

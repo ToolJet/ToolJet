@@ -76,6 +76,7 @@ const OptionDetailsPopover = forwardRef(
                     initialValue={item?.format || 'plain'}
                     paramLabel={'Data format'}
                     paramName={'dataFormat'}
+                    componentName={'Data Format'}
                     onChange={(value) => {
                       onOptionChange('format', value, index);
                     }}
@@ -106,6 +107,7 @@ const OptionDetailsPopover = forwardRef(
                     {...basicCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-label-input`}
                     initialValue={item?.label}
+                    componentName={'Option Label'}
                     onChange={(value) => {
                       onOptionChange('label', value, index);
                     }}
@@ -125,6 +127,7 @@ const OptionDetailsPopover = forwardRef(
                     {...basicCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-description-input`}
                     initialValue={item?.description}
+                    componentName={'Option Description'}
                     onChange={(value) => {
                       onOptionChange('description', value, index);
                     }}
@@ -144,6 +147,7 @@ const OptionDetailsPopover = forwardRef(
                     {...basicCodeHinterProps}
                     data-cy={`${dataCyPrefix}-option-details-value-input`}
                     initialValue={item?.value}
+                    componentName={'Option Value'}
                     onChange={(value) => {
                       onOptionChange('value', value, index);
                     }}
@@ -159,6 +163,7 @@ const OptionDetailsPopover = forwardRef(
                     initialValue={item?.icon?.value || ''}
                     paramLabel={'Icon'}
                     paramName={'icon'}
+                    componentName={'Option Icon'}
                     onChange={(value) => {
                       onOptionChange('icon.value', value, index);
                     }}
@@ -183,6 +188,7 @@ const OptionDetailsPopover = forwardRef(
                     initialValue={item?.default?.value}
                     paramLabel={['ButtonGroupV2'].includes(componentType) ? 'Selected' : 'Default option'}
                     paramName={'optionDefault'}
+                    componentName={'Default Option'}
                     onChange={(value) => {
                       onDefaultChange(value, index);
                     }}
@@ -206,6 +212,7 @@ const OptionDetailsPopover = forwardRef(
                     initialValue={item?.visible?.value}
                     paramLabel={'Option visibility'}
                     paramName={'optionVisibility'}
+                    componentName={'Option Visibility'}
                     onChange={(value) => {
                       onOptionChange('visible.value', value, index);
                     }}
@@ -228,6 +235,7 @@ const OptionDetailsPopover = forwardRef(
                     initialValue={item?.disable?.value}
                     paramLabel={'Disable option'}
                     paramName={'optionDisabled'}
+                    componentName={'Disable Option'}
                     onChange={(value) => {
                       onOptionChange('disable.value', value, index);
                     }}

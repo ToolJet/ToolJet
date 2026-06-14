@@ -300,6 +300,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             initialValue={selectedQuery?.options?.query_timeout ?? ''}
             onChange={(value) => optionchanged('query_timeout', value)}
             cyLabel="query-timeout-input"
+            componentName={'Query Timeout'}
           />
         </div>
       </div>
@@ -319,6 +320,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             onChange={(value) => optionchanged('disableQuery', value)}
             placeholder="{{components.toggleswitch1.value}}"
             cyLabel="query-disable-expression"
+            componentName={'Disable Query'}
           />
         </div>
       </div>
@@ -345,6 +347,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             placeholder={t('editor.queryManager.queryDisabledDefault', 'This query is disabled')}
             cyLabel="query-disabled-message"
             disabled={!hasDisableExpression}
+            componentName={'Disabled Message'}
           />
         </div>
       </div>

@@ -178,6 +178,7 @@ export const ListRows = React.memo(({ darkMode }) => {
                 className="codehinter-plugins"
                 placeholder="Enter limit"
                 onChange={(newValue) => limitOptionChanged(newValue)}
+                componentName={'TJDB List Rows Limit'}
               />
             </div>
           </div>
@@ -193,6 +194,7 @@ export const ListRows = React.memo(({ darkMode }) => {
                 className="codehinter-plugins"
                 placeholder="Enter offset"
                 onChange={(newValue) => offsetOptionChanged(newValue)}
+                componentName={'TJDB List Rows Offset'}
               />
             </div>
           </div>

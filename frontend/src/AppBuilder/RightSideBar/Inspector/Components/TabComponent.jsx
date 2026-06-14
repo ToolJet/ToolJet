@@ -289,6 +289,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               placeholder={'Tab Title'}
+              componentName={'Tab Title'}
               onChange={(value) => handleValueChange(item, value, 'title', index)}
             />
           </div>
@@ -305,6 +306,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               mode="javascript"
               lineNumbers={false}
               placeholder={'Tab ID'}
+              componentName={'Tab ID'}
               onChange={(value) => handleValueChange(item, value, 'id', index)}
               validationFn={(value) => validateTabId(value, item?.id)}
             />
@@ -321,6 +323,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Icon'}
               paramName={'icon'}
+              componentName={'Tab Icon'}
               onChange={(value) => {
                 onChangeIcon(item, { value }, 'icon', index);
               }}
@@ -342,6 +345,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Background'}
               paramName={'fieldBackgroundColor'}
+              componentName={'Tab Background'}
               onChange={(value) => {
                 handleValueChange(item, { value }, 'fieldBackgroundColor', index);
               }}
@@ -361,6 +365,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Loading'}
               paramName={'loading'}
+              componentName={'Tab Loading'}
               onChange={(value) => {
                 handleValueChange(item, { value }, 'loading', index);
               }}
@@ -383,6 +388,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
+              componentName={'Tab Visibility'}
               onFxPress={(active) => handleOnFxPress(item, 'visible', active)}
               fxActive={item?.visible?.fxActive}
               fieldMeta={{
@@ -403,6 +409,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Disable'}
               paramName={'disable'}
+              componentName={'Tab Disable'}
               onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
               onFxPress={(active) => handleOnFxPress(item, 'disable', active)}
               fxActive={item?.disable?.fxActive}

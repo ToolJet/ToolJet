@@ -219,6 +219,7 @@ export const Tags = ({
               lineNumbers={false}
               placeholder={'Tag Title'}
               onChange={(value) => handleValueChange(item, value, 'title', index)}
+              componentName={'Tag Title'}
             />
           </div>
 
@@ -233,6 +234,7 @@ export const Tags = ({
               type={'fxEditor'}
               paramLabel={'Pill color'}
               paramName={'backgroundColor'}
+              componentName={'Tag Pill Color'}
               onChange={(value) => {
                 handleValueChange(item, { value }, 'backgroundColor', index);
               }}
@@ -251,6 +253,7 @@ export const Tags = ({
               type={'fxEditor'}
               paramLabel={'Text and icon'}
               paramName={'textColor'}
+              componentName={'Tag Text and Icon'}
               onChange={(value) => {
                 handleValueChange(item, { value }, 'textColor', index);
               }}
@@ -270,6 +273,7 @@ export const Tags = ({
               type={'fxEditor'}
               paramLabel={'Icon'}
               paramName={'icon'}
+              componentName={'Tag Icon'}
               onChange={(value) => {
                 onChangeIcon(item, { value }, 'icon', index);
               }}
@@ -290,6 +294,7 @@ export const Tags = ({
               component={component}
               type={'fxEditor'}
               paramLabel={'Tag visibility'}
+              componentName={'Tag Visibility'}
               onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
               paramName={'visible'}
               onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
