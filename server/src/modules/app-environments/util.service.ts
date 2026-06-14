@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EntityManager, FindOptionsOrderValue } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from 'src/helpers/database.helper';
 import { IAppEnvironmentUtilService } from './interfaces/IUtilService';
 import { AppVersion } from '@entities/app_version.entity';
 import { App } from '@entities/app.entity';
@@ -12,6 +12,9 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { RequestContext } from '@modules/request-context/service';
+
+const ENV_MEMO_KEY = 'tj_appenv_memo';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
@@ -77,27 +80,41 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
   }
 
   async getByPriority(organizationId: string, ASC = true, manager?: EntityManager): Promise<AppEnvironment> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const condition = {
-        where: { organizationId },
-        order: { priority: ASC ? 'ASC' : ('DESC' as FindOptionsOrderValue) },
-      };
-      return manager.findOneOrFail(AppEnvironment, condition);
-    }, manager);
+    const memoKey = `byPriority:${organizationId}:${ASC ? 'ASC' : 'DESC'}`;
+    const cached = this.#getMemo(memoKey);
+    if (cached) return cached;
+
+    const m = manager ?? getConnectionInstance().manager;
+    const env = await m.findOneOrFail(AppEnvironment, {
+      where: { organizationId },
+      order: { priority: ASC ? 'ASC' : ('DESC' as FindOptionsOrderValue) },
+    });
+    this.#setMemo(memoKey, env);
+    return env;
   }
 
   async getEnvironmentByName(name: string, organizationId: string, manager?: EntityManager): Promise<AppEnvironment> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.findOne(AppEnvironment, {
-        where: { name, organizationId },
-      });
-    }, manager);
+    const m = manager ?? getConnectionInstance().manager;
+    return m.findOne(AppEnvironment, { where: { name, organizationId } });
   }
 
   async getAllEnvironments(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.find(AppEnvironment, { where: { organizationId } });
-    }, manager);
+    const m = manager ?? getConnectionInstance().manager;
+    return m.find(AppEnvironment, { where: { organizationId } });
+  }
+
+  #getMemo(key: string): AppEnvironment | undefined {
+    const ctx = RequestContext.currentContext;
+    const memo = ctx?.res?.locals?.[ENV_MEMO_KEY] as Record<string, AppEnvironment> | undefined;
+    return memo?.[key];
+  }
+
+  #setMemo(key: string, env: AppEnvironment): void {
+    const ctx = RequestContext.currentContext;
+    if (!ctx) return;
+    const memo = (ctx.res?.locals?.[ENV_MEMO_KEY] as Record<string, AppEnvironment>) ?? {};
+    memo[key] = env;
+    RequestContext.setLocals(ENV_MEMO_KEY, memo);
   }
 
   async calculateButtonVisibility(
@@ -190,16 +207,21 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       organizationId
     );
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const condition: FindOneOptions<AppEnvironment> = {
-        where: {
-          organizationId,
-          ...(id ? { id } : !isMultiEnvironmentEnabled ? { priority: 1 } : !priorityCheck ? { isDefault: true } : {}),
-        },
-        ...(priorityCheck && { order: { priority: 'ASC' } }),
-      };
-      return await manager.findOneOrFail(AppEnvironment, condition);
-    }, manager);
+    const memoKey = `get:${organizationId}:${id ?? '_'}:${isMultiEnvironmentEnabled ? 'multi' : 'single'}:${priorityCheck ? 'pri' : 'def'}`;
+    const cached = this.#getMemo(memoKey);
+    if (cached) return cached;
+
+    const m = manager ?? getConnectionInstance().manager;
+    const condition: FindOneOptions<AppEnvironment> = {
+      where: {
+        organizationId,
+        ...(id ? { id } : !isMultiEnvironmentEnabled ? { priority: 1 } : !priorityCheck ? { isDefault: true } : {}),
+      },
+      ...(priorityCheck && { order: { priority: 'ASC' } }),
+    };
+    const env = await m.findOneOrFail(AppEnvironment, condition);
+    this.#setMemo(memoKey, env);
+    return env;
   }
 
   async getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]> {
