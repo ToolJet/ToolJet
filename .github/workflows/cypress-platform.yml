@@ -3,7 +3,7 @@ name:
   # Cache invalidation - 2025-12-09
 
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled]
   # workflow_dispatch:
 
@@ -83,7 +83,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        env:
+          _BRANCH: ${{ env.BRANCH_NAME }}
+        run: echo "SAFE_BRANCH_NAME=$(echo "$_BRANCH" | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -463,7 +465,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        env:
+          _BRANCH: ${{ env.BRANCH_NAME }}
+        run: echo "SAFE_BRANCH_NAME=$(echo "$_BRANCH" | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -862,7 +866,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        env:
+          _BRANCH: ${{ env.BRANCH_NAME }}
+        run: echo "SAFE_BRANCH_NAME=$(echo "$_BRANCH" | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'
@@ -1274,7 +1280,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set SAFE_BRANCH_NAME
-        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+        env:
+          _BRANCH: ${{ env.BRANCH_NAME }}
+        run: echo "SAFE_BRANCH_NAME=$(echo "$_BRANCH" | tr '/' '-')" >> $GITHUB_ENV
 
       - name: Build CE Docker image
         if: matrix.edition == 'ce'

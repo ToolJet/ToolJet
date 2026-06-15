@@ -130,18 +130,33 @@ jobs:
           echo "host=$vm_host" >> $GITHUB_OUTPUT
 
       - name: Deploy to target environment
+        env:
+          SSH_USER: ${{ secrets.AZURE_VM_USER }}
+          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
 
+          VM_HOST="${{ steps.vmhost.outputs.host }}"
           IMAGE_TAG="${{ steps.taggen.outputs.tag }}"
           TARGET_SYSTEM="${{ github.event.inputs.test_system }}"
+
+          # Verify host key before connecting — prevents MITM (replaces StrictHostKeyChecking=no)
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
+
+          # Docker login on the remote VM — password is piped from local runner stdin so it never
+          # appears as a literal string inside the SSH data stream or remote shell history
+          echo "$DOCKER_PASSWORD" | ssh -i key.pem "$SSH_USER@$VM_HOST" \
+            "sudo docker login --username \"$DOCKER_USERNAME\" --password-stdin"
 
           # Debug: Show what we're deploying
           echo "DEBUG: IMAGE_TAG=$IMAGE_TAG"
           echo "DEBUG: TARGET_SYSTEM=$TARGET_SYSTEM"
 
-          ssh -o StrictHostKeyChecking=no -i key.pem $SSH_USER@${{ steps.vmhost.outputs.host }} << EOF
+          ssh -i key.pem "$SSH_USER@$VM_HOST" << EOF
           set -e
 
           IMAGE_TAG="$IMAGE_TAG"
@@ -157,24 +172,24 @@ jobs:
           if [[ "\$TARGET_SYSTEM" == *-3.16-lts ]]; then
             echo "Detected LTS system: \$TARGET_SYSTEM"
             echo "🔍 Searching for LTS directories..."
-            
+
             # Find LTS directories dynamically
             LTS_DIRS=\$(ls -1d ./*-lts 2>/dev/null | grep -E '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort -V; \\
                        ls -1d ./*-lts 2>/dev/null | grep -Ev '[0-9]+\.[0-9]+' | sed 's|^\./||' | sort)
-            
+
             if [[ -z "\$LTS_DIRS" ]]; then
               echo "❌ No LTS directories found!"
               echo "Available directories:"
               ls -la | grep "^d"
               exit 1
             fi
-            
+
             echo "Available LTS directories:"
             echo "\$LTS_DIRS"
-            
+
             # Choose the first available LTS directory
             SELECTED_LTS_DIR=\$(echo "\$LTS_DIRS" | head -n 1)
-            
+
             echo "📂 Selected LTS directory: \$SELECTED_LTS_DIR"
             cd "\$SELECTED_LTS_DIR"
             echo "✅ Now in directory: \$(pwd)"
@@ -184,9 +199,6 @@ jobs:
             cd ~
             echo "✅ Now in directory: \$(pwd)"
           fi
-
-          echo "🔐 Docker login"
-          echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
           echo "current image"
           cat .env | grep TOOLJET_IMAGE
@@ -263,6 +275,3 @@ jobs:
           sudo docker image prune -a -f
 
           EOF
-        env:
-          SSH_USER: ${{ secrets.AZURE_VM_USER }}
-          SSH_KEY: ${{ secrets.AZURE_VM_KEY }}
