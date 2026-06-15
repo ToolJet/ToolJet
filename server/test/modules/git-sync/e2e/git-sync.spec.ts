@@ -3379,6 +3379,276 @@ describe('GitSyncController', () => {
           [orgId, orphanDsId, mainBranchId]
         );
         expect(newDsvOnMain.length).toBeGreaterThanOrEqual(1);
+
+        step(62, 'matched data source renamed into an orphan\'s active name → pull succeeds (orphan branch DSV renamed)');
+        // 62. Regression for the matched-rename branch-DSV collision. A data
+        //     source already on main (matched by co_relation_id, present in git)
+        //     is renamed in git to a name an *orphan* DSV on main still holds.
+        //     The orphan rename in deserialize used to run only for brand-new
+        //     data sources (the `!ds` path), so a matched-and-renamed DS tripped
+        //     idx_unique_active_name_branch. The shared guard must now rename the
+        //     orphan branch DSV first so the matched DS can take the name; the
+        //     default-DSV sync must likewise dodge
+        //     data_source_version_default_name_organization_id_unique.
+        //
+        // Branch ordering mirrors step 61: feat-e2e-18 (where we rename) is
+        // created BEFORE the orphan is moved onto main, so the rename branch
+        // never inherits the orphan name via cloneDataSourceVersions.
+
+        // (a) Land a normal DS on main → becomes a matched DS (corid in git).
+        const createBranch16Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-16', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat16BranchId: string = createBranch16Resp.body.id;
+
+        const matchedSrcDsResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat16BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat16BranchId)
+          .send({ name: 'matched-rename-src', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const matchedSrcDsId: string = matchedSrcDsResp.body.id;
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/push')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat16BranchId)
+          .send({ commitMessage: 'land matched-rename-src', branchId: feat16BranchId })
+          .expect(201);
+
+        const matchedSrcMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-16',
+            target: 'main',
+            message: 'Land matched-rename-src',
+          }),
+        });
+        expect((await matchedSrcMergeResp.json().catch(() => ({}))).ok).toBe(true);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // (b) Create the rename branch NOW — clones the matched DS, but main has
+        //     no orphan yet, so feat-e2e-18 stays free of the orphan name.
+        const createBranch18Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-18', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat18BranchId: string = createBranch18Resp.body.id;
+
+        // (c) Create an orphan DS named 'matched-rename-dst' and SQL-move its DSV
+        //     onto main (corid never pushed → absent from main's data-sources/).
+        const createBranch17Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-17', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat17BranchId: string = createBranch17Resp.body.id;
+
+        const orphanDstDsResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat17BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat17BranchId)
+          .send({ name: 'matched-rename-dst', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const orphanDstDsId: string = orphanDstDsResp.body.id;
+        expect(orphanDstDsId).not.toBe(matchedSrcDsId);
+
+        await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
+          mainBranchId,
+          orphanDstDsId,
+        ]);
+
+        // (d) Rename the matched DS to the orphan's name on feat-e2e-18, push.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/data-sources/${matchedSrcDsId}?environment_id=${dsDevEnv.id}&branch_id=${feat18BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat18BranchId)
+          .send({ name: 'matched-rename-dst', options: buildUpdateOptions('http://renamed.url.com') })
+          .expect(200);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/push')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat18BranchId)
+          .send({ commitMessage: 'rename matched-rename-src → matched-rename-dst', branchId: feat18BranchId })
+          .expect(201);
+
+        const renameMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-18',
+            target: 'main',
+            message: 'Land matched-rename-dst rename',
+          }),
+        });
+        expect((await renameMergeResp.json().catch(() => ({}))).ok).toBe(true);
+
+        // Pull main — previously 500 (idx_unique_active_name_branch); now 201.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // (e) Matched DS now carries the orphan's old name on main, active.
+        const matchedSrcAfter = await dataSource.query(
+          `SELECT name, is_active FROM data_source_versions
+            WHERE data_source_id = $1 AND branch_id = $2`,
+          [matchedSrcDsId, mainBranchId]
+        );
+        expect(matchedSrcAfter).toHaveLength(1);
+        expect(matchedSrcAfter[0].is_active).toBe(true);
+        expect(matchedSrcAfter[0].name).toBe('matched-rename-dst');
+
+        // (f) Orphan branch DSV was renamed out of the way and/or deactivated by
+        //     the sweep — either way it no longer holds the active name.
+        const orphanDstAfter = await dataSource.query(
+          `SELECT name, is_active FROM data_source_versions
+            WHERE data_source_id = $1 AND branch_id = $2`,
+          [orphanDstDsId, mainBranchId]
+        );
+        expect(orphanDstAfter).toHaveLength(1);
+        const orphanFreedTheName =
+          orphanDstAfter[0].name !== 'matched-rename-dst' || orphanDstAfter[0].is_active === false;
+        expect(orphanFreedTheName).toBe(true);
+
+        // (g) Exactly one ACTIVE non-default DSV named 'matched-rename-dst' on
+        //     main → idx_unique_active_name_branch satisfied; it's the matched DS.
+        const activeBranchDst = await dataSource.query(
+          `SELECT dsv.id, dsv.data_source_id FROM data_source_versions dsv
+             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
+            WHERE ds.organization_id = $1 AND dsv.branch_id = $2
+              AND LOWER(dsv.name) = LOWER('matched-rename-dst')
+              AND dsv.is_active = true AND dsv.is_default = false`,
+          [orgId, mainBranchId]
+        );
+        expect(activeBranchDst).toHaveLength(1);
+        expect(activeBranchDst[0].data_source_id).toBe(matchedSrcDsId);
+
+        // (h) Exactly one ACTIVE default DSV named 'matched-rename-dst' in the org
+        //     → data_source_version_default_name_organization_id_unique satisfied.
+        const activeDefaultDst = await dataSource.query(
+          `SELECT dsv.id FROM data_source_versions dsv
+             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
+            WHERE ds.organization_id = $1
+              AND LOWER(dsv.name) = LOWER('matched-rename-dst')
+              AND dsv.is_active = true AND dsv.is_default = true`,
+          [orgId]
+        );
+        expect(activeDefaultDst).toHaveLength(1);
+
+        step(63, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
+        // 63. Regression for the CRUD rename check. Deleting a global DS on a
+        //     feature branch only soft-deletes its branch DSV (is_active=false);
+        //     the data_sources row survives. The rename validation used to query
+        //     data_sources, so renaming another DS into the freed name was
+        //     wrongly rejected as "already exists". The branch-aware check now
+        //     looks at active branch DSVs, so the rename succeeds.
+        const createBranch19Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-19', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat19BranchId: string = createBranch19Resp.body.id;
+
+        const delRenameAResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat19BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat19BranchId)
+          .send({ name: 'del-rename-a', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const delRenameAId: string = delRenameAResp.body.id;
+
+        const delRenameBResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat19BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat19BranchId)
+          .send({ name: 'del-rename-b', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const delRenameBId: string = delRenameBResp.body.id;
+
+        // Delete A on the branch → soft-deletes its branch DSV.
+        await request
+          .agent(app.getHttpServer())
+          .delete(`/api/data-sources/${delRenameAId}?branch_id=${feat19BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat19BranchId)
+          .expect(200);
+
+        // Rename B → A. Previously 400 ("already exists"); now 200.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/data-sources/${delRenameBId}?environment_id=${dsDevEnv.id}&branch_id=${feat19BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat19BranchId)
+          .send({ name: 'del-rename-a', options: buildUpdateOptions('http://b-renamed.url.com') })
+          .expect(200);
+
+        // B's active branch DSV now carries the freed name.
+        const bAfterRename = await dataSource.query(
+          `SELECT name FROM data_source_versions
+            WHERE data_source_id = $1 AND branch_id = $2 AND is_active = true`,
+          [delRenameBId, feat19BranchId]
+        );
+        expect(bAfterRename).toHaveLength(1);
+        expect(bAfterRename[0].name).toBe('del-rename-a');
+
+        // A's branch DSV stays soft-deleted.
+        const aAfterDelete = await dataSource.query(
+          `SELECT is_active FROM data_source_versions
+            WHERE data_source_id = $1 AND branch_id = $2`,
+          [delRenameAId, feat19BranchId]
+        );
+        expect(aAfterDelete).toHaveLength(1);
+        expect(aAfterDelete[0].is_active).toBe(false);
       }, 540000);
     });
   });
