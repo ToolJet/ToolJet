@@ -363,16 +363,25 @@ export async function resolveAllModuleViewersForVersion(
   const coRels = Array.from(new Set(viewers.map((v) => v.moduleAppCoRel).filter((x): x is string => !!x)));
 
   // Oldest app per co_relation_id wins — mirrors guard's findOne ASC. Hydrate may dup.
+  // COALESCE: apps.name can be null for modules created via certain paths; fall back to
+  // app_versions.app_name (snapshotted at version creation, reliably populated).
   type ModuleAppRow = { id: string; coRel: string; name: string; currentVersionId: string | null };
   const moduleApps: ModuleAppRow[] = coRels.length
     ? await manager.query(
-        `SELECT DISTINCT ON (co_relation_id)
-                id, co_relation_id AS "coRel", name, current_version_id AS "currentVersionId"
-         FROM apps
-         WHERE co_relation_id::text = ANY($1)
-           AND type = $2
-           AND organization_id = $3
-         ORDER BY co_relation_id, created_at ASC`,
+        `SELECT DISTINCT ON (a.co_relation_id)
+                a.id,
+                a.co_relation_id AS "coRel",
+                COALESCE(a.name, (
+                  SELECT av.app_name FROM app_versions av
+                  WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                  ORDER BY av.created_at DESC LIMIT 1
+                )) AS "name",
+                a.current_version_id AS "currentVersionId"
+         FROM apps a
+         WHERE a.co_relation_id::text = ANY($1)
+           AND a.type = $2
+           AND a.organization_id = $3
+         ORDER BY a.co_relation_id, a.created_at ASC`,
         [coRels, APP_TYPES.MODULE, organizationId]
       )
     : [];
