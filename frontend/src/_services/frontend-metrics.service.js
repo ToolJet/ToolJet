@@ -15,6 +15,7 @@
  *   - When the batch reaches MAX_BATCH_SIZE events
  */
 
+import config from 'config';
 import { authHeader } from '@/_helpers/auth-header';
 import { authenticationService } from '@/_services';
 import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
@@ -75,12 +76,13 @@ export function recordMetricEvent(type, attrs = {}, duration = undefined) {
 
 /**
  * Flush the in-memory event queue to the backend.
- * Uses navigator.sendBeacon when called on page unload (sync, non-blocking).
- * Falls back to fetch for regular periodic flushes.
  *
- * @param {boolean} [useBeacon=false] - True when called from beforeunload/visibilitychange
+ * Always uses fetch with keepalive:true so the request survives page unload.
+ * navigator.sendBeacon is NOT used because it omits cookies on cross-origin
+ * requests (dev: port 8082→3000), causing 401s. fetch+keepalive is the modern
+ * equivalent and supports credentials:'include'.
  */
-export function flush(useBeacon = false) {
+export function flush() {
   if (!isEnabled() || eventQueue.length === 0) return;
 
   const events = eventQueue.splice(0); // drain queue atomically
@@ -90,32 +92,13 @@ export function flush(useBeacon = false) {
     events,
   };
 
-  const url = '/api/otel/frontend-metrics';
-  const body = JSON.stringify(batch);
-  const headers = {
-    ...authHeader(),
-    'Content-Type': 'application/json',
-  };
-
-  if (useBeacon && typeof navigator.sendBeacon === 'function') {
-    // sendBeacon is fire-and-forget; Content-Type must be text/plain or application/x-www-form-urlencoded
-    // for cross-origin, but for same-origin it works with application/json Blob.
-    const blob = new Blob([body], { type: 'application/json' });
-    const sent = navigator.sendBeacon(url, blob);
-    if (!sent && process.env.NODE_ENV === 'development') {
-      console.warn('[FrontendMetrics] sendBeacon failed, events dropped on unload');
-    }
-    return;
-  }
-
-  // Regular periodic flush — use fetch (non-blocking, we don't await in the ticker)
-  fetch(url, {
+  fetch(`${config.apiUrl}/otel/frontend-metrics`, {
     method: 'POST',
-    headers,
-    body,
-    keepalive: true, // keeps the request alive even after navigation
+    headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(batch),
+    keepalive: true, // survives page unload (same role as sendBeacon)
+    credentials: 'include', // sends tj_auth_token cookie cross-origin in dev
   }).catch(() => {
-    // Silently ignore flush errors — observability must never break the app
     if (process.env.NODE_ENV === 'development') {
       console.warn('[FrontendMetrics] flush failed (OTEL endpoint unreachable?)');
     }
@@ -128,11 +111,24 @@ export function flush(useBeacon = false) {
  */
 function getCurrentPage() {
   const path = window.location.pathname;
-  if (path.includes('/preview/') || path.includes('/viewer/')) return 'app-viewer';
-  if (path.includes('/apps/') || path.includes('/editor/')) return 'app-builder';
-  if (path.includes('/dashboard')) return 'dashboard';
-  if (path.includes('/login') || path.includes('/signup')) return 'auth';
-  if (path.includes('/settings')) return 'settings';
+  // App editor: /:workspaceId/apps/:slug/...
+  if (path.includes('/apps/')) return 'app-builder';
+  // App viewer: /applications/... or /embed-apps/...
+  if (path.startsWith('/applications/') || path.startsWith('/embed-apps/')) return 'app-viewer';
+  // Workflows
+  if (path.includes('/workflows')) return 'workflows';
+  // TooljetDB
+  if (path.includes('/database')) return 'database';
+  // Any settings variant: workspace-settings, profile-settings, workspace-constants
+  if (path.includes('/settings') || path.includes('/workspace-constants')) return 'settings';
+  // Modules
+  if (path.includes('/modules')) return 'modules';
+  // Integrations / marketplace
+  if (path.includes('/integrations')) return 'integrations';
+  // Auth
+  if (path.includes('/login') || path.includes('/signup') || path.includes('/sso')) return 'auth';
+  // Dashboard: /:workspaceId or /:workspaceId/home
+  if (path.includes('/home') || /^\/[^/]+\/?$/.test(path)) return 'dashboard';
   return 'other';
 }
 
@@ -159,11 +155,11 @@ export function initFrontendMetrics() {
   flushTimer = setInterval(() => flush(false), FLUSH_INTERVAL_MS);
 
   // Unload beacon — fires when the user navigates away
-  const onUnload = () => flush(true);
+  const onUnload = () => flush();
   window.addEventListener('pagehide', onUnload);
   // visibilitychange catches tab switches and mobile backgrounding
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flush(true);
+    if (document.visibilityState === 'hidden') flush();
   });
 
   // SPA page view tracking — patch pushState (genuine navigation) and popstate (back/forward).
@@ -197,7 +193,7 @@ export function initFrontendMetrics() {
  * attempts a best-effort flush then drops any remaining buffered events.
  */
 export function teardownFrontendMetrics() {
-  flush(false); // best-effort send; errors are silently ignored by flush()
+  flush(); // best-effort send; errors are silently ignored by flush()
   if (flushTimer) {
     clearInterval(flushTimer);
     flushTimer = null;
