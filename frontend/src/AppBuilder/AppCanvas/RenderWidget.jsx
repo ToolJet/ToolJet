@@ -8,6 +8,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
@@ -60,6 +61,10 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'FileButton',
   'ButtonGroupV2',
   'Listview',
+  'TagsInput',
+  'TreeSelect',
+  'ModalV2',
+  'Container',
 ];
 
 const RenderWidget = ({
@@ -279,73 +284,88 @@ const RenderWidget = ({
 
   if (!component) return null;
 
+  // Pick the tooltip source — some widgets keep tooltip under `properties`,
+  // others under `general`. SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY enumerates
+  // the former group.
+  const isShadowedWidget = SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component);
+  const userTooltipContent = isShadowedWidget ? resolvedProperties?.tooltip : resolvedGeneralProperties?.tooltip;
+  const userTooltipFormat = isShadowedWidget
+    ? resolvedProperties?.tooltipFormat
+    : resolvedGeneralProperties?.tooltipFormat;
+  const hasUserTooltip = !!userTooltipContent?.toString().trim();
+
+  const innerWidget = (
+    <div
+      style={{
+        height: '100%',
+        padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
+      }}
+      className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''} ${
+        !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
+          ? 'disabled'
+          : ''
+      }`} //required for custom CSS
+      data-cy={`draggable-widget-${componentName}`}
+    >
+      <TrackedSuspense fallback={null}>
+        <ComponentToRender
+          id={id}
+          key={key}
+          {...obj}
+          currentLayout={currentLayout}
+          setExposedVariable={setExposedVariable}
+          setExposedVariables={setExposedVariables}
+          height={widgetHeight - 4}
+          width={widgetWidth}
+          parentId={parentId}
+          fireEvent={fireEventWrapper}
+          validate={validate}
+          resetComponent={resetComponent}
+          onComponentClick={onComponentClick}
+          darkMode={darkMode}
+          componentName={componentName}
+          adjustComponentPositions={adjustComponentPositions}
+          componentCount={componentCount}
+          dataCy={`${componentName}`}
+          currentMode={currentMode}
+          subContainerIndex={subContainerIndex}
+          componentType={componentType}
+        />
+      </TrackedSuspense>
+    </div>
+  );
+
+  // On-canvas tooltip uses the new rich-content WidgetTooltip (plainText / markdown / html).
+  // The off-canvas case (component-picker preview) keeps using OverlayTrigger because that
+  // tooltip surfaces the widget's *description*, not user-authored content.
+  if (inCanvas) {
+    return (
+      <ErrorBoundary>
+        <WidgetTooltip
+          content={userTooltipContent}
+          format={userTooltipFormat}
+          show={hasUserTooltip}
+          darkMode={darkMode}
+        >
+          {innerWidget}
+        </WidgetTooltip>
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <OverlayTrigger
-        placement={inCanvas ? 'auto' : 'top'}
+        placement="top"
         delay={{ show: 500, hide: 0 }}
-        trigger={
-          inCanvas && SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-            ? !resolvedProperties?.tooltip?.toString().trim()
-              ? null
-              : ['hover', 'focus']
-            : !resolvedGeneralProperties?.tooltip?.toString().trim()
-            ? null
-            : ['hover', 'focus']
-        }
         overlay={(props) =>
           renderTooltip({
             props: { ...props, style: { ...props.style, whiteSpace: 'pre-wrap' } },
-            text: inCanvas
-              ? `${
-                  SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY.includes(component?.component)
-                    ? resolvedProperties?.tooltip
-                    : resolvedGeneralProperties?.tooltip
-                }`
-              : `${t(`widget.${component?.name}.description`, component?.description)}`,
+            text: `${t(`widget.${component?.name}.description`, component?.description)}`,
           })
         }
       >
-        <div
-          style={{
-            height: '100%',
-            padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
-          }}
-          className={`canvas-component ${
-            inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''
-          } ${
-            !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
-              ? 'disabled'
-              : ''
-          }`} //required for custom CSS
-          data-cy={`draggable-widget-${componentName}`}
-        >
-          <TrackedSuspense fallback={null}>
-            <ComponentToRender
-              id={id}
-              key={key}
-              {...obj}
-              currentLayout={currentLayout}
-              setExposedVariable={setExposedVariable}
-              setExposedVariables={setExposedVariables}
-              height={widgetHeight - 4}
-              width={widgetWidth}
-              parentId={parentId}
-              fireEvent={fireEventWrapper}
-              validate={validate}
-              resetComponent={resetComponent}
-              onComponentClick={onComponentClick}
-              darkMode={darkMode}
-              componentName={componentName}
-              adjustComponentPositions={adjustComponentPositions}
-              componentCount={componentCount}
-              dataCy={`${componentName}`}
-              currentMode={currentMode}
-              subContainerIndex={subContainerIndex}
-              componentType={componentType}
-            />
-          </TrackedSuspense>
-        </div>
+        {innerWidget}
       </OverlayTrigger>
     </ErrorBoundary>
   );

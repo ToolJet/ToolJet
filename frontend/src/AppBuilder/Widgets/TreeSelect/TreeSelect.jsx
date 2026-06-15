@@ -14,6 +14,7 @@ import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import cx from 'classnames';
 import { Triangle } from 'lucide-react';
 import {
+  getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
@@ -60,7 +61,10 @@ const TreeSelect = ({
     autoLabelWidth,
     labelWidth,
     labelStyle = 'new',
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
@@ -459,6 +463,7 @@ const TreeSelect = ({
           darkMode={darkMode}
           isMandatory={isMandatory}
           inputId={inputId}
+          fontSize={labelFontSizeValue}
         />
         <div
           style={{

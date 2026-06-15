@@ -20,7 +20,7 @@ export const ControlButtons = memo(
     );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
     const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
-    const { handleRefresh, isRefreshing } = useTableRefresh(id);
+    const { handleRefresh, isRefreshing } = useTableRefresh(id, fireEvent);
 
     const RenderButton = ({ icon, tooltipId, tooltipContent, className, label, fill, ...restProps }) => {
       return (
