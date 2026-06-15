@@ -40,6 +40,7 @@ export const ERROR_TYPES = {
   RESTRICTED_PREVIEW: 'restricted-preview',
   APP_NOT_ON_BRANCH: 'app-not-on-branch',
   APP_NOT_READY: 'app-not-ready',
+  PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
 };
 
 export const ERROR_MESSAGES = {

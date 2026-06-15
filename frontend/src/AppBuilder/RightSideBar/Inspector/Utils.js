@@ -183,7 +183,8 @@ export function renderElement(
     componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
-    componentConfig.component == 'FileButton'
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'Tabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
