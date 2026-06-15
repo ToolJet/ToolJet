@@ -106,42 +106,44 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
             )}
           </p>
 
-          {conflictGroups.map((group, idx) => (
-            <div key={idx} className="conflict-group-wrapper">
-              <div className="conflict-section">
-                <div className="conflict-section-header">
-                  <span>
-                    {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
-                    {group.conflictKey
-                      ? ` - '${group.conflictKey}'`
-                      : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
-                  </span>
-                </div>
+          <div className="conflict-groups-list">
+            {conflictGroups.map((group, idx) => (
+              <div key={idx} className="conflict-group-wrapper">
+                <div className="conflict-section">
+                  <div className="conflict-section-header">
+                    <span>
+                      {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
+                      {group.conflictKey
+                        ? ` - '${group.conflictKey}'`
+                        : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
+                    </span>
+                  </div>
 
-                <div className="conflict-section-body">
-                  {group.conflicts.map((item, itemIdx) => (
-                    <div key={itemIdx} className="conflict-item">
-                      <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
+                  <div className="conflict-section-body">
+                    {group.conflicts.map((item, itemIdx) => (
+                      <div key={itemIdx} className="conflict-item">
+                        <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
 
-                      <span className="conflict-item-name">
-                        {group.conflictField === 'slug'
-                          ? item.name
-                          : item.coRelationId
-                          ? `#${item.coRelationId.slice(0, 8)}`
-                          : item.name}
-                      </span>
-
-                      {!hideBadges && (
-                        <span className={`conflict-badge conflict-badge--${item.status}`}>
-                          {STATUS_LABEL_MAP[item.status] || item.status}
+                        <span className="conflict-item-name">
+                          {group.conflictField === 'slug'
+                            ? item.name
+                            : item.coRelationId
+                            ? `#${item.coRelationId.slice(0, 8)}`
+                            : item.name}
                         </span>
-                      )}
-                    </div>
-                  ))}
+
+                        {!hideBadges && (
+                          <span className={`conflict-badge conflict-badge--${item.status}`}>
+                            {STATUS_LABEL_MAP[item.status] || item.status}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           <p className="conflict-footer-text">
             {isBranchCreation || isBranchSwitch || isPushConflict

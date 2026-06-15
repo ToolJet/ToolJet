@@ -68,6 +68,11 @@
     margin: 0 0 16px;
   }
 
+  .conflict-groups-list {
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
   .conflict-section {
     border: 1px solid var(--slate6);
     border-radius: 8px;
