@@ -163,11 +163,14 @@ export const authorizeWorkspace = async () => {
           /* CASE-4: For app viewer paths, check if app is public before redirecting to login */
           const pathSegments = getPathname(null, true).split('/').filter(Boolean);
           const appSlug = pathSegments[1]; // /applications/:slug/...
+          const searchParams = new URLSearchParams(window.location.search);
+          const isLocalPreview = !!(searchParams.get('version') || searchParams.get('env'));
           if (appSlug) {
             try {
               const appConfig = await appsService.getAppAuthenticationConfig(appSlug);
-              if (appConfig?.isPublic) {
-                // Public app — let the Viewer load it without authentication
+              //For preview validateSession will handle the authentication and authorization
+              if (appConfig?.isPublic || isLocalPreview) {
+                // Public app or preview URL — let validateSession in the route handle auth
                 updateCurrentSession({
                   authentication_failed: true,
                   load_app: true,
