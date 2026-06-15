@@ -35,22 +35,38 @@ export class DataQueryRepository extends Repository<DataQuery> {
   }
 
   async findPublicParentAppForModuleQuery(moduleAppId: string, dataQueryId: string): Promise<App | null> {
-    const qb = this.manager
+    return this.manager
       .createQueryBuilder(App, 'app')
-      .innerJoin(AppVersion, 'app_version', 'app_version.app_id = app.id')
+      // Structural join: traverse the deployed version's pages and components.
+      .innerJoin(AppVersion, 'app_version', 'app_version.app_id = app.id AND app_version.id = app.current_version_id')
       .innerJoin(Page, 'page', 'page.app_version_id = app_version.id')
       .innerJoin(Component, 'component', 'component.page_id = page.id')
       .innerJoin(DataQuery, 'data_query', 'data_query.id = :dataQueryId', { dataQueryId })
       .innerJoin(AppVersion, 'module_version', 'module_version.id = data_query.app_version_id')
       .innerJoin(App, 'module_app', 'module_app.id = module_version.app_id')
-      .where('component.type = :componentType', { componentType: 'ModuleViewer' })
-      .andWhere('app_version.is_public = true')
-      .andWhere(
-        `(app.current_version_id = app_version.id
-          OR NOT EXISTS (
-            SELECT 1 FROM organization_git_sync_branches wb WHERE wb.organization_id = app.organization_id
-          ))`
+      // Metadata join: resolve is_public independently of which version is deployed.
+      // For git-sync apps apps.is_public is null; the canonical flag lives on the most
+      // recently updated version on the default branch (mirrors resolveMetadataVersion).
+      // For non-git-sync apps wb and av_meta will both be null, falling through to app.is_public.
+      .leftJoin(
+        'organization_git_sync_branches',
+        'wb',
+        'wb.organization_id = app.organization_id AND wb.is_default = true'
       )
+      .leftJoin(
+        AppVersion,
+        'av_meta',
+        `av_meta.app_id = app.id
+         AND av_meta.branch_id = wb.id
+         AND av_meta.id = (
+           SELECT av2.id FROM app_versions av2
+           WHERE av2.app_id = app.id AND av2.branch_id = wb.id
+           ORDER BY av2.updated_at DESC LIMIT 1
+         )`
+      )
+      .where('component.type = :componentType', { componentType: 'ModuleViewer' })
+      // Priority: git-sync metadata version → app row → structural version (non-git-sync fallback).
+      .andWhere('COALESCE(av_meta.is_public, app.is_public, app_version.is_public) = true')
       .andWhere('module_version.app_id = :moduleAppId', { moduleAppId })
       .andWhere('module_version.app_id != app.id')
       .andWhere('app.organization_id = module_app.organization_id')
@@ -60,9 +76,8 @@ export class DataQueryRepository extends Repository<DataQuery> {
           OR component.properties::jsonb -> 'moduleVersionId' ->> 'value' = module_version.module_reference_id::text
           OR component.properties::jsonb -> 'moduleVersionId' ->> 'value' = data_query.app_version_id::text)`
       )
-      .limit(1);
-
-    return qb.getOne();
+      .limit(1)
+      .getOne();
   }
 
   getAll(appVersionId: string): Promise<DataQuery[]> {
