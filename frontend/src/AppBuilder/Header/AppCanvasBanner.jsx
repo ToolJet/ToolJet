@@ -9,15 +9,23 @@ import { shallow } from 'zustand/shallow';
 
 const AppCanvasBanner = ({ appId = '' }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { fetchDevelopmentVersions, currentMode, environments } = useStore(
+  const { fetchDevelopmentVersions, currentMode, environments, developmentVersions, selectedVersion } = useStore(
     (state) => ({
       fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       currentMode: state.modeStore.modules[moduleId].currentMode,
       environments: state.environments,
+      developmentVersions: state.developmentVersions,
+      selectedVersion: state.selectedVersion,
     }),
     shallow
   );
   const { isGitSyncEnabled } = useGitSyncConfig();
+
+  const isCurrentVersionLocked = !!(
+    selectedVersion &&
+    (selectedVersion.status === 'PUBLISHED' ||
+      developmentVersions?.find((v) => v.id === selectedVersion.id && v.status === 'PUBLISHED'))
+  );
 
   useEffect(() => {
     fetchDevelopmentVersions(appId);
@@ -29,7 +37,10 @@ const AppCanvasBanner = ({ appId = '' }) => {
       if (isGitSyncEnabled) {
         return <WorkspaceLockedBanner pageContext="modules" />;
       }
-      return <FreezeVersionInfo info="This version is locked. To make edits, create a draft version." hide={false} />;
+      if (isCurrentVersionLocked) {
+        return <FreezeVersionInfo info="This version is locked. To make edits, create a draft version." hide={false} />;
+      }
+      return null;
     }
     return <FreezeVersionInfo hide={false} />;
   };
