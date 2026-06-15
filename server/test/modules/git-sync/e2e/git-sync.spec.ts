@@ -3045,7 +3045,9 @@ describe('GitSyncController', () => {
         const moduleMetaFolderObj = JSON.parse(originalModuleMetaFolder);
         const realModuleFolderKeys = Object.keys(moduleMetaFolderObj).filter(
           (k) =>
-            moduleMetaFolderObj[k] && typeof moduleMetaFolderObj[k] === 'object' && (moduleMetaFolderObj[k] as any).appPath
+            moduleMetaFolderObj[k] &&
+            typeof moduleMetaFolderObj[k] === 'object' &&
+            (moduleMetaFolderObj[k] as any).appPath
         );
         expect(realModuleFolderKeys.length).toBeGreaterThan(0);
         const sampleModuleFolderEntry = moduleMetaFolderObj[realModuleFolderKeys[0]];
@@ -3378,7 +3380,10 @@ describe('GitSyncController', () => {
         );
         expect(newDsvOnMain.length).toBeGreaterThanOrEqual(1);
 
-        step(62, 'matched data source renamed into an orphan\'s active name → pull succeeds (orphan branch DSV renamed)');
+        step(
+          62,
+          "matched data source renamed into an orphan's active name → pull succeeds (orphan branch DSV renamed)"
+        );
         // 62. Regression for the matched-rename branch-DSV collision. A data
         //     source already on main (matched by co_relation_id, present in git)
         //     is renamed in git to a name an *orphan* DSV on main still holds.
@@ -3425,7 +3430,7 @@ describe('GitSyncController', () => {
 
         const matchedSrcMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -3506,7 +3511,7 @@ describe('GitSyncController', () => {
 
         const renameMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -3647,6 +3652,156 @@ describe('GitSyncController', () => {
         );
         expect(aAfterDelete).toHaveLength(1);
         expect(aAfterDelete[0].is_active).toBe(false);
+
+        step(
+          64,
+          'incoming DS collides with an orphan that owns an active default DSV → pull succeeds (default-DSV collision resolved)'
+        );
+        // 64. Stresses the org-wide active-default namespace (trigger
+        //     data_source_version_default_name_organization_id_unique). A
+        //     feature-branch-created + SQL-moved orphan (steps 61/62) has no
+        //     default DSV, so we hand-insert one for it: the orphan then occupies
+        //     the org-wide default name 'defcol-shared' while being absent from
+        //     git (its corid was never pushed). A distinct same-named DS is then
+        //     pushed and merged. On pull its branch DSV collides with the orphan's
+        //     (renamed aside by renameConflictingOrphanBranchDsv) and its default
+        //     DSV collides with the orphan's active default (suffixed by
+        //     resolveUniqueDefaultDsvName) — without the fixes this pull 500s on
+        //     idx_unique_active_name_branch / the unique-default trigger.
+        //
+        // Branch ordering (mirrors step 61): the incoming branch is created
+        // BEFORE the orphan lands on main, so it never inherits the orphan name
+        // via cloneDataSourceVersions.
+        const createBranch21Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-21', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat21BranchId: string = createBranch21Resp.body.id;
+
+        const createBranch22Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-e2e-22', sourceBranchId: mainBranchId })
+          .expect(201);
+        const feat22BranchId: string = createBranch22Resp.body.id;
+
+        // Orphan DS on feat-e2e-21, then SQL-move its branch DSV onto main
+        // (corid never pushed → absent from main's data-sources/).
+        const defcolOrphanResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat21BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat21BranchId)
+          .send({ name: 'defcol-shared', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const defcolOrphanId: string = defcolOrphanResp.body.id;
+
+        await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
+          mainBranchId,
+          defcolOrphanId,
+        ]);
+
+        // Feature-branch DSs get no default DSV, so hand-insert an active default
+        // for the orphan so it occupies the org-wide active-default namespace.
+        // (No other active default 'defcol-shared' exists yet, so the trigger
+        // allows this insert.)
+        const orphanDefaultDsvId = randomUUIDForMeta();
+        await dataSource.query(
+          `INSERT INTO data_source_versions (id, data_source_id, name, is_default, is_active, branch_id)
+           VALUES ($1, $2, 'defcol-shared', true, true, NULL)`,
+          [orphanDefaultDsvId, defcolOrphanId]
+        );
+
+        // Distinct same-named DS on feat-e2e-22 → push → merge to main.
+        const defcolIncomingResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${feat22BranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat22BranchId)
+          .send({ name: 'defcol-shared', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const defcolIncomingId: string = defcolIncomingResp.body.id;
+        expect(defcolIncomingId).not.toBe(defcolOrphanId);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/push')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', feat22BranchId)
+          .send({ commitMessage: 'collide-default-ds on feat-e2e-22', branchId: feat22BranchId })
+          .expect(201);
+
+        const defcolMergeResp = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-e2e-22',
+            target: 'main',
+            message: 'Land defcol-shared collide',
+          }),
+        });
+        expect((await defcolMergeResp.json().catch(() => ({}))).ok).toBe(true);
+
+        // Pull main — previously 500 (branch + default unique violations); now 201.
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // Trigger satisfied: exactly one ACTIVE default DSV named exactly
+        // 'defcol-shared' in the org.
+        const activeDefaultExact = await dataSource.query(
+          `SELECT dsv.id FROM data_source_versions dsv
+             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
+            WHERE ds.organization_id = $1
+              AND dsv.name = 'defcol-shared'
+              AND dsv.is_active = true AND dsv.is_default = true`,
+          [orgId]
+        );
+        expect(activeDefaultExact).toHaveLength(1);
+
+        // Collision was resolved by suffixing one side's default rather than
+        // failing — at least one active default 'defcol-shared_N' now exists.
+        const activeDefaultSuffixed = await dataSource.query(
+          `SELECT dsv.id FROM data_source_versions dsv
+             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
+            WHERE ds.organization_id = $1
+              AND dsv.name LIKE 'defcol-shared%' AND dsv.name <> 'defcol-shared'
+              AND dsv.is_active = true AND dsv.is_default = true`,
+          [orgId]
+        );
+        expect(activeDefaultSuffixed.length).toBeGreaterThanOrEqual(1);
+
+        // Branch index satisfied: exactly one ACTIVE non-default branch DSV named
+        // 'defcol-shared' on main (the colliding side was renamed aside). Which DS
+        // keeps the bare name depends on the deserialize match/rename ordering for
+        // two same-kind data sources, so we assert the invariant (no duplicate
+        // active name) rather than the owner.
+        const activeBranchDefcol = await dataSource.query(
+          `SELECT dsv.data_source_id FROM data_source_versions dsv
+             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
+            WHERE ds.organization_id = $1 AND dsv.branch_id = $2
+              AND dsv.name = 'defcol-shared'
+              AND dsv.is_active = true AND dsv.is_default = false`,
+          [orgId, mainBranchId]
+        );
+        expect(activeBranchDefcol).toHaveLength(1);
       }, 540000);
     });
   });
