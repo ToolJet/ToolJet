@@ -5,7 +5,7 @@ export interface IWorkspaceBranchController {
   // Create runs as a background job — the response is an enqueue ack
   create(user: any, dto: any): Promise<{ enqueued: boolean }>;
   switchBranch(user: any, branchId: string): Promise<{ success: boolean }>;
-  deleteBranch(user: any, branchId: string): Promise<{ jobId: string }>;
+  deleteBranch(user: any, branchId: string): Promise<{ enqueued: boolean }>;
   pushWorkspace(user: any, dto: any): Promise<{ success: boolean }>;
   pullWorkspace(user: any): Promise<{ success: boolean }>;
   checkForUpdates(user: any, branch: string): Promise<CheckUpdatesResponse>;

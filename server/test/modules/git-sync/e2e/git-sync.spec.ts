@@ -89,7 +89,7 @@ describe('GitSyncController', () => {
       const queueSvc = app.get(GitSyncQueueService, { strict: false });
       jest.spyOn(queueSvc, 'enqueueCreateBranch').mockImplementation((p) => branchSvc.executeCreateBranch(p));
       jest.spyOn(queueSvc, 'enqueuePullBranch').mockImplementation((p) => branchSvc.executePullBranch(p));
-      jest.spyOn(queueSvc, 'enqueueDeleteBranch').mockImplementation((p) => branchSvc.executeDeleteRemoteBranch(p));
+      jest.spyOn(queueSvc, 'enqueueDeleteBranch').mockImplementation((p) => branchSvc.executeDeleteBranch(p));
       jest.spyOn(queueSvc, 'enqueuePushAppDeletion').mockImplementation((p) => branchSvc.executePushAppDeletion(p));
     });
 

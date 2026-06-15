@@ -83,8 +83,8 @@ class FakeWorkspaceBranchService {
   executePullBranch = async (payload: any) => {
     this.calls.push({ method: 'executePullBranch', payload });
   };
-  executeDeleteRemoteBranch = async (payload: any) => {
-    this.calls.push({ method: 'executeDeleteRemoteBranch', payload });
+  executeDeleteBranch = async (payload: any) => {
+    this.calls.push({ method: 'executeDeleteBranch', payload });
   };
   executePushAppDeletion = async (payload: any) => {
     this.calls.push({ method: 'executePushAppDeletion', payload });
@@ -144,12 +144,18 @@ describe('GitSyncQueueService (enqueue side)', () => {
     });
   });
 
-  it('should enqueue git-delete-branch keyed by org+branchName', async () => {
-    await svc.enqueueDeleteBranch({ organizationId: 'org1', branchName: 'feature-x' });
+  it('should enqueue git-delete-branch keyed by org+branchId', async () => {
+    await svc.enqueueDeleteBranch({
+      organizationId: 'org1',
+      branchId: 'branch-uuid',
+      branchName: 'feature-x',
+      userId: 'u',
+    });
 
     expect(queue.added[0]).toMatchObject({
       name: GIT_SYNC_JOBS.DELETE_BRANCH,
-      opts: { jobId: 'git-delete-branch:org1:feature-x' },
+      data: { organizationId: 'org1', branchId: 'branch-uuid', branchName: 'feature-x' },
+      opts: { jobId: 'git-delete-branch:org1:branch-uuid' },
     });
   });
 
@@ -223,10 +229,10 @@ describe('GitSyncQueueProcessor dispatch', () => {
     expect(service.calls).toEqual([{ method: 'executePullBranch', payload }]);
   });
 
-  it('should route git-delete-branch jobs to executeDeleteRemoteBranch', async () => {
-    const payload = { organizationId: 'org1', branchName: 'b' };
+  it('should route git-delete-branch jobs to executeDeleteBranch', async () => {
+    const payload = { organizationId: 'org1', branchId: 'b1', branchName: 'b', userId: 'u' };
     await processor.process(makeJob(GIT_SYNC_JOBS.DELETE_BRANCH, payload));
-    expect(service.calls).toEqual([{ method: 'executeDeleteRemoteBranch', payload }]);
+    expect(service.calls).toEqual([{ method: 'executeDeleteBranch', payload }]);
   });
 
   it('should route git-push-app-deletion jobs to executePushAppDeletion', async () => {
@@ -340,10 +346,11 @@ describe('GitSyncQueueProcessor failed-event hook', () => {
   });
 });
 
-describe('WorkspaceBranchService.executeDeleteRemoteBranch (worker side)', () => {
-  // Retries on an already-deleted remote branch would loop pointlessly —
-  // "gone" must count as success. Only the first two constructor deps
-  // (provider, logger) are touched by this method.
+describe('WorkspaceBranchService.executeDeleteRemoteBranch (remote-ref helper)', () => {
+  // executeDeleteBranch (remote + DB) delegates the remote half here. Retries on
+  // an already-deleted remote branch would loop pointlessly — "gone" must count
+  // as success, which is also what lets executeDeleteBranch proceed to the DB
+  // delete. Only the first two constructor deps (provider, logger) are touched.
   const makeService = (deleteGitBranch?: (orgId: string, name: string) => Promise<void>) => {
     const provider = {
       getSourceControlService: async () => (deleteGitBranch ? { deleteGitBranch } : {}),
