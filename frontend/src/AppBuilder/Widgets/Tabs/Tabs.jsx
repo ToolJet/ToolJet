@@ -75,7 +75,7 @@ export const Tabs = function Tabs({
     setExposedVariables,
     setExposedVariable
   );
-  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } = properties;
+  const { defaultTab, hideTabs, renderOnlyActiveTab, scrollToTopOnTabSwitch, useDynamicOptions } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
   const tabsRef = useRef(null);
   const widgetVisibility = styles?.visibility ?? true;
@@ -131,6 +131,10 @@ export const Tabs = function Tabs({
   const parsedHideTabs = typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(hideTabs) : hideTabs;
   const parsedRenderOnlyActiveTab =
     typeof renderOnlyActiveTab !== 'boolean' ? resolveWidgetFieldValue(renderOnlyActiveTab) : renderOnlyActiveTab;
+  const parsedScrollToTopOnTabSwitch =
+    typeof scrollToTopOnTabSwitch !== 'boolean'
+      ? resolveWidgetFieldValue(scrollToTopOnTabSwitch)
+      : scrollToTopOnTabSwitch;
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -180,6 +184,16 @@ export const Tabs = function Tabs({
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : commonBackgroundColor);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, darkMode, parsedTabs]);
+
+  useEffect(() => {
+    if (!parsedScrollToTopOnTabSwitch) return;
+    const raf = requestAnimationFrame(() => {
+      const scrollEl = document.getElementById(`canvas-${id}-${currentTab}`);
+      if (scrollEl) scrollEl.scrollTop = 0;
+    });
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTab, parsedScrollToTopOnTabSwitch]);
 
   useEffect(() => {
     const exposedVariables = {

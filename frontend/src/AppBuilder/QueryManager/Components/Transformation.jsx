@@ -3,16 +3,10 @@ import { Tab, ListGroup, Row, Col, Popover, OverlayTrigger } from 'react-bootstr
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import { Button } from '@/_ui/LeftSidebar';
-import Information from '@/_ui/Icon/solidIcons/Information';
-import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
 import { v4 as uuidv4 } from 'uuid';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-
-const noop = () => {};
 
 const defaultValue = {
   javascript: `// write your code here
@@ -53,51 +47,6 @@ const getNonActiveTransformations = (activeLang) => {
     default:
       return {};
   }
-};
-
-const EducativeLabel = ({ darkMode }) => {
-  const popoverContent = (
-    <Popover
-      id="transformation-popover-container"
-      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
-    >
-      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
-        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
-        <div className="d-flex flex-column card-body">
-          <h4 className="mb-2">ToolJet x OpenAI</h4>
-          <p className="mb-2">
-            <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong> helps you write your queries
-            faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
-          </p>
-          <Button
-            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
-            darkMode={darkMode}
-            size="sm"
-            classNames="default-secondary-button"
-            styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
-          >
-            <Button.Content title="Read more" />
-          </Button>
-        </div>
-      </div>
-    </Popover>
-  );
-
-  return (
-    <div>
-      <OverlayTrigger
-        overlay={popoverContent}
-        rootClose
-        trigger="click"
-        placement="right"
-        container={document.getElementsByClassName('query-details')[0]}
-      >
-        <span style={{ cursor: 'pointer', marginLeft: '10px' }} data-cy="transformation-info-icon" className="lh-1">
-          <Information width={18} fill="#CCD1D5" style={{ position: 'absolute', left: '152px' }} />
-        </span>
-      </OverlayTrigger>
-    </div>
-  );
 };
 
 export const Transformation = ({ changeOption, options, darkMode, queryId, renderCopilot }) => {
@@ -168,41 +117,41 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
 
   return (
     <div className="field transformation-editor">
-      <div className="align-items-center gap-2 d-flex" style={{ position: 'relative', height: '20px' }}>
-        <div className="d-flex flex-column">
-          <div className="mb-0">
-            <span className="d-flex">
-              <CustomToggleSwitch
-                isChecked={enableTransformation}
-                toggleSwitchFunction={toggleEnableTransformation}
-                action="enableTransformation"
-                darkMode={darkMode}
-                dataCy="transformation"
-              />
-              <OverlayTrigger
-                trigger="click"
-                placement="bottom"
-                rootClose
-                overlay={labelPopoverContent(darkMode, t)}
-                container={document.getElementsByClassName('query-details')[0]}
-              >
-                <span
-                  style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
-                  className="ps-1 text-default"
-                  data-cy="transformation-label"
-                >
-                  {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
-                </span>
-              </OverlayTrigger>
+      <div className="tw-flex tw-items-start">
+        <CustomToggleSwitch
+          isChecked={enableTransformation}
+          toggleSwitchFunction={toggleEnableTransformation}
+          action="enableTransformation"
+          darkMode={darkMode}
+          dataCy="transformation"
+          classes={{ toggleSwitchContainer: 'tw-mt-0.5 tw-flex-grow-0' }}
+        />
+
+        <div>
+          <OverlayTrigger
+            trigger="click"
+            placement="bottom"
+            rootClose
+            overlay={labelPopoverContent(darkMode, t)}
+            container={document.getElementsByClassName('query-details')[0]}
+          >
+            <span
+              style={{ textDecoration: 'underline 2px dotted', textDecorationColor: 'var(--slate8)' }}
+              className="text-default"
+              data-cy="transformation-label"
+            >
+              {t('editor.queryManager.transformation.enableTransformation', 'Enable transformation')}
             </span>
-          </div>
-          <div className="d-flex text-placeholder justify-content-end" data-cy="transformation-copilot-info">
-            <p>Powered by AI copilot</p>
-            <EducativeLabel darkMode={darkMode} />
-          </div>
+          </OverlayTrigger>
+
+          <p className="tw-text-text-placeholder tw-mb-0" data-cy="transformation-info">
+            Run JavaScript or Python on the query result to reshape, filter, or reformat data.
+          </p>
         </div>
       </div>
+
       <br />
+
       <div className={`d-flex copilot-codehinter-wrap ${!enableTransformation && 'read-only-codehinter'}`}>
         <div className="col flex-grow-1">
           <div style={{ borderRadius: '6px', background: darkMode ? '#272822' : '#F8F9FA' }}>
