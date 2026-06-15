@@ -10,7 +10,7 @@ import { PenLine, TriangleAlert } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
-  const { moduleId } = useModuleContext();
+  const { moduleId, appType } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
@@ -61,7 +61,7 @@ function EditAppName() {
     try {
       await appsService.saveApp(appId, { name: sanitizedName, editingVersionId: selectedVersion?.id });
       setAppName(sanitizedName);
-      toast.success('App name has been updated!');
+      toast.success(`${appType === 'module' ? 'Module' : 'App'} name has been updated!`);
       return true;
     } catch (errorResponse) {
       if (errorResponse.statusCode === 409) {
@@ -115,7 +115,7 @@ function EditAppName() {
           processApp={handleRenameApp}
           selectedAppId={appId}
           selectedAppName={appName}
-          title="Rename app"
+          title={appType === 'module' ? 'Rename module' : 'Rename app'}
           titleAdornment={(() => {
             const { currentBranch } = useWorkspaceBranchesStore.getState();
             const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
@@ -132,9 +132,9 @@ function EditAppName() {
               </ToolTip>
             );
           })()}
-          actionButton="Rename app"
+          actionButton={appType === 'module' ? 'Rename module' : 'Rename app'}
           actionLoadingButton={'Renaming'}
-          appType="app"
+          appType={appType}
         />
       )}
     </>
