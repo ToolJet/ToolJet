@@ -35,6 +35,9 @@ export class DataSourceVersion {
   isActive: boolean;
 
 
+  // FIXME: misnamed. Stores a content hash (truncated sha256 of the DS's git JSON,
+  // git-sync pull dedup), NOT a timestamp. Also `numeric` → node-pg returns it as a
+  // string; coerce with Number() before comparing. Rename to meta_content_hash needs a migration.
   @Column({ name: 'meta_timestamp', type: 'numeric', precision: 15, nullable: true, default: null })
   metaTimestamp: number;
 
