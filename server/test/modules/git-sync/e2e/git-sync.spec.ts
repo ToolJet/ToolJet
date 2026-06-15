@@ -8,54 +8,47 @@ import * as request from 'supertest';
 // Tests in the save+retrieve block and the App git life cycle hit this
 // server for real (no stubs). All URLs are derived from TEST_GIT_BASE_URL +
 // TEST_GIT_REPO_PATH so changing the host needs only one override.
-const PEM = [
-  '-----BEGIN RSA PRIVATE KEY-----',
-  'MIIEowIBAAKCAQEArNG4ySWpCgq05Fncep8gu7bUYFxdag83y1B4nCyzxKFJ9RxK',
-  'u7ix+lksqnTaZI6wUYHoGGX7gSnft1/85TyByEcdR9nn8ZTQ/yeuQ0DOoXhWzY8m',
-  'hX+P6BqioYuKOxOAPYHbyRYp7o1cAKv3KdVW9Ro9dgWbeEAb19EJV0FDIvUUX8MZ',
-  'VIA+UqiyISYIbXrHlbboSkAJb1mLZr4oFsBJwfZZ69B/szTV7YAntb+N13E8cRzp',
-  'JchAPKhXhQZg+e7iEE2KcYLCm/U9qm7/2oys8JKgb+xSeKTG13kns9muYHIpMYeN',
-  '4mCjJMg9L0mA2MFIwm9aG+Ohnq+Hh8AktVvijQIDAQABAoIBAQCXQmRa4fSHDoHv',
-  'T9uTE84hnk9aG93DI5ixAjjecJ3TX1wNBfs/PNPCC+T1OJuh4eXfITWUjUZJce4W',
-  'YRRHS+NH+T5ekhHZt2gJu6BhyspQN7S57C5KMDEzdISdojWVqWbX7t4Arb57xgwd',
-  'pmYJnmmi05mxwAyofmwgRBzJ2xw47hnGEVPlFY+DJ2nXF0Df27UQg10Xx5bzAWOf',
-  'EixicsQGvBn+cdr0vbSjc2ohklzC9HY8gJ12EvM9XU3vEXlNtsRTjVoMjQlXUKQ/',
-  'uzfhA0AwqT9FuGnECcV1dNjpJJaubr7l+CiuUjRz9tr59TmVrN00SEno4CW+fwJ7',
-  '8DzpyFPhAoGBAOQDDymmTzTppu4qI+IoHAAoKY0uTvjVx3WJVfo1MP5JiDx4cwva',
-  'PYY4d93dHeU2W1DWhr0uqO3+Td8axzxwJmllghOl03vKljSvxdjnARhdgfstuf6J',
-  'uj2jtAemJau+YaoDGu6tTF4qGoUQFzfrYb8Zi5vbLDc2zerwYBev2R6VAoGBAMII',
-  'T/B0hOSmaJ5zkJbt1eZ5zRRv/56piaE4BPctAEE2WddMotmNIyrNXmGBIynZM7Eg',
-  'NVftSL2ZRmB0yCm249Md2fUCN5yYLInhmDwb9hRCnkBNUvxT5/jULlDLKH1sJmLb',
-  'L3H20kSIO8REM9FVa7MpAFBvuFrE52eaUCVBXM4ZAoGAE8EoGSWtixoLOmswPLHY',
-  '6zKPlwnCEdEDvO0vI8RkAEQCp6qP3SEFX5GY4QH9SxSQiMptVgqq3CPCP2gkhtn4',
-  'mf0PbgBZ+EmvBdWMwKQS9jdzwX1Otfzcw+Zg/KCqdtzBvWcTeEZPbYEcVxbzzAZ6',
-  'q4HdFJ3CkO4QnSBCUwsLNpkCgYB5ujNEfCUfOVLrDT9JoL4P0JwbVUQ9qskATp+2',
-  '3hGJ1+o3Cwojh8rnQF4Ut6pyx6QJXFZ66g83e2BOhRVKLkXxnYmujwyKfmF6wv/5',
-  'veT8wup7FseYK5+dWKgR4dJuFRpj7HRwf9NcUUeFkvAbRQbDKFbdH6m9sEgolAPx',
-  'y3bIiQKBgB82i38Aeafhd5PAJDOKtsrKUvrRaJt8cGtAPPzDU2JxGGE7lbBOS5Nq',
-  'qyY4jTRZ3NQLZ6rRlLCOZlPEo2g1NaR+QZKv+rGh+9e46GX7ie+WhK2yQ0jTli64',
-  'inCyrm0sxrsJlHKyjDKmP7gT16gxmMPZaUiwZxNzQ4VHXnuxd88E',
-  '-----END RSA PRIVATE KEY-----',
-].join('\n');
+// Required environment variables for this suite. No defaults: a missing or
+// empty value is a hard error so misconfigured CI fails loudly instead of
+// silently hitting the wrong host or sending placeholder credentials.
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
 
 // Single source of truth for the Gitea / GitHub Enterprise test server.
-// Override TEST_GIT_BASE_URL to point at a different host; everything else
-// (repo URL, enterprise URL, API URL, reset/merge admin endpoints, the
-// {owner, repo} pair used in admin merges) is derived from these two values.
-const GIT_BASE_URL = (process.env.TEST_GIT_BASE_URL || 'http://130.131.160.149:3004').replace(/\/$/, '');
+// Set TEST_GIT_BASE_URL to point at the host; everything else (repo URL,
+// enterprise URL, API URL, reset/merge admin endpoints, the {owner, repo}
+// pair used in admin merges) is derived from these two values.
+const GIT_BASE_URL = requireEnv('TEST_GIT_BASE_URL').replace(/\/$/, '');
 const GIT_REPO_PATH = (process.env.TEST_GIT_REPO_PATH || 'gsmithun4/e2e').replace(/^\/|\/$/g, '');
 const [GIT_REPO_OWNER, GIT_REPO_NAME] = GIT_REPO_PATH.split('/');
 
+// GitHub App credentials — read from env, no fallbacks.
 const GITHUB_HTTPS_PAYLOAD = {
   gitUrl: `${GIT_BASE_URL}/${GIT_REPO_PATH}`,
   branchName: process.env.TEST_GIT_HTTPS_BRANCH || 'main',
   githubEnterpriseUrl: GIT_BASE_URL,
   githubEnterpriseApiUrl: `${GIT_BASE_URL}/api/v3`,
-  githubAppId: process.env.TEST_GIT_HTTPS_APP_ID || '111',
-  githubAppInstallationId: process.env.TEST_GIT_HTTPS_INSTALLATION_ID || '1111',
-  githubAppPrivateKey: process.env.TEST_GIT_HTTPS_PRIVATE_KEY || PEM,
+  githubAppId: requireEnv('TOOLJET_GITHUB_APP_ID'),
+  githubAppInstallationId: requireEnv('TOOLJET_GITHUB_INSTALLATION_ID'),
+  // PEM keys stored in .env carry literal "\n" escapes (dotenv doesn't unescape
+  // them). The server parses the key as-is via forge.pki.privateKeyFromPem, so
+  // restore real newlines here or PEM parsing fails with a 400.
+  githubAppPrivateKey: requireEnv('TOOLJET_GITHUB_APP_PRIVATE_KEY').replace(/\\n/g, '\n'),
   gitType: 'github_https',
 };
+
+// Basic-auth header for the Gitea simulator admin endpoints (reset / merge /
+// files). Credentials come from env with no defaults.
+requireEnv('TOOLJET_GIT_ADMIN_USER');
+requireEnv('TOOLJET_GIT_ADMIN_PASSWORD');
+const BASIC =
+  'Basic ' +
+  Buffer.from(`${process.env.TOOLJET_GIT_ADMIN_USER}:${process.env.TOOLJET_GIT_ADMIN_PASSWORD}`).toString('base64');
 
 /**
  * @group platform
@@ -250,13 +243,18 @@ describe('GitSyncController', () => {
       });
 
       it('POST /api/git-sync/test-connection | should pass for a valid payload', async () => {
-        await request
+        const res = await request
           .agent(app.getHttpServer())
           .post('/api/git-sync/test-connection')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false, hasStoredConfig: false })
-          .expect(201);
+          .send({ ...GITHUB_HTTPS_PAYLOAD, useEnvConfig: false, hasStoredConfig: false });
+        if (res.status !== 201) {
+          // Surface the server's reason — usually a malformed key/url or an
+          // unreachable Git host — instead of a bare "expected 201, got 400".
+          process.stdout.write(`    test-connection failed: ${res.status} ${JSON.stringify(res.body)}\n`);
+        }
+        expect(res.status).toBe(201);
       });
 
       it('POST /api/git-sync/configs | should return 401 when unauthenticated', async () => {
@@ -390,7 +388,7 @@ describe('GitSyncController', () => {
         // 0. Reset the Gitea repo to a clean state before the run.
         await fetch(RESET_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: '{}',
         });
 
@@ -690,7 +688,7 @@ describe('GitSyncController', () => {
         //     simulator endpoint, not a ToolJet API).
         const mergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -1008,7 +1006,7 @@ describe('GitSyncController', () => {
         step(26, 'merge feat-e2e-2 → main on Gitea');
         const merge2Resp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -1336,7 +1334,7 @@ describe('GitSyncController', () => {
 
         const merge3Resp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -1576,7 +1574,7 @@ describe('GitSyncController', () => {
         // Merge feat-e2e-4 → main on Gitea.
         const merge4Resp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -1817,7 +1815,7 @@ describe('GitSyncController', () => {
         // Merge feat-e2e-5 → main on Gitea.
         const merge5Resp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -2177,7 +2175,7 @@ describe('GitSyncController', () => {
         // Server-side merge feat-e2e-9 → main so main's git appMeta picks up corid2.
         const collideMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -2369,7 +2367,7 @@ describe('GitSyncController', () => {
         // Merge feat-e2e-10 → main on Gitea.
         const dsMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -2741,7 +2739,7 @@ describe('GitSyncController', () => {
         // Server-side merge feat-e2e-11 → main on Gitea.
         const moduleMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -2877,7 +2875,7 @@ describe('GitSyncController', () => {
         const writeGitMeta = async (metaFileName: string, content: string, message: string): Promise<void> => {
           const resp = await fetch(FILES_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', Authorization: BASIC },
             body: JSON.stringify({
               ref: 'main',
               path: `.meta/${metaFileName}`,
@@ -3210,7 +3208,7 @@ describe('GitSyncController', () => {
 
         const orphanModMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
@@ -3333,7 +3331,7 @@ describe('GitSyncController', () => {
 
         const orphanDsMergeResp = await fetch(MERGE_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
           body: JSON.stringify({
             owner: GIT_REPO_OWNER,
             repo: `${GIT_REPO_NAME}.git`,
