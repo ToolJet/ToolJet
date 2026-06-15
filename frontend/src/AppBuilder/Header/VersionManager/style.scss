@@ -6,6 +6,7 @@
   }
 
   .versions-list {
+
     // Custom scrollbar styling
     &::-webkit-scrollbar {
       width: 6px;
@@ -299,6 +300,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -306,10 +308,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -323,13 +327,16 @@
 .version-item-skeleton {
   animation: pulse 1.5s ease-in-out infinite;
 
-  > div {
+  >div {
     pointer-events: none;
   }
 }
-.create-draft-button-tooltip{
-display: flex;
-.tooltip-inner{
-  width: 323px !important;
+
+.create-draft-button-tooltip {
+  display: flex;
+
+  .tooltip-inner {
+    max-width: 323px !important;
+    width: auto !important;
   }
 }

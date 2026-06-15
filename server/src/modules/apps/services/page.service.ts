@@ -155,7 +155,7 @@ export class PageService implements IPageService {
         return { ...page, components, restricted: false };
       })
     );
-    return pagesWithComponents;
+    return pagesWithComponents as unknown as Page[];
   }
 
   async findOne(id: string): Promise<Page> {
@@ -637,5 +637,31 @@ export class PageService implements IPageService {
 
   async findModuleContainer(appVersionId: string, organizationId: string): Promise<any> {
     return this.pageHelperService.findModuleContainer(appVersionId, organizationId);
+  }
+
+  async findModuleContainersForVersions(
+    appVersionIds: string[],
+    _organizationId: string,
+    manager: EntityManager
+  ): Promise<Map<string, any>> {
+    const versionIds = appVersionIds.filter(Boolean);
+    if (versionIds.length === 0) return new Map();
+
+    const pagesByVersion = await this.pageHelperService.findFirstPagesByVersionIds(versionIds, manager);
+    if (pagesByVersion.size === 0) return new Map();
+
+    const pageIds = [...pagesByVersion.values()].map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+
+    const moduleContainerByVersion = new Map<string, any>();
+    for (const [versionId, page] of pagesByVersion) {
+      const components = componentsByPage.get(page.id) ?? {};
+      const moduleContainer = _.find(
+        Object.values(components),
+        (c: any) => c?.component?.component === 'ModuleContainer'
+      );
+      if (moduleContainer) moduleContainerByVersion.set(versionId, moduleContainer);
+    }
+    return moduleContainerByVersion;
   }
 }

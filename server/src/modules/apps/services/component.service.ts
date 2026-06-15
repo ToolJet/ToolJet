@@ -198,52 +198,69 @@ export class ComponentsService implements IComponentsService {
     return result;
   }
 
-  async getAllComponents(pageId: string, externalManager?: EntityManager) {
+  async getAllComponents(pageId: string, externalManager?: EntityManager): Promise<Record<string, any>> {
+    const byPage = await this.getAllComponentsForPages([pageId], externalManager);
+    return byPage.get(pageId) ?? {};
+  }
+
+  async getAllComponentsForPages(
+    pageIds: string[],
+    externalManager?: EntityManager
+  ): Promise<Map<string, Record<string, any>>> {
+    if (pageIds.length === 0) return new Map();
+
     return dbTransactionWrap(async (manager: EntityManager) => {
       const rawComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect('component.layouts', 'layout')
-        .where('component.pageId = :pageId', { pageId })
-        .andWhere('layout.type IN (:...types)', {
-          types: ['desktop', 'mobile'],
-        })
-        .orderBy('component.id', 'ASC')
+        .where('component.pageId IN (:...pageIds)', { pageIds })
+        .andWhere('layout.type IN (:...types)', { types: ['desktop', 'mobile'] })
+        .orderBy('component.pageId', 'ASC')
+        .addOrderBy('component.id', 'ASC')
         .addOrderBy('layout.updatedAt', 'DESC')
         .getMany();
 
-      const result: Record<string, any> = {};
-      const layoutsToUpdate: Layout[] = [];
+      const { componentsByPage, layoutsNeedingMigration } = this.assembleComponentsByPage(rawComponents);
 
-      for (const component of rawComponents) {
-        const processedLayoutsForComponent: Layout[] = [];
+      if (layoutsNeedingMigration.length > 0) {
+        await manager.save(Layout, layoutsNeedingMigration);
+      }
 
-        (component.layouts || []).forEach((layout) => {
-          if (layout && layout.type) {
-            const currentLayout = { ...layout };
+      return componentsByPage;
+    }, externalManager);
+  }
 
-            if (currentLayout.dimensionUnit === LayoutDimensionUnits.PERCENT) {
-              currentLayout.left = this.resolveGridPositionForComponent(currentLayout.left, currentLayout.type);
-              currentLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
-              layoutsToUpdate.push(currentLayout);
-            }
-            processedLayoutsForComponent.push(currentLayout);
+  private assembleComponentsByPage(rawComponents: Component[]): {
+    componentsByPage: Map<string, Record<string, any>>;
+    layoutsNeedingMigration: Layout[];
+  } {
+    const componentsByPage = new Map<string, Record<string, any>>();
+    const layoutsNeedingMigration: Layout[] = [];
+
+    for (const component of rawComponents) {
+      const normalisedLayouts = (component.layouts || [])
+        .filter((l) => l && l.type)
+        .map((layout) => {
+          const next = { ...layout };
+          if (next.dimensionUnit === LayoutDimensionUnits.PERCENT) {
+            next.left = this.resolveGridPositionForComponent(next.left, next.type);
+            next.dimensionUnit = LayoutDimensionUnits.COUNT;
+            layoutsNeedingMigration.push(next);
           }
+          return next;
         });
 
-        const relevantLayouts = processedLayoutsForComponent
-          .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
-          .slice(0, 2);
+      const mostRecentLayouts = [...normalisedLayouts]
+        .sort((a, b) => (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0))
+        .slice(0, 2);
 
-        const transformedData = this.createComponentWithLayout(component, relevantLayouts);
-        result[component.id] = transformedData[component.id];
-      }
+      const transformed = this.createComponentWithLayout(component, mostRecentLayouts);
+      const bucket = componentsByPage.get(component.pageId) ?? {};
+      bucket[component.id] = transformed[component.id];
+      componentsByPage.set(component.pageId, bucket);
+    }
 
-      if (layoutsToUpdate.length > 0) {
-        await manager.save(Layout, layoutsToUpdate);
-      }
-
-      return result;
-    }, externalManager);
+    return { componentsByPage, layoutsNeedingMigration };
   }
 
   transformComponentData(data: object): Component[] {

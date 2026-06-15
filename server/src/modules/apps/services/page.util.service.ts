@@ -31,6 +31,24 @@ export class PageHelperService implements IPageHelperService {
     }, manager);
   }
 
+  public async findFirstPagesByVersionIds(
+    versionIds: string[],
+    manager: EntityManager
+  ): Promise<Map<string, Page>> {
+    if (versionIds.length === 0) return new Map();
+
+    const pages = await manager
+      .createQueryBuilder(Page, 'page')
+      .distinctOn(['page.appVersionId'])
+      .where('page.appVersionId IN (:...versionIds)', { versionIds })
+      .andWhere('page.isPageGroup = :isPageGroup', { isPageGroup: false })
+      .orderBy('page.appVersionId', 'ASC')
+      .addOrderBy('page.index', 'ASC')
+      .getMany();
+
+    return new Map(pages.map((p) => [p.appVersionId, p]));
+  }
+
   public async reorderPages(udpateObject, appVersionId: string, organizationId: string): Promise<void> {
     await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       const updateArr = [];
@@ -90,6 +108,8 @@ export class PageHelperService implements IPageHelperService {
     page.url = dto.url;
     page.type = dto.type;
     page.openIn = dto.openIn;
+    page.disabled = false;
+    page.hidden = false;
     page.pageHeader = {
       showOnDesktop: false,
       showOnMobile: false,

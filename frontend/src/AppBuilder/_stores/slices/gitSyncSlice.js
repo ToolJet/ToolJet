@@ -1,9 +1,12 @@
 import useStore from '@/AppBuilder/_stores/store';
 import { gitSyncService } from '@/_services';
 
+// allowEditing is always true post-app_git_sync teardown — workspace-level git sync
+// considers every app in a git-enabled org editable on feature branches. The freeze
+// logic now relies on version type/status + branching state on the server side.
 const initialState = {
   showGitSyncModal: false,
-  allowEditing: false,
+  allowEditing: true,
   appLoading: false,
   orgGit: null,
   appGit: null,
@@ -11,33 +14,27 @@ const initialState = {
 };
 export const createGitSyncSlice = (set, get) => ({
   ...initialState,
-  toggleGitSyncModal: (creationMode) => {
+  toggleGitSyncModal: () => {
     const featureAccess = useStore.getState()?.license?.featureAccess;
-    const selectedEnvironment = useStore.getState()?.selectedEnvironment;
-    const isEditorFreezed = useStore.getState()?.isEditorFreezed;
-
-    return featureAccess?.gitSync && selectedEnvironment?.priority === 1 && (creationMode === 'GIT' || !isEditorFreezed)
-      ? set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal')
-      : () => {};
+    if (!featureAccess?.gitSync) return;
+    set((state) => ({ showGitSyncModal: !state.showGitSyncModal }), false, 'toggleGitSyncModal');
   },
   fetchAppGit: async (currentOrganizationId, currentAppVersionId) => {
     set((state) => ({ appLoading: true }), false, 'setAppLoading');
     try {
       const data = await gitSyncService.getAppGitConfigs(currentOrganizationId, currentAppVersionId);
-      const allowEditing = data?.app_git?.allow_editing ?? false;
       const orgGit = data?.app_git?.org_git;
+      const isBranchingEnabled = orgGit?.is_branching_enabled ?? false;
       const appGit = data?.app_git;
       const isGitSyncConfigured = data?.app_git?.is_git_sync_configured;
+      get().updateBranchingEnabled?.(isBranchingEnabled);
       set((state) => ({ isGitSyncConfigured }), false, 'isGitSyncConfigured');
       set((state) => ({ orgGit }), false, 'setOrgGit');
       set((state) => ({ appGit }), false, 'setAppGit');
-      set((state) => ({ allowEditing }), false, 'setAllowEditing');
-      console.log('app git', appGit);
-      return allowEditing;
+      return true;
     } catch (error) {
       console.error('Failed to fetch app git configs:', error);
-      // Set allowEditing to false on error
-      set((state) => ({ allowEditing: false }), false, 'setAllowEditing');
+      get().updateBranchingEnabled?.(false);
       return false;
     } finally {
       set((state) => ({ appLoading: false }), false, 'setAppLoading');

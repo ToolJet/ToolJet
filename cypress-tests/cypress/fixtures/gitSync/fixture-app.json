@@ -1,0 +1,911 @@
+{
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "02d239b2-b2aa-43f4-9e48-393600ccc91a",
+          "type": "front-end",
+          "name": "table-and-rest-api",
+          "slug": "02d239b2-b2aa-43f4-9e48-393600ccc91a",
+          "isPublic": null,
+          "isMaintenanceOn": false,
+          "icon": "share",
+          "organizationId": "34173151-6e24-4f78-8f8c-d269ee669b39",
+          "currentVersionId": null,
+          "userId": "fdf13be5-8599-4a0d-b297-d0178c1cc47b",
+          "workflowApiToken": null,
+          "workflowEnabled": false,
+          "isInitialisedFromPrompt": false,
+          "appGeneratedFromPrompt": false,
+          "co_relation_id": null,
+          "appBuilderMode": "visual",
+          "aiGenerationMetadata": null,
+          "createdAt": "2026-04-01T14:07:24.777Z",
+          "creationMode": "DEFAULT",
+          "__loaded": true,
+          "isStub": false,
+          "editingVersion": {
+            "id": "0eeb7461-9514-4983-bf7e-06bd9bc16ac4",
+            "co_relation_id": null,
+            "name": "v1",
+            "definition": null,
+            "globalSettings": {
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+              "backgroundFxQuery": "",
+              "appMode": "light"
+            },
+            "pageSettings": null,
+            "showViewerNavigation": true,
+            "homePageId": "3a66111a-db02-4511-a490-271f4221ea47",
+            "versionType": "version",
+            "appId": "02d239b2-b2aa-43f4-9e48-393600ccc91a",
+            "currentEnvironmentId": "dcf80eb8-424b-4103-99a0-7f6e723c83ba",
+            "promotedFrom": null,
+            "parentVersionId": null,
+            "createdBy": null,
+            "status": "DRAFT",
+            "description": null,
+            "publishedAt": null,
+            "releasedAt": null,
+            "isStub": false,
+            "branchId": null,
+            "pulledAt": null,
+            "sourceTag": null,
+            "createdAt": "2026-04-01T14:07:24.854Z",
+            "updatedAt": "2026-04-01T14:07:24.775Z"
+          },
+          "components": [
+            {
+              "id": "c155f7f9-a16a-4707-9dd0-141ee5f0c388",
+              "co_relation_id": null,
+              "name": "table1",
+              "type": "Table",
+              "pageId": "3a66111a-db02-4511-a490-271f4221ea47",
+              "parent": null,
+              "properties": {
+                "title": {
+                  "value": "Table"
+                },
+                "visible": {
+                  "value": "{{true}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "dataSourceSelector": {
+                  "value": "{{queries.163686f5-262b-461c-a012-9e097b4e43c1.data}}"
+                },
+                "data": {
+                  "value": "{{ [ \n\t\t{ id: 1, name: 'Olivia Nguyen', email: 'olivia.nguyen@example.com', date: '15/05/2022', phone: 9876543210, interest: ['Reading', 'Traveling','Photography'], photo: 'https://reqres.in/img/faces/7-image.jpg' }, \n\t\t{ id: 2, name: 'Liam Patel', email: 'liam.patel@example.com', date: '20/09/2021', phone: 8765432109, interest: ['Cooking','Gardening','Hiking'], photo: 'https://reqres.in/img/faces/5-image.jpg' }, \n\t\t{ id: 3, name: 'Sophia Reyes', email: 'sophia.reyes@example.com', date: '01/01/2023', phone: 7654321098, interest: ['Music','Dancing','Crafting'], photo: 'https://reqres.in/img/faces/3-image.jpg' }, \n\t\t{ id: 4, name: 'Jacob Hernandez', email: 'jacob.hernandez@example.com', date: '10/11/2022', phone: 6543210987, interest: ['Reading', 'Traveling', 'Volunteering'], photo: 'https://reqres.in/img/faces/1-image.jpg' }, \n\t\t{ id: 5, name: 'William Sanchez', email: 'william.sanchez@example.com', date: '07/01/2021', phone: 4321098765, interest: ['Music', 'Dancing', 'Hiking'], photo: 'https://reqres.in/img/faces/4-image.jpg' }, \n\t\t{ id: 6, name: 'Ethan Morales', email: 'ethan.morales@example.com', date: '05/11/2021', phone: 2109876543, interest: ['Cooking', 'Traveling', 'Photography'], photo: 'https://reqres.in/img/faces/6-image.jpg' }, \n\t\t{ id: 7, name: 'Mia Tiana', email: 'mia.tiana@example.com', date: '21/11/2022', phone: 1098705217, interest: ['Music', 'Gardening', 'Hiking'], photo: 'https://reqres.in/img/faces/2-image.jpg' }, \n\t\t{ id: 8, name: 'Lucas Ramirez', email: 'lucas.ramirez@example.com', date: '31/03/2023', phone: 9876543210, interest: ['Reading', 'Dancing', 'Crafting'], photo: 'https://reqres.in/img/faces/9-image.jpg' }, \n\t\t{ id: 9, name: 'Alexander Vela', email: 'alexander.vela@example.com', date: '07/09/2022', phone: 7654321098, interest: ['Music','Gardening','Photography'], photo: 'https://reqres.in/img/faces/8-image.jpg' }, \n\t\t{ id: 10, name: 'Michael Reyes', email: 'michael.reyes@example.com', date: '25/12/2021', phone: 5432109876, interest: ['Cooking','Crafting','Volunteering'], photo: 'https://reqres.in/img/faces/10-image.jpg' } \n] }}"
+                },
+                "useDynamicColumn": {
+                  "value": "{{false}}"
+                },
+                "columnData": {
+                  "value": "{{[{name: 'email', key: 'email', id: '1'}, {name: 'Full name', key: 'name', id: '2', isEditable: true}]}}"
+                },
+                "rowsPerPage": {
+                  "value": "{{10}}"
+                },
+                "serverSidePagination": {
+                  "value": "{{false}}"
+                },
+                "enableNextButton": {
+                  "value": "{{true}}"
+                },
+                "enablePrevButton": {
+                  "value": "{{true}}"
+                },
+                "totalRecords": {
+                  "value": "{{10}}"
+                },
+                "enablePagination": {
+                  "value": "{{true}}"
+                },
+                "serverSideSort": {
+                  "value": "{{false}}"
+                },
+                "serverSideFilter": {
+                  "value": "{{false}}"
+                },
+                "displaySearchBox": {
+                  "value": "{{true}}"
+                },
+                "showDownloadButton": {
+                  "value": "{{true}}"
+                },
+                "showFilterButton": {
+                  "value": "{{true}}"
+                },
+                "autogenerateColumns": {
+                  "value": true,
+                  "generateNestedColumns": true
+                },
+                "isAllColumnsEditable": {
+                  "value": "{{false}}"
+                },
+                "columns": {
+                  "value": [
+                    {
+                      "name": "id",
+                      "key": "id",
+                      "id": "e3ecbf7fa52c4d7210a93edb8f43776267a489bad52bd108be9588f790126737",
+                      "autogenerated": true,
+                      "fxActiveFields": [],
+                      "columnSize": 30,
+                      "columnType": "string"
+                    },
+                    {
+                      "id": "be06ba26-1b6b-4f84-a317-a121149b21dd",
+                      "name": "userId",
+                      "key": "userId",
+                      "columnType": "number",
+                      "autogenerated": true
+                    },
+                    {
+                      "id": "a49d3b23-843a-4da3-85ff-4127fb225db7",
+                      "name": "title",
+                      "key": "title",
+                      "columnType": "string",
+                      "autogenerated": true
+                    },
+                    {
+                      "id": "fe706314-e687-476d-a087-f3f33e16a71e",
+                      "name": "completed",
+                      "key": "completed",
+                      "columnType": "boolean",
+                      "autogenerated": true
+                    }
+                  ]
+                },
+                "showBulkUpdateActions": {
+                  "value": "{{true}}"
+                },
+                "showBulkSelector": {
+                  "value": "{{false}}"
+                },
+                "highlightSelectedRow": {
+                  "value": "{{false}}"
+                },
+                "columnSizes": {
+                  "value": "{{({})}}"
+                },
+                "actions": {
+                  "value": []
+                },
+                "enabledSort": {
+                  "value": "{{true}}"
+                },
+                "hideColumnSelectorButton": {
+                  "value": "{{false}}"
+                },
+                "defaultSelectedRow": {
+                  "value": "{{{\"id\":1}}}"
+                },
+                "showAddNewRowButton": {
+                  "value": "{{true}}"
+                },
+                "allowSelection": {
+                  "value": "{{true}}"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "dynamicHeight": {
+                  "value": "{{false}}"
+                },
+                "selectRowOnCellEdit": {
+                  "value": "{{false}}"
+                }
+              },
+              "general": {},
+              "styles": {
+                "columnTitleColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "columnBackgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "containerBackgroundColor": {
+                  "value": "var(--cc-surface1-surface)"
+                },
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "columnHeaderWrap": {
+                  "value": "fixed"
+                },
+                "headerCasing": {
+                  "value": "none"
+                },
+                "actionButtonRadius": {
+                  "value": "0"
+                },
+                "cellSize": {
+                  "value": "regular"
+                },
+                "borderRadius": {
+                  "value": "6"
+                },
+                "borderColor": {
+                  "value": "var(--cc-weak-border)"
+                },
+                "tableType": {
+                  "value": "table-classic"
+                },
+                "maxRowHeight": {
+                  "value": "auto"
+                },
+                "maxRowHeightValue": {
+                  "value": "{{0}}"
+                },
+                "contentWrap": {
+                  "value": "{{false}}"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000090"
+                },
+                "padding": {
+                  "value": "default"
+                }
+              },
+              "generalStyles": {
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                }
+              },
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "layouts": [
+                {
+                  "id": "3455a650-142f-4909-b39a-d39781d2331a",
+                  "co_relation_id": null,
+                  "type": "desktop",
+                  "top": 100,
+                  "left": 7,
+                  "width": 25,
+                  "height": 460,
+                  "componentId": "c155f7f9-a16a-4707-9dd0-141ee5f0c388",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2026-04-01T14:07:55.814Z"
+                },
+                {
+                  "id": "9b7cc833-e671-4760-8214-1deeb55e1abc",
+                  "co_relation_id": null,
+                  "type": "mobile",
+                  "top": 100,
+                  "left": 7,
+                  "width": 25,
+                  "height": 460,
+                  "componentId": "c155f7f9-a16a-4707-9dd0-141ee5f0c388",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2026-04-01T14:07:55.814Z"
+                }
+              ]
+            },
+            {
+              "id": "5a83601f-0875-4fc1-9efc-687f38175b4f",
+              "co_relation_id": null,
+              "name": "query_status",
+              "type": "Text",
+              "pageId": "3a66111a-db02-4511-a490-271f4221ea47",
+              "parent": null,
+              "properties": {
+                "textFormat": {
+                  "value": "html"
+                },
+                "dynamicHeight": {
+                  "value": "{{false}}"
+                },
+                "text": {
+                  "value": "{{queries.163686f5-262b-461c-a012-9e097b4e43c1.data.length > 0 ? \"Query completed\": \"Failed\"}}"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                }
+              },
+              "general": {},
+              "styles": {
+                "backgroundColor": {
+                  "value": "#fff00000"
+                },
+                "textColor": {
+                  "value": "var(--cc-primary-text)"
+                },
+                "textSize": {
+                  "value": "{{14}}"
+                },
+                "textAlign": {
+                  "value": "left"
+                },
+                "fontWeight": {
+                  "value": "normal"
+                },
+                "decoration": {
+                  "value": "none"
+                },
+                "transformation": {
+                  "value": "none"
+                },
+                "fontStyle": {
+                  "value": "normal"
+                },
+                "lineHeight": {
+                  "value": "{{1.5}}"
+                },
+                "textIndent": {
+                  "value": "{{0}}"
+                },
+                "letterSpacing": {
+                  "value": "{{0}}"
+                },
+                "wordSpacing": {
+                  "value": "{{0}}"
+                },
+                "fontVariant": {
+                  "value": "normal"
+                },
+                "verticalAlignment": {
+                  "value": "center"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                },
+                "borderColor": {
+                  "value": "#ffffff00"
+                },
+                "borderRadius": {
+                  "value": "{{6}}"
+                },
+                "isScrollRequired": {
+                  "value": "enabled"
+                }
+              },
+              "generalStyles": {
+                "boxShadow": {
+                  "value": "0px 0px 0px 0px #00000040"
+                }
+              },
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{false}}"
+                }
+              },
+              "validation": {},
+              "layouts": [
+                {
+                  "id": "9aabb878-1a5d-441a-8742-5489079b9d4e",
+                  "co_relation_id": null,
+                  "type": "desktop",
+                  "top": 60,
+                  "left": 15,
+                  "width": 6,
+                  "height": 40,
+                  "componentId": "5a83601f-0875-4fc1-9efc-687f38175b4f",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2026-04-01T14:09:25.173Z"
+                },
+                {
+                  "id": "717cd62f-40e8-483a-8615-6331de91e2d3",
+                  "co_relation_id": null,
+                  "type": "mobile",
+                  "top": 580,
+                  "left": 15,
+                  "width": 6,
+                  "height": 40,
+                  "componentId": "5a83601f-0875-4fc1-9efc-687f38175b4f",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2026-04-01T14:09:25.173Z"
+                }
+              ]
+            }
+          ],
+          "pages": [
+            {
+              "id": "3a66111a-db02-4511-a490-271f4221ea47",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": null,
+              "hidden": null,
+              "icon": null,
+              "autoComputeLayout": true,
+              "appVersionId": "0eeb7461-9514-4983-bf7e-06bd9bc16ac4",
+              "pageGroupIndex": 1,
+              "pageGroupId": null,
+              "isPageGroup": false,
+              "url": null,
+              "openIn": "new_tab",
+              "type": "default",
+              "appId": "02d239b2-b2aa-43f4-9e48-393600ccc91a",
+              "co_relation_id": null
+            }
+          ],
+          "events": [],
+          "dataQueries": [
+            {
+              "id": "163686f5-262b-461c-a012-9e097b4e43c1",
+              "name": "restapi1",
+              "options": {
+                "method": "get",
+                "url": "",
+                "url_params": [],
+                "headers": [],
+                "cookies": [],
+                "body": [],
+                "json_body": null,
+                "body_toggle": false,
+                "retry_network_errors": true,
+                "transformationLanguage": "javascript",
+                "enableTransformation": false,
+                "runOnPageLoad": true
+              },
+              "dataSourceId": "6f57b039-08fd-4f75-be0e-f189e3b0fb0b",
+              "appVersionId": "0eeb7461-9514-4983-bf7e-06bd9bc16ac4",
+              "co_relation_id": null
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "6f57b039-08fd-4f75-be0e-f189e3b0fb0b",
+              "co_relation_id": "6f57b039-08fd-4f75-be0e-f189e3b0fb0b",
+              "name": "restapi",
+              "kind": "restapi",
+              "type": "default",
+              "pluginId": null,
+              "appVersionId": null,
+              "organizationId": "34173151-6e24-4f78-8f8c-d269ee669b39",
+              "scope": "global"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "0eeb7461-9514-4983-bf7e-06bd9bc16ac4",
+              "co_relation_id": null,
+              "name": "v1",
+              "definition": null,
+              "globalSettings": {
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "var(--cc-appBackground-surface)",
+                "backgroundFxQuery": "",
+                "appMode": "light"
+              },
+              "pageSettings": null,
+              "showViewerNavigation": true,
+              "homePageId": "3a66111a-db02-4511-a490-271f4221ea47",
+              "versionType": "version",
+              "appId": "02d239b2-b2aa-43f4-9e48-393600ccc91a",
+              "currentEnvironmentId": "dcf80eb8-424b-4103-99a0-7f6e723c83ba",
+              "promotedFrom": null,
+              "parentVersionId": null,
+              "createdBy": null,
+              "status": "DRAFT",
+              "description": null,
+              "publishedAt": null,
+              "releasedAt": null,
+              "isStub": false,
+              "branchId": null,
+              "pulledAt": null,
+              "sourceTag": null
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "dcf80eb8-424b-4103-99a0-7f6e723c83ba",
+              "organizationId": "34173151-6e24-4f78-8f8c-d269ee669b39",
+              "name": "development",
+              "isDefault": false,
+              "priority": 1,
+              "enabled": true
+            },
+            {
+              "id": "1399b9db-b4ef-48d3-aacc-23f12877f3eb",
+              "organizationId": "34173151-6e24-4f78-8f8c-d269ee669b39",
+              "name": "staging",
+              "isDefault": false,
+              "priority": 2,
+              "enabled": true
+            },
+            {
+              "id": "9118fbed-2b7d-4ea7-875f-40a4fb2777c0",
+              "organizationId": "34173151-6e24-4f78-8f8c-d269ee669b39",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "2f30411d-161a-4d48-9b11-ac5787f3a2d5",
+              "options": {
+                "url": {
+                  "value": "{{constants.API_BASE_URL}}",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "encrypted": true,
+                  "credential_id": "2998c558-0937-4927-8420-3d8607ca0f16"
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "body",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "bearer_token": {
+                  "encrypted": true,
+                  "credential_id": "02f42504-c64d-43bb-a9cf-5c9b740d3594"
+                },
+                "client_secret": {
+                  "encrypted": true,
+                  "credential_id": "704802ce-4462-43f8-b4c7-304aa26dd593"
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                }
+              },
+              "environmentId": "1399b9db-b4ef-48d3-aacc-23f12877f3eb",
+              "dataSourceId": "6f57b039-08fd-4f75-be0e-f189e3b0fb0b",
+              "createdAt": "2026-04-01T14:08:04.566Z",
+              "updatedAt": "2026-04-01T14:08:20.728Z"
+            },
+            {
+              "id": "f852dd3f-4537-4d03-9250-713f1ff633f8",
+              "options": {
+                "url": {
+                  "value": "{{constants.API_BASE_URL}}/users",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "encrypted": true,
+                  "credential_id": "dffa8e5c-03ed-4e99-bd5c-a7a4f11f4cf0"
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "body",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "bearer_token": {
+                  "encrypted": true,
+                  "credential_id": "c5a9d36f-dc63-4eb4-8f77-8c2f53477c20"
+                },
+                "client_secret": {
+                  "encrypted": true,
+                  "credential_id": "88a3ec98-a5eb-4547-9655-45835b9194c3"
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                }
+              },
+              "environmentId": "9118fbed-2b7d-4ea7-875f-40a4fb2777c0",
+              "dataSourceId": "6f57b039-08fd-4f75-be0e-f189e3b0fb0b",
+              "createdAt": "2026-04-01T14:08:04.566Z",
+              "updatedAt": "2026-04-01T14:08:40.811Z"
+            },
+            {
+              "id": "437f8cab-a145-4126-891f-ecd4848e3c3e",
+              "options": {
+                "url": {
+                  "value": "{{constants.API_BASE_URL}}/todos",
+                  "encrypted": false
+                },
+                "scopes": {
+                  "value": "read, write",
+                  "encrypted": false
+                },
+                "headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "audience": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "password": {
+                  "encrypted": true,
+                  "credential_id": "19783fab-336e-4e21-835e-8b89b9cf7ecb"
+                },
+                "username": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "auth_type": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "client_id": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "grant_type": {
+                  "value": "authorization_code",
+                  "encrypted": false
+                },
+                "client_auth": {
+                  "value": "body",
+                  "encrypted": false
+                },
+                "add_token_to": {
+                  "value": "header",
+                  "encrypted": false
+                },
+                "bearer_token": {
+                  "encrypted": true,
+                  "credential_id": "45577caf-6f26-4bf9-98b0-5cdad9bb2803"
+                },
+                "client_secret": {
+                  "encrypted": true,
+                  "credential_id": "b7193767-5294-4ef2-9cc4-9a127ddba6e7"
+                },
+                "header_prefix": {
+                  "value": "Bearer ",
+                  "encrypted": false
+                },
+                "ssl_certificate": {
+                  "value": "none",
+                  "encrypted": false
+                },
+                "access_token_url": {
+                  "value": "",
+                  "encrypted": false
+                },
+                "custom_auth_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "custom_query_params": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                },
+                "retry_network_errors": {
+                  "value": true,
+                  "encrypted": false
+                },
+                "multiple_auth_enabled": {
+                  "value": false,
+                  "encrypted": false
+                },
+                "access_token_custom_headers": {
+                  "value": [
+                    [
+                      "",
+                      ""
+                    ]
+                  ],
+                  "encrypted": false
+                }
+              },
+              "environmentId": "dcf80eb8-424b-4103-99a0-7f6e723c83ba",
+              "dataSourceId": "6f57b039-08fd-4f75-be0e-f189e3b0fb0b",
+              "createdAt": "2026-04-01T14:08:04.566Z",
+              "updatedAt": "2026-04-01T14:08:13.195Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          },
+          "modules": []
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.21.14-beta-ee"
+}

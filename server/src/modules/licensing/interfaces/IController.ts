@@ -3,6 +3,7 @@ import { LicenseUpdateDto } from '../dto';
 import { Terms } from './terms';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
 import { UserEntity } from '@modules/app/decorators/user.decorator';
+import { UpdateEnvLicenseSettingDto } from '@ee/licensing/dto/update-env-license-setting.dto';
 
 export interface ILicenseController {
   /**
@@ -35,6 +36,13 @@ export interface ILicenseController {
    * @returns A promise that resolves when the license is updated.
    */
   updateLicense(licenseUpdateDto: LicenseUpdateDto, user: User): Promise<void>;
+
+  /*
+   * Updates the license env setting.
+   * @param UpdateEnvLicenseSettingDto - The DTO containing the update information for the license env setting.
+   * @returns A promise that resolves when the license env setting is updated.
+   */
+  updateEnvLicenseSetting(dto: UpdateEnvLicenseSettingDto): Promise<void>;
 }
 
 export interface ILicenseAppsController {

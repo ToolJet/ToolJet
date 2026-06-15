@@ -14,6 +14,7 @@ import { SessionModule } from '@modules/session/module';
 import { EncryptionModule } from '@modules/encryption/module';
 import { AppController } from './controller';
 import { AppService } from './service';
+import { AppUtilService } from './util.service';
 import { ProfileModule } from '@modules/profile/module';
 import { SMTPModule } from '@modules/smtp/module';
 import { UsersModule } from '@modules/users/module';
@@ -49,6 +50,7 @@ import { EventsModule } from '@modules/events/module';
 import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
+import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
@@ -59,6 +61,7 @@ import { CustomDomainStatusScheduler } from '@modules/custom-domains/scheduler';
 import { ModulesModule } from '@modules/modules/module';
 import { EmailListenerModule } from '@modules/email-listener/module';
 import { InMemoryCacheModule } from '@modules/inMemoryCache/module';
+import { OrganizationEnvModule } from '@modules/organization-env/module';
 import { reconfigurePostgrest, reconfigurePostgrestWithoutSchemaSync } from '@modules/tooljet-db/helper';
 import { isSQLModeDisabled } from '@helpers/tooljet_db.helper';
 import { EntityManager } from 'typeorm';
@@ -73,6 +76,8 @@ import { ExpressAdapter } from '@bull-board/express';
 import * as basicAuth from 'express-basic-auth';
 import { MfaCleanupScheduler } from '@modules/auth/scheduler';
 import { OtelMiddleware } from './middlewares/otel.middleware';
+import { BackgroundProcessorModule } from '@modules/background-processor/module';
+import { WorkspaceContextModule } from '@modules/workspace-context/module';
 
 export class AppModule implements OnModuleInit, NestModule {
   constructor(
@@ -142,13 +147,17 @@ export class AppModule implements OnModuleInit, NestModule {
       await ExternalApiModule.register(configs, true),
       await GitSyncModule.register(configs, true),
       await AppGitModule.register(configs, true),
+      await WorkspaceBranchesModule.register(configs, true),
       await CrmModule.register(configs, true),
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),
       await InMemoryCacheModule.register(configs),
+      await OrganizationEnvModule.register(configs),
       await AppHistoryModule.register(configs, true),
       await ScimModule.register(configs, true),
       await CustomDomainsModule.register(configs, true),
+      await BackgroundProcessorModule.register(configs, true),
+      await WorkspaceContextModule.register(configs, true),
     ];
 
     const conditionalImports = [];
@@ -185,6 +194,8 @@ export class AppModule implements OnModuleInit, NestModule {
       providers: [
         ShutdownHook,
         GetConnection,
+        AppService,
+        AppUtilService,
         ClearSSOResponseScheduler,
         SampleDBScheduler,
         SessionScheduler,

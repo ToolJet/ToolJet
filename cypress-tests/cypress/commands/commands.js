@@ -506,8 +506,8 @@ Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
   cy.intercept("GET", API_ENDPOINT).as("library_apps");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait(2000);
 });
 
@@ -546,7 +546,7 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
   const isPublicValue = isPublic ? "true" : "false";
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,
+    sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE id = (SELECT app_id FROM app_versions WHERE app_name='${appName}' LIMIT 1);`,
   });
 });
 
@@ -574,9 +574,9 @@ Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
 Cypress.Commands.add("getAppId", (appName) => {
   cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
+    sql: `select app_id from app_versions where app_name='${appName}';`,
   }).then((resp) => {
-    const appId = resp.rows[0]?.id;
+    const appId = resp.rows[0]?.app_id;
     return appId;
   });
 });

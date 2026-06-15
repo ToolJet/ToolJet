@@ -7,9 +7,10 @@ export const DeleteWidgetConfirmation = ({ darkMode }) => {
   const showWidgetDeleteConfirmation = useStore((state) => state.showWidgetDeleteConfirmation, shallow);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation, shallow);
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  const deleteTargetIsModuleEditor = useStore((state) => state.deleteTargetIsModuleEditor, shallow);
 
   const handleConfirmDelete = () => {
-    deleteComponents();
+    deleteComponents(undefined, 'canvas', { isModuleEditor: deleteTargetIsModuleEditor });
   };
 
   return (

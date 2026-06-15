@@ -216,6 +216,7 @@ export class PluginsService implements IPluginsService {
       if (shouldAutoInstall && pluginsToBeInstalled.length) {
         for (const pluginId of pluginsToBeInstalled) {
           const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+          if (!pluginDetails) continue;
           const installedPluginInfo = await this.install(pluginDetails);
           installedPluginsList.push(installedPluginInfo.name);
           installedPluginsInfo.push(installedPluginInfo);

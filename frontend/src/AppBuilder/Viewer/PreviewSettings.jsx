@@ -21,13 +21,17 @@ const AppEnvironments = lazy(() =>
 
 const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
   const appType = useAppType();
-  const { setShowUndoRedoBtn, editingVersion } = useStore(
+  const { setShowUndoRedoBtn, editingVersion, selectedVersion } = useStore(
     (state) => ({
       setShowUndoRedoBtn: state?.setShowUndoRedoBtn,
       editingVersion: state?.editingVersion,
+      selectedVersion: state?.selectedVersion,
     }),
     shallow
   );
+
+  // In sub-branch preview, lock version and env selectors so user cannot switch
+  const isSubBranch = selectedVersion?.versionType === 'branch';
 
   const [previewNavbar, togglePreviewNavbar] = useState(false);
 
@@ -52,9 +56,9 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
               </div>
             }
           >
-            <AppVersionsManager darkMode={darkMode} />
+            <AppVersionsManager darkMode={darkMode} disabled={isSubBranch} />
             <div className="navbar-seperator"></div>
-            <AppEnvironments darkMode={darkMode} />
+            <AppEnvironments darkMode={darkMode} disabled={isSubBranch} />
           </Suspense>
         )}
         <span style={{ marginLeft: appType === 'module' && '10px' }}>

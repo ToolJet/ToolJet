@@ -1,5 +1,5 @@
 export const RESTRICTED_WIDGETS_CONFIG = {
-  Form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Accordion'],
+  Form: ['Calendar', 'Kanban', 'Tabs', 'Modal', 'Accordion'],
   Kanban_card: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Accordion', 'Table'],
   Calendar: ['Calendar', 'Kanban'],
   Container: ['Calendar', 'Kanban'],
@@ -35,4 +35,8 @@ export const RESTRICTED_WIDGET_SLOTS_CONFIG = [
   'PDF',
   'Camera',
   'QrScanner',
+  'Text',
+  'TextArea',
+  'AudioRecorder',
+  'CustomComponent',
 ];

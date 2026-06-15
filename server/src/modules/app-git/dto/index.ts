@@ -1,27 +1,5 @@
 import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
-export class AppGitCreateDto {
-  @IsString()
-  @IsNotEmpty()
-  appId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  versionId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  organizationGitId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  gitAppName: string;
-
-  @IsBoolean()
-  @IsOptional()
-  allowEditing: boolean;
-}
-
 export class AppGitPushDto {
   @IsString()
   gitAppName: string;
@@ -34,64 +12,78 @@ export class AppGitPushDto {
 
   @IsString()
   gitVersionName: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  allowMasterPush?: boolean;
 }
 
 export class AppGitPullDto {
   @IsString()
-  gitAppId: string;
-
-  @IsString()
-  gitVersionId: string;
-
-  @IsString()
-  lastCommitMessage: string;
-
-  @IsString()
-  lastCommitUser: string;
-
-  @IsString()
-  lastPushDate: string;
-
-  @IsString()
-  organizationGitId: string;
-
-  @IsString()
-  gitAppName: string;
-
-  @IsString()
-  gitVersionName: string;
-
-  @IsString()
-  appName: string;
-
-  @IsBoolean()
   @IsOptional()
-  allowEditing: boolean;
+  gitAppId?: string;
+
+  @IsString()
+  @IsOptional()
+  appCoRelationId?: string;
+
+  @IsString()
+  @IsOptional()
+  gitAppName?: string;
+
+  @IsString()
+  @IsOptional()
+  gitVersionName?: string;
+
+  @IsString()
+  @IsOptional()
+  appName?: string;
+
+  @IsString()
+  @IsOptional()
+  commitHash?: string;
+
+  @IsString()
+  @IsOptional()
+  gitBranchName?: string;
+
+  @IsString()
+  @IsOptional()
+  workspaceBranchId?: string;
 }
 
 export class AppGitPullUpdateDto {
   @IsString()
-  gitVersionId: string;
+  @IsOptional()
+  gitAppName?: string;
 
   @IsString()
-  lastCommitMessage: string;
+  @IsOptional()
+  gitVersionName?: string;
+
+  @IsOptional()
+  gitBranchName?: string;
 
   @IsString()
-  lastCommitUser: string;
+  @IsOptional()
+  currentVersionId?: string;
 
   @IsString()
-  lastPushDate: string;
+  @IsOptional()
+  commitHash?: string;
 
-  @IsString()
-  gitAppName: string;
-
-  @IsString()
-  gitVersionName: string;
-}
-export class AppGitUpdateDto {
   @IsBoolean()
-  allowEditing: boolean;
+  @IsOptional()
+  isVersionTag?: boolean;
+
+  @IsOptional()
+  taggedVersionName?: string;
 }
+
 export class RenameAppOrVersionDto {
   @IsString()
   @IsNotEmpty()
@@ -108,4 +100,22 @@ export class RenameAppOrVersionDto {
   @IsString()
   @IsOptional()
   remoteName: string;
+}
+
+export class AppCommitInfoDto {
+  @IsString()
+  @IsNotEmpty()
+  commitId: string;
+
+  @IsString()
+  @IsOptional()
+  message?: string;
+
+  @IsString()
+  @IsOptional()
+  author?: string;
+
+  @IsString()
+  @IsOptional()
+  date?: string;
 }

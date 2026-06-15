@@ -47,8 +47,12 @@ const AppLoginPage = () => {
       const config = await appsService.getAppAuthenticationConfig(slug);
       setAppConfig(config);
 
-      // Public app: redirect directly to the app
-      if (config.isPublic) {
+      // Public app: redirect directly to the app unless the destination is a preview URL.
+      // Preview URLs (?version / ?env) always require authentication regardless of isPublic —
+      // skipping this check causes an infinite loop with the useAppData preview-URL guard.
+      const destinationParams = new URL(appRedirectPath, window.location.origin).searchParams;
+      const isPreviewRedirect = destinationParams.has('version') || destinationParams.has('env');
+      if (config.isPublic && !isPreviewRedirect) {
         window.location.href = appRedirectPath;
         return;
       }
