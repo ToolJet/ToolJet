@@ -392,6 +392,7 @@ export class VersionUtilService implements IVersionUtilService {
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
         .select('DISTINCT app.name', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.isStub = false')
         .andWhere(
           `(component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
              SELECT unnest(ARRAY[av.id::text, av.module_reference_id::text, av.name])
@@ -401,9 +402,10 @@ export class VersionUtilService implements IVersionUtilService {
         )
         .getRawMany();
 
-      const appNames = results.map((r) => r.appName).filter(Boolean);
-      if (appNames.length > 0) {
-        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`);
+      if (results.length > 0) {
+        const appNames = results.map((r) => r.appName).filter(Boolean);
+        const nameList = appNames.length > 0 ? appNames.join('\n') : 'one or more apps';
+        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${nameList}`);
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
