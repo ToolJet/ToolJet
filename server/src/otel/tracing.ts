@@ -156,6 +156,7 @@ let concurrentUsersCounter: any;
 let activeSessionsCounter: any;
 let concurrentUsersGauge: any;
 let sessionsActiveGauge: any;
+let jwtValidationHistogram: any;
 
 // Track active users per workspace with last activity timestamp
 // Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
@@ -372,10 +373,21 @@ const initializeCustomMetrics = () => {
     description: 'API request duration in milliseconds',
     unit: 'ms',
   });
+
+  // Histogram for JWT validation latency (hot path: every authenticated request)
+  jwtValidationHistogram = meter.createHistogram('jwt.validation.duration', {
+    description: 'Time spent validating a JWT token and loading the user session',
+    unit: 'ms',
+  });
 };
 
 export function recordApiHit(attrs: { route: string; method: string }) {
   apiHitCounter.add(1, attrs);
+}
+export function recordJwtValidationDuration(duration: number) {
+  if (jwtValidationHistogram) {
+    jwtValidationHistogram.record(duration);
+  }
 }
 export function recordApiDuration(
   duration: number,
@@ -420,9 +432,14 @@ export const startOpenTelemetry = async (): Promise<void> => {
     await sdk.start();
     initializeCustomMetrics();
 
-    // Initialize audit log metrics
+    // Initialize audit log metrics (Track 2: audit-log-derived app metrics)
     const { initializeAuditLogMetrics } = await import('./audit-metrics');
     initializeAuditLogMetrics();
+
+    // Initialize frontend metrics receiver (Track 1: browser telemetry → OTEL)
+    const { initializeFrontendMetrics } = await import('./frontend-metrics');
+    initializeFrontendMetrics();
+
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
@@ -439,8 +456,10 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
-// Export audit metrics function for use in services
-export { recordAuditLogMetric } from './audit-metrics';
+// Export audit metrics functions for use in services
+export { recordAuditLogMetric, recordDirectQueryMetric } from './audit-metrics';
+// Export frontend metrics recording for use in the frontend-metrics controller
+export { recordFrontendMetricsBatch } from './frontend-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {
   workspaceId: string;
@@ -599,14 +618,18 @@ loadEnvVars();
 if (process.env.ENABLE_OTEL === 'true') {
   process.on('uncaughtException', (err: any) => {
     if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+      // OTEL SDK emits these when the remote OTLP endpoint closes the connection.
+      // Suppress them so the observability transport never crashes the server.
       if (process.env.OTEL_LOG_LEVEL === 'debug') {
         console.error('[OTEL] Suppressed transport error (server still running):', err.code, err.message);
       }
       return;
     }
-    // For non-OTEL errors, log and exit — throwing inside uncaughtException causes a re-emit loop.
-    console.error('[OTEL] Uncaught non-transport exception:', err);
-    // process.exit(1);
+    // For all other uncaught exceptions: log but do NOT exit.
+    // Plugin async/sync mismatches (e.g. missing await before connect()) can surface here
+    // and killing the server for those would be far worse than continuing.
+    // Node.js default behaviour (exit) is intentionally NOT restored here.
+    console.error('[OTEL] Uncaught exception (server continuing):', err);
   });
 }
 

@@ -173,6 +173,7 @@
     "y-websocket": "^1.4.5",
     "yjs": "^13.5.46",
     "zipcelx": "^1.6.2",
+    "web-vitals": "^4.2.4",
     "zustand": "^4.3.6"
   },
   "devDependencies": {

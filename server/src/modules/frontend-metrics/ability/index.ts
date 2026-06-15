@@ -1,0 +1,24 @@
+import { Injectable } from '@nestjs/common';
+import { Ability, AbilityBuilder, InferSubjects } from '@casl/ability';
+import { AbilityFactory } from '@modules/app/ability-factory';
+import { UserAllPermissions } from '@modules/app/types';
+import { FEATURE_KEY } from '../constants';
+import { User } from '@entities/user.entity';
+
+type Subjects = InferSubjects<typeof User> | 'all';
+export type FeatureAbility = Ability<[FEATURE_KEY, Subjects]>;
+
+@Injectable()
+export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
+  protected getSubjectType() {
+    return User;
+  }
+
+  protected defineAbilityFor(
+    can: AbilityBuilder<FeatureAbility>['can'],
+    _userAllPermissions: UserAllPermissions
+  ): void {
+    // Any authenticated user can ingest their own frontend metrics
+    can([FEATURE_KEY.INGEST], User);
+  }
+}

@@ -1,4 +1,5 @@
 import config from 'config';
+import { recordQueryExec, recordQueryError } from '@/_services/frontend-metrics.service';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 
@@ -107,7 +108,21 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
   }
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(url, requestOptions).then(handleResponse);
+  const startTime = Date.now();
+  return fetch(url, requestOptions)
+    .then(handleResponse)
+    .then((result) => {
+      recordQueryExec(queryId, null, 'success', Date.now() - startTime);
+      return result;
+    })
+    .catch((err) => {
+      recordQueryExec(queryId, null, 'failure', Date.now() - startTime);
+      // TypeError means fetch itself failed (no connectivity / CORS).
+      // Any other error is a server-returned non-2xx (handleResponse throws).
+      const errorType = err instanceof TypeError ? 'network_error' : 'server_error';
+      recordQueryError(queryId, null, errorType);
+      throw err;
+    });
 }
 
 function preview(query, options, versionId, environmentId) {

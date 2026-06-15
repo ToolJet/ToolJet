@@ -4,6 +4,7 @@ import { render } from 'react-dom';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
+import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
 // RootRouter now handles route splitting for viewer isolation
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
@@ -32,6 +33,11 @@ appService
     console.log({ config });
 
     window.public_config = config;
+
+    // Track 1: Initialize frontend metrics beacon (feat/app-based-metricsv2)
+    // No-op unless ENABLE_OTEL=true is in public_config.
+    initFrontendMetrics();
+
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';
     i18n

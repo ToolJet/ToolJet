@@ -273,21 +273,9 @@ export const initializeAuditLogMetrics = () => {
     unit: '1',
   });
 
-  console.log('✅ Audit log metrics initialized with separate meters:');
-  console.log('   Platform metrics (tooljet-platform):');
-  console.log('     - audit.logs.total, audit.logs.actions, audit.logs.resources');
-  console.log('     - audit.logs.active_users, audit.logs.organization_activity');
-  console.log('     - user.sessions.total');
-  console.log('   App metrics (tooljet-app):');
-  console.log('     - query.executions.total (with mode/environment), query.failures.total, query.duration');
-  console.log('     - app.usage.total, app.active_users, app.success_rate, app.errors.total');
-  console.log('     - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
-  console.log('     - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
-  console.log('');
-  console.log('⚙️  Configuration:');
-  console.log(`   OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled' : 'disabled (default)'}`);
-  if (process.env.OTEL_INCLUDE_QUERY_TEXT === 'true') {
-    console.log('   ⚠️  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production');
+  if (process.env.OTEL_LOG_LEVEL === 'debug') {
+    console.log('[OTEL] Audit log metrics initialized (tooljet-platform + tooljet-app meters)');
+    console.log(`[OTEL] OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled (high cardinality)' : 'disabled'}`);
   }
 };
 
@@ -661,6 +649,136 @@ function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
       break;
   }
 }
+
+// ============================================================================
+// DIRECT STREAMING — bypasses audit-log pipeline for lower latency
+// Call these from service layer (EE util.service.ts, etc.) instead of waiting
+// for the audit log event to be emitted and processed.
+// ============================================================================
+
+/**
+ * DirectQueryMetricPayload — the minimal data needed to emit query metrics
+ * directly without going through the audit-log pipeline.
+ */
+export interface DirectQueryMetricPayload {
+  userId: string;
+  organizationId: string;
+  appId: string;
+  appName?: string;
+  queryId: string;
+  queryName?: string;
+  dataSourceType: string;
+  mode: string; // 'edit' | 'view'
+  environment: string; // environment name
+  status: 'success' | 'failure' | string;
+  duration?: number; // ms
+  error?: string;
+  errorType?: string;
+  queryText?: string; // only if OTEL_INCLUDE_QUERY_TEXT=true
+  queryMode?: string; // 'sql' | 'gui' | etc.
+}
+
+/**
+ * Record query execution metrics directly to OTEL, bypassing audit logs.
+ *
+ * Use this in the EE DataQueriesUtilService.runQuery() finally block
+ * when ENABLE_OTEL=true, instead of waiting for the audit log pipeline.
+ */
+export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
+  if (!queryExecutionsCounter) {
+    // OTEL not yet initialised — silently skip; never throw from observability code
+    return;
+  }
+
+  try {
+    const {
+      userId,
+      organizationId,
+      appId,
+      appName = 'unknown',
+      queryId,
+      queryName = 'unknown',
+      dataSourceType,
+      mode,
+      environment,
+      status,
+      duration,
+      error,
+      queryText = '',
+      queryMode = 'unknown',
+    } = payload;
+
+    const isReleased = mode === 'view' ? 'true' : 'false';
+    const errorType = payload.errorType || categorizeError(error);
+
+    const labels = {
+      app_id: appId || 'unknown',
+      app_name: appName,
+      query_id: queryId,
+      query_name: queryName,
+      data_source_type: dataSourceType,
+      organization_id: organizationId,
+      status,
+      mode,
+      environment,
+      is_released: isReleased,
+      query_text: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
+      query_mode: queryMode,
+    };
+
+    queryExecutionsCounter.add(1, labels);
+
+    if (duration !== undefined && typeof duration === 'number') {
+      queryDurationHistogram.record(duration, labels);
+    }
+
+    if (status === 'failure' || error) {
+      if (queryFailuresCounter) {
+        queryFailuresCounter.add(1, {
+          app_id: appId || 'unknown',
+          app_name: appName,
+          query_name: queryName,
+          error_type: errorType,
+          data_source_type: dataSourceType,
+          organization_id: organizationId,
+          mode,
+          environment,
+          is_released: isReleased,
+          query_text: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
+          query_mode: queryMode,
+        });
+      }
+      if (appErrorsCounter && appId) {
+        appErrorsCounter.add(1, {
+          app_id: appId,
+          app_name: appName,
+          error_type: errorType,
+          mode,
+          environment,
+          organization_id: organizationId,
+        });
+      }
+    }
+
+    if (appId && appId !== 'unknown') {
+      trackAppActiveUser(appId, userId);
+      if (mode !== 'unknown' && environment !== 'unknown') {
+        trackAppSuccess(appId, mode, environment, status === 'success');
+      }
+    }
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.log(
+        `[OTEL Direct] query metric: app=${appId} query=${queryId} mode=${mode} env=${environment} status=${status} duration=${duration}ms`
+      );
+    }
+  } catch (err) {
+    // Observability must never break the application
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.error('[OTEL] Error in recordDirectQueryMetric:', err);
+    }
+  }
+};
 
 /**
  * Categorize error type from error message

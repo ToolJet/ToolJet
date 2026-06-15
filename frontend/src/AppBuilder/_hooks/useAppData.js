@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { recordAppOpen, recordAppLoad } from '@/_services/frontend-metrics.service';
 import {
   appEnvironmentService,
   appService,
@@ -201,6 +202,7 @@ const useAppData = (
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+  const appLoadStart = useRef(null);
   const promptSentRef = useRef(false);
   const isPageSwitchRef = useRef(false);
 
@@ -348,6 +350,7 @@ const useAppData = (
     }
 
     // const appDataPromise = appService.fetchApp(appId);
+    appLoadStart.current = Date.now();
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
@@ -667,6 +670,12 @@ const useAppData = (
         }
 
         startExposedValueBatch();
+        if (initialLoadRef.current) {
+          recordAppOpen(effectiveAppId, mode);
+          if (appLoadStart.current) {
+            recordAppLoad(effectiveAppId, mode, Date.now() - appLoadStart.current);
+          }
+        }
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
       })
