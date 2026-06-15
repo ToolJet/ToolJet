@@ -16,4 +16,8 @@ export class GitSyncQueueService {
   async enqueueDeleteBranch(_payload: unknown): Promise<void> {
     // no queue in CE
   }
+
+  async enqueuePushAppDeletion(_payload: unknown): Promise<void> {
+    // no queue in CE
+  }
 }
