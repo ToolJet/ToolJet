@@ -78,9 +78,18 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
 
         try {
           await appsService.validatePrivateApp(slug, apiQueryParams);
-        } catch {
+        } catch (errorResponse) {
           const subpath = getSubpath() ?? '';
-          window.location.href = `${subpath}/login?redirectTo=${encodeURIComponent(redirectPath)}`;
+          let orgId = '';
+          try {
+            const msgObj = JSON.parse(errorResponse?.data?.message);
+            orgId = msgObj?.organizationId ?? '';
+          } catch {
+            console.error('Error parsing error response message', errorResponse);
+          }
+          window.location.href = `${subpath}/login${orgId ? `/${orgId}` : ''}?redirectTo=${encodeURIComponent(
+            redirectPath
+          )}`;
           return;
         }
       }
