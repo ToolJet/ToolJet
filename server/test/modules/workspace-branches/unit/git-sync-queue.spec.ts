@@ -6,20 +6,10 @@ import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { RedisService } from '@modules/redis/service';
 
 /**
- * WHAT IS THIS?
- * -------------
- * Create branch / pull branch / delete branch used to run their heavy git work
- * (clone + hydrate apps/modules/data_sources) inside the HTTP request — the user
- * stared at a spinner for 12-60s. These tests cover the BullMQ plumbing that
- * moves that work to a background worker (WORKER=true pods):
- *
- *  - GitSyncQueueService: the enqueue side. API pods call this; it adds a job
- *    with a DETERMINISTIC jobId so double-clicks collapse into one job.
- *  - GitSyncQueueProcessor: the worker side. Dispatches by job name to the
- *    workspace-branch service's execute* methods, holding a per-org Redis lease
- *    so two worker replicas never run git ops for the same org at once.
- *
- * Pure unit tests — no real Redis, no real BullMQ, no git, no DB.
+ * Unit tests for the git-sync queue plumbing (no real Redis/BullMQ/git/DB):
+ *  - GitSyncQueueService: enqueue side — deterministic jobIds dedup double-clicks.
+ *  - GitSyncQueueProcessor: worker side — dispatches by job name under a per-org
+ *    Redis lease so two replicas never run git ops for the same org at once.
  */
 
 /** The narrow slice of a BullMQ Queue the enqueue service uses. */

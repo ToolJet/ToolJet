@@ -80,10 +80,9 @@ describe('GitSyncController', () => {
       tokenCookie = tokenCookieData;
     });
 
-    // Create/pull/delete-branch git work now runs on the git-sync BullMQ queue.
-    // Tests stay deterministic by running each job INLINE at enqueue time —
-    // request returns only after the worker-side method finished, i.e. the old
-    // synchronous semantics. afterEach resetAllMocks wipes these, hence beforeEach.
+    // Run each git-sync job inline at enqueue time so requests resolve only once
+    // the worker body finished — keeps these tests deterministic. resetAllMocks
+    // wipes the spies, hence beforeEach.
     beforeEach(() => {
       const branchSvc = app.get(WorkspaceBranchService, { strict: false });
       const queueSvc = app.get(GitSyncQueueService, { strict: false });
@@ -93,8 +92,7 @@ describe('GitSyncController', () => {
       jest.spyOn(queueSvc, 'enqueuePushAppDeletion').mockImplementation((p) => branchSvc.executePushAppDeletion(p));
     });
 
-    // POST /workspace-branches no longer returns the branch row (the job creates
-    // it) — resolve ids from the list endpoint instead.
+    // Create returns an enqueue ack, not the branch row — resolve ids from the list endpoint.
     const branchIdByName = async (name: string, xBranchId: string): Promise<string> => {
       const res = await request
         .agent(app.getHttpServer())
