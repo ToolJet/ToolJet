@@ -400,6 +400,16 @@ export const createGridSlice = (set, get) => {
             if (element && visibility) element.style.height = `${newHeight}px`;
           }
 
+          // Embedded ModuleContainer renders flush (WidgetWrapper forces top:0);
+          // pin its temp top to 0 so the transform & canvas-height math match.
+          // moduleId === 'canvas' is the module editor, where it keeps canonical top.
+          if (componentType === 'ModuleContainer' && moduleId !== 'canvas') {
+            const moduleContainerKey = getDynamicLayoutKey(componentId, contextIndices);
+            if (temporaryLayoutPatch[moduleContainerKey]) {
+              temporaryLayoutPatch[moduleContainerKey] = { ...temporaryLayoutPatch[moduleContainerKey], top: 0 };
+            }
+          }
+
           Object.assign(mergedPatch, temporaryLayoutPatch);
 
           const scopedElement = contextIndices
