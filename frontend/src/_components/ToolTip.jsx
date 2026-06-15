@@ -23,7 +23,10 @@ export function ToolTip({
       placement={placement}
       delay={delay}
       overlay={
-        <Tooltip className={tooltipClassName} style={{ width: rest?.width ? rest?.width : 'auto' }}>
+        <Tooltip
+          className={tooltipClassName}
+          style={{ width: rest?.width ?? 'auto', maxWidth: rest?.maxWidth ?? undefined }}
+        >
           {message}
         </Tooltip>
       }
