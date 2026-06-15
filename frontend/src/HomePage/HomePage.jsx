@@ -66,7 +66,7 @@ import { TriangleAlert } from 'lucide-react';
 
 import { appTypeToDisplayNameMapping } from './helper';
 
-const MAX_APPS_PER_PAGE = 9;
+const MAX_APPS_PER_PAGE = 9; // Keep in sync with server pagination limit
 class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
