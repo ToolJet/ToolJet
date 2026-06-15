@@ -108,7 +108,7 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       // Branch creation runs as a background job — no branch to switch/navigate to yet
       await workspaceActions.createBranch(branchName.trim(), sourceBranchId, selectedOption.commitSha || undefined);
 
-      toast.success('Branch is being created — it will appear in the branch list shortly');
+      toast.success('Creating branch. It will show up in the branch list once ready.');
 
       onClose();
     } catch (error) {
