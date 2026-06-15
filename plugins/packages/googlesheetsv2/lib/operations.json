@@ -657,7 +657,7 @@
         "key": "values",
         "type": "codehinter",
         "lineNumbers": false,
-        "placeholder": "[['new value 1', 'new value 2']]",
+        "placeholder": "[[\"new value 1\", \"new value 2\"]]",
         "description": "Enter Value",
         "width": "320px",
         "height": "36px",
