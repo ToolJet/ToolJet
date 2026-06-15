@@ -39,10 +39,9 @@ export const PhoneInput = (props) => {
     handleBlur,
     handleFocus,
     value,
-    handlePhoneCurrencyInputChange,
     country,
     setCountry,
-    setInputValue,
+    setPhoneInputValue,
   } = inputLogic;
   const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
 
@@ -119,18 +118,14 @@ export const PhoneInput = (props) => {
     if (nextCountry === country && nextValue === value) return;
 
     setCountry(nextCountry);
-    // Pass nextCountry so setInputValue validates and publishes country/countryCode against the new country,
-    // since its own `country` closure isn't updated until the re-render.
-    setInputValue(nextValue, nextCountry);
+    // Pass nextCountry so the value is validated/published against the new country,
+    // since the `country` state closure isn't updated until the re-render.
+    setPhoneInputValue(nextValue, nextCountry);
   };
 
   const onInputValueChange = (value) => {
-    setExposedVariables({
-      country: country,
-      countryCode: `+${getCountryCallingCodeSafe(country)}`,
-      formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-    });
-    handlePhoneCurrencyInputChange(value);
+    setPhoneInputValue(value);
+    fireEvent('onChange');
   };
 
   const handleKeyUp = (e) => {
