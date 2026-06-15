@@ -50,7 +50,7 @@ export const DesktopLayout = ({
         'tw-flex-col': position === 'top' || isPagesSidebarHidden,
       })}
     >
-      {appType !== 'module' && (
+      {appType !== 'module' && !isModuleMode && (
         <>
           {/* === SIDEBAR STICKY WRAPPER === */}
           <div
