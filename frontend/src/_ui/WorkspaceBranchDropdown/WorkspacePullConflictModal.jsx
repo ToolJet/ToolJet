@@ -43,10 +43,16 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
     g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote')
   );
   const isBranchCreation = context === 'branch-creation';
+  const isBranchSwitch = context === 'branch-switch';
+  const hideBadges = isBranchCreation || isBranchSwitch;
 
-  const conflictTitles = isBranchCreation
-    ? ['Cannot create branch with duplicate data']
-    : [...new Set(conflictGroups.map((g) => CONFLICT_TITLE_MAP[`${g.type}-${g.conflictField}`]).filter(Boolean))];
+  const hasSlugConflicts = conflictGroups.some((g) => g.conflictField === 'slug');
+  const hasNameConflicts = conflictGroups.some((g) => g.conflictField !== 'slug');
+
+  const conflictTitles =
+    isBranchCreation || isBranchSwitch
+      ? [isBranchCreation ? 'Cannot create branch with duplicate data' : 'Cannot open branch with duplicate data']
+      : [...new Set(conflictGroups.map((g) => CONFLICT_TITLE_MAP[`${g.type}-${g.conflictField}`]).filter(Boolean))];
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('pull-conflict-modal-overlay')) {
@@ -79,8 +85,16 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
           <p className="conflict-description">
             {isBranchCreation ? (
               <>
-                The following apps have the <strong>same name</strong> on main branch. ToolJet requires unique names &
-                slug for apps, data sources, modules, and folders within a branch.
+                The following apps have the{' '}
+                <strong>same {hasSlugConflicts && !hasNameConflicts ? 'slug' : 'name'}</strong> on main branch. ToolJet
+                requires unique names & slug for apps, data sources, modules, and folders within a branch.
+              </>
+            ) : isBranchSwitch ? (
+              <>
+                The following apps have the{' '}
+                <strong>same {hasSlugConflicts && !hasNameConflicts ? 'slug' : 'name'}</strong> on{' '}
+                {hasSlugConflicts && !hasNameConflicts ? 'this' : 'main'} branch. ToolJet requires unique names & slug
+                for apps, data sources, modules, and folders within a branch.
               </>
             ) : isPushConflict ? (
               <>
@@ -98,7 +112,9 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
                 <div className="conflict-section-header">
                   <span>
                     {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
-                    {group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
+                    {group.conflictKey
+                      ? ` - '${group.conflictKey}'`
+                      : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
                   </span>
                 </div>
 
@@ -108,10 +124,14 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
                       <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
 
                       <span className="conflict-item-name">
-                        {item.coRelationId ? `#${item.coRelationId.slice(0, 8)}` : item.name}
+                        {group.conflictField === 'slug'
+                          ? item.name
+                          : item.coRelationId
+                          ? `#${item.coRelationId.slice(0, 8)}`
+                          : item.name}
                       </span>
 
-                      {!isBranchCreation && (
+                      {!hideBadges && (
                         <span className={`conflict-badge conflict-badge--${item.status}`}>
                           {STATUS_LABEL_MAP[item.status] || item.status}
                         </span>
@@ -124,7 +144,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
           ))}
 
           <p className="conflict-footer-text">
-            {isBranchCreation || isPushConflict
+            {isBranchCreation || isBranchSwitch || isPushConflict
               ? 'Resolve the conflict before trying again. Read our docs for step-by-step instructions on resolving unique constraint conflicts.'
               : 'Rename the conflicting resources before pulling again. Read our docs for step-by-step instructions on resolving naming conflicts.'}
           </p>

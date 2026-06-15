@@ -96,6 +96,8 @@
 
   .conflict-section-body {
     border-top: 1px solid var(--slate6);
+    max-height: 200px;
+    overflow-y: auto;
   }
 
   .conflict-item {
