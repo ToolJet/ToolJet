@@ -205,7 +205,7 @@
     "compression-webpack-plugin": "^12.0.0",
     "css-loader": "^6.7.3",
     "css-minimizer-webpack-plugin": "^8.0.0",
-    "esbuild": "0.25.9",
+    "esbuild": "^0.28.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^8.10.2",
     "eslint-import-resolver-webpack": "^0.13.10",
@@ -279,13 +279,15 @@
     "isomorphic-fetch@2.x": {
       "node-fetch": "^2.6.13"
     },
-    "esbuild": "0.25.9",
+    "esbuild": "^0.28.1",
     "on-headers": "1.1.0",
     "tar-fs": "^3.1.0",
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
     },
-    "immutable@3": "^3.8.3",
+    "draft-js": {
+      "immutable": "^3.8.3"
+    },
     "@base-ui/react": {
       "date-fns": "$date-fns"
     }
