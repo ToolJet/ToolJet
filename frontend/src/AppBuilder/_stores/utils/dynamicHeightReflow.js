@@ -708,6 +708,17 @@ export const resolveContainerHeight = ({
   // (Container/Accordion: padding+border+header; Form: header/footer/body
   // gutter; Tabs: strip + pane padding; ModalV2: body padding + borders).
   // Floor at canonical so the container never drops below its authored size.
+  //
+  // Exception: a dynamic-height ModuleContainer must fit its content in BOTH
+  // directions. Flooring at the authored height would keep the module root
+  // tall after a collapseWhenHidden child hides and shrinks the content, so
+  // the inner canvas (updateCanvasBottomHeight) never shrinks either. The
+  // module canvas enforces its own 40px minimum, so dropping the floor here
+  // is safe. `component` is the module-aware resolved component, so
+  // `dynamicHeight` already reflects the consuming ModuleViewer instance.
+  if (componentType === 'ModuleContainer' && component?.properties?.dynamicHeight === true) {
+    return currentMax + extraHeight;
+  }
   return Math.max(currentMax + extraHeight, containerHeight);
 };
 
