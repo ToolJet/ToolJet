@@ -1,7 +1,5 @@
 import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Folder } from '@entities/folder.entity';
-import { FolderApp } from '@entities/folder_app.entity';
-import { AppGitSync } from '@entities/app_git_sync.entity';
 import { decamelizeKeys } from 'humps';
 import { CreateFolderDto, UpdateFolderDto } from '@modules/folders/dto';
 import { IFoldersService } from './interfaces/IService';
@@ -11,6 +9,7 @@ import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { FoldersUtilService } from './util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { MODULES } from '@modules/app/constants/modules';
 import { APP_TYPES } from '@modules/apps/constants';
 
@@ -18,7 +17,8 @@ import { APP_TYPES } from '@modules/apps/constants';
 export class FoldersService implements IFoldersService {
   constructor(
     protected foldersUtilService: FoldersUtilService,
-    protected abilityService: AbilityService
+    protected abilityService: AbilityService,
+    protected organizationGitSyncRepository: OrganizationGitSyncRepository
   ) {}
 
   async createFolder(user, createFolderDto: CreateFolderDto) {
@@ -57,14 +57,8 @@ export class FoldersService implements IFoldersService {
 
       await this.checkFolderManagePermission(user, folder, manager, 'update');
 
-      const gitSyncedAppInFolder = await manager
-        .createQueryBuilder(AppGitSync, 'ags')
-        .innerJoin(FolderApp, 'fa', 'fa.app_id = ags.app_id')
-        .where('fa.folder_id = :folderId', { folderId })
-        .select('ags.id')
-        .getOne();
-
-      if (gitSyncedAppInFolder) {
+      // Workspace-level git sync: any folder in a git-synced org is locked.
+      if (await this.organizationGitSyncRepository.isOrganizationGitSynced(user.organizationId, manager)) {
         throw new BadRequestException('Folders with git-synced apps cannot be edited');
       }
 
@@ -132,14 +126,7 @@ export class FoldersService implements IFoldersService {
 
       await this.checkFolderManagePermission(user, folder, manager, 'delete');
 
-      const gitSyncedAppInFolder = await manager
-        .createQueryBuilder(AppGitSync, 'ags')
-        .innerJoin(FolderApp, 'fa', 'fa.app_id = ags.app_id')
-        .where('fa.folder_id = :folderId', { folderId: folder.id })
-        .select('ags.id')
-        .getOne();
-
-      if (gitSyncedAppInFolder) {
+      if (await this.organizationGitSyncRepository.isOrganizationGitSynced(user.organizationId, manager)) {
         throw new BadRequestException(
           "Folders with apps synced to git can't be deleted. Delete the git apps and try again."
         );

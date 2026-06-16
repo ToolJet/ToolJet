@@ -45,7 +45,7 @@ export class AbilityService extends IAbilityService {
     manager?: EntityManager
   ): Promise<UserPermissions> {
     // skipAppEditingVersionHydration: permissions load all org apps; afterLoad
-    // would fire AppVersion N+1 per row (557+ pre-fix). Read-only — no txn needed.
+    // would fire AppVersion N+1 per row. Read-only — no txn needed.
     const m = manager || getConnectionInstance().manager;
     return skipAppEditingVersionHydration.run(true, async () => {
       const permissions = await this.getResourcePermission(user, resourcePermissionsObject, m);

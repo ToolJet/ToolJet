@@ -15,16 +15,17 @@ export class WorkspaceBranchesModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { WorkspaceBranchController, WorkspaceBranchService } = await this.getProviders(
+    const { DeletionCommitListener, WorkspaceBranchController, WorkspaceBranchService } = await this.getProviders(
       configs,
       'workspace-branches',
-      ['controller', 'service']
+      ['controller', 'service', 'deletion-commit.listener']
     );
 
-    const { PlatformGitPullService, PlatformGitPushService } = await this.getProviders(configs, 'platform-git-sync', [
-      'pull.service',
-      'push.service',
-    ]);
+    const { PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService } = await this.getProviders(
+      configs,
+      'platform-git-sync',
+      ['pull.service', 'push.service', 'pull-conflict-detection.service']
+    );
 
     return this.cacheModule(cacheKey, {
       module: WorkspaceBranchesModule,
@@ -38,8 +39,15 @@ export class WorkspaceBranchesModule extends SubModule {
         await BackgroundProcessorModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
-      providers: [WorkspaceBranchService, FeatureAbilityFactory, PlatformGitPullService, PlatformGitPushService],
-      exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService],
+      providers: [
+        WorkspaceBranchService,
+        FeatureAbilityFactory,
+        PlatformGitPullService,
+        PlatformGitPushService,
+        PullConflictDetectionService,
+        ...(isMainImport ? [DeletionCommitListener] : []),
+      ],
+      exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService],
     });
   }
 }

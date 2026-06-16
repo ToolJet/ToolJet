@@ -14,7 +14,6 @@ import { AppGitModule } from '@modules/app-git/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { VersionRepository } from '@modules/versions/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { AppEnvironmentsModule } from '@modules/app-environments/module';
 import { OrganizationRepository } from '@modules/organizations/repository';
 import { SubModule } from '@modules/app/sub-module';
@@ -68,7 +67,6 @@ export class ExternalApiModule extends SubModule {
         AppsRepository,
         GroupPermissionsRepository,
         VersionRepository,
-        AppGitRepository,
         OrganizationRepository,
         UserRepository,
         UserPersonalAccessTokenRepository,

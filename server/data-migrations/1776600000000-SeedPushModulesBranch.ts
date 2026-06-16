@@ -7,14 +7,13 @@ import { getImportPath } from '@modules/app/constants';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { AppGitSync } from '@entities/app_git_sync.entity';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 // Types only — runtime instances resolve via dynamic import matching SubModule.getProviders
 // path, otherwise the compile-time class reference doesn't match the DI-registered token.
 // Pattern copied from 1752749046662-EncrpyGoogleCalendarClientSecret.ts.
-import type { DataSourceBranchUtil } from 'ee/app-git/shared/datasource-branch.util';
+import type { DataSourceBranchUtil } from '@modules/app-git/shared/datasource-branch.util';
 import type { VersionsCreateService } from '@modules/versions/services/create.service';
 
 const BRANCH_NAME = 'push-modules';
@@ -187,11 +186,7 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
    *
    * Returns null if the app has no version at all (skip cloning entirely).
    */
-  private async findStableAppSource(
-    em: EntityManager,
-    app: App,
-    defaultBranchId: string
-  ): Promise<AppVersion | null> {
+  private async findStableAppSource(em: EntityManager, app: App, defaultBranchId: string): Promise<AppVersion | null> {
     const defaultBranchVersion = await em.findOne(AppVersion, {
       where: {
         appId: app.id,
@@ -322,18 +317,22 @@ export class SeedPushModulesBranch1776600000000 implements MigrationInterface {
   }
 
   private async ensureAppGitSyncRow(em: EntityManager, moduleApp: App, organizationGitId: string): Promise<void> {
-    const existing = await em.findOne(AppGitSync, { where: { appId: moduleApp.id } });
-    if (existing) return;
+    // Raw SQL: the AppGitSync entity has been removed in the same release that
+    // adds DropAppGitSyncTable1779500000000. Schema migrations (including the
+    // drop) run before data-migrations, so on fresh installs the table is gone
+    // by the time this seed executes — guard with to_regclass and bail out
+    // silently. On upgrades where this seed already ran in the past, this
+    // function is not re-executed; the guard is purely a fresh-install safety.
+    const tableCheck = await em.query(`SELECT to_regclass('public.app_git_sync') AS oid`);
+    if (!tableCheck?.[0]?.oid) return;
 
-    await em.save(
-      AppGitSync,
-      em.create(AppGitSync, {
-        appId: moduleApp.id,
-        organizationGitId,
-        gitAppName: moduleApp.name,
-        gitAppId: moduleApp.id,
-        allowEditing: true,
-      })
+    const existing = await em.query(`SELECT id FROM app_git_sync WHERE app_id = $1 LIMIT 1`, [moduleApp.id]);
+    if (existing.length > 0) return;
+
+    await em.query(
+      `INSERT INTO app_git_sync (app_id, organization_git_id, git_app_name, git_app_id, allow_editing)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [moduleApp.id, organizationGitId, moduleApp.name, moduleApp.id, true]
     );
   }
 

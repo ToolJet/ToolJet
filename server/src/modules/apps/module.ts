@@ -24,7 +24,6 @@ import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
@@ -81,7 +80,6 @@ export class AppsModule extends SubModule {
         VersionRepository,
         AppsRepository,
         OrganizationGitSyncRepository,
-        AppGitRepository,
         PageService,
         EventsService,
         AppsUtilService,

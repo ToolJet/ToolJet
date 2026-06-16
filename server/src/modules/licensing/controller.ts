@@ -9,7 +9,7 @@ import { FEATURE_KEY } from './constants';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { User as UserEntity } from '@entities/user.entity';
 import { User } from '@modules/app/decorators/user.decorator';
-import { UpdateEnvLicenseSettingDto } from '@ee/licensing/dto/update-env-license-setting.dto';
+import { UpdateEnvLicenseSettingDto } from '@modules/licensing/dto/update-env-license-setting.dto';
 
 @InitModule(MODULES.LICENSING)
 @Controller('license')

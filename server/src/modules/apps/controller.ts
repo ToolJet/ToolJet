@@ -13,6 +13,7 @@ import { FEATURE_KEY } from './constants';
 import { AbilityDecorator as Ability, AppAbility } from '@modules/app/decorators/ability.decorator';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { AppAuthGuard } from './guards/app-auth.guard';
 import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
@@ -136,7 +137,7 @@ export class AppsController implements IAppsController {
       type: query.type ?? 'front-end',
       branchId: query.branch_id || headerBranchId,
     };
-    return this.appsService.getAllApps(user, AppListDto, false);
+    return this.appsService.getAllApps(user, AppListDto, query.all === 'true');
   }
 
   @InitFeature(FEATURE_KEY.GET)
@@ -184,7 +185,7 @@ export class AppsController implements IAppsController {
   @UseGuards(JwtAuthGuard, ValidAppGuard, FeatureAbilityGuard)
   @Get(':id')
   show(@User() user: UserEntity, @App() app: AppEntity, @Headers('x-branch-id') branchId?: string) {
-    return this.appsService.getOne(app, user, branchId);
+    return skipAppEditingVersionHydration.run(true, () => this.appsService.getOne(app, user, branchId));
   }
 
   @InitFeature(FEATURE_KEY.GET_BY_SLUG)

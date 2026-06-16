@@ -32,23 +32,37 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class EnsureDefaultBranchDraftVersion1777970000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Step 1: Minimal DRAFT row per app missing one on the default branch.
+    // Step 1 loops over every app in a git-enabled workspace doing per-app lookups
+    // and an INSERT; on an instance with many apps the whole block can run past the
+    // connection's statement_timeout (57014). Disable it for this transaction;
+    // SET LOCAL reverts on commit/rollback. (Per-app probes are scoped by app_id, an
+    // indexed FK, so no temp index is needed — only the timeout guard.)
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
+    // Step 1: Minimal non-stub DRAFT row per app missing one on the default
+    // branch. is_stub=false so the row surfaces as a real, hydrated version to
+    // downstream `is_stub` readers (subscriber overlay, module ref resolution,
+    // app listing). Real content is filled lazily on first open via Gate B in
+    // AppsService.getOne, which fires because migration 1779600000000 stamps
+    // `remote_updated_at = NOW()` on these rows while `pulled_at` stays NULL.
     //
     // Inherits only what's strictly needed:
     //   - co_relation_id (chk_app_versions_co_relation_id_when_not_stub requires
     //     a value for non-stub rows; inherit from the published row).
-    //   - name with a unique suffix to satisfy (name, app_id) UNIQUE.
+    //
+    // `name` is set to a fixed sentinel UUID so 1779600000000 can find and
+    // stamp/rename these rows. The sentinel collides per-app only with itself
+    // (one INSERT per app) so (name, app_id) UNIQUE holds; 1779600000000 then
+    // rewrites `name = id::text` so the sentinel doesn't linger.
     //
     // Everything else (definition, settings, home_page_id, …) is left at column
-    // defaults / NULL. The DRAFT row is a metadata host, not a content snapshot.
+    // defaults / NULL — the row is a metadata host, content arrives lazily.
     await queryRunner.query(`
       DO $$
       DECLARE
         app_rec RECORD;
         published_rec RECORD;
         new_id UUID;
-        candidate_name VARCHAR;
-        suffix INT;
       BEGIN
         FOR app_rec IN
           SELECT DISTINCT a.id AS app_id, wb.id AS default_branch_id
@@ -70,7 +84,7 @@ export class EnsureDefaultBranchDraftVersion1777970000000 implements MigrationIn
                 AND av.branch_id = wb.id
             )
         LOOP
-          SELECT id, name, co_relation_id
+          SELECT id, co_relation_id
           INTO published_rec
           FROM app_versions
           WHERE app_id = app_rec.app_id
@@ -81,22 +95,13 @@ export class EnsureDefaultBranchDraftVersion1777970000000 implements MigrationIn
           LIMIT 1;
 
           new_id := gen_random_uuid();
-          candidate_name := published_rec.name || '_draft';
-          suffix := 1;
-          WHILE EXISTS (
-            SELECT 1 FROM app_versions
-            WHERE app_id = app_rec.app_id AND name = candidate_name
-          ) LOOP
-            candidate_name := published_rec.name || '_draft_' || suffix;
-            suffix := suffix + 1;
-          END LOOP;
 
           INSERT INTO app_versions (
             id, name, app_id, status, version_type, branch_id, co_relation_id,
             parent_version_id, is_stub, created_at, updated_at
           ) VALUES (
             new_id,
-            candidate_name,
+            '00000000-0000-0000-0000-000077970000',
             app_rec.app_id,
             'DRAFT',
             'version',

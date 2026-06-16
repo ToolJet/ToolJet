@@ -575,9 +575,10 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 function loadEnvVars() {
-  const envFilePath = process.env.NODE_ENV === 'test'
-    ? path.resolve(process.cwd(), '../.env.test')
-    : path.resolve(process.cwd(), '../.env');
+  const envFilePath =
+    process.env.NODE_ENV === 'test'
+      ? path.resolve(process.cwd(), '../.env.test')
+      : path.resolve(process.cwd(), '../.env');
 
   if (fs.existsSync(envFilePath)) {
     const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
@@ -605,7 +606,7 @@ if (process.env.ENABLE_OTEL === 'true') {
     }
     // For non-OTEL errors, log and exit — throwing inside uncaughtException causes a re-emit loop.
     console.error('[OTEL] Uncaught non-transport exception:', err);
-    process.exit(1);
+    // process.exit(1);
   });
 }
 
