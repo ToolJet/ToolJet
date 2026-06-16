@@ -1,10 +1,11 @@
 import React, { useState, useContext, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { tooljetDatabaseService, appsService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { appsService } from '@/_services/apps.service';
 import { ListItemPopover } from './ActionsPopover';
 import { TooljetDatabaseContext } from '../index';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';

@@ -1,6 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { getDefaultOptions } from './storeHelper';
-import { dataqueryService, orgEnvironmentConstantService } from '@/_services';
+import { dataqueryService } from '@/_services/dataquery.service';
+import { orgEnvironmentConstantService } from '@/_services/organization_constants.service';
 // import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { v4 as uuidv4 } from 'uuid';

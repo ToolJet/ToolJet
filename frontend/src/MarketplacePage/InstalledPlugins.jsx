@@ -1,10 +1,13 @@
 import React from 'react';
 import cx from 'classnames';
-import { pluginsService, marketplaceService, globalDatasourceService } from '@/_services';
+import { pluginsService } from '@/_services/plugins.service';
+import { marketplaceService } from '@/_services/marketplace.service';
+import { globalDatasourceService } from '@/_services/globalDatasource.service';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
-import { ConfirmDialog, SearchBox } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { SearchBox } from '@/_components/SearchBox';
 import Icon from '@/_ui/Icon/SolidIcons';
 import config from 'config';
 import Modal from '@/HomePage/Modal';

@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { shallow } from 'zustand/shallow';
+import EEAppCanvasBanner from '@ee/modules/Appbuilder/components/AppCanvasBanner';
 
 const AppCanvasBanner = ({ appId = '' }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
@@ -30,4 +30,4 @@ const AppCanvasBanner = ({ appId = '' }) => {
   return <div>{renderBanner()}</div>;
 };
 
-export default withEditionSpecificComponent(AppCanvasBanner, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppCanvasBanner : EEAppCanvasBanner;

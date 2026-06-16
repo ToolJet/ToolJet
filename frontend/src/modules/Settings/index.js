@@ -1,8 +1,9 @@
-import { withEditionSpecificModule } from '@/modules/common/helpers';
-import { MODULE_CONSTANTS } from '../common/constants';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
-const Settings = withEditionSpecificModule('Settings', {
-  moduleRequiredIn: [MODULE_CONSTANTS.MODULE_EDITIONS.CLOUD, MODULE_CONSTANTS.MODULE_EDITIONS.EE],
-});
+// The 'Settings' module was never registered in any edition's registry, so the
+// old withEditionSpecificModule wrapper redirected in ALL editions. Preserved
+// as a plain redirect — if a Settings module ever ships, route it here.
+const Settings = () => <Navigate to="/" replace />;
 
 export default Settings;

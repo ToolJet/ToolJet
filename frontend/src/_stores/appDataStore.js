@@ -1,4 +1,4 @@
-import { appVersionService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import { create, findAllEntityReferences, zustandDevTools } from './utils';
 import { shallow } from 'zustand/shallow';
 import { useResolveStore } from './resolverStore';

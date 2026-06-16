@@ -4,7 +4,7 @@ import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { useAppDataStore } from './appDataStore';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import update from 'immutability-helper';
 const { diff } = require('deep-object-diff');

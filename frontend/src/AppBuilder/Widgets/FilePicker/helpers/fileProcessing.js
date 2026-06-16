@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
-import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import JSON5 from 'json5'; // Import JSON5 for more lenient parsing
 import Papa from 'papaparse';
@@ -38,6 +36,10 @@ export const processCSV = (str, delimiter = ',') => {
 
 export const processXls = async (base64Str) => {
   try {
+    // Lazy load xlsx (~1MB) so picking a CSV/JSON file never pays for it
+    // eslint-disable-next-line import/no-unresolved
+    const XLSX = await import('xlsx');
+
     // Decode base64 to binary string
     const binary = atob(base64Str.split(',')[1] || base64Str);
 

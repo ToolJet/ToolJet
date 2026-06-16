@@ -3,7 +3,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select, { components } from 'react-select';
-import { FilterPreview } from '@/_components';
+import { FilterPreview } from '@/_components/FilterPreview';
 import './appSelect.theme.scss';
 
 export const RESOURCE_TYPE = {

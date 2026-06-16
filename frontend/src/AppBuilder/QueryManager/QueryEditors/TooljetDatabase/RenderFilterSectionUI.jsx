@@ -1,5 +1,5 @@
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import React from 'react';

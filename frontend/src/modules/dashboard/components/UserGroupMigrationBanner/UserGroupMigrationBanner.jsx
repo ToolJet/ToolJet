@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEUserGroupMigrationBanner from '@ee/modules/Dashboard/components/UserGroupMigrationBanner';
 
 const UserGroupMigrationBanner = (props) => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(UserGroupMigrationBanner, 'Dashboard');
+export default process.env.TOOLJET_EDITION === 'ce' ? UserGroupMigrationBanner : EEUserGroupMigrationBanner;

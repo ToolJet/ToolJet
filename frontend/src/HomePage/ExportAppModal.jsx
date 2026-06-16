@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
-import { appsService } from '@/_services';
+import { appsService } from '@/_services/apps.service';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
 import useStore from '@/AppBuilder/_stores/store';

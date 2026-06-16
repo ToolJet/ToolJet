@@ -9,7 +9,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
 import { Confirm } from '@/AppBuilder/Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 export const AggregateFilter = ({ darkMode, operation = '' }) => {
   const {
     columns,

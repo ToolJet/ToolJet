@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEAppPromoteReleasePermissionsUI from '@ee/modules/WorkspaceSettings/components/AppPromoteReleasePermissionsUI';
 
 const AppPromoteReleasePermissionsUI = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(AppPromoteReleasePermissionsUI, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppPromoteReleasePermissionsUI : EEAppPromoteReleasePermissionsUI;

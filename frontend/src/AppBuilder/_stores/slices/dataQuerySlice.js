@@ -1,4 +1,5 @@
-import { dataqueryService, appPermissionService } from '@/_services';
+import { dataqueryService } from '@/_services/dataquery.service';
+import { appPermissionService } from '@/_services/appPermission.service';
 import { getDefaultOptions } from '@/_stores/storeHelper';
 import { v4 as uuidv4 } from 'uuid';
 import _, { isEmpty, throttle } from 'lodash';

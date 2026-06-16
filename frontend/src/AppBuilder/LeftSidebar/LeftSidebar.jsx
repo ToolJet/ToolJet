@@ -3,7 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { SidebarItem } from './SidebarItem';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { DarkModeToggle } from '@/_components';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Popover from '@/_ui/Popover';
 // import { PageMenu } from './PageMenu';
 import LeftSidebarInspector from './LeftSidebarInspector/LeftSidebarInspector';
@@ -11,7 +11,7 @@ import GlobalSettings from './GlobalSettings';
 import '../../_styles/left-sidebar.scss';
 import Debugger from './Debugger/Debugger';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EELeftSidebar from '@ee/modules/AiBuilder/components/Sidebar';
 import UpdatePresenceMultiPlayer from '@/AppBuilder/Header/UpdatePresenceMultiPlayer';
 import { SquareDashedMousePointer, Bug, Bolt, History } from 'lucide-react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -304,4 +304,8 @@ const AvatarGroupWrapper = ({ darkMode, maxDisplay }) => {
   return <AvatarGroup avatars={transformedAvatars} maxDisplay={maxDisplay} variant="multiplayer" darkMode={darkMode} />;
 };
 
-export const LeftSidebar = withEditionSpecificComponent(BaseLeftSidebar, 'AiBuilder');
+// The EE Sidebar imports BaseLeftSidebar from this file (ESM cycle). The arrow
+// wrapper defers dereferencing the EE binding to render time, so module
+// evaluation order inside the cycle cannot hit the TDZ.
+export const LeftSidebar =
+  process.env.TOOLJET_EDITION === 'ce' ? BaseLeftSidebar : (props) => <EELeftSidebar {...props} />;

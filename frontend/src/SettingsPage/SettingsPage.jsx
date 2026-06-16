@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { authenticationService, userService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { userService } from '@/_services/user.service';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';

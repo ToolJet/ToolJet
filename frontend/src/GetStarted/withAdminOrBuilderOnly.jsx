@@ -1,6 +1,6 @@
 import React from 'react';
 import { fetchEdition } from '@/modules/common/helpers/utils';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { checkIfToolJetCloud } from '@/_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 import { getPrivateRoute } from '@/_helpers/routes';

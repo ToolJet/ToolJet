@@ -1,7 +1,6 @@
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-
+import { AppLibraries as EEAppLibraries } from '@ee/modules/AppLibraries/components/AppLibraries';
 const AppLibraries = () => {
   return null;
 };
 
-export default withEditionSpecificComponent(AppLibraries, 'AppLibraries');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppLibraries : EEAppLibraries;

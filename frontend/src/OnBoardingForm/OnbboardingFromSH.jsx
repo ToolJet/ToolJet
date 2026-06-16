@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import OnBoardingInput from './OnBoardingInput';

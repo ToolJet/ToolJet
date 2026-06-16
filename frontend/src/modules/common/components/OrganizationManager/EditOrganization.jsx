@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';

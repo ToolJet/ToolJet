@@ -7,7 +7,8 @@ import {
   FormDescription,
   TermsAndPrivacyInfo,
 } from '@/modules/common/components';
-import { appService, authenticationService } from '@/_services';
+import { appService } from '@/_services/app.service';
+import { authenticationService } from '@/_services/authentication.service';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import './resources/styles/workspace_invitation_page.scss';

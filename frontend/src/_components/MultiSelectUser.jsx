@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FilterPreview } from '@/_components';
+import { FilterPreview } from '@/_components/FilterPreview';
 import PropTypes from 'prop-types';
 import Select from 'react-select-search';
 import '@/_styles/widgets/multi-select.scss';

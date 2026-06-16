@@ -1,5 +1,5 @@
 import { create, zustandDevTools } from './utils';
-import { whiteLabellingService } from '@/_services';
+import { whiteLabellingService } from '@/_services/white-labelling.service';
 import { authHeader } from '@/_helpers';
 
 import useStore from '@/AppBuilder/_stores/store';

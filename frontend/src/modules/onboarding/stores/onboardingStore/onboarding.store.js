@@ -3,7 +3,7 @@ import { zustandDevTools } from '@/_stores/utils';
 import { setupFirstUser } from '@/modules/onboarding/services/onboarding.service';
 import { appsService } from '@/_services/apps.service';
 import { getSubpath } from '@/_helpers/routes';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { utils } from '@/modules/common/helpers';
 
 const useCEOnboardingStore = create(

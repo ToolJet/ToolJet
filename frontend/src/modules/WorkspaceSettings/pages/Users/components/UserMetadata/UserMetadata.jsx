@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEUserMetadata from '@ee/modules/WorkspaceSettings/components/UserMetadata';
 
 const UserMetadata = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(UserMetadata, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? UserMetadata : EEUserMetadata;

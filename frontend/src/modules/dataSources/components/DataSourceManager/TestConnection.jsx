@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { datasourceService } from '@/_services';
+import { datasourceService } from '@/_services/datasource.service';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';

@@ -2,29 +2,43 @@ import React, { Suspense } from 'react';
 // BrowserRouter removed - now in RootRouter.jsx
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { authenticationService, tooljetService, licenseService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { tooljetService } from '@/_services/tooljet.service';
+import { licenseService } from '@/_services/license.service';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
-import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 // Viewer import removed - now handled by ViewerApp.jsx
 // import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { MarketplacePage } from '@/MarketplacePage';
-import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
-import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import '@/_styles/theme.scss';
-import AppLoader from '@/AppLoader';
+import { TJLoader } from '@/_ui/TJLoader';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
-import WorkspaceConstants from '@/WorkspaceConstants';
+
+// Route-level code splitting: these are cold paths and/or heavy payloads.
+// The editor (AppLoader) is the biggest win — webpackPrefetch downloads it in
+// idle time after the dashboard renders, since dashboard → editor is the
+// dominant navigation. ChunkErrorBoundary in RootRouter handles stale chunks.
+const AppLoader = React.lazy(() => import(/* webpackPrefetch: true */ '@/AppLoader'));
+const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase').then((m) => ({ default: m.TooljetDatabase })));
+const SettingsPage = React.lazy(() =>
+  import('../SettingsPage/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+);
+const MarketplacePage = React.lazy(() => import('@/MarketplacePage').then((m) => ({ default: m.MarketplacePage })));
+const InstalledPlugins = React.lazy(() =>
+  import('@/MarketplacePage/InstalledPlugins').then((m) => ({ default: m.InstalledPlugins }))
+);
+const MarketplacePlugins = React.lazy(() =>
+  import('@/MarketplacePage/MarketplacePlugins').then((m) => ({ default: m.MarketplacePlugins }))
+);
+const WorkspaceConstants = React.lazy(() => import('@/WorkspaceConstants'));
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
@@ -256,235 +270,240 @@ class AppComponent extends React.Component {
               </div>
             )}
             <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
-              <Routes>
-                {onboarding({ ...this.props, darkMode })}
-                {auth({ ...this.props, darkMode })}
-                <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
-                <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-                <Route
-                  exact
-                  path="/:workspaceId/apps/:slug/:pageHandle?/*"
-                  element={
-                    <AppsRoute componentType="editor" darkMode={darkMode}>
-                      <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AppsRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId/workspace-constants"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                {/* VIEWER ROUTES REMOVED - Now handled by ViewerApp.jsx via RootRouter.jsx */}
-                {/* These routes are now in ViewerApp.jsx for bundle isolation: */}
-                {/* - /applications/:slug/:pageHandle? */}
-                {/* - /applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle? */}
-                <Route
-                  exact
-                  path="/oauth2/authorize"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
-                {isWorkflowsFeatureEnabled() && (
+              <Suspense fallback={<TJLoader />}>
+                <Routes>
+                  {onboarding({ ...this.props, darkMode })}
+                  {auth({ ...this.props, darkMode })}
+                  <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
+                  <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
                   <Route
                     exact
-                    path="/:workspaceId/workflows/*"
+                    path="/:workspaceId/apps/:slug/:pageHandle?/*"
+                    element={
+                      <AppsRoute componentType="editor" darkMode={darkMode}>
+                        <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      </AppsRoute>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/:workspaceId/workspace-constants"
                     element={
                       <DesktopOnlyRoute darkMode={darkMode}>
                         <PrivateRoute darkMode={darkMode}>
-                          <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                          <WorkspaceConstants switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                         </PrivateRoute>
                       </DesktopOnlyRoute>
                     }
                   />
-                )}
-                <Route
-                  path="/:workspaceId/workspace-settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <WorkspaceSettings {...mergedProps} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
-                  path="settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
-                  path="/:workspaceId/settings/*"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId/modules"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-
-                {getAuditLogsRoutes({ ...mergedProps, darkMode })}
-                <Route
-                  exact
-                  path="/:workspaceId/profile-settings"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                {getDataSourcesRoutes({ ...mergedProps, darkMode })}
-                {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}
-                <Route
-                  exact
-                  path="/:workspaceId/home"
-                  element={
-                    <DesktopOnlyRoute>
-                      <PrivateRoute>
-                        <GuardedHomePage
-                          switchDarkMode={this.switchDarkMode}
-                          darkMode={darkMode}
-                          version={this.state.tooljetVersion}
-                        />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-
-                <Route
-                  exact
-                  path="/:workspaceId/database"
-                  element={
-                    <DesktopOnlyRoute darkMode={darkMode}>
-                      <PrivateRoute darkMode={darkMode}>
-                        <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-
-                {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
+                  {/* VIEWER ROUTES REMOVED - Now handled by ViewerApp.jsx via RootRouter.jsx */}
+                  {/* These routes are now in ViewerApp.jsx for bundle isolation: */}
+                  {/* - /applications/:slug/:pageHandle? */}
+                  {/* - /applications/:slug/versions/:versionId/environments/:environmentId/:pageHandle? */}
                   <Route
                     exact
-                    path="/integrations"
+                    path="/oauth2/authorize"
                     element={
-                      <AdminRoute {...this.props} darkMode={darkMode}>
-                        <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                      </AdminRoute>
-                    }
-                  >
-                    <Route path="installed" element={<InstalledPlugins />} />
-                    <Route path="marketplace" element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>} />
-                  </Route>
-                )}
-
-                <Route
-                  exact
-                  path="/"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <Navigate to="/:workspaceId" />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/error/:errorType"
-                  element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
-                />
-                <Route
-                  exact
-                  path="/app-url-archived"
-                  element={
-                    <SwitchWorkspacePage
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={darkMode}
-                      archived={true}
-                      isAppUrl={true}
-                    />
-                  }
-                />
-                <Route
-                  exact
-                  path="/switch-workspace"
-                  element={
-                    <SwitchWorkspaceRoute darkMode={darkMode}>
-                      <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </SwitchWorkspaceRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/switch-workspace-archived"
-                  element={
-                    <SwitchWorkspaceRoute darkMode={darkMode}>
-                      <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
-                    </SwitchWorkspaceRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId"
-                  element={
-                    <PrivateRoute darkMode={darkMode}>
-                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  exact
-                  path="/:workspaceId/home"
-                  element={
-                    <DesktopOnlyRoute>
-                      <PrivateRoute>
-                        <GuardedHomePage
-                          switchDarkMode={this.switchDarkMode}
-                          darkMode={darkMode}
-                          version={this.state.tooljetVersion}
-                        />
+                      <PrivateRoute darkMode={darkMode}>
+                        <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
-                    </DesktopOnlyRoute>
-                  }
-                />
-                {/* EMBED APPS ROUTE REMOVED - handled by ViewerApp.jsx */}
-                <Route
-                  path="*"
-                  render={() => {
-                    if (authenticationService?.currentSessionValue?.current_organization_id) {
-                      return <Navigate to="/:workspaceId" />;
                     }
-                    return <Navigate to="/login" />;
-                  }}
-                />
-              </Routes>
+                  />
+                  {isWorkflowsFeatureEnabled() && (
+                    <Route
+                      exact
+                      path="/:workspaceId/workflows/*"
+                      element={
+                        <DesktopOnlyRoute darkMode={darkMode}>
+                          <PrivateRoute darkMode={darkMode}>
+                            <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                          </PrivateRoute>
+                        </DesktopOnlyRoute>
+                      }
+                    />
+                  )}
+                  <Route
+                    path="/:workspaceId/workspace-settings/*"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <WorkspaceSettings {...mergedProps} />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                  <Route
+                    path="settings/*"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                  <Route
+                    path="/:workspaceId/settings/*"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <InstanceSettings {...this.props} darkMode={darkMode} switchDarkMode={this.switchDarkMode} />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/:workspaceId/modules"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+
+                  {getAuditLogsRoutes({ ...mergedProps, darkMode })}
+                  <Route
+                    exact
+                    path="/:workspaceId/profile-settings"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                  {getDataSourcesRoutes({ ...mergedProps, darkMode })}
+                  {/* DUPLICATE VIEWER ROUTES REMOVED - handled by ViewerApp.jsx */}
+                  <Route
+                    exact
+                    path="/:workspaceId/home"
+                    element={
+                      <DesktopOnlyRoute>
+                        <PrivateRoute>
+                          <GuardedHomePage
+                            switchDarkMode={this.switchDarkMode}
+                            darkMode={darkMode}
+                            version={this.state.tooljetVersion}
+                          />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+
+                  <Route
+                    exact
+                    path="/:workspaceId/database"
+                    element={
+                      <DesktopOnlyRoute darkMode={darkMode}>
+                        <PrivateRoute darkMode={darkMode}>
+                          <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+
+                  {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
+                    <Route
+                      exact
+                      path="/integrations"
+                      element={
+                        <AdminRoute {...this.props} darkMode={darkMode}>
+                          <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        </AdminRoute>
+                      }
+                    >
+                      <Route path="installed" element={<InstalledPlugins />} />
+                      <Route
+                        path="marketplace"
+                        element={<DesktopOnlyRoute>{<MarketplacePlugins />}</DesktopOnlyRoute>}
+                      />
+                    </Route>
+                  )}
+
+                  <Route
+                    exact
+                    path="/"
+                    element={
+                      <PrivateRoute darkMode={darkMode}>
+                        <Navigate to="/:workspaceId" />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/error/:errorType"
+                    element={<ErrorPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />}
+                  />
+                  <Route
+                    exact
+                    path="/app-url-archived"
+                    element={
+                      <SwitchWorkspacePage
+                        switchDarkMode={this.switchDarkMode}
+                        darkMode={darkMode}
+                        archived={true}
+                        isAppUrl={true}
+                      />
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/switch-workspace"
+                    element={
+                      <SwitchWorkspaceRoute darkMode={darkMode}>
+                        <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      </SwitchWorkspaceRoute>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/switch-workspace-archived"
+                    element={
+                      <SwitchWorkspaceRoute darkMode={darkMode}>
+                        <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} archived={true} />
+                      </SwitchWorkspaceRoute>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/:workspaceId"
+                    element={
+                      <PrivateRoute darkMode={darkMode}>
+                        <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    exact
+                    path="/:workspaceId/home"
+                    element={
+                      <DesktopOnlyRoute>
+                        <PrivateRoute>
+                          <GuardedHomePage
+                            switchDarkMode={this.switchDarkMode}
+                            darkMode={darkMode}
+                            version={this.state.tooljetVersion}
+                          />
+                        </PrivateRoute>
+                      </DesktopOnlyRoute>
+                    }
+                  />
+                  {/* EMBED APPS ROUTE REMOVED - handled by ViewerApp.jsx */}
+                  <Route
+                    path="*"
+                    render={() => {
+                      if (authenticationService?.currentSessionValue?.current_organization_id) {
+                        return <Navigate to="/:workspaceId" />;
+                      }
+                      return <Navigate to="/login" />;
+                    }}
+                  />
+                </Routes>
+              </Suspense>
             </BreadCrumbContext.Provider>
             <div id="modal-div" />
           </div>

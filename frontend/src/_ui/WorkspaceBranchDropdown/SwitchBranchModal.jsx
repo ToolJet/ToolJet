@@ -10,7 +10,7 @@ import '@/_styles/switch-branch-modal.scss';
 import { DeleteBranchConfirmModal } from './DeleteBranchConfirmModal';
 import { PullConflictModal } from './WorkspacePullConflictModal';
 import { Tooltip } from 'react-tooltip';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {

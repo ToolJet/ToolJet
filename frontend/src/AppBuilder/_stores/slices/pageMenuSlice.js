@@ -1,6 +1,6 @@
 import { buildComponentMetaDefinition } from '@/_helpers/appUtils';
 import { getHostURL } from '@/_helpers/routes';
-import { appVersionService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import { toast } from 'react-hot-toast';
 import { v4 as uuid } from 'uuid';
 import Fuse from 'fuse.js';

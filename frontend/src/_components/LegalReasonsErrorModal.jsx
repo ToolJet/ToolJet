@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import SolidIcon from '../_ui/Icon/SolidIcons';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { getWorkspaceId } from '@/_helpers/utils';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 

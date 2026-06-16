@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import {
-  authenticationService,
-  orgEnvironmentConstantService,
-  appEnvironmentService,
-  licenseService,
-} from '@/_services';
-import { ConfirmDialog, ToolTip } from '@/_components';
+import { authenticationService } from '@/_services/authentication.service';
+import { orgEnvironmentConstantService } from '@/_services/organization_constants.service';
+import { appEnvironmentService } from '@/_services/app_environment.service';
+import { licenseService } from '@/_services/license.service';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { ToolTip } from '@/_components/ToolTip';
 import { toast } from 'react-hot-toast';
 import { capitalize } from 'lodash';
 import { withTranslation } from 'react-i18next';

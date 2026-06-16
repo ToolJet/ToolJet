@@ -1,5 +1,5 @@
 import useStore from '@/AppBuilder/_stores/store';
-import { gitSyncService } from '@/_services';
+import { gitSyncService } from '@/_services/git_sync.service';
 
 // allowEditing is always true post-app_git_sync teardown — workspace-level git sync
 // considers every app in a git-enabled org editable on feature branches. The freeze

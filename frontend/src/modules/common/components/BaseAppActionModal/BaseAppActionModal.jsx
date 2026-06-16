@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { AppModal } from '@/_components';
+import { AppModal } from '@/_components/AppModal';
 
 const BaseAppActionModal = ({ configs, modalStates, ...props }) => {
   const getActiveConfig = () => {

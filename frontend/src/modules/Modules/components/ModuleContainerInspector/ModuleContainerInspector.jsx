@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEModuleContainerInspector from '@ee/modules/Modules/components/ModuleContainerInspector';
 
 const ModuleContainerInspector = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(ModuleContainerInspector, 'Modules');
+export default process.env.TOOLJET_EDITION === 'ce' ? ModuleContainerInspector : EEModuleContainerInspector;

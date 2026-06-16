@@ -1,7 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { toast } from 'react-hot-toast';
-import { commentNotificationsService } from '@/_services';
+import { commentNotificationsService } from '@/_services/commentNotifications.service';
 import { hightlightMentionedUserInComment, getWorkspaceId } from '@/_helpers/utils';
 import { appendWorkspaceId } from '@/_helpers/routes';
 

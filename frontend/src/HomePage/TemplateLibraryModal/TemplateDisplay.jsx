@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Badge } from 'react-bootstrap';
-import { ImageWithSpinner } from '@/_components';
+import { ImageWithSpinner } from '@/_components/ImageWithSpinner';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
 export default function TemplateDisplay(props) {

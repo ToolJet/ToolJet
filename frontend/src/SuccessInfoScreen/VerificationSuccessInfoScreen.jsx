@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
-import { authenticationService, loginConfigsService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { loginConfigsService } from '@/_services/login_configs.service';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
-import { ShowLoading } from '@/_components';
+import { ShowLoading } from '@/_components/LoginLoader';
 import { toast } from 'react-hot-toast';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
 import { ButtonSolid } from '@/_components/AppButton';

@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import BaseLogoNavDropdown from '@/modules/common/components/BaseLogoNavDropdown';
+import EELogoNavDropdown from '@ee/modules/Appbuilder/components/LogoNavDropdown';
 
 const LogoNavDropdown = (props) => {
   return <BaseLogoNavDropdown {...props} />;
 };
-export default withEditionSpecificComponent(LogoNavDropdown, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? LogoNavDropdown : EELogoNavDropdown;

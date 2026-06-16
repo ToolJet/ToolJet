@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEDataSourceResourcePermissions from '@ee/modules/WorkspaceSettings/components/DataSourceResourcePermissions';
 
 function DataSourceResourcePermissions() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(DataSourceResourcePermissions, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? DataSourceResourcePermissions : EEDataSourceResourcePermissions;

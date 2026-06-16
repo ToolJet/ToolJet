@@ -1,5 +1,5 @@
 import { create, zustandDevTools } from './utils';
-import { appVersionService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import { toast } from 'react-hot-toast';
 
 const initialState = {

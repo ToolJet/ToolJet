@@ -1,8 +1,8 @@
-import { getEditionSpecificStore } from '@/modules/common/helpers/getEditionSpecificStores';
-let StoreModule;
-try {
-  StoreModule = await getEditionSpecificStore('onboarding', 'invitationsStore');
-} catch (error) {
-  console.error('Failed to load store:', error);
-}
-export default StoreModule;
+import * as ceStores from '@/modules/_store';
+import * as eeStores from '@ee/modules/_store';
+
+// Build-time edition selection — replaces the old async registry lookup and
+// removes the top-level await (a hidden chunk-loading serialization point).
+const stores = process.env.TOOLJET_EDITION === 'ce' ? ceStores.stores : eeStores.stores;
+
+export default stores?.invitationsStore;

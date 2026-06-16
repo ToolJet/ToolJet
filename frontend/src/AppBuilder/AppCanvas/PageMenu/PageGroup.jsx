@@ -5,7 +5,7 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import useStore from '@/AppBuilder/_stores/store';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 import cx from 'classnames';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import {
   NavigationMenu,
   NavigationMenuList,

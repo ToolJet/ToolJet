@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
 import Select from '@/_ui/Select';
-import { dataqueryService } from '@/_services';
+import { dataqueryService } from '@/_services/dataquery.service';
 import { get, debounce } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';

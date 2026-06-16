@@ -3,7 +3,7 @@ import Skeleton from 'react-loading-skeleton';
 import { toast } from 'react-hot-toast';
 import { isEmpty } from 'lodash';
 import { TooljetDatabaseContext } from '../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { ListItem } from '../TableListItem';
 import { BreadCrumbContext } from '../../App/App';
 import Search from '../Search';

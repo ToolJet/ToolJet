@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import BaseWorkspaceActions from '@/modules/common/components/BaseWorkspaceActions';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEWorkspaceActions from '@ee/modules/Dashboard/components/WorkspaceActions';
 const WorkspaceActions = ({ workspacesLimit, super_admin, handleAddWorkspace, ...props }) => {
   return (
     <BaseWorkspaceActions
@@ -11,4 +11,4 @@ const WorkspaceActions = ({ workspacesLimit, super_admin, handleAddWorkspace, ..
     />
   );
 };
-export default withEditionSpecificComponent(WorkspaceActions, 'Dashboard');
+export default process.env.TOOLJET_EDITION === 'ce' ? WorkspaceActions : EEWorkspaceActions;

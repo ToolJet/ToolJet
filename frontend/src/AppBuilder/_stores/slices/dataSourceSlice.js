@@ -1,4 +1,5 @@
-import { datasourceService, globalDatasourceService } from '@/_services';
+import { datasourceService } from '@/_services/datasource.service';
+import { globalDatasourceService } from '@/_services/globalDatasource.service';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 const initialState = {

@@ -1,4 +1,5 @@
-import { appsService, appVersionService } from '@/_services';
+import { appsService } from '@/_services/apps.service';
+import { appVersionService } from '@/_services/appVersion.service';
 import { decimalToHex, APP_HEADER_HEIGHT, QUERY_PANE_HEIGHT } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import toast from 'react-hot-toast';
 import DependencyGraph from './DependencyClass';

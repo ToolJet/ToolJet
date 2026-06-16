@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEMultiEnvTabs from '@ee/modules/DataSources/components/MultiEnvTabs';
 
 const MultiEnvTabs = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(MultiEnvTabs, 'DataSources');
+export default process.env.TOOLJET_EDITION === 'ce' ? MultiEnvTabs : EEMultiEnvTabs;

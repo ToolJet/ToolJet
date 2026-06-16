@@ -4,7 +4,7 @@ import _, { isEmpty } from 'lodash';
 import JSON5 from 'json5';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-import { workflowExecutionsService } from '@/_services';
+import { workflowExecutionsService } from '@/_services/workflow_executions.service';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/AppBuilder/QueryManager/constants';
@@ -920,8 +920,37 @@ export const hightlightMentionedUserInComment = (comment) => {
 //   };
 // };
 
+// The pyodide loader script used to be a render-blocking <script> in index.ejs
+// on every page. It is now injected on demand the first time a Python query
+// runs. Only the script load is memoized — each call still creates a fresh
+// interpreter instance, preserving the per-run isolation of the old behavior.
+let pyodideScriptPromise = null;
+
+const injectPyodideScript = () => {
+  if (window.loadPyodide) return Promise.resolve();
+  if (!pyodideScriptPromise) {
+    pyodideScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      // Non-cloud uses a relative URL so the <base href> subpath is respected,
+      // exactly like the old static tag in index.ejs.
+      script.src =
+        process.env.TOOLJET_EDITION === 'cloud'
+          ? `${process.env.PYODIDE_BASE_URL}pyodide.js`
+          : 'assets/libs/pyodide-0.23.2/pyodide.js';
+      script.onload = resolve;
+      script.onerror = () => {
+        pyodideScriptPromise = null; // allow retry on transient failure
+        reject(new Error(`Failed to load ${script.src}`));
+      };
+      document.head.appendChild(script);
+    });
+  }
+  return pyodideScriptPromise;
+};
+
 export const loadPyodide = async () => {
   try {
+    await injectPyodideScript();
     const pyodide = await window.loadPyodide({ indexURL: process.env.PYODIDE_BASE_URL });
     return pyodide;
   } catch (error) {

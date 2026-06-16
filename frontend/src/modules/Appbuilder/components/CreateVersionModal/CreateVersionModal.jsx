@@ -1,8 +1,8 @@
 import React from 'react';
 import BaseCreateVersionModal from '@/modules/common/components/BaseCreateVersionModal';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EECreateVersionModal from '@ee/modules/Appbuilder/components/CreateVersionModal';
 const CreateVersionModal = (props) => {
   return <BaseCreateVersionModal {...props} />;
 };
-export default withEditionSpecificComponent(CreateVersionModal, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? CreateVersionModal : EECreateVersionModal;
 //Moved this component to version Manager header -> need to discuss and remove this file later

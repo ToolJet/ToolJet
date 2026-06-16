@@ -1,6 +1,6 @@
 import React from 'react';
 import './Configuration.scss';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 import { toast } from 'react-hot-toast';
 import { Dropdown } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';

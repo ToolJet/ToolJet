@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { sessionService } from '@/_services';
+import { sessionService } from '@/_services/session.service';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();

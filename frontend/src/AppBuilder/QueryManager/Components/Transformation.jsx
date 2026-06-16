@@ -6,11 +6,10 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import useStore from '@/AppBuilder/_stores/store';
 import { v4 as uuidv4 } from 'uuid';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
 const noop = () => {};
 

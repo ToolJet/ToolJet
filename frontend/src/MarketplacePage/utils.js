@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { marketplaceService } from '@/_services';
+import { marketplaceService } from '@/_services/marketplace.service';
 import toast from 'react-hot-toast';
 
 export function capitalizeFirstLetter(str) {

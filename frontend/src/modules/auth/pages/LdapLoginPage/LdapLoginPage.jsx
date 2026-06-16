@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EELdapLoginPage from '@ee/modules/auth/components/LdapLoginPage';
 
 const LdapLoginPage = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(LdapLoginPage, 'auth');
+export default process.env.TOOLJET_EDITION === 'ce' ? LdapLoginPage : EELdapLoginPage;

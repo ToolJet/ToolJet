@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import BaseLoginPage from './components/BaseLoginPage/BaseLoginPage';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EELoginPage from '@ee/modules/auth/components/LoginPage';
 
 const LoginPage = (props) => {
   const params = useParams();
@@ -14,4 +14,4 @@ const LoginPage = (props) => {
   return <BaseLoginPage {...props} />;
 };
 
-export default withEditionSpecificComponent(LoginPage, 'auth');
+export default process.env.TOOLJET_EDITION === 'ce' ? LoginPage : EELoginPage;

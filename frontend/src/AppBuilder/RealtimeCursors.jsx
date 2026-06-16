@@ -5,7 +5,8 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 import { xorWith, isEqual } from 'lodash';
 import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
-import { userService, authenticationService } from '@/_services';
+import { userService } from '@/_services/user.service';
+import { authenticationService } from '@/_services/authentication.service';
 import useStore from '@/AppBuilder/_stores/store';
 
 const RealtimeCursors = () => {

@@ -1,7 +1,7 @@
 import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { getCookie } from '@/_helpers/cookie';
 import { eraseRedirectUrl, getRedirectURL } from '@/_helpers/routes';
-import { sessionService } from '@/_services';
+import { sessionService } from '@/_services/session.service';
 
 export const onInvitedUserSignUpSuccess = (response, navigate) => {
   const { organizationInviteUrl, ...currentUser } = response;

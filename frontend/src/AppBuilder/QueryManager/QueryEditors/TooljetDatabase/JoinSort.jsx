@@ -8,7 +8,7 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { isEmpty } from 'lodash';
 import { NoCondition } from './NoConditionUI';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 export default function JoinSort({ darkMode }) {
   const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =

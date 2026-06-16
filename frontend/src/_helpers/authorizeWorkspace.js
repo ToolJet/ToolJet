@@ -1,4 +1,7 @@
-import { organizationService, authenticationService, sessionService, appsService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { sessionService } from '@/_services/session.service';
+import { appsService } from '@/_services/apps.service';
 import {
   pathnameToArray,
   getSubpath,

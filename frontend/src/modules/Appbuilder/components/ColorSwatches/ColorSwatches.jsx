@@ -1,7 +1,7 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers';
 import BaseColorSwatches from '@/modules/common/components/BaseColorSwatches';
 import { getCssVarValue } from '@/AppBuilder/Widgets/utils';
+import EEColorSwatches from '@ee/modules/Appbuilder/components/ColorSwatches';
 
 const ColorSwatches = (props) => {
   const { value } = props;
@@ -13,4 +13,4 @@ const ColorSwatches = (props) => {
   return <BaseColorSwatches {...props} value={modifiedValue} />;
 };
 
-export default withEditionSpecificComponent(ColorSwatches, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? ColorSwatches : EEColorSwatches;

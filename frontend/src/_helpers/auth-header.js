@@ -1,4 +1,4 @@
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import { handleUnSubscription } from './utils';
 import { getPatToken } from '@/AppBuilder/EmbedApp';
 import { getActiveBranchId } from './active-branch';

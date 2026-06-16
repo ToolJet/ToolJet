@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEOpenIdLoginPage from '@ee/modules/auth/components/OpenIdLoginPage';
 
 export const OpenIdLoginPage = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(OpenIdLoginPage, 'auth');
+export default process.env.TOOLJET_EDITION === 'ce' ? OpenIdLoginPage : EEOpenIdLoginPage;

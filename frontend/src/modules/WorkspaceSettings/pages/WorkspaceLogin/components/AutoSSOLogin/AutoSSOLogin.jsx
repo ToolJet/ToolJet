@@ -1,10 +1,10 @@
 // src/modules/OrganizationSettings/OrganizationLogin/AutoSSOLogin.jsx
 
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEAutoSSOLogin from '@ee/modules/WorkspaceSettings/components/AutoSSOLogin';
 
 const AutoSSOLogin = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(AutoSSOLogin, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? AutoSSOLogin : EEAutoSSOLogin;

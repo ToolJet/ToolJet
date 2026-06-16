@@ -1,8 +1,10 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEFolderPermissionActionContainer from '@ee/modules/WorkspaceSettings/components/FolderPermissionActionContainer';
 
 function FolderPermissionActionContainer() {
   return <></>;
 }
 
-export default withEditionSpecificComponent(FolderPermissionActionContainer, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce'
+  ? FolderPermissionActionContainer
+  : EEFolderPermissionActionContainer;

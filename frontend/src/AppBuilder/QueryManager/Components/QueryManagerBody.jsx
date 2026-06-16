@@ -23,7 +23,7 @@ import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEQueryManagerBody from '@ee/modules/Appbuilder/components/QueryManager';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
@@ -633,6 +633,10 @@ const CustomToggleFlag = ({
   );
 };
 
-const QueryManagerBody = withEditionSpecificComponent(BaseQueryManagerBody, 'Appbuilder');
+// The EE QueryManager imports BaseQueryManagerBody from this file (ESM cycle).
+// The arrow wrapper defers dereferencing the EE binding to render time, so
+// module evaluation order inside the cycle cannot hit the TDZ.
+const QueryManagerBody =
+  process.env.TOOLJET_EDITION === 'ce' ? BaseQueryManagerBody : (props) => <EEQueryManagerBody {...props} />;
 
 export default QueryManagerBody;

@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEModuleContainerBlank from '@ee/modules/Modules/components/ModuleContainerBlank';
 
 const ModuleContainerBlank = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(ModuleContainerBlank, 'Modules');
+export default process.env.TOOLJET_EDITION === 'ce' ? ModuleContainerBlank : EEModuleContainerBlank;

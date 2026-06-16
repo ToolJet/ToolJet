@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { zustandDevTools } from './utils';
-import { organizationService } from '@/_services';
+import { organizationService } from '@/_services/organization.service';
 
 const initialState = {
   organizations: [],

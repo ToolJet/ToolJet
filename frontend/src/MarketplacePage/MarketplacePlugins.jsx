@@ -1,8 +1,9 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import { MarketplaceCard } from './MarketplaceCard';
-import { pluginsService, marketplaceService } from '@/_services';
-import { SearchBox } from '@/_components';
+import { pluginsService } from '@/_services/plugins.service';
+import { marketplaceService } from '@/_services/marketplace.service';
+import { SearchBox } from '@/_components/SearchBox';
 
 export const MarketplacePlugins = () => {
   const [installedPlugins, setInstalledPlugins] = React.useState({});

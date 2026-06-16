@@ -1,5 +1,5 @@
 import config from 'config';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
 import { handleUnSubscription } from '@/_helpers/utils';

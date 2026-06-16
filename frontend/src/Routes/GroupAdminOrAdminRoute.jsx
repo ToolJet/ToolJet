@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { licenseService } from '@/_services';
+import { licenseService } from '@/_services/license.service';
 
 export const GroupAdminOrAdminRoute = ({ children }) => {
   const { isLoading, isValidSession, session, setLoading } = useSessionManagement({

@@ -2,7 +2,7 @@ import React from 'react';
 import config from 'config';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { pluginsService } from '@/_services';
+import { pluginsService } from '@/_services/plugins.service';
 import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 import Icon from '@/_ui/Icon/SolidIcons';
 

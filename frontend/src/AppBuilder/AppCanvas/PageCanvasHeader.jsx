@@ -1,6 +1,6 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEPageCanvasHeader from '@ee/modules/Appbuilder/components/PageCanvasHeader';
 
 const PageCanvasHeader = () => null;
 
-export default withEditionSpecificComponent(PageCanvasHeader, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? PageCanvasHeader : EEPageCanvasHeader;

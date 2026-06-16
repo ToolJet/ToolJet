@@ -45,7 +45,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
-import { appService } from '@/_services';
+import { appService } from '@/_services/app.service';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';

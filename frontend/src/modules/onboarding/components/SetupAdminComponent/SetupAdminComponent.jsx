@@ -3,7 +3,7 @@ import { OnboardingBackgroundWrapper, OnboardingQuestions } from '@/modules/onbo
 import useOnboardingStore from '@/modules/common/helpers/onboardingStoreHelper';
 import { shallow } from 'zustand/shallow';
 import { BaseSetupAdminPage } from '@/modules/common/components';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EESetupAdminPageComponent from '@ee/modules/onboarding/components/SetupAdminPageComponent';
 
 const SetupAdminPageComponent = () => {
   const { currentStep } = useOnboardingStore(
@@ -22,4 +22,4 @@ const SetupAdminPageComponent = () => {
   return <BaseSetupAdminPage onboardingStepContent={onboardingStepContent()} />;
 };
 
-export default withEditionSpecificComponent(SetupAdminPageComponent, 'onboarding');
+export default process.env.TOOLJET_EDITION === 'ce' ? SetupAdminPageComponent : EESetupAdminPageComponent;

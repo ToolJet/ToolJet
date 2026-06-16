@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
 import Textarea from '@/_ui/Textarea';
-import { openapiService } from '@/_services';
+import { openapiService } from '@/_services/openapi.service';
 import OpenapiAuth from './OpenapiAuth';
 
 const OpenApi = ({

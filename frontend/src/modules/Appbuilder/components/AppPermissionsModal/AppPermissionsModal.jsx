@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEAppPermissionsModal from '@ee/modules/Appbuilder/components/AppPermissionsModal';
 
 const AppPermissionsModal = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(AppPermissionsModal, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppPermissionsModal : EEAppPermissionsModal;

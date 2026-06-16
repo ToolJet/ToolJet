@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import cx from 'classnames';
-import { folderService, authenticationService } from '@/_services';
+import { folderService } from '@/_services/folder.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
-import { ConfirmDialog, ToolTip } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { ToolTip } from '@/_components/ToolTip';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App/App';

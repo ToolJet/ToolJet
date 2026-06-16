@@ -3,7 +3,7 @@ import { OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
 import { VirtuosoGrid } from 'react-virtuoso';
 import * as Icons from '@tabler/icons-react';
-import { SearchBox } from '@/_components';
+import { SearchBox } from '@/_components/SearchBox';
 import useStore from '@/AppBuilder/_stores/store';
 
 export default function IconSelector({ iconName, iconColor, pageId, iconStyles, disabled = false }) {

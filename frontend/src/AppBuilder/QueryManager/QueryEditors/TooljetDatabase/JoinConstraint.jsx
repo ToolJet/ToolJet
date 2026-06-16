@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =

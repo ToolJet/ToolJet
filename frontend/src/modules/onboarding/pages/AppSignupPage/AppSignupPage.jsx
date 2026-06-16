@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { authenticationService, appsService, sessionService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
+import { appsService } from '@/_services/apps.service';
+import { sessionService } from '@/_services/session.service';
 import { loginConfigsService } from '@/_services/login_configs.service';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { setCookie } from '@/_helpers/cookie';

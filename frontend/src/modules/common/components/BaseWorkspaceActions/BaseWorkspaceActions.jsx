@@ -1,6 +1,6 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import { fetchEdition } from '../../helpers/utils';
 const BaseWorkspaceActions = ({
   workspacesLimit = null,

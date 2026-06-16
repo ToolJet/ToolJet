@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { dataqueryService } from '@/_services';
+import { dataqueryService } from '@/_services/dataquery.service';
 import Select from '@/_ui/Select';
 import { PLUGIN_DYNAMIC_CONNECTION_PARAM_KEYS } from '@/_ui/DynamicSelector/constants';
 import { getQueryVariables } from '@/AppBuilder/_utils/queryPanel';

@@ -6,7 +6,7 @@ import { IconLayoutSidebarLeftCollapse, IconLayoutSidebarRightCollapse } from '@
 // eslint-disable-next-line import/no-unresolved
 import useStore from '@/AppBuilder/_stores/store';
 import AppLogo from '@/_components/AppLogo';
-import { DarkModeToggle } from '@/_components';
+import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import { RenderPageAndPageGroup } from '@/AppBuilder/AppCanvas/PageMenu/PageGroup';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';

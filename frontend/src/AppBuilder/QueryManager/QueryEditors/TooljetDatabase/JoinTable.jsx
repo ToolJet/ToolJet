@@ -13,7 +13,7 @@ import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
 import { NoCondition } from './NoConditionUI';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (

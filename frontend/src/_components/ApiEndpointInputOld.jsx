@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { openapiService } from '@/_services';
+import { openapiService } from '@/_services/openapi.service';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import DOMPurify from 'dompurify';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { withTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';

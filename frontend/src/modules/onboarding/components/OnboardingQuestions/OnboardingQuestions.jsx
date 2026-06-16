@@ -1,7 +1,7 @@
 import React from 'react';
 import { WorkspaceNameForm, DynamicFeatureImage } from './components';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { BaseOnboardingQuestions } from '@/modules/common/components';
+import EEOnboardingQuestions from '@ee/modules/onboarding/components/OnboardingQuestions';
 
 const OnboardingQuestions = ({ ...props }) => {
   const renderCurrentStep = () => {
@@ -16,4 +16,4 @@ const OnboardingQuestions = ({ ...props }) => {
   );
 };
 
-export default withEditionSpecificComponent(OnboardingQuestions, 'onboarding');
+export default process.env.TOOLJET_EDITION === 'ce' ? OnboardingQuestions : EEOnboardingQuestions;

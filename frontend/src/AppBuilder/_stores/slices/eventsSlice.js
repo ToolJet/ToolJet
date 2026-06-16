@@ -1,4 +1,4 @@
-import { appVersionService } from '@/_services';
+import { appVersionService } from '@/_services/appVersion.service';
 import toast from 'react-hot-toast';
 import { debounce, replaceEntityReferencesWithIds } from '../utils';
 import { isQueryRunnable, serializeNestedObjectToQueryParams } from '@/_helpers/utils';

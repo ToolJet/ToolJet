@@ -1,4 +1,3 @@
-import zipcelx from 'zipcelx';
 import Papa from 'papaparse';
 import generateFile from '@/_lib/generate-file';
 import moment from 'moment';
@@ -58,7 +57,9 @@ export const exportToCSV = (table, componentName) => {
 };
 
 // Export to Excel
-export const exportToExcel = (table, componentName) => {
+export const exportToExcel = async (table, componentName) => {
+  // Lazy load zipcelx so the table widget chunk doesn't pay for it until export is clicked
+  const { default: zipcelx } = await import('zipcelx');
   const { headers, data } = getData(table, true);
   const fileName = getExportFileName(componentName);
   const config = {

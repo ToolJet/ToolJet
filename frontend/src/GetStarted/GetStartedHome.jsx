@@ -4,7 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import GetStartedCard from './GetStartedCard';
 import withAdminOrBuilderOnly from './withAdminOrBuilderOnly';
 import HomePagePromptSection from './HomePagePromptSection';
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 import toast from 'react-hot-toast';
 
 const WIDGET_TYPES = {

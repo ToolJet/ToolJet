@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ToolTip } from '@/_components';
-import { appsService } from '@/_services';
+import { ToolTip } from '@/_components/ToolTip';
+import { appsService } from '@/_services/apps.service';
 import { toast } from 'react-hot-toast';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';

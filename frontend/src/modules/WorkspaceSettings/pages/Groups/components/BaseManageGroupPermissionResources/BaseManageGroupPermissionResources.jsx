@@ -1,13 +1,15 @@
 import React from 'react';
 import cx from 'classnames';
-import { groupPermissionV2Service, authenticationService } from '@/_services';
+import { groupPermissionV2Service } from '@/_services/groupPermission.v2.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
-import { FilterPreview, MultiSelectUser } from '@/_components';
+import { FilterPreview } from '@/_components/FilterPreview';
+import { MultiSelectUser } from '@/_components/MultiSelectUser';
 
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ModalBase from '@/_ui/Modal';

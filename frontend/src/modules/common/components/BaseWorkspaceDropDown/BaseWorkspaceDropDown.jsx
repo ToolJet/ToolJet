@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
-import { authenticationService } from '@/_services';
-import { ToolTip } from '@/_components';
+import { authenticationService } from '@/_services/authentication.service';
+import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 import { CreateOrganization } from '@/modules/common/components/OrganizationManager';
 import WorkspaceActions from '@/modules/dashboard/components/WorkspaceActions';

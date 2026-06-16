@@ -1,4 +1,4 @@
-import { authenticationService } from '@/_services';
+import { authenticationService } from '@/_services/authentication.service';
 
 export const canAnyGroupPerformAction = (action, id) => {
   let { user_permissions, data_source_group_permissions, super_admin, admin } =

@@ -9,7 +9,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { handleDeactivateTargets, hideGridLines } from '../Grid/gridUtils';
-import { appsService } from '@/_services';
+import { appsService } from '@/_services/apps.service';
 
 const BUFFER_OFFSET = 15;
 

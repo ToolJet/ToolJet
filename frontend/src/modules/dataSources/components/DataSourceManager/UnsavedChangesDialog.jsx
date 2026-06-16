@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 export default function UnsavedChangesDialog() {

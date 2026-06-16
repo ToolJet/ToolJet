@@ -1,9 +1,9 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import VersionActionButtonsBase from './VersionActionButtons';
+import EEVersionActionButtons from '@ee/modules/Appbuilder/components/VersionActionButtons';
 
 const VersionActionButtons = (props) => {
   return <VersionActionButtonsBase {...props} />;
 };
 
-export default withEditionSpecificComponent(VersionActionButtons, 'Appbuilder');
+export default process.env.TOOLJET_EDITION === 'ce' ? VersionActionButtons : EEVersionActionButtons;

@@ -1,4 +1,6 @@
-import { appEnvironmentService, appVersionService, authenticationService } from '@/_services';
+import { appEnvironmentService } from '@/_services/app_environment.service';
+import { appVersionService } from '@/_services/appVersion.service';
+import { authenticationService } from '@/_services/authentication.service';
 import useStore from '@/AppBuilder/_stores/store';
 import toast from 'react-hot-toast';
 import {

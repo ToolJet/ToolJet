@@ -1,6 +1,6 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import { BaseManageOrgConstants } from '@/modules/common/components';
+import EEManageOrgConstants from '@ee/modules/WorkspaceSettings/components/ManageOrgConstants';
 
 const ManageOrgConstants = (props) => {
   const getCurrentEnvironment = (orgEnvironments) => {
@@ -10,4 +10,4 @@ const ManageOrgConstants = (props) => {
   return <BaseManageOrgConstants {...mergedProps} />;
 };
 
-export default withEditionSpecificComponent(ManageOrgConstants, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? ManageOrgConstants : EEManageOrgConstants;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { ToolTip } from '@/_components';
+import { ToolTip } from '@/_components/ToolTip';
 import EyeHide from '@/../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '@/../assets/images/onboardingassets/Icons/EyeShow';
 

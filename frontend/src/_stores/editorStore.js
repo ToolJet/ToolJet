@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
-import { licenseService } from '@/_services';
+import { licenseService } from '@/_services/license.service';
 import { useResolveStore } from './resolverStore';
 const STORE_NAME = 'Editor';
 

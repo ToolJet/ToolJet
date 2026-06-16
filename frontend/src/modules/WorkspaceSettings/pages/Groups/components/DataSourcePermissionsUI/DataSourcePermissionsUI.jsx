@@ -1,8 +1,8 @@
 import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEDataSourcePermissionsUI from '@ee/modules/WorkspaceSettings/components/DataSourcePermissionsUI';
 
 const DataSourcePermissionsUI = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(DataSourcePermissionsUI, 'WorkspaceSettings');
+export default process.env.TOOLJET_EDITION === 'ce' ? DataSourcePermissionsUI : EEDataSourcePermissionsUI;

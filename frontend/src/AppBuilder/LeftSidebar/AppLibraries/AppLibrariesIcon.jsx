@@ -1,7 +1,6 @@
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
-
+import { AppLibrariesIcon as EEAppLibrariesIcon } from '@ee/modules/AppLibraries/components/AppLibrariesIcon';
 const AppLibrariesIcon = () => {
   return null;
 };
 
-export default withEditionSpecificComponent(AppLibrariesIcon, 'AppLibraries');
+export default process.env.TOOLJET_EDITION === 'ce' ? AppLibrariesIcon : EEAppLibrariesIcon;

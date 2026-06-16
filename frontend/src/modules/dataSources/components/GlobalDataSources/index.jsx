@@ -12,10 +12,13 @@ import {
   CloudStorageSources,
   CommonlyUsedDataSources,
 } from '../../../common/components/DataSourceComponents';
-import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
+import { pluginsService } from '@/_services/plugins.service';
+import { globalDatasourceService } from '@/_services/globalDatasource.service';
+import { authenticationService } from '@/_services/authentication.service';
+import { marketplaceService } from '@/_services/marketplace.service';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
-import { SearchBox } from '@/_components';
+import { SearchBox } from '@/_components/SearchBox';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';

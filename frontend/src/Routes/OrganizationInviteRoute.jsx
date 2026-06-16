@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useLocation, useParams } from 'react-router-dom';
-import { appService, authenticationService } from '@/_services';
+import { appService } from '@/_services/app.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { toast } from 'react-hot-toast';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';

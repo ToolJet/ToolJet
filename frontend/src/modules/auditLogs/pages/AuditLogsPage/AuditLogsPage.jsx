@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import EEAuditLogsPage from '@ee/modules/AuditLogs/components/AuditLogsPage';
 
 const AuditLogsPage = () => {
   const navigate = useNavigate();
@@ -10,4 +10,4 @@ const AuditLogsPage = () => {
   return <></>;
 };
 
-export default withEditionSpecificComponent(AuditLogsPage, 'AuditLogs');
+export default process.env.TOOLJET_EDITION === 'ce' ? AuditLogsPage : EEAuditLogsPage;
