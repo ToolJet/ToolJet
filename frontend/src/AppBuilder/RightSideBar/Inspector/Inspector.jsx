@@ -781,9 +781,14 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     return null;
   }
 
-  return Object.keys(
-    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
-  ).map((style) => {
+  const isRevamped = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Universal styles (e.g. the "Advanced" group holding `cssClass`) are spread first in
+  // combineProperties, so without this they'd render at the top. Pin "Advanced" last.
+  const orderedStyleKeys = isRevamped
+    ? Object.keys(groupedProperties).sort((a, b) => (a === 'Advanced' ? 1 : b === 'Advanced' ? -1 : 0))
+    : Object.keys(componentMeta.styles);
+
+  return orderedStyleKeys.map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 

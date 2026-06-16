@@ -303,7 +303,7 @@ const RenderWidget = ({
         !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
           ? 'disabled'
           : ''
-      }`} //required for custom CSS
+      } ${(resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ')}`} //required for custom CSS; trailing user-defined CSS class(es)
       data-cy={`draggable-widget-${componentName}`}
     >
       <TrackedSuspense fallback={null}>
