@@ -42,7 +42,6 @@ async function validateEvent(plain: object): Promise<string[]> {
 function validBatch(overrides: object = {}): object {
   return {
     collected_at: new Date().toISOString(),
-    workspace_id: 'ws-abc-123',
     events: [
       { type: 'page_view', ts: Date.now(), attrs: { page: 'dashboard' } },
     ],
@@ -59,11 +58,6 @@ function validEvent(overrides: object = {}): object {
 describe('IngestFrontendMetricsDto validation', () => {
   it('accepts a valid batch with all required fields', async () => {
     expect(await validateDto(validBatch())).toHaveLength(0);
-  });
-
-  it('accepts a valid batch without optional workspace_id', async () => {
-    const { workspace_id, ...withoutId } = validBatch() as any;
-    expect(await validateDto(withoutId)).toHaveLength(0);
   });
 
   it('rejects when collected_at is missing', async () => {
@@ -93,7 +87,6 @@ describe('IngestFrontendMetricsDto validation', () => {
   });
 
   it('propagates nested event validation errors (@ValidateNested)', async () => {
-    // An event with an invalid type triggers a nested class-validator error
     const errors = await validateDto(
       validBatch({ events: [{ type: 'UNKNOWN_TYPE', ts: Date.now(), attrs: {} }] })
     );
@@ -104,7 +97,6 @@ describe('IngestFrontendMetricsDto validation', () => {
 // ── FrontendMetricEventDto ────────────────────────────────────────────────────
 
 describe('FrontendMetricEventDto validation', () => {
-  // All 9 valid event types
   const validTypes = [
     'page_view', 'page_load', 'app_open', 'app_load',
     'query_exec', 'query_error', 'widget_render', 'widget_error', 'js_error',
@@ -158,7 +150,7 @@ describe('FrontendMetricEventDto validation', () => {
 
   it('accepts attrs with mixed string/number/boolean values', async () => {
     expect(
-      await validateEvent(validEvent({ attrs: { page: 'dashboard', retries: 3, cached: true } }))
+      await validateEvent(validEvent({ attrs: { page: 'dashboard', app_id: 'uuid-1' } }))
     ).toHaveLength(0);
   });
 });

@@ -208,13 +208,13 @@ describe('flush()', () => {
     expect(options.method).toBe('POST');
   });
 
-  test('batch payload has collected_at, workspace_id, and events', () => {
+  test('batch payload has collected_at and events (no workspace_id — server injects from JWT)', () => {
     recordMetricEvent('page_view', { page: 'dashboard' });
     flush();
     const batch = getLastBatch();
-    expect(batch).toHaveProperty('workspace_id', 'ws-test-123');
     expect(batch).toHaveProperty('events');
     expect(new Date(batch.collected_at).toString()).not.toBe('Invalid Date');
+    expect(batch).not.toHaveProperty('workspace_id');
   });
 
   test('drains the queue atomically — second flush sends nothing', () => {
@@ -240,21 +240,13 @@ describe('flush()', () => {
 // ── getCurrentPage() — tested via initFrontendMetrics() initial page view ─────
 //
 // getCurrentPage() is not exported, so it's tested indirectly:
-// initFrontendMetrics() immediately calls firePV() = recordPageView(getCurrentPage()).
-// We set window.location.pathname, call init, and check the queued page_view event.
+// initFrontendMetrics() immediately calls _onPopstate() = recordPageView(getCurrentPage()).
+// We navigate to each path first, then call init, and check the page_view event.
 //
-// We save/restore history.pushState around each test to prevent wrapper accumulation
-// — initFrontendMetrics() wraps pushState, and teardownFrontendMetrics() does not
-// restore it, so without the save/restore, stale wrappers would pile up.
+// teardownFrontendMetrics() (in the outer afterEach) now restores history.pushState
+// and removes all event listeners — no inner save/restore needed.
 
 describe('getCurrentPage() URL mapping', () => {
-  // Captured synchronously before any test runs — guaranteed to be the unwrapped original
-  const originalPushState = history.pushState;
-
-  afterEach(() => {
-    history.pushState = originalPushState;
-  });
-
   const cases = [
     ['/my-workspace/apps/my-app/page1', 'app-builder'],
     ['/my-workspace/apps/slug', 'app-builder'],
@@ -276,13 +268,8 @@ describe('getCurrentPage() URL mapping', () => {
   ];
 
   test.each(cases)('path "%s" maps to page "%s"', (path, expectedPage) => {
-    // Navigate BEFORE initFrontendMetrics() has a chance to wrap pushState.
-    // The inner afterEach restores pushState to originalPushState after each test,
-    // so no stale listeners are in place when this line runs (from test 2 onwards).
     history.pushState({}, '', path);
-    // initFrontendMetrics() wraps pushState AND immediately calls firePV(),
-    // which records page_view using getCurrentPage() → reads window.location.pathname.
-    initFrontendMetrics();
+    initFrontendMetrics(); // immediately fires _onPopstate() → recordPageView(getCurrentPage())
     flush();
     const pvEvent = getLastBatch().events.find((e) => e.type === 'page_view');
     expect(pvEvent.attrs.page).toBe(expectedPage);
@@ -345,7 +332,6 @@ describe('teardownFrontendMetrics()', () => {
     initFrontendMetrics();
     teardownFrontendMetrics();
 
-    // After teardown + re-enable, init should work again (sets up interval)
     enableOtel();
     const spy = jest.spyOn(global, 'setInterval');
     initFrontendMetrics();
@@ -355,9 +341,28 @@ describe('teardownFrontendMetrics()', () => {
   test('clears the flush interval', () => {
     const clearSpy = jest.spyOn(global, 'clearInterval');
     initFrontendMetrics();
-    disableOtel(); // disable before teardown
+    disableOtel();
     teardownFrontendMetrics();
     expect(clearSpy).toHaveBeenCalled();
+  });
+
+  test('restores history.pushState so init→teardown→init does not double-wrap it', () => {
+    initFrontendMetrics();
+    const wrappedPush = history.pushState;
+    teardownFrontendMetrics();
+
+    // pushState is restored — it is a different reference from the wrapped version
+    expect(history.pushState).not.toBe(wrappedPush);
+
+    // After re-init, a single pushState triggers exactly one page_view (not two)
+    enableOtel();
+    initFrontendMetrics();
+    flush(); // drain the initial page_view fired by init
+    fetch.mockClear();
+    window.history.pushState({}, '', '/my-workspace/home');
+    flush();
+    const pvEvents = getLastBatch().events.filter((e) => e.type === 'page_view');
+    expect(pvEvents).toHaveLength(1);
   });
 });
 

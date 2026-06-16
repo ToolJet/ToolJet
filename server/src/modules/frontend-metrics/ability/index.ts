@@ -18,7 +18,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     can: AbilityBuilder<FeatureAbility>['can'],
     _userAllPermissions: UserAllPermissions
   ): void {
-    // Any authenticated user can ingest their own frontend metrics
+    // Any authenticated user may ingest their own frontend metrics
     can([FEATURE_KEY.INGEST], User);
   }
 }

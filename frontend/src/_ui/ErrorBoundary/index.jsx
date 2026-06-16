@@ -10,13 +10,6 @@ class ErrorBoundary extends Component {
     this._handleError = this._handleError.bind(this);
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  // Sentry.ErrorBoundary is the nearest error boundary to children, so React's
-  // componentDidCatch on this outer class never fires — Sentry catches it first.
-  // Use Sentry's onError prop instead, which is called after Sentry records the event.
   _handleError(error, componentStack) {
     if (this.props.widgetType) {
       recordWidgetError(this.props.widgetType, error?.message);

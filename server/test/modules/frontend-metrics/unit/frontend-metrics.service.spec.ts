@@ -18,7 +18,6 @@ import * as otelFrontendMetrics from '@otel/frontend-metrics';
 function makeDto(overrides: Partial<IngestFrontendMetricsDto> = {}): IngestFrontendMetricsDto {
   return {
     collected_at: new Date().toISOString(),
-    workspace_id: 'ws-client-supplied',
     events: [
       {
         type: 'page_view',
@@ -39,9 +38,6 @@ describe('FrontendMetricsService', () => {
   let recordBatchSpy: jest.SpyInstance;
 
   beforeEach(async () => {
-    // Spy on the module namespace object — TypeScript's CommonJS output uses
-    // `require('@otel/frontend-metrics').recordFrontendMetricsBatch(...)` so
-    // spying on the namespace is reliable even without jest.mock() hoisting.
     recordBatchSpy = jest
       .spyOn(otelFrontendMetrics, 'recordFrontendMetricsBatch')
       .mockImplementation(() => undefined);
@@ -84,12 +80,6 @@ describe('FrontendMetricsService', () => {
       );
     });
 
-    it('preserves the client-supplied workspace_id in the batch (OTEL uses context.organizationId to override)', async () => {
-      await service.ingest(makeDto({ workspace_id: 'ws-from-client' }), mockContext);
-      const [batch] = recordBatchSpy.mock.calls[0];
-      expect(batch.workspace_id).toBe('ws-from-client');
-    });
-
     it('uses fallback collected_at when the dto field is absent', async () => {
       const dto = makeDto();
       (dto as any).collected_at = undefined;
@@ -120,27 +110,48 @@ describe('FrontendMetricsService', () => {
         events: [{
           type: 'query_exec',
           ts: Date.now(),
-          attrs: { retries: 3, cached: false, duration: 1234.5 },
+          // Use valid allowlisted keys with non-string values
+          attrs: { query_id: 42 as any, status: true as any },
         }],
       });
       await service.ingest(dto, mockContext);
       const [batch] = recordBatchSpy.mock.calls[0];
-      expect(batch.events[0].attrs.retries).toBe(3);
-      expect(batch.events[0].attrs.cached).toBe(false);
-      expect(batch.events[0].attrs.duration).toBe(1234.5);
+      expect(batch.events[0].attrs.query_id).toBe(42);
+      expect(batch.events[0].attrs.status).toBe(true);
     });
 
-    it('caps attributes at 20 keys per event, dropping excess', async () => {
-      const tooManyAttrs: Record<string, string> = {};
-      for (let i = 0; i < 25; i++) {
-        tooManyAttrs[`key_${i}`] = `value_${i}`;
-      }
+    it('drops unknown attribute keys (allowlist enforcement)', async () => {
       const dto = makeDto({
-        events: [{ type: 'page_view', ts: Date.now(), attrs: tooManyAttrs }],
+        events: [{ type: 'page_view', ts: Date.now(), attrs: { page: 'home', retries: 3, cached: false } as any }],
       });
       await service.ingest(dto, mockContext);
       const [batch] = recordBatchSpy.mock.calls[0];
-      expect(Object.keys(batch.events[0].attrs)).toHaveLength(20);
+      expect(batch.events[0].attrs).toEqual({ page: 'home' });
+      expect('retries' in batch.events[0].attrs).toBe(false);
+      expect('cached' in batch.events[0].attrs).toBe(false);
+    });
+
+    it('strips reserved keys (workspace.id, user.id) from client attrs', async () => {
+      const dto = makeDto({
+        events: [{
+          type: 'page_view',
+          ts: Date.now(),
+          attrs: { page: 'home', 'workspace.id': 'evil-tenant', 'user.id': 'evil-user' } as any,
+        }],
+      });
+      await service.ingest(dto, mockContext);
+      const [batch] = recordBatchSpy.mock.calls[0];
+      expect('workspace.id' in batch.events[0].attrs).toBe(false);
+      expect('user.id' in batch.events[0].attrs).toBe(false);
+    });
+
+    it('returns empty object when attrs is an array (not a plain object)', async () => {
+      const dto = makeDto({
+        events: [{ type: 'page_view', ts: Date.now(), attrs: ['evil', 'array'] as any }],
+      });
+      await service.ingest(dto, mockContext);
+      const [batch] = recordBatchSpy.mock.calls[0];
+      expect(batch.events[0].attrs).toEqual({});
     });
 
     it('returns empty object when attrs is null/undefined', async () => {

@@ -7,11 +7,11 @@
  *
  * Telemetry is only sent when:
  *   1. window.public_config.ENABLE_OTEL === 'true'  (server-set flag)
- *   2. The user is authenticated (JWT cookie is present, workspace known)
+ *   2. The user is authenticated (workspace ID available in session)
  *
  * Events are batched in memory and flushed:
  *   - Every FLUSH_INTERVAL_MS (default 30 s)
- *   - On page unload via navigator.sendBeacon
+ *   - On page unload via pagehide / visibilitychange
  *   - When the batch reaches MAX_BATCH_SIZE events
  */
 
@@ -20,26 +20,26 @@ import { authHeader } from '@/_helpers/auth-header';
 import { authenticationService } from '@/_services';
 import { onLCP, onINP, onCLS, onFCP, onTTFB } from 'web-vitals';
 
-const FLUSH_INTERVAL_MS = 30_000; // 30 seconds
-const MAX_BATCH_SIZE = 50; // flush early when batch is large
+const FLUSH_INTERVAL_MS = 30_000;
+const MAX_BATCH_SIZE = 50;
 
-// In-memory event queue
 let eventQueue = [];
 let flushTimer = null;
 let initialized = false;
 
-/**
- * Returns true when frontend metrics collection is enabled.
- * Reads the flag injected by ConfigService into window.public_config.
- */
+// Stored at module scope so teardownFrontendMetrics() can remove them.
+// Named functions are required — anonymous arrows have no removable reference.
+let _origPushState = null;
+const _onUnload = () => flush();
+const _onVisibility = () => {
+  if (document.visibilityState === 'hidden') flush();
+};
+const _onPopstate = () => recordPageView(getCurrentPage());
+
 function isEnabled() {
   return window.public_config?.ENABLE_OTEL === 'true';
 }
 
-/**
- * Get the current workspace ID from the auth session.
- * Falls back to undefined if not yet authenticated.
- */
 function getCurrentWorkspaceId() {
   try {
     return authenticationService.currentSessionValue?.current_organization_id || undefined;
@@ -50,7 +50,6 @@ function getCurrentWorkspaceId() {
 
 /**
  * Queue a single metric event.
- * Called by the SPA at instrumentation points.
  *
  * @param {string} type - One of: page_view, page_load, app_open, app_load,
  *                        query_exec, query_error, widget_render, widget_error, js_error
@@ -77,22 +76,20 @@ export function recordMetricEvent(type, attrs = {}, duration = undefined) {
 /**
  * Flush the in-memory event queue to the backend.
  *
- * Always uses fetch with keepalive:true so the request survives page unload.
+ * Uses fetch with keepalive:true so the request survives page unload.
  * navigator.sendBeacon is NOT used because it omits cookies on cross-origin
- * requests (dev: port 8082→3000), causing 401s. fetch+keepalive is the modern
- * equivalent and supports credentials:'include'.
+ * requests (dev: port 8082→3000), causing 401s.
  */
 export function flush() {
   if (!isEnabled() || eventQueue.length === 0) return;
-  // Session not ready yet (workspace ID missing) — keep events in queue for next tick.
-  // This prevents a 401 on the first flush after page reload, when authHeader() has no
-  // tj-workspace-id because authenticationService hasn't finished loading the session.
-  if (!getCurrentWorkspaceId()) return;
+  // Capture once — avoids TOCTOU if session changes between guard and batch assembly.
+  const wsId = getCurrentWorkspaceId();
+  // Session not ready yet — keep events in queue for next tick to avoid 401.
+  if (!wsId) return;
 
-  const events = eventQueue.splice(0); // drain queue atomically
+  const events = eventQueue.splice(0);
   const batch = {
     collected_at: new Date().toISOString(),
-    workspace_id: getCurrentWorkspaceId(),
     events,
   };
 
@@ -100,8 +97,8 @@ export function flush() {
     method: 'POST',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify(batch),
-    keepalive: true, // survives page unload (same role as sendBeacon)
-    credentials: 'include', // sends tj_auth_token cookie cross-origin in dev
+    keepalive: true,
+    credentials: 'include',
   }).catch(() => {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[FrontendMetrics] flush failed (OTEL endpoint unreachable?)');
@@ -115,25 +112,16 @@ export function flush() {
  */
 function getCurrentPage() {
   const path = window.location.pathname;
-  // App editor: /:workspaceId/apps/:slug/...
   if (path.includes('/apps/')) return 'app-builder';
-  // App viewer: /applications/... or /embed-apps/...
   if (path.startsWith('/applications/') || path.startsWith('/embed-apps/')) return 'app-viewer';
-  // Workflows
   if (path.includes('/workflows')) return 'workflows';
-  // TooljetDB
   if (path.includes('/database')) return 'database';
-  // Settings: /workspace-settings/*, /profile-settings/*, legacy /settings/*
-  // Note: '/workspace-settings' does NOT include '/settings' as a substring (hyphen breaks it)
+  // Covers /workspace-settings/*, /profile-settings/*, legacy /settings/*
   if (path.includes('/settings') || path.includes('/workspace-settings') || path.includes('/workspace-constants'))
     return 'settings';
-  // Modules
   if (path.includes('/modules')) return 'modules';
-  // Integrations / marketplace
   if (path.includes('/integrations')) return 'integrations';
-  // Auth
   if (path.includes('/login') || path.includes('/signup') || path.includes('/sso')) return 'auth';
-  // Dashboard: /:workspaceId or /:workspaceId/home
   if (path.includes('/home') || /^\/[^/]+\/?$/.test(path)) return 'dashboard';
   return 'other';
 }
@@ -141,167 +129,97 @@ function getCurrentPage() {
 /**
  * Initialize the frontend metrics service.
  * Call this once after window.public_config is available (inside index.jsx).
- *
- * Sets up:
- * - Periodic flush interval
- * - Page unload beacon
- * - SPA route-change page view tracking (History API)
- * - Core Web Vitals (LCP, INP, CLS, FCP, TTFB)
  */
 export function initFrontendMetrics() {
   if (initialized || !isEnabled()) return;
-  // Clear any stale timer from a previous init (HMR re-evaluation)
-  if (flushTimer) {
-    clearInterval(flushTimer);
-    flushTimer = null;
-  }
   initialized = true;
 
-  // Periodic flush
-  flushTimer = setInterval(() => flush(false), FLUSH_INTERVAL_MS);
+  // ponytail: window.__tjMetricsTimer survives HMR module re-evaluation so the
+  // old instance's orphaned interval is cleared before the new one starts.
+  if (window.__tjMetricsTimer) clearInterval(window.__tjMetricsTimer);
+  flushTimer = setInterval(flush, FLUSH_INTERVAL_MS);
+  window.__tjMetricsTimer = flushTimer;
 
-  // Unload beacon — fires when the user navigates away
-  const onUnload = () => flush();
-  window.addEventListener('pagehide', onUnload);
-  // visibilitychange catches tab switches and mobile backgrounding
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flush();
-  });
+  window.addEventListener('pagehide', _onUnload);
+  document.addEventListener('visibilitychange', _onVisibility);
 
   // SPA page view tracking — patch pushState (genuine navigation) and popstate (back/forward).
   // replaceState is intentionally NOT patched: ToolJet uses it for URL cleanup (same page,
   // different query string) and patching it would produce spurious duplicate events.
-  const firePV = () => recordPageView(getCurrentPage());
-  const origPush = history.pushState.bind(history);
+  _origPushState = history.pushState.bind(history);
   history.pushState = (...args) => {
-    origPush(...args);
-    firePV();
+    _origPushState(...args);
+    _onPopstate();
   };
-  window.addEventListener('popstate', firePV);
-  // Record the initial page load view
-  firePV();
+  window.addEventListener('popstate', _onPopstate);
+  _onPopstate(); // initial page view
 
-  // Core Web Vitals — reported once per page load (or on each attribution update for INP).
-  // LCP/INP/FCP/TTFB are in ms. CLS is a unitless score (0.0–1.0); we multiply by 1000
-  // to store it as an integer (milliunits) on the same histogram — dashboards querying
-  // vital='CLS' should divide by 1000 to get the actual CLS score.
-  const vitalAttrs = () => ({ page: getCurrentPage() });
-  onLCP((m) => recordMetricEvent('page_load', { ...vitalAttrs(), vital: 'LCP' }, m.value));
-  onINP((m) => recordMetricEvent('page_load', { ...vitalAttrs(), vital: 'INP' }, m.value));
-  onCLS((m) => recordMetricEvent('page_load', { ...vitalAttrs(), vital: 'CLS' }, Math.round(m.value * 1000)));
-  onFCP((m) => recordMetricEvent('page_load', { ...vitalAttrs(), vital: 'FCP' }, m.value));
-  onTTFB((m) => recordMetricEvent('page_load', { ...vitalAttrs(), vital: 'TTFB' }, m.value));
+  // CLS is a unitless score (0.0–1.0); multiply by 1000 to store as an integer
+  // on the same histogram as other ms-valued vitals. Divide by 1000 when reading.
+  onLCP((m) => recordMetricEvent('page_load', { page: getCurrentPage(), vital: 'LCP' }, m.value));
+  onINP((m) => recordMetricEvent('page_load', { page: getCurrentPage(), vital: 'INP' }, m.value));
+  onCLS((m) => recordMetricEvent('page_load', { page: getCurrentPage(), vital: 'CLS' }, Math.round(m.value * 1000)));
+  onFCP((m) => recordMetricEvent('page_load', { page: getCurrentPage(), vital: 'FCP' }, m.value));
+  onTTFB((m) => recordMetricEvent('page_load', { page: getCurrentPage(), vital: 'TTFB' }, m.value));
 }
 
 /**
  * Tear down the metrics service — for TEST / HMR use only.
- * Never call from production code paths (e.g. logout handlers) because this
- * attempts a best-effort flush then drops any remaining buffered events.
+ * Restores all patched globals so re-initialization starts clean.
  */
 export function teardownFrontendMetrics() {
-  flush(); // best-effort send; errors are silently ignored by flush()
-  if (flushTimer) {
-    clearInterval(flushTimer);
-    flushTimer = null;
+  flush();
+  clearInterval(flushTimer);
+  window.__tjMetricsTimer = null;
+  flushTimer = null;
+
+  window.removeEventListener('pagehide', _onUnload);
+  document.removeEventListener('visibilitychange', _onVisibility);
+  window.removeEventListener('popstate', _onPopstate);
+
+  if (_origPushState) {
+    history.pushState = _origPushState;
+    _origPushState = null;
   }
+
   eventQueue = [];
   initialized = false;
 }
 
-// ============================================================================
-// Convenience helpers — call these at specific SPA instrumentation points
-// ============================================================================
+// ── Convenience helpers ──────────────────────────────────────────────────────
 
-/**
- * Record a page view. Call from route change handlers.
- *
- * @param {string} page - Page/route name (e.g. 'dashboard', 'app-builder', 'viewer')
- */
 export function recordPageView(page) {
   recordMetricEvent('page_view', { page });
 }
 
-/**
- * Record page load duration. Call after initial render.
- *
- * @param {string} page - Page name
- * @param {number} duration - Load time in ms
- */
 export function recordPageLoad(page, duration) {
   recordMetricEvent('page_load', { page }, duration);
 }
 
-/**
- * Record an app open event (edit or view).
- *
- * @param {string} appId - ToolJet app UUID
- * @param {string} mode - 'edit' | 'view'
- */
 export function recordAppOpen(appId, mode) {
   recordMetricEvent('app_open', { app_id: appId, mode });
 }
 
-/**
- * Record time-to-interactive for a ToolJet app.
- *
- * @param {string} appId
- * @param {string} mode - 'edit' | 'view'
- * @param {number} duration - ms from open to first-interactive
- */
 export function recordAppLoad(appId, mode, duration) {
   recordMetricEvent('app_load', { app_id: appId, mode }, duration);
 }
 
-/**
- * Record a data query execution (client round-trip).
- *
- * @param {string} queryId
- * @param {string} appId
- * @param {string} status - 'success' | 'failure'
- * @param {number} duration - full round-trip ms
- */
 export function recordQueryExec(queryId, appId, status, duration) {
   recordMetricEvent('query_exec', { query_id: queryId, app_id: appId, status }, duration);
 }
 
-/**
- * Record a client-side query error.
- *
- * @param {string} queryId
- * @param {string} appId
- * @param {string} errorType
- */
 export function recordQueryError(queryId, appId, errorType = 'unknown') {
   recordMetricEvent('query_error', { query_id: queryId, app_id: appId, error_type: errorType });
 }
 
-/**
- * Record a widget render duration.
- *
- * @param {string} widgetType - Widget component name
- * @param {number} duration - Render time in ms
- * @param {string} [appId]
- */
 export function recordWidgetRender(widgetType, duration, appId = '') {
   recordMetricEvent('widget_render', { widget_type: widgetType, app_id: appId }, duration);
 }
 
-/**
- * Record a widget error caught by the error boundary.
- *
- * @param {string} widgetType
- * @param {string} [errorMessage]
- */
 export function recordWidgetError(widgetType, errorMessage = '') {
   recordMetricEvent('widget_error', { widget_type: widgetType, error_message: errorMessage.slice(0, 200) });
 }
 
-/**
- * Record a JavaScript error caught by a React error boundary.
- *
- * @param {string} errorMessage
- * @param {string} [componentStack]
- */
 export function recordJsError(errorMessage, componentStack = '') {
   recordMetricEvent('js_error', {
     error_message: String(errorMessage).slice(0, 200),

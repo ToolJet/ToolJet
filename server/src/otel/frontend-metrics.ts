@@ -132,10 +132,7 @@ export interface FrontendMetricEvent {
 }
 
 export interface FrontendMetricsBatch {
-  /** ISO8601 timestamp when the batch was assembled on the client */
   collected_at: string;
-  /** ToolJet workspace ID (read from tj-workspace-id header or local config) */
-  workspace_id?: string;
   events: FrontendMetricEvent[];
 }
 
@@ -151,18 +148,15 @@ export const recordFrontendMetricsBatch = (
   batch: FrontendMetricsBatch,
   context: { userId?: string; organizationId?: string }
 ) => {
-  if (!initialized || !frontendMeter) {
-    return;
-  }
+  if (!initialized) return;
 
-  // Server-extracted organizationId (from verified JWT) always wins over the
-  // client-supplied batch.workspace_id — the client cannot forge it.
-  const workspaceId = context.organizationId || batch.workspace_id || 'unknown';
+  // JWT-derived values win; sanitizeAttrs in service.ts already stripped 'workspace.id'/'user.id'
+  // from client attrs, so these assignments cannot be overridden by client data.
+  const workspaceId = context.organizationId || 'unknown';
   const userId = context.userId || 'anonymous';
 
   for (const event of batch.events) {
     try {
-      // Inject server-side context into every event's attributes
       const baseAttrs = {
         ...event.attrs,
         'workspace.id': workspaceId,
@@ -171,60 +165,40 @@ export const recordFrontendMetricsBatch = (
 
       switch (event.type) {
         case 'page_view':
-          if (frontendPageViewCounter) {
-            frontendPageViewCounter.add(1, baseAttrs);
-          }
+          frontendPageViewCounter.add(1, baseAttrs);
           break;
 
         case 'page_load':
-          if (frontendPageLoadHistogram && event.duration !== undefined) {
-            frontendPageLoadHistogram.record(event.duration, baseAttrs);
-          }
+          if (event.duration !== undefined) frontendPageLoadHistogram.record(event.duration, baseAttrs);
           break;
 
         case 'app_open':
-          if (frontendAppOpenCounter) {
-            frontendAppOpenCounter.add(1, baseAttrs);
-          }
+          frontendAppOpenCounter.add(1, baseAttrs);
           break;
 
         case 'app_load':
-          if (frontendAppLoadHistogram && event.duration !== undefined) {
-            frontendAppLoadHistogram.record(event.duration, baseAttrs);
-          }
+          if (event.duration !== undefined) frontendAppLoadHistogram.record(event.duration, baseAttrs);
           break;
 
         case 'query_exec':
-          if (frontendQueryCounter) {
-            frontendQueryCounter.add(1, baseAttrs);
-          }
-          if (frontendQueryDurationHistogram && event.duration !== undefined) {
-            frontendQueryDurationHistogram.record(event.duration, baseAttrs);
-          }
+          frontendQueryCounter.add(1, baseAttrs);
+          if (event.duration !== undefined) frontendQueryDurationHistogram.record(event.duration, baseAttrs);
           break;
 
         case 'query_error':
-          if (frontendQueryErrorCounter) {
-            frontendQueryErrorCounter.add(1, baseAttrs);
-          }
+          frontendQueryErrorCounter.add(1, baseAttrs);
           break;
 
         case 'widget_render':
-          if (frontendWidgetRenderHistogram && event.duration !== undefined) {
-            frontendWidgetRenderHistogram.record(event.duration, baseAttrs);
-          }
+          if (event.duration !== undefined) frontendWidgetRenderHistogram.record(event.duration, baseAttrs);
           break;
 
         case 'widget_error':
-          if (frontendWidgetErrorCounter) {
-            frontendWidgetErrorCounter.add(1, baseAttrs);
-          }
+          frontendWidgetErrorCounter.add(1, baseAttrs);
           break;
 
         case 'js_error':
-          if (frontendJsErrorCounter) {
-            frontendJsErrorCounter.add(1, baseAttrs);
-          }
+          frontendJsErrorCounter.add(1, baseAttrs);
           break;
 
         default:
@@ -233,7 +207,6 @@ export const recordFrontendMetricsBatch = (
           }
       }
     } catch (err) {
-      // Never propagate errors from metric recording
       if (process.env.OTEL_LOG_LEVEL === 'debug') {
         console.error('[OTEL Frontend] Error recording event:', event.type, err);
       }
