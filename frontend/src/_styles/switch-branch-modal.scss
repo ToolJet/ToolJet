@@ -26,6 +26,9 @@
 
   .modal-body {
     padding: 16px 12px;
+    height: 480px;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -33,6 +36,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1;
+  min-height: 0;
 
   // Search Section
   .search-section {
@@ -83,12 +88,13 @@
     }
   }
 
-  // Branch List
+  // Branch List — flex: 1 so it fills all space between search and footer
   .branch-list-section {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    max-height: 300px;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
 
     .branch-list-item {
@@ -167,6 +173,32 @@
         animation: spin 0.6s linear infinite;
         margin-right: 8px;
       }
+    }
+
+    .load-more-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      list-style: none;
+      width: auto;
+      padding: 6px 4px 2px 28px;
+      background: none;
+      border: none;
+      color: var(--indigo9);
+      font-size: 12px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+
+      &:hover {
+        color: var(--indigo11);
+      }
+
+      &:disabled {
+        cursor: default;
+      }
+
     }
   }
 
