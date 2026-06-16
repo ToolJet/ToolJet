@@ -74,8 +74,9 @@ export const datePickerV2Config = {
     firstDayOfWeek: {
       type: 'select',
       displayName: 'First day of week',
+      placeholder: 'Default',
       options: [
-        { name: 'Default (based on locale)', value: '' },
+        { name: 'Default', value: '' },
         { name: 'Sunday', value: '0' },
         { name: 'Monday', value: '1' },
         { name: 'Tuesday', value: '2' },
