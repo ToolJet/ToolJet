@@ -7,25 +7,30 @@ class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
+    this._handleError = this._handleError.bind(this);
   }
-  // eslint-disable-next-line no-unused-vars
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
+
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
-    console.log(error, errorInfo);
+  // Sentry.ErrorBoundary is the nearest error boundary to children, so React's
+  // componentDidCatch on this outer class never fires — Sentry catches it first.
+  // Use Sentry's onError prop instead, which is called after Sentry records the event.
+  _handleError(error, componentStack) {
     if (this.props.widgetType) {
       recordWidgetError(this.props.widgetType, error?.message);
     } else {
-      recordJsError(error?.message, errorInfo?.componentStack);
+      recordJsError(error?.message, componentStack);
     }
   }
 
   render() {
     return (
-      <Sentry.ErrorBoundary fallback={<h2>{this.props.t('errorBoundary', 'Something went wrong.')}</h2>}>
+      <Sentry.ErrorBoundary
+        fallback={<h2>{this.props.t('errorBoundary', 'Something went wrong.')}</h2>}
+        onError={this._handleError}
+      >
         {this.props.children}
       </Sentry.ErrorBoundary>
     );

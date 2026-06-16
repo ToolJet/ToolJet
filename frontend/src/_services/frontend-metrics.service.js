@@ -123,8 +123,10 @@ function getCurrentPage() {
   if (path.includes('/workflows')) return 'workflows';
   // TooljetDB
   if (path.includes('/database')) return 'database';
-  // Any settings variant: workspace-settings, profile-settings, workspace-constants
-  if (path.includes('/settings') || path.includes('/workspace-constants')) return 'settings';
+  // Settings: /workspace-settings/*, /profile-settings/*, legacy /settings/*
+  // Note: '/workspace-settings' does NOT include '/settings' as a substring (hyphen breaks it)
+  if (path.includes('/settings') || path.includes('/workspace-settings') || path.includes('/workspace-constants'))
+    return 'settings';
   // Modules
   if (path.includes('/modules')) return 'modules';
   // Integrations / marketplace
