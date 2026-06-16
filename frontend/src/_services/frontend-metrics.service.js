@@ -84,6 +84,10 @@ export function recordMetricEvent(type, attrs = {}, duration = undefined) {
  */
 export function flush() {
   if (!isEnabled() || eventQueue.length === 0) return;
+  // Session not ready yet (workspace ID missing) — keep events in queue for next tick.
+  // This prevents a 401 on the first flush after page reload, when authHeader() has no
+  // tj-workspace-id because authenticationService hasn't finished loading the session.
+  if (!getCurrentWorkspaceId()) return;
 
   const events = eventQueue.splice(0); // drain queue atomically
   const batch = {
