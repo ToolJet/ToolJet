@@ -1097,14 +1097,20 @@
         },
         {
           "type": "category",
+          "label": "Automation Testing",
+          "items": [
+            "development-lifecycle/testing/overview",
+            "development-lifecycle/testing/cypress-guide"
+          ]
+        },
+        {
+          "type": "category",
           "label": "Backup",
           "link": {
             "type": "doc",
             "id": "development-lifecycle/backup/gitsync-backup"
           },
-          "items": [
-            "development-lifecycle/backup/gitsync-backup"
-          ]
+          "items": ["development-lifecycle/backup/gitsync-backup"]
         },
         {
           "type": "category",
