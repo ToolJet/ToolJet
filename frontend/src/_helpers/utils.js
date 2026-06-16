@@ -688,7 +688,9 @@ export function hasCircularDependency(obj, stack = new Set()) {
 
 export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
-  const safeComment = DOMPurify.sanitize(comment);
+  // Comments are plain text (composed via react-mentions); strip all HTML so a typed
+  // payload can't survive sanitize, then add only the mention highlight span.
+  const safeComment = DOMPurify.sanitize(comment, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
   return safeComment.replace(regex, '<span class="mentioned-user">$2</span>');
 };
 //   const currentPageId = _ref.currentPageId;
