@@ -15,7 +15,7 @@ import {
 import { CreateGroupExternalDto, UpdateGroupExternalDto, ListGroupsQueryDto } from '../dto/groups.dto';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from '@modules/external-apis/constants';
-import { ExternalApiSecurityGuard } from '@modules/auth/guards/external-api-security.guard';
+import { ExternalApiSecurityGuard } from '@ee/auth/guards/external-api-security.guard';
 
 @Controller('ext')
 export class ExternalApisGroupsController {
