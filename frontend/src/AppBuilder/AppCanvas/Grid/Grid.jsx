@@ -38,6 +38,7 @@ import {
   getRevertPosition,
   getParentFromSlotId,
   getContainerIdFromSlotId,
+  computeDragEndLayout,
 } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import useTransientStore from '@/AppBuilder/_stores/transientStore';
@@ -416,54 +417,22 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
       const updatedLayouts = boxPositions.reduce((layouts, { id, x, y, parent }) => {
         const currentWidget = boxList.find((box) => box.id === id);
         const containerWidth = parent ? useGridStore.getState().subContainerWidths[parent] : gridWidth;
+        const oldContainerWidth = currentWidget.component?.parent
+          ? useGridStore.getState().subContainerWidths[currentWidget.component.parent]
+          : gridWidth;
 
-        let _width = currentWidget.layouts[currentLayout].width;
-        let _height = currentWidget.layouts[currentLayout].height;
-        // Adjust width if parent changed
-        if (parent !== currentWidget.component?.parent) {
-          const oldContainerWidth = currentWidget.component?.parent
-            ? useGridStore.getState().subContainerWidths[currentWidget.component.parent]
-            : gridWidth;
-          _width = Math.round((_width * oldContainerWidth) / containerWidth);
-        }
-
-        // Ensure minimum width
-        _width = Math.max(_width, 1);
-
-        // Calculate new left position
-        let _left = Math.round(x / containerWidth);
-
-        // Adjust position and width if exceeding grid bounds
-        if (_width + _left > NO_OF_GRIDS) {
-          _left = Math.max(0, NO_OF_GRIDS - _width);
-          _width = Math.min(_width, NO_OF_GRIDS);
-        }
-
-        // Round y position
-        y = Math.max(0, Math.round(y / GRID_HEIGHT) * GRID_HEIGHT);
-        // Adjust height for certain parent components
-        if (parent) {
-          const parentElem = document.getElementById(`canvas-${parent}`);
-          const parentId = parent.includes('-') ? parent.split('-').slice(0, -1).join('-') : parent;
-          const componentType = boxList.find((box) => box.id === parentId)?.component.component;
-          const parentHeight = parentElem?.clientHeight || _height;
-          if (_height > parentHeight && ['Listview'].includes(componentType)) {
-            _height = parentHeight;
-            y = 0;
-          }
-
-          if (componentType === 'Listview' && y > parentHeight) {
-            y = y % parentHeight;
-          }
-        }
         newParent = parent ? parent : null;
         oldParent = currentWidget.component?.parent;
-        layouts[id] = {
-          width: _width,
-          height: _height,
-          top: y,
-          left: _left,
-        };
+        layouts[id] = computeDragEndLayout({
+          widget: currentWidget,
+          boxList,
+          currentLayout,
+          containerWidth,
+          sourceContainerWidth: oldContainerWidth,
+          x,
+          y,
+          parent,
+        });
 
         return layouts;
       }, {});
