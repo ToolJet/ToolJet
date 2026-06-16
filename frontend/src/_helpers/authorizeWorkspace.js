@@ -250,7 +250,7 @@ export const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callback = null) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callback = null, redirectPath = null) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -266,7 +266,9 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
       if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
         const slug = data.current_organization_slug || data.current_organization_id;
-        const pathWithoutSlug = excludeWorkspaceIdFromURL(window.location.pathname);
+        // Use explicit redirectPath when provided (e.g. from SSO callback where
+        // window.location.pathname is /sso/google, not the intended destination).
+        const pathWithoutSlug = excludeWorkspaceIdFromURL(redirectPath || window.location.pathname);
         // App viewer paths (/applications/, /embed-apps/) use no workspace slug prefix on
         // custom domains — the custom domain identifies the workspace, so the URL format is
         // /applications/:slug, not /:workspaceSlug/applications/:slug.
