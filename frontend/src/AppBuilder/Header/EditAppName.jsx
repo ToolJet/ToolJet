@@ -10,7 +10,7 @@ import { PenLine, TriangleAlert } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
-  const { moduleId } = useModuleContext();
+  const { moduleId, appType } = useModuleContext();
   const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
@@ -61,7 +61,7 @@ function EditAppName() {
     try {
       await appsService.saveApp(appId, { name: sanitizedName, editingVersionId: selectedVersion?.id });
       setAppName(sanitizedName);
-      toast.success('App name has been updated!');
+      toast.success(`${appType === 'module' ? 'Module' : 'App'} name has been updated!`);
       return true;
     } catch (errorResponse) {
       if (errorResponse.statusCode === 409) {
@@ -79,11 +79,11 @@ function EditAppName() {
         <ToolTip
           message={getDisabledTooltipMessage()}
           placement="bottom"
-          width="210px"
+          maxWidth="210px"
           isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
         >
           <button
-            className="edit-app-name-button tw-h-8 tw-min-w-[100px] tw-rounded-lg tw-pr-1 tw-w-auto tw-font-medium tw-outline-none tw-bg-transparent tw-border tw-border-transparent tw-shadow-none tw-group tw-transition-all tw-duration-300 tw-flex tw-items-center tw-relative tw-justify-start"
+            className="edit-app-name-button tw-h-8 tw-min-w-[100px] tw-max-w-[240px] tw-rounded-lg tw-pr-1 tw-w-auto tw-font-medium tw-outline-none tw-bg-transparent tw-border tw-border-transparent tw-shadow-none tw-group tw-transition-all tw-duration-300 tw-flex tw-items-center tw-relative tw-justify-start"
             style={{
               cursor: isRenameDisabled ? 'not-allowed' : 'pointer',
               opacity: isRenameDisabled ? 0.6 : 1,
@@ -115,7 +115,7 @@ function EditAppName() {
           processApp={handleRenameApp}
           selectedAppId={appId}
           selectedAppName={appName}
-          title="Rename app"
+          title={appType === 'module' ? 'Rename module' : 'Rename app'}
           titleAdornment={(() => {
             const { currentBranch } = useWorkspaceBranchesStore.getState();
             const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
@@ -132,9 +132,9 @@ function EditAppName() {
               </ToolTip>
             );
           })()}
-          actionButton="Rename app"
+          actionButton={appType === 'module' ? 'Rename module' : 'Rename app'}
           actionLoadingButton={'Renaming'}
-          appType="app"
+          appType={appType}
         />
       )}
     </>

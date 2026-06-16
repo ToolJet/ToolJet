@@ -1,0 +1,212 @@
+name: Weekly Vulnerability Report
+
+on:
+  schedule:
+    # 03:30 UTC = 09:00 IST, every Monday
+    - cron: '30 3 * * 1'
+  workflow_dispatch:   # manual "Run workflow" button (default branch only)
+
+permissions:
+  contents: read
+
+jobs:
+  vulnerability-report:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false       # one branch failing must not skip the other
+      matrix:
+        branch: [main, lts-3.16]
+    steps:
+      - name: Checkout ${{ matrix.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run npm audit across the whole branch
+        id: scan
+        env:
+          EXCLUDE_PATTERN: "/docs/"
+        run: |
+          set -uo pipefail
+
+          mkdir -p reports
+          rows="$(mktemp)"          # collects one row per advisory
+          c=0 h=0 m=0 l=0 found=0
+
+          # Find every lockfile in the branch, skipping node_modules
+          while IFS= read -r lockfile; do
+            dir=$(dirname "$lockfile")
+
+            # Optional exclude (e.g. docs/)
+            if [ -n "$EXCLUDE_PATTERN" ] && echo "$lockfile" | grep -q "$EXCLUDE_PATTERN"; then
+              echo "Skipping $lockfile (matched EXCLUDE_PATTERN)"
+              continue
+            fi
+
+            found=$((found + 1))
+            manifest="${dir#./}"; [ "$manifest" = "." ] && manifest="(root)"
+            audit=$(cd "$dir" && npm audit --json 2>/dev/null || true)
+
+            # Headline counts
+            c=$(( c + $(echo "$audit" | jq -r '.metadata.vulnerabilities.critical // 0') ))
+            h=$(( h + $(echo "$audit" | jq -r '.metadata.vulnerabilities.high // 0') ))
+            m=$(( m + $(echo "$audit" | jq -r '.metadata.vulnerabilities.moderate // 0') ))
+            l=$(( l + $(echo "$audit" | jq -r '.metadata.vulnerabilities.low // 0') ))
+
+            # Per-advisory detail rows: rank<TAB>severity<TAB>package<TAB>title<TAB>range<TAB>fix<TAB>manifest
+            echo "$audit" | jq -r --arg manifest "$manifest" '
+              ({critical:1, high:2, moderate:3, low:4, info:5}) as $rankmap
+              | (.vulnerabilities // {})
+              | to_entries[]
+              | .key as $pkg
+              | .value as $v
+              | (
+                  if   ($v.fixAvailable | type) == "object"
+                    then ($v.fixAvailable.name + "@" + $v.fixAvailable.version
+                          + (if $v.fixAvailable.isSemVerMajor then " (major)" else "" end))
+                  elif ($v.fixAvailable == true) then "available"
+                  else "no fix"
+                  end
+                ) as $fix
+              | ($v.via[] | select(type == "object"))
+              | [ (($rankmap[.severity]) // 9 | tostring),
+                  .severity, $pkg, (.title // "-"),
+                  (.range // ($v.range // "-")), $fix, $manifest ]
+              | @tsv
+            ' >> "$rows" || true
+          done < <(find . -name package-lock.json -not -path '*/node_modules/*')
+
+          echo "Audited $found lockfile(s) on ${{ matrix.branch }}"
+
+          # Build a severity-sorted markdown table (worst first), de-duplicated
+          details="reports/details-${{ matrix.branch }}.md"
+          if [ -s "$rows" ]; then
+            {
+              echo "| Severity | Package | Vulnerability | Vulnerable range | Fix | Manifest |"
+              echo "|---|---|---|---|---|---|"
+              sort -t$'\t' -k1,1n -k3,3 "$rows" | sort -u -t$'\t' -k2 | sort -t$'\t' -k1,1n -k3,3 \
+                | while IFS=$'\t' read -r rank sev pkg title range fix manifest; do
+                    title="${title//|/\\|}"     # escape pipes for markdown
+                    echo "| ${sev} | \`${pkg}\` | ${title} | \`${range}\` | \`${fix}\` | ${manifest} |"
+                  done
+            } > "$details"
+          else
+            echo "_No vulnerabilities found._" > "$details"
+          fi
+
+          {
+            echo "critical=$c"
+            echo "high=$h"
+            echo "medium=$m"
+            echo "low=$l"
+            echo "total=$(( c + h + m + l ))"
+            echo "lockfiles=$found"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Add to run summary
+        run: |
+          {
+            echo "## 🔒 Vulnerability Report — \`${{ matrix.branch }}\`"
+            echo ""
+            echo "| Severity | Count |"
+            echo "|----------|-------|"
+            echo "| 🔴 Critical | ${{ steps.scan.outputs.critical }} |"
+            echo "| 🟠 High | ${{ steps.scan.outputs.high }} |"
+            echo "| 🟡 Medium | ${{ steps.scan.outputs.medium }} |"
+            echo "| ⚪ Low | ${{ steps.scan.outputs.low }} |"
+            echo "| 📊 **Total** | **${{ steps.scan.outputs.total }}** |"
+            echo ""
+            echo "_Lockfiles scanned: ${{ steps.scan.outputs.lockfiles }} · docs/ excluded_"
+            echo ""
+            echo "<details><summary>Show all vulnerabilities</summary>"
+            echo ""
+            cat "reports/details-${{ matrix.branch }}.md"
+            echo ""
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+  notify:
+    needs: vulnerability-report
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Notification
+        run: |
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SCAN_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+          if [ "${{ needs.vulnerability-report.result }}" = "success" ]; then
+            COLOR="#2563EB"
+            STATUS_TEXT="✅ Weekly npm audit scan completed for \`main\` and \`lts-3.16\`."
+          else
+            COLOR="#D40E0D"
+            STATUS_TEXT="⚠️ Weekly npm audit scan finished with errors (\`${{ needs.vulnerability-report.result }}\`) for \`main\` and \`lts-3.16\`."
+          fi
+
+          payload=$(cat <<EOF
+          {
+            "attachments": [
+              {
+                "color": "$COLOR",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "🔒 Weekly Vulnerability Report",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "$STATUS_TEXT\\nSeverity counts and every vulnerability with its fix are on the run summary page."
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      { "type": "mrkdwn", "text": "*Repository:*\\n${{ github.repository }}" },
+                      { "type": "mrkdwn", "text": "*Scan Time:*\\n$SCAN_TIME" }
+                    ]
+                  },
+                  {
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "📊 View Full Report",
+                          "emoji": true
+                        },
+                        "url": "$RUN_URL",
+                        "style": "primary"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          response=$(curl -s -w "%{http_code}" -X POST \
+            -H 'Content-type: application/json' \
+            --data "$payload" \
+            "${{ secrets.SLACK_WEBHOOK_URL_VUR }}")
+
+          http_code="${response: -3}"
+          if [ "$http_code" != "200" ]; then
+            echo "Slack notification failed with HTTP $http_code"
+            exit 1
+          fi
+          echo "Slack notification sent successfully"
