@@ -61,10 +61,7 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
           return;
         }
       } else {
-        /* Preview URL — always requires authentication (public and private apps alike).
-           Redirect to workspace login so the user gets a real auth prompt.
-           App-scoped login is avoided here because it auto-redirects for public apps,
-           causing an infinite loop. */
+        /* Preview URL — always requires authentication (public and private apps alike). */
         const previewQueryParams = {
           ...(queryParams['version'] && { version_name: queryParams['version'] }),
           ...(queryParams['env'] && { environment_name: queryParams['env'] }),
@@ -74,22 +71,11 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
           ...(isOldLocalPreview && { version_id: versionId, environment_id: environmentId }),
           access_type: 'view',
         };
-        const redirectPath = location.pathname + location.search;
 
         try {
           await appsService.validatePrivateApp(slug, apiQueryParams);
         } catch (errorResponse) {
-          const subpath = getSubpath() ?? '';
-          let orgId = '';
-          try {
-            const msgObj = JSON.parse(errorResponse?.data?.message);
-            orgId = msgObj?.organizationId ?? '';
-          } catch {
-            console.error('Error parsing error response message', errorResponse);
-          }
-          window.location.href = `${subpath}/login${orgId ? `/${orgId}` : ''}?redirectTo=${encodeURIComponent(
-            redirectPath
-          )}`;
+          handleError(componentType, errorResponse);
           return;
         }
       }

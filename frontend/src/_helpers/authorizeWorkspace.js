@@ -169,7 +169,7 @@ export const authorizeWorkspace = async () => {
             try {
               const appConfig = await appsService.getAppAuthenticationConfig(appSlug);
               //For preview validateSession will handle the authentication and authorization
-              if (appConfig?.isPublic || isLocalPreview) {
+              if (appConfig?.isPublic && !isLocalPreview) {
                 // Public app or preview URL — let validateSession in the route handle auth
                 updateCurrentSession({
                   authentication_failed: true,
