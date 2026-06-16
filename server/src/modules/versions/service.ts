@@ -31,7 +31,6 @@ import { RequestContext } from '@modules/request-context/service';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY } from '@modules/app/constants';
 import { MODULE_VERSION_AUDIT_KEYS } from '@modules/modules/constants';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { AppHistoryUtilService } from '@modules/app-history/util.service';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 
@@ -48,7 +47,6 @@ export class VersionService implements IVersionService {
     protected readonly organizationThemesUtilService: OrganizationThemesUtilService,
     protected readonly versionsUtilService: VersionUtilService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly appGitRepository: AppGitRepository,
     protected readonly appHistoryUtilService: AppHistoryUtilService,
     protected readonly organizationGitRepository: OrganizationGitSyncRepository
   ) {}
@@ -226,19 +224,15 @@ export class VersionService implements IVersionService {
         user.organizationId,
         editingVersion?.globalSettings?.theme?.id
       );
-      let appGit = await this.appGitRepository.findAppGitByAppId(app.id);
-      // Branch-copy apps (platform git sync) don't have their own app_git_sync record
-      if (!appGit && app.co_relation_id && app.co_relation_id !== app.id) {
-        appGit = await this.appGitRepository.findAppGitByAppId(app.co_relation_id);
-      }
-      // Modules are branch-scoped like apps — same git-sync freeze applies.
-      if (appGit) {
-        shouldFreezeEditor = !appGit.allowEditing || shouldFreezeEditor;
-      }
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
       }
-      editingVersion['globalSettings']['theme'] = appTheme;
+      // null globalSettings on branch DRAFT/legacy versions — guard before theme assignment
+      if (editingVersion['globalSettings']) {
+        editingVersion['globalSettings']['theme'] = appTheme;
+      } else {
+        editingVersion['globalSettings'] = { theme: appTheme };
+      }
 
       // Strip JS libraries from globalSettings when the org's license doesn't include
       // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
@@ -263,7 +257,9 @@ export class VersionService implements IVersionService {
     const response = await prepareResponse(app, app.appVersions?.[0]?.id);
     const modules = await this.appUtilService.fetchModules(app, false, undefined);
 
-    response['modules'] = await Promise.all(modules.map((module) => prepareResponse(module, undefined)));
+    response['modules'] = await Promise.all(
+      modules.map((module) => prepareResponse(module, module.editingVersion?.id))
+    );
 
     // Top-level linkedApps map: covers main app + every module
     // Helps frontend to resolve go-to-app link for any correlationId referenced
@@ -320,19 +316,12 @@ export class VersionService implements IVersionService {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
       }
 
-      if (appVersion.status === AppVersionStatus.PUBLISHED) {
+      if (appVersion.status !== AppVersionStatus.DRAFT) {
         const nameChanging = appVersionUpdateDto.name && appVersionUpdateDto.name !== appVersion.name;
         const descChanging =
-          appVersionUpdateDto.description !== undefined &&
-          appVersionUpdateDto.description !== appVersion.description;
+          appVersionUpdateDto.description !== undefined && appVersionUpdateDto.description !== appVersion.description;
         if (nameChanging || descChanging) {
-          const organizationGit = await this.organizationGitRepository.findOrgGitByOrganizationId(
-            user.organizationId,
-            manager
-          );
-          if (organizationGit?.isEnabled) {
-            throw new BadRequestException('Cannot edit name or description of a saved version.');
-          }
+          throw new BadRequestException('Cannot edit name or description of a saved version.');
         }
       }
 

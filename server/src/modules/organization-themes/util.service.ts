@@ -5,12 +5,15 @@ import { OrganizationThemes } from '@entities/organization_themes.entity';
 import { OrganizationThemesRepository } from '@modules/organization-themes/repository';
 import { TJDefaultTheme, defaultThemeName, THEME_UPDATE_TYPE } from '@modules/organization-themes/constants';
 import { IOrganizationThemesUtilService } from './interfaces/IUtilService';
+import { RequestContext } from '@modules/request-context/service';
 import {
   UpdateThemeDefaultDto,
   UpdateThemeNameDto,
   UpdateThemeDefinitionDto,
   Definition,
 } from '@modules/organization-themes/dto';
+
+const THEME_MEMO_KEY = 'tj_theme_memo';
 
 @Injectable()
 export class OrganizationThemesUtilService implements IOrganizationThemesUtilService {
@@ -20,11 +23,20 @@ export class OrganizationThemesUtilService implements IOrganizationThemesUtilSer
     return TJDefaultTheme;
   }
   async getTheme(organizationId: string, themeId?: string): Promise<OrganizationThemes> {
-    if (!themeId) {
-      // No theme ID set -> Return default theme
-      return this.themesRepository.findDefaultTheme(organizationId);
+    const memoKey = `${organizationId}:${themeId ?? '_default'}`;
+    const ctx = RequestContext.currentContext;
+    const memo = ctx?.res?.locals?.[THEME_MEMO_KEY] as Record<string, OrganizationThemes> | undefined;
+    if (memo && memoKey in memo) return memo[memoKey];
+
+    const theme = themeId
+      ? await this.themesRepository.findThemeById(themeId, organizationId)
+      : await this.themesRepository.findDefaultTheme(organizationId);
+
+    if (ctx) {
+      const next = { ...(memo ?? {}), [memoKey]: theme };
+      RequestContext.setLocals(THEME_MEMO_KEY, next);
     }
-    return this.themesRepository.findThemeById(themeId, organizationId);
+    return theme;
   }
 
   async createDefaultTheme(manager: EntityManager, organizationId: string): Promise<OrganizationThemes> {

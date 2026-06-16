@@ -91,8 +91,10 @@ export default function generateColumnsData({
   searchText,
   columnForAddNewRow = false,
   t,
+  moduleId = 'canvas',
 }) {
-  const getResolvedValue = useStore.getState().getResolvedValue;
+  const _getResolvedValue = useStore.getState().getResolvedValue;
+  const getResolvedValue = (value, customVariables = {}) => _getResolvedValue(value, customVariables, moduleId);
   const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
   const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
@@ -124,6 +126,7 @@ export default function generateColumnsData({
       const parseInUnixTimestamp = getResolvedValue(column.parseInUnixTimestamp);
       const isEditable = getResolvedValue(column.isEditable);
       const isVisible = getResolvedValue(column.columnVisibility) ?? true;
+      // const disableSort = getResolvedValue(column.disableSort);
       const autoAssignColors = getResolvedValue(column.autoAssignColors) ?? false;
       let pinPosition = column.pinPosition ?? 'unpinned';
       if (useDynamicColumn && column.freezeColumn !== undefined && column.freezeColumn !== null) {
@@ -141,7 +144,7 @@ export default function generateColumnsData({
         id: column.id || uuidv4(),
         accessorKey: column.key || column.name,
         header: getResolvedValue(column.name) ?? '',
-        enableSorting: true,
+        // enableSorting: !disableSort,
         enableResizing: true,
         enableHiding: true,
         enableColumnFilter: true,

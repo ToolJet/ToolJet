@@ -19,6 +19,8 @@ import {
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
+import { TransactionLogger } from '@modules/logging/service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -271,6 +273,60 @@ const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'N
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
+const TOOLTIP_FORMAT_COMPONENT_TYPES = [
+  'Accordion',
+  'AudioRecorder',
+  'Button',
+  'ButtonGroupV2',
+  'Camera',
+  'Checkbox',
+  'CircularProgressBar',
+  'ColorPicker',
+  'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'Divider',
+  'DropdownV2',
+  'EmailInput',
+  'FileButton',
+  'FileInput',
+  'FilePicker',
+  'Form',
+  'Icon',
+  'IFrame',
+  'Image',
+  'JSONEditor',
+  'JSONExplorer',
+  'Kanban',
+  'KeyValuePair',
+  'Link',
+  'Listview',
+  'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'PopoverMenu',
+  'ProgressBar',
+  'RadioButtonV2',
+  'RangeSliderV2',
+  'ReorderableList',
+  'StarRating',
+  'Statistics',
+  'Tabs',
+  'Tags',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TextInput',
+  'TimePicker',
+  'ToggleSwitchV2',
+  'TreeSelect',
+  'VerticalDivider',
+];
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -280,7 +336,8 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
-    protected appsRepository: AppsRepository
+    protected appsRepository: AppsRepository,
+    protected readonly transactionLogger: TransactionLogger
   ) {}
 
   /**
@@ -545,14 +602,25 @@ export class AppImportExportService {
       const appModules = components.filter((c) => c.type === 'ModuleViewer' || c.properties?.moduleAppId);
       const moduleAppIds = appModules.map((moduleComponent) => ({
         moduleId: moduleComponent.properties?.moduleAppId.value,
-        // moduleVersionId.value holds the version's module_reference_id (uuid),
-        // stable across instances. Empty string signals an unpinned ref.
+        // moduleVersionId.value holds the version's co_relation_id (portable git identity).
+        // The git-sync adapter writes co_relation_id as the version `id` in exported JSON,
+        // so pulled/imported data and locally-created refs both use co_relation_id.
+        // Empty string signals an unpinned ref.
         versionIdentifier: moduleComponent.properties?.moduleVersionId?.value,
       }));
 
+      // Deduplicate: multiple ModuleViewer components may reference the same module.
+      // Keep one entry per unique moduleId (co_relation_id).
+      const seenExportModuleIds = new Set<string>();
+      const uniqueModuleAppIds = moduleAppIds.filter((m) => {
+        if (!m.moduleId || seenExportModuleIds.has(m.moduleId)) return false;
+        seenExportModuleIds.add(m.moduleId);
+        return true;
+      });
+
       // moduleAppId.value stores co_relation_id after migration — resolve to real DB ids
       // so this.export() can fetch the module app correctly.
-      const coRelationIds = moduleAppIds.map((m) => m.moduleId).filter(Boolean);
+      const coRelationIds = uniqueModuleAppIds.map((m) => m.moduleId).filter(Boolean);
       const moduleAppsById: Record<string, string> = {};
       if (coRelationIds.length > 0) {
         const resolvedModules = await manager
@@ -579,21 +647,36 @@ export class AppImportExportService {
 
       const moduleApps = [];
       await Promise.all(
-        moduleAppIds.map(async (moduleAppId) => {
+        uniqueModuleAppIds.map(async (moduleAppId) => {
           const resolvedId = moduleAppsById[moduleAppId.moduleId] ?? moduleAppId.moduleId;
 
           let versionDbId: string | undefined;
           if (moduleAppId.versionIdentifier && isUUID(moduleAppId.versionIdentifier) && resolvedId) {
-            // PINNED: explicit module_reference_id from the ModuleViewer.
-            const byRefId = await manager.findOne(AppVersion, {
-              where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
+            // PINNED: moduleVersionId.value stores the version's co_relation_id
+            // (portable git identity) after the git-sync adapter rewrites ids.
+            // Try co_relation_id first; fall back to module_reference_id for legacy data.
+            const byCoRelId = await manager.findOne(AppVersion, {
+              where: { co_relation_id: moduleAppId.versionIdentifier, appId: resolvedId },
             });
-            versionDbId = byRefId?.id;
-          } else if (resolvedId && parentBranchId) {
-            // UNPINNED: prefer the module's branch-local row (matches the parent app's
-            // branch). Falls back to the default-branch row to mirror resolveModuleRef's
-            // runtime behavior so unpinned exports stay portable when the parent's
-            // branch lacks a module row (e.g. module added after the branch was created).
+            versionDbId = byCoRelId?.id;
+
+            if (!versionDbId) {
+              const byRefId = await manager.findOne(AppVersion, {
+                where: { moduleReferenceId: moduleAppId.versionIdentifier, appId: resolvedId },
+              });
+              versionDbId = byRefId?.id;
+            }
+          }
+
+          // Fall through to branch-local resolution when:
+          //   - The pin didn't resolve (cross-workspace import where module_reference_id
+          //     from the source workspace doesn't exist locally), OR
+          //   - The module ref was unpinned (empty versionIdentifier).
+          // Without this fallthrough, an unresolvable pin causes export() to run without
+          // a version_id filter, pulling ALL app_versions (including stubs on other
+          // branches) into the serialized module — breaking the one-version-per-branch
+          // git contract.
+          if (!versionDbId && resolvedId && parentBranchId) {
             const branchRow = await manager.findOne(AppVersion, {
               where: { appId: resolvedId, branchId: parentBranchId, isStub: false },
               order: { createdAt: 'DESC' },
@@ -820,7 +903,18 @@ export class AppImportExportService {
 
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {
-      for (const importedModule of appParams.modules) {
+      // Deduplicate: the export may include the same module once per ModuleViewer
+      // component that references it. Keep only the first occurrence keyed by
+      // co_relation_id (preferred) or name (fallback).
+      const seenModuleKeys = new Set<string>();
+      const uniqueModules = appParams.modules.filter((m: any) => {
+        const key = m?.appV2?.co_relation_id || m?.appV2?.name;
+        if (!key || seenModuleKeys.has(key)) return false;
+        seenModuleKeys.add(key);
+        return true;
+      });
+
+      for (const importedModule of uniqueModules) {
         // Prefer passport match (survives renames and cross-lineage name collisions).
         const existingModule =
           (importedModule?.appV2?.co_relation_id && existingByCoRel.get(importedModule.appV2.co_relation_id)) ||
@@ -899,7 +993,11 @@ export class AppImportExportService {
           // resolve correctly without rewriting. createImportedAppForUser sets
           // co_relation_id = source.id by default, but ModuleViewer references
           // the source's co_relation_id field — overwrite to match.
-          if (isGitApp && importedModule?.appV2?.co_relation_id && newApp.co_relation_id !== importedModule.appV2.co_relation_id) {
+          if (
+            isGitApp &&
+            importedModule?.appV2?.co_relation_id &&
+            newApp.co_relation_id !== importedModule.appV2.co_relation_id
+          ) {
             await manager.update(App, { id: newApp.id }, { co_relation_id: importedModule.appV2.co_relation_id });
             newApp.co_relation_id = importedModule.appV2.co_relation_id;
           }
@@ -2178,6 +2276,19 @@ export class AppImportExportService {
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
+        // Heal any parent-child cycles in the imported tree BEFORE we begin ID
+        // remapping. A cycle reaching this point (corrupt source app / hand-
+        // edited JSON / git-merge artifact) would otherwise persist verbatim
+        // and freeze the canvas on first open. The helper mutates
+        // component.parent in place on the deterministically-chosen node.
+        const { repairedIds } = repairParentCycles(pageComponents);
+        if (repairedIds.length > 0) {
+          this.transactionLogger.warn(
+            `[app-import] Repaired ${repairedIds.length} parent-child cycle(s) on page ${page.id}. ` +
+              `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+          );
+        }
+
         const newComponentIdsMap = {};
         for (const component of pageComponents) {
           newComponentIdsMap[component.id] = uuid();
@@ -3324,7 +3435,11 @@ export class AppImportExportService {
           parent_version_id: appVersion?.id || null,
           createdById: user.id,
           co_relation_id: appVersion.id || null,
-          branchId: isWorkflow ? null : branchId,
+          // Only DRAFT rows may carry a branch_id (chk_app_versions_branched_implies_draft).
+          // PUBLISHED versions are branchless workspace history — e.g. hydrating a released
+          // module produces a PUBLISHED temp row, which the git-pull re-parent later forces
+          // back to DRAFT + branchId. Without this guard the INSERT violates the CHECK.
+          branchId: isWorkflow || versionStatus !== AppVersionStatus.DRAFT ? null : branchId,
           // Preserve moduleReferenceId from source if present (cross-instance pull / git import).
           // Generate fresh for legacy payloads predating the column. Module-only.
           ...(importedApp.type === APP_TYPES.MODULE && {
@@ -4051,6 +4166,10 @@ function migrateProperties(
 
   if (MAX_LIMIT_COMPONENT_TYPES.includes(componentType) && properties.maxLimit === undefined) {
     properties.maxLimit = { value: '' };
+  }
+
+  if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {
+    properties.tooltipFormat = { value: 'plainText' };
   }
 
   if (!tooljetVersion) {

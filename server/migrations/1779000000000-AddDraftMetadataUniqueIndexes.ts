@@ -32,6 +32,18 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // The dedupe loop below probes app_versions by LOWER(slug) per iteration, and
+    // uniqueness here is trigger-based (Step 2) so no real index helps. Disable the
+    // statement_timeout for this transaction and back the probe with a temp index so
+    // it doesn't degrade into sequential scans and get cancelled (57014) on a large
+    // table. SET LOCAL reverts on commit/rollback; the temp index is dropped below.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS tmp_idx_av_dedupe_draft_slug
+        ON app_versions (LOWER(slug))
+        WHERE status = 'DRAFT' AND branch_id IS NOT NULL AND version_type = 'version'
+    `);
+
     // Step 1: Dedupe (slug, apps.type) globally among default-branch DRAFT rows.
     // Keep the oldest row's slug; rename later duplicates with _N suffixes within
     // the same type bucket so app and module slug spaces are independent.
@@ -78,6 +90,9 @@ export class AddDraftMetadataUniqueIndexes1779000000000 implements MigrationInte
         END LOOP;
       END $$;
     `);
+
+    // Dedupe done — drop the temp index (uniqueness is trigger-based, Step 2).
+    await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_av_dedupe_draft_slug`);
 
     // Step 2: Trigger-based enforcement. Mirrors the pattern used by the
     // per-branch slug/app_name triggers in 1778000000000. Advisory lock keyed

@@ -16,7 +16,6 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { FeatureAbilityFactory } from './ability';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { RolesRepository } from '@modules/roles/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
@@ -65,7 +64,6 @@ export class ModulesModule extends SubModule {
         DataSourcesRepository,
         FeatureAbilityFactory,
         RolesRepository,
-        AppGitRepository,
         GroupPermissionsRepository,
         ValidAppGuard,
         OrganizationGitSyncRepository,

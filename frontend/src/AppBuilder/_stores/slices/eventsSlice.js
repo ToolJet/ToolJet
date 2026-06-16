@@ -401,6 +401,7 @@ export const createEventsSlice = (set, get) => ({
           'onRecordClicked',
           'onCancelChanges',
           'onSort',
+          'onHeaderClick',
           'onCellValueChanged',
           'onFilterChanged',
           'onRowHovered',
@@ -420,6 +421,7 @@ export const createEventsSlice = (set, get) => ({
           'onSaveKeyValuePairChanges',
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',
+          'onRefresh',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -766,8 +768,6 @@ export const createEventsSlice = (set, get) => ({
             const key = getResolvedValue(event.key, customVariables, moduleId);
             const value = getResolvedValue(event.value, customVariables, moduleId);
 
-            console.log('here--- set-custom-variable', key, value, moduleId);
-
             setVariable(key, value, moduleId);
             return Promise.resolve();
             // customAppVariables[key] = value;
@@ -786,6 +786,17 @@ export const createEventsSlice = (set, get) => ({
 
             // return resp;
           }
+
+          // case 'set-custom-variables': {
+          //   const { setVariables } = get();
+          //   const variables = getResolvedValue(event.variables, customVariables, moduleId);
+
+          //   if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
+          //     setVariables(variables, moduleId);
+          //   }
+
+          //   return Promise.resolve();
+          // }
 
           case 'get-custom-variable': {
             const { getVariable } = get();
@@ -1130,6 +1141,16 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
+      // const setVariables = (variables = {}) => {
+      //   if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+
+      //   const event = {
+      //     actionId: 'set-custom-variables',
+      //     variables,
+      //   };
+      //   return executeAction(event, mode, {}, moduleId);
+      // };
+
       const getVariable = (key = '') => {
         if (key) {
           const event = {
@@ -1389,6 +1410,7 @@ export const createEventsSlice = (set, get) => ({
       return {
         runQuery,
         setVariable,
+        // setVariables,
         getVariable,
         unsetAllVariables,
         unSetVariable,

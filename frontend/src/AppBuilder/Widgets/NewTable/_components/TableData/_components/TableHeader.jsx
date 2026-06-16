@@ -15,7 +15,7 @@ import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import { getPinnedStyles } from '../pinColumnsUtils';
 
-const DraggableHeader = ({ header, darkMode, id, table }) => {
+const DraggableHeader = ({ header, darkMode, id, table, fireEvent, setExposedVariables }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
     id: header.id,
   });
@@ -27,6 +27,7 @@ const DraggableHeader = ({ header, darkMode, id, table }) => {
   const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
   const columnTitleColor = useTableStore((state) => state.getTableStyles(id)?.columnTitleColor, shallow);
   const columnBackgroundColor = useTableStore((state) => state.getTableStyles(id)?.columnBackgroundColor, shallow);
+  const enabledSort = useTableStore((state) => state.getTableProperties(id)?.enabledSort ?? true, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -39,6 +40,21 @@ const DraggableHeader = ({ header, darkMode, id, table }) => {
   };
 
   const isDataColumn = column.columnType !== 'selector';
+
+  const handleHeaderClick = () => {
+    if (!isDataColumn) return;
+    setExposedVariables({
+      selectedColumnHeader: {
+        key: column.key,
+        name: column.name,
+        index: header.column.getIndex(),
+      },
+    });
+    fireEvent('onHeaderClick');
+    if (enabledSort && header.column.getCanSort()) {
+      header.column.toggleSorting();
+    }
+  };
   const {
     pinnedPosition,
     isPinnedBoundary,
@@ -92,8 +108,8 @@ const DraggableHeader = ({ header, darkMode, id, table }) => {
         className={cx('d-flex justify-content-between custom-gap-4', {
           'd-flex justify-content-center w-100': header.column.columnDef.type === 'selector',
         })}
-        onClick={header.column.getCanSort() ? () => header.column.toggleSorting() : undefined}
-        style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
+        onClick={isDataColumn ? handleHeaderClick : undefined}
+        style={{ cursor: isDataColumn ? 'pointer' : 'default', width: '100%' }}
       >
         <div
           className={`d-flex thead-editable-icon-header-text-wrapper ${
@@ -165,6 +181,7 @@ const DraggableHeader = ({ header, darkMode, id, table }) => {
         <div
           onMouseDown={header.getResizeHandler()}
           onTouchStart={header.getResizeHandler()}
+          onClick={(e) => e.stopPropagation()}
           className={cx('resizer', { 'resizing-column': header.column.getIsResizing() })}
         >
           <div
@@ -180,7 +197,7 @@ const DraggableHeader = ({ header, darkMode, id, table }) => {
   );
 };
 
-export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }) => {
+export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder, fireEvent, setExposedVariables }) => {
   const { getLoadingState, getIsRefreshing } = useTableStore();
   const loadingState = getLoadingState(id);
   const isRefreshing = getIsRefreshing(id);
@@ -220,7 +237,15 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy} key={headerGroup.id}>
             <tr className="tr" style={{ display: 'flex' }}>
               {headerGroup.headers.map((header) => (
-                <DraggableHeader key={header.id} header={header} darkMode={darkMode} id={id} table={table} />
+                <DraggableHeader
+                  key={header.id}
+                  header={header}
+                  darkMode={darkMode}
+                  id={id}
+                  table={table}
+                  fireEvent={fireEvent}
+                  setExposedVariables={setExposedVariables}
+                />
               ))}
             </tr>
           </SortableContext>

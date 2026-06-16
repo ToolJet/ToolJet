@@ -26,6 +26,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  */
 export class EnforceBranchedAppVersionInvariants1779300000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // The cleanup UPDATEs and the ADD CONSTRAINT validations below each scan the
+    // whole app_versions table — slow enough to trip statement_timeout (57014) on a
+    // large instance. Disable it for this transaction; SET LOCAL reverts on
+    // commit/rollback.
+    await queryRunner.query(`SET LOCAL statement_timeout = 0`);
+
     // Step 1: Convert orphan BRANCH-type rows (no branch_id) to VERSION + PUBLISHED.
     // version_type='branch' AND branch_id IS NULL means the FK was set NULL by the
     // ON DELETE SET NULL on `fk_app_versions_branch` after the workspace branch

@@ -922,8 +922,7 @@ describe("Custom Group Granular Access", () => {
                 const previewUrl = `${Cypress.config("baseUrl")}/applications/${appId1}/home?env=development&version=v1`;
                 cy.visit(previewUrl);
                 signup(data.firstName, data.email);
-                cy.wait(1500);
-                cy.get(commonSelectors.previewSettings).should('be.visible');
+                cy.waitForElement(commonSelectors.previewSettings).should('be.visible');
                 cy.get(commonWidgetSelector.draggableWidget("text1")).should(
                     "contain",
                     "development",

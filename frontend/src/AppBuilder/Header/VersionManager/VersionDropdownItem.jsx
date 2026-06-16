@@ -114,7 +114,7 @@ const VersionDropdownItem = ({
       style={{ minWidth: '160px' }}
     >
       <Popover.Body className={cx('d-flex flex-column p-0', { 'dark-theme theme-dark': darkMode })}>
-        {!isGitSyncEnabled && (
+        {!isGitSyncEnabled && isDraft && (
           <ToolTip message="Saved versions cannot be edited" placement="left" show={isEditDisabled}>
             <div
               className={cx('dropdown-item tj-text-xsm', {
@@ -304,7 +304,7 @@ const VersionDropdownItem = ({
                 )}
 
                 {/* More menu */}
-                {!(isGitSyncEnabled && isReleased) && (
+                {!isReleased && (
                   <OverlayTrigger
                     trigger="click"
                     placement="bottom-end"

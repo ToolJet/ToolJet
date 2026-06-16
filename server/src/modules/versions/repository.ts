@@ -11,6 +11,9 @@ import { App } from '@entities/app.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
+import { RequestContext } from '@modules/request-context/service';
+
+const FIND_VERSION_MEMO_KEY = 'tj_find_version_memo';
 
 @Injectable()
 export class VersionRepository extends Repository<AppVersion> {
@@ -60,21 +63,19 @@ export class VersionRepository extends Repository<AppVersion> {
   }
 
   findById(id: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOneOrFail(AppVersion, {
-        where: { id, appId },
-        ...(relations?.length ? { relations } : {}),
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOneOrFail(AppVersion, {
+      where: { id, appId },
+      ...(relations?.length ? { relations } : {}),
+    });
   }
 
   findByName(name: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOneOrFail(AppVersion, {
-        where: { name, appId },
-        ...(relations?.length ? { relations } : {}),
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOneOrFail(AppVersion, {
+      where: { name, appId },
+      ...(relations?.length ? { relations } : {}),
+    });
   }
 
   async findLatestVersionForEnvironment(
@@ -84,64 +85,55 @@ export class VersionRepository extends Repository<AppVersion> {
     organizationId: string,
     manager?: EntityManager
   ): Promise<AppVersion | undefined> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      // Subquery to determine the priority of the given environment
-      const prioritySubquery = manager
-        .createQueryBuilder()
-        .subQuery()
-        .select('priority')
-        .from(AppEnvironment, 'env')
-        .where('env.organizationId = :organizationId', { organizationId })
-        .andWhere(environmentId ? 'env.id = :environmentId' : 'env.name = :environmentName')
-        .getQuery();
+    const m = manager ?? this.manager;
+    const prioritySubquery = m
+      .createQueryBuilder()
+      .subQuery()
+      .select('priority')
+      .from(AppEnvironment, 'env')
+      .where('env.organizationId = :organizationId', { organizationId })
+      .andWhere(environmentId ? 'env.id = :environmentId' : 'env.name = :environmentName')
+      .getQuery();
 
-      const query = manager
-        .createQueryBuilder(AppVersion, 'appVersion')
-        .innerJoin(AppEnvironment, 'environment', 'appVersion.currentEnvironmentId = environment.id')
-        .where('appVersion.appId = :appId', { appId })
-        .andWhere('environment.organizationId = :organizationId', { organizationId })
-        .andWhere(`environment.priority >= (${prioritySubquery})`)
-        .andWhere('appVersion.version_type != :branchType')
-        .orderBy('appVersion.createdAt', 'DESC')
-        .setParameters({
-          appId,
-          organizationId,
-          environmentId: environmentId || undefined,
-          environmentName: environmentName || undefined,
-          branchType: AppVersionType.BRANCH,
-        });
-
-      return await query.getOne();
-    }, manager || this.manager);
+    return m
+      .createQueryBuilder(AppVersion, 'appVersion')
+      .innerJoin(AppEnvironment, 'environment', 'appVersion.currentEnvironmentId = environment.id')
+      .where('appVersion.appId = :appId', { appId })
+      .andWhere('environment.organizationId = :organizationId', { organizationId })
+      .andWhere(`environment.priority >= (${prioritySubquery})`)
+      .andWhere('appVersion.version_type != :branchType')
+      .orderBy('appVersion.createdAt', 'DESC')
+      .setParameters({
+        appId,
+        organizationId,
+        environmentId: environmentId || undefined,
+        environmentName: environmentName || undefined,
+        branchType: AppVersionType.BRANCH,
+      })
+      .getOne();
   }
 
   async findDataQueriesForVersion(appVersionId: string, manager?: EntityManager): Promise<DataQuery[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(DataQuery, {
-        where: { appVersionId },
-        relations: ['dataSource'],
-        select: {
-          dataSource: {
-            kind: true,
-          },
-        },
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(DataQuery, {
+      where: { appVersionId },
+      relations: ['dataSource'],
+      select: { dataSource: { kind: true } },
+    });
   }
 
   async findDataQueriesForVersionWithPermissions(appVersionId: string, manager?: EntityManager): Promise<DataQuery[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager
-        .createQueryBuilder(DataQuery, 'query')
-        .where('query.appVersionId = :appVersionId', { appVersionId })
-        .leftJoinAndSelect('query.dataSource', 'dataSource')
-        .leftJoinAndSelect('query.permissions', 'permission')
-        .leftJoinAndSelect('permission.users', 'queryUser')
-        .leftJoinAndSelect('queryUser.user', 'user')
-        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
-        .select(['query', 'dataSource.kind', 'permission', 'queryUser', 'user', 'group'])
-        .getMany();
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m
+      .createQueryBuilder(DataQuery, 'query')
+      .where('query.appVersionId = :appVersionId', { appVersionId })
+      .leftJoinAndSelect('query.dataSource', 'dataSource')
+      .leftJoinAndSelect('query.permissions', 'permission')
+      .leftJoinAndSelect('permission.users', 'queryUser')
+      .leftJoinAndSelect('queryUser.user', 'user')
+      .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+      .select(['query', 'dataSource.kind', 'permission', 'queryUser', 'user', 'group'])
+      .getMany();
   }
 
   /**
@@ -154,28 +146,42 @@ export class VersionRepository extends Repository<AppVersion> {
    * (definition/queries/plugins) don't surface `app.name` etc.
    */
   async findVersion(id: string, manager?: EntityManager): Promise<AppVersion> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersion = await manager.findOneOrFail(AppVersion, {
-        where: { id },
-        relations: [
-          'app',
-          'dataQueries',
-          'dataQueries.dataSource',
-          'dataQueries.plugins',
-          'dataQueries.plugins.manifestFile',
-        ],
-      });
+    // skip memo for tx-bound manager — caller owns isolation
+    if (!manager) {
+      const ctx = RequestContext.currentContext;
+      const memo = ctx?.res?.locals?.[FIND_VERSION_MEMO_KEY] as Record<string, AppVersion> | undefined;
+      if (memo?.[id]) return memo[id];
+    }
 
-      if (appVersion?.dataQueries) {
-        for (const query of appVersion?.dataQueries) {
-          if (query?.plugin) {
-            query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
-          }
+    const m = manager ?? this.manager;
+    const appVersion = await m.findOneOrFail(AppVersion, {
+      where: { id },
+      relations: [
+        'app',
+        'dataQueries',
+        'dataQueries.dataSource',
+        'dataQueries.plugins',
+        'dataQueries.plugins.manifestFile',
+      ],
+    });
+
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion.dataQueries) {
+        if (query?.plugin) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
         }
       }
+    }
 
-      return appVersion;
-    }, manager || this.manager);
+    if (!manager) {
+      const ctx = RequestContext.currentContext;
+      if (ctx) {
+        const memo = (ctx.res?.locals?.[FIND_VERSION_MEMO_KEY] as Record<string, AppVersion>) ?? {};
+        memo[id] = appVersion;
+        RequestContext.setLocals(FIND_VERSION_MEMO_KEY, memo);
+      }
+    }
+    return appVersion;
   }
 
   /**
@@ -185,42 +191,35 @@ export class VersionRepository extends Repository<AppVersion> {
    * the call site if you need branch-aware metadata.
    */
   async findVersionWithQueryPermissions(id: string, manager?: EntityManager): Promise<AppVersion> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersion = await manager
-        .createQueryBuilder(AppVersion, 'appVersion')
-        .where('appVersion.id = :id', { id })
-        .leftJoinAndSelect('appVersion.app', 'app')
-        .leftJoinAndSelect('appVersion.dataQueries', 'dataQueries')
-        .leftJoinAndSelect('dataQueries.dataSource', 'dataSource')
-        .leftJoinAndSelect('dataQueries.plugins', 'plugins')
-        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('dataQueries.permissions', 'permission')
-        .leftJoinAndSelect('permission.users', 'queryUser')
-        .leftJoinAndSelect('queryUser.user', 'user')
-        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
-        .getOneOrFail();
+    const m = manager ?? this.manager;
+    const appVersion = await m
+      .createQueryBuilder(AppVersion, 'appVersion')
+      .where('appVersion.id = :id', { id })
+      .leftJoinAndSelect('appVersion.app', 'app')
+      .leftJoinAndSelect('appVersion.dataQueries', 'dataQueries')
+      .leftJoinAndSelect('dataQueries.dataSource', 'dataSource')
+      .leftJoinAndSelect('dataQueries.plugins', 'plugins')
+      .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+      .leftJoinAndSelect('dataQueries.permissions', 'permission')
+      .leftJoinAndSelect('permission.users', 'queryUser')
+      .leftJoinAndSelect('queryUser.user', 'user')
+      .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+      .getOneOrFail();
 
-      if (appVersion?.dataQueries) {
-        for (const query of appVersion?.dataQueries) {
-          if (query?.plugin) {
-            query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
-          }
+    if (appVersion?.dataQueries) {
+      for (const query of appVersion.dataQueries) {
+        if (query?.plugin) {
+          query.plugin.manifestFile.data = JSON.parse(decode(query.plugin.manifestFile.data.toString('utf8')));
         }
       }
-
-      return appVersion;
-    }, manager || this.manager);
+    }
+    return appVersion;
   }
 
   getVersionsInApp(appId: string, branchId?: string, manager?: EntityManager): Promise<AppVersion[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
-
-      return manager.find(AppVersion, {
-        where,
-        order: { createdAt: 'DESC' },
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    const where = branchId ? { appId, branchId, isStub: false } : { appId, isStub: false };
+    return m.find(AppVersion, { where, order: { createdAt: 'DESC' } });
   }
 
   getCount(appId: string): Promise<number> {
@@ -230,29 +229,27 @@ export class VersionRepository extends Repository<AppVersion> {
   }
 
   deleteById(versionId: string, manager?: EntityManager): Promise<any> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.delete(AppVersion, { id: versionId });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.delete(AppVersion, { id: versionId });
   }
 
   async findAppFromVersion(id: string, organizationId: string, manager?: EntityManager): Promise<App> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersion = await manager.findOneOrFail(AppVersion, {
-        where: { id, app: { organizationId } },
-        relations: ['app'],
+    const m = manager ?? this.manager;
+    const appVersion = await m.findOneOrFail(AppVersion, {
+      where: { id, app: { organizationId } },
+      relations: ['app'],
+    });
+    const app = appVersion.app;
+    // Workflows keep metadata on apps.*; non-workflows must overlay from the
+    // canonical version row resolved by git-sync state. Forward the loaded
+    // version's branchId so the overlay picks that branch's row directly.
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
+      const metadataVersion = await this.resolveMetadataVersion(m, app, {
+        branchId: appVersion.branchId ?? undefined,
       });
-      const app = appVersion.app;
-      // Workflows keep metadata on apps.*; non-workflows must overlay from the
-      // canonical version row resolved by git-sync state. Forward the loaded
-      // version's branchId so the overlay picks that branch's row directly.
-      if (app && app.type !== APP_TYPES.WORKFLOW) {
-        const metadataVersion = await this.resolveMetadataVersion(manager, app, {
-          branchId: appVersion.branchId ?? undefined,
-        });
-        this.overlayMetadata(app, metadataVersion);
-      }
-      return app;
-    }, manager || this.manager);
+      this.overlayMetadata(app, metadataVersion);
+    }
+    return app;
   }
 
   // Returns the workspace's default branch id, or null when git-sync is off.
@@ -328,19 +325,17 @@ export class VersionRepository extends Repository<AppVersion> {
    * would default-branch fallback and could mask sub-branch values.
    */
   async findVersionsFromApp(app: App, manager?: EntityManager): Promise<AppVersion[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersions = await manager.find(AppVersion, {
-        where: { appId: app.id },
-        relations: [
-          'app',
-          'dataQueries',
-          'dataQueries.dataSource',
-          'dataQueries.plugins',
-          'dataQueries.plugins.manifestFile',
-        ],
-      });
-      return appVersions;
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(AppVersion, {
+      where: { appId: app.id },
+      relations: [
+        'app',
+        'dataQueries',
+        'dataQueries.dataSource',
+        'dataQueries.plugins',
+        'dataQueries.plugins.manifestFile',
+      ],
+    });
   }
 
   /**
@@ -356,26 +351,24 @@ export class VersionRepository extends Repository<AppVersion> {
    *   - branchId absent, git off           → any slug-bearing row (most recent).
    */
   async getAppVersionById(versionId: string, branchId?: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const version = await manager.findOneOrFail(AppVersion, {
-        where: { id: versionId },
-        relations: ['app'],
-      });
-      if (!version) throw new BadRequestException('Wrong version Id');
-
-      const app = version.app;
-      if (app && app.type !== APP_TYPES.WORKFLOW) {
-        // Prefer the caller's explicit branchId; fall back to the loaded version's
-        // own branchId so overlay still picks the right branch when no header was
-        // supplied. versionId is no longer accepted by resolveMetadataVersion.
-        const metadataVersion = await this.resolveMetadataVersion(manager, app, {
-          branchId: branchId ?? version.branchId ?? undefined,
-        });
-        this.overlayMetadata(app, metadataVersion);
-      }
-
-      return version;
+    const version = await this.manager.findOneOrFail(AppVersion, {
+      where: { id: versionId },
+      relations: ['app'],
     });
+    if (!version) throw new BadRequestException('Wrong version Id');
+
+    const app = version.app;
+    if (app && app.type !== APP_TYPES.WORKFLOW) {
+      // Prefer the caller's explicit branchId; fall back to the loaded version's
+      // own branchId so overlay still picks the right branch when no header was
+      // supplied. versionId is no longer accepted by resolveMetadataVersion.
+      const metadataVersion = await this.resolveMetadataVersion(this.manager, app, {
+        branchId: branchId ?? version.branchId ?? undefined,
+      });
+      this.overlayMetadata(app, metadataVersion);
+    }
+
+    return version;
   }
 
   /**
@@ -385,22 +378,20 @@ export class VersionRepository extends Repository<AppVersion> {
    * via `getAppVersionById` (with branchId) or overlay manually.
    */
   async getAppVersionByIdOrName(versionId: string, appId?: string) {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      let version;
-      try {
-        version = await manager.findOneOrFail(AppVersion, {
-          where: { name: versionId, appId: appId },
-          relations: ['app'],
-        });
-      } catch {
-        version = await manager.findOneOrFail(AppVersion, {
-          where: { id: versionId },
-          relations: ['app'],
-        });
-      }
-      if (!version) throw new BadRequestException('Wrong version Id');
-      return version;
-    });
+    let version;
+    try {
+      version = await this.manager.findOneOrFail(AppVersion, {
+        where: { name: versionId, appId },
+        relations: ['app'],
+      });
+    } catch (error) {
+      version = await this.manager.findOneOrFail(AppVersion, {
+        where: { id: versionId },
+        relations: ['app'],
+      });
+    }
+    if (!version) throw new BadRequestException('Wrong version Id');
+    return version;
   }
 
   // Thin DB-level update. Business hooks (e.g. the DRAFT → PUBLISHED transition
@@ -408,34 +399,17 @@ export class VersionRepository extends Repository<AppVersion> {
   // this method pure so it can be reused for plain field updates without
   // dragging in branch / publish lifecycle.
   async updateVersion(versionId: string, editableParams: Partial<AppVersion>, manager?: EntityManager): Promise<void> {
-    await dbTransactionWrap((mgr: EntityManager) => {
-      return mgr.update(
-        AppVersion,
-        { id: versionId },
-        {
-          ...editableParams,
-          updatedAt: new Date(),
-        }
-      );
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    await m.update(AppVersion, { id: versionId }, { ...editableParams, updatedAt: new Date() });
   }
 
   async findParentVersionApps(versionId: string, manager?: EntityManager): Promise<AppVersion[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersions = await manager.find(AppVersion, {
-        where: { parentVersionId: versionId },
-      });
-      return appVersions;
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(AppVersion, { where: { parentVersionId: versionId } });
   }
 
   async getAllVersions(appId: string, manager?: EntityManager): Promise<AppVersion[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const appVersions = await manager.find(AppVersion, {
-        where: { appId: appId },
-        relations: ['user'],
-      });
-      return appVersions;
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(AppVersion, { where: { appId }, relations: ['user'] });
   }
 }

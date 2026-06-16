@@ -58,7 +58,7 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     throw new NotFoundException();
   }
 
-  async listRemoteBranches(organizationId: string): Promise<{ name: string }[]> {
+  async listRemoteBranches(organizationId: string): Promise<{ branches: any[] }> {
     throw new NotFoundException();
   }
 

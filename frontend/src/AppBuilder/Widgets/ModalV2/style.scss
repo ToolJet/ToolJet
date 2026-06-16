@@ -72,3 +72,10 @@
   top: -4px;
   bottom: unset;
 }
+
+/* Suppress the one-frame scroll flash while modal-body children grow ahead
+ * of the Modal reflow. Lifted when body genuinely overflows the 85vh cap.
+ */
+.modal-content[class*="dynamic-"]:not(.tj-modal-allow-body-scroll) .modal-body .real-canvas {
+  overflow-y: hidden !important;
+}

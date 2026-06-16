@@ -10,8 +10,8 @@ import { PenLine, TriangleAlert } from 'lucide-react';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function EditAppName() {
-  const { moduleId } = useModuleContext();
-  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit, appGit] = useStore(
+  const { moduleId, appType } = useModuleContext();
+  const [appId, appName, setAppName, appCreationMode, selectedVersion, orgGit] = useStore(
     (state) => [
       state.appStore.modules[moduleId].app.appId,
       state.appStore.modules[moduleId].app.appName,
@@ -19,7 +19,6 @@ function EditAppName() {
       state.appStore.modules[moduleId].app.creationMode,
       state.selectedVersion,
       state.orgGit,
-      state.appGit,
     ],
     shallow
   );
@@ -29,20 +28,18 @@ function EditAppName() {
 
   const isDraftVersion = selectedVersion?.status === 'DRAFT';
   const isGitSyncEnabled = orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-  const isAppCommittedToGit = !!appGit?.id;
   const isOnDefaultBranch = workspaceActiveBranch
     ? workspaceActiveBranch.is_default ||
       workspaceActiveBranch.isDefault ||
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType !== 'branch';
-  const isRenameDisabled = !isGitSyncEnabled
-    ? false
-    : !isAppCommittedToGit
-    ? !isDraftVersion
-    : !isDraftVersion || isOnDefaultBranch;
+  // Workspace-level git sync: every app in a git-enabled org participates in git.
+  // Default branch is read-only (rename must happen on a feature branch); rename also
+  // requires a draft version regardless of git state.
+  const isRenameDisabled = !isGitSyncEnabled ? false : !isDraftVersion || isOnDefaultBranch;
 
   const getDisabledTooltipMessage = () => {
-    if (isGitSyncEnabled && isAppCommittedToGit && isOnDefaultBranch) {
+    if (isGitSyncEnabled && isOnDefaultBranch) {
       return "Renaming isn't allowed on default branch. Switch branch to update name.";
     }
     if (!isDraftVersion && isGitSyncEnabled) {
@@ -64,7 +61,7 @@ function EditAppName() {
     try {
       await appsService.saveApp(appId, { name: sanitizedName, editingVersionId: selectedVersion?.id });
       setAppName(sanitizedName);
-      toast.success('App name has been updated!');
+      toast.success(`${appType === 'module' ? 'Module' : 'App'} name has been updated!`);
       return true;
     } catch (errorResponse) {
       if (errorResponse.statusCode === 409) {
@@ -82,11 +79,11 @@ function EditAppName() {
         <ToolTip
           message={getDisabledTooltipMessage()}
           placement="bottom"
-          width="210px"
+          maxWidth="210px"
           isVisible={appCreationMode !== 'GIT' || isRenameDisabled}
         >
           <button
-            className="edit-app-name-button tw-h-8 tw-min-w-[100px] tw-rounded-lg tw-pr-1 tw-w-auto tw-font-medium tw-outline-none tw-bg-transparent tw-border tw-border-transparent tw-shadow-none tw-group tw-transition-all tw-duration-300 tw-flex tw-items-center tw-relative tw-justify-start"
+            className="edit-app-name-button tw-h-8 tw-min-w-[100px] tw-max-w-[240px] tw-rounded-lg tw-pr-1 tw-w-auto tw-font-medium tw-outline-none tw-bg-transparent tw-border tw-border-transparent tw-shadow-none tw-group tw-transition-all tw-duration-300 tw-flex tw-items-center tw-relative tw-justify-start"
             style={{
               cursor: isRenameDisabled ? 'not-allowed' : 'pointer',
               opacity: isRenameDisabled ? 0.6 : 1,
@@ -118,7 +115,7 @@ function EditAppName() {
           processApp={handleRenameApp}
           selectedAppId={appId}
           selectedAppName={appName}
-          title="Rename app"
+          title={appType === 'module' ? 'Rename module' : 'Rename app'}
           titleAdornment={(() => {
             const { currentBranch } = useWorkspaceBranchesStore.getState();
             const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
@@ -135,9 +132,9 @@ function EditAppName() {
               </ToolTip>
             );
           })()}
-          actionButton="Rename app"
+          actionButton={appType === 'module' ? 'Rename module' : 'Rename app'}
           actionLoadingButton={'Renaming'}
-          appType="app"
+          appType={appType}
         />
       )}
     </>

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/Widgets/ModalV2/hooks/useModalCSA';
@@ -30,7 +30,6 @@ export const ModalV2 = function Modal({
   dataCy,
   height,
   currentMode,
-  adjustComponentPositions,
   currentLayout,
   componentCount,
   subContainerIndex,
@@ -196,17 +195,26 @@ export const ModalV2 = function Modal({
     onHideModal,
     onShowModal,
   });
-  const contextIndices = contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex;
+  // Memoized: this lands in useDynamicHeight's effect deps. A fresh array per
+  // render (e.g. inside a Listview row, where Viewer re-renders on every
+  // canvasUpdater tick) would refire the effect → adjustComponentPositions →
+  // incrementCanvasUpdater → re-render, freezing the preview in a reflow loop.
+  const contextIndices = useMemo(
+    () => (contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex),
+    [contextPath, subContainerIndex]
+  );
 
   useDynamicHeight({
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
-    value: JSON.stringify({ headerHeight, showHeader, showModal }),
+    // Includes footerHeight + showFooter so resizing/toggling the footer
+    // also triggers a reflow (configured slot heights feed into the modal's
+    // computed body height).
+    value: JSON.stringify({ headerHeight, footerHeight, showHeader, showFooter, showModal }),
     visibility: isVisible,
     subContainerIndex: contextIndices,
     componentType,
@@ -301,7 +309,9 @@ export const ModalV2 = function Modal({
       <ModalWidget
         show={showModal}
         contentClassName="modal-component"
-        container={document.getElementsByClassName('real-canvas')[0]}
+        container={
+          document.getElementsByClassName('tj-canvas-area')?.[0] || document.getElementsByClassName('real-canvas')?.[0]
+        }
         size={size}
         keyboard={true}
         enforceFocus={false}
