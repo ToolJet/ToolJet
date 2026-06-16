@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/react';
+import { recordWidgetError, recordJsError } from '@/_services/frontend-metrics.service';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -14,8 +15,12 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // You can also log the error to an error reporting service
     console.log(error, errorInfo);
+    if (this.props.widgetType) {
+      recordWidgetError(this.props.widgetType, error?.message);
+    } else {
+      recordJsError(error?.message, errorInfo?.componentStack);
+    }
   }
 
   render() {
