@@ -3,7 +3,7 @@ import { LicenseUpdateDto } from '../dto';
 import { Terms } from './terms';
 import { LIMIT_TYPE } from '@modules/users/constants/lifecycle';
 import { UserEntity } from '@modules/app/decorators/user.decorator';
-import { UpdateEnvLicenseSettingDto } from '@ee/licensing/dto/update-env-license-setting.dto';
+import { UpdateEnvLicenseSettingDto } from '@modules/licensing/dto/update-env-license-setting.dto';
 
 export interface ILicenseController {
   /**

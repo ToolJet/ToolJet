@@ -13,7 +13,7 @@ import { APP_TYPES } from '@modules/apps/constants';
 // Types only — runtime instances resolve via dynamic import matching SubModule.getProviders
 // path, otherwise the compile-time class reference doesn't match the DI-registered token.
 // Pattern copied from 1752749046662-EncrpyGoogleCalendarClientSecret.ts.
-import type { DataSourceBranchUtil } from 'ee/app-git/shared/datasource-branch.util';
+import type { DataSourceBranchUtil } from '@modules/app-git/shared/datasource-branch.util';
 import type { VersionsCreateService } from '@modules/versions/services/create.service';
 
 const BRANCH_NAME = 'push-modules';
