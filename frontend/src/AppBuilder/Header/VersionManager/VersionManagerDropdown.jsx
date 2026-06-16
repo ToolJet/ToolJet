@@ -471,23 +471,6 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       }}
     >
       <Popover.Body style={{ padding: 0 }}>
-        {/* Environment Toggle - Integrated at top */}
-        <div>
-          <EnvironmentSwitcher
-            environments={environments}
-            selectedEnvironment={selectedEnvironmentFilter || currentEnvironment}
-            onEnvironmentChange={handleEnvironmentChange}
-            darkMode={darkMode}
-          />
-        </div>
-
-        {/* Search Field - Only show if more than 5 versions */}
-        {versionOnlyCount > 5 && (
-          <div>
-            <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
-          </div>
-        )}
-
         {/* Versions header with Refresh — only when git sync is enabled */}
         {isGitSyncEnabled && (
           <div
@@ -519,6 +502,23 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
+
+        {/* Environment Toggle */}
+        <div>
+          <EnvironmentSwitcher
+            environments={environments}
+            selectedEnvironment={selectedEnvironmentFilter || currentEnvironment}
+            onEnvironmentChange={handleEnvironmentChange}
+            darkMode={darkMode}
+          />
+        </div>
+
+        {/* Search Field - Only show if more than 5 versions */}
+        {versionOnlyCount > 5 && (
+          <div>
+            <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
+          </div>
+        )}
 
         {/* Versions List - Scrollable */}
         <div
