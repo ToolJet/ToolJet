@@ -73,7 +73,7 @@ export const datePickerV2Config = {
     },
     firstDayOfWeek: {
       type: 'select',
-      displayName: 'First day of week',
+      displayName: 'Week starts on',
       placeholder: 'Default',
       options: [
         { name: 'Default', value: '' },
