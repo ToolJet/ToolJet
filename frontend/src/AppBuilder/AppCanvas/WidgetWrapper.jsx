@@ -126,8 +126,8 @@ const WidgetWrapper = memo(
     }
 
     let newLayoutData = layoutData;
-
-    if (componentType === 'ModuleContainer' && mode === 'view') {
+    const isModuleContainerInView = componentType === 'ModuleContainer' && mode === 'view';
+    if (isModuleContainerInView) {
       newLayoutData = { ...layoutData, top: 0, left: 0, width: NO_OF_GRIDS };
     }
 
@@ -151,7 +151,9 @@ const WidgetWrapper = memo(
         (isTruthyOrZero(subContainerIndex) || DYNAMIC_HEIGHT_AUTO_LIST.includes(componentType))
           ? 'auto'
           : finalHeight + 'px',
-      transform: `translate(${newLayoutData.left * gridWidth}px, ${temporaryLayouts?.top ?? newLayoutData.top}px)`,
+      transform: `translate(${newLayoutData.left * gridWidth}px, ${
+        isModuleContainerInView ? 0 : temporaryLayouts?.top ?? newLayoutData.top
+      }px)`,
       WebkitFontSmoothing: 'antialiased',
       borderTop: !visibility && mode === 'edit' ? `1px dashed var(--border-accent-strong)` : 'none',
       boxSizing: 'content-box',
