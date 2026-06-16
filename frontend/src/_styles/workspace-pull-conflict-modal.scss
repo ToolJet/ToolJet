@@ -13,6 +13,7 @@
 
 .pull-conflict-modal {
   width: 440px;
+  max-height: 90vh;
   background-color: var(--slate1);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -52,6 +53,11 @@
 }
 
 .pull-conflict-modal-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 16px 24px 20px;
 
   .conflict-title {
@@ -66,6 +72,12 @@
     color: var(--slate11);
     line-height: 1.5;
     margin: 0 0 16px;
+  }
+
+  .conflict-groups-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .conflict-section {
