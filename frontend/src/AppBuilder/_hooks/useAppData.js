@@ -671,9 +671,10 @@ const useAppData = (
 
         startExposedValueBatch();
         if (initialLoadRef.current) {
-          recordAppOpen(effectiveAppId, mode);
+          const releaseStatus = mode === 'view' ? (isReleasedApp ? 'released' : 'preview') : mode;
+          recordAppOpen(effectiveAppId, releaseStatus);
           if (appLoadStart.current) {
-            recordAppLoad(effectiveAppId, mode, Date.now() - appLoadStart.current);
+            recordAppLoad(effectiveAppId, releaseStatus, Date.now() - appLoadStart.current);
           }
         }
         setEditorLoading(false, moduleId);
