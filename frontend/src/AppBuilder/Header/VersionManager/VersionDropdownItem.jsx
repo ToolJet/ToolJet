@@ -288,7 +288,7 @@ const VersionDropdownItem = ({
                 onMouseEnter={() => setIsHoveringActionButtons(true)}
                 onMouseLeave={() => setIsHoveringActionButtons(false)}
               >
-                {isDisabled && (isHoveringItem || isPulling) && (
+                {isDisabled && (
                   <Button
                     variant="outline"
                     size="small"
@@ -311,6 +311,7 @@ const VersionDropdownItem = ({
                       color: 'var(--text-default)',
                       fontWeight: 500,
                       borderRadius: '4px',
+                      visibility: isHoveringItem || isPulling ? 'visible' : 'hidden',
                     }}
                   >
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
