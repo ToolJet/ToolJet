@@ -431,7 +431,7 @@ export default class Googlesheetsv2QueryService implements QueryService {
       }
     } catch (error) {
       console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body });
-      let errorDetails = {};
+      let errorDetails: { message?: string; status?: string } = {};
       if (error.response) {
         const errorRespose = JSON.parse(error.response.body);
         errorDetails = {
@@ -445,8 +445,12 @@ export default class Googlesheetsv2QueryService implements QueryService {
           message: 'Invalid JSON',
         };
       }
-      // For OAuth if token is expired or invalid it returns 401 or 403
-      // For other authentication types just throw generic error so that user can re-authenticate
+
+      const displayMessage = errorDetails.message || error.message || 'Query could not be completed';
+
+      // For OAuth if token is expired or invalid, 401 triggers the refresh/re-auth flow.
+      // 403 (permission denied, insufficient scope) is surfaced as a QueryError so the
+      // actual Google error message reaches the user instead of a silent OAuth redirect.
       const statusCode =
         error.response?.statusCode ||
         error.description?.statusCode ||
@@ -456,13 +460,13 @@ export default class Googlesheetsv2QueryService implements QueryService {
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
 
-      if (sourceOptions['authentication_type'] !== 'service_account' && (statusCode === 401 || statusCode === 403)) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
+      if (sourceOptions['authentication_type'] !== 'service_account' && statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(displayMessage, displayMessage, {
           ...error,
           ...errorDetails,
         });
       }
-      throw new QueryError('Query could not be completed', error.message, errorDetails);
+      throw new QueryError(displayMessage, displayMessage, errorDetails);
     }
 
     return {
@@ -558,10 +562,11 @@ export default class Googlesheetsv2QueryService implements QueryService {
         error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
-      if (statusCode === 401 || statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
+      const googleMessage = error.message;
+      if (statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(googleMessage, googleMessage, {});
       }
-      throw error;
+      throw new QueryError(googleMessage, googleMessage, { statusCode });
     }
   }
 
@@ -602,18 +607,11 @@ export default class Googlesheetsv2QueryService implements QueryService {
         error.data?.response?.statusCode ||
         error.data?.error?.statusCode ||
         error.data?.error?.response?.statusCode;
-      if (statusCode === 401 || statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Unauthorized', 'OAuth token expired or invalid', {});
+      const googleMessage = error.message;
+      if (statusCode === 401) {
+        throw new OAuthUnauthorizedClientError(googleMessage, googleMessage, {});
       }
-      let driverMessage: string;
-      try {
-        const rawBody = (error.data as any)?.error?.response?.body;
-        driverMessage = rawBody ? JSON.parse(rawBody)?.error?.message : null;
-      } catch {
-        driverMessage = null;
-      }
-      const displayMessage = driverMessage || error.message;
-      throw new QueryError(displayMessage, displayMessage, { statusCode, message: displayMessage });
+      throw new QueryError(googleMessage, googleMessage, { statusCode });
     }
   }
 
