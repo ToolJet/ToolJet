@@ -49,10 +49,17 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
   const hasSlugConflicts = conflictGroups.some((g) => g.conflictField === 'slug');
   const hasNameConflicts = conflictGroups.some((g) => g.conflictField !== 'slug');
 
-  const conflictTitles =
-    isBranchCreation || isBranchSwitch
-      ? [isBranchCreation ? 'Cannot create branch with duplicate data' : 'Cannot open branch with duplicate data']
-      : [...new Set(conflictGroups.map((g) => CONFLICT_TITLE_MAP[`${g.type}-${g.conflictField}`]).filter(Boolean))];
+  const conflictTitles = (() => {
+    if (isBranchCreation || isBranchSwitch) {
+      return [isBranchCreation ? 'Cannot create branch with duplicate data' : 'Cannot open branch with duplicate data'];
+    }
+    const unique = [
+      ...new Set(conflictGroups.map((g) => CONFLICT_TITLE_MAP[`${g.type}-${g.conflictField}`]).filter(Boolean)),
+    ];
+    return unique.length === 1
+      ? unique
+      : [isPushConflict ? 'Cannot push branch with duplicate data' : 'Cannot pull branch with duplicate data'];
+  })();
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('pull-conflict-modal-overlay')) {

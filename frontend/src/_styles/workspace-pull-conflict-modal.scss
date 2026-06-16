@@ -13,6 +13,7 @@
 
 .pull-conflict-modal {
   width: 440px;
+  max-height: 90vh;
   background-color: var(--slate1);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -52,6 +53,11 @@
 }
 
 .pull-conflict-modal-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 16px 24px 20px;
 
   .conflict-title {
@@ -69,7 +75,8 @@
   }
 
   .conflict-groups-list {
-    max-height: 320px;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
   }
 
@@ -101,8 +108,6 @@
 
   .conflict-section-body {
     border-top: 1px solid var(--slate6);
-    max-height: 200px;
-    overflow-y: auto;
   }
 
   .conflict-item {
