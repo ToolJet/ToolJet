@@ -22,7 +22,7 @@
   animation: conflictModalFadeIn 0.2s ease;
 
   &.theme-dark {
-    background-color: var(--slate2);
+    background-color: var(--surfaces-surface-01);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
 }
@@ -157,6 +157,14 @@
     &--remote {
       background-color: var(--slate3);
       color: var(--slate11);
+    }
+
+    .theme-dark & {
+      &--existing,
+      &--remote {
+        background-color: var(--slate5);
+        color: var(--slate11);
+      }
     }
 
     .conflict-badge-corel {

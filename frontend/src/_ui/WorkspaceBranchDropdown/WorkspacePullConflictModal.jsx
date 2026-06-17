@@ -63,11 +63,11 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
 
   return ReactDOM.createPortal(
     <div className="pull-conflict-modal-overlay" onClick={handleOverlayClick}>
-      <div className={`pull-conflict-modal${darkMode ? ' theme-dark' : ''}`}>
+      <div className={`pull-conflict-modal${darkMode ? ' theme-dark dark-theme' : ''}`}>
         {/* HEADER */}
         <div className="pull-conflict-modal-header">
           <div className="conflict-warning-icon">
-            <SolidIcon name="informationcircle" width="24" fill="var(--orange9)" />
+            <SolidIcon name="warning" width="24" fill="var(--orange9)" />
           </div>
         </div>
 
