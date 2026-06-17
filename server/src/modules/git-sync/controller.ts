@@ -5,7 +5,7 @@ import { IGitSyncController } from './Interfaces/IController';
 import { ProviderConfigDTO } from './dto/provider-config.dto';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
-import { UpdateGitEnvConfigDTO } from '@ee/git-sync/providers/dto/provider-config.dto';
+import { UpdateGitEnvConfigDTO } from '@modules/git-sync/providers/dto/provider-config.dto';
 
 // Strategy-only stubs (CE base). DB-only endpoints moved to
 // src/modules/git-sync-configs/controller.ts.

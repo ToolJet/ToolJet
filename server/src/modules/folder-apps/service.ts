@@ -60,7 +60,7 @@ export class FolderAppsService implements IFolderAppsService {
     let branchId = type === APP_TYPES.WORKFLOW ? undefined : query.branchId;
 
     // AppsSubscriber.afterLoad would otherwise fire one AppVersion query per loaded App
-    // entity (557+ N+1 hits per request observed pre-fix), including App entities loaded
+    // entity (N+1), including App entities loaded
     // internally by abilityService.resourceActionsPermission. The list response doesn't
     // need editingVersion hydration, so opt out for the duration of this read.
     return skipAppEditingVersionHydration.run(true, async () => {

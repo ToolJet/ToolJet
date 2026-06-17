@@ -233,7 +233,12 @@ export class VersionService implements IVersionService {
       if (appVersion?.status === AppVersionStatus.PUBLISHED) {
         shouldFreezeEditor = true;
       }
-      editingVersion['globalSettings']['theme'] = appTheme;
+      // null globalSettings on branch DRAFT/legacy versions — guard before theme assignment
+      if (editingVersion['globalSettings']) {
+        editingVersion['globalSettings']['theme'] = appTheme;
+      } else {
+        editingVersion['globalSettings'] = { theme: appTheme };
+      }
 
       // Strip JS libraries from globalSettings when the org's license doesn't include
       // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
@@ -308,18 +313,12 @@ export class VersionService implements IVersionService {
         await this.versionsUtilService.checkDraftModulesInApp(appVersion.id, user.organizationId, manager);
       }
 
-      if (appVersion.status === AppVersionStatus.PUBLISHED) {
+      if (appVersion.status !== AppVersionStatus.DRAFT) {
         const nameChanging = appVersionUpdateDto.name && appVersionUpdateDto.name !== appVersion.name;
         const descChanging =
           appVersionUpdateDto.description !== undefined && appVersionUpdateDto.description !== appVersion.description;
         if (nameChanging || descChanging) {
-          const organizationGit = await this.organizationGitRepository.findOrgGitByOrganizationId(
-            user.organizationId,
-            manager
-          );
-          if (organizationGit?.isEnabled) {
-            throw new BadRequestException('Cannot edit name or description of a saved version.');
-          }
+          throw new BadRequestException('Cannot edit name or description of a saved version.');
         }
       }
 

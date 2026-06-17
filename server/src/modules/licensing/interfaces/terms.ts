@@ -70,7 +70,7 @@ export interface Terms {
       jsLibraries: boolean;
     };
     components?: {
-      navigation?: boolean;
+      navigation: boolean;
     };
   };
   modules?: {

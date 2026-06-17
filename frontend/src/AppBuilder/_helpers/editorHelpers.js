@@ -53,7 +53,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
 import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
-import { Tabs } from '@/AppBuilder/Widgets/Tabs';
+import { Tabs } from '@/AppBuilder/Widgets/Tabs/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';

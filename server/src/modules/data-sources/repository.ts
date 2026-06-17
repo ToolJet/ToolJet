@@ -30,9 +30,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const isSuperAdmin = userPermissions.isSuperAdmin;
     const isAdmin = userPermissions.isAdmin;
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const query = manager
-        .createQueryBuilder(DataSource, 'data_source')
+    const manager = this.manager;
+    const query = manager
+      .createQueryBuilder(DataSource, 'data_source')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
@@ -191,11 +191,15 @@ export class DataSourcesRepository extends Repository<DataSource> {
 
       const dataSourceList = [...result, ...sampleDataSource];
 
+      const rawById = new Map<string, any>();
+      for (const r of rawResults) {
+        if (!rawById.has(r.data_source_id)) rawById.set(r.data_source_id, r);
+      }
+
       //remove tokenData from restapi datasources
       const dataSources = dataSourceList?.map((ds) => {
         if (useBranchPath || branchId) {
-          // Find the matching raw row to get dsv/dsvo columns
-          const rawRow = rawResults.find((r) => r.data_source_id === ds.id);
+          const rawRow = rawById.get(ds.id);
           if (rawRow) {
             // Overlay version-specific name from data_source_versions
             if (rawRow.dsv_name) {
@@ -223,7 +227,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
           }
         } else if (environmentId) {
           // Non-branch with environmentId: use version options
-          const rawRow = rawResults.find((r) => r.data_source_id === ds.id);
+          const rawRow = rawById.get(ds.id);
           const rawOptions = rawRow?.dsvo_options;
           if (rawOptions) {
             const parsedOptions = typeof rawOptions === 'string' ? JSON.parse(rawOptions) : rawOptions;
@@ -251,17 +255,15 @@ export class DataSourcesRepository extends Repository<DataSource> {
         return ds;
       });
 
-      return dataSources;
-    });
+    return dataSources;
   }
 
   async findById(dataSourceId: string, organizationId: string, manager?: EntityManager): Promise<DataSource> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.findOneOrFail(DataSource, {
-        where: { id: dataSourceId, organizationId },
-        relations: ['plugin', 'apps'],
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOneOrFail(DataSource, {
+      where: { id: dataSourceId, organizationId },
+      relations: ['plugin', 'apps'],
+    });
   }
 
   async convertToGlobalSource(dataSourceId: string, organizationId: string, manager?: EntityManager) {
@@ -300,52 +302,35 @@ export class DataSourcesRepository extends Repository<DataSource> {
     kind: DefaultDataSourceKind,
     manager?: EntityManager
   ): Promise<DataSource> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.findOneOrFail(DataSource, {
-        where: { organizationId, type: DataSourceTypes.STATIC, kind },
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOneOrFail(DataSource, { where: { organizationId, type: DataSourceTypes.STATIC, kind } });
   }
 
   findByQuery(dataQueryId: string, organizationId: string, dataSourceId?: string, manager?: EntityManager) {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.findOne(DataSource, {
-        where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId }, organizationId },
-        relations: ['dataQueries', 'plugin'],
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.findOne(DataSource, {
+      where: { ...(dataSourceId ? { id: dataSourceId } : {}), dataQueries: { id: dataQueryId }, organizationId },
+      relations: ['dataQueries', 'plugin'],
+    });
   }
 
   getDatasourceByPluginId(pluginId: string) {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(DataSource, {
-        where: {
-          pluginId: pluginId,
-        },
-        relations: ['dataQueries'],
-      });
-    });
+    return this.manager.find(DataSource, { where: { pluginId }, relations: ['dataQueries'] });
   }
 
   getQueriesByDatasourceId(datasourceId: string, branchId?: string | null) {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      if (branchId) {
-        return manager
-          .createQueryBuilder(DataSource, 'ds')
-          .leftJoinAndSelect(
-            'ds.dataQueries',
-            'dq',
-            'dq.app_version_id IN (SELECT av.id FROM app_versions av WHERE av.branch_id = :branchId)',
-            { branchId }
-          )
-          .where('ds.id = :datasourceId', { datasourceId })
-          .getMany();
-      }
-
-      return manager.find(DataSource, {
-        where: { id: datasourceId },
-        relations: ['dataQueries'],
-      });
-    });
+    if (branchId) {
+      return this.manager
+        .createQueryBuilder(DataSource, 'ds')
+        .leftJoinAndSelect(
+          'ds.dataQueries',
+          'dq',
+          'dq.app_version_id IN (SELECT av.id FROM app_versions av WHERE av.branch_id = :branchId)',
+          { branchId }
+        )
+        .where('ds.id = :datasourceId', { datasourceId })
+        .getMany();
+    }
+    return this.manager.find(DataSource, { where: { id: datasourceId }, relations: ['dataQueries'] });
   }
 }

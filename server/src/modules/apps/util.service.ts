@@ -1,7 +1,8 @@
 import { App } from '@entities/app.entity';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
-import { dbTransactionWrap } from '@helpers/database.helper';
+import { dbTransactionWrap, getConnectionInstance } from '@helpers/database.helper';
+import { skipAppEditingVersionHydration } from './subscribers/apps.subscriber';
 import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { catchDbException, cleanObject } from '@helpers/utils.helper';
 import {
@@ -854,6 +855,10 @@ export class AppsUtilService implements IAppsUtilService {
       resources: [{ resource: resourceType }, { resource: MODULES.FOLDER }],
       organizationId: user.organizationId,
     });
+    // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
+    const willInnerJoinOnBranch =
+      !!branchId &&
+      ((type === APP_TYPES.MODULE && !isGetAll) || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -861,26 +866,15 @@ export class AppsUtilService implements IAppsUtilService {
       searchKey,
       isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
       type,
-      branchId
+      branchId,
+      willInnerJoinOnBranch
     );
     this.applyAppVersionsJoin(qb, type, branchId, isGetAll);
     return qb;
   }
 
-  // Eagerly load appVersions for modules, branch-filtered like apps.
-  // We intentionally DO NOT filter out stub versions at this outer join —
-  // after a branch-create or workspace pull a net-new module has only a stub
-  // version on the branch; filtering it out would hide the module entirely.
-  // The UUID-name-leak concern is handled by the inner `versions`-aliased join
-  // in viewableAppsQueryUsingPermissions (read by ModuleManager).
-  //
-  // The default branch carries multiple VERSION-type rows per app (DRAFT +
-  // RELEASED + PROMOTED) sharing branch_id. A naive `branch_id = :branchId`
-  // join fans those rows out and TypeORM's `take()` LIMITs the joined rows,
-  // not distinct apps — so apps with extra versions on the branch crowd out
-  // others and the page returns fewer apps than APPS_PAGE_SIZE. The
-  // correlated subquery pins the join to one row per app (the same row the
-  // listing already orders by: non-stub first, most recently edited).
+  // Stub versions retained — net-new branch modules have only a stub.
+  // UUID-name-leak handled by inner `versions`-aliased join in viewableAppsQueryUsingPermissions.
   private applyAppVersionsJoin(
     qb: SelectQueryBuilder<AppBase>,
     type: string,
@@ -911,7 +905,10 @@ export class AppsUtilService implements IAppsUtilService {
     searchKey?: string,
     select?: Array<string>,
     type?: string,
-    branchId?: string
+    branchId?: string,
+    // consumed by the EE override (which applies addBranchFilter); unused in CE base
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _skipBranchScope?: boolean
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -1133,13 +1130,13 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async fetchModules(app: App, allVersions: boolean = false, versionId: string): Promise<any[]> {
-    // Only the version ID is needed to filter ModuleViewer components; avoid calling
-    // findVersion (which loads the full AppVersion with all relations) just for the UUID.
-    const versionToLoadId = versionId || app.currentVersionId || (app as any).editingVersion?.id;
+    return skipAppEditingVersionHydration.run(true, async () => {
+      const versionToLoadId =
+        versionId || app.currentVersionId || (app as any).editingVersion?.id;
+      if (!versionToLoadId && !allVersions) return [];
 
-    if (!versionToLoadId && !allVersions) return [];
+      const manager = getConnectionInstance().manager;
 
-    const modules = await dbTransactionWrap(async (manager) => {
       const moduleComponents = await manager
         .createQueryBuilder(Component, 'component')
         .leftJoinAndSelect(Page, 'page', 'page.id = component.page_id')
@@ -1156,69 +1153,114 @@ export class AppsUtilService implements IAppsUtilService {
         .getMany();
 
       const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
+      if (moduleAppIds.length === 0) return [];
 
-      const modules =
-        moduleAppIds.length > 0
-          ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
-              .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
-              .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
-              .distinct(true)
-              .getMany()
-          : [];
+      const modules = await manager
+        .createQueryBuilder(App, 'app')
+        .where('app.co_relation_id IN (:...moduleAppIds)', { moduleAppIds })
+        .andWhere('app.organization_id = :organizationId', { organizationId: app.organizationId })
+        .andWhere('app.type = :moduleType', { moduleType: APP_TYPES.MODULE })
+        .distinct(true)
+        .getMany();
+      if (modules.length === 0) return [];
 
-      // For each module: (a) branch-scope its editingVersion to the parent app's
-      // branch so downstream callers render the right pages/queries/events, and
-      // (b) project the branch-specific name/slug/icon/isPublic onto the App entity.
-      //
-      // (a) — The App subscriber sets editingVersion to the VERSION-type (default-
-      //       branch) version because it has no branch context. When the parent is
-      //       being viewed on a feature branch, that's wrong for the module too.
-      // (b) — apps.name / slug / icon / is_public are NULL for modules post-migration
-      //       (metadata moved to app_versions). Without the overlay, AppBuilder gets
-      //       NULL/placeholder values for module labels, icons, and visibility flags.
-      //       overlayAppMetadata routes by branchId (sub-branch row), then default
-      //       branch (git enabled), then any version row (git off).
-      if (modules.length > 0) {
-        const parentBranchId = app.editingVersion?.branchId;
-        await Promise.all(
-          modules.map(async (moduleApp: any) => {
-            if (parentBranchId) {
-              const branchVersion = await manager.findOne(AppVersion, {
-                where: { appId: moduleApp.id, branchId: parentBranchId, isStub: false },
-                order: { updatedAt: 'DESC' },
-              });
-              if (branchVersion) {
-                moduleApp.editingVersion = branchVersion;
-                moduleApp.appVersions = [branchVersion];
-                return;
-              }
-            }
-            // Fallback: TypeORM's async afterLoad is not reliably awaited in all query
-            // paths, so editingVersion may not be populated by the subscriber. Query
-            // explicitly to guarantee it is always set before returning.
-            if (!moduleApp.editingVersion) {
-              const fallbackVersion = await manager.findOne(AppVersion, {
-                where: { appId: moduleApp.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
-                order: { updatedAt: 'DESC' },
-              });
-              if (fallbackVersion) moduleApp.editingVersion = fallbackVersion;
-            }
-            // Populate appVersions so downstream callers (prepareResponse) can resolve
-            // the version by ID (fast path) instead of loading all versions via
-            // findVersionsFromApp.
-            if (moduleApp.editingVersion) {
-              moduleApp.appVersions = [moduleApp.editingVersion];
-            }
-            await this.overlayAppMetadata(moduleApp, parentBranchId);
-          })
-        );
+      // TWO independent rows per module, resolved in bulk (keep SEPARATE):
+      //   (1) editingVersion: latest non-branch non-stub VERSION row (the row the editor loads).
+      //   (2) metadata source: git-on => latest DRAFT on target branch; git-off => latest any row.
+      // 1 defaultBranch lookup + 2 bulk DISTINCT ON queries, keyed per module.
+      const moduleIds = modules.map((m) => m.id);
+      const parentBranchId = app.editingVersion?.branchId ?? null;
+
+      // (0) Single defaultBranch lookup (not per module). Modules are never workflows here.
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId: app.organizationId, isDefault: true },
+        select: ['id'],
+      });
+      const gitEnabled = !!defaultBranch;
+
+      // (1a) Branch-row preference: latest non-stub row on parentBranchId per module.
+      //      When set, the module uses this row and skips fallback + overlay + the no-DRAFT throw.
+      let branchMap = new Map<string, AppVersion>();
+      if (parentBranchId) {
+        const branchRows = await manager
+          .createQueryBuilder(AppVersion, 'av')
+          .distinctOn(['av.appId'])
+          .where('av.appId IN (:...moduleIds)', { moduleIds })
+          .andWhere('av.branchId = :parentBranchId', { parentBranchId })
+          .andWhere('av.isStub = false')
+          .orderBy('av.appId', 'ASC')
+          .addOrderBy('av.updatedAt', 'DESC')
+          .getMany();
+        branchMap = new Map(branchRows.map((v) => [v.appId, v]));
+      }
+
+      // (1b) editingVersion fallback: latest non-branch non-stub row per module (updatedAt DESC).
+      const editingRows = await manager
+        .createQueryBuilder(AppVersion, 'av')
+        .distinctOn(['av.appId'])
+        .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .andWhere('av.versionType != :branchType', { branchType: AppVersionType.BRANCH })
+        .andWhere('av.isStub = false')
+        .orderBy('av.appId', 'ASC')
+        .addOrderBy('av.updatedAt', 'DESC')
+        .getMany();
+      const editingMap = new Map(editingRows.map((v) => [v.appId, v]));
+
+      // (2) metadata source row per module.
+      const metaQb = manager
+        .createQueryBuilder(AppVersion, 'av')
+        .distinctOn(['av.appId'])
+        .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .orderBy('av.appId', 'ASC')
+        .addOrderBy('av.updatedAt', 'DESC');
+      if (gitEnabled) {
+        // git-on: latest DRAFT on target branch (parentBranchId ?? defaultBranch.id).
+        const targetBranchId = parentBranchId ?? defaultBranch.id;
+        metaQb
+          .andWhere('av.branchId = :targetBranchId', { targetBranchId })
+          .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
+      }
+      // git-off: no extra filter — latest any row per module.
+      const metaRows = await metaQb.getMany();
+      const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
+
+      for (const moduleApp of modules as any[]) {
+        // (1) Branch-row preference + early return: parent viewed on a branch and module has a
+        //     branch row → use it, skip fallback + overlay + the no-DRAFT throw.
+        if (parentBranchId && branchMap.has(moduleApp.id)) {
+          const bv = branchMap.get(moduleApp.id);
+          moduleApp.editingVersion = bv;
+          moduleApp.appVersions = [bv];
+          continue;
+        }
+
+        const ev = editingMap.get(moduleApp.id);
+        if (ev) {
+          moduleApp.editingVersion = ev;
+          moduleApp.appVersions = [ev];
+        } else if (!gitEnabled) {
+          // git-off: no editing row → mark stub
+          moduleApp.isStub = true;
+        }
+        // git-on with no editingVersion: leave as-is
+
+        const meta = metaMap.get(moduleApp.id);
+        if (gitEnabled && !meta && parentBranchId) {
+          throw new BadRequestException(
+            `No DRAFT version found for app ${moduleApp.id} on branch ${parentBranchId}.`
+          );
+        }
+        if (meta) {
+          // apps.name/slug/icon/isPublic are NULL for modules (metadata on app_versions).
+          if (meta.appName != null) moduleApp.name = meta.appName;
+          if (meta.slug != null) moduleApp.slug = meta.slug;
+          if (meta.icon != null) moduleApp.icon = meta.icon;
+          if (meta.isPublic != null) moduleApp.isPublic = meta.isPublic;
+        }
       }
 
       return modules;
     });
-    return modules;
   }
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
     const defaultBranchId =

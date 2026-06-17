@@ -12387,6 +12387,18 @@ tbody {
   color: var(--indigo9);
 }
 
+.marketplace-search-holder {
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.marketplace-empty-state {
+  display: block;
+  text-align: center;
+  margin-top: 48px;
+}
+
 .popover {
   .popover-arrow {
     display: none;
@@ -13656,7 +13668,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -13992,7 +14005,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -14047,6 +14061,17 @@ tbody {
 
 .tooltip-inner {
   border-radius: 8px;
+}
+
+// Shared tooltip style for long (up to 100-char) app/module/workflow names:
+// wrap into a readable box instead of bootstrap's cramped default or a wide single line.
+.long-name-tooltip {
+  .tooltip-inner {
+    max-width: 210px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+  }
 }
 
 #inspector-tabpane-properties {
@@ -14384,7 +14409,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;

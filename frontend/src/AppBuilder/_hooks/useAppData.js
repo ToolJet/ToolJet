@@ -22,7 +22,8 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams, replaceEditorURL } from '@/_helpers/routes';
+import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -135,6 +136,8 @@ const useAppData = (
   const setJsLibraryRegistry = useStore((state) => state.setJsLibraryRegistry);
   const setJsLibraryLoading = useStore((state) => state.setJsLibraryLoading);
   const isLicenseFetched = useStore((state) => state.isLicenseFetched);
+  const startExposedValueBatch = useStore((state) => state.startExposedValueBatch);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const setModulesIsLoading = useStore((state) => state?.setModulesIsLoading ?? noop);
   const setModulesList = useStore((state) => state?.setModulesList ?? noop);
@@ -199,6 +202,7 @@ const useAppData = (
 
   const initialLoadRef = useRef(true);
   const promptSentRef = useRef(false);
+  const isPageSwitchRef = useRef(false);
 
   const appTypeRef = useRef(null);
   const { isReleasedVersionId } = useStore(
@@ -233,15 +237,10 @@ const useAppData = (
 
   useEffect(() => {
     if (pageSwitchInProgress && !moduleMode) {
-      const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
+      isPageSwitchRef.current = true;
       setPageSwitchInProgress(false);
-      setTimeout(() => {
-        handleEvent('onPageLoad', currentPageEvents, {});
-        // Rebuild all suggestion segments for the new page's components/queries/variables
-        mode === 'edit' && initSuggestions(moduleId);
-      }, 0);
     }
-  }, [pageSwitchInProgress, currentPageId, moduleMode, mode]);
+  }, [pageSwitchInProgress, moduleMode]);
 
   useEffect(() => {
     const subscription = authenticationService.currentSession
@@ -290,6 +289,19 @@ const useAppData = (
     lastModuleVersionRef.current = versionId;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
+    const hasPreviewParams = !!(queryParams.version || queryParams.env);
+
+    // Unauthenticated users must not access preview URLs even when the app is public.
+    // load_app=true + authentication_failed=true is the session signal for "public app, no valid JWT".
+    // Without this guard, isPublicAccess below evaluates to true (via the load_app && auth_failed branch)
+    // and fetchAppBySlug is called, serving the released version to unauthenticated preview viewers.
+    if (!moduleMode && hasPreviewParams && currentSession?.load_app && currentSession?.authentication_failed) {
+      const subpath = getSubpath() ?? '';
+      const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `${subpath}/applications/${slug}/login?redirectTo=${redirectTo}`;
+      return;
+    }
+
     const isPublicAccess =
       (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
@@ -654,6 +666,7 @@ const useAppData = (
           updateReleasedVersionId(appData.current_version_id);
         }
 
+        startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
       })
@@ -662,6 +675,10 @@ const useAppData = (
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
+          return;
+        }
+        if (isPublicAccess && _error?.data?.statusCode === 501) {
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
       });
 
@@ -673,6 +690,7 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
+      flushExposedValueBatch();
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
@@ -700,9 +718,21 @@ const useAppData = (
           }
         }
 
-        await runOnLoadQueries(moduleId);
         const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
-        handleEvent('onPageLoad', currentPageEvents, {});
+        if (isPageSwitchRef.current) {
+          // Page switch: skip runOnLoadQueries and only fire onPageLoad.
+          // Running runOnLoadQueries here would create an infinite loop if any
+          // runOnPageLoad query has a success/failure event that navigates to another
+          // page — each navigation would re-trigger queries which re-trigger navigation.
+          // Apps that need data refresh on navigation should trigger queries from the
+          // onPageLoad event instead of relying on runOnPageLoad.
+          isPageSwitchRef.current = false;
+          handleEvent('onPageLoad', currentPageEvents, {});
+        } else {
+          runOnLoadQueries(moduleId).then(() => {
+            handleEvent('onPageLoad', currentPageEvents, {});
+          });
+        }
       };
 
       loadLibrariesAndRun();

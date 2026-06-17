@@ -91,8 +91,10 @@ export default function generateColumnsData({
   searchText,
   columnForAddNewRow = false,
   t,
+  moduleId = 'canvas',
 }) {
-  const getResolvedValue = useStore.getState().getResolvedValue;
+  const _getResolvedValue = useStore.getState().getResolvedValue;
+  const getResolvedValue = (value, customVariables = {}) => _getResolvedValue(value, customVariables, moduleId);
   const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
   const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;

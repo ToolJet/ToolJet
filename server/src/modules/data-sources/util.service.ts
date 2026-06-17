@@ -2,6 +2,7 @@ import { DataSource } from '@entities/data_source.entity';
 import { BadRequestException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import * as protobuf from 'protobufjs';
 import got from 'got';
+import Ajv2020 from 'ajv/dist/2020';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, ILike } from 'typeorm';
@@ -398,7 +399,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
             // Also update DSV name if DS name changed
             if (name) {
-              await this.ensureUniqueActiveNameForUpdate(name, dataSource.id, organizationId, manager);
+              await this.ensureUniqueActiveNameForUpdate(
+                name,
+                dataSource.id,
+                organizationId,
+                manager,
+                effectiveBranchId
+              );
               await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
             }
           }
@@ -481,6 +488,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           // Update DSV name if needed
           if (dsv && name) {
+            await this.ensureUniqueActiveNameForUpdate(
+              name,
+              dataSource.id,
+              organizationId,
+              manager,
+              nonMultiEnvBranchId
+            );
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
@@ -510,19 +524,43 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     }
   }
 
-  async decrypt(options: Record<string, any>) {
-    const decryptedOptions = { ...options };
+  async validateOptions(
+    dataSourceId: string,
+    organizationId: string,
+    environmentId: string,
+    options: Record<string, any>,
+    schema: Record<string, any>
+  ): Promise<{ valid: boolean; errors: any[] }> {
+    const dataSource = await this.findOneByEnvironment(dataSourceId, environmentId, organizationId);
+    const storedOptions: Record<string, any> = dataSource.options || {};
 
+    // Convert options to plain data, decrypting only credential_ids that
+    // belong to this datasource (prevents cross-datasource credential reads).
+    const data: Record<string, any> = {};
     for (const [key, value] of Object.entries(options)) {
       if (value?.credential_id) {
-        decryptedOptions[key] = {
-          ...value,
-          value: await this.credentialService.getValue(value.credential_id),
-        };
+        const stored = storedOptions[key];
+        if (stored?.credential_id === value.credential_id) {
+          const decrypted = await this.credentialService.getValue(value.credential_id);
+          if (decrypted !== undefined && decrypted !== null && decrypted !== '') {
+            data[key] = decrypted;
+          }
+        }
+      } else if (value?.value !== undefined && value?.value !== null && value?.value !== '') {
+        data[key] = value.value;
       }
     }
 
-    return decryptedOptions;
+    const ajv = new Ajv2020({
+      strict: false,
+      allErrors: true,
+      removeAdditional: false,
+      validateSchema: false,
+      coerceTypes: true,
+    });
+    const validate = ajv.compile(schema);
+    const valid = validate(data);
+    return { valid: !!valid, errors: validate.errors || [] };
   }
 
   async parseOptionsForUpdate(
@@ -1405,14 +1443,34 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     name: string,
     currentDataSourceId: string,
     organizationId: string,
-    manager: EntityManager
+    manager: EntityManager,
+    branchId?: string
   ): Promise<void> {
-    const existing = await manager
-      .createQueryBuilder(DataSource, 'ds')
-      .where('LOWER(ds.name) = LOWER(:name)', { name })
-      .andWhere('ds.organizationId = :organizationId', { organizationId })
-      .andWhere('ds.id != :currentDataSourceId', { currentDataSourceId })
-      .getOne();
+    // Name uniqueness lives entirely on data_source_versions — data_sources.name is no
+    // longer authoritative — so this must query DSVs, not data_sources. Querying
+    // data_sources would also ignore the soft-delete model: deleting a DS on a branch
+    // only flips its DSV to is_active = false (the data_sources row stays), so a stale
+    // data_sources match would wrongly block reusing that name.
+    //
+    // Filter on is_active = true and mirror whichever DB constraint applies to the row
+    // being renamed:
+    //   - on a branch  → idx_unique_active_name_branch (active, non-default, per branch)
+    //   - off a branch → trg_unique_active_default_dsv_name_per_org (active default, per org)
+    const query = manager
+      .createQueryBuilder(DataSourceVersion, 'dsv')
+      .innerJoin(DataSource, 'ds', 'ds.id = dsv.data_source_id')
+      .where('LOWER(dsv.name) = LOWER(:name)', { name })
+      .andWhere('dsv.isActive = true')
+      .andWhere('dsv.dataSourceId != :currentDataSourceId', { currentDataSourceId })
+      .andWhere('ds.organizationId = :organizationId', { organizationId });
+
+    if (branchId) {
+      query.andWhere('dsv.isDefault = false').andWhere('dsv.branchId = :branchId', { branchId });
+    } else {
+      query.andWhere('dsv.isDefault = true');
+    }
+
+    const existing = await query.getOne();
 
     if (existing) {
       throw new BadRequestException(`A data source with name "${name}" already exists in this workspace`);

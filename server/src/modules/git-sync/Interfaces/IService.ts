@@ -1,6 +1,6 @@
 import { ProviderConfigDTO } from '@modules/git-sync/dto/provider-config.dto';
 import { UpdateGitEnvConfigDTO } from '@ee/git-sync/providers/dto/provider-config.dto';
-import { TestConnectionPayloadDTO } from '@ee/git-sync/providers/dto/test-provider-connection.dto';
+import { TestConnectionPayloadDTO } from '@modules/git-sync/providers/dto/test-provider-connection.dto';
 
 // Strategy-only contract after DB-only operations moved to GitSyncConfigsService.
 export interface IGitSyncService {
