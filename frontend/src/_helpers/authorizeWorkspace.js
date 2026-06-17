@@ -283,9 +283,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
           const redirect = encodeURIComponent(
             isViewerPath ? `${pathWithoutSlug}${searchAndHash}` : `/${slug}${pathWithoutSlug}${searchAndHash}`
           );
-          console.log(redirect, 'redirect');
-          console.log(searchAndHash, 'searchAndHash');
-          window.location.href = `http://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
+          window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
           return;
         } catch (e) {
           console.error('[authorizeWorkspace] Transfer token failed:', e);
