@@ -12,6 +12,7 @@ import { FoldersModule } from '@modules/folders/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { AppsModule } from '@modules/apps/module';
+import { NotificationsModule } from '@modules/notifications/module';
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -57,6 +58,7 @@ export class WorkspaceBranchesModule extends SubModule {
         await FoldersModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await BackgroundProcessorModule.register(configs),
+        await NotificationsModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
       providers: [
