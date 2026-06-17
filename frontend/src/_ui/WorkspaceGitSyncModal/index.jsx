@@ -243,6 +243,17 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
       toast.success('Commit was pushed to git successfully!');
       onClose();
     } catch (error) {
+      if (error?.statusCode === 409) {
+        try {
+          const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+          if (parsed?.conflictGroups?.length) {
+            setPullConflictGroups(parsed.conflictGroups);
+            return;
+          }
+        } catch {
+          /* fall through to generic toast */
+        }
+      }
       toast.error(error?.error || error?.message || 'Push failed');
     }
   };
