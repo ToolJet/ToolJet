@@ -1,6 +1,6 @@
 ---
 id: cypress-guide
-title: Writing Cypress Tests for ToolJet Applications
+title: Cypress Guide
 ---
 
 # Writing Cypress Tests for ToolJet Applications
@@ -18,10 +18,14 @@ Install Cypress if you haven't already:
 npm install cypress --save-dev
 ```
 
+## Finding Your Selectors
+
+Open DevTools on your deployed application and search for `data-cy`. Every named component is already tagged and ready to use.
+
 ## Your First Test
 
 ```javascript
-cy.visit("https://app.tooljet.com/applications/automationapp");
+cy.visit("https://app.tooljet.com/applications/your-app");
 
 cy.get('[data-cy="btnfetchusers-button"]').click();
 
@@ -32,53 +36,67 @@ Visit the application, click a button, verify the result. No page objects, no se
 
 ## Testing a Complete User Workflow
 
-The following example tests a full search-and-detail workflow covering a real user journey:
+The following example tests a full search-and-detail workflow:
 
 ```javascript
-// Step 1 - Type a username to filter
+// Type a username to filter
 cy.get('[data-cy="inputusername-input"]').clear().type("Bret");
 
-// Step 2 - Click the fetch button
+// Fetch results
 cy.get('[data-cy="btnfetchusers-button"]').click();
 
-// Step 3 - Verify the correct user appears in the table
+// Verify the correct user appears in the table
 cy.get('[data-cy="tableusers-name-row-0"]').should("contain.text", "Leanne Graham");
 cy.get('[data-cy="tableusers-username-row-0"]').should("contain.text", "Bret");
 
-// Step 4 - Click the row to open the detail panel
+// Click the row to open the detail panel
 cy.get('[data-cy="tableusers-row-0"]').click();
 
-// Step 5 - Verify the detail panel updates correctly
+// Verify detail panel content
 cy.get('[data-cy="text3-text"]').should("contain.text", "Leanne Graham");
 cy.get('[data-cy="text5-text"]').should("contain.text", "Sincere@april.biz");
 ```
-
-Every selector is predictable. Every component is testable with zero guesswork.
 
 ## Selector Reference
 
 Name your components clearly in the ToolJet builder and the selectors follow automatically.
 
-| Component Type | Selector Pattern | Example |
+| Component | Element | Selector Pattern |
 |:---|:---|:---|
-| Button | `[data-cy="{name}-button"]` | `[data-cy="btnfetchusers-button"]` |
-| Text Input | `[data-cy="{name}-input"]` | `[data-cy="inputusername-input"]` |
-| Text | `[data-cy="{name}-text"]` | `[data-cy="text3-text"]` |
-| Table Row | `[data-cy="{name}-row-{n}"]` | `[data-cy="tableusers-row-0"]` |
-| Table Cell | `[data-cy="{name}-{column}-row-{n}"]` | `[data-cy="tableusers-name-row-0"]` |
-| Column Header | `[data-cy="{column}-column-header"]` | `[data-cy="name-column-header"]` |
+| Button | Clickable button | `[data-cy="{name}-button"]` |
+| Button | Label text | `[data-cy="{name}-label"]` |
+| Text Input | Input field | `[data-cy="{name}-input"]` |
+| Text | Text content | `[data-cy="{name}-text"]` |
+| Table | Row | `[data-cy="{name}-row-{n}"]` |
+| Table | Cell | `[data-cy="{name}-{column}-row-{n}"]` |
+| Table | Column header | `[data-cy="{column}-column-header"]` |
 
 :::info
-Open DevTools on your deployed application and search for `data-cy` to discover all available selectors. Every named component is already tagged.
+`{name}` is always the lowercased version of your component name. A component named `btnFetchUsers` becomes `btnfetchusers` in every selector.
 :::
+
+## Why This Approach Is Reliable
+
+Traditional selectors break whenever the UI changes:
+
+```javascript
+// Fragile - breaks on any CSS or layout change
+cy.get(".sc-bdfBwQ > .sc-gsnTZi > button:nth-child(2)").click();
+```
+
+ToolJet's `data-cy` selectors are tied to the component name, not the DOM structure:
+
+```javascript
+// Stable - survives redesigns, theme changes, and layout updates
+cy.get('[data-cy="btnfetchusers-button"]').click();
+```
 
 ## Quick-Start Checklist
 
 1. **Name your components clearly** in the ToolJet builder, for example: `btnSubmit`, `tableOrders`, `inputSearch`.
-2. **Open DevTools** on your deployed application and search for `data-cy` to confirm the selectors are present.
+2. **Open DevTools** on your deployed application and search for `data-cy` to confirm selectors are present.
 3. **Write tests** using `cy.get('[data-cy="..."]')`. The selectors are already there.
-4. **Follow the naming pattern**: `{componentname}-{element}` for buttons and inputs; `{componentname}-row-{n}` for table rows.
-5. **Integrate with CI**. These selectors are stable across deployments, so tests pass consistently without maintenance.
+4. **Integrate with CI**. These selectors are stable across deployments, so tests pass consistently without maintenance.
 
 ## Example Test Results
 
@@ -101,5 +119,3 @@ User Lookup Demo App - Functional Automation
 
 6 passing (28s)
 ```
-
-Tests run this fast because the selectors are stable. No retries, no flakiness from brittle DOM traversal.

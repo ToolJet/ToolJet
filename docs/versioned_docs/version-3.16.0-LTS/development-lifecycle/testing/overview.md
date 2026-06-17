@@ -15,43 +15,43 @@ Every component you name in the ToolJet builder automatically receives `data-cy`
 
 The rule is: **component name (lowercased) + element type**.
 
+:::info
+ToolJet automatically lowercases the full component name for all `data-cy` selectors. A component named `btnFetchUsers` becomes `btnfetchusers` in every selector, regardless of the element type.
+:::
+
 Name a button `btnSubmit` and you get `btnsubmit-button` as a test hook. Name a table `tableOrders` and every row, cell, and column header is immediately addressable.
 
 **Button component** named `btnFetchUsers`:
 
 ```
 [data-cy="btnfetchusers-button"]   → click the button
-[data-cy="btnFetchUsers-label"]    → verify its label text
-[data-cy="btnFetchUsers-icon"]     → verify icon presence
+[data-cy="btnfetchusers-label"]    → verify its label text
+[data-cy="btnfetchusers-icon"]     → verify icon presence
 ```
 
 **Table component** named `tableUsers`:
 
 ```
-[data-cy="tableusers-row-0"]          → click a row
-[data-cy="tableusers-name-row-0"]     → read a cell value
-[data-cy="name-column-header"]        → sort a column
+[data-cy="tableusers-row-0"]              → click a row
+[data-cy="tableusers-name-row-0"]         → read a cell value
+[data-cy="name-column-header"]            → sort a column
 ```
 
 ## Why `data-cy` Selectors
 
-Without stable selectors, tests are tied to DOM structure and CSS class names. A single layout change can break dozens of test cases overnight.
-
-**Without `data-cy`:**
+Traditional selectors break when CSS or DOM structure changes:
 
 ```javascript
 cy.get(".sc-bdfBwQ > .sc-gsnTZi > button:nth-child(2)").click();
 cy.get("table tbody tr:first-child td:nth-child(3)").should("have.text", "...");
 ```
 
-**With ToolJet's `data-cy`:**
+ToolJet's `data-cy` selectors are tied to the component name, not the DOM:
 
 ```javascript
 cy.get('[data-cy="btnfetchusers-button"]').click();
 cy.get('[data-cy="tableusers-email-row-0"]').should("contain.text", "...");
 ```
-
-The selector is stable because it reflects the component name you set in the builder, not where the element happens to live in the DOM.
 
 ## Prerequisites
 
