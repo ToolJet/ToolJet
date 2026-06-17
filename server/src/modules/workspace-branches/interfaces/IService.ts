@@ -61,7 +61,7 @@ export interface IWorkspaceBranchService {
     tagDescription?: string,
   ): Promise<{ success: boolean; draftVersionId: string | null }>;
   checkForUpdates(organizationId: string, branch?: string): Promise<CheckUpdatesResponse>;
-  listRemoteBranches(organizationId: string): Promise<{ name: string }[]>;
+  listRemoteBranches(organizationId: string): Promise<{ branches: any[] }>;
   getPullRequests(organizationId: string): Promise<any>;
   getEntityTags(organizationId: string, coRelationId: string): Promise<any[]>;
 }

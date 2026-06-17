@@ -9,7 +9,7 @@ export interface IWorkspaceBranchController {
   pushWorkspace(user: any, dto: any): Promise<{ success: boolean }>;
   pullWorkspace(user: any): Promise<{ success: boolean }>;
   checkForUpdates(user: any, branch: string): Promise<CheckUpdatesResponse>;
-  listRemoteBranches(user: any): Promise<{ name: string }[]>;
+  listRemoteBranches(user: any): Promise<{ branches: any[] }>;
   getPullRequests(user: any): Promise<any>;
   pullModule(user: any, dto: any): Promise<{ success: boolean; draftVersionId: string | null }>;
 }

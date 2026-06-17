@@ -14063,6 +14063,17 @@ tbody {
   border-radius: 8px;
 }
 
+// Shared tooltip style for long (up to 100-char) app/module/workflow names:
+// wrap into a readable box instead of bootstrap's cramped default or a wide single line.
+.long-name-tooltip {
+  .tooltip-inner {
+    max-width: 210px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+  }
+}
+
 #inspector-tabpane-properties {
   .accordion {
     .accordion-item:last-child {

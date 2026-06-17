@@ -574,7 +574,7 @@ class HomePageComponent extends React.Component {
       if (!file) return;
 
       const fileReader = new FileReader();
-      const fileName = file.name.replace('.json', '').substring(0, 50);
+      const fileName = file.name.replace('.json', '').substring(0, 100);
       fileReader.readAsText(file, 'UTF-8');
       fileReader.onload = async (event) => {
         const result = event.target.result;
@@ -1461,12 +1461,12 @@ class HomePageComponent extends React.Component {
   handleAppNameChange = (e) => {
     const newAppName = e.target.value;
     const { appsFromRepos } = this.state;
-    const MAX_LENGTH = 50;
+    const MAX_LENGTH = 100;
     let validationMessage = {};
     if (!newAppName.trim()) {
       validationMessage = { message: 'App name cannot be empty' };
-    } else if (newAppName.length > 50) {
-      validationMessage = { message: 'App name cannot exceed 50 characters' };
+    } else if (newAppName.length > 100) {
+      validationMessage = { message: 'App name cannot exceed 100 characters' };
     } else {
       const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
       if (matchingApp?.app_name_exist === 'EXIST') {
