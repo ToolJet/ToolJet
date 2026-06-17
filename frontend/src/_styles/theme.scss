@@ -15306,6 +15306,12 @@ textarea.tj-text-input-widget {
   @extend .widget-version-identifier;
 }
 
+.widget-version-beta-identifier {
+  background-color: var(--indigo9);
+  @extend .widget-version-identifier;
+  width: 36px;
+}
+
 .tjdb-display-time-pill {
   height: 12px;
   gap: 10px;
