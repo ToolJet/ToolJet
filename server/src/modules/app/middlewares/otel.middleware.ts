@@ -41,7 +41,9 @@ export class OtelMiddleware implements NestMiddleware {
         const statusCode = res.statusCode;
         const duration = Date.now() - startTime;
 
-        span.setAttribute('http.status_code', statusCode);
+        if (span.isRecording()) {
+          span.setAttribute('http.status_code', statusCode);
+        }
         recordApiDuration(duration, { route, method, status_code: statusCode });
         this.logger.log(
           `Setting up Otel logging : API ${method} ${route} completed with status ${statusCode} in ${duration}ms`

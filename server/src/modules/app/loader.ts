@@ -17,6 +17,8 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
+import pino from 'pino';
+import { createOtelLogStream } from '../../otel/tracing';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -76,57 +78,71 @@ export class AppModuleLoader {
         load: [() => getEnvVars()],
       }),
       LoggerModule.forRoot({
-        pinoHttp: {
-          level: (() => {
-            // Allow explicit OTEL_LOG_LEVEL override only when OTEL is enabled
+        pinoHttp: (() => {
+          const level = (() => {
             if (process.env.OTEL_LOG_LEVEL && process.env.ENABLE_OTEL === 'true') {
               return process.env.OTEL_LOG_LEVEL;
             }
-            const logLevel = {
-              production: 'info',
-              development: 'debug',
-              test: 'silent',
-            };
+            const logLevel = { production: 'info', development: 'debug', test: 'silent' };
             return logLevel[process.env.NODE_ENV] || 'info';
-          })(),
-          autoLogging: process.env.NODE_ENV === 'test' ? false : {
-            ignore: (req) => {
-              if (req.url === '/api/health' || req.url === '/api/metrics') {
-                return true;
-              }
-              return false;
+          })();
+
+          const autoLogging = process.env.NODE_ENV === 'test' ? false : {
+            ignore: (req) => req.url === '/api/health' || req.url === '/api/metrics',
+          };
+
+          const transport =
+            process.env.NODE_ENV !== 'production' &&
+            process.env.NODE_ENV !== 'test' &&
+            process.env.ENABLE_OTEL !== 'true'
+              ? { target: 'pino-pretty', options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' } }
+              : undefined;
+
+          const baseOptions = {
+            level,
+            autoLogging,
+            transport,
+            redact: {
+              paths: [
+                'req.headers.authorization',
+                'req.headers.cookie',
+                'res.headers.authorization',
+                'res.headers["set-cookie"]',
+                'req.headers["proxy-authorization"]',
+                'req.headers["www-authenticate"]',
+                'req.headers["authentication-info"]',
+                'req.headers["x-forwarded-for"]',
+                ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
+              ],
+              censor: '[REDACTED]',
             },
-          },
-          transport:
-            process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
-              ? {
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                    levelFirst: true,
-                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
-                  },
-                }
-              : undefined,
-          redact: {
-            paths: [
-              'req.headers.authorization',
-              'req.headers.cookie',
-              'res.headers.authorization',
-              'res.headers["set-cookie"]',
-              'req.headers["proxy-authorization"]',
-              'req.headers["www-authenticate"]',
-              'req.headers["authentication-info"]',
-              'req.headers["x-forwarded-for"]',
-              ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
-            ],
-            censor: '[REDACTED]',
-          },
-          customProps: (req, res) => {
-            const id = res?.['locals']?.tj_transactionId;
-            return id ? { transactionId: id } : {};
-          },
-        },
+            customProps: (req, res) => {
+              const id = res?.['locals']?.tj_transactionId;
+              return id ? { transactionId: id } : {};
+            },
+          };
+
+          // When OTEL is enabled, route pino output to both a human-readable
+          // stream and the OTEL log pipeline via pino.multistream.
+          // PinoInstrumentation is not used because it only supports pino <10
+          // (ToolJet uses pino 10.x).
+          if (process.env.ENABLE_OTEL === 'true') {
+            const otelStream = createOtelLogStream();
+            if (otelStream) {
+              // In dev use pino-pretty as a sync Transform (not a transport/worker
+              // thread) so the multistream can include it alongside the OTEL stream.
+              const prettyOrStdout =
+                process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
+                  // eslint-disable-next-line @typescript-eslint/no-var-requires
+                  ? require('pino-pretty')({ colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z', destination: 1 })
+                  : process.stdout;
+              const streams = [{ level: 'trace', stream: prettyOrStdout }, { level: 'trace', stream: otelStream }];
+              return [baseOptions, pino.multistream(streams, { levels: { trace: 10, debug: 20, info: 30, warn: 40, error: 50, fatal: 60 } })];
+            }
+          }
+
+          return baseOptions;
+        })(),
       }),
       getMainDBConnectionModule(),
       TypeOrmModule.forRoot({

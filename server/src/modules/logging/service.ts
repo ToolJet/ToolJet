@@ -2,6 +2,7 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import { RequestContext } from '@modules/request-context/service';
 import pino, { Logger as PinoBaseLogger } from 'pino';
 import { ConfigService } from '@nestjs/config';
+import { createOtelLogStream } from '@otel/tracing';
 import { ignoreLogPaths } from '../logging/constant';
 
 @Injectable()
@@ -21,21 +22,38 @@ export class TransactionLogger implements LoggerService {
         }[env] ||
         'trace';
 
-      TransactionLogger.baseLogger = pino({
-        level,
-        ...(env !== 'production'
-          ? {
-              transport: {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  levelFirst: true,
-                  translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+      if (process.env.ENABLE_OTEL === 'true') {
+        const otelStream = createOtelLogStream();
+        // ponytail: sync Transform instead of transport so pino.multistream can include it
+        const prettyStream =
+          env !== 'production' && env !== 'test'
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            ? require('pino-pretty')({ colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z', destination: 1 })
+            : process.stdout;
+        const streams = otelStream
+          ? [{ level: 'trace', stream: prettyStream }, { level: 'trace', stream: otelStream }]
+          : [{ level: 'trace', stream: prettyStream }];
+        TransactionLogger.baseLogger = pino(
+          { level },
+          pino.multistream(streams, { levels: { trace: 10, debug: 20, info: 30, warn: 40, error: 50, fatal: 60 } })
+        );
+      } else {
+        TransactionLogger.baseLogger = pino({
+          level,
+          ...(env !== 'production'
+            ? {
+                transport: {
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    levelFirst: true,
+                    translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z',
+                  },
                 },
-              },
-            }
-          : {}),
-      });
+              }
+            : {}),
+        });
+      }
     }
   }
 
