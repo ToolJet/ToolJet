@@ -5,20 +5,27 @@ on:
     types: [labeled]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
     if: |
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') || 
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') || 
-      contains(github.event.pull_request.labels.*.name, 'run-cypress') || 
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
 
     strategy:
+      fail-fast: false
       matrix:
         edition: >-
           ${{ 
@@ -98,14 +105,153 @@ jobs:
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@localhost:5432/tooljet" >> .env
+          echo "PGRST_SERVER_PORT=3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
+          echo "SSO_OPENID_CLIENT_ID=${{ secrets.SSO_OPENID_CLIENT_ID }}" >> .env
+          echo "SSO_OPENID_CLIENT_SECRET=${{ secrets.SSO_OPENID_CLIENT_SECRET }}" >> .env
+          echo "ENABLE_EXTERNAL_API=true" >> .env
+          echo "EXTERNAL_API_ACCESS_TOKEN=d980eb3af24d783991cee51a2d84dce9f9bd41d4b46f441cc691ccebbecd3cbc" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__development='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__development='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/development\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__staging='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__staging='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/staging\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_GLOBAL_CONSTANTS__production='{\"envConstant\":\"globalUI\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
+          echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
       - name: Set up database
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
+
+      - name: Test database connection
+        run: |
+          echo "Testing database connection..."
+          docker exec -i postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+
+      - name: Create delete_user procedure
+        run: |
+          echo "Creating delete_users stored procedure..."
+          docker exec -i postgres psql -U postgres -d tooljet_development <<'EOF'
+          CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
+          LANGUAGE plpgsql
+          AS $$
+          DECLARE
+            v_email TEXT;
+            v_user_id UUID;
+            v_organization_ids UUID[] := ARRAY[]::UUID[];
+            v_organizations_to_delete UUID[] := ARRAY[]::UUID[];
+            v_log_message TEXT;
+          BEGIN
+            IF COALESCE(array_length(p_emails, 1), 0) = 0 THEN
+              RAISE NOTICE 'delete_users: no emails provided';
+              RETURN;
+            END IF;
+
+            FOREACH v_email IN ARRAY p_emails LOOP
+              BEGIN
+                RAISE NOTICE '========================================';
+                RAISE NOTICE 'Starting user deletion for email: %', v_email;
+
+                SELECT id INTO v_user_id FROM users WHERE email = v_email;
+
+                IF v_user_id IS NULL THEN
+                  RAISE NOTICE 'User with email % not found. Skipping.', v_email;
+                  CONTINUE;
+                END IF;
+
+                RAISE NOTICE 'User found with id: %', v_user_id;
+
+                SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                INTO v_organization_ids
+                FROM organization_users
+                WHERE user_id = v_user_id;
+
+                RAISE NOTICE 'Found % organizations for user',
+                  COALESCE(array_length(v_organization_ids, 1), 0);
+
+                IF array_length(v_organization_ids, 1) > 0 THEN
+                  SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
+                  INTO v_organizations_to_delete
+                  FROM (
+                    SELECT organization_id
+                    FROM organization_users
+                    WHERE organization_id = ANY(v_organization_ids)
+                    GROUP BY organization_id
+                    HAVING COUNT(*) = 1
+                  ) subquery;
+                ELSE
+                  v_organizations_to_delete := ARRAY[]::UUID[];
+                END IF;
+
+                RAISE NOTICE 'Found % organizations to delete',
+                  COALESCE(array_length(v_organizations_to_delete, 1), 0);
+
+                IF array_length(v_organizations_to_delete, 1) > 0 THEN
+                  WITH deleted_apps AS (
+                    DELETE FROM apps
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' apps'
+                  INTO v_log_message FROM deleted_apps;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_data_sources AS (
+                    DELETE FROM data_sources
+                    WHERE organization_id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' data sources'
+                  INTO v_log_message FROM deleted_data_sources;
+                  RAISE NOTICE '%', v_log_message;
+
+                  WITH deleted_organizations AS (
+                    DELETE FROM organizations
+                    WHERE id = ANY(v_organizations_to_delete)
+                    RETURNING id
+                  )
+                  SELECT 'Deleted ' || COUNT(*) || ' organizations'
+                  INTO v_log_message FROM deleted_organizations;
+                  RAISE NOTICE '%', v_log_message;
+                ELSE
+                  RAISE NOTICE 'No organizations removed for user %', v_email;
+                END IF;
+
+                WITH deleted_audit_logs AS (
+                  DELETE FROM audit_logs
+                  WHERE user_id = v_user_id
+                     OR organization_id = ANY(v_organizations_to_delete)
+                  RETURNING id
+                )
+                SELECT 'Deleted ' || COUNT(*) || ' audit logs'
+                INTO v_log_message FROM deleted_audit_logs;
+                RAISE NOTICE '%', v_log_message;
+
+                DELETE FROM organization_users WHERE user_id = v_user_id;
+                DELETE FROM users WHERE id = v_user_id;
+
+                RAISE NOTICE 'Deleted user with id: %', v_user_id;
+                RAISE NOTICE 'User deletion completed for email: %', v_email;
+              EXCEPTION
+                WHEN OTHERS THEN
+                  RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+              END;
+            END LOOP;
+
+            RAISE NOTICE '========================================';
+            RAISE NOTICE 'delete_users procedure finished.';
+          END;
+          $$;
+          EOF
+          echo "delete_users procedure created successfully"
 
       - name: sleep 5
         run: sleep 5
@@ -125,7 +271,7 @@ jobs:
 
       - name: Seeding (Setup Super Admin)
         run: |
-          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+          curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
             -H 'Content-Type: application/json' \
             --data-raw '{
               "companyName": "ToolJet",
@@ -134,6 +280,33 @@ jobs:
               "email": "dev@tooljet.io",
               "password": "password"
             }'
+
+      - name: Seeding (Authenticate)
+        run: |
+          AUTH_RESPONSE=$(curl --fail-with-body \
+            -c /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/authenticate' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }')
+          echo "$AUTH_RESPONSE"
+          ORG_ID=$(echo "$AUTH_RESPONSE" | jq -r '.current_organization_id')
+          echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
+
+      - name: Seeding (Complete Onboarding)
+        run: |
+          # Sets onboarding_status = onboarding_completed so the frontend does not
+          # redirect every page visit to /setup, which would break all UI tests.
+          # tj-workspace-id header is required by JwtStrategy to resolve the user.
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X POST \
+            'http://localhost:3000/api/onboarding/finish' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"region": "us"}'
 
       - name: docker logs
         run: sudo docker logs postgrest
