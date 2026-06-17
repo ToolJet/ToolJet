@@ -395,15 +395,6 @@ module.exports = {
     client: {
       overlay: false,
     },
-    allowedHosts: 'all',
-    proxy: [
-      {
-        context: ['/api'],
-        target: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
-        secure: false,
-        changeOrigin: true,
-      },
-    ],
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',

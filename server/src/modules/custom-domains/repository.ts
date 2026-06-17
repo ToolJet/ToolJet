@@ -21,15 +21,10 @@ export class CustomDomainRepository extends Repository<CustomDomain> {
   }
 
   async findActiveDomain(domain: string): Promise<CustomDomain | null> {
-    // Strip port from both the input and the stored value so that local-dev
-    // entries like "myapp.local.com:8082" still match when the browser sends
-    // only the hostname ("myapp.local.com") via window.location.hostname.
-    const hostname = domain.toLowerCase().split(':')[0];
-    return this.createQueryBuilder('cd')
-      .where("SPLIT_PART(LOWER(cd.domain), ':', 1) = :hostname", { hostname })
-      .andWhere('cd.status = :status', { status: 'active' })
-      .leftJoinAndSelect('cd.organization', 'organization')
-      .getOne();
+    return this.findOne({
+      where: { domain: domain.toLowerCase(), status: 'active' },
+      relations: ['organization'],
+    });
   }
 
   async findPendingDomains(limit: number): Promise<CustomDomain[]> {
