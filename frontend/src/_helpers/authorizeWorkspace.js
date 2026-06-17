@@ -267,11 +267,17 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
         const slug = data.current_organization_slug || data.current_organization_id;
         const pathWithoutSlug = excludeWorkspaceIdFromURL(window.location.pathname);
+        // App viewer paths (/applications/, /embed-apps/) use no workspace slug prefix on
+        // custom domains — the custom domain identifies the workspace, so the URL format is
+        // /applications/:slug, not /:workspaceSlug/applications/:slug.
+        const isViewerPath = pathWithoutSlug.startsWith('/applications/') || pathWithoutSlug.startsWith('/embed-apps/');
         setRedirectAttempt();
         try {
           const { token } = await sessionTransferService.createTransferToken();
           const redirect = encodeURIComponent(
-            `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
+            isViewerPath
+              ? `${pathWithoutSlug}${window.location.search}${window.location.hash}`
+              : `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
           );
           window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
           return;

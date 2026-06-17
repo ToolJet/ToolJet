@@ -1,6 +1,6 @@
 import { ProviderConfigDTO } from '@modules/git-sync/dto/provider-config.dto';
 import { OrganizationGitCreateDto, OrganizationGitUpdateDto, OrganizationGitStatusUpdateDto } from '../dto';
-import { TestConnectionPayloadDTO } from '@ee/git-sync/providers/dto/test-provider-connection.dto';
+import { TestConnectionPayloadDTO } from '@modules/git-sync/providers/dto/test-provider-connection.dto';
 
 export interface IGitSyncService {
   deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void>;
