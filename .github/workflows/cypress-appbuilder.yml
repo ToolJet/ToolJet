@@ -146,12 +146,36 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: App builder
+      - name: Install Cypress & deps
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:8082"
-          config-file: cypress-app-builder.config.js
+          runTests: false
+
+      - name: App builder
+        working-directory: ./cypress-tests
+        env:
+          CELL: "App Builder / ${{ matrix.edition }}"
+          CONFIG_FILE: cypress-app-builder.config.js
+          CYPRESS_CONFIG: "baseUrl=http://localhost:8082"
+        run: node cy-ci-run.js
+
+      - name: Ensure run summary exists
+        if: always()
+        working-directory: ./cypress-tests
+        run: |
+          if [ ! -f summary.json ]; then
+            printf '{"cell":"App Builder / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
+          fi
+          cat summary.json
+
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-summary-appbuilder-${{ matrix.edition }}
+          path: cypress-tests/summary.json
+          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -192,3 +216,51 @@ jobs:
   #       with:
   #         name: screenshots
   #         path: cypress-tests/cypress/screenshots
+
+  notify-slack:
+    needs: Cypress-App-Builder
+    # Run after the matrix whenever the test job actually ran (not skipped —
+    # avoids posting on unrelated labels).
+    if: always() && needs.Cypress-App-Builder.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      # This job runs separately from the matrix, so check out just the script.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Download run summaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cypress-summary-*
+          path: summaries
+
+      - name: Build Slack payload
+        env:
+          CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
+          OVERALL: ${{ needs.Cypress-App-Builder.result }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          # Normalise pull_request_target → pull_request so the script renders PR context.
+          EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
+          SHA: ${{ github.sha }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+          # PR context — populated only on pull_request events; empty on push.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BRANCH: ${{ github.ref_name }}
+        run: node .github/scripts/build-slack-payload.js
+
+      - name: Post result to Slack
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          # Fail the step (and surface the Slack API error) instead of
+          # silently swallowing ok:false responses like not_in_channel.
+          errors: true
+          payload-file-path: payload.json
