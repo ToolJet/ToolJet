@@ -25,7 +25,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
 
 ### SSL/TLS Connection
 
-It Enables encrypted communication between ToolJet and the MariaDB server to protect data transmitted over the network.
+It enables encrypted communication between ToolJet and the MariaDB server to protect data transmitted over the network.
 
 - **SSL:** Whether or not to use SSL to connect to the MariaDB server.
 
