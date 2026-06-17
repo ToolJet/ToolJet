@@ -68,7 +68,7 @@ Authenticates with Databricks using OAuth on behalf of the signed-in user, enabl
 
 ## Querying Databricks
 
-1. Click on + Add button of the query manager at the bottom panel of the editor.
+1. Click the **+** Add button of the query manager at the bottom panel of the editor.
 2. Select the **Databricks** datasource added in previous step.
 3. Select the **SQL Mode** from the dropdown.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
@@ -107,7 +107,7 @@ INSERT INTO customers (
     zip_code,
     country
 ) VALUES (
-    '1001'
+    '1001',
     'Tom',
     'Hudson',
     'tom.hudson@example.com',
@@ -150,7 +150,7 @@ WHERE customer_id = 1001;
 
 GUI mode can be used to query Databricks plugin without writing queries.
 
-1. Create a new query and select the Databricks pligin.
+1. Create a new query and select the Databricks plugin.
 2. Select **GUI mode** from the dropdown.
 3. Choose the operation you want to perform.
 4. Fetch and select the **Table name**.
