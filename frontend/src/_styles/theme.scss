@@ -6420,6 +6420,94 @@ a.step-item-disabled {
   }
 }
 
+// notification row
+.notification-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+
+  &.unread {
+    background: var(--surfaces-surface-02, rgba(0, 0, 0, 0.03));
+  }
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--surfaces-surface-03, rgba(0, 0, 0, 0.06));
+    }
+  }
+
+  .notification-row-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-row-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-default);
+    line-height: 1.3;
+  }
+
+  .notification-row-body {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .notification-row-time {
+    font-size: 11px;
+    color: var(--text-placeholder);
+    margin-top: 2px;
+  }
+
+  .notification-row-dismiss {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--text-placeholder);
+    flex-shrink: 0;
+
+    &:hover {
+      color: var(--text-default);
+    }
+  }
+}
+
+// error detail modal trace
+.notification-error-pre {
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre;
+  font-family: monospace;
+  font-size: 12px;
+  background: var(--surfaces-surface-02, #f5f5f5);
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.notification-error-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.trace-wrap {
+  position: relative;
+
+  .copy-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+  }
+}
+
 // profile-settings css
 .confirm-input {
   padding-right: 8px !important;
