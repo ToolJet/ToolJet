@@ -54,7 +54,7 @@ export const NotificationCenter = ({ darkMode }) => {
             </span>
           )}
         </div>
-        <div className="list-group list-group-flush list-group-hoverable p-3">
+        <div className="list-group list-group-flush list-group-hoverable p-2">
           {!isLoading &&
             items.map((n) => (
               <NotificationRow
