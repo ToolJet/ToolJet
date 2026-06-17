@@ -190,6 +190,96 @@ describe('AppsController', () => {
       });
     });
 
+    describe('App name length validation', () => {
+      const nameOfLength = (n: number): string => 'a'.repeat(n);
+
+      const seedAdmin = async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await login(app);
+        return { adminUserData, cookie: loggedUser.tokenCookie };
+      };
+
+      it('should create an app when the name is exactly 100 characters', async () => {
+        const { adminUserData, cookie } = await seedAdmin();
+        await ensureAppEnvironments(app, adminUserData.organization.id);
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/apps`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ name: nameOfLength(100), type: 'front-end' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.name).toBe(nameOfLength(100));
+      });
+
+      it('should reject app creation when the name exceeds 100 characters', async () => {
+        const { adminUserData, cookie } = await seedAdmin();
+        await ensureAppEnvironments(app, adminUserData.organization.id);
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/apps`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ name: nameOfLength(101), type: 'front-end' });
+
+        expect(response.statusCode).toBe(400);
+      });
+
+      it('should create a module when the name is exactly 100 characters', async () => {
+        const { adminUserData, cookie } = await seedAdmin();
+        await ensureAppEnvironments(app, adminUserData.organization.id);
+
+        const response = await request(app.getHttpServer())
+          .post(`/api/apps`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ name: nameOfLength(100), type: 'module' });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.name).toBe(nameOfLength(100));
+      });
+
+      it('should update an app name to exactly 100 characters', async () => {
+        const { adminUserData, cookie } = await seedAdmin();
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+          name: 'old name',
+        });
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ app: { name: nameOfLength(100) } });
+
+        expect(response.statusCode).toBe(200);
+        await application.reload();
+        expect(application.name).toBe(nameOfLength(100));
+      });
+
+      it('should reject an app name update that exceeds 100 characters', async () => {
+        const { adminUserData, cookie } = await seedAdmin();
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+          name: 'old name',
+        });
+
+        const response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', cookie)
+          .send({ app: { name: nameOfLength(101) } });
+
+        expect(response.statusCode).toBe(400);
+        await application.reload();
+        expect(application.name).toBe('old name');
+      });
+    });
+
     describe('GET /api/apps | List applications', () => {
       describe('authorization', () => {
         it('should allow only authenticated users to fetch apps', async () => {

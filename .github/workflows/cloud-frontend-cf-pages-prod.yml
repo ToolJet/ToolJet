@@ -118,7 +118,7 @@ jobs:
                   SERVER_IP: ${{ secrets.CLOUD_PROD_CLOUD_SERVER_IP }}
                   TJDB_SQL_MODE_DISABLE: ${{ secrets.CLOUD_PROD_CLOUD_TJDB_SQL_MODE_DISABLE }}
                   TOOLJET_SERVER_URL: ${{ secrets.CLOUD_PROD_CLOUD_TOOLJET_SERVER_URL }}
-                  WEBSITE_SIGNUP_URL: https://www.tooljet.com/create-account
+                  WEBSITE_SIGNUP_URL: https://app.tooljet.ai/signup
                   TOOLJET_EDITION: cloud
 
             - name: 📝 Add SPA routing redirect rule

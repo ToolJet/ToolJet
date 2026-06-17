@@ -61,7 +61,7 @@ import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.enti
 import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
+import { GitSyncEnvUtilService } from '@modules/organization-env/services/gitsync.util.service';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
@@ -668,15 +668,28 @@ export class AppsService implements IAppsService {
     }
   }
 
-  // Caller must wrap in `skipAppEditingVersionHydration.run(true, ...)` so the per-entity
-  // afterLoad does not fire while apps are being loaded; this re-attaches the same fields in one query.
   private async hydrateEditingVersionInBulk(apps: AppListItem[], manager: EntityManager): Promise<void> {
     if (apps.length === 0) return;
     const appIds = apps.map((a) => a.id).filter(Boolean);
     if (appIds.length === 0) return;
 
+    // Whitelist — skip heavy JSONB (definition, globalSettings, pageSettings).
     const editingVersions = await manager
       .createQueryBuilder(AppVersion, 'av')
+      .select([
+        'av.id',
+        'av.name',
+        'av.appId',
+        'av.branchId',
+        'av.versionType',
+        'av.isStub',
+        'av.currentEnvironmentId',
+        'av.homePageId',
+        'av.moduleReferenceId',
+        'av.co_relation_id',
+        'av.createdAt',
+        'av.updatedAt',
+      ])
       .distinctOn(['av.appId'])
       .where('av.appId IN (:...appIds)', { appIds })
       .andWhere('av.versionType != :branch', { branch: AppVersionType.BRANCH })
@@ -776,7 +789,12 @@ export class AppsService implements IAppsService {
         user.organizationId,
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
-      response['editing_version']['global_settings']['theme'] = appTheme;
+      // null global_settings on branch DRAFT/legacy versions — guard before theme assignment
+      if (response['editing_version']['global_settings']) {
+        response['editing_version']['global_settings']['theme'] = appTheme;
+      } else {
+        response['editing_version']['global_settings'] = { theme: appTheme };
+      }
 
       if (app.editingVersion.definition) {
         response['editing_version'] = {
@@ -821,7 +839,12 @@ export class AppsService implements IAppsService {
         user.organizationId,
         response['editing_version']['global_settings']?.['theme']?.['id']
       );
-      response['editing_version']['global_settings']['theme'] = appTheme;
+      // null global_settings on branch DRAFT/legacy versions — guard before theme assignment
+      if (response['editing_version']['global_settings']) {
+        response['editing_version']['global_settings']['theme'] = appTheme;
+      } else {
+        response['editing_version']['global_settings'] = { theme: appTheme };
+      }
 
       // Strip JS libraries from globalSettings when the org's license doesn't include
       // the feature — the FE loads whatever arrives here, so the gate lives on the BE.
@@ -839,6 +862,20 @@ export class AppsService implements IAppsService {
 
   async getBySlug(app: App, user: User): Promise<any> {
     const prepareResponse = async (app) => {
+      // Unauthenticated access to a public app with no released version must not
+      // fall through to the editing (draft) version — surface a 501 so the FE
+      // redirects to url-unavailable instead of leaking draft content.
+      if (!app.currentVersionId && !user) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_IMPLEMENTED,
+            error: 'App is not released yet',
+            message: { error: 'App is not released yet' },
+          },
+          HttpStatus.NOT_IMPLEMENTED
+        );
+      }
+
       // app.editingVersion is populated by AppSubscriber.afterLoad ONLY when
       // git sync is off (or when the entity is a workflow). For git-enabled
       // front-end / module apps the subscriber returns early without

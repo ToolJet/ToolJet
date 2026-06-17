@@ -17,19 +17,14 @@ export class DataQueryRepository extends Repository<DataQuery> {
   }
 
   getQueriesByVersionId(versionId: string, scope: DataSourceScopes, manager?: EntityManager): Promise<DataQuery[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.find(DataQuery, {
-        relations: {
-          dataSource: true,
-        },
-        where: {
-          appVersionId: versionId,
-          dataSource: {
-            ...(scope ? { scope } : {}),
-          },
-        },
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(DataQuery, {
+      relations: { dataSource: true },
+      where: {
+        appVersionId: versionId,
+        dataSource: { ...(scope ? { scope } : {}) },
+      },
+    });
   }
 
   getOneById(dataQueryId: string, relations?: FindOptionsRelations<DataQuery>): Promise<DataQuery> {
@@ -63,37 +58,33 @@ export class DataQueryRepository extends Repository<DataQuery> {
   }
 
   getAll(appVersionId: string): Promise<DataQuery[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager
-        .createQueryBuilder(DataQuery, 'data_query')
-        .innerJoinAndSelect('data_query.dataSource', 'data_source')
-        .leftJoinAndSelect('data_query.plugins', 'plugins')
-        .leftJoinAndSelect('plugins.iconFile', 'iconFile')
-        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
-        .where('data_source.appVersionId = :appVersionId', { appVersionId })
-        .where('data_query.app_version_id = :appVersionId', { appVersionId })
-        .orderBy('data_query.updatedAt', 'DESC')
-        .getMany();
-    });
+    return this.manager
+      .createQueryBuilder(DataQuery, 'data_query')
+      .innerJoinAndSelect('data_query.dataSource', 'data_source')
+      .leftJoinAndSelect('data_query.plugins', 'plugins')
+      .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+      .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+      .where('data_source.appVersionId = :appVersionId', { appVersionId })
+      .where('data_query.app_version_id = :appVersionId', { appVersionId })
+      .orderBy('data_query.updatedAt', 'DESC')
+      .getMany();
   }
 
   getAllWithPermissions(appVersionId: string): Promise<DataQuery[]> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager
-        .createQueryBuilder(DataQuery, 'data_query')
-        .innerJoinAndSelect('data_query.dataSource', 'data_source')
-        .leftJoinAndSelect('data_query.plugins', 'plugins')
-        .leftJoinAndSelect('plugins.iconFile', 'iconFile')
-        .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
-        .leftJoinAndSelect('data_query.permissions', 'permission')
-        .leftJoinAndSelect('permission.users', 'queryUser')
-        .leftJoinAndSelect('queryUser.user', 'user')
-        .leftJoinAndSelect('queryUser.permissionGroup', 'group')
-        .where('data_source.appVersionId = :appVersionId', { appVersionId })
-        .where('data_query.app_version_id = :appVersionId', { appVersionId })
-        .orderBy('data_query.updatedAt', 'DESC')
-        .getMany();
-    });
+    return this.manager
+      .createQueryBuilder(DataQuery, 'data_query')
+      .innerJoinAndSelect('data_query.dataSource', 'data_source')
+      .leftJoinAndSelect('data_query.plugins', 'plugins')
+      .leftJoinAndSelect('plugins.iconFile', 'iconFile')
+      .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
+      .leftJoinAndSelect('data_query.permissions', 'permission')
+      .leftJoinAndSelect('permission.users', 'queryUser')
+      .leftJoinAndSelect('queryUser.user', 'user')
+      .leftJoinAndSelect('queryUser.permissionGroup', 'group')
+      .where('data_source.appVersionId = :appVersionId', { appVersionId })
+      .where('data_query.app_version_id = :appVersionId', { appVersionId })
+      .orderBy('data_query.updatedAt', 'DESC')
+      .getMany();
   }
 
   async createOne(data: Partial<DataQuery>, manager?: EntityManager): Promise<DataQuery> {
@@ -142,11 +133,10 @@ export class DataQueryRepository extends Repository<DataQuery> {
     relations?: string[],
     manager?: EntityManager
   ): Promise<DataQuery[]> {
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      return manager.find(DataQuery, {
-        where: { ...(findOptions ? findOptions : {}) },
-        relations: relations || [],
-      });
-    }, manager || this.manager);
+    const m = manager ?? this.manager;
+    return m.find(DataQuery, {
+      where: { ...(findOptions ? findOptions : {}) },
+      relations: relations || [],
+    });
   }
 }

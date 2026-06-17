@@ -42,7 +42,6 @@ export const PreviewAndShareIcons = () => {
     featureAccess,
     currentPageHandle,
     selectedEnvironment,
-    isVersionReleased,
     editingVersion,
     appId,
     app,
@@ -55,7 +54,6 @@ export const PreviewAndShareIcons = () => {
       featureAccess: state.license?.featureAccess,
       currentPageHandle: state?.modules[moduleId].currentPageHandle,
       selectedEnvironment: state.selectedEnvironment,
-      isVersionReleased: state.releasedVersionId === state.selectedVersion?.id,
       editingVersion: state.editingVersion,
       appId: state.appStore.modules[moduleId].app.appId,
       app: state.appStore.modules[moduleId].app.app,
@@ -97,7 +95,6 @@ export const PreviewAndShareIcons = () => {
               slug={slug}
               pageHandle={currentPageHandle}
               darkMode={darkMode}
-              isVersionReleased={isVersionReleased}
               isPublic={isPublic ?? false}
             />
           )}
