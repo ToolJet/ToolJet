@@ -4,6 +4,8 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export default function SuccessNotificationInputs({ currentState, options, darkMode, optionchanged }) {
   const { t } = useTranslation();
+  const successMessageLabel = t('editor.queryManager.successMessage', 'Success Message');
+
   if (!options?.showSuccessNotification) {
     return <div className="mb-3"></div>;
   }
@@ -11,7 +13,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
     <div className="flex-grow-1" style={{ margin: '16px 0px' }}>
       <div className="d-flex" style={{ marginBottom: '16px' }}>
         <label className="form-label align-items-center" data-cy={'label-success-message-input'} style={{ width: 150 }}>
-          {t('editor.queryManager.successMessage', 'Message')}
+          {successMessageLabel}
         </label>
         <div className="flex-grow-1" style={{ maxWidth: '460px' }}>
           <CodeHinter
@@ -19,6 +21,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
             initialValue={options.successMessage}
             onChange={(value) => optionchanged('successMessage', value)}
             placeholder={t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}
+            componentName={successMessageLabel}
             cyLabel={'success-message'}
           />
         </div>
