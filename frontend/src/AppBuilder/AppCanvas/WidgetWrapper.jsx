@@ -139,6 +139,8 @@ const WidgetWrapper = memo(
       isWidgetActive,
       enabled: isFlexLayout,
       measureWidth: isFlexSubcontainer,
+      dynamicHeight: isDynamicHeightEnabledInModeView,
+      temporaryHeight: temporaryLayouts?.height,
     });
 
     if (!canShowInCurrentLayout || !layoutData) {

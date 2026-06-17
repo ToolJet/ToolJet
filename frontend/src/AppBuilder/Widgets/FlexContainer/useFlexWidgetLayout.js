@@ -15,6 +15,8 @@ export const useFlexWidgetLayout = ({
   isWidgetActive,
   enabled = true,
   measureWidth = false,
+  dynamicHeight = false,
+  temporaryHeight,
 }) => {
   const wrapperRef = useRef(null);
   const [configWidgetTop, setConfigWidgetTop] = useState(0);
@@ -29,7 +31,18 @@ export const useFlexWidgetLayout = ({
   });
 
   const effectiveWidthPx = widthPx ?? gridDerivedWidthPx ?? 100;
-  const visibleHeightPx = height ?? flexLayoutData.height ?? 100;
+  // Flex children do not use WidgetWrapper's absolute-positioned grid style,
+  // so they also do not automatically pick up `temporaryLayouts.height` via
+  // the normal grid wrapper path. Dynamic-height widgets such as Table and
+  // Listview still write their measured height into temporaryLayouts, though.
+  // If the flex item keeps using the authored layout height here, the child
+  // may visually grow internally while the flex item's basis stays stale; the
+  // parent FlexContainer then computes the same old height and any widget below
+  // it remains in place. In viewer mode, prefer the temporary height so flex
+  // layout and dynamic-height reflow agree on the child's actual size.
+  const visibleHeightPx = dynamicHeight
+    ? temporaryHeight ?? height ?? flexLayoutData.height ?? 100
+    : height ?? flexLayoutData.height ?? 100;
   const effectiveHeightPx = visibility ? visibleHeightPx : mode === 'edit' ? HIDDEN_COMPONENT_HEIGHT : 0;
   const availableWidth = containerWidth ?? effectiveWidthPx;
   let widgetWidth = fillWidth ? availableWidth : effectiveWidthPx;

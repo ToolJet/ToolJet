@@ -57,7 +57,7 @@ export const FlexContainer = ({
     height,
     adjustComponentPositions,
     currentLayout,
-    isContainer: false,
+    isContainer: true,
     componentCount,
     value: useMemo(
       () =>
