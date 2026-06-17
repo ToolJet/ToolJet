@@ -5,6 +5,10 @@ title: Amazon Textract
 
 ToolJet integrates with Amazon Textract to facilitate the extraction of text and data from various document types, such as scanned documents, forms, and tables. Supported document formats include PDF, JPEG/JPG, and PNG.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect ToolJet with Amazon Textract, you will need the following credentials:
@@ -61,4 +65,4 @@ This operation let's you analyze the document stored in your AWS S3 buckets by p
   3. **Queries**: Extract data from databases and other structured sources.
   4. **Signature Detection**: Identify and extract signatures.
 
-  <img className="screenshot-full img-full" src="/img/marketplace/plugins/textract/analyze-in-S3-query.png" alt="Amazon Textract querying" />
+  <img style={{ marginTop:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/textract/analyze-in-S3-query.png" alt="Amazon Textract querying" />

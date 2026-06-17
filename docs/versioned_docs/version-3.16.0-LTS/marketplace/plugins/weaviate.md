@@ -5,6 +5,10 @@ title: Weaviate
 
 Weaviate is a vector database, integrating Weaviate with ToolJet enables efficient vector search and semantic querying, allowing applications to retrieve relevant information based on meaning rather than exact keywords. This integration is ideal for building AI-powered search engines, recommendation systems, and knowledge retrieval applications that enhance user experience with context-aware results.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connections
 
 ### Cloud

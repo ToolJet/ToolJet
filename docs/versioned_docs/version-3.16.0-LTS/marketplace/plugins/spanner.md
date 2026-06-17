@@ -5,9 +5,13 @@ title: Google Cloud Spanner
 
 Integrating Google Cloud Spanner with ToolJet allows you to connect your Spanner databases and interact with them directly from your application. You can run SQL queries, fetch data, and perform write operations on your Cloud Spanner instances.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
-You will need the Private key and Instance id to connect with the Google Cloud Spanner.
+You will need the **Private key** and **Instance id** to connect with the Google Cloud Spanner.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/spanner/connection.png" alt="Cloud Spanner Configuration" />
 

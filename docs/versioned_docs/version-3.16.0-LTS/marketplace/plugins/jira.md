@@ -7,15 +7,19 @@ title: Jira
 
 ToolJet allows you to connect to your Jira instance to perform various operations such as managing issues, users, worklogs, and boards.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/jira-signup-page.png" alt="Jira Homepage" />
+    <img style={{ marginTop:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/jira/jira-signup-page.png" alt="Jira Homepage" />
 </div>
 
 ## Connection
 
 To connect to a Jira data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
 
-To connect to your Jira instance, the following details are required:
+To connect to your Jira instance, the following credentials are required:
 
 - **URL**: Your Jira instance URL
 - **Email**: Your Jira account email
@@ -239,7 +243,7 @@ This operation searches for users based on a query.
 
 - **Query**: The search query in Jira Query Language (JQL) format.
 
-#### Optional Parameter:
+#### Optional Parameters:
 
 - **Start at**: The index of the first user to return.
 - **Max results**: The maximum number of users to return.
@@ -363,7 +367,7 @@ This operation deletes a specific worklog entry from an issue.
 - **Issue key**: The key or id of the issue containing the worklog.
 - **Worklog id**: The ID of the worklog to delete.
 
-#### Optional Parameters:
+#### Optional Parameter:
 
 - **Params/Body**: Additional parameters such as notify users, adjust estimate, etc.
 

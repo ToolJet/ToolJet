@@ -5,6 +5,10 @@ title: Azure Repos
 
 ToolJet offers the capability to establish a connection with Azure Repos in order to read from and commit to Git repositories for source control and version management.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect with Azure Repos, you will need the **Organization Name (e.g., https://dev.azure.com/your-organization)** and a **Personal Access Token (PAT)**.
