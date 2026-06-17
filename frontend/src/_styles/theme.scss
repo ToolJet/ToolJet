@@ -6479,6 +6479,12 @@ a.step-item-disabled {
   }
 }
 
+// cap the bell list to ~4 rows; scroll the rest (bell sits low, panel grows upward)
+.notification-center .notifications-card .list-group {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
 // error detail modal trace
 .notification-error-pre {
   max-height: 320px;
