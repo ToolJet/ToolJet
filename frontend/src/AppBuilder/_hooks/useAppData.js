@@ -785,7 +785,15 @@ const useAppData = (
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
+    // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
+    // env-dropdown init) are written by two independent async flows. On clone -> editor
+    // open, currentVersionId flips to the new app's version before selectedVersion does,
+    // so firing here would call getAppVersionData(newAppId, previousAppVersionId) -> 404.
+    // Genuine version switches always move both together, so requiring agreement skips
+    // only the stale cross-app window.
+    const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
+
+    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
