@@ -61,7 +61,7 @@ import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.enti
 import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
+import { GitSyncEnvUtilService } from '@modules/organization-env/services/gitsync.util.service';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
