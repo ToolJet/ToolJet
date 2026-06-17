@@ -20,7 +20,8 @@ export const buildTableColumn = (
   tableBodyRef,
   t,
   enableExpandableRows,
-  toggleRowExpansion
+  toggleRowExpansion,
+  moduleId = 'canvas'
 ) => {
   const expansionColumn = enableExpandableRows
     ? {
@@ -110,6 +111,7 @@ export const buildTableColumn = (
       handleCellValueChange,
       searchText: globalFilter,
       t,
+      moduleId,
     }).filter(Boolean),
 
     ...generateActionColumns({

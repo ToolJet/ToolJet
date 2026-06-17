@@ -10,6 +10,7 @@ import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerContext';
 import { getDynamicLayoutKey, serializeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
 import { useFlexWidgetLayout } from '@/AppBuilder/Widgets/FlexContainer/useFlexWidgetLayout';
+import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 
 const DYNAMIC_HEIGHT_AUTO_LIST = [
   'CodeEditor',
@@ -195,11 +196,26 @@ const WidgetWrapper = memo(
     const configWidgetHeight = isFlexLayout
       ? flexLayout.configWidgetHeight
       : temporaryLayouts?.height ?? layoutData.height;
+
     const isModuleContainer = componentType === 'ModuleContainer';
     const configHandleClassName = cx({
       'module-container': isModuleContainer,
       [flexLayout.configHandleClassName]: isFlexLayout && flexLayout.configHandleClassName,
     });
+    const isModuleViewerWidget = componentType === 'ModuleViewer';
+
+    // Capture phase fires before the embedded widget can consume the click, so a
+    // click anywhere inside the module reliably opens the configuration sidebar.
+    // Widgets embedded inside a module render read-only and are not Moveable
+    // targets, so clicking them never fires Moveable's `onClick` (the path that
+    // opens the right sidebar) — react-moveable derives `onClick` from its gesto
+    // drag-end, which never starts on interactive child elements.
+    const handleModuleClickCapture = (e) => {
+      if (e.shiftKey) return; // don't interfere with shift multi-select
+      const { setActiveRightSideBarTab, setRightSidebarOpen } = useStore.getState();
+      setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
+      setRightSidebarOpen(true);
+    };
 
     if (!componentType) return null;
     return (
@@ -224,6 +240,7 @@ const WidgetWrapper = memo(
           subcontainer-id={subContainerIndex}
           data-layout-context={serializedLayoutContext}
           style={outerStyle}
+          onClickCapture={isModuleViewerWidget && mode === 'edit' ? handleModuleClickCapture : undefined}
           onMouseEnter={() => {
             if (isDragging || isModuleContainer) return;
             if (isFlexLayout) {

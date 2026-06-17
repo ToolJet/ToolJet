@@ -59,7 +59,11 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { useElementGuidelines } from './hooks/useElementGuidelines';
 import { RIGHT_SIDE_BAR_TAB } from '../../RightSideBar/rightSidebarConstants';
 import ConfigHandleButton from '@/_components/ConfigHandleButton';
-import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { getDropTargetLabel } from '../appCanvasUtils';
+import {
+  RESTRICTED_WIDGETS_CONFIG,
+  RESTRICTED_WIDGET_SLOTS_CONFIG,
+} from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 
 // Lazy load editor-only component to reduce viewer bundle size
 const MentionComponentInChat = lazy(() => import('../ConfigHandle/MentionComponentInChat'));
@@ -561,11 +565,13 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
 
       const parentId = targetSlotId?.length > 36 ? targetSlotId.slice(0, 36) : targetSlotId;
       const parentWidgetType = getComponentTypeFromId(parentId);
+      const parentSlotType = targetSlotId ? targetSlotId.split('-').pop() : undefined;
 
       let restrictedWidgetsTobeDropped =
-        RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType]?.filter((widgetType) =>
-          widgetsTypeToBeDropped.includes(widgetType)
-        ) || [];
+        [
+          ...(RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType] || []),
+          ...(['header', 'footer'].includes(parentSlotType) ? RESTRICTED_WIDGET_SLOTS_CONFIG : []),
+        ].filter((widgetType) => widgetsTypeToBeDropped.includes(widgetType)) || [];
 
       // Check nesting depth restrictions for all widget types in NESTING_LEVEL_LIMITS
       let nestingDepthExceeded = false;
@@ -616,7 +622,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
         } else if (isParentModuleContainer) {
           toast.error('Modules cannot be edited inside an app');
         } else if (!isParentChangeAllowed) {
-          toast.error(`${restrictedWidgetsTobeDropped} is not compatible as a child component of ${parentWidgetType}`);
+          toast.error(
+            `${restrictedWidgetsTobeDropped} is not compatible as a child component of ${getDropTargetLabel(
+              parentWidgetType,
+              parentSlotType
+            )}`
+          );
         }
       }
 
@@ -1142,7 +1153,12 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
               if (isParentModuleContainer) {
                 toast.error('Modules cannot be edited inside an app');
               } else if (!isModalToCanvas) {
-                toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
+                toast.error(
+                  `${dragged.widgetType} is not compatible as a child component of ${getDropTargetLabel(
+                    target.widgetType,
+                    target.slotType
+                  )}`
+                );
               }
             }
 
