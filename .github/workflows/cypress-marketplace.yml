@@ -20,7 +20,8 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
 
     strategy:
       fail-fast: false
@@ -431,8 +432,7 @@ jobs:
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
 
     steps:
       - name: Checkout

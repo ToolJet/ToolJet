@@ -31,10 +31,10 @@ jobs:
       matrix:
         edition:
           - ${{
-            (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
+            (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') && 'ee' || ''
+            (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee')) && 'ee' || ''
             }}
         exclude:
           - edition: ""
