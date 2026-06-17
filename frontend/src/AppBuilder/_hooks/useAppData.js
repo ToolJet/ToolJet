@@ -672,6 +672,11 @@ const useAppData = (
       })
       .catch((_error) => {
         if (cancelled) return;
+        // Surface load failures — this catch otherwise swallows the error and silently blanks the
+        // editor, which makes load-path regressions (e.g. a throw during dependency resolution)
+        // invisible in the console.
+        // eslint-disable-next-line no-console
+        console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
