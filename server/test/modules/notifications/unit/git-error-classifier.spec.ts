@@ -45,6 +45,10 @@ describe('git-error-classifier', () => {
       expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.DELETE_BRANCH).title).toBe('Branch deletion failed');
       expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.PUSH_APP_DELETION).title).toBe('App deletion sync failed');
     });
+
+    it('falls back to a generic title for unknown job names', () => {
+      expect(classifyGitError(new Error('x'), 'some-unknown-job').title).toBe('Git operation failed');
+    });
   });
 
   describe('sanitizeGitError | scrubs secrets', () => {
@@ -58,6 +62,13 @@ describe('git-error-classifier', () => {
     ])('removes %s', (_label, raw) => {
       const out = sanitizeGitError(raw);
       expect(out).not.toMatch(/ghp_abc123abc123abc123abc12345678|github_pat_11ABCDEF0_longtokenvaluehereXXXXXXXXXX|dXNlcjpwYXNz|s3cret/);
+      expect(out).toMatch(/\[REDACTED\]/);
+    });
+
+    // gho_ (OAuth), ghu_ (user-to-server), ghr_ (refresh) are live creds too — scrub when standalone
+    it('scrubs a standalone gho_ OAuth token not embedded in a URL', () => {
+      const out = sanitizeGitError('using token gho_ABCDEF0123456789ABCDEF0123');
+      expect(out).not.toMatch(/gho_ABCDEF0123456789ABCDEF0123/);
       expect(out).toMatch(/\[REDACTED\]/);
     });
   });
