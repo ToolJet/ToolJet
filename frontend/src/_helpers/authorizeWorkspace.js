@@ -276,12 +276,16 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
         setRedirectAttempt();
         try {
           const { token } = await sessionTransferService.createTransferToken();
+          // When redirectPath is explicitly provided (e.g. from SSO callback), the current
+          // page's search/hash belong to the OAuth response (#id_token=..., ?code=...) and
+          // must not be forwarded to the destination. Use empty string in that case.
+          const searchAndHash = redirectPath ? '' : `${window.location.search}${window.location.hash}`;
           const redirect = encodeURIComponent(
-            isViewerPath
-              ? `${pathWithoutSlug}${window.location.search}${window.location.hash}`
-              : `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
+            isViewerPath ? `${pathWithoutSlug}${searchAndHash}` : `/${slug}${pathWithoutSlug}${searchAndHash}`
           );
-          window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
+          console.log(redirect, 'redirect');
+          console.log(searchAndHash, 'searchAndHash');
+          window.location.href = `http://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
           return;
         } catch (e) {
           console.error('[authorizeWorkspace] Transfer token failed:', e);

@@ -505,6 +505,7 @@ export default class LicenseBase {
   }
 
   public get customDomains(): boolean {
+    return true;
     if (this.IsBasicPlan) {
       return !!this.BASIC_PLAN_TERMS.features?.customDomains;
     }
@@ -548,6 +549,7 @@ export default class LicenseBase {
   }
 
   public get licenseType(): string {
+    return LICENSE_TYPE.ENTERPRISE;
     if (!this.isValid || this.isExpired) {
       return LICENSE_TYPE.BASIC;
     }

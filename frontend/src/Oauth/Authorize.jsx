@@ -352,7 +352,11 @@ export function Authorize({ navigate }) {
       const isAiOnboarding =
         hashParams.get('state')?.includes('tj_api_source=ai_onboarding') ||
         router.query.state?.includes('tj_api_source=ai_onboarding');
-      const isNormalFlow = (organizationId || signupOrganizationSlug || inviteFlowIdentifier) && !isAiOnboarding;
+      // A workspace-level configId in the URL (set by the SSO button on a workspace/custom-domain
+      // login page) definitively identifies a workspace login — treat it as a normal flow even when
+      // organizationId is absent (e.g. cookie/localStorage inaccessible across custom-domain → base-domain).
+      const isNormalFlow =
+        (organizationId || signupOrganizationSlug || inviteFlowIdentifier || router.query.configId) && !isAiOnboarding;
       if (isNormalFlow) {
         /* For workspace signup and signin */
         authenticationService
