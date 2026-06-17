@@ -574,7 +574,15 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
 
             for (const variable of userVars) {
               const paramName = `tj_param_${paramIndex++}`;
-              parameterizedQuery = parameterizedQuery.split(variable).join(`:${paramName}`);
+              // Strip surrounding SQL string quotes if the placeholder was wrapped in them
+              // e.g. '{{var}}' or "{{var}}" → :paramName (quotes would break bind params)
+              parameterizedQuery = parameterizedQuery
+                .split(`'${variable}'`)
+                .join(`:${paramName}`)
+                .split(`"${variable}"`)
+                .join(`:${paramName}`)
+                .split(variable)
+                .join(`:${paramName}`);
               existingParams.push([paramName, (options as Record<string, any>)[variable]]);
             }
 
