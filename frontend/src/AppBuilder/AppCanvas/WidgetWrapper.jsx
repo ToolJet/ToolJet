@@ -128,7 +128,8 @@ const WidgetWrapper = memo(
     let newLayoutData = layoutData;
 
     if (componentType === 'ModuleContainer' && mode === 'view') {
-      newLayoutData = { ...layoutData, top: 0, left: 0, width: NO_OF_GRIDS };
+      const isEmbeddedModule = moduleId !== 'canvas';
+      newLayoutData = { ...layoutData, width: isEmbeddedModule ? NO_OF_GRIDS : layoutData.width };
     }
 
     const width = gridWidth * newLayoutData?.width;
