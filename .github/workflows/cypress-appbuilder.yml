@@ -157,7 +157,7 @@ jobs:
         env:
           CELL: "App Builder / ${{ matrix.edition }}"
           CONFIG_FILE: cypress-app-builder.config.js
-          CYPRESS_CONFIG: "baseUrl=http://localhost:8082"
+          CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
         run: node cy-ci-run.js
 
       - name: Ensure run summary exists
