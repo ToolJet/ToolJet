@@ -7,7 +7,7 @@ title: Resolving Unique Constraint Errors in Git Branching
 Branching and Pull Requests is currently in beta and not recommended for production use.
 :::
 
-This page applies to workspaces using [Branching and Pull Requests](/docs/development-lifecycle/branching-pr).
+This page applies to workspaces using [Branching and Pull Requests](/docs/beta/branching-and-pr).
 
 When working with branches, all changes are scoped to that branch only. However, certain fields in ToolJet must be unique within a branch. When two branches independently assign the same value to one of these fields and both get merged into main, pulling the latest commit from Git will fail with a unique constraint error.
 
