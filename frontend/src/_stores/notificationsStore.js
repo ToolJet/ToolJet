@@ -24,19 +24,21 @@ export const useNotificationsStore = create(
         },
         async markRead(recipientId) {
           const res = await notificationsService.markRead(recipientId);
-          if (res.error) return;
+          if (res.error) return { error: res.error };
           set((s) => ({
             items: s.items.map((n) => (n.recipientId === recipientId ? { ...n, readAt: new Date().toISOString() } : n)),
             unreadCount: Math.max(0, s.unreadCount - 1),
           }));
+          return { error: null };
         },
         async markAllRead() {
           const res = await notificationsService.markAllRead();
-          if (res.error) return;
+          if (res.error) return { error: res.error };
           set((s) => ({
             items: s.items.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
             unreadCount: 0,
           }));
+          return { error: null };
         },
       },
     }),
