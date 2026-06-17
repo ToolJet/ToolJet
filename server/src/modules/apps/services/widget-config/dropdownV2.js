@@ -89,7 +89,7 @@ export const dropdownV2Config = {
     },
     serverSideSearch: {
       type: 'clientServerSwitch',
-      displayName: 'Type',
+      displayName: 'Search type',
       options: [
         { displayName: 'Client side', value: 'clientSide' },
         { displayName: 'Server side', value: 'serverSide' },
