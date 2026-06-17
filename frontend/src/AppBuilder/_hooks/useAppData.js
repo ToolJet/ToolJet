@@ -351,6 +351,14 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
+        // Reset the AppBuilder store before populating the new app. The dependency graph and
+        // resolvedStore are module-level singletons that are NOT reset between apps; on clone -> open
+        // the graph still holds the previous app's edges, so setResolvedGlobals below fires a
+        // dependency cascade over them before initDependencyGraph rebuilds — dereferencing resolved
+        // entries that don't exist in the new app and throwing (caught + swallowed -> blank editor).
+        // cleanUpStore installs a fresh graph + clears resolved values so the cascade starts clean.
+        // Canvas-only (mirrors the version-change effect's own cleanUpStore); modules manage their own.
+        if (!moduleMode) cleanUpStore(false);
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
