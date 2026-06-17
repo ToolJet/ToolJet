@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsDateString, IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ListNotificationsQueryDto {
@@ -14,5 +14,6 @@ export class ListNotificationsQueryDto {
   limit?: number = 20;
 
   @IsOptional()
+  @IsDateString()
   before?: string; // ISO date cursor
 }

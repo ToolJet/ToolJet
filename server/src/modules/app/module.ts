@@ -159,7 +159,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await CustomDomainsModule.register(configs, true),
       await BackgroundProcessorModule.register(configs, true),
       await WorkspaceContextModule.register(configs, true),
-      await NotificationsModule.register(configs),
+      await NotificationsModule.register(configs, true),
     ];
 
     const conditionalImports = [];

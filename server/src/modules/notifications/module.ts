@@ -8,14 +8,16 @@ import { NOTIFICATION_CHANNELS } from './constants';
 
 @Module({})
 export class NotificationsModule extends SubModule {
-  static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
-    const cacheKey = this.buildCacheKey(configs);
+  static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
     return this.cacheModule(cacheKey, {
       module: NotificationsModule,
-      controllers: [NotificationController],
+      // Mount controller only at the main app import; feature modules importing this
+      // for NotificationService must not re-register the route.
+      controllers: isMainImport ? [NotificationController] : [],
       providers: [
         NotificationService,
         NotificationRepository,

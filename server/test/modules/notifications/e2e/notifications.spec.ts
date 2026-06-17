@@ -81,9 +81,11 @@ describe('NotificationController', () => {
       });
     });
 
-    it('should reject unauthenticated requests', async () => {
-      const res = await request(app.getHttpServer()).get('/api/notifications');
-      expect(res.status).toBe(401);
+    describe('auth', () => {
+      it('should reject unauthenticated requests', async () => {
+        const res = await request(app.getHttpServer()).get('/api/notifications');
+        expect(res.status).toBe(401);
+      });
     });
   });
 });
