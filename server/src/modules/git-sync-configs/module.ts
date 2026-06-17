@@ -2,6 +2,7 @@ import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
 import { GitSyncConfigsRepository } from './repository';
+import { RemoteBranchCacheService } from '@ee/git-sync/remote-branch-cache.service';
 
 // Self-contained module — does NOT import any other module. LicenseModule is global so
 // its services (LicenseTermsService) are available without an explicit import; the same
@@ -23,7 +24,13 @@ export class GitSyncConfigsModule extends SubModule {
     return this.cacheModule(cacheKey, {
       module: GitSyncConfigsModule,
       controllers: isMainImport ? [GitSyncConfigsController] : [],
-      providers: [GitSyncConfigsRepository, GitSyncConfigsService, GitSyncConfigsUtilService, FeatureAbilityFactory],
+      providers: [
+        GitSyncConfigsRepository,
+        GitSyncConfigsService,
+        GitSyncConfigsUtilService,
+        FeatureAbilityFactory,
+        RemoteBranchCacheService,
+      ],
       exports: [GitSyncConfigsUtilService],
     });
   }
