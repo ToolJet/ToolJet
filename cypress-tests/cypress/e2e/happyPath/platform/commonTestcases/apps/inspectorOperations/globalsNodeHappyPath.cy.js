@@ -11,7 +11,7 @@ describe("Globals - Inspector", () => {
   after(() => {
     cy.apiUpdateProfile({
       firstName: "The",
-      lastName: "developer",
+      lastName: "Developer",
     });
   });
 
@@ -19,7 +19,7 @@ describe("Globals - Inspector", () => {
     const dataList = [
       ["email", `"dev@tooljet.io"`],
       ["firstName", `"The"`],
-      ["lastName", `"developer"`],
+      ["lastName", `"Developer"`],
       ["id", `${Cypress.env("user_id")}`],
       ["avatarId", `null`],
       ["groups", `[2]`],
