@@ -46,19 +46,11 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
   const isBranchSwitch = context === 'branch-switch';
   const hideBadges = isBranchCreation || isBranchSwitch;
 
-  const hasSlugConflicts = conflictGroups.some((g) => g.conflictField === 'slug');
-  const hasNameConflicts = conflictGroups.some((g) => g.conflictField !== 'slug');
-
   const conflictTitles = (() => {
-    if (isBranchCreation || isBranchSwitch) {
-      return [isBranchCreation ? 'Cannot create branch with duplicate data' : 'Cannot open branch with duplicate data'];
-    }
-    const unique = [
-      ...new Set(conflictGroups.map((g) => CONFLICT_TITLE_MAP[`${g.type}-${g.conflictField}`]).filter(Boolean)),
-    ];
-    return unique.length === 1
-      ? unique
-      : [isPushConflict ? 'Cannot push branch with duplicate data' : 'Cannot pull branch with duplicate data'];
+    if (isBranchCreation) return ['Cannot create branch with duplicate data'];
+    if (isBranchSwitch) return ['Cannot open branch with duplicate data'];
+    if (isPushConflict) return ['Cannot push with duplicate data'];
+    return ['Cannot pull with duplicate data'];
   })();
 
   const handleOverlayClick = (e) => {
@@ -90,27 +82,8 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
           </div>
 
           <p className="conflict-description">
-            {isBranchCreation ? (
-              <>
-                The following apps have the{' '}
-                <strong>same {hasSlugConflicts && !hasNameConflicts ? 'slug' : 'name'}</strong> on main branch. ToolJet
-                requires unique names & slug for apps, data sources, modules, and folders within a branch.
-              </>
-            ) : isBranchSwitch ? (
-              <>
-                The following apps have the{' '}
-                <strong>same {hasSlugConflicts && !hasNameConflicts ? 'slug' : 'name'}</strong> on{' '}
-                {hasSlugConflicts && !hasNameConflicts ? 'this' : 'main'} branch. ToolJet requires unique names & slug
-                for apps, data sources, modules, and folders within a branch.
-              </>
-            ) : isPushConflict ? (
-              <>
-                The following apps have the <strong>same name</strong> on this branch. ToolJet requires unique names &
-                slug for apps, data sources, modules, and folders within a branch.
-              </>
-            ) : (
-              'The following resources have naming conflicts with resources already on this branch. ToolJet requires unique names & slugs for apps, data sources, modules, and folders within a branch.'
-            )}
+            The following resources have the same name or slug on this branch. ToolJet requires unique names & slug for
+            apps, data sources, modules, and folders within a branch.
           </p>
 
           <div className="conflict-groups-list">
