@@ -74,7 +74,11 @@ export class NotificationRepository extends Repository<Notification> {
   }
 
   async unreadCount(userId: string): Promise<number> {
-    return this.manager.count(NotificationRecipient, { where: { userId, readAt: null } });
+    const [{ c }] = await this.manager.query(
+      `SELECT COUNT(*) AS c FROM notification_recipients WHERE user_id = $1 AND read_at IS NULL`,
+      [userId]
+    );
+    return parseInt(c, 10);
   }
 
   // org+user scoped: only marks rows owned by this user
