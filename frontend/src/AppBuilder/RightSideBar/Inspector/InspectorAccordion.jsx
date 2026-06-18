@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import Accordion from '@/_ui/Accordion';
-import { useFlexChildInspectorContext } from './FlexChildInspectorContext';
+import { useFlexChildInspectorContext } from './Components/FlexContainer/FlexChildInspectorContext';
 import {
   buildFlexChildWidthAccordionItem,
   injectFlexChildWidthBeforeAdditionalActions,
-} from './flexChildInspectorUtils';
+} from './Components/FlexContainer/flexChildInspectorUtils';
 
 const InspectorAccordion = ({ items, ...rest }) => {
   const flexChildContext = useFlexChildInspectorContext();

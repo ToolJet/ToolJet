@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderElement } from '../../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { EventManager } from '../../EventManager';
 import { OptionsList } from './components';
 import { useOptionsManager } from './hooks/useOptionsManager';

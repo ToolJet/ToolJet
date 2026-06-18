@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { renderElement } from '../Utils';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import List from '@/ToolJetUI/List/List';
 import ListGroup from 'react-bootstrap/ListGroup';

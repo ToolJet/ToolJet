@@ -7,7 +7,7 @@ import { EventManager } from '../../EventManager';
 import { useTranslation } from 'react-i18next';
 import { FieldPopoverContent, FieldsList } from './FieldManager';
 import { useFieldManager, usePopoverState } from './hooks';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 
 // Constants
 const ADDITIONAL_ACTIONS = [

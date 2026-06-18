@@ -55,7 +55,7 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
-import { FlexChildInspectorProvider } from './FlexChildInspectorContext';
+import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
 const INSPECTOR_HEADER_OPTIONS = [
   {

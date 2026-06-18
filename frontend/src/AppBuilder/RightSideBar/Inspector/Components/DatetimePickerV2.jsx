@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { renderElement } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';

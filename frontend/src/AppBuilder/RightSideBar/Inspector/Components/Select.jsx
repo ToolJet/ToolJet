@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';

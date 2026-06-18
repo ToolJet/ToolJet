@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved

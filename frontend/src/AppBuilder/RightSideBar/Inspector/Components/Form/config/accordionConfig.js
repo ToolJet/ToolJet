@@ -3,7 +3,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { EventManager } from '../../../EventManager';
 import { renderElement } from '../../../Utils';
-import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../../flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../../inspectorConstants';
 
 export const createAccordionItems = ({
   properties,

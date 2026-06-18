@@ -2,10 +2,8 @@ jest.mock('../Components/FlexChildLayoutPanel', () => ({
   FlexChildLayoutPanel: () => null,
 }));
 
-import {
-  ADDITIONAL_ACTIONS_ACCORDION_ID,
-  injectFlexChildWidthBeforeAdditionalActions,
-} from '../flexChildInspectorUtils';
+import { injectFlexChildWidthBeforeAdditionalActions } from '../Components/FlexContainer/flexChildInspectorUtils';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 
 describe('injectFlexChildWidthBeforeAdditionalActions', () => {
   it('inserts the flex child item before Additional Actions using its language-agnostic id', () => {
