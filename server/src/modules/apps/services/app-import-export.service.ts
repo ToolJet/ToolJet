@@ -341,8 +341,22 @@ export class AppImportExportService {
   ) {}
 
   /**
-   * Reverse lookup: given app slugs (as stored on `app_versions.slug`), return their owning apps' `co_relation_id`s.
-   * Used by the import path to back-fill `pages.target_corelation_id` for dumps that only carry the legacy slug-in-`appId`.
+   * Reverse lookup: given app slugs (as stored on `app_versions.slug`), return their
+   * owning apps' `co_relation_id`s. Used by the import path to back-fill
+   * `pages.target_corelation_id` and `event.correlationId` for dumps that only carry
+   * legacy slugs.
+   *
+   * Restricted to `apps.type = 'front-end'` because go-to-app navigation and
+   * cross-app page targets only point at front-end apps (modules and workflows are
+   * never valid targets). This matches the two backfill migrations
+   * (1781645306551 / 1781645376435).
+   *
+   * Tie-breaker mirrors `findAppBySlug`'s runtime priority so the import resolves the
+   * same logical app a click would:
+   *   1. Default-branch row (`organization_git_sync_branches.is_default = true`)
+   *   2. Branchless row (`av.branch_id IS NULL`, for git-disabled orgs)
+   *   3. Anything else (sub-branches, stale tag snapshots after rename)
+   *   Within tier: newest `updated_at`, then `id` for determinism.
    */
   protected async resolveCorelationIdsBySlugs(
     manager: EntityManager,
@@ -352,20 +366,24 @@ export class AppImportExportService {
     const distinct = Array.from(new Set((slugs || []).filter(Boolean)));
     if (distinct.length === 0) return new Map();
 
-    // Slugs live on `app_versions` and can collide across branches in git-enabled
-    // workspaces (the unique constraint is `(slug, branch_id, type)`). Order so the
-    // default-branch row wins, then by oldest version — deterministic and matches the
-    // resolution rule the rest of the loader uses for cross-branch slug lookup.
     const rows = await manager
       .createQueryBuilder(App, 'app')
       .innerJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
+      .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
       .where('av.slug IN (:...slugs)', { slugs: distinct })
       .andWhere('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.co_relation_id IS NOT NULL')
+      .andWhere(`app.type = 'front-end'`)
       .select('av.slug', 'slug')
       .addSelect('app.co_relation_id', 'coRelationId')
-      .orderBy('CASE WHEN av.branch_id IS NULL THEN 0 ELSE 1 END', 'ASC')
-      .addOrderBy('av.createdAt', 'ASC')
+      .orderBy(
+        `CASE WHEN wb.is_default = true THEN 0
+              WHEN av.branch_id IS NULL THEN 1
+              ELSE 2 END`,
+        'ASC'
+      )
+      .addOrderBy('av.updatedAt', 'DESC')
+      .addOrderBy('av.id', 'ASC')
       .getRawMany<{ slug: string; coRelationId: string }>();
 
     const result = new Map<string, string>();
