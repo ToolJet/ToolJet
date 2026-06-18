@@ -574,7 +574,7 @@ export const MultiselectV2 = ({
             onChange={onChangeHandler}
             options={modifiedSelectOptions}
             filterOption={(option, input) => {
-              if (serverSideSearch) return true; // server mode: render all options, no client-side filtering
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();

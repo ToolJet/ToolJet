@@ -891,7 +891,9 @@ const TagsInput = ({
             isClearable={false}
             isMulti
             hideSelectedOptions={true}
-            filterOption={(option, inputValue) => (serverSideSearch ? true : option.label?.includes(inputValue))}
+            filterOption={(option, inputValue) =>
+              serverSideSearch === true ? true : option.label?.includes(inputValue)
+            }
             closeMenuOnSelect={false}
             tabSelectsValue={false}
             onKeyDown={handleKeyDown}

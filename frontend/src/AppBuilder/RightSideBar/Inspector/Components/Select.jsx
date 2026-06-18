@@ -637,6 +637,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'serverSideSearch',
+            'properties',
+            currentState,
+            allComponents
+          )}
         {isRadioButton &&
           renderElement(
             component,

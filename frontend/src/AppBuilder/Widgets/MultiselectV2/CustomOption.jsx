@@ -12,7 +12,7 @@ const CustomOption = (props) => {
   const captionText = hasCaption ? String(caption) : '';
   const isSelectAll = labelText.includes('Select all');
   // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
-  const serverSideSearch = props.selectProps.serverSideSearch;
+  const serverSideSearch = props.selectProps.serverSideSearch === true;
   const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));
 
   return (

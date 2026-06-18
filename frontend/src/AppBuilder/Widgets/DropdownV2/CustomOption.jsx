@@ -9,7 +9,7 @@ const CustomOption = (props) => {
   const hasCaption = caption !== null && caption !== undefined && caption !== '';
   const captionText = hasCaption ? String(caption) : '';
   // Server-side search: results come pre-filtered from the backend, so skip client-side highlighting.
-  const serverSideSearch = props.selectProps.serverSideSearch;
+  const serverSideSearch = props.selectProps.serverSideSearch === true;
   const renderWithHighlight = (text) => (serverSideSearch ? text : highlightText(text, props.selectProps.inputValue));
   return (
     <components.Option

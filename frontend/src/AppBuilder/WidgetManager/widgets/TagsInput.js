@@ -168,7 +168,7 @@ export const tagsInputConfig = {
         { displayName: 'Server side', value: 'serverSide' },
       ],
       validation: { schema: { type: 'boolean' }, defaultValue: false },
-      section: 'additionalActions',
+      accordian: 'Tags',
       conditionallyRender: {
         key: 'enableSearch',
         value: true,
