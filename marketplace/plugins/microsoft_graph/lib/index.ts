@@ -147,10 +147,6 @@ export default class Microsoft_graph implements QueryService {
               searchParams: queryParams,
             };
     }
-    console.log('[MSGRAPH_DEBUG] URL:', url);
-    console.log('[MSGRAPH_DEBUG] method:', requestOptions.method);
-    console.log('[MSGRAPH_DEBUG] json body:', JSON.stringify(requestOptions.json));
-    console.log('[MSGRAPH_DEBUG] auth header prefix:', (requestOptions.headers?.['Authorization'] as string)?.substring(0, 30));
     try {
       const response = await got(url, requestOptions);
       if (response && response.body) {
