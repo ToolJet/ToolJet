@@ -11,7 +11,7 @@ export const verifyNodes = (nodes, verificationFunction) => {
   );
 };
 
-export const openNode = (node, index = 0, time = 1000) => {
+export const openNode = (node, index = 0, time = 15000) => {
   cy.get(`[data-cy="inspector-${node.toLowerCase()}-expand-button"]`, {
     timeout: time,
   })

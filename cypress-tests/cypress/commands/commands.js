@@ -97,40 +97,106 @@ Cypress.Commands.add(
     widgetName2 = widgetName,
     canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
-    cy.get(commonSelectors.searchField)
-      .should("be.visible")
-      .first()
-      .clear()
-      .type(widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
+    // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
+    // widget-list-box. `:has()` lets the source selector resolve straight to
+    // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't nest
+    // cleanly inside `:has()`. Require `draggable="true"`: react-dnd sets that
+    // attribute on the connector node only once mounted/connected, and dragging
+    // before it's set makes cypress-real-dnd throw "source may not be a real
+    // HTML5 draggable" (no dragIntercepted event).
+    const sourceSelector = `.draggable-box[draggable="true"]:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
+    const placedWidget = '[data-cy^="draggable-widget-"]';
+
+    const countWidgets = () =>
+      cy.get("body").then(($b) => $b.find(placedWidget).length);
+
+    // Self-healing panel open. The search box is only RENDERED when the
+    // components tab is active (RightSidebar renders it under
+    // `activeTab === COMPONENTS`), so its DOM *presence* — not jQuery
+    // `:visible`, flaky mid-transition — is the reliable "panel open" signal.
+    // The components button is a TOGGLE and a drag's own `isDragging` effect
+    // flips the sidebar asynchronously, so a single click can race the toggle
+    // and land on the wrong state. Click → verify the search box appeared →
+    // re-click if it didn't, until the panel is open (bounded retries).
+    const ensureComponentsPanelOpen = (tries = 5) => {
+      cy.get("body").then(($b) => {
+        if ($b.find(commonSelectors.searchField).length > 0) return; // already open
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        cy.wait(500); // let the toggle settle before re-checking
+        cy.get("body").then(($b2) => {
+          if ($b2.find(commonSelectors.searchField).length === 0 && tries > 1) {
+            ensureComponentsPanelOpen(tries - 1);
+          }
+        });
+      });
+    };
+
+    const openPanelAndSearch = () => {
+      ensureComponentsPanelOpen();
+      cy.get(commonSelectors.searchField)
+        .should("be.visible")
+        .first()
+        .clear()
+        .type(widgetName);
+      cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
+    };
 
     // `[data-cy=real-canvas]` is reused by every SubContainer — `cy.get` picks
     // the FIRST match which can be a sidebar/preview surface, not the actual
     // editing canvas. Resolve by id instead:
-    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`) —
-    //     the root canvas rejects drops in that mode.
+    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`).
     //   - app editor   → `#real-canvas` (unique).
-    // Caller can override via `canvas` arg if they need a specific sub-canvas.
-    cy.get("body").then(($body) => {
-      let resolvedCanvas = canvas;
-      if (!resolvedCanvas) {
-        const mc = $body.find('[component-type="ModuleContainer"]')[0];
-        resolvedCanvas = mc?.id ? `#${mc.id}` : "#real-canvas";
-      }
+    const resolveCanvas = ($body) => {
+      if (canvas) return canvas;
+      const mc = $body.find('[component-type="ModuleContainer"]')[0];
+      return mc?.id ? `#${mc.id}` : "#real-canvas";
+    };
 
-      // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
-      // widget-list-box. `:has()` lets the source selector resolve straight to
-      // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't
-      // nest cleanly inside `:has()`.
-      const sourceSelector = `.draggable-box:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
-      cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
-        targetX: positionX,
-        targetY: positionY,
+    // The FIRST real-drag of a spec run silently loses its CDP intercept
+    // (cypress-real-dnd arms `Input.setInterceptDrags` lazily), so react-dnd's
+    // drop fires but no component is created. The intercept warms up after that
+    // first attempt. Rather than depend on a global `cy.realDragInit()` (which
+    // still misses the very first drag), retry the full open→search→drag until
+    // a new component actually appears on the canvas.
+    //
+    // Poll for the new widget instead of checking once after a fixed wait: a
+    // fixed delay races the render+autosave and triggers a SPURIOUS retry that
+    // double-drops the widget (button1 + button2). Only re-drag if no new widget
+    // appears within the poll window (a genuine cold-intercept miss).
+    const confirmDropOrRetry = (before, pollsLeft, triesLeft) => {
+      countWidgets().then((now) => {
+        if (now > before) return; // drop succeeded
+        if (pollsLeft <= 0) {
+          if (triesLeft > 1) attempt(triesLeft - 1);
+          return;
+        }
+        cy.wait(500);
+        confirmDropOrRetry(before, pollsLeft - 1, triesLeft);
       });
-      cy.waitForAutoSave();
-    });
+    };
+
+    const attempt = (triesLeft) => {
+      countWidgets().then((before) => {
+        openPanelAndSearch();
+        // Wait for react-dnd to mark the source draggable before initiating.
+        cy.get(sourceSelector, { timeout: 15000 }).should("exist");
+        cy.get("body").then(($body) => {
+          cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
+            targetX: positionX,
+            targetY: positionY,
+          });
+          confirmDropOrRetry(before, 16, triesLeft); // up to ~8s for render
+        });
+      });
+    };
+
+    // Arm the CDP drag intercept before dragging. Without this the intercept
+    // can be disarmed between tests (fresh app per beforeEach), and the next
+    // drag throws `No Input.dragIntercepted` instead of silently missing — a
+    // throw the count-based retry below can't catch. realDragInit re-arms it.
+    cy.realDragInit();
+    attempt(3);
+    cy.waitForAutoSave();
   }
 );
 
@@ -508,14 +574,20 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
 
 Cypress.Commands.overwrite( //update required if using
   "intercept",
-  (originalFn, method, endpoint, ...rest) => {
-    const isSubpath = Cypress.config("baseUrl")?.includes("/apps");
-    const cleanEndpoint = endpoint.startsWith("/apps")
-      ? endpoint.replace("/apps", "")
-      : endpoint;
-    const fullUrl = isSubpath ? `/apps${cleanEndpoint}` : cleanEndpoint;
-
-    return originalFn(method, fullUrl, ...rest);
+  (originalFn, ...args) => {
+    // The /apps subpath rewrite only applies to the (method, stringEndpoint)
+    // form. Pass RouteMatcher objects, regexes, and the single-arg form
+    // through untouched — otherwise `endpoint.startsWith` throws on a non-string
+    // (e.g. `cy.intercept(/\/events/)`).
+    const endpoint = args[1];
+    if (typeof endpoint === "string") {
+      const isSubpath = Cypress.config("baseUrl")?.includes("/apps");
+      const cleanEndpoint = endpoint.startsWith("/apps")
+        ? endpoint.replace("/apps", "")
+        : endpoint;
+      args[1] = isSubpath ? `/apps${cleanEndpoint}` : cleanEndpoint;
+    }
+    return originalFn(...args);
   }
 );
 
