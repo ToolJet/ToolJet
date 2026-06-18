@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const Pagination = ({
   id,
@@ -12,8 +13,12 @@ export const Pagination = ({
   width,
 }) => {
   const isInitialRender = useRef(true);
-  const { visibility, disabledState, boxShadow, alignment } = styles;
+  const { visibility, disabledState, loadingState } = properties;
+  const { boxShadow, alignment } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
+  const [isVisible, setIsVisible] = useState(visibility);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const [isLoading, setIsLoading] = useState(loadingState);
 
   const pageChanged = (number) => {
     setCurrentPage(number);
@@ -59,24 +64,97 @@ export const Pagination = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.numberOfPages]);
 
+  // sync style prop → local state
+  useEffect(() => {
+    isVisible !== visibility && setIsVisible(visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    isDisabled !== disabledState && setIsDisabled(disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    isLoading !== loadingState && setIsLoading(loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  // CSA: setPage
+  useEffect(() => {
+    setExposedVariable('setPage', async function (pageIndex) {
+      const total = Number(properties.numberOfPages);
+      const n = Number(pageIndex);
+      if (!Number.isFinite(n) || !Number.isFinite(total) || total < 1) return;
+      const target = Math.min(Math.max(1, Math.floor(n)), total);
+      pageChanged(target);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.numberOfPages]);
+
+  // CSA: setVisibility
+  useEffect(() => {
+    setExposedVariable('setVisibility', async function (state) {
+      setIsVisible(!!state);
+      setExposedVariable('isVisible', !!state);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // CSA: setDisable
+  useEffect(() => {
+    setExposedVariable('setDisable', async function (value) {
+      setIsDisabled(!!value);
+      setExposedVariable('isDisabled', !!value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // CSA: setLoading
+  useEffect(() => {
+    setExposedVariable('setLoading', async function (value) {
+      setIsLoading(!!value);
+      setExposedVariable('isLoading', !!value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', isVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', isDisabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', isLoading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
+
   const computedStyles = {
     height,
-    display: visibility ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
   };
 
   return (
     <div
-      data-disabled={disabledState}
+      data-disabled={isDisabled}
       className="d-flex align-items-center"
       data-cy={dataCy}
-      style={{ boxShadow: visibility ? boxShadow : 'none', justifyContent: alignment }}
-      aria-hidden={!visibility}
-      aria-disabled={disabledState}
+      style={{ boxShadow: isVisible ? boxShadow : 'none', justifyContent: alignment }}
+      aria-hidden={!isVisible}
+      aria-disabled={isDisabled}
       aria-label="Pagination"
       role="navigation"
       id={`component-${id}`}
     >
-      <ul className="pagination m-0" style={computedStyles}>
+      <ul
+        className="pagination m-0"
+        style={{ ...computedStyles, ...(isLoading ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
+      >
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}
@@ -97,6 +175,7 @@ export const Pagination = ({
           callback={gotoPage}
           darkMode={darkMode}
           containerWidth={width}
+          isLoading={isLoading}
         />
         <Pagination.Operator
           operator=">"
@@ -247,7 +326,7 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   );
 };
 
-const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth }) => {
+const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth, isLoading }) => {
   const itemWidth = 28; // Width of each item
 
   const [maxItems, setMaxItems] = useState(0); // for max items that can fit in container
@@ -293,11 +372,28 @@ const PageLinks = ({ currentPage, totalPages, callback, darkMode, containerWidth
 
     // Render page numbers
     for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(
-        <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
-          <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
-        </li>
-      );
+      if (isLoading && i === startPage) {
+        pageNumbers.push(
+          <li
+            key={i}
+            className="page-item d-flex align-items-center justify-content-center"
+            style={{ minWidth: itemWidth }}
+          >
+            <Loader
+              width="16"
+              absolute={false}
+              style={{ margin: 0 }}
+              classes={{ loaderContainer: 'align-items-center' }}
+            />
+          </li>
+        );
+      } else {
+        pageNumbers.push(
+          <li key={i} onClick={() => callback(i)} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+            <a className={`page-link ${darkMode && 'text-light'}`}>{i}</a>
+          </li>
+        );
+      }
     }
     // If total pages exceed the maximum displayable page numbers, add ellipsis
     if (totalPages > maxPageNumbers) {
