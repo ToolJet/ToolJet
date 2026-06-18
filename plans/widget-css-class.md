@@ -14,6 +14,7 @@ Durable decisions that apply across all phases:
 - **Schema bucket**: `cssClass` goes in `universalProps.**styles**`, NOT `generalStyles`. (Grill correction — `generalStyles` ignores the `accordian` key and isn't rendered for revamped widgets; `styles` rides `RenderStyleOptions` which honors `accordian`.)
 - **Target node**: applied to the **inner** `canvas-component _tooljet-{name}` node (`RenderWidget.jsx:302`), not the outer `WidgetWrapper`. See ADR 0001.
 - **Schema is mirrored**: `universalProps` exists independently in frontend `componentTypes.js` AND server `widget-config/index.js` (server bucket `styles: {}` + `definition.styles: {}` confirmed present) — both must be kept in sync.
+- **Enterprise gating (`customStyling`)**: the feature is gated by the `customStyling` license flag (same flag as the app/workspace Custom CSS panel it depends on), read via `useStore((s) => s.license.featureAccess?.customStyling)`. Gate at the **ends only** — hide the field in the inspector and skip DOM application when false; **never erase the stored value** so it returns on re-enable. No schema/migration change (the field stays in the schema regardless of license). (PM correction, 2026-06-18)
 
 ---
 
@@ -58,6 +59,7 @@ surface is added.
 - [ ] Custom CSS authored in the existing Custom CSS panel targeting the class visibly styles the widget.
 - [ ] Surrounding/duplicate whitespace in the value is normalized; no blocklist/validation rejects input.
 - [ ] Existing apps (saved before this change) load without migration and with an empty default.
+- [ ] With `customStyling` license flag **false**: the "CSS class" field / Advanced group is hidden in the inspector, and any previously-saved class is NOT applied to the DOM. With the flag **true** again: the saved class re-appears in the field and re-applies — value was never erased.
 - [ ] Spot-check special render paths: Modal / ModalV2 (portal) and a container widget (Container/Form/Tabs/ListView) receive the class correctly; CircularProgressBar's box-shadow exclusion does not swallow `cssClass`.
 
 ---
