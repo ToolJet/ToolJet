@@ -546,7 +546,7 @@ export function convertAllKeysToSnakeCase(o) {
     const newO = {};
     for (const origKey in o) {
       if (Object.prototype.hasOwnProperty.call(o, origKey)) {
-        if (!['pages', 'events'].includes(origKey)) {
+        if (!['pages', 'events', 'linkedApps'].includes(origKey)) {
           const newKey = origKey
             .split(/(?=[A-Z])/)
             .join('_')
