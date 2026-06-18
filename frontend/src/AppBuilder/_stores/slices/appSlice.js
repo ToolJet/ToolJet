@@ -6,6 +6,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import { clearAllPeriodicTimers } from '@/AppBuilder/_stores/slices/componentsSlice';
 import _, { isEmpty, has } from 'lodash';
 import { getSubpath } from '@/_helpers/routes';
 import { v4 as uuidv4 } from 'uuid';
@@ -317,6 +318,9 @@ export const createAppSlice = (set, get) => ({
 
   cleanUpStore: (isPageSwitch = false, moduleId) => {
     const { resetUndoRedoStack, initModules, clearSelectedComponents } = get();
+    // Tear down periodic query timers on full app teardown only — they intentionally
+    // survive page switches (e.g. a health-check query keeps polling across pages).
+    if (!isPageSwitch) clearAllPeriodicTimers();
     resetUndoRedoStack();
     clearSelectedComponents();
     set((state) => {

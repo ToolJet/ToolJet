@@ -645,6 +645,15 @@ export const createEventsSlice = (set, get) => ({
             const { queryId } = event;
             return get().queryPanel.resetQuery(queryId, moduleId);
           }
+          // Parked: pause/resume periodic-run CSAs not exposed in v1 (engine kept for future).
+          // case 'pause-periodic-run': {
+          //   const { queryId } = event;
+          //   return get().queryPanel.pausePeriodicRun(queryId, moduleId);
+          // }
+          // case 'resume-periodic-run': {
+          //   const { queryId } = event;
+          //   return get().queryPanel.resumePeriodicRun(queryId, moduleId);
+          // }
           case 'logout': {
             return logoutAction();
           }
@@ -1096,6 +1105,21 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
+      // Parked: pause/resume periodic-run CSAs not exposed in v1 (engine kept for future).
+      // const pausePeriodicRun = (queryName = '') => {
+      //   const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+      //   if (query) {
+      //     return executeAction({ actionId: 'pause-periodic-run', queryId: query.id }, mode, {}, moduleId);
+      //   }
+      // };
+
+      // const resumePeriodicRun = (queryName = '') => {
+      //   const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+      //   if (query) {
+      //     return executeAction({ actionId: 'resume-periodic-run', queryId: query.id }, mode, {}, moduleId);
+      //   }
+      // };
+
       const setVariable = (key = '', value = '') => {
         if (key) {
           const event = {
@@ -1386,6 +1410,9 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        // Parked: pause/resume periodic-run CSAs not exposed in v1 (engine kept for future).
+        // pausePeriodicRun,
+        // resumePeriodicRun,
         scrollComponentInToView,
       };
     },
