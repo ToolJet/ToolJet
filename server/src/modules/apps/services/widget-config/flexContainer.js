@@ -28,7 +28,7 @@ export const flexContainerConfig = {
     },
     justifyContent: {
       type: 'switch',
-      displayName: 'Distribute',
+      displayName: 'Justify',
       isIcon: true,
       isFxNotRequired: true,
       options: [
