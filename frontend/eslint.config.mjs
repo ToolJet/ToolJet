@@ -8,6 +8,7 @@ import pluginJest from 'eslint-plugin-jest';
 import pluginPrettier from 'eslint-plugin-prettier';
 import configPrettier from 'eslint-config-prettier';
 import pluginStorybook from 'eslint-plugin-storybook';
+import barrelFiles from 'eslint-plugin-barrel-files';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
@@ -29,7 +30,7 @@ function remapImportRules(rules) {
 export default [
   // Global ignores (replaces .eslintignore)
   {
-    ignores: ['build/**', 'assets/**', 'cypress-tests/**'],
+    ignores: ['build/**', 'assets/**', 'cypress-tests/**', 'eslint.config.mjs'],
   },
 
   // Disable reporting unused eslint-disable directives (ESLint 9 defaults to "warn",
@@ -265,6 +266,34 @@ export default [
       ],
 
       'react/no-unknown-property': 'off',
+    },
+  },
+
+  // Barrel-file detection — registers the plugin and enables all rules as error.
+  // Using the upstream recommended preset so future rules are picked up on upgrade.
+  barrelFiles.configs.recommended,
+
+  // Downgrade all barrel-files rules to warn: violations exist throughout src/ today
+  // and we want visibility without blocking CI. avoid-importing-barrel-files is
+  // configured with tsconfig so it can resolve the @/ alias.
+  {
+    rules: {
+      'barrel-files/avoid-barrel-files': 'warn',
+      'barrel-files/avoid-re-export-all': 'warn',
+      'barrel-files/avoid-namespace-import': 'warn',
+      'barrel-files/avoid-importing-barrel-files': ['warn', {
+        tsconfig: { configFile: './tsconfig.json' },
+      }],
+    },
+  },
+
+  // ee/ architecture intentionally uses barrel exports — only disable authoring rules.
+  // avoid-importing-barrel-files and avoid-namespace-import remain as warn.
+  {
+    files: ['ee/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'barrel-files/avoid-barrel-files': 'off',
+      'barrel-files/avoid-re-export-all': 'off',
     },
   },
 
