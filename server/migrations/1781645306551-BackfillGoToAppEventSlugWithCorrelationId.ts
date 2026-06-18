@@ -114,7 +114,7 @@ export class BackfillGoToAppEventSlugWithCorrelationId1781645306551 implements M
                 a.co_relation_id
               FROM app_versions av
               JOIN apps a ON a.id = av.app_id
-              LEFT JOIN workspace_branches wb ON wb.id = av.branch_id
+              LEFT JOIN organization_git_sync_branches wb ON wb.id = av.branch_id
               WHERE av.slug = ANY($1)
                 AND a.organization_id = $2
                 AND a.co_relation_id IS NOT NULL
