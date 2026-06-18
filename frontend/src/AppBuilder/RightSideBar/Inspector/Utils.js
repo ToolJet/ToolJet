@@ -172,6 +172,8 @@ export function renderElement(
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'DropdownV2' ||
+    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||

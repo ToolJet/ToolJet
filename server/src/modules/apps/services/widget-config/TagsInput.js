@@ -160,6 +160,20 @@ export const tagsInputConfig = {
       },
       accordian: 'Tags',
     },
+    serverSideSearch: {
+      type: 'clientServerSwitch',
+      displayName: 'Search type',
+      options: [
+        { displayName: 'Client side', value: 'clientSide' },
+        { displayName: 'Server side', value: 'serverSide' },
+      ],
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'additionalActions',
+      conditionallyRender: {
+        key: 'enableSearch',
+        value: true,
+      },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -412,6 +426,7 @@ export const tagsInputConfig = {
       placeholder: { value: 'Add or select a tag' },
       dynamicHeight: { value: '{{true}}' },
       enableSearch: { value: '{{true}}' },
+      serverSideSearch: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
 
       collapseWhenHidden: { value: '{{false}}' },
