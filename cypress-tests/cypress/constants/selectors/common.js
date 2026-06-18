@@ -397,7 +397,12 @@ export const commonWidgetSelector = {
   changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
   changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
-  sidebarinspector: "[data-cy='left-sidebar-inspector']",
+  // NOTE: data-cy="left-sidebar-inspector" is on the OUTER sidebar wrapper div
+  // (frontend/src/AppBuilder/LeftSidebar/LeftSidebar.jsx:236), not the clickable
+  // Inspector button. The button gets data-cy="left-sidebar-inspector-button"
+  // (SidebarItem.jsx:49, tip="Inspector" -> generateCypressDataCy -> "inspector").
+  // Clicking the wrapper div is a no-op, so target the button to open the panel.
+  sidebarinspector: "[data-cy='left-sidebar-inspector-button']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",

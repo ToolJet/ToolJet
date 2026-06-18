@@ -100,6 +100,17 @@ describe('Button Component Tests', { testIsolation: false }, () => {
             { event: "On Click", message: "On Click Event" },
         ];
 
+        // `add-event-handler` lives in the right-sidebar Inspector
+        // (frontend/src/AppBuilder/RightSideBar/Inspector/EventManager.jsx:1278),
+        // which is only shown when the component's Properties panel is open. The
+        // drag leaves the widget selected but the right Inspector can be
+        // collapsed, so open it explicitly via the config handle's
+        // "Properties & Styles" button — that handler calls
+        // setRightSidebarOpen(true) + CONFIGURATION tab
+        // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:277-288).
+        cy.get('[data-cy="draggable-widget-button1"]').realHover();
+        cy.get('[data-cy="button1-properties-styles-button"]').click();
+
         addMultiEventsWithAlert(events);
         const textInputSelector = '[data-cy="draggable-widget-button1"]';
 

@@ -28,19 +28,30 @@ export const selectEvent = (
   }
 
   // Creating a handler auto-opens its config popover (`popover-card`); if it
-  // didn't, click the card to open it.
-  cy.get("body").then(($body) => {
-    if ($body.find('[data-cy="popover-card"]:visible').length === 0) {
-      cy.get('[data-cy="event-handler-card"]').eq(eventIndex).click();
-    }
-  });
+  // didn't, click the card to open it. The card IS the Radix popover trigger,
+  // so when it's already open it carries `data-state="open"` — gate on that
+  // rather than the popover's `:visible` (which flickers mid-animation and can
+  // wrongly trigger a re-click). When a re-click is needed, force it: an open
+  // Radix popover sets `body { pointer-events: none }` (scroll-lock), which
+  // would otherwise block the click even though the card is interactive.
+  cy.get('[data-cy="event-handler-card"]')
+    .eq(eventIndex)
+    .then(($card) => {
+      if ($card.attr("data-state") !== "open") {
+        cy.wrap($card).click({ force: true });
+      }
+    });
   cy.get('[data-cy="popover-card"]').should("be.visible");
 
   // `action-selection` is now a RocketSelect (trigger + role=option items in a
   // portal), not a searchable input. Open it (unless it auto-opened) and pick
   // the action by its visible label.
   chooseRocketOption('[data-cy="action-selection"]', action);
-  if (needWait) {
+  // A handler is created with `actionId: 'show-alert'` already set
+  // (EventManager.jsx:441), so re-picking "Show Alert" is a no-op that fires no
+  // PATCH /events — waiting for one would hang. Only wait when the action
+  // actually changes the saved handler.
+  if (needWait && !/^\s*show alert\s*$/i.test(action)) {
     cy.wait("@events");
   }
 };
@@ -94,7 +105,25 @@ export const addSupportCSAData = (field, data) => {
   // (update) — not PUT. Match the URL regardless of method so the waits below
   // resolve on the real requests.
   cy.intercept(/\/events(\/|\?|$)/).as("events");
+  // The config field (e.g. alert-message) lives inside the event's `popover-card`.
+  // Selecting the action via the RocketSelect can momentarily re-render the
+  // popover; if it ended up closed, the field won't exist. Ensure the popover is
+  // open (reopening the handler card when needed) before typing.
+  cy.get("body").then(($body) => {
+    if ($body.find(`[data-cy="${field}-input-field"]`).length === 0) {
+      // addSupportCSAData always runs right after selectEvent created/edited the
+      // most recent handler, so the relevant card is the last one.
+      cy.get('[data-cy="event-handler-card"]')
+        .last()
+        .then(($card) => {
+          if ($card.attr("data-state") !== "open") {
+            cy.wrap($card).click({ force: true });
+          }
+        });
+    }
+  });
   cy.get(`[data-cy="${field}-input-field"]`)
+    .should("be.visible")
     .click({ force: true })
     .clearAndTypeOnCodeMirror(data);
   cy.get('[data-cy="event-label"]').click({ force: true })
