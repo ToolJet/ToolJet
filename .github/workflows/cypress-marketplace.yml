@@ -20,7 +20,8 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-ee')
 
     strategy:
       fail-fast: false
@@ -408,13 +409,37 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
-      - name: Marketplace
+      - name: Install Cypress & deps
         uses: cypress-io/github-action@v6
         with:
-          browser: chrome
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000"
-          config-file: cypress-marketplace.config.js
+          runTests: false
+
+      - name: Marketplace
+        working-directory: ./cypress-tests
+        env:
+          CELL: "Marketplace / ${{ matrix.edition }}"
+          BROWSER: chrome
+          CONFIG_FILE: cypress-marketplace.config.js
+          CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
+        run: node cy-ci-run.js
+
+      - name: Ensure run summary exists
+        if: always()
+        working-directory: ./cypress-tests
+        run: |
+          if [ ! -f summary.json ]; then
+            printf '{"cell":"Marketplace / %s","result":"failure","stats":null}\n' '${{ matrix.edition }}' > summary.json
+          fi
+          cat summary.json
+
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-summary-marketplace-${{ matrix.edition }}
+          path: cypress-tests/summary.json
+          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -431,8 +456,7 @@ jobs:
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace-subpath')
 
     steps:
       - name: Checkout
@@ -515,12 +539,36 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-      - name: Marketplace subpath
-        uses: cypress-io/github-action@v5
+      - name: Install Cypress & deps
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80/apps/tooljet/"
-          config-file: cypress-marketplace.config.js
+          runTests: false
+
+      - name: Marketplace subpath
+        working-directory: ./cypress-tests
+        env:
+          CELL: "Marketplace subpath"
+          CONFIG_FILE: cypress-marketplace.config.js
+          CYPRESS_CONFIG: "baseUrl=http://localhost:80/apps/tooljet/"
+        run: node cy-ci-run.js
+
+      - name: Ensure run summary exists
+        if: always()
+        working-directory: ./cypress-tests
+        run: |
+          if [ ! -f summary.json ]; then
+            printf '{"cell":"Marketplace subpath","result":"failure","stats":null}\n' > summary.json
+          fi
+          cat summary.json
+
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-summary-marketplace-subpath
+          path: cypress-tests/summary.json
+          retention-days: 7
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v4
@@ -528,3 +576,60 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+  notify-slack:
+    needs:
+      - Cypress-Marketplace
+      - Cypress-Marketplace-Subpath
+    # Run after the matrix whenever at least one test job actually ran (not all
+    # skipped — avoids posting on unrelated labels).
+    if: >-
+      always() &&
+      (needs.Cypress-Marketplace.result != 'skipped' ||
+       needs.Cypress-Marketplace-Subpath.result != 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      # This job runs separately from the matrix, so check out just the script.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Download run summaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cypress-summary-*
+          path: summaries
+
+      - name: Build Slack payload
+        env:
+          CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
+          # Red unless every test job that ran passed (skipped cells don't count).
+          OVERALL: >-
+            ${{ (needs.Cypress-Marketplace.result == 'failure' ||
+                 needs.Cypress-Marketplace-Subpath.result == 'failure')
+                && 'failure' || 'success' }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          # Normalise pull_request_target → pull_request so the script renders PR context.
+          EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
+          SHA: ${{ github.sha }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+          # PR context — populated only on pull_request events; empty on push.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BRANCH: ${{ github.ref_name }}
+        run: node .github/scripts/build-slack-payload.js
+
+      - name: Post result to Slack
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          # Fail the step (and surface the Slack API error) instead of
+          # silently swallowing ok:false responses like not_in_channel.
+          errors: true
+          payload-file-path: payload.json
