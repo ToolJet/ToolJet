@@ -29,7 +29,7 @@ You can enable the **Authentication required for all users** toggle in the confi
 - **[Calendar](#calendar)**
 - **[Users](#users)**
 - **[Teams](#teams)**
-- **[One Drive](#one-drive)**
+- **[One Drive](#onedrive)**
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/microsoft-graph/listops.png" alt="Microsoft Graph supoorted entities" />
 
