@@ -145,7 +145,7 @@ export const flexContainerConfig = {
       placeholder: 'Enter tooltip text',
     },
   },
-  events: { onClick: { displayName: 'On click' } },
+  events: {},
   styles: {
     backgroundColor: {
       type: 'colorSwatches',

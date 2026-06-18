@@ -22,7 +22,6 @@ export const FlexContainer = ({
   componentCount = 0,
   currentMode,
   subContainerIndex,
-  fireEvent,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -121,11 +120,7 @@ export const FlexContainer = ({
   };
 
   return (
-    <div
-      style={outerStyles}
-      className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}
-      onClick={() => fireEvent('onClick')}
-    >
+    <div style={outerStyles} className={`flex-container-widget ${isLoading ? 'jet-container-loading' : ''}`}>
       {isLoading ? (
         <Spinner />
       ) : (
