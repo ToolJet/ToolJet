@@ -49,12 +49,14 @@ const BLOCKED_HOSTNAME_PATTERNS = [
   /\.traefik\.me$/i,
 ];
 
+type SSRFCheckLevel = 'full' | 'standard' | 'minimal';
+
 interface SSRFProtectionOptions {
   enabled?: boolean;
   dnsResolutionCheck?: boolean;
   blockedSchemes?: string[];
   allowedHostnames?: Set<string>;
-  allowPrivateNetworks?: boolean;
+  checkLevel?: SSRFCheckLevel;
 }
 
 export function getSSRFConfig(): SSRFProtectionOptions {
@@ -83,11 +85,11 @@ export function getSSRFConfig(): SSRFProtectionOptions {
     ? blockedSchemesEnv.split(',').map(s => s.trim().toLowerCase()).filter(s => s.length > 0)
     : DEFAULT_BLOCKED_SCHEMES;
 
-  // Cloud: block all private ranges — multi-tenant shared infra, full SSRF enforcement.
-  // EE/CE: allow RFC1918 (10.x, 172.16.x, 192.168.x) — customers legitimately reach
-  //        internal services on their own private networks. Cloud metadata endpoints
-  //        (169.254.x.x) and loopback remain blocked even on self-hosted.
-  const allowPrivateNetworks = !isCloud;
+  // Check level controls which IP ranges are blocked:
+  //   Cloud    — 'full':    block all private ranges (RFC1918 + loopback + metadata)
+  //   CE/unset — 'standard': block metadata + loopback + specials; allow RFC1918
+  //   EE       — 'minimal': block only cloud metadata endpoints (169.254.169.254 etc.)
+  const checkLevel: SSRFCheckLevel = isCloud ? 'full' : isEE ? 'minimal' : 'standard';
 
   // Self-hosted: localhost and loopback explicitly allowed.
   // Cloud: nothing bypasses SSRF checks.
@@ -95,7 +97,7 @@ export function getSSRFConfig(): SSRFProtectionOptions {
     ? new Set<string>()
     : new Set(['localhost', 'ip6-localhost', 'ip6-loopback', '::1']);
 
-  return { enabled, dnsResolutionCheck, blockedSchemes, allowPrivateNetworks, allowedHostnames };
+  return { enabled, dnsResolutionCheck, blockedSchemes, checkLevel, allowedHostnames };
 }
 
 /**
@@ -333,7 +335,7 @@ function isPrivateIPv6(ip: string): boolean {
 
 /**
  * Checks if an IP is a dangerous private/reserved address that must always be blocked,
- * even on self-hosted deployments where allowPrivateNetworks=true.
+ * even on self-hosted deployments (checkLevel='standard' or 'minimal').
  *
  * Unlike isPrivateIP(), this does NOT block RFC1918 ranges (10.x, 172.16.x, 192.168.x)
  * because self-hosted customers legitimately access internal services at those addresses.
@@ -442,10 +444,7 @@ export async function resolvesToPrivateIP(hostname: string, config?: SSRFProtect
       return true;
     }
 
-    // Check if any resolved address is a private IP.
-    // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges
-    // (metadata, loopback) — not RFC1918, which are legitimate internal services.
-    const ipCheckFn = config?.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
+    const ipCheckFn = resolveIPChecker(config?.checkLevel);
     return addresses.some(addr => ipCheckFn(addr));
   } catch (error) {
     console.warn(`DNS resolution error for ${hostname}:`, error.message);
@@ -541,9 +540,8 @@ export async function validateUrlForSSRF(
   }
 
   // 3. Check if hostname is a private IP address.
-  // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges
-  // (metadata endpoints, loopback) — RFC1918 is allowed for internal services.
-  const ipCheckFn = config.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
+  // Check strictness varies by edition — see resolveIPChecker.
+  const ipCheckFn = resolveIPChecker(config.checkLevel);
   if (ipCheckFn(hostname)) {
     throw new QueryError(
       'Private IP address blocked',
@@ -610,9 +608,7 @@ export function createSSRFSafeLookup(options?: SSRFProtectionOptions) {
         return callback(null, address, family);
       }
 
-      // Validate the resolved IP address.
-      // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges.
-      const ipCheckFn = config.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
+      const ipCheckFn = resolveIPChecker(config.checkLevel);
       if (ipCheckFn(address)) {
         const error: any = new Error(
           `Hostname "${hostname}" resolves to private IP address "${address}" which is blocked for security reasons`
@@ -799,8 +795,7 @@ export function validateUrlForSSRFSync(urlString: string, options?: SSRFProtecti
   }
 
   // Check if hostname is a private IP.
-  // On self-hosted (allowPrivateNetworks=true) only block dangerous ranges.
-  const ipCheckFnSync = config.allowPrivateNetworks ? isDangerousPrivateIP : isPrivateIP;
+  const ipCheckFnSync = resolveIPChecker(config.checkLevel);
   if (ipCheckFnSync(hostname)) {
     throw new QueryError(
       'Private IP address blocked',

@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService, validateUrlForSSRF, getSSRFProtectionOptions } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 
@@ -43,18 +43,20 @@ export default class N8n implements QueryService {
       };
     };
 
+    await validateUrlForSSRF(url);
+
     try {
       switch (operation) {
         case 'post': {
           if (bodyContent === '') {
             throw new Error('Please provide body content');
           }
-          const response = await got(url, constructPayload('post'));
+          const response = await got(url, getSSRFProtectionOptions(undefined, constructPayload('post')));
           result = JSON.parse(response.body);
           break;
         }
         case 'get': {
-          const response = await got(url, constructPayload('get'));
+          const response = await got(url, getSSRFProtectionOptions(undefined, constructPayload('get')));
           result = JSON.parse(response.body);
           break;
         }
