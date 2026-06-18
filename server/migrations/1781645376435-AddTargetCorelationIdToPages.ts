@@ -57,54 +57,59 @@ export class AddTargetCorelationIdToPages1781645376435 implements MigrationInter
     // Step 2: Temp partial index on app_versions(slug). Slug uniqueness here is
     // trigger-enforced, not index-enforced — without this the backfill's slug join
     // degrades into a sequential scan on app_versions for every page row. Dropped
-    // at the end; the surrounding transaction rolls it back on failure.
+    // in `finally` so operators running with `transaction: 'none'` don't end up
+    // with an orphan index on partial failure.
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS tmp_idx_av_slug_target_lookup
         ON app_versions (slug)
         WHERE slug IS NOT NULL
     `);
 
-    // Step 3: Backfill target_corelation_id by treating pages.app_id as a slug and
-    // resolving it against app_versions.slug within the same organization as the
-    // page's source app. DISTINCT ON ensures one update per page; the ORDER BY
-    // mirrors findAppBySlug's runtime resolution:
-    //   1. Default-branch rows (git-enabled workspaces).
-    //   2. Branchless rows (git-disabled / pre-git-sync legacy).
-    //   3. Anything else (sub-branches, stale tag snapshots after rename).
-    //   Within tier: newest updated_at, then id for determinism.
-    // Unresolvable slugs leave target_corelation_id NULL.
-    await queryRunner.query(`
-      UPDATE pages p
-      SET target_corelation_id = sub.target_co_relation_id
-      FROM (
-        SELECT DISTINCT ON (p2.id)
-          p2.id AS page_id,
-          target_app.co_relation_id AS target_co_relation_id
-        FROM pages p2
-        JOIN app_versions src_av ON src_av.id = p2.app_version_id
-        JOIN apps source_app ON source_app.id = src_av.app_id
-        JOIN app_versions target_av ON target_av.slug = p2.app_id
-        JOIN apps target_app
-          ON target_app.id = target_av.app_id
-          AND target_app.organization_id = source_app.organization_id
-        LEFT JOIN workspace_branches wb ON wb.id = target_av.branch_id
-        WHERE p2.app_id IS NOT NULL
-          AND p2.app_id <> ''
-          AND target_app.co_relation_id IS NOT NULL
-          AND target_app.type = 'front-end'
-        ORDER BY p2.id,
-                 (CASE WHEN wb.is_default = true THEN 0
-                       WHEN target_av.branch_id IS NULL THEN 1
-                       ELSE 2 END) ASC,
-                 target_av.updated_at DESC,
-                 target_av.id ASC
-      ) sub
-      WHERE p.id = sub.page_id
-    `);
-
-    // Step 4: Drop the temp index — runtime lookups go through co_relation_id, not
-    // slug, so the index is dead weight after the backfill completes.
-    await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_av_slug_target_lookup`);
+    try {
+      // Step 3: Backfill target_corelation_id by treating pages.app_id as a slug
+      // and resolving it against app_versions.slug within the same organization as
+      // the page's source app. DISTINCT ON ensures one update per page; the
+      // ORDER BY mirrors findAppBySlug's runtime resolution:
+      //   1. Default-branch rows (git-enabled workspaces).
+      //   2. Branchless rows (git-disabled / pre-git-sync legacy).
+      //   3. Anything else (sub-branches, stale tag snapshots after rename).
+      //   Within tier: newest updated_at, then id for determinism.
+      // `pages.type = 'app'` guards against junk app_id values on non-app pages.
+      // Unresolvable slugs leave target_corelation_id NULL.
+      await queryRunner.query(`
+        UPDATE pages p
+        SET target_corelation_id = sub.target_co_relation_id
+        FROM (
+          SELECT DISTINCT ON (p2.id)
+            p2.id AS page_id,
+            target_app.co_relation_id AS target_co_relation_id
+          FROM pages p2
+          JOIN app_versions src_av ON src_av.id = p2.app_version_id
+          JOIN apps source_app ON source_app.id = src_av.app_id
+          JOIN app_versions target_av ON target_av.slug = p2.app_id
+          JOIN apps target_app
+            ON target_app.id = target_av.app_id
+            AND target_app.organization_id = source_app.organization_id
+          LEFT JOIN organization_git_sync_branches wb ON wb.id = target_av.branch_id
+          WHERE p2.app_id IS NOT NULL
+            AND p2.app_id <> ''
+            AND p2.type = 'app'
+            AND target_app.co_relation_id IS NOT NULL
+            AND target_app.type = 'front-end'
+          ORDER BY p2.id,
+                   (CASE WHEN wb.is_default = true THEN 0
+                         WHEN target_av.branch_id IS NULL THEN 1
+                         ELSE 2 END) ASC,
+                   target_av.updated_at DESC,
+                   target_av.id ASC
+        ) sub
+        WHERE p.id = sub.page_id
+      `);
+    } finally {
+      // Step 4: Drop the temp index — runtime lookups go through co_relation_id,
+      // not slug, so the index is dead weight after the backfill completes.
+      await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_av_slug_target_lookup`);
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
