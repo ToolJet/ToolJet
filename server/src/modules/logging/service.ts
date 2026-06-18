@@ -15,6 +15,7 @@ export class TransactionLogger implements LoggerService {
       const env = this.configService.get<string>('NODE_ENV', 'development');
       const level =
         this.configService.get<string>('TRANSACTION_LOGGING_LEVEL') ||
+        (env !== 'development' ? process.env.SERVER_LOG_LEVEL : null) ||
         {
           production: 'info',
           development: 'trace',

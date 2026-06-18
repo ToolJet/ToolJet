@@ -6,33 +6,44 @@ import { trace, context } from '@opentelemetry/api';
 import { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { recordApiDuration, recordApiHit } from '@otel/tracing';
-import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class OtelMiddleware implements NestMiddleware {
   constructor(
     private readonly licenseTermsService: LicenseTermsService,
-    private readonly configService: ConfigService,
-    private readonly logger: Logger
+    private readonly configService: ConfigService
   ) {}
+
+  // Replace UUIDs and bare numeric segments with :id to avoid high cardinality.
+  private normalizeRoute(path: string): string {
+    return path
+      .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, ':id')
+      .replace(/\/\d+(?=\/|$)/g, '/:id');
+  }
 
   async use(req: Request, res: Response, next: NextFunction) {
     if (this.configService.get<string>('ENABLE_OTEL') !== 'true') {
       return next();
     }
-    if (!(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
+    const isDev = this.configService.get<string>('NODE_ENV') === 'development';
+    if (!isDev && !(await this.licenseTermsService.getLicenseTermsInstance(LICENSE_FIELD.OBSERVABILITY_ENABLED))) {
       return next();
     }
 
-    const span = trace.getSpan(context.active());
-    const route = req.route?.path || req.path || 'unknown_route';
+    // req.path and req.url are relative to the NestJS router mount point (/api is stripped).
+    // req.originalUrl is the full path as received from the client — use that.
+    const rawPath = (req.originalUrl || '').split('?')[0];
+    const route = this.normalizeRoute(rawPath || 'unknown_route');
     const method = req.method || 'UNKNOWN_METHOD';
     const startTime = Date.now();
+    const span = trace.getSpan(context.active());
 
-    if (span && route.startsWith('/api/') && route !== '/api/health') {
-      span.updateName(`${method} ${route}`);
-      span.setAttribute('http.route', route);
-      span.setAttribute('http.method', method);
+    if (route.startsWith('/api/') && route !== '/api/health') {
+      if (span) {
+        span.updateName(`${method} ${route}`);
+        span.setAttribute('http.route', route);
+        span.setAttribute('http.method', method);
+      }
 
       recordApiHit({ route, method });
 
@@ -41,13 +52,10 @@ export class OtelMiddleware implements NestMiddleware {
         const statusCode = res.statusCode;
         const duration = Date.now() - startTime;
 
-        if (span.isRecording()) {
+        if (span?.isRecording()) {
           span.setAttribute('http.status_code', statusCode);
         }
         recordApiDuration(duration, { route, method, status_code: statusCode });
-        this.logger.log(
-          `Setting up Otel logging : API ${method} ${route} completed with status ${statusCode} in ${duration}ms`
-        );
 
         return originalJson(body);
       };

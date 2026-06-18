@@ -12,7 +12,7 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
-import { PeriodicExportingMetricReader, AggregationTemporality } from '@opentelemetry/sdk-metrics';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto';
 import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
 import { logs } from '@opentelemetry/api-logs';
@@ -54,58 +54,47 @@ let otelLoggerProvider: LoggerProvider | null = null;
 // Function to create the SDK (called only when startOpenTelemetry is invoked)
 // NOTE: URLs, headers, and resource are read here — AFTER loadEnvVars() has run —
 // so .env file values are correctly picked up.
-function createSDK(): NodeSDK {
+function buildResource() {
+  return resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
+    [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
+    [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
+  });
+}
+
+// Logs are initialised separately so they don't block or couple to metric/trace SDK startup.
+// ponytail: sdk-node nests its own api-logs (0.218.x); pino resolves from root (0.203.x) —
+// registering here ensures PinoInstrumentation's OTelPinoStream sees the real provider.
+function initializeLogs(resource: ReturnType<typeof buildResource>): void {
+  const authHeader: Record<string, string> | undefined = process.env.OTEL_HEADER
+    ? { Authorization: process.env.OTEL_HEADER }
+    : undefined;
+  const logsUrl = process.env.OTEL_EXPORTER_OTLP_LOGS || 'http://localhost:4318/v1/logs';
+  const logRecordProcessor = new BatchLogRecordProcessor(
+    new OTLPLogExporter({ url: logsUrl, headers: authHeader }),
+    { scheduledDelayMillis: parseInt(process.env.OTEL_LOG_BATCH_DELAY_MS || '2000', 10) }
+  );
+  otelLoggerProvider = new LoggerProvider({ resource, processors: [logRecordProcessor] });
+  (logs as any).setGlobalLoggerProvider(otelLoggerProvider);
+}
+
+function createSDK(resource: ReturnType<typeof buildResource>): NodeSDK {
   const traceUrl = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
   const metricsUrl = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
   const authHeader: Record<string, string> | undefined = process.env.OTEL_HEADER
     ? { Authorization: process.env.OTEL_HEADER }
     : undefined;
 
-  // Define the trace exporter
-  const traceExporter = new OTLPTraceExporter({
-    url: traceUrl,
-    headers: authHeader,
-  });
+  const traceExporter = new OTLPTraceExporter({ url: traceUrl, headers: authHeader });
 
-  // Define the metric exporter
-  // Dynatrace (and many other backends) require DELTA temporality.
-  // The OTLPMetricExporter defaults to CUMULATIVE, which Dynatrace silently drops.
-  // Set OTEL_METRICS_TEMPORALITY=cumulative for backends like Prometheus' OTLP receiver.
   const metricExporter = new OTLPMetricExporter({
     url: metricsUrl,
     headers: authHeader,
-    temporalityPreference:
-      process.env.OTEL_METRICS_TEMPORALITY === 'cumulative'
-        ? AggregationTemporality.CUMULATIVE
-        : AggregationTemporality.DELTA,
   });
-
-  const logsUrl = process.env.OTEL_EXPORTER_OTLP_LOGS || 'http://localhost:4318/v1/logs';
-  const logExporter = new OTLPLogExporter({
-    url: logsUrl,
-    headers: authHeader,
-  });
-  const logRecordProcessor = new BatchLogRecordProcessor(logExporter, {
-    scheduledDelayMillis: parseInt(process.env.OTEL_LOG_BATCH_DELAY_MS || '2000', 10),
-  });
-
-  const resource = resourceFromAttributes({
-    [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
-    [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
-    [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
-  });
-
-  // Register LoggerProvider on the ROOT @opentelemetry/api-logs instance.
-  // sdk-node bundles its own api-logs (0.218.x) and registers there, but
-  // @opentelemetry/instrumentation-pino resolves api-logs from the root
-  // (0.203.x), giving it a separate no-op global. Registering here ensures
-  // PinoInstrumentation's OTelPinoStream gets a real provider.
-  otelLoggerProvider = new LoggerProvider({ resource, processors: [logRecordProcessor] });
-  (logs as any).setGlobalLoggerProvider(otelLoggerProvider);
 
   return new NodeSDK({
-    resource: resource,
-    traceExporter: traceExporter,
+    resource,
+    traceExporter,
     spanProcessor: new BatchSpanProcessor(traceExporter),
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
@@ -181,7 +170,6 @@ let concurrentUsersCounter: any;
 let activeSessionsCounter: any;
 let concurrentUsersGauge: any;
 let sessionsActiveGauge: any;
-let jwtValidationHistogram: any;
 
 // Track active users per workspace with last activity timestamp
 // Key format: "workspaceId:userId", Value: { lastSeen: timestamp, role: string }
@@ -399,20 +387,10 @@ const initializeCustomMetrics = () => {
     unit: 'ms',
   });
 
-  // Histogram for JWT validation latency (hot path: every authenticated request)
-  jwtValidationHistogram = meter.createHistogram('jwt.validation.duration', {
-    description: 'Time spent validating a JWT token and loading the user session',
-    unit: 'ms',
-  });
 };
 
 export function recordApiHit(attrs: { route: string; method: string }) {
   apiHitCounter.add(1, attrs);
-}
-export function recordJwtValidationDuration(duration: number) {
-  if (jwtValidationHistogram) {
-    jwtValidationHistogram.record(duration);
-  }
 }
 export function recordApiDuration(
   duration: number,
@@ -452,9 +430,13 @@ process.on('SIGTERM', () => {
 
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
-    // Create SDK lazily (only when this function is called)
+    const resource = buildResource();
+
+    // Logs, metrics, and traces initialised independently — each signal is self-contained.
+    initializeLogs(resource);
+
     if (!sdk) {
-      sdk = createSDK();
+      sdk = createSDK(resource);
     }
 
     await sdk.start();
@@ -613,6 +595,17 @@ export const decrementActiveSessions = (attributes: {
 const PINO_SEV: Record<number, number> = { 10: 1, 20: 5, 30: 9, 40: 13, 50: 17, 60: 21 };
 const PINO_TEXT: Record<number, string> = { 10: 'TRACE', 20: 'DEBUG', 30: 'INFO', 40: 'WARN', 50: 'ERROR', 60: 'FATAL' };
 
+const SENSITIVE_KEY_RE = /token|secret|password|authorization|api.?key|credential|private.?key/i;
+const JWT_RE = /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g;
+
+function scrubAttributes(attrs: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [k, v] of Object.entries(attrs)) {
+    result[k] = SENSITIVE_KEY_RE.test(k) ? '[REDACTED]' : v;
+  }
+  return result;
+}
+
 /**
  * Returns a Writable that bridges raw pino JSON lines to the OTEL log pipeline.
  * Call this after startOpenTelemetry() to add as a pino multistream destination.
@@ -627,12 +620,13 @@ export function createOtelLogStream(): Writable | null {
       try {
         const rec = JSON.parse(chunk.toString());
         const { msg, message, time, level, hostname, pid, trace_id, span_id, trace_flags, ...attributes } = rec;
+        const body = (msg || message || '').replace(JWT_RE, '[JWT_REDACTED]');
         pinoLogger.emit({
           severityNumber: PINO_SEV[level] ?? 9,
           severityText: PINO_TEXT[level] ?? 'INFO',
-          body: msg || message || '',
+          body,
           timestamp: time ? [Math.floor(time / 1000), (time % 1000) * 1_000_000] as [number, number] : undefined,
-          attributes,
+          attributes: scrubAttributes(attributes),
         });
       } catch { /* ignore unparseable lines (pino startup banner, etc.) */ }
       cb();

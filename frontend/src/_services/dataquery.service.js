@@ -1,5 +1,5 @@
 import config from 'config';
-import { recordQueryExec, recordQueryError } from '@/_services/frontend-metrics.service';
+import { recordQueryError } from '@/_services/frontend-metrics.service';
 import { authHeader, handleResponse } from '@/_helpers';
 import { getActiveBranchId } from '@/_helpers/active-branch';
 
@@ -111,14 +111,8 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
   const startTime = Date.now();
   return fetch(url, requestOptions)
     .then(handleResponse)
-    .then((result) => {
-      recordQueryExec(queryId, null, 'success', Date.now() - startTime);
-      return result;
-    })
+    .then((result) => result)
     .catch((err) => {
-      recordQueryExec(queryId, null, 'failure', Date.now() - startTime);
-      // TypeError means fetch itself failed (no connectivity / CORS).
-      // Any other error is a server-returned non-2xx (handleResponse throws).
       const errorType = err instanceof TypeError ? 'network_error' : 'server_error';
       recordQueryError(queryId, null, errorType);
       throw err;

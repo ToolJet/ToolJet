@@ -2,26 +2,15 @@ import { metrics } from '@opentelemetry/api';
 import { AuditLogFields } from '@modules/audit-logs/types';
 
 /**
- * OTEL Metrics for Audit Logs
- *
- * This module provides OpenTelemetry metrics instrumentation for audit logs.
- * It tracks various app-based metrics by streaming audit log events to the OTEL collector.
- *
- * Metrics are separated into two categories:
- * - Platform metrics: Platform-level operations (user management, org settings, etc.)
- * - App metrics: App-specific operations (query execution, app usage, etc.)
+ * OTEL Metrics for app-level activity (sourced from audit log events).
+ * Platform-level audit log counters (audit.logs.*) are intentionally excluded —
+ * those duplicate what the audit log storage already tracks.
  */
 
-// Meters for different metric categories
 let platformMeter: any;
 let appMeter: any;
 
 // Platform-level metrics
-let auditLogCounter: any;
-let auditLogActionCounter: any;
-let auditLogResourceCounter: any;
-let auditLogUserActivityGauge: any;
-let auditLogOrganizationActivityGauge: any;
 let userSessionsCounter: any;
 
 // App-level query metrics (with mode and environment tracking)
@@ -46,10 +35,7 @@ let datasourceCreationsCounter: any;
 let datasourceUpdatesCounter: any;
 let datasourceDeletionsCounter: any;
 
-// Store recent activity for gauges (last 15 minutes)
-const ACTIVITY_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const userActivity = new Map<string, { count: number; lastUpdate: number }>();
-const organizationActivity = new Map<string, { count: number; lastUpdate: number }>();
+const ACTIVITY_WINDOW_MS = 15 * 60 * 1000;
 const appActiveUsers = new Map<string, Map<string, number>>(); // appId -> Map<userId, lastSeen>
 
 // Store app success/failure counts for success rate calculation
@@ -67,81 +53,7 @@ export const initializeAuditLogMetrics = () => {
 
   // ============ Platform-level metrics ============
 
-  // Counter: Total audit log events
-  auditLogCounter = platformMeter.createCounter('audit.logs.total', {
-    description: 'Total number of audit log events',
-    unit: '1',
-  });
-
-  // Counter: Audit log events by action type
-  auditLogActionCounter = platformMeter.createCounter('audit.logs.actions', {
-    description: 'Number of audit log events by action type',
-    unit: '1',
-  });
-
-  // Counter: Audit log events by resource type
-  auditLogResourceCounter = platformMeter.createCounter('audit.logs.resources', {
-    description: 'Number of audit log events by resource type',
-    unit: '1',
-  });
-
-  // Gauge: Active users by organization (based on recent audit logs)
-  auditLogUserActivityGauge = platformMeter.createObservableGauge('audit.logs.active_users', {
-    description: 'Number of active users by organization (based on audit log activity in last 15 minutes)',
-    unit: '1',
-  });
-
-  auditLogUserActivityGauge.addCallback((observableResult: any) => {
-    const now = Date.now();
-    const cutoffTime = now - ACTIVITY_WINDOW_MS;
-
-    // Clean up old entries and aggregate by organization
-    const orgUserCounts = new Map<string, Set<string>>();
-
-    for (const [key, value] of userActivity.entries()) {
-      if (value.lastUpdate < cutoffTime) {
-        userActivity.delete(key);
-      } else {
-        // key format: "orgId:userId"
-        const [orgId, userId] = key.split(':');
-        if (!orgUserCounts.has(orgId)) {
-          orgUserCounts.set(orgId, new Set());
-        }
-        orgUserCounts.get(orgId)!.add(userId);
-      }
-    }
-
-    // Report metrics for each organization
-    for (const [orgId, users] of orgUserCounts.entries()) {
-      observableResult.observe(users.size, {
-        organization_id: orgId,
-      });
-    }
-  });
-
-  // Gauge: Activity count by organization
-  auditLogOrganizationActivityGauge = platformMeter.createObservableGauge('audit.logs.organization_activity', {
-    description: 'Number of audit log events by organization in last 15 minutes',
-    unit: '1',
-  });
-
-  auditLogOrganizationActivityGauge.addCallback((observableResult: any) => {
-    const now = Date.now();
-    const cutoffTime = now - ACTIVITY_WINDOW_MS;
-
-    // Clean up old entries
-    for (const [orgId, activity] of organizationActivity.entries()) {
-      if (activity.lastUpdate < cutoffTime) {
-        organizationActivity.delete(orgId);
-      } else {
-        observableResult.observe(activity.count, {
-          organization_id: orgId,
-        });
-      }
-    }
-  });
-
-  // User Sessions Counter (platform-level)
+  // User Sessions Counter
   userSessionsCounter = platformMeter.createCounter('user.sessions.total', {
     description: 'Total user login/logout events',
     unit: '1',
@@ -288,7 +200,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
    if (!isOtelEnabled) {
    return;
  }
-  if (!auditLogCounter) {
+  if (!userSessionsCounter) {
     console.warn('Audit log metrics not initialized. Skipping metric recording.');
     return;
   }
@@ -304,51 +216,6 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
       ipAddress,
       metadata = {},
     } = auditLogData;
-
-    // Prepare common attributes
-    const commonAttributes = {
-      organization_id: organizationId,
-      user_id: userId,
-      resource_type: resourceType,
-      action_type: actionType,
-    };
-
-    // Record total audit log counter
-    auditLogCounter.add(1, commonAttributes);
-
-    // Record action-specific counter
-    auditLogActionCounter.add(1, {
-      action_type: actionType,
-      resource_type: resourceType,
-      organization_id: organizationId,
-    });
-
-    // Record resource-specific counter
-    auditLogResourceCounter.add(1, {
-      resource_type: resourceType,
-      organization_id: organizationId,
-    });
-
-    // Update user activity gauge data
-    const userActivityKey = `${organizationId}:${userId}`;
-    userActivity.set(userActivityKey, {
-      count: (userActivity.get(userActivityKey)?.count || 0) + 1,
-      lastUpdate: Date.now(),
-    });
-
-    // Update organization activity gauge data
-    if (organizationActivity.has(organizationId)) {
-      const current = organizationActivity.get(organizationId)!;
-      organizationActivity.set(organizationId, {
-        count: current.count + 1,
-        lastUpdate: Date.now(),
-      });
-    } else {
-      organizationActivity.set(organizationId, {
-        count: 1,
-        lastUpdate: Date.now(),
-      });
-    }
 
     // Record query-specific metrics
     if (actionType === 'DATA_QUERY_RUN') {
@@ -802,8 +669,6 @@ function categorizeError(error: any): string {
  * Clear activity data (useful for testing)
  */
 export const clearActivityData = () => {
-  userActivity.clear();
-  organizationActivity.clear();
   appActiveUsers.clear();
   appSuccessTracking.clear();
 };

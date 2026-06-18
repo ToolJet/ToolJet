@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { recordAppOpen, recordAppLoad } from '@/_services/frontend-metrics.service';
 import {
   appEnvironmentService,
   appService,
@@ -670,13 +669,6 @@ const useAppData = (
         }
 
         startExposedValueBatch();
-        if (initialLoadRef.current) {
-          const releaseStatus = mode === 'view' ? (isReleasedApp ? 'released' : 'preview') : mode;
-          recordAppOpen(effectiveAppId, releaseStatus);
-          if (appLoadStart.current) {
-            recordAppLoad(effectiveAppId, releaseStatus, Date.now() - appLoadStart.current);
-          }
-        }
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
       })

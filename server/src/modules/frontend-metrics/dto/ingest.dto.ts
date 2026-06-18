@@ -12,18 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// Mirror of FrontendMetricEventType in frontend-metrics.ts (kept in sync manually)
-const VALID_EVENT_TYPES = [
-  'page_view',
-  'page_load',
-  'app_open',
-  'app_load',
-  'query_exec',
-  'query_error',
-  'widget_render',
-  'widget_error',
-  'js_error',
-] as const;
+const VALID_EVENT_TYPES = ['query_error', 'widget_error', 'js_error'] as const;
 
 export type ValidEventType = typeof VALID_EVENT_TYPES[number];
 
@@ -35,7 +24,6 @@ export class FrontendMetricEventDto {
   @Min(0)
   ts: number;
 
-  // Must be ≥ 0 — OTEL backends reject negative histogram observations.
   @IsNumber()
   @Min(0)
   @IsOptional()

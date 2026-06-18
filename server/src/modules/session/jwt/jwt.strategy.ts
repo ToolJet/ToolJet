@@ -10,7 +10,7 @@ import { SessionUtilService } from '../util.service';
 import { JWTPayload } from '../types';
 import { UserSessionRepository } from '@modules/session/repository';
 import { TransactionLogger } from '@modules/logging/service';
-import { trackUserActivity, recordJwtValidationDuration } from '@otel/tracing';
+import { trackUserActivity } from '@otel/tracing';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid';
 
@@ -174,7 +174,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       this.transactionLogger.log(
         `JwtStrategy validate completed at ${new Date().toISOString()} after ${elapsed}ms`
       );
-      recordJwtValidationDuration(elapsed);
     }
   }
 

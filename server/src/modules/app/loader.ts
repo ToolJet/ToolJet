@@ -83,6 +83,9 @@ export class AppModuleLoader {
             if (process.env.OTEL_LOG_LEVEL && process.env.ENABLE_OTEL === 'true') {
               return process.env.OTEL_LOG_LEVEL;
             }
+            if (process.env.SERVER_LOG_LEVEL && process.env.NODE_ENV !== 'development') {
+              return process.env.SERVER_LOG_LEVEL;
+            }
             const logLevel = { production: 'info', development: 'debug', test: 'silent' };
             return logLevel[process.env.NODE_ENV] || 'info';
           })();
@@ -112,6 +115,11 @@ export class AppModuleLoader {
                 'req.headers["www-authenticate"]',
                 'req.headers["authentication-info"]',
                 'req.headers["x-forwarded-for"]',
+                'req.body.password',
+                'req.body.current_password',
+                'req.body.new_password',
+                'req.body.token',
+                'req.body.invitation_token',
                 ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
               ],
               censor: '[REDACTED]',
@@ -136,7 +144,8 @@ export class AppModuleLoader {
                   // eslint-disable-next-line @typescript-eslint/no-var-requires
                   ? require('pino-pretty')({ colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z', destination: 1 })
                   : process.stdout;
-              const streams = [{ level: 'trace', stream: prettyOrStdout }, { level: 'trace', stream: otelStream }];
+              const otelLogLevel = process.env.OTEL_LOG_MIN_LEVEL || 'warn';
+              const streams = [{ level, stream: prettyOrStdout }, { level: otelLogLevel, stream: otelStream }];
               return [baseOptions, pino.multistream(streams, { levels: { trace: 10, debug: 20, info: 30, warn: 40, error: 50, fatal: 60 } })];
             }
           }
