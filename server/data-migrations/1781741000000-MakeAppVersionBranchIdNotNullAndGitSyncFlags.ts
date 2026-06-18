@@ -156,10 +156,16 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         EXECUTE FUNCTION enforce_app_versions_app_name_branch_unique()
     `);
 
-    // Slug on FEATURE branches: strict per-branch uniqueness (rule b), AND must not
-    // collide with any OTHER app's slug on any default branch (rule e). Slugs are
-    // global (apps.slug is globally unique), so the default-branch check spans all
-    // default branches.
+    // Slug uniqueness is INSTANCE-LEVEL but scoped by app type: a slug belongs to at
+    // most one app of a given type across the entire instance (mirrors the global
+    // apps.slug intent, but a module and a front-end app may share a slug). So the
+    // check is "is this slug used by a DIFFERENT app of the SAME type anywhere?" —
+    // independent of branch and default-ness. The same app may reuse its own slug
+    // across all of its rows/branches.
+    //
+    // Two functions are kept (feature-branch rows vs default-branch rows) only so the
+    // raised constraint name matches what the application maps; the check body is the
+    // same instance-wide, type-scoped, cross-app lookup in both.
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION enforce_app_versions_slug_branch_unique()
       RETURNS TRIGGER AS $$
@@ -182,35 +188,19 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           RETURN NEW;
         END IF;
 
-        PERFORM pg_advisory_xact_lock(hashtextextended(
-          'avs:' || NEW.branch_id::text || '|' || v_app_type || '|' || LOWER(NEW.slug), 0
-        ));
+        -- instance-wide lock on (type, slug)
+        PERFORM pg_advisory_xact_lock(hashtextextended('avslug:' || v_app_type || '|' || LOWER(NEW.slug), 0));
 
-        -- (b) unique within this feature branch
+        -- instance-level, type-scoped: slug must not belong to another app of the same type
         IF EXISTS (
           SELECT 1
           FROM app_versions av
           JOIN apps a ON a.id = av.app_id
-          WHERE LOWER(av.slug) = LOWER(NEW.slug)
-            AND av.branch_id = NEW.branch_id
-            AND a.type = v_app_type
-            AND av.id <> NEW.id
-        ) THEN
-          RAISE EXCEPTION 'app_versions_slug_branch_id_unique'
-            USING ERRCODE = 'unique_violation';
-        END IF;
-
-        -- (e) must not exist on another app's default branch
-        IF EXISTS (
-          SELECT 1
-          FROM app_versions av
-          JOIN apps a ON a.id = av.app_id
-          JOIN organization_git_sync_branches wb ON wb.id = av.branch_id AND wb.is_default = true
           WHERE LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
             AND av.app_id <> NEW.app_id
         ) THEN
-          RAISE EXCEPTION 'app_versions_default_branch_slug_unique'
+          RAISE EXCEPTION 'app_versions_slug_branch_id_unique'
             USING ERRCODE = 'unique_violation';
         END IF;
 
@@ -226,8 +216,6 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         EXECUTE FUNCTION enforce_app_versions_slug_branch_unique()
     `);
 
-    // Slug on the DEFAULT branch (rule d): unique across apps only (same app may
-    // have multiple default-branch rows). Spans all default branches (global slug).
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION enforce_app_versions_default_branch_slug_unique()
       RETURNS TRIGGER AS $$
@@ -250,15 +238,13 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           RETURN NEW;
         END IF;
 
-        PERFORM pg_advisory_xact_lock(hashtextextended(
-          'avdbs:' || v_app_type || '|' || LOWER(NEW.slug), 0
-        ));
+        PERFORM pg_advisory_xact_lock(hashtextextended('avslug:' || v_app_type || '|' || LOWER(NEW.slug), 0));
 
+        -- instance-level, type-scoped: slug must not belong to another app of the same type
         IF EXISTS (
           SELECT 1
           FROM app_versions av
           JOIN apps a ON a.id = av.app_id
-          JOIN organization_git_sync_branches wb ON wb.id = av.branch_id AND wb.is_default = true
           WHERE LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
             AND av.app_id <> NEW.app_id
