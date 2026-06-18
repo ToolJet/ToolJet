@@ -16,7 +16,8 @@
   position: absolute;
 }
 
-.flex-child-wrapper {
+.flex-child-wrapper:last-child,
+.flex-child-wrapper:nth-last-child(2):has(+ [data-cy="flex-container-drop-indicator"]) {
   overflow-x: clip;
 }
 
