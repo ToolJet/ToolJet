@@ -24,7 +24,7 @@
     "/sites": {
       "get": {
         "summary": "List sites",
-        "description": "Search across SharePoint sites in the organization. Use $search=* to return all sites.",
+        "description": "Search across SharePoint sites in the organization. Use search=* to return all sites.",
         "operationId": "listSites",
         "tags": ["Sites"],
         "parameters": [
@@ -401,6 +401,117 @@
         "security": [
           {
             "oauth2": ["Sites.Read.All"]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update list",
+        "description": "Update the properties of a SharePoint list",
+        "operationId": "updateList",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "List properties to update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateListRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharePointList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete list",
+        "description": "Delete a SharePoint list",
+        "operationId": "deleteList",
+        "tags": ["Lists"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list-id",
+            "in": "path",
+            "description": "The unique identifier or name of the list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "List deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "security": [
+          {
+            "oauth2": ["Sites.ReadWrite.All"]
           }
         ]
       }
@@ -940,6 +1051,20 @@
           }
         }
       },
+      "UpdateListRequest": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The displayable title of the list"
+          },
+          "description": {
+            "type": "string",
+            "description": "The descriptive text for the list",
+            "nullable": true
+          }
+        }
+      },
       "ListItem": {
         "type": "object",
         "properties": {
@@ -1311,7 +1436,7 @@
         }
       },
       "search": {
-        "name": "$search",
+        "name": "search",
         "in": "query",
         "description": "Search query for site discovery",
         "required": false,

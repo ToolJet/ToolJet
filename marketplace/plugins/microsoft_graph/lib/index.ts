@@ -143,10 +143,14 @@ export default class Microsoft_graph implements QueryService {
           : {
               method: operation,
               headers: this.authHeader(accessToken),
-              json: bodyParams,
+              json: this.parseBodyParams(bodyParams),
               searchParams: queryParams,
             };
     }
+    console.log('[MSGRAPH_DEBUG] URL:', url);
+    console.log('[MSGRAPH_DEBUG] method:', requestOptions.method);
+    console.log('[MSGRAPH_DEBUG] json body:', JSON.stringify(requestOptions.json));
+    console.log('[MSGRAPH_DEBUG] auth header prefix:', (requestOptions.headers?.['Authorization'] as string)?.substring(0, 30));
     try {
       const response = await got(url, requestOptions);
       if (response && response.body) {
@@ -186,6 +190,26 @@ export default class Microsoft_graph implements QueryService {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
+  }
+
+  private parseBodyParams(params: Record<string, any>): Record<string, any> {
+    if (!params) return params;
+    return Object.keys(params).reduce(
+      (acc, key) => {
+        const value = params[key];
+        if (typeof value === 'string') {
+          try {
+            acc[key] = JSON.parse(value);
+          } catch {
+            acc[key] = value;
+          }
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>
+    );
   }
 
   private constructSourceOptions(sourceOptions) {
@@ -259,7 +283,7 @@ export default class Microsoft_graph implements QueryService {
     }
 
     if (!['get', 'delete'].includes(result.method) && params.request) {
-      result.json = params.request;
+      result.json = this.parseBodyParams(params.request);
     }
 
     return result;
