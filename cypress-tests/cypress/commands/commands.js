@@ -1,5 +1,9 @@
 import "cypress-mailhog";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import {
+  commonSelectors,
+  commonWidgetSelector,
+  cyParamName,
+} from "Selectors/common";
 import { commonEeSelectors } from "Selectors/eeCommon";
 import { importSelectors } from "Selectors/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
@@ -91,10 +95,8 @@ Cypress.Commands.add(
     positionX = 100,
     positionY = 100,
     widgetName2 = widgetName,
-    canvas = commonSelectors.canvas
+    canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    const dataTransfer = new DataTransfer();
-
     // Open widget panel and search
     cy.get('[data-cy="right-sidebar-components-button"]').click();
     cy.get(commonSelectors.searchField)
@@ -104,76 +106,30 @@ Cypress.Commands.add(
       .type(widgetName);
     cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
 
-    // Get element positions for coordinate calculations
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).then(($widget) => {
-      cy.get(canvas).then(($canvas) => {
-        const widgetRect = $widget[0].getBoundingClientRect();
-        const canvasRect = $canvas[0].getBoundingClientRect();
-        const dropX = canvasRect.left + positionX;
-        const dropY = canvasRect.top + positionY;
+    // `[data-cy=real-canvas]` is reused by every SubContainer — `cy.get` picks
+    // the FIRST match which can be a sidebar/preview surface, not the actual
+    // editing canvas. Resolve by id instead:
+    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`) —
+    //     the root canvas rejects drops in that mode.
+    //   - app editor   → `#real-canvas` (unique).
+    // Caller can override via `canvas` arg if they need a specific sub-canvas.
+    cy.get("body").then(($body) => {
+      let resolvedCanvas = canvas;
+      if (!resolvedCanvas) {
+        const mc = $body.find('[component-type="ModuleContainer"]')[0];
+        resolvedCanvas = mc?.id ? `#${mc.id}` : "#real-canvas";
+      }
 
-        // Initiate drag from widget center
-        cy.get(commonWidgetSelector.widgetBox(widgetName2))
-          .trigger("mousedown", {
-            which: 1,
-            button: 0,
-            clientX: widgetRect.left + widgetRect.width / 2,
-            clientY: widgetRect.top + widgetRect.height / 2,
-            force: true,
-          })
-          .trigger("dragstart", { dataTransfer, force: true });
-
-        // Drag over canvas with target coordinates
-        cy.get(canvas)
-          .trigger("dragenter", { dataTransfer, force: true })
-          .trigger("dragover", {
-            dataTransfer,
-            clientX: dropX,
-            clientY: dropY,
-            force: true,
-          });
-
-        // Inject ghost position for headless mode
-        // Required because Cypress doesn't create native ghost elements
-        cy.window().then((win) => {
-          if (!win.useGridStore) return;
-
-          const canvasElement = win.document.querySelector(canvas);
-          if (!canvasElement) return;
-
-          const rect = canvasElement.getBoundingClientRect();
-
-          win.useGridStore.getState().actions.setGhostDragPosition({
-            left: positionX,
-            top: positionY,
-            e: {
-              target: {
-                getBoundingClientRect: () => ({
-                  left: rect.left + positionX,
-                  top: rect.top + positionY,
-                  right: rect.left + positionX,
-                  bottom: rect.top + positionY,
-                  width: 0,
-                  height: 0,
-                }),
-                closest: (selector) =>
-                  selector === ".real-canvas" ? canvasElement : null,
-              },
-            },
-          });
-        });
-
-        cy.get(canvas)
-          .trigger("drop", {
-            dataTransfer,
-            clientX: dropX,
-            clientY: dropY,
-            force: true,
-          })
-          .trigger("mouseup", { force: true });
-
-        cy.waitForAutoSave();
+      // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
+      // widget-list-box. `:has()` lets the source selector resolve straight to
+      // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't
+      // nest cleanly inside `:has()`.
+      const sourceSelector = `.draggable-box:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
+      cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
+        targetX: positionX,
+        targetY: positionY,
       });
+      cy.waitForAutoSave();
     });
   }
 );
