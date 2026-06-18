@@ -619,7 +619,7 @@ export const createPageMenuSlice = (set, get) => {
         }
 
         const linkedApps = get().appStore.modules[moduleId]?.linkedApps;
-        const appSlug = linkedApps[page.targetCorelationId]?.slug;
+        const appSlug = linkedApps?.[page.targetCorelationId]?.slug;
 
         // Editor: throw → routed to debugger via logError below.
         // Viewer: skip validation and attempt the redirect so the existing 404 / "not found" handling kicks in.
