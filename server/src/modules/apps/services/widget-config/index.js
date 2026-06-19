@@ -18,6 +18,7 @@ import { daterangepickerConfig } from './daterangepicker';
 import { textConfig } from './text';
 import { imageConfig } from './image';
 import { containerConfig } from './container';
+import { flexContainerConfig } from './flexContainer';
 import { dropdownConfig } from './dropdown';
 import { dropdownV2Config } from './dropdownV2';
 import { multiselectConfig } from './multiselect';
@@ -107,6 +108,7 @@ const widgets = {
   textConfig,
   imageConfig,
   containerConfig,
+  flexContainerConfig,
   dropdownConfig, //!Depreciated
   dropdownV2Config,
   multiselectConfig,

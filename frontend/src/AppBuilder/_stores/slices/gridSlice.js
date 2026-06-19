@@ -42,6 +42,7 @@ const initialState = {
     containerId: null,
     triggerUpdate: 0,
   },
+  flexContainerDropTarget: null,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -59,6 +60,18 @@ export const createGridSlice = (set, get) => ({
   debouncedIncrementCanvasUpdater: debounce(() => {
     get().incrementCanvasUpdater();
   }, 200),
+  setFlexContainerDropTarget: (payload) =>
+    set((state) => {
+      const current = state.flexContainerDropTarget;
+      if (
+        current === payload ||
+        (current?.flexContainerId === payload?.flexContainerId && current?.index === payload?.index)
+      ) {
+        return;
+      }
+
+      state.flexContainerDropTarget = payload;
+    }),
   setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   setResizingComponentId: (id) => set(() => ({ resizingComponentId: id })),
   setIsGroupDragging: (isGroupDragging) => set(() => ({ isGroupDragging: isGroupDragging })),
