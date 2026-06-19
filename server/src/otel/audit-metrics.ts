@@ -39,7 +39,7 @@ const ACTIVITY_WINDOW_MS = 15 * 60 * 1000;
 const appActiveUsers = new Map<string, Map<string, number>>(); // appId -> Map<userId, lastSeen>
 
 // Store app success/failure counts for success rate calculation
-// Key format: "appId:mode:environment" -> { success: number, failure: number, lastUpdate: number }
+// Key format: "appId:app_mode:environment" -> { success: number, failure: number, lastUpdate: number }
 const appSuccessTracking = new Map<string, { success: number; failure: number; lastUpdate: number }>();
 
 /**
@@ -129,13 +129,13 @@ export const initializeAuditLogMetrics = () => {
       if (stats.lastUpdate < cutoffTime) {
         appSuccessTracking.delete(key);
       } else {
-        const [appId, mode, environment] = key.split(':');
+        const [appId, appMode, environment] = key.split(':');
         const total = stats.success + stats.failure;
         const successRate = total > 0 ? (stats.success / total) * 100 : 100;
 
         observableResult.observe(successRate, {
           app_id: appId,
-          mode: mode,
+          app_mode: appMode,
           environment: environment,
         });
       }
@@ -267,17 +267,15 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   const error = metadata['error'];
   const errorType = metadata['errorType'] || categorizeError(error);
 
-  // New labels for mode and environment tracking
-  const mode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit' or 'view'
-  const environment = metadata['environment'] || resourceData['environment'] || 'unknown'; // environment name
-  const isReleased = mode === 'view' ? 'true' : 'false';
+  const appMode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit', 'view', or 'released'
+  const environment = metadata['environment'] || resourceData['environment'] || 'unknown';
+  const isPublished = (appMode === 'view' || appMode === 'released') ? 'true' : 'false';
 
-  // Extract query from parsedQueryOptions (camelCase from queryStatus.getMetaData())
-  // Only include query text if explicitly enabled (to avoid high cardinality)
+  // Only include query text if explicitly enabled (to avoid high cardinality in Prometheus)
   const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
   const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
   const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
-  const queryMode = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, etc.
+  const queryType = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, raw, etc.
 
   const labels = {
     app_id: appId,
@@ -287,11 +285,11 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
     data_source_type: dataSourceType,
     organization_id: organizationId,
     status: status,
-    mode: mode, // NEW: edit or view
-    environment: environment, // NEW: environment name
-    is_released: isReleased, // NEW: boolean string
-    query_text: queryText, // NEW: actual SQL/query text
-    query_mode: queryMode, // NEW: sql or gui
+    app_mode: appMode,
+    environment: environment,
+    is_published: isPublished,
+    query_text: queryText,
+    query_type: queryType,
   };
 
   // Count query execution
@@ -311,11 +309,11 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
       error_type: errorType,
       data_source_type: dataSourceType,
       organization_id: organizationId,
-      mode: mode,
+      app_mode: appMode,
       environment: environment,
-      is_released: isReleased,
+      is_published: isPublished,
       query_text: queryText,
-      query_mode: queryMode,
+      query_type: queryType,
     });
 
     // Record app-level error
@@ -324,7 +322,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
         app_id: appId,
         app_name: appName,
         error_type: errorType,
-        mode: mode,
+        app_mode: appMode,
         environment: environment,
         organization_id: organizationId,
       });
@@ -337,8 +335,8 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   }
 
   // Track app success rate
-  if (appId !== 'unknown' && mode !== 'unknown' && environment !== 'unknown') {
-    trackAppSuccess(appId, mode, environment, status === 'success');
+  if (appId !== 'unknown' && appMode !== 'unknown' && environment !== 'unknown') {
+    trackAppSuccess(appId, appMode, environment, status === 'success');
   }
 }
 
@@ -401,8 +399,8 @@ function trackAppActiveUser(appId: string, userId: string) {
 /**
  * Track app success/failure for success rate calculation
  */
-function trackAppSuccess(appId: string, mode: string, environment: string, isSuccess: boolean) {
-  const key = `${appId}:${mode}:${environment}`;
+function trackAppSuccess(appId: string, appMode: string, environment: string, isSuccess: boolean) {
+  const key = `${appId}:${appMode}:${environment}`;
   const now = Date.now();
 
   if (!appSuccessTracking.has(key)) {
@@ -535,14 +533,14 @@ export interface DirectQueryMetricPayload {
   queryId: string;
   queryName?: string;
   dataSourceType: string;
-  mode: string; // 'edit' | 'view'
+  app_mode: string; // 'edit' | 'view' | 'released'
   environment: string; // environment name
   status: 'success' | 'failure' | string;
   duration?: number; // ms
   error?: string;
   errorType?: string;
   queryText?: string; // only if OTEL_INCLUDE_QUERY_TEXT=true
-  queryMode?: string; // 'sql' | 'gui' | etc.
+  query_type?: string; // 'sql' | 'gui' | 'raw' | etc.
 }
 
 /**
@@ -566,16 +564,16 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
       queryId,
       queryName = 'unknown',
       dataSourceType,
-      mode,
+      app_mode,
       environment,
       status,
       duration,
       error,
       queryText = '',
-      queryMode = 'unknown',
+      query_type = 'unknown',
     } = payload;
 
-    const isReleased = mode === 'view' ? 'true' : 'false';
+    const isPublished = (app_mode === 'view' || app_mode === 'released') ? 'true' : 'false';
     const errorType = payload.errorType || categorizeError(error);
 
     const labels = {
@@ -586,11 +584,11 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
       data_source_type: dataSourceType,
       organization_id: organizationId,
       status,
-      mode,
+      app_mode,
       environment,
-      is_released: isReleased,
+      is_published: isPublished,
       query_text: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
-      query_mode: queryMode,
+      query_type,
     };
 
     queryExecutionsCounter.add(1, labels);
@@ -608,11 +606,11 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
           error_type: errorType,
           data_source_type: dataSourceType,
           organization_id: organizationId,
-          mode,
+          app_mode,
           environment,
-          is_released: isReleased,
+          is_published: isPublished,
           query_text: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
-          query_mode: queryMode,
+          query_type,
         });
       }
       if (appErrorsCounter && appId) {
@@ -620,7 +618,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
           app_id: appId,
           app_name: appName,
           error_type: errorType,
-          mode,
+          app_mode,
           environment,
           organization_id: organizationId,
         });
@@ -629,14 +627,14 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
 
     if (appId && appId !== 'unknown') {
       trackAppActiveUser(appId, userId);
-      if (mode !== 'unknown' && environment !== 'unknown') {
-        trackAppSuccess(appId, mode, environment, status === 'success');
+      if (app_mode !== 'unknown' && environment !== 'unknown') {
+        trackAppSuccess(appId, app_mode, environment, status === 'success');
       }
     }
 
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
       console.log(
-        `[OTEL Direct] query metric: app=${appId} query=${queryId} mode=${mode} env=${environment} status=${status} duration=${duration}ms`
+        `[OTEL Direct] query metric: app=${appId} query=${queryId} app_mode=${app_mode} env=${environment} status=${status} duration=${duration}ms`
       );
     }
   } catch (err) {
