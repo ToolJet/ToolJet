@@ -68,7 +68,7 @@ export const useDynamicHeight = ({
     // widget whose own WidgetWrapper lives at a different context (e.g.
     // ListviewSubcontainer fires for the Listview id at row index [0], but
     // the Listview's own wrapper has data-layout-context="root"). In that
-    // case we still need to kick off `adjustComponentPositions` so row
+    // case we still need to kick off `scheduleReflow` so row
     // heights get recomputed — we just can't touch the element's inline
     // style because there isn't one to touch.
 

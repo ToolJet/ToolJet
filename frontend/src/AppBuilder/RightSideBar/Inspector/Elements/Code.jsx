@@ -39,13 +39,13 @@ export const Code = ({
   const paramMeta = accordian
     ? customMeta ?? componentMeta[paramType]?.[param.name]
     : customMeta ?? componentMeta[paramType][param.name];
-  const displayName = paramMeta.displayName || param.name;
+  const displayName = paramMeta?.displayName || param.name;
 
   function handleCodeChanged(value) {
     onChange(param, 'value', value, paramType);
   }
 
-  const options = paramMeta.options || {};
+  const options = paramMeta?.options || {};
 
   const getfieldName = React.useMemo(() => {
     return param.name;
@@ -63,7 +63,7 @@ export const Code = ({
         initialValue={initialValue}
         paramName={param.name}
         paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
-        paramType={paramMeta.type}
+        paramType={paramMeta?.type}
         fieldMeta={paramMeta}
         onFxPress={onFxPress}
         fxActive={CLIENT_SERVER_TOGGLE_FIELDS.includes(param.name) ? false : fxActive} // Client Server Toggle don't support Fx

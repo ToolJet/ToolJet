@@ -23,6 +23,7 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'RichTextEditor',
   'Text',
   'Table',
+  'ModuleViewer',
 ];
 
 const WidgetWrapper = memo(
