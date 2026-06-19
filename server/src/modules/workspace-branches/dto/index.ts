@@ -35,6 +35,10 @@ export class WorkspacePushDto {
 
   @IsOptional()
   deletionOnly?: boolean;
+
+  @IsOptional()
+  @IsString()
+  scope?: 'app' | 'module' | 'datasource' | 'all';
 }
 
 export class WorkspacePullDto {

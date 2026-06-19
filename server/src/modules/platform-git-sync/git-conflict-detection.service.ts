@@ -6,7 +6,8 @@ export class GitConflictDetectionService {
     _organizationId: string,
     _branchId: string,
     _repoPath: string,
-    _appCoRelationId?: string
+    _appCoRelationId?: string,
+    _scope?: 'app' | 'module' | 'datasource' | 'all'
   ): Promise<void> {
     // CE no-op
   }
