@@ -247,7 +247,11 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         try {
           const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
           if (parsed?.conflictGroups?.length) {
-            setPullConflictGroups(parsed.conflictGroups);
+            const isDsPage = window.location.pathname.includes('data-sources');
+            const groups = isDsPage
+              ? parsed.conflictGroups.filter((g) => g.type === 'datasource')
+              : parsed.conflictGroups;
+            setPullConflictGroups(groups);
             return;
           }
         } catch {
