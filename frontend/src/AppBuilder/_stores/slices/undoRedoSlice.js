@@ -217,15 +217,25 @@ const filterAndFormatPatches = (patches) => {
       //     value,
       //   });
       // } else
-      if (path[6] === 'component' && path[7] !== 'parent') {
+      if (path[6] === 'component' && path[7] !== 'parent' && path[9] !== undefined) {
+        let attr = path[10];
+        let patchValue = value;
+        // Coarse patch: immer replaced the whole property object (path stops at the property,
+        // with no `.value` leaf), so `attr` is undefined and `value` is the wrapper object.
+        // Replaying that as-is would nest it under `.value` -> { value: { value: X } }.
+        // Unwrap one level so the replay restores the correct { value: X } shape.
+        if (attr === undefined && patchValue && typeof patchValue === 'object' && 'value' in patchValue) {
+          attr = 'value';
+          patchValue = patchValue.value;
+        }
         changeStack.push({
           op: 'propertyUpdate',
           componentId: path[5],
           value: {
             property: path[9],
-            value: value,
+            value: patchValue,
             paramType: path[8],
-            attr: path[10],
+            attr,
           },
         });
       }

@@ -2923,7 +2923,8 @@ function migrateProperties(
       (shouldHandleBackwardCompatibility && ['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) ||
       (['TextArea', 'DaterangePicker', 'FilePicker'].includes(componentType) && !properties.label)
     ) {
-      properties.label = '';
+      // Keep the canonical { value: ... } shape — a bare string here is a malformed property.
+      properties.label = { value: '' };
     }
 
     // NumberInput
