@@ -272,6 +272,9 @@ export const commonSelectors = {
   appNameInfoLabel: '[data-cy="app-name-info-label"]',
   createAppButton: '[data-cy="create-app"]',
   renameApptitle: '[data-cy="rename-app-title"]',
+  // Opens the Rename app modal in the editor header
+  // (frontend/src/AppBuilder/Header/EditAppName.jsx:55).
+  editAppNameButton: '[data-cy="edit-app-name-button"]',
   renameAppButton: '[data-cy="rename-app"]',
   cloneAppTitle: '[data-cy="clone-app-title"]',
   cloneAppButton: '[data-cy="clone-app"]',
@@ -340,7 +343,11 @@ export const commonWidgetSelector = {
   },
 
   widgetConfigHandle: (widgetName) => {
-    return `[data-cy="${cyParamName(widgetName)}-config-handle"]`;
+    // The old `<name>-config-handle` button no longer exists. The button that
+    // opens the right Inspector (Properties/Styles/Events) is
+    // `<name>-properties-styles-button`
+    // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:285).
+    return `[data-cy="${cyParamName(widgetName)}-properties-styles-button"]`;
   },
 
   accordion: (accordionName, index = 0) => {

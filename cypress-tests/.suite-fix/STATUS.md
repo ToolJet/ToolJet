@@ -17,7 +17,7 @@ Server: http://localhost:8082 (must stay up)
 ## Spec Status (21 active)
 | # | Spec | Status | Notes |
 |---|------|--------|-------|
-| 1 | components/buttonHappyPath | ⬜ | |
+| 1 | components/buttonHappyPath | 🟡 | 1/7 pass (deletion ✓ via config-handle fix). Remaining drift: widget-accordion-general, #inspector-tab-styles, add-event-handler, yes-button, positional assert (674 vs 100). Big old spec — needs dedicated pass. |
 | 2 | components/componentDuplicationHappypath | ⬜ | |
 | 3 | components/componentsBasicHappypath | ⬜ | |
 | 4 | components/csa | ⬜ | |

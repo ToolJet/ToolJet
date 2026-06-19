@@ -1,4 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { selectCSA, selectEvent } from "Support/utils/events";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { buttonText } from "Texts/button";
 import { commonWidgetText } from "Texts/common";
@@ -21,19 +22,17 @@ export const verifyControlComponentAction = (widgetName, value) => {
   openEditorSidebar(widgetName);
   openAccordion(commonWidgetText.accordionEvents);
 
-  cy.get(commonWidgetSelector.addMoreEventHandlerLink).click();
-  cy.get(commonWidgetSelector.eventHandlerCard).eq(1).click();
-
-  cy.get(commonWidgetSelector.actionSelection).type("Control component{Enter}");
-  cy.get(commonWidgetSelector.eventComponentSelection).type(
-    "textinput1{Enter}"
-  );
-  cy.get(commonWidgetSelector.eventComponentActionSelection).type(
-    "Set text{Enter}"
-  );
+  // Add a second "On click" handler via the popover model and wire it to
+  // Control Component -> textinput1 -> Set text (selectEvent/selectCSA are the
+  // popover-aware helpers; the old add-event-handler + event-handler-card.eq(1)
+  // + action-selection.type() flow no longer exists). The Set text value field
+  // is rendered as `action-options-text-input-field` (EventManager.jsx:1042).
+  selectEvent("On click", "Control Component", 0, '[data-cy="add-event-handler"]', 1);
+  selectCSA("textinput1", "Set text");
   cy.get(commonWidgetSelector.componentTextInput)
     .find('[data-cy*="-input-field"]')
     .clearAndTypeOnCodeMirror(value);
+  cy.get('[data-cy="event-label"]').click({ force: true });
   cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 };

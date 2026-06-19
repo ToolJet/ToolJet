@@ -32,7 +32,12 @@ import {
   addSupportCSAData,
 } from "Support/utils/events";
 
-describe("Editor- Test Button widget ", () => {
+// testIsolation:false — cypress-real-dnd caches its CDP client for the spec
+// run; testIsolation's per-test AUT reset leaves that client stale, so 2nd+
+// test drags throw "No dragIntercepted". Keeping the AUT stable keeps the drag
+// intercept valid. Each test still re-logs-in + creates its own app in
+// beforeEach, so shared browser state is not relied upon.
+describe("Editor- Test Button widget ", { testIsolation: false }, () => {
   beforeEach(() => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-button-App`);
@@ -384,7 +389,10 @@ describe("Editor- Test Button widget ", () => {
   });
 
   it("Should verify csa", () => {
-    cy.get('[data-tooltip-content="Hide query panel"]').click();
+    // Query panel toggle is now `query-manager-toggle-button`
+    // (frontend/src/AppBuilder/QueryPanel/QueryPanel.jsx:184); the old
+    // `[data-tooltip-content="Hide query panel"]` selector is gone.
+    cy.get('[data-cy="query-manager-toggle-button"]').click();
     // cy.dragAndDropWidget(buttonText.defaultWidgetText);
     selectEvent("On click", "Show alert");
 

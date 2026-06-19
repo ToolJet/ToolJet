@@ -312,6 +312,12 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
+  // Renaming is now modal-driven (frontend/src/AppBuilder/Header/EditAppName.jsx):
+  // the editor header shows a button `edit-app-name-button` that opens an
+  // AppModal. The rename input (`app-name-input`) and submit button
+  // (`rename-app`, from generateCypressDataCy("Rename app")) only exist once
+  // that modal is open, so click the header button first.
+  cy.get(commonSelectors.editAppNameButton).click();
   cy.get(commonSelectors.appNameInput).type(
     `{selectAll}{backspace}${appName}`,
     { force: true }
@@ -456,8 +462,9 @@ Cypress.Commands.add("moveComponent", (componentName, x, y) => {
   cy.get(commonSelectors.canvas, { log: false })
     .trigger("mousemove", {
       which: 1,
-      clientX: x,
-      ClientY: y,
+      // #real-canvas is overlaid by #main-editor-canvas, so an un-forced
+      // mousemove fails the actionability "covered by another element" check.
+      force: true,
       clientX: x,
       clientY: y,
       pageX: x,
@@ -466,7 +473,7 @@ Cypress.Commands.add("moveComponent", (componentName, x, y) => {
       screenY: y,
       log: false,
     })
-    .trigger("mouseup", { log: false });
+    .trigger("mouseup", { force: true, log: false });
 
   const log = Cypress.log({
     name: "moveComponent",

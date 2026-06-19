@@ -31,7 +31,12 @@ export const verifyAndModifyParameter = (paramName, value) => {
 export const openEditorSidebar = (widgetName = "") => {
   cy.hideTooltip();
 
-
+  // The canvas config handle no longer exposes a single `<name>-config-handle`
+  // button. Hovering the widget reveals ConfigHandle buttons; the one that
+  // opens the RIGHT Inspector (Properties/Styles/Events) is
+  // `<name>-properties-styles-button` — its onClick sets the CONFIGURATION tab
+  // and setRightSidebarOpen(true)
+  // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:277-288).
   cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).realHover().then(() => {
     cy.wait(1000);
     cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
@@ -62,11 +67,18 @@ export const verifyAndModifyToggleFx = (
 };
 
 export const addDefaultEventHandler = (message) => {
-  cy.get(commonWidgetSelector.addEventHandlerLink)
-    .should("contain.text", commonWidgetText.addEventHandlerLink)
-    .click();
-  cy.intercept("PUT", "events").as("events");
-  cy.get(commonWidgetSelector.eventHandlerCard).click();
+  // New popover-based add flow (EventManager.jsx): the "Add event handler"
+  // button is a Popover trigger -> opens `add-event-menu` whose options are
+  // `event-trigger-option-<value>`. The default first trigger ("On click") both
+  // creates the handler and opens its config `popover-card`, where the default
+  // action is already "Show Alert". So we only need to pick the trigger and
+  // type the alert message. The old direct `event-handler-card` click is gone.
+  cy.intercept(/\/events(\/|\?|$)/).as("events");
+  cy.get(commonWidgetSelector.addEventHandlerLink).eq(0).click();
+  cy.get('[data-cy="add-event-menu"]').should("be.visible");
+  cy.contains('[data-cy^="event-trigger-option-"]', /^on click$/i).click();
+  cy.wait("@events");
+  cy.get('[data-cy="popover-card"]').should("be.visible");
   cy.wait(1000);
   cy.get(commonWidgetSelector.alertMessageInputField)
     .find('[data-cy*="-input-field"]')
@@ -90,10 +102,17 @@ export const editAndVerifyWidgetName = (
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
+  // The config handle's component-name button is icon/label only and carries
+  // no data-cy; the renamed component's name is shown in the `.component-name-btn`
+  // span inside the `.config-handle`, a sibling of the rendered widget within
+  // the same WidgetWrapper (ConfigHandle.jsx:232-266, WidgetWrapper.jsx:211-225).
+  // Verify the rename by hovering the widget and reading that label from the
+  // enclosing wrapper.
   cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
-  cy.get(commonWidgetSelector.widgetConfigHandle(name))
-    .click()
-    .should("have.text", name);
+  cy.get(commonWidgetSelector.draggableWidget(name))
+    .closest("[component-type]")
+    .find(".config-handle .component-name-btn")
+    .should("contain.text", name);
 };
 
 export const verifyComponentValueFromInspector = (
