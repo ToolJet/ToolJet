@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/_components';
 import AddEditResourcePermissionsModal from './components/AddEditResourceModal/AddEditResourcePermissionsModal';
 import DataSourceResourcePermissions from './components/DataSourceResourcePermission';
 import WorkflowResourcePermissions from './components/WorkflowResourcePermission';
+import ModuleResourcePermissions from './components/ModuleResourcePermission';
 import Spinner from 'react-bootstrap/Spinner';
 import { RESOURCE_TYPE, APP_TYPES, RESOURCE_NAME_MAPPING } from '../..';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -114,9 +115,19 @@ class BaseManageGranularAccess extends React.Component {
               label: app.name,
             };
           });
+        const addableModules = data
+          .filter((app) => app.type === APP_TYPES.MODULE)
+          .map((app) => {
+            return {
+              name: app.name,
+              value: app.id,
+              label: app.name,
+            };
+          });
         this.setState({
           addableApps,
           addableWorkflows,
+          addableModules,
         });
       })
       .catch((err) => {
@@ -182,7 +193,7 @@ class BaseManageGranularAccess extends React.Component {
     const resourcesToAdd = selectedResource
       .filter((res) => !res?.isAllField)
       .map((option) => {
-        if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
+        if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES) {
           return {
             appId: option.value,
           };
@@ -194,7 +205,7 @@ class BaseManageGranularAccess extends React.Component {
       });
 
     const environmentPermissions = {};
-    if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
+    if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES) {
       const envKeys = selectedEnvironments.filter((env) => !env.isAllField).map((env) => env.value);
       environmentPermissions.canAccessDevelopment = envKeys.includes('canAccessDevelopment');
       environmentPermissions.canAccessStaging = envKeys.includes('canAccessStaging');
@@ -208,7 +219,7 @@ class BaseManageGranularAccess extends React.Component {
       groupId: this.props.groupPermissionId,
       isAll: isAll,
       createResourcePermissionObject: {
-        ...((type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) && {
+        ...((type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES) && {
           ...initialPermissionState,
           ...environmentPermissions,
         }),
@@ -301,7 +312,11 @@ class BaseManageGranularAccess extends React.Component {
               : [],
         },
       });
-    } else if (granularPermission.type === RESOURCE_TYPE.APPS || granularPermission.type === RESOURCE_TYPE.WORKFLOWS) {
+    } else if (
+      granularPermission.type === RESOURCE_TYPE.APPS ||
+      granularPermission.type === RESOURCE_TYPE.WORKFLOWS ||
+      granularPermission.type === RESOURCE_TYPE.MODULES
+    ) {
       const currentApps = granularPermission?.appsGroupPermissions?.groupApps;
       const appsGroupPermission = granularPermission?.appsGroupPermissions;
       const selectedResources =
@@ -394,6 +409,17 @@ class BaseManageGranularAccess extends React.Component {
             key={index}
           />
         );
+      case RESOURCE_TYPE.MODULES:
+        return (
+          <ModuleResourcePermissions
+            updateOnlyGranularPermissions={this.updateOnlyGranularPermissions}
+            permissions={permissions}
+            currentGroupPermission={currentGroupPermission}
+            openEditPermissionModal={this.openEditPermissionModal}
+            isEditable={isEditable}
+            key={index}
+          />
+        );
       default:
         return null;
     }
@@ -407,6 +433,8 @@ class BaseManageGranularAccess extends React.Component {
         return this.state.addableDs;
       case RESOURCE_TYPE.WORKFLOWS:
         return this.state.addableWorkflows;
+      case RESOURCE_TYPE.MODULES:
+        return this.state.addableModules;
       default:
         return [];
     }
@@ -461,7 +489,7 @@ class BaseManageGranularAccess extends React.Component {
     } = this.state;
     const type = currentEditingPermissions.type;
     const currentResource =
-      type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
+      type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES
         ? currentEditingPermissions?.appsGroupPermissions?.groupApps?.map((app) => {
             return app.app.id;
           })
@@ -475,7 +503,7 @@ class BaseManageGranularAccess extends React.Component {
     const resourcesToAdd = selectedResource
       ?.filter((item) => !currentResource.includes(item))
       .map((id) => {
-        if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS)
+        if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES)
           return {
             appId: id,
           };
@@ -487,7 +515,7 @@ class BaseManageGranularAccess extends React.Component {
       });
     const resourceItemsToDelete = currentResource?.filter((item) => !selectedResource?.includes(item));
     const groupResToDelete =
-      type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
+      type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES
         ? currentEditingPermissions?.appsGroupPermissions?.groupApps?.filter((groupApp) =>
             resourceItemsToDelete?.includes(groupApp.appId)
           )
@@ -501,7 +529,7 @@ class BaseManageGranularAccess extends React.Component {
     });
 
     const environmentPermissions = {};
-    if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS) {
+    if (type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES) {
       const envKeys = selectedEnvironments.filter((env) => !env.isAllField).map((env) => env.value);
       environmentPermissions.canAccessDevelopment = envKeys.includes('canAccessDevelopment');
       environmentPermissions.canAccessStaging = envKeys.includes('canAccessStaging');
@@ -513,7 +541,7 @@ class BaseManageGranularAccess extends React.Component {
       name: newPermissionName,
       isAll: isAll,
       actions:
-        type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS
+        type === RESOURCE_TYPE.APPS || type === RESOURCE_TYPE.WORKFLOWS || type === RESOURCE_TYPE.MODULES
           ? { ...initialPermissionState, ...environmentPermissions }
           : initialPermissionStateDs,
       resourcesToAdd,
@@ -791,7 +819,7 @@ class BaseManageGranularAccess extends React.Component {
                     name={
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
-                        : resourceType === RESOURCE_TYPE.WORKFLOWS
+                        : resourceType === RESOURCE_TYPE.WORKFLOWS || resourceType === RESOURCE_TYPE.MODULES
                         ? 'workflows'
                         : 'datasource'
                     }
@@ -897,8 +925,13 @@ class BaseManageGranularAccess extends React.Component {
                 <>
                   {[...granularPermissions]
                     .sort((a, b) => {
-                      // Define the desired order: Apps, Data Sources, Workflows
-                      const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
+                      // Define the desired order: Apps, Data Sources, Modules, Workflows
+                      const order = [
+                        RESOURCE_TYPE.APPS,
+                        RESOURCE_TYPE.DATA_SOURCES,
+                        RESOURCE_TYPE.MODULES,
+                        RESOURCE_TYPE.WORKFLOWS,
+                      ];
                       return order.indexOf(a.type) - order.indexOf(b.type);
                     })
                     .map((permissions, index) => {

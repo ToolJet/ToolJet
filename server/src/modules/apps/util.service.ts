@@ -28,10 +28,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep } from 'lodash';
-import { merge } from 'lodash';
-import { mergeWith } from 'lodash';
-import { isArray } from 'lodash';
+import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
@@ -394,7 +391,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
         break;
       case APP_TYPES.MODULE:
-        resourceType = MODULES.APP;
+        resourceType = MODULES.MODULES;
         break;
       default:
         resourceType = MODULES.APP;
@@ -470,8 +467,9 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
+      // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
-        return viewableAppsQb;
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -534,6 +532,9 @@ export class AppsUtilService implements IAppsUtilService {
         break;
       case APP_TYPES.FRONT_END:
         resourceType = MODULES.APP;
+        break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.MODULES;
         break;
       default:
         resourceType = MODULES.APP;
@@ -653,15 +654,13 @@ export class AppsUtilService implements IAppsUtilService {
 
       const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
 
-      const modules =
-        moduleAppIds.length > 0
-          ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
-          : [];
-      return modules;
+      return moduleAppIds.length > 0
+        ? await manager
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
+        : [];
     });
     return modules;
   }

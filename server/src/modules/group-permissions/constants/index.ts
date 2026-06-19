@@ -18,6 +18,7 @@ export enum ResourceType {
   APP = 'app',
   DATA_SOURCE = 'data_source',
   WORKFLOWS = 'workflow',
+  MODULE = 'module',
 }
 
 export const DEFAULT_GROUP_PERMISSIONS = {

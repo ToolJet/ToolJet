@@ -29,6 +29,8 @@ export interface UserPermissions {
   [MODULES.APP]?: UserAppsPermissions;
   [MODULES.GLOBAL_DATA_SOURCE]?: UserDataSourcePermissions;
   [MODULES.WORKFLOWS]?: UserWorkflowPermissions;
+  // Modules reuse the apps permission shape (editable/viewable sets), resolved from ResourceType.MODULE.
+  [MODULES.MODULES]?: UserAppsPermissions;
 }
 export interface UserWorkflowPermissions {
   editableWorkflowsId: string[];

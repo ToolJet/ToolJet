@@ -17,6 +17,8 @@ function AddResourcePermissionsMenu({
         return 'apps';
       case RESOURCE_TYPE.WORKFLOWS:
         return 'workflows';
+      case RESOURCE_TYPE.MODULES:
+        return 'workflows';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'datasource';
       default:
@@ -27,6 +29,7 @@ function AddResourcePermissionsMenu({
   const resourceNameMapping = {
     [RESOURCE_TYPE.APPS]: 'Apps',
     [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
+    [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
   };
 
