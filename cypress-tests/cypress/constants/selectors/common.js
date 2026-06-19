@@ -351,7 +351,13 @@ export const commonWidgetSelector = {
   },
 
   accordion: (accordionName, index = 0) => {
-    return `[data-cy="widget-accordion-${accordionName.toLowerCase()}"]:eq(${index})`;
+    // AccordionItem.js:38 builds the data-cy as
+    // `widget-accordion-${title.toLowerCase().replace(/\s+/g,'-')}` — spaces
+    // become hyphens, so multi-word titles like "Additional actions" →
+    // `widget-accordion-additional-actions` (the old space form is stale).
+    return `[data-cy="widget-accordion-${accordionName
+      .toLowerCase()
+      .replace(/\s+/g, "-")}"]:eq(${index})`;
   },
 
   nodeComponent: (componentName) => {
@@ -379,8 +385,16 @@ export const commonWidgetSelector = {
     return `[data-cy="${widgetName.toLowerCase()}-invalid-feedback"]`;
   },
 
-  buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
-  buttonStylesEditorSideBar: "#inspector-tab-styles",
+  // Right-Inspector close control is now `inspector-close-button`
+  // (Inspector.jsx:707) — was `inspector-close-icon`.
+  buttonCloseEditorSideBar: "[data-cy='inspector-close-button']",
+  // The right-Inspector tabs are now a custom ToolJetUI <Tabs id="inspector">
+  // (frontend/src/ToolJetUI/Tabs/Tabs.jsx) — each tab is a `button[role="tab"]`
+  // with NO id/data-cy, only a `.tab-label` span. The old `#inspector-tab-styles`
+  // (react-bootstrap id) no longer exists. There are exactly two tabs
+  // (Properties, Styles — Inspector.jsx:594-599); Styles is the 2nd nav-link,
+  // scoped to the `#inspector` Tabs wrapper.
+  buttonStylesEditorSideBar: "#inspector .nav-link:eq(1)",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
   constantInspectorIcon: '[data-cy="inspector-constants-expand-button"]',
   inspectorIcon: '[data-cy="left-sidebar-inspector-button"]',

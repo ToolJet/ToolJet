@@ -71,6 +71,23 @@ const chooseRocketOption = (triggerSelector, label) => {
     .click();
 };
 
+// Pick a value from an OptionCombobox (shared.jsx OptionCombobox → Rocket
+// Combobox). The field renders a searchable `ComboboxInput` (an InputGroup that
+// nests >1 <input>, so scope typing to the first/visible one) and a portalled
+// listbox of `role="option"` items. Type to filter, then click the exact match.
+const pickComboboxOption = (fieldSelector, label) => {
+  cy.get(fieldSelector).scrollIntoView().click();
+  cy.get(`${fieldSelector} input`)
+    .filter(":visible")
+    .first()
+    .clear({ force: true })
+    .type(label, { force: true });
+  cy.get('[role="option"]')
+    .filter(":visible")
+    .contains(new RegExp(`^\\s*${label}\\s*$`, "i"))
+    .click({ force: true });
+};
+
 export const selectCSA = (
   component,
   componentAction,
@@ -80,23 +97,21 @@ export const selectCSA = (
   // (update) — not PUT. Match the URL regardless of method so the waits below
   // resolve on the real requests.
   cy.intercept(/\/events(\/|\?|$)/).as("events");
-  cy.get('[data-cy="action-options-component-selection-field"]')
-    .click()
-    .find("input")
-    .type(`{selectAll}{backspace}${component}{enter}`);
-  cy.get('[data-cy="event-label"]').click({ force: true })
 
-  cy.get('[data-cy="action-options-action-selection-field"]')
-    .click()
-    .find("input")
-    .type(`{selectAll}{backspace}${componentAction}{enter}`);
-  cy.get('[data-cy="event-label"]').click({ force: true })
-
+  pickComboboxOption(
+    '[data-cy="action-options-component-selection-field"]',
+    component
+  );
+  pickComboboxOption(
+    '[data-cy="action-options-action-selection-field"]',
+    componentAction
+  );
   cy.wait("@events");
+
   cy.get('[data-cy="debounce-input-field"]')
     .click()
     .type(`{selectAll}{backspace}${debounce}{enter}`);
-  cy.get('[data-cy="event-label"]').click({ force: true })
+  cy.get('[data-cy="event-label"]').click({ force: true });
   cy.wait("@events");
 };
 
