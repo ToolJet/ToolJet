@@ -9,14 +9,9 @@ import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
-import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto';
-import { BatchLogRecordProcessor, LoggerProvider } from '@opentelemetry/sdk-logs';
-import { logs } from '@opentelemetry/api-logs';
-import { Writable } from 'stream';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -44,12 +39,6 @@ const sanitizeObject = (obj: any) => {
 
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
-// LoggerProvider — created separately so it can be registered on the ROOT
-// @opentelemetry/api-logs instance (0.203.x). sdk-node nests its own
-// api-logs (0.218.x), so logs.setGlobalLoggerProvider() inside sdk.start()
-// only updates that nested instance and PinoInstrumentation (which resolves
-// api-logs from root) never sees the provider.
-let otelLoggerProvider: LoggerProvider | null = null;
 
 // Function to create the SDK (called only when startOpenTelemetry is invoked)
 // NOTE: URLs, headers, and resource are read here — AFTER loadEnvVars() has run —
@@ -62,21 +51,6 @@ function buildResource() {
   });
 }
 
-// Logs are initialised separately so they don't block or couple to metric/trace SDK startup.
-// ponytail: sdk-node nests its own api-logs (0.218.x); pino resolves from root (0.203.x) —
-// registering here ensures PinoInstrumentation's OTelPinoStream sees the real provider.
-function initializeLogs(resource: ReturnType<typeof buildResource>): void {
-  const authHeader: Record<string, string> | undefined = process.env.OTEL_HEADER
-    ? { Authorization: process.env.OTEL_HEADER }
-    : undefined;
-  const logsUrl = process.env.OTEL_EXPORTER_OTLP_LOGS || 'http://localhost:4318/v1/logs';
-  const logRecordProcessor = new BatchLogRecordProcessor(
-    new OTLPLogExporter({ url: logsUrl, headers: authHeader }),
-    { scheduledDelayMillis: parseInt(process.env.OTEL_LOG_BATCH_DELAY_MS || '2000', 10) }
-  );
-  otelLoggerProvider = new LoggerProvider({ resource, processors: [logRecordProcessor] });
-  (logs as any).setGlobalLoggerProvider(otelLoggerProvider);
-}
 
 function createSDK(resource: ReturnType<typeof buildResource>): NodeSDK {
   const traceUrl = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
@@ -412,7 +386,6 @@ process.on('SIGTERM', () => {
 
   const shutdownPromises: Promise<void>[] = [];
   if (sdk) shutdownPromises.push(sdk.shutdown());
-  if (otelLoggerProvider) shutdownPromises.push(otelLoggerProvider.shutdown());
 
   if (shutdownPromises.length > 0) {
     Promise.all(shutdownPromises)
@@ -431,9 +404,6 @@ process.on('SIGTERM', () => {
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
     const resource = buildResource();
-
-    // Logs, metrics, and traces initialised independently — each signal is self-contained.
-    initializeLogs(resource);
 
     if (!sdk) {
       sdk = createSDK(resource);
@@ -591,48 +561,6 @@ export const decrementActiveSessions = (attributes: {
   }
 };
 
-// Pino log level → OTEL severity mappings (pino v10, default levels)
-const PINO_SEV: Record<number, number> = { 10: 1, 20: 5, 30: 9, 40: 13, 50: 17, 60: 21 };
-const PINO_TEXT: Record<number, string> = { 10: 'TRACE', 20: 'DEBUG', 30: 'INFO', 40: 'WARN', 50: 'ERROR', 60: 'FATAL' };
-
-const SENSITIVE_KEY_RE = /token|secret|password|authorization|api.?key|credential|private.?key/i;
-const JWT_RE = /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g;
-
-function scrubAttributes(attrs: Record<string, any>): Record<string, any> {
-  const result: Record<string, any> = {};
-  for (const [k, v] of Object.entries(attrs)) {
-    result[k] = SENSITIVE_KEY_RE.test(k) ? '[REDACTED]' : v;
-  }
-  return result;
-}
-
-/**
- * Returns a Writable that bridges raw pino JSON lines to the OTEL log pipeline.
- * Call this after startOpenTelemetry() to add as a pino multistream destination.
- * PinoInstrumentation cannot be used because it only supports pino <10.
- */
-export function createOtelLogStream(): Writable | null {
-  if (!otelLoggerProvider) return null;
-  // Use the SDK LoggerProvider directly (avoids the 0.203 / 0.218 api-logs split)
-  const pinoLogger = otelLoggerProvider.getLogger('pino', '1.0.0');
-  return new Writable({
-    write(chunk: Buffer | string, _enc: BufferEncoding, cb: () => void) {
-      try {
-        const rec = JSON.parse(chunk.toString());
-        const { msg, message, time, level, hostname, pid, trace_id, span_id, trace_flags, ...attributes } = rec;
-        const body = (msg || message || '').replace(JWT_RE, '[JWT_REDACTED]');
-        pinoLogger.emit({
-          severityNumber: PINO_SEV[level] ?? 9,
-          severityText: PINO_TEXT[level] ?? 'INFO',
-          body,
-          timestamp: time ? [Math.floor(time / 1000), (time % 1000) * 1_000_000] as [number, number] : undefined,
-          attributes: scrubAttributes(attributes),
-        });
-      } catch { /* ignore unparseable lines (pino startup banner, etc.) */ }
-      cb();
-    },
-  });
-}
 
 // ============================================================================
 // AUTO-START: Initialize OTEL SDK immediately when this module is imported

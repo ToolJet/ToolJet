@@ -17,8 +17,6 @@ import { TypeormLoggerService } from '@modules/logging/services/typeorm-logger.s
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { RedisModule } from '@modules/redis/module';
-import pino from 'pino';
-import { createOtelLogStream } from '../../otel/tracing';
 
 export class AppModuleLoader {
   static async loadModules(configs: {
@@ -80,9 +78,6 @@ export class AppModuleLoader {
       LoggerModule.forRoot({
         pinoHttp: (() => {
           const level = (() => {
-            if (process.env.OTEL_LOG_LEVEL && process.env.ENABLE_OTEL === 'true') {
-              return process.env.OTEL_LOG_LEVEL;
-            }
             if (process.env.SERVER_LOG_LEVEL && process.env.NODE_ENV !== 'development') {
               return process.env.SERVER_LOG_LEVEL;
             }
@@ -95,9 +90,7 @@ export class AppModuleLoader {
           };
 
           const transport =
-            process.env.NODE_ENV !== 'production' &&
-            process.env.NODE_ENV !== 'test' &&
-            process.env.ENABLE_OTEL !== 'true'
+            process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
               ? { target: 'pino-pretty', options: { colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z' } }
               : undefined;
 
@@ -120,6 +113,12 @@ export class AppModuleLoader {
                 'req.body.new_password',
                 'req.body.token',
                 'req.body.invitation_token',
+                'req.body.access_token',
+                'req.body.refresh_token',
+                'req.body.secret',
+                'req.body.api_key',
+                'req.headers["x-api-key"]',
+                'req.headers["x-auth-token"]',
                 ...(process.env.LOGGER_REDACT ? process.env.LOGGER_REDACT?.split(',') : []),
               ],
               censor: '[REDACTED]',
@@ -128,27 +127,12 @@ export class AppModuleLoader {
               const id = res?.['locals']?.tj_transactionId;
               return id ? { transactionId: id } : {};
             },
+            customLogLevel: (_req, res, err) => {
+              if (err || res.statusCode >= 500) return 'error';
+              if (res.statusCode >= 400) return 'warn';
+              return 'info';
+            },
           };
-
-          // When OTEL is enabled, route pino output to both a human-readable
-          // stream and the OTEL log pipeline via pino.multistream.
-          // PinoInstrumentation is not used because it only supports pino <10
-          // (ToolJet uses pino 10.x).
-          if (process.env.ENABLE_OTEL === 'true') {
-            const otelStream = createOtelLogStream();
-            if (otelStream) {
-              // In dev use pino-pretty as a sync Transform (not a transport/worker
-              // thread) so the multistream can include it alongside the OTEL stream.
-              const prettyOrStdout =
-                process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test'
-                  // eslint-disable-next-line @typescript-eslint/no-var-requires
-                  ? require('pino-pretty')({ colorize: true, levelFirst: true, translateTime: 'UTC:mm/dd/yyyy, h:MM:ss TT Z', destination: 1 })
-                  : process.stdout;
-              const otelLogLevel = process.env.OTEL_LOG_MIN_LEVEL || 'warn';
-              const streams = [{ level, stream: prettyOrStdout }, { level: otelLogLevel, stream: otelStream }];
-              return [baseOptions, pino.multistream(streams, { levels: { trace: 10, debug: 20, info: 30, warn: 40, error: 50, fatal: 60 } })];
-            }
-          }
 
           return baseOptions;
         })(),
