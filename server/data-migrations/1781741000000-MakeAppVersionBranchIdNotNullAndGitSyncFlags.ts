@@ -19,8 +19,12 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
     // ── 1. Flag columns (set from the ORIGINAL branch_id state, before backfill) ──
-    await queryRunner.query(`ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_synced boolean NOT NULL DEFAULT false`);
-    await queryRunner.query(`ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_git_sync boolean NOT NULL DEFAULT false`);
+    await queryRunner.query(
+      `ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_synced boolean NOT NULL DEFAULT false`
+    );
+    await queryRunner.query(
+      `ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_git_sync boolean NOT NULL DEFAULT false`
+    );
 
     // Existing branch-associated rows are the synced/gitsync rows. The rows that
     // are still branch_id IS NULL here are the non-gitsync ones and stay false on
@@ -264,6 +268,134 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         FOR EACH ROW
         EXECUTE FUNCTION enforce_app_versions_default_branch_slug_unique()
     `);
+
+    // ── Metadata propagation across an app's version rows ────────────────
+    // When the four user-facing fields (app_name, slug, is_public, icon) are edited
+    // on a DRAFT version_type='version' row, copy them to all other version_type=
+    // 'version' rows of the same app (so DRAFT and PUBLISHED snapshots stay in sync).
+    // Applies regardless of gitsync state.
+    //
+    // Stubs are excluded entirely: a stub (is_stub = true) is neither a source nor a
+    // target. When a stub is converted to non-stub (is_stub true -> false) the trigger
+    // fires (is_stub is in the trigger columns / WHEN) and the now-real draft
+    // propagates — so is_stub appears in the fire list even though it is not copied.
+    //
+    // Loop safety: the propagation UPDATE re-fires this AFTER trigger on each sibling.
+    // pg_trigger_depth() > 1 short-circuits those cascaded fires, so it runs exactly
+    // one level deep. The WHEN clause fires only on real changes, and the IS DISTINCT
+    // FROM filter skips rows already in sync (avoids redundant writes). Same-app
+    // copies never trip the slug/name uniqueness triggers (those are cross-app).
+    await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION propagate_app_version_metadata()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        IF pg_trigger_depth() > 1 THEN
+          RETURN NEW; -- cascaded fire from our own UPDATE below; do not recurse
+        END IF;
+
+        -- source must be a NON-STUB DRAFT version row
+        IF NEW.version_type::text <> 'version' OR NEW.status::text <> 'DRAFT' OR NEW.is_stub THEN
+          RETURN NEW;
+        END IF;
+
+        UPDATE app_versions
+        SET app_name  = NEW.app_name,
+            slug      = NEW.slug,
+            is_public = NEW.is_public,
+            icon      = NEW.icon
+        WHERE app_id = NEW.app_id
+          AND version_type = 'version'
+          AND is_stub = false          -- never overwrite stub rows
+          AND id <> NEW.id
+          AND (
+            app_name  IS DISTINCT FROM NEW.app_name OR
+            slug      IS DISTINCT FROM NEW.slug OR
+            is_public IS DISTINCT FROM NEW.is_public OR
+            icon      IS DISTINCT FROM NEW.icon
+          );
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trg_propagate_app_version_metadata
+        AFTER UPDATE OF app_name, slug, is_public, icon, is_stub
+        ON app_versions
+        FOR EACH ROW
+        WHEN (
+          OLD.app_name  IS DISTINCT FROM NEW.app_name OR
+          OLD.slug      IS DISTINCT FROM NEW.slug OR
+          OLD.is_public IS DISTINCT FROM NEW.is_public OR
+          OLD.icon      IS DISTINCT FROM NEW.icon OR
+          OLD.is_stub   IS DISTINCT FROM NEW.is_stub
+        )
+        EXECUTE FUNCTION propagate_app_version_metadata()
+    `);
+    // Also propagate when a DRAFT version row is INSERTED (e.g. a draft created/
+    // recreated after a PUBLISHED row already exists — gitsync pull/import where rows
+    // arrive in any order). Reuses the same function; a separate trigger is needed
+    // because a WHEN clause referencing OLD is invalid for INSERT. The function's
+    // depth guard + is_stub/IS DISTINCT FROM filters keep it loop-safe and a no-op for
+    // the common case of a first/only version row (or a stub).
+    await queryRunner.query(`
+      CREATE TRIGGER trg_propagate_app_version_metadata_insert
+        AFTER INSERT
+        ON app_versions
+        FOR EACH ROW
+        EXECUTE FUNCTION propagate_app_version_metadata()
+    `);
+
+    // ── Published version rows pull metadata from the DRAFT (source of truth) ──
+    // The reverse of the propagation above: the DRAFT version_type='version' row is
+    // the ONLY source of truth for app_name/slug/is_public/icon. When a PUBLISHED
+    // version_type='version' row is inserted or has those fields updated, overwrite
+    // NEW with the draft's current values, so draft and published stay in sync.
+    //
+    // This is a BEFORE trigger that only mutates NEW (its own row) — it issues no
+    // further writes, so it cannot recurse. The trigger name is prefixed
+    // 'trg_app_versions_0_' so it fires BEFORE the name/slug uniqueness triggers
+    // (BEFORE row triggers run in trigger-name order): they then validate the
+    // draft-sourced values, not whatever was passed in.
+    await queryRunner.query(`
+      CREATE OR REPLACE FUNCTION sync_published_app_version_metadata_from_draft()
+      RETURNS TRIGGER AS $$
+      DECLARE
+        d RECORD;
+      BEGIN
+        -- excluded for stubs; only a non-stub PUBLISHED version row pulls from draft
+        IF NEW.version_type::text <> 'version' OR NEW.status::text <> 'PUBLISHED' OR NEW.is_stub THEN
+          RETURN NEW;
+        END IF;
+
+        -- source of truth is the NON-STUB DRAFT version row
+        SELECT app_name, slug, is_public, icon INTO d
+        FROM app_versions
+        WHERE app_id = NEW.app_id
+          AND version_type = 'version'
+          AND status = 'DRAFT'
+          AND is_stub = false
+        ORDER BY is_git_sync DESC, updated_at DESC
+        LIMIT 1;
+
+        IF FOUND THEN
+          NEW.app_name  := d.app_name;
+          NEW.slug      := d.slug;
+          NEW.is_public := d.is_public;
+          NEW.icon      := d.icon;
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    await queryRunner.query(`
+      CREATE TRIGGER trg_app_versions_0_sync_published_meta_from_draft
+        BEFORE INSERT OR UPDATE OF app_name, slug, is_public, icon, is_stub
+        ON app_versions
+        FOR EACH ROW
+        EXECUTE FUNCTION sync_published_app_version_metadata_from_draft()
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -272,6 +404,11 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
     // Drop new triggers/functions.
+    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_app_versions_0_sync_published_meta_from_draft ON app_versions`);
+    await queryRunner.query(`DROP FUNCTION IF EXISTS sync_published_app_version_metadata_from_draft()`);
+    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_propagate_app_version_metadata_insert ON app_versions`);
+    await queryRunner.query(`DROP TRIGGER IF EXISTS trg_propagate_app_version_metadata ON app_versions`);
+    await queryRunner.query(`DROP FUNCTION IF EXISTS propagate_app_version_metadata()`);
     await queryRunner.query(`DROP TRIGGER IF EXISTS trg_app_versions_app_name_branch_unique ON app_versions`);
     await queryRunner.query(`DROP TRIGGER IF EXISTS trg_app_versions_slug_branch_unique ON app_versions`);
     await queryRunner.query(`DROP TRIGGER IF EXISTS trg_app_versions_default_branch_slug_unique ON app_versions`);
