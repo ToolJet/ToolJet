@@ -176,6 +176,7 @@ const SelectTableMenu = ({ darkMode }) => {
                 deleteJoinTableOptions('limit');
               }
             }}
+            componentName={'TJDB Join Table Limit'}
           />
         </div>
       </div>
@@ -195,6 +196,7 @@ const SelectTableMenu = ({ darkMode }) => {
                 deleteJoinTableOptions('offset');
               }
             }}
+            componentName={'TJDB Join Table Offset'}
           />
         </div>
       </div>
@@ -529,6 +531,7 @@ const RenderFilterSection = ({ darkMode }) => {
                 onChange={(newValue) =>
                   updateFilterConditionEntry('Value', index, { value: newValue, isLeftSideCondition: false })
                 }
+                componentName={'TJDB Join Right Value'}
               />
             )}
           </div>

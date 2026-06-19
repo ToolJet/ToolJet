@@ -98,6 +98,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
             className="codehinter-plugins"
             placeholder="Enter limit. Default is 1"
             onChange={(newValue) => deleteOperationLimitOptionChanged(newValue)}
+            componentName={'TJDB Delete Rows Limit'}
           />
         </div>
       </div>

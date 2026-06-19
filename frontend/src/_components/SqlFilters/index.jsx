@@ -174,6 +174,7 @@ const SqlFilterRow = React.memo(function SqlFilterRow({
             />
           ) : (
             <CodeHinter
+              componentName={'SQL Filter Value'}
               type="basic"
               initialValue={
                 filterValue

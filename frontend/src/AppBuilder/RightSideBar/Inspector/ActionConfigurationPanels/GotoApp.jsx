@@ -50,6 +50,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 usePortalEditor={false}
                 component={component}
+                componentName={'Go to App Query Param Key'}
                 cyLabel="event-query-param-key"
               />
             </div>
@@ -60,6 +61,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 usePortalEditor={false}
                 component={component}
+                componentName={'Go to App Query Param Value'}
                 cyLabel="event-query-param-value"
               />
             </div>

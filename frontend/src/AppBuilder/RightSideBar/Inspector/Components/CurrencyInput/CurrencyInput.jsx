@@ -92,6 +92,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'defaultCountry' }, 'value', value, 'properties')}
+            componentName={'Currency Default Country'}
           />
         ) : (
           <Select
@@ -133,6 +134,7 @@ export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'numberFormat' }, 'value', value, 'properties')}
+            componentName={'Currency Number Format'}
           />
         ) : (
           <Select

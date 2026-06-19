@@ -707,6 +707,7 @@ const DynamicSelector = ({
         <div className="flex-grow-1">
           {isFxMode ? (
             <CodeHinter
+              componentName={'Dynamic Selector'}
               initialValue={options[propertyKey]?.value ?? value}
               onChange={(val) => {
                 debouncedHandleCodeChange(val);

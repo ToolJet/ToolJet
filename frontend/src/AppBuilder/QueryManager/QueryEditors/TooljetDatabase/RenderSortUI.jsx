@@ -63,6 +63,7 @@ const RenderSortUI = ({
                       enablePreview={false}
                       height="30"
                       placeholder="->>key"
+                      componentName={'TJDB Sort JSONPath'}
                     />
                   </span>
                 </ToolTip>

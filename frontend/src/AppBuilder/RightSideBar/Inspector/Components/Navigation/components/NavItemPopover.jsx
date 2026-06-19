@@ -95,6 +95,7 @@ const NavItemPopover = forwardRef(
                   {...basicCodeHinterProps}
                   data-cy="inspector-nav-item-details-label-input"
                   initialValue={item?.label}
+                  componentName={'Nav Item Label'}
                   onChange={(value) => handleChange('label', value)}
                 />
               </div>
@@ -107,6 +108,7 @@ const NavItemPopover = forwardRef(
                   initialValue={item?.icon?.value || ''}
                   paramLabel={'Icon'}
                   paramName={'icon'}
+                  componentName={'Nav Item Icon'}
                   onChange={(value) => handleChange('icon.value', value)}
                   onVisibilityChange={(value) => {
                     const transformedValue = getResolvedValue(value);
@@ -130,6 +132,7 @@ const NavItemPopover = forwardRef(
                   initialValue={item?.visible?.value}
                   paramLabel={'Hide this item'}
                   paramName={'visibility'}
+                  componentName={'Nav Item Visibility'}
                   onChange={(value) => handleChange('visible.value', value)}
                   onFxPress={(active) => handleChange('visible.fxActive', active)}
                   fxActive={item?.visible?.fxActive}
@@ -145,6 +148,7 @@ const NavItemPopover = forwardRef(
                   initialValue={item?.disable?.value}
                   paramLabel={'Disable item'}
                   paramName={'disable'}
+                  componentName={'Nav Item Disable'}
                   onChange={(value) => handleChange('disable.value', value)}
                   onFxPress={(active) => handleChange('disable.fxActive', active)}
                   fxActive={item?.disable?.fxActive}

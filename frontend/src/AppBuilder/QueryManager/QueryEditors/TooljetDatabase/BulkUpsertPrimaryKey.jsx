@@ -68,6 +68,7 @@ export const BulkUpsertPrimaryKey = () => {
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
             onChange={handleRowsChange}
+            componentName={'TJDB Bulk Upsert Rows'}
           />
         </div>
       </div>
