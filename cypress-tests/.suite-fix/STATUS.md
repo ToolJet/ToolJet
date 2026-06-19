@@ -18,7 +18,7 @@ Server: http://localhost:8082 (must stay up)
 | # | Spec | Status | Notes |
 |---|------|--------|-------|
 | 1 | components/buttonHappyPath | 🟡 | 1/7 pass (deletion ✓ via config-handle fix). Remaining drift: widget-accordion-general, #inspector-tab-styles, add-event-handler, yes-button, positional assert (674 vs 100). Big old spec — needs dedicated pass. |
-| 2 | components/componentDuplicationHappypath | ⬜ | |
+| 2 | components/componentDuplicationHappypath | 🟡 | testIsolation:false added → drag throw GONE, all 4 tests now run (were blocked). Now all 4 fail at `[data-cy='tooltip-input-field']` (button.js addBasicData/verifyBasicData). That selector is GONE from current frontend — tooltip property field moved to a dynamic renderer or removed. Needs: locate current tooltip field selector (or confirm removed → adjust). Shared (button.js used by other specs). |
 | 3 | components/componentsBasicHappypath | ⬜ | |
 | 4 | components/csa | ⬜ | |
 | 5 | components/datePickerHappyPath | ⬜ | |

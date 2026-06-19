@@ -6,7 +6,10 @@ import { addBasicData, verifyBasicData } from "Support/utils/button";
 
 import { openEditorSidebar } from "Support/utils/commonWidget";
 
-describe("Editor- component duplication", () => {
+// testIsolation:false — cypress-real-dnd caches its CDP client for the spec
+// run; testIsolation's per-test AUT reset leaves it stale, so 2nd+ test drags
+// throw "No dragIntercepted". Each test still re-logs-in + creates its own app.
+describe("Editor- component duplication", { testIsolation: false }, () => {
   const data = {};
   beforeEach(() => {
     cy.apiLogin();
@@ -26,7 +29,11 @@ describe("Editor- component duplication", () => {
     data.tooltipText = fake.randomSentence;
   });
   afterEach(() => {
-    cy.apiDeleteApp(`${fake.companyName}-App`);
+    // apiDeleteApp takes an APP ID (defaults to Cypress.env("appId")), not a
+    // name (apiCommands.js:49). Passing a fresh `${fake.companyName}-App` string
+    // (companyName regenerates on each access) sent a bogus id and the delete
+    // request failed. Call with no arg to delete the app created in beforeEach.
+    cy.apiDeleteApp();
   });
   it("should verify duplication using copy and paste", () => {
     addBasicData(data);
