@@ -163,21 +163,24 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   const mergedVersions = useMemo(() => {
     const gitOnlyItems = [];
-    gitVersionStatus.forEach((status, versionName) => {
-      if (!status.isLocal) {
-        if (searchQuery && !versionName.toLowerCase().includes(searchQuery.toLowerCase())) return;
-        gitOnlyItems.push({
-          id: `git-${versionName}`,
-          name: versionName,
-          versionType: 'version',
-          status: null,
-          isGitOnly: true,
-          description: status.tagDescription,
-        });
-      }
-    });
+    const isDevelopmentView = (selectedEnvironmentFilter || currentEnvironment)?.name === 'development';
+    if (isDevelopmentView) {
+      gitVersionStatus.forEach((status, versionName) => {
+        if (!status.isLocal) {
+          if (searchQuery && !versionName.toLowerCase().includes(searchQuery.toLowerCase())) return;
+          gitOnlyItems.push({
+            id: `git-${versionName}`,
+            name: versionName,
+            versionType: 'version',
+            status: null,
+            isGitOnly: true,
+            description: status.tagDescription,
+          });
+        }
+      });
+    }
     return [...filteredVersions, ...gitOnlyItems];
-  }, [filteredVersions, gitVersionStatus, searchQuery]);
+  }, [filteredVersions, gitVersionStatus, searchQuery, selectedEnvironmentFilter, currentEnvironment]);
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -484,19 +487,21 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             <span className="tj-text-sm" style={{ fontWeight: 500, color: 'var(--text-default)' }}>
               Versions
             </span>
-            <Button
-              variant="outline"
-              size="small"
-              leadingIcon="refresh"
-              fill="var(--icon-strong)"
-              onClick={handleRefreshFromGit}
-              disabled={isRefreshing}
-              loading={isRefreshing}
-              className={cx({ 'dark-theme theme-dark': darkMode })}
-              style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              Refresh
-            </Button>
+            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && (
+              <Button
+                variant="outline"
+                size="small"
+                leadingIcon="refresh"
+                fill="var(--icon-strong)"
+                onClick={handleRefreshFromGit}
+                disabled={isRefreshing}
+                loading={isRefreshing}
+                className={cx({ 'dark-theme theme-dark': darkMode })}
+                style={{ padding: '8px 8px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                Refresh
+              </Button>
+            )}
           </div>
         )}
 
