@@ -41,10 +41,18 @@ const AppSignupPage = () => {
   const loadAppConfig = async () => {
     try {
       const config = await appsService.getAppAuthenticationConfig(slug);
+      const redirectSearch = appRedirectPath.includes('?') ? appRedirectPath.split('?')[1] : '';
+      const redirectParams = new URLSearchParams(redirectSearch);
+      const isLocalPreview = !!(
+        searchParams.get('version') ||
+        searchParams.get('env') ||
+        redirectParams.get('version') ||
+        redirectParams.get('env')
+      );
       setAppConfig(config);
 
-      // Public app: redirect directly to the app
-      if (config.isPublic) {
+      // Public app: redirect directly to the app not preview apps
+      if (config.isPublic && !isLocalPreview) {
         window.location.href = appRedirectPath;
         return;
       }
