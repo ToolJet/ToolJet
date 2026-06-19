@@ -384,7 +384,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
     try {
-      // moduleVersionId.value stores either a DB UUID (legacy) or version name (post-migration)
+      // moduleVersionId.value stores the module_reference_id (current), the app_version id (legacy), or version name (legacy)
       const results = await manager
         .createQueryBuilder(Component, 'component')
         .innerJoin('component.page', 'page')
@@ -392,20 +392,20 @@ export class VersionUtilService implements IVersionUtilService {
         .innerJoin(App, 'app', 'app.id = appVersion.appId')
         .select('DISTINCT app.name', 'appName')
         .where('component.type = :type', { type: 'ModuleViewer' })
+        .andWhere('appVersion.isStub = false')
         .andWhere(
-          `(component.properties::jsonb -> 'moduleVersionId' ->> 'value') = :versionId
-           OR EXISTS (
-             SELECT 1 FROM app_versions av
-             WHERE av.id::text = :versionId
-               AND (component.properties::jsonb -> 'moduleVersionId' ->> 'value') = av.name
+          `(component.properties::jsonb -> 'moduleVersionId' ->> 'value') IN (
+             SELECT unnest(ARRAY[av.id::text, av.module_reference_id::text, av.name])
+             FROM app_versions av WHERE av.id = :versionId
            )`,
           { versionId }
         )
         .getRawMany();
 
-      const appNames = results.map((r) => r.appName).filter(Boolean);
-      if (appNames.length > 0) {
-        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${appNames.join('\n')}`);
+      if (results.length > 0) {
+        const appNames = results.map((r) => r.appName).filter(Boolean);
+        const nameList = appNames.length > 0 ? appNames.join('\n') : 'one or more apps';
+        throw new BadRequestException(`Cannot delete this version.\nUsed by:\n${nameList}`);
       }
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
