@@ -8,7 +8,8 @@ import { addNewPage } from "Support/utils/multipage";
 import { navigateToCreateNewVersionModal } from "Support/utils/version";
 import testData from "Fixtures/inspectorItems.json";
 
-describe("Editor- Inspector", () => {
+// testIsolation:false — multiple tests share one logged-in session/app context here
+describe("Editor- Inspector", { testIsolation: false }, () => {
   let currentVersion = "";
   let newVersion = [];
   let versionFrom = "";
@@ -20,9 +21,17 @@ describe("Editor- Inspector", () => {
     cy.viewport(1800, 1800);
   });
 
+  // QUARANTINED: written against the OLD single-layer inspector. Current inspector is a 2-layer
+  // tree+detail UI: tree nodes (Node.jsx) emit `inspector-<type>-expand-button` /
+  // `inspector-<name>-subnode-label`, and only level!==1 subnodes open a separate JSONViewer detail
+  // (Node.jsx:77 onSelect) whose rows use `inspector-<key>-label`/`-value` (Row.jsx:82,91).
+  // The shared helpers openAndVerifyNode/verifyNodeData assume the old flat node model and no longer
+  // map to this. globals is level-1 (not selectable), so its child entry-counts ("1 entry"/"8 entries")
+  // are not readable via the current helpers. Needs a full rewrite of inspector.js tree-navigation
+  // helpers + live DOM verification — out of scope for a selector-fix pass.
   it.skip("should verify the values of inspector", () => {
     cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(".tooltip-inner").invoke("hide");
+    cy.hideTooltip();
 
     openAndVerifyNode("globals", testData.globalsNodes, verifyNodeData);
     openAndVerifyNode("currentUser", testData.currentUserNodes, verifyNodeData);
@@ -46,9 +55,12 @@ describe("Editor- Inspector", () => {
     cy.apiDeleteApp();
   });
 
+  // QUARANTINED (same root cause as test 1): depends on openAndVerifyNode/openNode/verifyNodeData
+  // against the reworked 2-layer tree+detail inspector, plus event/CSA/multipage flows. Needs the
+  // inspector.js helper rewrite before this can be re-enabled.
   it.skip("should verify dynamic items", () => {
     cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(".tooltip-inner").invoke("hide");
+    cy.hideTooltip();
 
     cy.get(multipageSelector.sidebarPageButton).click();
     addNewPage("test_page");
@@ -97,7 +109,7 @@ describe("Editor- Inspector", () => {
     cy.forceClickOnCanvas()
     cy.wait(500)
     cy.get(commonWidgetSelector.sidebarinspector).click();
-    cy.get(".tooltip-inner").invoke("hide");
+    cy.hideTooltip();
 
     // openNode("page");
 
@@ -150,6 +162,11 @@ describe("Editor- Inspector", () => {
     cy.apiDeleteApp();
   });
 
+  // QUARANTINED (same root cause): deleteComponentFromInspector uses inspector-menu-icon +
+  // inspector-delete-component-action, but in the reworked inspector "Delete Component" is a
+  // per-node HiddenOptions action with enableInspectorTreeView:false (useCallbackActions.js:116),
+  // so it is filtered out of the tree-view hover menu — the old delete-from-inspector path no longer
+  // exists. Needs inspector.js helper rewrite + live DOM verification.
   it.skip("should verify deletion of component from inspector", () => {
     cy.dragAndDropWidget("button", 500, 500);
     cy.get(commonWidgetSelector.sidebarinspector).click();
