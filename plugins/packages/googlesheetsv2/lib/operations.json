@@ -221,7 +221,7 @@
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "name contains 'report'",
-        "description": "'A query string for filtering spreadsheets. Example: name contains report'",
+        "description": "A query string for filtering spreadsheets. Example: name contains report",
         "height": "36px",
         "className": "codehinter-plugins"
       }
@@ -246,10 +246,10 @@
         "key": "filter",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter Filter",
+        "description": "An array of DataFilter objects (a1Range, gridRange, or developerMetadataLookup). Example: [{\"a1Range\": \"Sheet1!A28:B28\"}]",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter Filter"
+        "placeholder": "[{\"a1Range\": \"Sheet1!A28:B28\"}]"
       }
     },
     "bulk_update_by_primary_key": {
@@ -304,7 +304,7 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "description": "Enter an array of objects to update/insert. Example: [{\"id\":1,\"name\":\"John\"}]",
-        "placeholder": "{'ID': 1, 'Status': 'Done'}, {'ID': 2, 'Status': 'In Progress'}]"
+        "placeholder": "[{'ID': 1, 'Status': 'Done'}, {'ID': 2, 'Status': 'In Progress'}]"
       }
     },
     "copy_spreadsheet": {
