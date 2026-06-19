@@ -383,6 +383,7 @@ export const listViewComponentSlice = (set, get) => {
 
       const clonedRowData = removeFunctionObjects(deepClone(rowData));
 
+      let selectionUpdated = false;
       set((state) => {
         const exposed = state.resolvedStore.modules[moduleId].exposedValues.components;
 
@@ -419,10 +420,25 @@ export const listViewComponentSlice = (set, get) => {
         if (!target.data || Array.isArray(target.data)) target.data = {};
         target.children[rowIndex] = rowData;
         target.data[rowIndex] = clonedRowData;
+
+        // Keep selectedRecord/selectedRow in sync when the selected row's children
+        // update AFTER the click snapshot. onRecordOrRowClicked runs on the capture
+        // phase, so a child's own click handler (e.g. a table row selection) updates
+        // its exposed values after selectedRecord was already snapshotted — without
+        // this, selectedRecord stays one update behind until the next row click.
+        if (target.selectedRecordId === rowIndex || target.selectedRowId === rowIndex) {
+          target.selectedRecord = rowData;
+          target.selectedRow = rowData;
+          selectionUpdated = true;
+        }
       });
 
       get().updateDependencyValues(`components.${listviewId}.children`, moduleId, []);
       get().updateDependencyValues(`components.${listviewId}.data`, moduleId, []);
+      if (selectionUpdated) {
+        get().updateDependencyValues(`components.${listviewId}.selectedRecord`, moduleId, []);
+        get().updateDependencyValues(`components.${listviewId}.selectedRow`, moduleId, []);
+      }
     },
 
     // Walk up the ListView ancestor chain, deriving children/data at each level.
