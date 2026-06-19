@@ -732,7 +732,9 @@ const DynamicEditorBridge = (props) => {
             data-cy={`${cyLabel}-widget-parameter-label`}
           >
             <ToolTip
-              label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
+              label={
+                fieldMeta?.useRawLabel ? paramLabel : t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)
+              }
               meta={fieldMeta}
               labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
