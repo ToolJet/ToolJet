@@ -683,9 +683,6 @@ export default function Grid({ gridWidth, currentLayout, mainCanvasWidth }) {
                 gridHeight: GRID_HEIGHT,
               })
             );
-            // Retool-like opposite-edge resize: never translate the element while resizing.
-            // (Moveable supplies a translate when resizing from left/top; applying it makes the
-            // element "move" instead of shrinking/growing from the opposite edge.)
             e.target.style.transform = '';
             positionGhostElement(e.target, 'moveable-ghost-widget');
             return;
