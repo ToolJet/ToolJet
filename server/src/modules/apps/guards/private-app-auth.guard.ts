@@ -29,7 +29,7 @@ export class PrivateAppAuthGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    const app = await this.appRepository.findOne({ where: { slug } });
+    const app = await this.appRepository.findAppBySlug(slug);
     if (!app) throw new NotFoundException('App not found. Invalid app id');
 
     const organization = await this.organizationRepository.findOne({ where: { id: app.organizationId } });
