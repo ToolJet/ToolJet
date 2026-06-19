@@ -654,6 +654,348 @@
         ]
       }
     },
+    "/sites/root/drive": {
+      "get": {
+        "summary": "Get root site drive",
+        "description": "Get the default document library (drive) for the tenant's root SharePoint site",
+        "operationId": "getRootSiteDrive",
+        "tags": ["Drives"],
+        "parameters": [
+          { "$ref": "#/components/parameters/select" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Drive" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/sites/{site-id}/drive": {
+      "get": {
+        "summary": "Get site drive",
+        "description": "Get the default document library (drive) for a SharePoint site. The returned id is used for file operations.",
+        "operationId": "getSiteDrive",
+        "tags": ["Drives"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Drive" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/sites/{site-id}/drives": {
+      "get": {
+        "summary": "List site drives",
+        "description": "List all document libraries (drives) in a SharePoint site",
+        "operationId": "listSiteDrives",
+        "tags": ["Drives"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" },
+          { "$ref": "#/components/parameters/top" },
+          { "$ref": "#/components/parameters/skip" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drives retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveCollectionResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/sites/{site-id}/drives/{drive-id}": {
+      "get": {
+        "summary": "Get site drive by ID",
+        "description": "Get a specific document library (drive) in a SharePoint site by its drive ID",
+        "operationId": "getSiteDriveById",
+        "tags": ["Drives"],
+        "parameters": [
+          {
+            "name": "site-id",
+            "in": "path",
+            "description": "The unique identifier of the site",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Drive" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/content": {
+      "get": {
+        "summary": "Download file",
+        "description": "Download the binary content of a file from a SharePoint document library. Returns base64-encoded content with mimeType and size.",
+        "operationId": "downloadSharePointFile",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the file",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content retrieved successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}/children": {
+      "get": {
+        "summary": "List folder contents",
+        "description": "List the files and folders inside a SharePoint document library folder. Use the drive id from Get Site Drive.",
+        "operationId": "listFolderContents",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the folder. Use 'root' for the root folder.",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" },
+          { "$ref": "#/components/parameters/filter" },
+          { "$ref": "#/components/parameters/orderby" },
+          { "$ref": "#/components/parameters/top" },
+          { "$ref": "#/components/parameters/skip" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Folder contents retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItemCollectionResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{item-id}": {
+      "get": {
+        "summary": "Get file or folder metadata",
+        "description": "Get metadata for a file or folder. The response includes @microsoft.graph.downloadUrl which can be used directly as a download link (valid for 1 hour).",
+        "operationId": "getDriveItem",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the file or folder",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/select" },
+          { "$ref": "#/components/parameters/expand" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItem" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.Read.All"] }]
+      },
+      "delete": {
+        "summary": "Delete file or folder",
+        "description": "Delete a file or folder from a SharePoint document library",
+        "operationId": "deleteDriveItem",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "item-id",
+            "in": "path",
+            "description": "The unique identifier of the file or folder to delete",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Item deleted successfully" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.ReadWrite.All"] }]
+      }
+    },
+    "/drives/{drive-id}/items/{parent-item-id}:/{filename}:/content": {
+      "put": {
+        "summary": "Upload file to folder",
+        "description": "Upload a file (up to 4 MB) to a folder in a SharePoint document library. Provide fileContent as a base64-encoded string.",
+        "operationId": "uploadFileToFolder",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "name": "drive-id",
+            "in": "path",
+            "description": "The unique identifier of the drive (document library)",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "parent-item-id",
+            "in": "path",
+            "description": "The unique identifier of the destination folder. Use 'root' for the root folder.",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "filename",
+            "in": "path",
+            "description": "The name of the file to create or replace (e.g. report.pdf)",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UploadFileRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItem" }
+              }
+            }
+          },
+          "201": {
+            "description": "File created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DriveItem" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        },
+        "security": [{ "oauth2": ["Sites.ReadWrite.All"] }]
+      }
+    },
     "/sites/{site-id}/lists/{list-id}/items/{item-id}": {
       "get": {
         "summary": "Get list item",
@@ -1310,6 +1652,131 @@
           }
         }
       },
+      "Drive": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the drive",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the drive"
+          },
+          "driveType": {
+            "type": "string",
+            "description": "The drive type: personal, business, or documentLibrary"
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL to the drive in the browser",
+            "readOnly": true
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "DriveCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": { "type": "string" },
+          "@odata.nextLink": { "type": "string" },
+          "value": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Drive" }
+          }
+        }
+      },
+      "DriveItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the item",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the file or folder"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes",
+            "readOnly": true
+          },
+          "webUrl": {
+            "type": "string",
+            "description": "URL to view the item in the browser",
+            "readOnly": true
+          },
+          "@microsoft.graph.downloadUrl": {
+            "type": "string",
+            "description": "Pre-authenticated download URL, valid for 1 hour. Use this directly as a download link.",
+            "readOnly": true
+          },
+          "file": {
+            "type": "object",
+            "description": "Present when the item is a file",
+            "properties": {
+              "mimeType": { "type": "string" }
+            }
+          },
+          "folder": {
+            "type": "object",
+            "description": "Present when the item is a folder",
+            "properties": {
+              "childCount": { "type": "integer" }
+            }
+          },
+          "createdDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "lastModifiedDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "createdBy": { "$ref": "#/components/schemas/IdentitySet" },
+          "lastModifiedBy": { "$ref": "#/components/schemas/IdentitySet" }
+        }
+      },
+      "DriveItemCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "@odata.context": { "type": "string" },
+          "@odata.nextLink": { "type": "string" },
+          "@odata.count": { "type": "integer" },
+          "value": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DriveItem" }
+          }
+        }
+      },
+      "UploadFileRequest": {
+        "type": "object",
+        "required": ["fileContent"],
+        "properties": {
+          "fileContent": {
+            "type": "string",
+            "description": "Base64-encoded content of the file to upload"
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type of the file (e.g. application/pdf, image/png, text/plain). Defaults to application/octet-stream."
+          }
+        }
+      },
       "Error": {
         "type": "object",
         "properties": {
@@ -1527,6 +1994,14 @@
     {
       "name": "Analytics",
       "description": "Site usage analytics"
+    },
+    {
+      "name": "Drives",
+      "description": "SharePoint document library drives"
+    },
+    {
+      "name": "Files",
+      "description": "File and folder operations in SharePoint document libraries"
     }
   ]
 }
