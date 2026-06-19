@@ -8,6 +8,7 @@ import {
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
+import { resolveFlexContainerHeight } from './dynamicHeightReflowFlexContainer';
 
 // Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
 const TABS_TAB_BAR_HEIGHT = 50;
@@ -557,6 +558,30 @@ export const resolveContainerHeight = ({
 
   if (!visibility) {
     return containerHeight;
+  }
+
+  // FlexContainer must branch before the generic grid-container path below.
+  // The code below this point intentionally reads child grid positions and
+  // computes max child bottom; doing that for flex children would ignore flex
+  // stacking/wrapping and can leave downstream siblings overlapping grown
+  // content in viewer mode.
+  if (componentType === 'FlexContainer') {
+    return resolveFlexContainerHeight({
+      componentId,
+      currentLayout,
+      currentPageComponents,
+      temporaryLayouts,
+      contextIndices: context,
+      getResolvedComponent,
+      getContainerChildrenMapping,
+      getExposedPropertyForAdditionalActions,
+      calculateMoveableBoxHeightWithId,
+      getComponentDefinition,
+      getCanonicalLayout,
+      getDynamicElementSelector,
+      getEffectiveLayout,
+      resolveWidgetVisibility,
+    });
   }
 
   // ModalV2 uses a global class (modal is portal'd out), all others use a

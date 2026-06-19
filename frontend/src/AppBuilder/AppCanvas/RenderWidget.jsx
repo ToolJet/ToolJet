@@ -61,6 +61,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'FileButton',
   'ButtonGroupV2',
   'Listview',
+  'FlexContainer',
   'TagsInput',
   'TreeSelect',
   'ModalV2',

@@ -35,6 +35,7 @@ import {
   NESTING_LEVEL_LIMITS,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 // Debounce timers for query re-runs triggered by dependency changes
 const queryRerunTimers = new Map();
@@ -166,7 +167,7 @@ export const createComponentsSlice = (set, get) => ({
     );
   },
 
-  setCurrentPageId: (id, moduleId = 'canvas') =>
+  setCurrentPageId: (id, moduleId = 'canvas') => {
     set(
       (state) => {
         const currentPageIndex = state.modules[moduleId].pages.findIndex((page) => page.id === id);
@@ -186,7 +187,8 @@ export const createComponentsSlice = (set, get) => ({
       },
       false,
       'setCurrentPageId'
-    ),
+    );
+  },
   setCurrentPageHandle: (handle, moduleId = 'canvas') => {
     set(
       (state) => {
@@ -1298,6 +1300,7 @@ export const createComponentsSlice = (set, get) => ({
       checkIfParentIsFormAndAddField,
       buildComponentDefinition,
       getCurrentPageId,
+      getComponentDefinition,
     } = get();
     const currentPageId = getCurrentPageId(moduleId);
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
@@ -1324,8 +1327,9 @@ export const createComponentsSlice = (set, get) => ({
         };
         return acc;
       }, {});
+      const flexChildOrderUpdates = {};
 
-      newComponents.forEach((newComponent, index) => {
+      newComponents.forEach((newComponent) => {
         // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
         const oldName = getComponentNameFromId(newComponent.id, moduleId);
         if (oldName) {
@@ -1375,6 +1379,13 @@ export const createComponentsSlice = (set, get) => ({
             }
             const page = state.modules[moduleId].pages.find((page) => page.id === currentPageId);
             page.components[newComponent.id] = newComponent;
+            get().addFlexContainerChildOrderToDraft({
+              state,
+              page,
+              parentId,
+              childId: newComponent.id,
+              flexChildOrderUpdates,
+            });
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
@@ -1387,7 +1398,31 @@ export const createComponentsSlice = (set, get) => ({
       }
 
       if (saveAfterAction) {
-        saveComponentChanges(diff, 'components', 'create', moduleId)
+        const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
+          const component = getComponentDefinition(componentId, moduleId)?.component;
+          if (component) acc[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
+          return acc;
+        }, {});
+
+        const savePromise =
+          Object.keys(flexParentUpdateDiff).length > 0
+            ? saveComponentChanges(
+                {
+                  create: {
+                    diff,
+                    pageId: currentPageId,
+                  },
+                  update: {
+                    diff: flexParentUpdateDiff,
+                  },
+                },
+                'components/batch',
+                'update',
+                moduleId
+              )
+            : saveComponentChanges(diff, 'components', 'create', moduleId);
+
+        savePromise
           .then(() => {
             resolve(); // Resolve the promise after all operations are complete
           })
@@ -1433,6 +1468,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const toDeleteComponents = [];
     const toDeleteEvents = [];
+    const flexChildOrderUpdates = {};
     const allComponents = getCurrentPageComponents(moduleId);
     const affectedFormIds = new Set(); // Track which Forms need their fields updated
 
@@ -1477,6 +1513,13 @@ export const createComponentsSlice = (set, get) => ({
                 return componentId !== id;
               }
             );
+          });
+
+          get().removeDeletedComponentFromFlexChildOrdersInDraft({
+            page,
+            childId: id,
+            toDeleteComponents,
+            flexChildOrderUpdates,
           });
 
           if (checkIfComponentIsModule(id, moduleId)) {
@@ -1529,11 +1572,17 @@ export const createComponentsSlice = (set, get) => ({
         }
       };
 
+      const flexParentUpdateDiff = Object.entries(flexChildOrderUpdates).reduce((acc, [componentId, childOrder]) => {
+        const component = getComponentDefinition(componentId, moduleId)?.component;
+        if (component) acc[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
+        return acc;
+      }, {});
+
       // If Forms were affected, use batch operation to combine delete + form update
-      if (affectedFormIds.size > 0) {
+      if (affectedFormIds.size > 0 || Object.keys(flexParentUpdateDiff).length > 0) {
         // Build the form update diff
         const currentPageIndex = getCurrentPageIndex(moduleId);
-        const formUpdateDiff = {};
+        let formUpdateDiff = { ...flexParentUpdateDiff };
         affectedFormIds.forEach((formId) => {
           const formComponent = get().modules[moduleId].pages[currentPageIndex].components[formId]?.component;
           if (formComponent) {
@@ -1714,6 +1763,8 @@ export const createComponentsSlice = (set, get) => ({
       });
     }
 
+    const flexChildOrderUpdates = {};
+
     // When updateParent is true and saveAfterAction is true, skip the save in checkParentAndUpdateFormFields
     // so we can batch the form field changes with the layout changes into a single API call
     const formFieldsDiff = updateParent
@@ -1726,11 +1777,56 @@ export const createComponentsSlice = (set, get) => ({
           // ============ Component layout update logic ============
           Object.entries(componentLayouts).forEach(([componentId, layout]) => {
             const component = page.components[componentId];
+            const newParentComponentType = newParentId ? page.components[newParentId]?.component?.component : null;
+            const oldParentComponentType = component?.component?.parent
+              ? page.components[component.component.parent]?.component?.component
+              : null;
+
             if (component) {
-              component.layouts[currentLayout] = {
-                ...component.layouts[currentLayout],
-                ...layout,
-              };
+              if (newParentComponentType === 'FlexContainer' && updateParent) {
+                // FlexContainer children: write only flex-specific fields, strip grid fields
+                const defaultFlexLayout = createDefaultFlexChildLayout({
+                  widthPx: layout.widthPx,
+                  height: layout.height,
+                });
+                const { fillWidth, widthPx, height } = {
+                  ...defaultFlexLayout,
+                  ...layout,
+                };
+                const flexLayout = {};
+                if (fillWidth !== undefined) flexLayout.fillWidth = fillWidth;
+                if (widthPx !== undefined) flexLayout.widthPx = widthPx;
+                if (height !== undefined) flexLayout.height = height;
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  ...flexLayout,
+                };
+                // Strip absolute-grid position/width fields when moving into FlexContainer.
+                delete component.layouts[currentLayout].top;
+                delete component.layouts[currentLayout].left;
+                delete component.layouts[currentLayout].width;
+              } else if (
+                oldParentComponentType === 'FlexContainer' &&
+                newParentComponentType !== 'FlexContainer' &&
+                updateParent
+              ) {
+                // Moving OUT of FlexContainer: strip flex fields, write grid fields
+                const { top, left, width, height } = layout;
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  top,
+                  left,
+                  width,
+                  height,
+                };
+                delete component.layouts[currentLayout].fillWidth;
+                delete component.layouts[currentLayout].widthPx;
+              } else {
+                component.layouts[currentLayout] = {
+                  ...component.layouts[currentLayout],
+                  ...layout,
+                };
+              }
             }
             // ============ Component layout update logic ends ===========
 
@@ -1738,6 +1834,15 @@ export const createComponentsSlice = (set, get) => ({
             oldParentId = component.component.parent;
             hasParentChanged = oldParentId !== newParentId;
             if (hasParentChanged && updateParent) {
+              if (oldParentComponentType === 'FlexContainer' && oldParentId) {
+                get().removeFlexContainerChildOrderFromDraft({
+                  page,
+                  parentId: oldParentId,
+                  childId: componentId,
+                  flexChildOrderUpdates,
+                });
+              }
+
               // Update the component's parent
               component.component.parent = newParentId;
               // Remove the component from the old parent's children list
@@ -1758,6 +1863,15 @@ export const createComponentsSlice = (set, get) => ({
                 }
                 if (!state.containerChildrenMapping[newParentId].includes(componentId)) {
                   state.containerChildrenMapping[newParentId].push(componentId);
+                }
+                if (newParentComponentType === 'FlexContainer') {
+                  get().addFlexContainerChildOrderToDraft({
+                    state,
+                    page,
+                    parentId: newParentId,
+                    childId: componentId,
+                    flexChildOrderUpdates,
+                  });
                 }
               } else {
                 if (!state.containerChildrenMapping[moduleId].includes(componentId)) {
@@ -1858,12 +1972,18 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
-
     if (saveAfterAction) {
       // Check if we need to batch multiple operations together
       if (updateParent) {
         // Collect all component updates that need to be batched
         let updatedDiff = formFieldsDiff || {};
+
+        Object.entries(flexChildOrderUpdates).forEach(([componentId, childOrder]) => {
+          const component = getComponentDefinition(componentId, moduleId)?.component;
+          if (component) {
+            updatedDiff[componentId] = get().buildFlexChildOrderComponentDiff(component, childOrder);
+          }
+        });
 
         // Update container auto-height for both old and new parents
         // Get the diffs to include in the batch operation

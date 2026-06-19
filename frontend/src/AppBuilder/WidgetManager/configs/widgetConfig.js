@@ -79,6 +79,7 @@ import {
   navigationConfig,
   fileButtonConfig,
   buttonGroupV2Config,
+  flexContainerConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -97,6 +98,7 @@ export const widgets = [
   formConfig,
   modalV2Config,
   containerConfig,
+  flexContainerConfig,
   accordionConfig,
   tabsConfig,
   listviewConfig,
