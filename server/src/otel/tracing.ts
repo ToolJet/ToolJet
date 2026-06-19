@@ -107,8 +107,7 @@ function createSDK(resource: ReturnType<typeof buildResource>): NodeSDK {
         },
       }),
       new NestInstrumentation(),
-      // PinoInstrumentation removed: it only supports pino <10, but ToolJet
-      // uses pino 10.x. Log bridging is handled via createOtelLogStream() below.
+      // PinoInstrumentation omitted: only supports pino <10, ToolJet uses pino 10.x.
       new PgInstrumentation({
         enhancedDatabaseReporting: true,
         responseHook: (span: Span, responseInfo: any) => {
