@@ -152,16 +152,16 @@ export const createEventsSlice = (set, get) => ({
       get().eventsSlice.updateEventsField('eventsCreatedLoader', true, moduleId);
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      appVersionService
-        .createAppVersionEventHandler(appId, versionId, event)
-        .then((response) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
-          get().eventsSlice.addEvent(response, moduleId);
-        })
-        .catch((err) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
-          toast.error(err?.error || 'An error occurred while creating the event handler');
-        });
+      try {
+        const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        get().eventsSlice.addEvent(response, moduleId);
+        return response;
+      } catch (err) {
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        toast.error(err?.error || 'An error occurred while creating the event handler');
+        return null;
+      }
     },
     bulkCreateAppVersionEventHandlers: async (events, moduleId) => {
       if (!events || events.length === 0) return [];
