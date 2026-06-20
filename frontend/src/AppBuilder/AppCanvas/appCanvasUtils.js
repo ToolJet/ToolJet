@@ -80,6 +80,19 @@ export const addNewWidgetToTheEditor = (
     for (const { name, default_value } of inputItems) {
       componentData.definition.properties[name] = { value: default_value };
     }
+
+    // Module editor's additional-action settings act as the instance defaults;
+    // the instance properties stay editable in the app (override). API responses
+    // snake_case definition keys (see input_items above), so check both forms.
+    const moduleContainerProperties = moduleInfo.moduleContainer?.component.definition.properties;
+    const copyModuleDefault = (snakeKey, camelKey) => {
+      const defaultValue = moduleContainerProperties?.[snakeKey]?.value ?? moduleContainerProperties?.[camelKey]?.value;
+      if (defaultValue !== undefined) {
+        componentData.definition.properties[camelKey] = { value: defaultValue };
+      }
+    };
+    copyModuleDefault('dynamic_height', 'dynamicHeight');
+    copyModuleDefault('collapse_when_hidden', 'collapseWhenHidden');
   }
 
   // Ensure minimum width

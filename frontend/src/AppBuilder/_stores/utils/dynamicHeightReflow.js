@@ -53,7 +53,7 @@ const TABS_TAB_BAR_HEIGHT = 50;
 //
 // ── Pipeline ────────────────────────────────────────────────────────────────
 //   useDynamicHeight (hook)
-//     → adjustComponentPositions (gridSlice)
+//     → scheduleReflow → flushReflows (gridSlice)
 //       → resolveWidgetVisibility / resolveContainerHeight /
 //         resolveWidgetMeasuredHeight (this file)
 //       → buildReflowPatch (this file) — returns temporary layout patch
@@ -141,6 +141,27 @@ export const getEffectiveLayout = (
 // current reflowed position.
 export const getCanonicalLayout = (componentId, currentLayout, currentPageComponents) => {
   return currentPageComponents?.[componentId]?.layouts?.[currentLayout] || null;
+};
+
+// Module-aware resolved-component getter for the reflow engine. An embedded
+// module's root ModuleContainer must take its `dynamicHeight` from the
+// consuming ModuleViewer INSTANCE (resolved in the 'canvas' namespace) — the
+// ModuleContainer's own property is only the module editor's drop-time
+// default. Without this overlay, the dynamic-height opt-out gate in
+// resolveContainerHeight (and the bubble gate in the reflow) pin the module
+// root to its authored height whenever the module-editor default is off, even
+// though the instance enabled dynamic height.
+export const bindModuleAwareGetResolvedComponent = (getResolvedComponent, getComponentTypeFromId, moduleId) => {
+  return (id, ctx) => {
+    const resolved = getResolvedComponent(id, ctx, moduleId);
+    if (moduleId !== 'canvas' && resolved?.properties && getComponentTypeFromId(id, moduleId) === 'ModuleContainer') {
+      const instanceDynamicHeight = getResolvedComponent(moduleId, null, 'canvas')?.properties?.dynamicHeight;
+      if (instanceDynamicHeight !== undefined && resolved.properties.dynamicHeight !== instanceDynamicHeight) {
+        return { ...resolved, properties: { ...resolved.properties, dynamicHeight: instanceDynamicHeight } };
+      }
+    }
+    return resolved;
+  };
 };
 
 // Bottom edge helper. flowHeightOverride lets callers substitute a zero (for
@@ -363,6 +384,12 @@ const getExtraContainerHeight = ({
     extraHeight = MODAL_CANVAS_PADDING * 2 + 8;
     if (properties.showHeader) extraHeight += 12;
     if (properties.showFooter) extraHeight += 12;
+  } else if (componentType === 'ModuleContainer') {
+    // Module root chrome: WidgetWrapper canvas-component padding (BOX_PADDING
+    // top + bottom) plus the real-canvas 1px padding pair net of its
+    // `calc(100% + 1px)` extension. Without this the canvas content box lands
+    // exactly `childMax` minus chrome and the last widget clips/scrolls.
+    extraHeight = BOX_PADDING * 2 + 2;
   } else if (componentType === 'Listview' && normalizeLayoutContext(contextIndices)) {
     // Listview row context: previously `-= 40` to cancel the historical +50
     // buffer (net +10 chrome per row). Buffer is gone, so set the row's
@@ -706,6 +733,17 @@ export const resolveContainerHeight = ({
   // (Container/Accordion: padding+border+header; Form: header/footer/body
   // gutter; Tabs: strip + pane padding; ModalV2: body padding + borders).
   // Floor at canonical so the container never drops below its authored size.
+  //
+  // Exception: a dynamic-height ModuleContainer must fit its content in BOTH
+  // directions. Flooring at the authored height would keep the module root
+  // tall after a collapseWhenHidden child hides and shrinks the content, so
+  // the inner canvas (updateCanvasBottomHeight) never shrinks either. The
+  // module canvas enforces its own 40px minimum, so dropping the floor here
+  // is safe. `component` is the module-aware resolved component, so
+  // `dynamicHeight` already reflects the consuming ModuleViewer instance.
+  if (componentType === 'ModuleContainer' && component?.properties?.dynamicHeight === true) {
+    return currentMax + extraHeight;
+  }
   return Math.max(currentMax + extraHeight, containerHeight);
 };
 
