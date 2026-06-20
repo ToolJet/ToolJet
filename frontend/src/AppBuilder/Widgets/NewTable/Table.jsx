@@ -125,7 +125,7 @@ const Table = memo(
     const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
-    const allAppEvents = useEvents();
+    const allAppEvents = useEvents(moduleId);
 
     const shouldAutogenerateColumns = useRef(false);
     const hasDataChanged = useRef(false);
