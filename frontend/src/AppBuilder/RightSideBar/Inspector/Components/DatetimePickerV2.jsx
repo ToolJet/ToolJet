@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { renderElement } from '../Utils';
 import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
@@ -461,6 +462,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: t('widget.common.additionalActions', 'Additional Actions'),
     isOpen: true,
     children: additionalActions.map((property) => {
