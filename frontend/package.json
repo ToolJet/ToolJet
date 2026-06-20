@@ -66,6 +66,7 @@
     "cmdk": "^1.1.1",
     "cron-validator": "^1.3.1",
     "cronstrue": "^2.51.0",
+    "date-fns": "3.6.0",
     "deep-object-diff": "^1.1.9",
     "dependency-graph": "^1.0.0",
     "dompurify": "^3.0.0",
@@ -142,7 +143,7 @@
     "react-rnd": "^10.4.1",
     "react-router-dom": "^6.8.1",
     "react-select": "^5.7.0",
-    "react-select-search": "^4.1.6",
+    "react-select-search": "4.1.8",
     "react-selecto": "^1.22.0",
     "react-spring": "^9.6.1",
     "react-syntax-highlighter": "^15.6.1",
@@ -201,10 +202,10 @@
     "babel-plugin-console-source": "^2.0.5",
     "babel-plugin-import": "^1.13.6",
     "babel-plugin-istanbul": "^6.1.1",
-    "compression-webpack-plugin": "^10.0.0",
+    "compression-webpack-plugin": "^12.0.0",
     "css-loader": "^6.7.3",
-    "css-minimizer-webpack-plugin": "^7.0.2",
-    "esbuild": "0.25.9",
+    "css-minimizer-webpack-plugin": "^8.0.0",
+    "esbuild": "^0.28.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^8.10.2",
     "eslint-import-resolver-webpack": "^0.13.10",
@@ -278,11 +279,17 @@
     "isomorphic-fetch@2.x": {
       "node-fetch": "^2.6.13"
     },
-    "esbuild": "0.25.9",
+    "esbuild": "^0.28.1",
     "on-headers": "1.1.0",
     "tar-fs": "^3.1.0",
     "minimatch@3": {
       "brace-expansion": "^1.1.11"
+    },
+    "draft-js": {
+      "immutable": "^3.8.3"
+    },
+    "@base-ui/react": {
+      "date-fns": "$date-fns"
     }
   },
   "scripts": {
