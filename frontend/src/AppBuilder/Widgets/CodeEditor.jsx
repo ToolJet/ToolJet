@@ -127,6 +127,7 @@ const CodeEditor = ({
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}
+          editable={!disabledState}
         />
       </div>
     </div>
