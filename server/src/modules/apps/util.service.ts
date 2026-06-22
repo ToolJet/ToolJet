@@ -379,7 +379,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean, context?: string): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -407,7 +407,8 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type
+        type,
+        context
       );
 
       // Eagerly load appVersions for modules
@@ -432,7 +433,8 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string
+    type?: string,
+    context?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -470,6 +472,17 @@ export class AppsUtilService implements IAppsUtilService {
       // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
       // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
+        if (context === 'picker') {
+          return this.addPickerModulesFilter(
+            viewableAppsQb,
+            userAppPermissions as unknown as UserAppsPermissions
+          );
+        }
+        return this.addViewableFrontEndAppsFilter(
+          viewableAppsQb,
+          userAppPermissions as unknown as UserAppsPermissions,
+          viewableApps
+        );
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -516,6 +529,34 @@ export class AppsUtilService implements IAppsUtilService {
       });
     }
 
+    return query;
+  }
+
+  /**
+   * Picker context: include hidden modules (hide_from_dashboard is irrelevant for the picker).
+   * Still intersects with the user's permitted module sets — never returns unfiltered.
+   * isAllEditable || isAllViewable → no id filter (user can see all modules in the org).
+   * Otherwise → apps.id IN (editableAppsId ∪ viewableAppsId).
+   */
+  private addPickerModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, editableAppsId, viewableAppsId } = userModulePermissions;
+
+    if (isAllEditable || isAllViewable) {
+      // User can access all modules — no id restriction needed.
+      return query;
+    }
+
+    const viewableModules = Array.from(new Set([...editableAppsId, ...viewableAppsId]));
+
+    if (viewableModules.length === 0) {
+      query.andWhere('1 = 0'); // user has no module access
+      return query;
+    }
+
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
     return query;
   }
 

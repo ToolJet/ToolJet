@@ -1,5 +1,5 @@
 import { sanitizeInput } from '@helpers/utils.helper';
-import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum, IsIn } from 'class-validator';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { APP_TYPES } from '../constants';
 
@@ -129,6 +129,10 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsOptional()
+  @IsIn(['picker'])
+  context?: string;
 }
 
 export class VersionReleaseDto {
