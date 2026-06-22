@@ -76,7 +76,8 @@ const useAppData = (
   mode = 'edit',
   { environmentId, versionId } = {},
   moduleMode = false,
-  appSlug
+  appSlug,
+  canEdit = true
 ) => {
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
@@ -100,6 +101,7 @@ const useAppData = (
   const setCurrentPageId = useStore((state) => state.setCurrentPageId);
   const updateEventsField = useEventActions().updateEventsField;
   const setCurrentMode = useStore((state) => state.setCurrentMode);
+  const setIsEditorReadOnly = useStore((state) => state.setIsEditorReadOnly);
   const setAppHomePageId = useStore((state) => state.setAppHomePageId);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const setIsQueryPaneExpanded = useStore((state) => state.queryPanel.setIsQueryPaneExpanded);
@@ -585,6 +587,14 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
+        // Gate Build-with-only module access: canEdit=false → read-only editor
+        // Explicit reset to false handles the case where the user navigates from a
+        // Build-with module to an editable module within the same session (stale true).
+        if (moduleMode) {
+          setIsEditorReadOnly(!canEdit);
+        } else {
+          setIsEditorReadOnly(false); // always reset for non-module editors
+        }
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
@@ -612,7 +622,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, mode]);
+  }, [setApp, setEditorLoading, currentSession, mode, canEdit]);
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {

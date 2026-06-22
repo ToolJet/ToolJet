@@ -16,11 +16,12 @@ import SaveIndicator from './SaveIndicator';
 
 export const EditorHeader = ({ darkMode, appType }) => {
   const { moduleId, isModuleEditor } = useModuleContext();
-  const { isSaving, saveError, isVersionReleased } = useStore(
+  const { isSaving, saveError, isVersionReleased, isEditorReadOnly } = useStore(
     (state) => ({
       isSaving: state.appStore.modules[moduleId].app.isSaving,
       saveError: state.appStore.modules[moduleId].app.saveError,
       isVersionReleased: state.isVersionReleased,
+      isEditorReadOnly: state.isEditorReadOnly,
     }),
     shallow
   );
@@ -54,24 +55,35 @@ export const EditorHeader = ({ darkMode, appType }) => {
                       {isModuleEditor && <ModuleEditorBanner />}
                       <EditAppName />
                     </div>
-                    <div>
-                      <span
-                        className={cx('autosave-indicator tj-text-xsm', {
-                          'autosave-indicator-saving': isSaving,
-                          'text-danger': saveError,
-                          'd-none': isVersionReleased,
-                        })}
-                        data-cy="autosave-indicator"
-                      >
-                        <SaveIndicator isSaving={isSaving} saveError={saveError} />
-                      </span>
-                    </div>
+                    {!isEditorReadOnly && (
+                      <div>
+                        <span
+                          className={cx('autosave-indicator tj-text-xsm', {
+                            'autosave-indicator-saving': isSaving,
+                            'text-danger': saveError,
+                            'd-none': isVersionReleased,
+                          })}
+                          data-cy="autosave-indicator"
+                        >
+                          <SaveIndicator isSaving={isSaving} saveError={saveError} />
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <HeaderActions darkMode={darkMode} />
+            {isModuleEditor && isEditorReadOnly ? (
+              <span
+                className="tw-inline-flex tw-items-center tw-px-2 tw-py-1 tw-text-xs tw-font-medium tw-rounded tw-bg-amber-100 tw-text-amber-800"
+                data-cy="module-readonly-badge"
+              >
+                Read-only — Build with only
+              </span>
+            ) : (
+              <HeaderActions darkMode={darkMode} />
+            )}
 
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
               <div className="d-flex align-items-center p-0">
