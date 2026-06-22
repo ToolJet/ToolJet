@@ -78,11 +78,9 @@ export class AppModuleLoader {
       LoggerModule.forRoot({
         pinoHttp: (() => {
           const level = (() => {
-            if (process.env.SERVER_LOG_LEVEL && process.env.NODE_ENV !== 'development') {
-              return process.env.SERVER_LOG_LEVEL;
-            }
-            const logLevel = { production: 'info', development: 'debug', test: 'silent' };
-            return logLevel[process.env.NODE_ENV] || 'info';
+            if (process.env.NODE_ENV === 'development') return 'debug';
+            if (process.env.NODE_ENV === 'test') return 'silent';
+            return { all: 'debug', warn: 'warn', error: 'error' }[process.env.ORM_LOGGING] || 'info';
           })();
 
           const autoLogging = process.env.NODE_ENV === 'test' ? false : {

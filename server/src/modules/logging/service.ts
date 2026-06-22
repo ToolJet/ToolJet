@@ -13,14 +13,9 @@ export class TransactionLogger implements LoggerService {
     if (!TransactionLogger.baseLogger) {
       const env = this.configService.get<string>('NODE_ENV', 'development');
       const level =
-        this.configService.get<string>('TRANSACTION_LOGGING_LEVEL') ||
-        (env !== 'development' ? process.env.SERVER_LOG_LEVEL : null) ||
-        {
-          production: 'info',
-          development: 'trace',
-          test: 'error',
-        }[env] ||
-        'trace';
+        env === 'development' ? 'trace' :
+        env === 'test' ? 'error' :
+        ({ all: 'debug', warn: 'warn', error: 'error' }[this.configService.get<string>('ORM_LOGGING')] || 'info');
 
       TransactionLogger.baseLogger = pino({
         level,
