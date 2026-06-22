@@ -8,10 +8,13 @@ export const workspaceBranchesService = {
   deleteBranch,
   pushWorkspace,
   pullWorkspace,
+  pullApp,
+  pullModule,
   ensureAppDraft,
   checkForUpdates,
   listRemoteBranches,
   fetchPullRequests,
+  getEntityTags,
 };
 
 function list() {
@@ -77,6 +80,40 @@ function pullWorkspace(sourceBranch, branchId) {
   return fetch(`${config.apiUrl}/workspace-branches/pull`, requestOptions).then(handleResponse);
 }
 
+function pullApp(appId, branchId, tagSha, tagName, tagDescription) {
+  const body = {
+    appId,
+    ...(branchId && { branchId }),
+    ...(tagSha && { tagSha }),
+    ...(tagName && { tagName }),
+    ...(tagDescription && { tagDescription }),
+  };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/workspace-branches/pull-app`, requestOptions).then(handleResponse);
+}
+
+function pullModule(moduleId, tagSha, tagName, tagDescription, branchId) {
+  const body = {
+    moduleId,
+    ...(branchId && { branchId }),
+    ...(tagSha && { tagSha }),
+    ...(tagName && { tagName }),
+    ...(tagDescription && { tagDescription }),
+  };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/workspace-branches/pull-module`, requestOptions).then(handleResponse);
+}
+
 function ensureAppDraft(appId, branchId, tagSha, tagName) {
   const body = {
     appId,
@@ -107,4 +144,12 @@ function listRemoteBranches() {
 function fetchPullRequests() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/workspace-branches/pull-requests`, requestOptions).then(handleResponse);
+}
+
+function getEntityTags(coRelationId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(
+    `${config.apiUrl}/workspace-branches/entity-tags?coRelationId=${encodeURIComponent(coRelationId)}`,
+    requestOptions
+  ).then(handleResponse);
 }

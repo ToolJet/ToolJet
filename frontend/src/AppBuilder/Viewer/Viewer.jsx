@@ -25,6 +25,7 @@ export const Viewer = ({
   environmentId,
   versionId,
   moduleMode = false,
+  isHydrating = false,
   slug: appSlug,
 } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
@@ -126,7 +127,7 @@ export const Viewer = ({
     };
   }, []);
 
-  if (isEditorLoading) {
+  if (isEditorLoading || isHydrating) {
     return (
       <div className={cx('apploader', { 'dark-theme theme-dark': darkMode, 'module-mode': moduleMode })}>
         {moduleMode ? <Spinner /> : <TJLoader />}

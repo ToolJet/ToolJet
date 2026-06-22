@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -1216,9 +1216,16 @@ export class AppsUtilService implements IAppsUtilService {
       if (gitEnabled) {
         // git-on: latest DRAFT on target branch (parentBranchId ?? defaultBranch.id).
         const targetBranchId = parentBranchId ?? defaultBranch.id;
-        metaQb
-          .andWhere('av.branchId = :targetBranchId', { targetBranchId })
-          .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
+        metaQb.andWhere(
+          new Brackets((qb) => {
+            qb.where('av.branchId = :targetBranchId AND av.status = :draftStatus', {
+              targetBranchId,
+              draftStatus: AppVersionStatus.DRAFT,
+            }).orWhere('av.branchId IS NULL AND av.status = :publishedStatus', {
+              publishedStatus: AppVersionStatus.PUBLISHED,
+            });
+          })
+        );
       }
       // git-off: no extra filter — latest any row per module.
       const metaRows = await metaQb.getMany();

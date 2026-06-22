@@ -177,14 +177,14 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
           <div className="create-draft-version-body">
             {!isGitSyncEnabled && (
               <div className="col mt-3 mb-3">
-                <label className="form-label mb-1 ms-1" data-cy="version-name-label">
+                <label className="form-label mb-1 ms-1" data-cy="draft-version-name-label">
                   {t('editor.appVersionManager.versionName', 'Version Name')}
                 </label>
                 <input
                   type="text"
                   onChange={(e) => setVersionName(e.target.value)}
                   className="form-control"
-                  data-cy="version-name-input-field"
+                  data-cy="draft-version-name-input-field"
                   placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
                   disabled={isCreatingVersion}
                   value={versionName}
@@ -192,7 +192,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
                   minLength="1"
                   maxLength="25"
                 />
-                <small className="version-name-helper-text" data-cy="version-name-helper-text">
+                <small className="version-name-helper-text" data-cy="draft-version-name-helper-text">
                   {t('editor.appVersionManager.versionNameHelper', 'Version name must be unique and max 25 characters')}
                 </small>
               </div>

@@ -318,8 +318,9 @@ const useAppData = (
           // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
         } else {
-          // versionId is the version's module_reference_id (uuid) when pinned, '' when unpinned.
-          // The server resolver handles either; the URL builder omits the `ref` param when empty.
+          // versionId is a versionName string (cross-workspace stable, git-tag-backed) when the
+          // bridge field is populated, a UUID module_reference_id for legacy same-workspace-only
+          // pins, or '' when unpinned. The server resolver handles all three cases.
           appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       } else if (versionId) {
@@ -351,6 +352,14 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
+        // Reset the AppBuilder store before populating the new app. The dependency graph and
+        // resolvedStore are module-level singletons that are NOT reset between apps; on clone -> open
+        // the graph still holds the previous app's edges, so setResolvedGlobals below fires a
+        // dependency cascade over them before initDependencyGraph rebuilds — dereferencing resolved
+        // entries that don't exist in the new app and throwing (caught + swallowed -> blank editor).
+        // cleanUpStore installs a fresh graph + clears resolved values so the cascade starts clean.
+        // Canvas-only (mirrors the version-change effect's own cleanUpStore); modules manage their own.
+        if (!moduleMode) cleanUpStore(false);
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -463,6 +472,7 @@ const useAppData = (
             isReleasedApp: isReleasedApp,
             appType: appData.type,
             currentVersionId: appData.editing_version?.id || appData.current_version_id,
+            co_relation_id: appData.co_relation_id,
           },
           moduleId
         );
@@ -672,6 +682,11 @@ const useAppData = (
       })
       .catch((_error) => {
         if (cancelled) return;
+        // Surface load failures — this catch otherwise swallows the error and silently blanks the
+        // editor, which makes load-path regressions (e.g. a throw during dependency resolution)
+        // invisible in the console.
+        // eslint-disable-next-line no-console
+        console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
@@ -785,7 +800,15 @@ const useAppData = (
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
+    // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
+    // env-dropdown init) are written by two independent async flows. On clone -> editor
+    // open, currentVersionId flips to the new app's version before selectedVersion does,
+    // so firing here would call getAppVersionData(newAppId, previousAppVersionId) -> 404.
+    // Genuine version switches always move both together, so requiring agreement skips
+    // only the stale cross-app window.
+    const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
+
+    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
@@ -823,6 +846,7 @@ const useAppData = (
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
+          co_relation_id: appData.co_relation_id,
         });
 
         setGlobalSettings(
