@@ -237,9 +237,10 @@ function setSlug(appId, slug) {
 }
 
 function exportResource(body, appType) {
+  const branchId = getActiveBranchId();
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { ...authHeader(), ...(branchId && { 'x-branch-id': branchId }) },
     body: JSON.stringify(body),
     credentials: 'include',
   };
