@@ -111,6 +111,9 @@ export class ValidateAppAccessResponseDto {
 
   @Expose()
   versionId: string;
+
+  @Expose()
+  canEdit?: boolean;
 }
 
 export class AppListDto {

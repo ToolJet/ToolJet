@@ -115,6 +115,10 @@ export class AppsService implements IAppsService {
 
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
+      if (app.type === APP_TYPES.MODULE && hasViewPermission) {
+        // Build-with: user can open the module builder read-only
+        return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
+      }
       // Viewer role: require access_type=view explicitly; reject edit or missing
       if (accessType?.toLowerCase() !== 'view') {
         throw new ForbiddenException({

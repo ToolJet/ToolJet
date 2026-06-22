@@ -45,8 +45,44 @@ export function defineAppAbility(
   // App listing is available to all
   can(FEATURE_KEY.GET, App);
 
-  if (isAdmin || superAdmin || (resourceType === MODULES.MODULES && isBuilder)) {
-    // Admin or super admin and do all operations
+  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin) {
+    // Per-module edit/view grants for non-admin builders (Edit vs Build-with)
+    const userModulePermissions = userPermission?.[MODULES.MODULES];
+    const isAllModulesEditable = !!userModulePermissions?.isAllEditable;
+    const isAllModulesViewable = !!userModulePermissions?.isAllViewable;
+    const isEditable =
+      isAllModulesEditable ||
+      !!(
+        userModulePermissions?.editableAppsId?.length &&
+        appId &&
+        userModulePermissions.editableAppsId.includes(appId)
+      );
+    const isViewable =
+      isAllModulesViewable ||
+      !!(
+        userModulePermissions?.viewableAppsId?.length &&
+        appId &&
+        userModulePermissions.viewableAppsId.includes(appId)
+      );
+
+    if (isEditable) {
+      can(
+        [FEATURE_KEY.UPDATE, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS, FEATURE_KEY.UPDATE_ICON],
+        App
+      );
+      return;
+    }
+    if (isViewable) {
+      // Build-with: can open module builder read-only; UPDATE intentionally excluded
+      can([FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS], App);
+      return;
+    }
+    // No permissions: only basic listing (GET already granted above)
+    return;
+  }
+
+  if (isAdmin || superAdmin) {
+    // Admin or super admin: full permissions
     can(
       [
         FEATURE_KEY.CREATE,
