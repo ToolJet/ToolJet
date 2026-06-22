@@ -1,21 +1,3 @@
-/**
- * Frontend Metrics Service (Track 1 — feat/app-based-metricsv2)
- *
- * Collects error telemetry from the React SPA and forwards it to the
- * backend via POST /api/otel/frontend-metrics.
- *
- * Only three event types are tracked (Phase 1):
- *   - js_error   : React error boundary catches
- *   - widget_error: widget render failures
- *   - query_error : data query failures
- *
- * Events are deduplicated by fingerprint within each 30s flush window.
- * Same error firing 10,000 times in a render loop = one entry with count=10000.
- * On page unload the map is flushed immediately.
- *
- * Enabled only when window.public_config.ENABLE_OTEL === 'true'.
- */
-
 import config from 'config';
 import { authHeader } from '@/_helpers/auth-header';
 import { authenticationService } from '@/_services';

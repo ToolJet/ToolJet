@@ -110,7 +110,6 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(url, requestOptions)
     .then(handleResponse)
-    .then((result) => result)
     .catch((err) => {
       const errorType = err instanceof TypeError ? 'network_error' : 'server_error';
       recordQueryError(queryId, null, errorType);

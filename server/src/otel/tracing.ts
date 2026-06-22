@@ -40,19 +40,13 @@ const sanitizeObject = (obj: any) => {
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
 
-// Function to create the SDK (called only when startOpenTelemetry is invoked)
-// NOTE: URLs, headers, and resource are read here — AFTER loadEnvVars() has run —
-// so .env file values are correctly picked up.
-function buildResource() {
-  return resourceFromAttributes({
+// NOTE: createSDK is called lazily — AFTER loadEnvVars() — so .env values are correctly picked up.
+function createSDK(): NodeSDK {
+  const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
     [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
     [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
   });
-}
-
-
-function createSDK(resource: ReturnType<typeof buildResource>): NodeSDK {
   const traceUrl = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
   const metricsUrl = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
   const authHeader: Record<string, string> | undefined = process.env.OTEL_HEADER
@@ -383,11 +377,8 @@ process.on('SIGTERM', () => {
     cleanupInterval = null;
   }
 
-  const shutdownPromises: Promise<void>[] = [];
-  if (sdk) shutdownPromises.push(sdk.shutdown());
-
-  if (shutdownPromises.length > 0) {
-    Promise.all(shutdownPromises)
+  if (sdk) {
+    sdk.shutdown()
       .then(() => {
         if (process.env.OTEL_LOG_LEVEL === 'debug') {
           console.log('OpenTelemetry instrumentation shutdown successfully');
@@ -402,10 +393,8 @@ process.on('SIGTERM', () => {
 
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
-    const resource = buildResource();
-
     if (!sdk) {
-      sdk = createSDK(resource);
+      sdk = createSDK();
     }
 
     await sdk.start();

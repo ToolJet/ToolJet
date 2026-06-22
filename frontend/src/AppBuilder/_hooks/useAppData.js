@@ -201,7 +201,6 @@ const useAppData = (
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
-  const appLoadStart = useRef(null);
   const promptSentRef = useRef(false);
   const isPageSwitchRef = useRef(false);
 
@@ -349,7 +348,6 @@ const useAppData = (
     }
 
     // const appDataPromise = appService.fetchApp(appId);
-    appLoadStart.current = Date.now();
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;

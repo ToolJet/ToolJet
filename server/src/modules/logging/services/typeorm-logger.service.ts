@@ -18,10 +18,10 @@ export class TypeormLoggerService implements Logger {
     const explicit = this.configService.get<string>('CUSTOM_QUERY_LOGGING_LEVEL');
     if (explicit) return explicit;
     if (this.isDev()) return 'query';
-    // SERVER_LOG_LEVEL=debug → all slow queries; error → errors only; default: warn (slow + errors)
-    const serverLevel = this.configService.get<string>('SERVER_LOG_LEVEL');
-    if (serverLevel === 'error') return 'error';
-    if (serverLevel === 'debug') return 'query';
+    // ORM_LOGGING=all → all queries; error → errors only; default: warn (slow + errors)
+    const ormLogging = this.configService.get<string>('ORM_LOGGING');
+    if (ormLogging === 'error') return 'error';
+    if (ormLogging === 'all') return 'query';
     return 'warn';
   }
 

@@ -575,6 +575,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
 
     const isPublished = (app_mode === 'view' || app_mode === 'released') ? 'true' : 'false';
     const errorType = payload.errorType || categorizeError(error);
+    const qtLabel = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '';
 
     const labels = {
       app_id: appId || 'unknown',
@@ -587,7 +588,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
       app_mode,
       environment,
       is_published: isPublished,
-      query_text: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
+      query_text: qtLabel,
       query_type,
     };
 
@@ -609,7 +610,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
           app_mode,
           environment,
           is_published: isPublished,
-          query_text: process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '',
+          query_text: qtLabel,
           query_type,
         });
       }

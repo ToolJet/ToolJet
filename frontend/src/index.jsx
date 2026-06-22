@@ -34,9 +34,7 @@ appService
 
     window.public_config = config;
 
-    // Track 1: Initialize frontend metrics beacon (feat/app-based-metricsv2)
-    // No-op unless ENABLE_OTEL=true is in public_config.
-    initFrontendMetrics();
+    initFrontendMetrics(); // no-op unless ENABLE_OTEL=true
 
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';
