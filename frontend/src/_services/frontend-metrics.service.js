@@ -9,8 +9,9 @@
  *   - widget_error: widget render failures
  *   - query_error : data query failures
  *
- * Events are flushed every 30 s, but ONLY when the queue is non-empty.
- * On page unload the queue is flushed immediately.
+ * Events are deduplicated by fingerprint within each 30s flush window.
+ * Same error firing 10,000 times in a render loop = one entry with count=10000.
+ * On page unload the map is flushed immediately.
  *
  * Enabled only when window.public_config.ENABLE_OTEL === 'true'.
  */
@@ -20,9 +21,10 @@ import { authHeader } from '@/_helpers/auth-header';
 import { authenticationService } from '@/_services';
 
 const FLUSH_INTERVAL_MS = 30_000;
-const MAX_BATCH_SIZE = 50;
+const MAX_UNIQUE_ERRORS = 50;
 
-let eventQueue = [];
+// fingerprint → { type, attrs, count, firstSeen }
+let eventMap = new Map();
 let flushTimer = null;
 let initialized = false;
 
@@ -31,9 +33,7 @@ const _onVisibility = () => {
   if (document.visibilityState === 'hidden') flush();
 };
 
-// Global error listeners — defined at module level so teardown can remove the same refs.
 const _onGlobalError = (event) => {
-  // Skip errors from browser extensions (filename won't match our origin).
   if (event.filename && !event.filename.startsWith(window.location.origin)) return;
   recordJsError(event.message || 'unknown_error', `${event.filename}:${event.lineno}`);
 };
@@ -60,30 +60,33 @@ function getAppContext() {
   return path.startsWith('/applications/') || path.startsWith('/embed-apps/') ? 'released_app' : 'platform';
 }
 
-/**
- * Extract app identifier from the current URL.
- * Editor:   /apps/{uuid}/...        → UUID
- * Released: /applications/{slug}/... → slug
- * Embed:    /embed-apps/{slug}/...   → slug
- */
 function getAppIdFromUrl() {
   const path = window.location.pathname;
   const match = path.match(/^\/(?:apps|applications|embed-apps)\/([^/]+)/);
   return match ? match[1] : null;
 }
 
-function recordMetricEvent(type, attrs = {}) {
+function recordMetricEvent(fingerprint, type, attrs = {}) {
   if (!isEnabled()) return;
-  eventQueue.push({ type, ts: Date.now(), attrs });
-  if (eventQueue.length >= MAX_BATCH_SIZE) flush();
+
+  const existing = eventMap.get(fingerprint);
+  if (existing) {
+    existing.count += 1;
+  } else {
+    eventMap.set(fingerprint, { type, attrs, count: 1, firstSeen: Date.now() });
+  }
+
+  if (eventMap.size >= MAX_UNIQUE_ERRORS) flush();
 }
 
 export function flush() {
-  if (!isEnabled() || eventQueue.length === 0) return;
+  if (!isEnabled() || eventMap.size === 0) return;
   const wsId = getCurrentWorkspaceId();
   if (!wsId) return;
 
-  const events = eventQueue.splice(0);
+  const events = [...eventMap.values()];
+  eventMap.clear();
+
   fetch(`${config.apiUrl}/otel/frontend-metrics`, {
     method: 'POST',
     headers: { ...authHeader(), 'Content-Type': 'application/json' },
@@ -120,30 +123,32 @@ export function teardownFrontendMetrics() {
   document.removeEventListener('visibilitychange', _onVisibility);
   window.removeEventListener('error', _onGlobalError);
   window.removeEventListener('unhandledrejection', _onUnhandledRejection);
-  eventQueue = [];
+  eventMap.clear();
   initialized = false;
 }
 
 // ── Error helpers ────────────────────────────────────────────────────────────
 
 export function recordJsError(errorMessage, componentStack = '') {
-  recordMetricEvent('js_error', {
+  const msg = String(errorMessage).slice(0, 200);
+  recordMetricEvent(`js_error:${msg}`, 'js_error', {
     app_context: getAppContext(),
-    error_message: String(errorMessage).slice(0, 200),
+    error_message: msg,
     component_stack: componentStack.slice(0, 500),
   });
 }
 
 export function recordWidgetError(widgetType, errorMessage = '') {
-  recordMetricEvent('widget_error', {
+  const msg = String(errorMessage).slice(0, 200);
+  recordMetricEvent(`widget_error:${widgetType}:${msg}`, 'widget_error', {
     app_context: getAppContext(),
     widget_type: widgetType,
-    error_message: String(errorMessage).slice(0, 200),
+    error_message: msg,
   });
 }
 
 export function recordQueryError(queryId, appId, errorType = 'unknown') {
-  recordMetricEvent('query_error', {
+  recordMetricEvent(`query_error:${queryId}:${errorType}`, 'query_error', {
     app_context: getAppContext(),
     query_id: queryId,
     app_id: appId ?? getAppIdFromUrl(),

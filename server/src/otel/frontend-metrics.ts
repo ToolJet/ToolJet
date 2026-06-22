@@ -46,8 +46,8 @@ export type FrontendMetricEventType = 'query_error' | 'widget_error' | 'js_error
 
 export interface FrontendMetricEvent {
   type: FrontendMetricEventType;
-  ts: number;
-  duration?: number;
+  firstSeen: number;
+  count?: number;
   attrs: Record<string, string | number | boolean>;
 }
 
@@ -73,15 +73,16 @@ export const recordFrontendMetricsBatch = (
         'user.id': userId,
       };
 
+      const count = event.count ?? 1;
       switch (event.type) {
         case 'js_error':
-          frontendJsErrorCounter.add(1, attrs);
+          frontendJsErrorCounter.add(count, attrs);
           break;
         case 'widget_error':
-          frontendWidgetErrorCounter.add(1, attrs);
+          frontendWidgetErrorCounter.add(count, attrs);
           break;
         case 'query_error':
-          frontendQueryErrorCounter.add(1, attrs);
+          frontendQueryErrorCounter.add(count, attrs);
           break;
       }
     } catch (err) {

@@ -22,12 +22,12 @@ export class FrontendMetricEventDto {
 
   @IsNumber()
   @Min(0)
-  ts: number;
+  firstSeen: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   @IsOptional()
-  duration?: number;
+  count?: number;
 
   @IsObject()
   attrs: Record<string, string | number | boolean>;
