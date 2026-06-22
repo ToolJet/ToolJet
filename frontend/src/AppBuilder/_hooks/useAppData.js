@@ -146,7 +146,7 @@ const useAppData = (
     let totalPages = 1;
 
     while (currentPage <= totalPages) {
-      const data = await appsService.getAll(currentPage, '', '', 'module');
+      const data = await appsService.getAll(currentPage, '', '', 'module', 'picker');
       const pageModules = data?.apps || [];
 
       allModules.push(...pageModules);
