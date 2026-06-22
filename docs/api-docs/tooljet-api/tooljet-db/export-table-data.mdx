@@ -1,0 +1,132 @@
+---
+id: export-table-data
+title: "Export Table Data as CSV"
+---
+
+<PlanBadge type="enterprise" />
+
+<EndpointHeader
+method="POST"
+path="/workspace/{workspaceId}/tooljet-db/tables/{tableName}/export"
+/>
+
+<ApiColumns>
+<ApiLeft>
+
+Exports ToolJet Database table data as a CSV file.
+
+The exported data can be filtered, sorted, paginated, and limited to selected columns before downloading.
+
+<ParamsTable
+title="Path Parameters"
+params={[
+{
+"name":"workspaceId",
+"type":"string",
+"required":true,
+"description":"The unique identifier of the workspace.",
+"in":"path"
+},
+{
+"name":"tableName",
+"type":"string",
+"required":true,
+"description":"The ToolJet Database table name.",
+"in":"path"
+}
+]}
+/>
+
+### Request body
+
+All request body parameters are optional.
+
+If no request body is provided, all rows and columns from the specified table are exported.
+
+| Field   | Type    | Description                                       |
+| ------- | ------- | ------------------------------------------------- |
+| filters | array   | Filters the rows included in the exported data.   |
+| sort    | array   | Sorts the exported rows.                          |
+| select  | array   | Specifies the columns to include in the CSV file. |
+| limit   | integer | Maximum number of rows to export.                 |
+| offset  | integer | Number of rows to skip before exporting.          |
+
+### Supported filter operators
+
+* `equals`
+* `greater than`
+* `greater than or equal`
+* `less than`
+* `less than or equal`
+* `not equal`
+* `like`
+* `ilike`
+* `match`
+* `imatch`
+* `in`
+* `is`
+
+### Sort directions
+
+* `Ascending`
+* `Descending`
+
+<ErrorsTable
+errors={[
+{
+"status":"400",
+"description":"Invalid request parameters."
+},
+{
+"status":"403",
+"description":"External API disabled or missing EXTERNAL_API license."
+},
+{
+"status":"404",
+"description":"Workspace or table not found."
+},
+{
+"status":"451",
+"description":"Feature not enabled in license."
+}
+]}
+/>
+
+</ApiLeft>
+
+<ApiRight>
+
+<RequestExample
+code={`curl --request POST "https://{your-domain}/api/ext/workspace/{workspaceId}/tooljet-db/tables/{tableName}/export" \\   --header "Authorization: Bearer <access_token>" \\   --header "Content-Type: application/json" \\   --data '{
+    "filters": [
+      {
+        "column": "status",
+        "operator": "equals",
+        "value": "active"
+      }
+    ],
+    "sort": [
+      {
+        "column": "created_at",
+        "direction": "Descending"
+      }
+    ],
+    "select": [
+      "id",
+      "name",
+      "status"
+    ],
+    "limit": 100,
+    "offset": 0
+  }'`}
+/>
+
+**Response:** `200`
+
+```http
+Content-Type: text/csv
+Content-Disposition: attachment; filename="<tableName>.csv"
+```
+
+</ApiRight>
+</ApiColumns>
