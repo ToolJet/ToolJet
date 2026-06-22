@@ -337,7 +337,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
               theme={darkMode ? 'dark' : 'light'}
               disabled={true}
             />
-            <div className="tj-text-xxsm import-from-helper-text">Apps can only be imported from the same branch</div>
+            <div className="tj-text-xxsm import-from-helper-text">Apps can only be pulled from the same branch</div>
           </div>
 
           {/* LATEST COMMIT */}
