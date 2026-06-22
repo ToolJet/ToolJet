@@ -250,7 +250,7 @@
 
   .kv-editable:not(.kv-value-editing):hover {
     cursor: pointer;
-    background-color: var(--interactive-overlays-fill-hover);
+    background-color: var(--kv-hover-bg, var(--interactive-overlays-fill-hover));
     border-radius: 6px;
 
   }

@@ -58,7 +58,27 @@ export const KeyValuePair = ({
     accentColor = 'var(--primary)',
     // Container
     padding = 'default',
+    backgroundColor = 'var(--cc-surface1-surface)',
+    borderColor = 'var(--cc-weak-border)',
+    borderRadius = 6,
+    boxShadow = '0px 0px 0px 0px #00000040',
+    hoverBackgroundMode = 'auto',
+    hoverBackgroundColor = 'var(--interactive-overlays-fill-hover)',
   } = styles;
+
+  // Auto keeps the existing key-value hover color; Manual lets the user pick one.
+  const hoverBackground =
+    hoverBackgroundMode === 'manual'
+      ? hoverBackgroundColor || 'var(--interactive-overlays-fill-hover)'
+      : 'var(--interactive-overlays-fill-hover)';
+
+  const containerStyles = {
+    backgroundColor,
+    border: `1px solid ${borderColor}`,
+    borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
+    boxShadow,
+    '--kv-hover-bg': hoverBackground,
+  };
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
     loadingState,
@@ -177,7 +197,7 @@ export const KeyValuePair = ({
 
   if (isLoading) {
     return (
-      <div className={'key-value-pair-container'} data-cy={dataCy}>
+      <div className={'key-value-pair-container'} style={containerStyles} data-cy={dataCy}>
         <div className="key-value-pair-loading">
           <Loader width="24" />
         </div>
@@ -195,6 +215,7 @@ export const KeyValuePair = ({
         'dark-mode': darkMode,
         [`dynamic-${id}`]: isDynamicHeightEnabled,
       })}
+      style={containerStyles}
       data-cy={dataCy}
       id={`component-${id}`}
     >
