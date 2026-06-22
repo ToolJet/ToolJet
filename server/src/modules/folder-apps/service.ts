@@ -66,9 +66,9 @@ export class FolderAppsService implements IFolderAppsService {
     return skipAppEditingVersionHydration.run(true, async () => {
       // End users without branch switcher fall back to the org default branch so folders
       // reflect only default-branch apps. Applies to both front-end apps and modules.
-      // getDetails returns options.defaultBranch only when git sync is fully enabled
-      // (license + provider + branch resolved); non-git-sync workspaces yield null and
-      // branchId stays undefined — downstream queries handle that path natively.
+      // getDetails always resolves options.defaultBranch (every org has one), so this
+      // scopes to the default branch on gitsync-off workspaces too — matching the
+      // backfilled branch_id on their version rows.
       if (!branchId && (type === APP_TYPES.FRONT_END || type === APP_TYPES.MODULE)) {
         const { options } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         branchId = options.defaultBranch?.id;

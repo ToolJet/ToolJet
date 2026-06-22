@@ -1,8 +1,10 @@
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 
 // Combined "is git sync active for this org" answer — licence entitlement +
-// provider configuration (DB row OR env-mapped). When isEnabled=false the
-// options/orgGit fields are blanked so callers don't need to re-check.
+// provider configuration (DB row OR env-mapped). When isEnabled=false the type/orgGit
+// fields are blanked and isBranchingEnabled is false. options.defaultBranch is ALWAYS
+// populated regardless of isEnabled — every org has a default branch and branch_id is
+// mandatory on version rows, so gitsync-off callers still need it.
 export interface GitSyncDetails {
   isEnabled: boolean;
   options: {
