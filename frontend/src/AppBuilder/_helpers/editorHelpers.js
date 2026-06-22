@@ -52,6 +52,7 @@ import { isPDFSupported } from '@/_helpers/appUtils';
 
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Container } from '@/AppBuilder/Widgets/Container/Container';
+import { FlexContainer } from '@/AppBuilder/Widgets/FlexContainer/FlexContainer';
 import { Listview } from '@/AppBuilder/Widgets/Listview/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
@@ -173,6 +174,7 @@ export const AllComponents = {
   Form,
   Calendar,
   Container,
+  FlexContainer,
   Listview,
   Tabs,
   Kanban,
