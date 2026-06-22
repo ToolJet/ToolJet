@@ -114,7 +114,7 @@ describe('GitObjectCacheService.mirrorPathFor', () => {
     // Clear EVERY knob a test (or a prior spec file) could leave set. ROOT is a
     // static on the class — process-global across spec files — so the path-shape
     // assertions below would silently change if it leaked in. Reset all four.
-    delete process.env.GIT_OBJECT_CACHE;
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     delete process.env.GIT_OBJECT_CACHE_DIR;
     delete (GitObjectCacheService as any).ROOT;
   });
@@ -139,12 +139,12 @@ describe('GitObjectCacheService.mirrorPathFor', () => {
     expect(p).not.toContain('SECRET');
   });
 
-  it('is on only when GIT_OBJECT_CACHE=true', () => {
-    // The whole feature is behind an env flag. Default off = today's behavior.
-    process.env.GIT_OBJECT_CACHE = 'false';
-    expect(svc.isEnabled()).toBe(false);
-    process.env.GIT_OBJECT_CACHE = 'true';
+  it('is on by default, off only when DISABLE_GIT_OBJECT_CACHE=true', () => {
+    // Feature defaults ON. Opt out with DISABLE_GIT_OBJECT_CACHE=true.
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     expect(svc.isEnabled()).toBe(true);
+    process.env.DISABLE_GIT_OBJECT_CACHE = 'true';
+    expect(svc.isEnabled()).toBe(false);
   });
 });
 
@@ -154,7 +154,7 @@ describe('GitObjectCacheService.authConfigArgs', () => {
   afterEach(() => {
     // Defensive: this block sets nothing, but a leaked ROOT/env from another
     // spec file in the same worker shouldn't survive past here.
-    delete process.env.GIT_OBJECT_CACHE;
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     delete process.env.GIT_OBJECT_CACHE_DIR;
     delete (GitObjectCacheService as any).ROOT;
   });
@@ -278,14 +278,14 @@ describe('GitObjectCacheService.cachedSparseClone fallback', () => {
   const path = require('path');
 
   afterEach(() => {
-    delete process.env.GIT_OBJECT_CACHE;
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
   });
 
   // The most important safety property: if ANYTHING in the cache path fails, the
   // user's operation must still succeed by doing a normal clone instead. And the
   // temp folder must be clean first, because a normal clone expects an empty dir.
   it('on any cache error, cleans the temp dir and runs a normal clone instead', async () => {
-    process.env.GIT_OBJECT_CACHE = 'true';
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     const svc = new GitObjectCacheService({} as any);
 
     // Force the cache step to blow up, WITHOUT touching the network: we overwrite
@@ -328,7 +328,7 @@ describe('GitObjectCacheService.cachedSparseClone fallback', () => {
   // the CE stub does): go straight to plainClone WITHOUT building a mirror and
   // WITHOUT wiping the temp dir. Contrast with the error path above, which wipes.
   it('when the flag is off, calls plainClone directly and leaves the temp dir untouched', async () => {
-    delete process.env.GIT_OBJECT_CACHE; // off
+    process.env.DISABLE_GIT_OBJECT_CACHE = 'true'; // off
     const svc = new GitObjectCacheService({} as any);
 
     // If the cache path were entered, this would throw — proving OFF skips it.
@@ -447,7 +447,7 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
   afterEach(async () => {
     await svc.onModuleDestroy().catch(() => {}); // close connections the test opened
     delete (GitObjectCacheService as any).ROOT;
-    delete process.env.GIT_OBJECT_CACHE;
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     fs.rmSync(root, { recursive: true, force: true });
   });
 
@@ -462,19 +462,19 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
   };
 
   it('starts listening on the evict channel when the cache is enabled', async () => {
-    process.env.GIT_OBJECT_CACHE = 'true';
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     await svc.onModuleInit(); // NestJS calls this when the service boots
     expect(redis.subscriber.subscribed).toContain(CHANNEL);
   });
 
   it('does not open any Redis connection when the cache is disabled', async () => {
-    process.env.GIT_OBJECT_CACHE = 'false';
+    process.env.DISABLE_GIT_OBJECT_CACHE = 'true';
     await svc.onModuleInit();
     expect(redis.subscriber.subscribed).toEqual([]); // never subscribed
   });
 
   it('deletes its local mirror when another pod broadcasts an evict', async () => {
-    process.env.GIT_OBJECT_CACHE = 'true';
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     await svc.onModuleInit();
 
     // Arrange: this pod has a mirror on disk for org1's repo.
@@ -491,7 +491,7 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
   });
 
   it('ignores a garbage message safely and does not evict anything', async () => {
-    process.env.GIT_OBJECT_CACHE = 'true';
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     await svc.onModuleInit();
 
     // A real mirror exists. A non-JSON message must be swallowed (the handler
@@ -538,7 +538,7 @@ describe('GitObjectCacheService Redis fleet eviction', () => {
   });
 
   it('stops listening and closes the connection on shutdown', async () => {
-    process.env.GIT_OBJECT_CACHE = 'true';
+    delete process.env.DISABLE_GIT_OBJECT_CACHE;
     await svc.onModuleInit();
     await svc.onModuleDestroy(); // NestJS calls this when the service shuts down
     expect(redis.subscriber.unsubscribed).toContain(CHANNEL);
