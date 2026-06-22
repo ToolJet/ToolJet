@@ -108,7 +108,6 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
   }
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  const startTime = Date.now();
   return fetch(url, requestOptions)
     .then(handleResponse)
     .then((result) => result)
