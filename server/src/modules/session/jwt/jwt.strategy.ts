@@ -170,9 +170,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
       return user;
     } finally {
-      const elapsed = Date.now() - startTime;
       this.transactionLogger.log(
-        `JwtStrategy validate completed at ${new Date().toISOString()} after ${elapsed}ms`
+        `JwtStrategy validate completed at ${new Date().toISOString()} after ${Date.now() - startTime}ms`
       );
     }
   }
