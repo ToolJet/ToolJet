@@ -375,6 +375,26 @@ module.exports = {
     client: {
       overlay: false,
     },
+    headers: (() => {
+      if (environment !== 'development') return {};
+      const extraDomains = (process.env.CSP_WHITELISTED_DOMAINS || '')
+        .split(',')
+        .map((d) => d.trim())
+        .filter(Boolean);
+      const allowedConnectSrc = [
+        "'self'",
+        'http://localhost:*',
+        'ws://localhost:*',
+        'cdn.jsdelivr.net',
+        'cdn.skypack.dev',
+        'https://esm.sh',
+        'unpkg.com',
+        ...extraDomains,
+      ].join(' ');
+      return {
+        'Content-Security-Policy': `connect-src ${allowedConnectSrc}`,
+      };
+    })(),
   },
   output: {
     filename: environment === 'production' ? '[name].[contenthash:8].js' : '[name].js',
