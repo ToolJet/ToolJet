@@ -23,6 +23,7 @@ import {
   dataCsvAssertionHelper,
   addFilter,
   addNewRow,
+  resizeTableWidget,
 } from "Support/utils/table";
 import {
   selectCSA,
@@ -54,7 +55,36 @@ import { deleteDownloadsFolder } from "Support/utils/common";
 import { resizeQueryPanel } from "Support/utils/dataSource";
 import { waitForQueryAction } from "Support/utils/queries";
 
-// QUARANTINED (whole describe): all 12 tests die in beforeEach — `cy.resizeWidget("table1",750,600)` throws `cy.trigger() can only be called on a single element. Your subject contained 2 elements` because the shared resizeWidget command's `[class="bottom-right"]` resize-handle selector now matches 2 elements (commands.js:375). Beyond the hook, several tests use the OLD flat inspector (verifyNodeData/openNode) quarantined suite-wide. Fixing resizeWidget alone won't green it; needs shared resizeWidget selector fix + inspector-helper rewrite. KEPT: testIsolation:false + cy.hideTooltip() (2x raw tooltip-inner replaced).
+// The Table widget renders `data-cy="draggable-widget-<name>"` on BOTH the outer
+// RenderWidget wrapper (RenderWidget.jsx:308) AND its inner <table> (Table.jsx:340),
+// so `draggableWidget(name)` matches 2 elements and `.should("be.visible")`/`.click()`
+// throw / pick the wrong (covered) node. Scope table-widget gets to the outer box.
+// (SHARED issue — same class as listView's duplicate `real-canvas`.)
+const tableWidget = (name) =>
+  `${commonWidgetSelector.draggableWidget(name)}:eq(0)`;
+
+// QUARANTINED (whole describe). The beforeEach is now FULLY FIXED (drag → widen
+// canvas → close settings panel → spec-local resizeTableWidget via the moveable
+// EAST handle → openEditorSidebar → allow-selection toggle, all pass). The real
+// blocker is a PRODUCT MIGRATION: the widget on canvas is the new `NewTable`, whose
+// entire data-cy schema differs from what this legacy spec + tableSelector +
+// table.js assume. Verified at runtime (DIAG): the table wrapper renders (2 els,
+// 334x460) but `cells=0` and `search=0` because:
+//   - search input is now `<name>-search-input-field`  (SearchBar.jsx:38)
+//     — was bare `search-input-field`.
+//   - cells are now `<name>-<columnHeader>-row-<i>`     (TableRow.jsx:103)
+//     — was `*-cell-<colIndex>`. There is NO `-cell-` anymore.
+//   - rows `<name>-row-<i>` (TableRow.jsx:60); headers `<columnName>-column-header`
+//     (TableHeader.jsx:150) — was `column-header-<name>`.
+//   - default table data is now a SINGLE row [{id:1,name:'Sarah',email:'sarah@mail.com'}]
+//     (widgets/table.js:29) — the spec expects 4 rows with @example.com.
+// Greening this is a from-scratch NewTable rewrite (like datePickerV2/modalV2),
+// not a selector fix: needs new tableSelector schema (`<name>-<col>-row-<i>`,
+// `<name>-search-input-field`, `<col>-column-header`), rewritten table.js helpers,
+// new default-data assertions, and the OLD flat-inspector tests (verifyNodeData/
+// openNode/verifyValue) replaced with the 2-layer tree inspector. KEPT for the
+// future rewrite: testIsolation:false, beforeEach fixes, spec-local tableWidget()
+// (data-cy duplicated on wrapper + inner <table>) + resizeTableWidget (east handle).
 describe.skip("Table", { testIsolation: false }, () => {
   beforeEach(() => {
     cy.apiLogin();
@@ -62,10 +92,19 @@ describe.skip("Table", { testIsolation: false }, () => {
     cy.openApp();
     deleteDownloadsFolder();
     cy.viewport(1400, 2200);
+    // Drag first (widget lands reliably), widen canvas, close the settings panel
+    // modifyCanvasSize leaves open, then resize the table so it renders at a visible
+    // size. The shared `cy.resizeWidget` `[class="bottom-right"]` handle matched 2
+    // els (commands.js:375 — forbidden to edit) → spec-local resizeTableWidget.
+    cy.dragAndDropWidget("Table", 250, 100);
+    cy.hideTooltip();
     cy.modifyCanvasSize(900, 800);
-    cy.dragAndDropWidget("Table", 50, 50);
-    cy.resizeWidget(tableText.defaultWidgetName, 750, 600);
+    cy.get("[data-cy='left-sidebar-settings-button']").click();
+    resizeTableWidget(tableText.defaultWidgetName, 750, 600);
     resizeQueryPanel("1");
+    // Right inspector is not auto-open after drag (SHARED FIX 6) — open it before
+    // touching the "Allow selection" property toggle.
+    openEditorSidebar(tableText.defaultWidgetName);
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
   });
   afterEach(() => {
@@ -73,9 +112,10 @@ describe.skip("Table", { testIsolation: false }, () => {
   });
 
   it("Should verify the table components and labels", () => {
-    cy.get(
-      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    ).should("be.visible");
+    // Deselect the table so its moveable selection overlay (moveable-line edges)
+    // stops covering the widget/search input for the visibility assertions.
+    cy.forceClickOnCanvas();
+    cy.get(tableWidget(tableText.defaultWidgetName)).should("be.visible");
 
     cy.get(tableSelector.searchInputField)
       .should("be.visible")

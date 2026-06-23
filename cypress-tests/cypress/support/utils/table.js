@@ -1,6 +1,45 @@
 import { commonWidgetSelector, cyParamName } from "Selectors/common";
 import { tableSelector } from "Selectors/table";
 
+// Spec-local scoped resize. The shared `cy.resizeWidget` uses `[class="bottom-right"]`
+// which now matches 2 elements (commands.js:375 — forbidden to edit). We scope the
+// mousedown to the LAST visible bottom-right handle (the active widget's moveable
+// control box) to avoid the "cy.trigger() can only be called on a single element" throw.
+// The Table widget puts `draggable-widget-<name>` on BOTH the RenderWidget wrapper
+// (RenderWidget.jsx:308, the outer moveable box) AND its internal <table>
+// (Table.jsx:340) — so the data-cy matches 2 els. The OUTER (first in DOM) is the
+// selectable/resizable moveable box. Use this for clicks/resize.
+export const tableWidgetOuter = (widgetName) =>
+  `[data-cy="draggable-widget-${widgetName}"]`;
+
+export const resizeTableWidget = (widgetName, x, y) => {
+  // The Table is a `moveable-dynamic-height` widget (Grid.css:25): height auto-fits
+  // content, only the EAST (`e`) / WEST (`w`) resize handles render — the legacy
+  // `[class="bottom-right"]` (SE) handle no longer exists. Widen the table by
+  // dragging the east handle so all columns/controls are visible.
+  cy.get(tableWidgetOuter(widgetName)).first().click({ force: true });
+  cy.wait(500);
+  cy.get('.moveable-control.moveable-direction.moveable-e[data-direction="e"]')
+    .should("have.length.gte", 1)
+    .then(($handles) => {
+      cy.wrap($handles.last()).trigger("mousedown", { which: 1, force: true });
+    });
+  cy.get("#real-canvas")
+    .trigger("mousemove", {
+      which: 1,
+      force: true,
+      clientX: x,
+      clientY: y,
+      pageX: x,
+      pageY: y,
+      screenX: x,
+      screenY: y,
+    })
+    .trigger("mouseup", { force: true });
+  cy.waitForAutoSave();
+  cy.forceClickOnCanvas();
+};
+
 export const searchOnTable = (value = "") => {
   cy.get('[data-cy="search-input-field"]').type(
     `{selectAll}{backspace}${value}`
