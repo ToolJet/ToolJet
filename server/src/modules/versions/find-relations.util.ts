@@ -11,6 +11,7 @@ import { EventHandler } from '@entities/event_handler.entity';
 import { Page } from '@entities/page.entity';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes } from '@modules/data-sources/constants';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 
 export async function findAllRelationsForVersion(versionId: string, manager?: EntityManager): Promise<any> {
   // this.getUuidFieldsForExport()
@@ -113,12 +114,19 @@ async function getUuidFieldsForExport(
 
     const dataQueryIds = dataQueries.map((dq) => dq.id);
 
-    // Get Data Source Option IDs only (from data_source_version_options via default DSV)
+    // Get Data Source Option IDs only (from data_source_version_options via the
+    // default-branch DSV — the row whose branch_id = the org default branch).
+    const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, user?.organizationId);
     const dataSourceOptions = allDataSourceIds.length
       ? await manager
           .createQueryBuilder(DataSourceVersionOptions, 'dsvo')
           .select('dsvo.id')
-          .innerJoin(DataSourceVersion, 'dsv', 'dsv.id = dsvo.dataSourceVersionId AND dsv.isDefault = true')
+          .innerJoin(
+            DataSourceVersion,
+            'dsv',
+            'dsv.id = dsvo.dataSourceVersionId AND dsv.branch_id = :defaultBranchId',
+            { defaultBranchId }
+          )
           .where(
             'dsvo.environmentId IN(:...environmentId) AND dsv.dataSourceId IN(:...dataSourceId)',
             {

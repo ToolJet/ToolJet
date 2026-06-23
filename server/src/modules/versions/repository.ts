@@ -62,39 +62,6 @@ export class VersionRepository extends Repository<AppVersion> {
     }, manager || this.manager);
   }
 
-  /**
-   * Enforce the cross-version metadata invariant: every version_type='version'
-   * row of an app carries identical app-level metadata (app_name / slug / icon /
-   * is_public). Call after any write that sets these on a version-type row — a
-   * default-branch edit (git off), a publish, or a tag import — so published
-   * snapshots and the editor DRAFT never drift apart.
-   *
-   * Scoped to version_type='version', so sub-branch BRANCH rows (independent
-   * feature-branch edits) are left untouched. Only the supplied fields are
-   * written, so a partial update (e.g. slug only) leaves the rest in place.
-   *
-   * Uniqueness triggers are not tripped: the only guarded row is the
-   * default-branch DRAFT (branch_id NOT NULL), which already holds these values;
-   * every other version-type row is branchless and falls outside the slug /
-   * app_name trigger predicates.
-   */
-  async syncMetadataAcrossVersions(
-    appId: string,
-    metadata: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean },
-    manager?: EntityManager
-  ): Promise<void> {
-    const fields: Record<string, any> = {};
-    if (metadata.appName !== undefined) fields.appName = metadata.appName;
-    if (metadata.slug !== undefined) fields.slug = metadata.slug;
-    if (metadata.icon !== undefined) fields.icon = metadata.icon;
-    if (metadata.isPublic !== undefined) fields.isPublic = metadata.isPublic;
-    if (Object.keys(fields).length === 0) return;
-
-    return dbTransactionWrap(async (mgr: EntityManager) => {
-      await mgr.update(AppVersion, { appId, versionType: AppVersionType.VERSION }, fields);
-    }, manager || this.manager);
-  }
-
   findById(id: string, appId: string, relations?: string[], manager?: EntityManager): Promise<AppVersion> {
     const m = manager ?? this.manager;
     return m.findOneOrFail(AppVersion, {

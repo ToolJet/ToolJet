@@ -679,7 +679,8 @@ export class AppsUtilService implements IAppsUtilService {
       // git-enabled workspace should still go through the branch-aware path rather than
       // fanning the write out across NULL branch rows.
       if (Object.keys(versionParams).length > 0 && !isWorkflow) {
-        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+        const details = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+        const isGitEnabled = details.isEnabled;
 
         if (isGitEnabled) {
           // Git-sync workspace. Sub-branch metadata edits go to the single BRANCH-type row
@@ -713,12 +714,35 @@ export class AppsUtilService implements IAppsUtilService {
             },
           ]);
         } else {
-          // Non-git-sync flow: all version_type='version' rows of this app share
-          // the same metadata. Propagate to every version-type row (the canonical
-          // DRAFT plus published snapshots) so slug/name/icon/is_public stay in
-          // sync regardless of which row backs a slug lookup. Scoped to
-          // version_type='version' per the cross-version metadata invariant.
-          await this.versionRepository.syncMetadataAcrossVersions(appId, versionParams, manager);
+          // Non-git-sync flow: write metadata to the canonical default-branch DRAFT
+          // version row. The DB metadata trigger (propagate_app_version_metadata) then
+          // fans the change out to the app's other version_type='version' rows (published
+          // snapshots), so no manual cross-version propagation is needed here.
+          const defaultBranchId = details.options.defaultBranch?.id;
+          if (defaultBranchId) {
+            await catchDbException(async () => {
+              await manager.update(
+                AppVersion,
+                {
+                  appId,
+                  branchId: defaultBranchId,
+                  versionType: AppVersionType.VERSION,
+                  status: AppVersionStatus.DRAFT,
+                  isStub: false,
+                },
+                versionParams
+              );
+            }, [
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+                message: 'This app name is already taken.',
+              },
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
+                message: 'This slug is already taken.',
+              },
+            ]);
+          }
         }
       }
 
@@ -731,19 +755,6 @@ export class AppsUtilService implements IAppsUtilService {
     }, manager);
   }
 
-  /**
-   * Public passthrough to VersionRepository.syncMetadataAcrossVersions so callers
-   * that already depend on this service (e.g. the platform git pull/hydrate path)
-   * can enforce the cross-version metadata invariant without wiring the versions
-   * repository in directly. See the repository method for semantics.
-   */
-  async syncVersionMetadata(
-    appId: string,
-    metadata: { appName?: string | null; slug?: string | null; icon?: string | null; isPublic?: boolean },
-    manager?: EntityManager
-  ): Promise<void> {
-    return this.versionRepository.syncMetadataAcrossVersions(appId, metadata, manager);
-  }
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
     const { currentEnvironmentId, definition } = body;
@@ -1459,34 +1470,30 @@ export class AppsUtilService implements IAppsUtilService {
    * (AppsUtilService.update writes the DRAFT branch row) so published/released
    * snapshots can't shadow the current metadata.
    */
-  async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
+  async overlayAppMetadata(app: App, _branchId?: string): Promise<void> {
     if (!app || app.type === APP_TYPES.WORKFLOW) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
       const defaultBranchId = options.defaultBranch?.id;
+      if (!defaultBranchId) return;
 
-      let source: AppVersion | null = null;
-      if (defaultBranchId) {
-        const targetBranchId = branchId ?? defaultBranchId;
-        source = await manager.findOne(AppVersion, {
-          where: { appId: app.id, branchId: targetBranchId, status: AppVersionStatus.DRAFT },
-          order: { updatedAt: 'DESC' },
-          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-        });
-        if (!source && branchId) {
-          throw new BadRequestException(`No DRAFT version found for app ${app.id} on branch ${branchId}.`);
-        }
-      } else {
-        // Git off: pick any VERSION-type row under the app — every row carries
-        // identical metadata. branch_id is always NULL in this mode, so it is
-        // deliberately NOT part of the filter.
-        source = await manager.findOne(AppVersion, {
-          where: { appId: app.id, versionType: AppVersionType.VERSION },
-          order: { updatedAt: 'DESC' },
-          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-        });
-      }
+      // App metadata is the default-branch canonical row (instance-level identity),
+      // regardless of which branch is being edited. is_git_sync=true sorts first (the
+      // authoritative row when git is on); git-off falls back to the latest such row.
+      // This mirrors the DB metadata trigger's own canonical-row selection.
+      const source = await manager
+        .getRepository(AppVersion)
+        .createQueryBuilder('av')
+        .where('av.app_id = :appId', { appId: app.id })
+        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+        .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+        .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
+        .andWhere('av.is_stub = false')
+        .orderBy('av.is_git_sync', 'DESC')
+        .addOrderBy('av.updated_at', 'DESC')
+        .select(['av.id', 'av.appName', 'av.slug', 'av.icon', 'av.isPublic'])
+        .getOne();
 
       if (!source) return;
       if (source.appName != null) app.name = source.appName;

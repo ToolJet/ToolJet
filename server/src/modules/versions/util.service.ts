@@ -101,15 +101,9 @@ export class VersionUtilService implements IVersionUtilService {
 
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
-      // chk_app_versions_branched_implies_draft (1779300000000) requires
-      // non-DRAFT rows to be branchless. Detach branch_id in the SAME UPDATE
-      // as the status flip so the row never lands in the violating state
-      // mid-transaction. handleDefaultBranchPublish below still fires for the
-      // default-branch publish path; its own branch_id detach (line 245)
-      // becomes an idempotent no-op once we've done it inline here.
-      if (appVersionUpdateDto.status !== AppVersionStatus.DRAFT && appVersion.branchId) {
-        editableParams['branchId'] = null;
-      }
+      // branch_id is NOT NULL now and the old chk_app_versions_branched_implies_draft CHECK
+      // was dropped — PUBLISHED version rows live on the default branch, so the status flip
+      // no longer detaches branch_id (the row keeps its default-branch id).
     }
     if (
       appVersionUpdateDto?.description !== undefined &&
@@ -241,20 +235,11 @@ export class VersionUtilService implements IVersionUtilService {
       await this.createVersionService.setupNewVersion(newDraft, sourceVersion, parentApp.organizationId, manager);
     }
 
-    // Step 2: detach branch_id from the just-published row. Delegated via the
-    // repository to keep the DB write centralised.
-    await this.versionRepository.updateVersion(appVersion.id, { branchId: null }, manager);
-
-    // Step 3: enforce the cross-version metadata invariant. Publishing created a
-    // fresh DRAFT and left the just-published snapshot behind; older published
-    // snapshots may still carry stale metadata from earlier publishes. Sync all
-    // version_type='version' rows to the new DRAFT's metadata so every snapshot
-    // matches the current app-level metadata.
-    await this.versionRepository.syncMetadataAcrossVersions(
-      appVersion.appId,
-      { appName: newDraft.appName, slug: newDraft.slug, icon: newDraft.icon, isPublic: newDraft.isPublic },
-      manager
-    );
+    // The just-published row stays on the default branch (branch_id is no longer detached
+    // to NULL — published version rows now live on the default branch). Cross-version
+    // metadata is kept consistent by the DB triggers: the new DRAFT propagates its metadata
+    // to all version_type='version' rows, and published rows pull from the DRAFT — so no
+    // manual branch_id detach or metadata fan-out is needed here.
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
