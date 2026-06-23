@@ -1048,7 +1048,12 @@ export class AppImportExportService {
         appParams = { ...appParams.appV2 };
       }
 
-      if (!appParams?.name) {
+      // appParams.name can be null when the file was exported from a git-enabled
+      // workspace where the module only exists on a feature branch (no default-branch
+      // DRAFT version → resolveMetadataVersion returns null → app.name stays null).
+      // appName (user-provided) is always used as the final name (line below), so
+      // allow it as a fallback here to avoid a spurious 400 on device imports.
+      if (!appParams?.name && !appName) {
         throw new BadRequestException('Invalid params for app import');
       }
 
