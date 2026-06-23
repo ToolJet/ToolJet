@@ -106,6 +106,10 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     // org+type, and each org owns its default branch). On the DEFAULT branch the
     // same app may have many rows, so uniqueness is enforced only across apps
     // (app_id <> NEW.app_id). On FEATURE branches it stays strict (id <> NEW.id).
+    // Both arms also exclude the row being updated (av.id <> NEW.id): a re-parent
+    // UPDATE that changes app_id (e.g. git pull hydrate moving an imported version
+    // onto the stub app) leaves the row's OLD app_id visible at BEFORE UPDATE time,
+    // which would otherwise match `app_id <> NEW.app_id` and collide with itself.
     await queryRunner.query(`
       CREATE OR REPLACE FUNCTION enforce_app_versions_app_name_branch_unique()
       RETURNS TRIGGER AS $$
@@ -136,9 +140,10 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           WHERE av.app_name = NEW.app_name
             AND av.branch_id = NEW.branch_id
             AND a.type = v_app_type
+            AND av.id <> NEW.id
             AND (
               (v_is_default IS TRUE  AND av.app_id <> NEW.app_id) OR
-              (v_is_default IS NOT TRUE AND av.id <> NEW.id)
+              (v_is_default IS NOT TRUE)
             )
         ) THEN
           RAISE EXCEPTION 'app_versions_app_name_branch_id_unique'
@@ -200,6 +205,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           WHERE LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
             AND av.app_id <> NEW.app_id
+            AND av.id <> NEW.id
         ) THEN
           RAISE EXCEPTION 'app_versions_slug_branch_id_unique'
             USING ERRCODE = 'unique_violation';
@@ -249,6 +255,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           WHERE LOWER(av.slug) = LOWER(NEW.slug)
             AND a.type = v_app_type
             AND av.app_id <> NEW.app_id
+            AND av.id <> NEW.id
         ) THEN
           RAISE EXCEPTION 'app_versions_default_branch_slug_unique'
             USING ERRCODE = 'unique_violation';
