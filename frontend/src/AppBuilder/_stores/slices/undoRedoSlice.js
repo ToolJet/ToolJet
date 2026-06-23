@@ -217,13 +217,23 @@ const filterAndFormatPatches = (patches) => {
       //     value,
       //   });
       // } else
+      // path layout: [modules, moduleId, pages, pageIndex, components, componentId, 'component', 'definition', paramType, property, attr]
+      //   path[8] = paramType  (styles / properties / others / ...)
+      //   path[9] = property   (backgroundColor / label / ...)
+      //   path[10] = attr      ('value' / 'fxActive' / ...)
+      //
+      // Guard: batch operations (e.g. Form field add/remove) replace the whole paramType object at once via
+      // `definition[paramType] = { ...old, ...diff }`, which makes immer emit a single coarse patch that stops
+      // at path[8] with no property name in path[9]. Replaying that would call setComponentProperty with
+      // property=undefined, which lodash coerces to the string "undefined" and writes a phantom
+      // `definition[paramType]["undefined"]` key — silently corrupting the app JSON and making the undo a no-op.
       if (path[6] === 'component' && path[7] !== 'parent' && path[9] !== undefined) {
         let attr = path[10];
         let patchValue = value;
-        // Coarse patch: immer replaced the whole property object (path stops at the property,
-        // with no `.value` leaf), so `attr` is undefined and `value` is the wrapper object.
-        // Replaying that as-is would nest it under `.value` -> { value: { value: X } }.
-        // Unwrap one level so the replay restores the correct { value: X } shape.
+        // Guard: if a future code path replaces a whole property wrapper object at once
+        // (path stops at path[9] with no attr leaf at path[10]), replaying as-is would nest
+        // the { value: X } wrapper under .value -> { value: { value: X } }. Unwrap one level
+        // so the replay restores the correct { value: X } shape.
         if (attr === undefined && patchValue && typeof patchValue === 'object' && 'value' in patchValue) {
           attr = 'value';
           patchValue = patchValue.value;
