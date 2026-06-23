@@ -135,11 +135,14 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async pushWorkspace(commitMessage, targetBranch, options = {}) {
+        async pushWorkspace(commitMessage, targetBranch, options = {}, scope) {
           set({ isPushing: true });
           try {
             const branchId = get().activeBranchId;
-            const result = await workspaceBranchesService.pushWorkspace(commitMessage, targetBranch, branchId, options);
+            const result = await workspaceBranchesService.pushWorkspace(commitMessage, targetBranch, branchId, {
+              ...options,
+              ...(scope && { scope }),
+            });
             set({ isPushing: false });
             return result;
           } catch (error) {

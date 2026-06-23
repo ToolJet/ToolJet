@@ -151,6 +151,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'ColorPicker',
   'FileButton',
   'ButtonGroupV2',
+  'Pagination',
 ];
 
 export const Inspector = ({

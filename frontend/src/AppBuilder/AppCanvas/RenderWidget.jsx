@@ -13,6 +13,7 @@ import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeight
 
 const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'Table',
+  'Pagination',
   'TextInput',
   'TextArea',
   'PasswordInput',

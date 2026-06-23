@@ -258,7 +258,7 @@ const DynamicSelector = ({
       }
     } catch (err) {
       console.error(`[DynamicSelector] Error fetching data for ${invokeMethod}:`, err);
-      setError(err?.message || 'Failed to fetch data');
+      setError(err?.error || err?.message || 'Failed to fetch data');
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -351,6 +351,23 @@ const DynamicSelector = ({
     }
   }, [selectedDataSource]);
 
+  // Re-validate access whenever this (non-dependent) field's own value changes —
+  // e.g. typed directly in FX mode — instead of waiting for a remount to catch it.
+  useEffect(() => {
+    if (selectedDataSource?.kind !== 'googlesheetsv2') return;
+    if (isDependentField || autoFetch || !selectedDataSource) return;
+
+    const cacheKey = `${propertyKey}_cache`;
+    const existingCache = get(options, cacheKey) || {};
+    const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+    const userId = currentUser?.id;
+
+    const cachedData = isMultiAuth ? existingCache[userId]?.['nonDependentCache'] : existingCache['nonDependentCache'];
+
+    validateSelectedValue(cachedData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options[propertyKey]?.value ?? options[propertyKey] ?? value]);
+
   useEffect(() => {
     if (autoFetch && !isDependentField && selectedDataSource?.id && invokeMethod && !isFxMode) {
       const cacheKey = `${propertyKey}_cache`;
@@ -405,6 +422,27 @@ const DynamicSelector = ({
       }
     }
   }, [compositeDependencyKey]);
+
+  // Re-validate access whenever this (dependent) field's own value changes —
+  // e.g. typed directly in FX mode — instead of waiting for a remount/dependency
+  // change to catch it. Validates against the cache slot for the current parent
+  // value; does not trigger a network fetch.
+  useEffect(() => {
+    if (selectedDataSource?.kind !== 'googlesheetsv2') return;
+    if (!isDependentField || autoFetch || !selectedDataSource || !depsReady) return;
+
+    const cacheKey = `${propertyKey}_cache`;
+    const existingCache = get(options, cacheKey) || {};
+    const isMultiAuth = !!selectedDataSource?.options?.multiple_auth_enabled;
+    const userId = currentUser?.id;
+
+    const cachedData = isMultiAuth
+      ? existingCache[userId]?.[compositeDependencyKey]
+      : existingCache[compositeDependencyKey];
+
+    validateSelectedValue(cachedData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options[propertyKey]?.value ?? options[propertyKey] ?? value]);
 
   // Re-fetch when page changes (pagination mode)
   useEffect(() => {
@@ -790,7 +828,18 @@ const DynamicSelector = ({
       {error && (
         <div className="d-flex align-items-center gap-1 mt-1" style={{ color: '#E54D2E', fontSize: '12px' }}>
           <IconAlertTriangle size={14} stroke={2} style={{ flexShrink: 0 }} />
-          <span>{error}</span>
+          <span
+            title={error}
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {error.length > 200 ? `${error.slice(0, 200)}…` : error}
+          </span>
         </div>
       )}
 
