@@ -208,6 +208,7 @@
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^8.10.2",
     "eslint-import-resolver-webpack": "^0.13.10",
+    "eslint-plugin-barrel-files": "^3.0.1",
     "eslint-plugin-import-x": "^4.15.0",
     "eslint-plugin-jest": "^28.14.0",
     "eslint-plugin-prettier": "^4.2.5",
