@@ -48,6 +48,8 @@ import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.entity';
 import { DataQuery } from '@entities/data_query.entity';
 import { AppVersion } from '@entities/app_version.entity';
+import { Component } from '@entities/component.entity';
+import { Page } from '@entities/page.entity';
 
 @Injectable()
 export class AppsService implements IAppsService {
@@ -291,6 +293,27 @@ export class AppsService implements IAppsService {
   async delete(app: App, user: User) {
     const { organizationId } = user;
     const { id } = app;
+
+    if (app.type === APP_TYPES.MODULE) {
+      await dbTransactionWrap(async (manager: EntityManager) => {
+        const refCount = await manager
+          .createQueryBuilder(Component, 'component')
+          .innerJoin(Page, 'page', 'page.id = component.page_id')
+          .innerJoin(AppVersion, 'appVersion', 'appVersion.id = page.app_version_id')
+          .where("component.type = 'ModuleViewer'")
+          .andWhere(
+            "component.properties::jsonb -> 'moduleAppId' ->> 'value' = :moduleId",
+            { moduleId: app.id }
+          )
+          .andWhere('appVersion.app_id != :appId', { appId: app.id })
+          .getCount();
+        if (refCount > 0) {
+          throw new BadRequestException(
+            'This module is referenced by other apps. Remove all references before deleting.'
+          );
+        }
+      });
+    }
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       const schedules = await manager
