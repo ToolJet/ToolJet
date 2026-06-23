@@ -26,6 +26,7 @@ const DYNAMIC_HEIGHT_AUTO_LIST = [
   'Table',
   'ModuleViewer',
   'RadioButtonV2',
+  'Tags',
 ];
 
 const WidgetWrapper = memo(
