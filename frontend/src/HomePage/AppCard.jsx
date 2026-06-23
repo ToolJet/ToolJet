@@ -282,7 +282,7 @@ export default function AppCard({
     );
 
     return isNameOverflowing ? (
-      <ToolTip trigger={['hover']} message={app.name}>
+      <ToolTip trigger={['hover']} message={app.name} maxWidth="210px" tooltipClassName="long-name-tooltip">
         {AppName}
       </ToolTip>
     ) : (

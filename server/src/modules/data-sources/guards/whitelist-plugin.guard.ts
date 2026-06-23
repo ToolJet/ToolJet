@@ -13,6 +13,7 @@ export class WhitelistPluginGuard implements CanActivate {
     'mongodb',
     'bigquery',
     'snowflake',
+    'mariadb',
     'oracledb',
     'databricks',
   ]); // Start with grpcv2, easily expandable

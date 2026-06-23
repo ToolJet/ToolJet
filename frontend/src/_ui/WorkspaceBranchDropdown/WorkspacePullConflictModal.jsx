@@ -11,30 +11,47 @@ const TYPE_ICON_MAP = {
   folder: 'folder',
 };
 
-const GROUP_LABEL_MAP = {
-  'app-name': 'Conflicting apps',
-  'app-slug': 'Conflicting Applications',
-  'module-name': 'Conflicting modules',
-  'module-slug': 'Conflicting modules',
-  'folder-folder': 'Conflicting app folders',
-  'datasource-name': 'Conflicting data sources',
-};
-
 const CONFLICT_TITLE_MAP = {
-  'app-name': 'App name must be unique',
-  'app-slug': 'App slug must be unique',
-  'module-name': 'Module name must be unique',
-  'module-slug': 'Module slug must be unique',
+  'app-name': 'App name already exists',
+  'app-slug': 'App slug already exists',
+  'module-name': 'Module name already exists',
+  'module-slug': 'Module slug already exists',
   'folder-folder': 'Folder name must be unique',
-  'datasource-name': 'Data source name must be unique',
+  'datasource-name': 'Data source name already exists',
 };
 
-export function PullConflictModal({ show, onClose, conflictGroups = [] }) {
+const CONFLICT_SECTION_HEADER_MAP = {
+  'app-name': 'Conflicting app name',
+  'app-slug': 'Conflicting app slug',
+  'module-name': 'Conflicting module name',
+  'module-slug': 'Conflicting module slug',
+  'folder-folder': 'Conflicting folder name',
+  'datasource-name': 'Conflicting data source name',
+};
+
+const STATUS_LABEL_MAP = {
+  incoming: 'Incoming pull',
+  existing: 'Existing branch',
+  local: 'Local',
+  remote: 'Remote',
+};
+
+export function PullConflictModal({ show, onClose, conflictGroups = [], context }) {
   if (!show) return null;
 
-  const conflictTitles = [
-    ...new Set(conflictGroups.map((g) => CONFLICT_TITLE_MAP[`${g.type}-${g.conflictField}`]).filter(Boolean)),
-  ];
+  const isPushConflict = conflictGroups.some((g) =>
+    g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote')
+  );
+  const isBranchCreation = context === 'branch-creation';
+  const isBranchSwitch = context === 'branch-switch';
+  const hideBadges = isBranchCreation || isBranchSwitch;
+
+  const conflictTitles = (() => {
+    if (isBranchCreation) return ['Cannot create branch with duplicate data'];
+    if (isBranchSwitch) return ['Cannot open branch with duplicate data'];
+    if (isPushConflict) return ['Cannot push with duplicate data'];
+    return ['Cannot pull with duplicate data'];
+  })();
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains('pull-conflict-modal-overlay')) {
@@ -46,11 +63,11 @@ export function PullConflictModal({ show, onClose, conflictGroups = [] }) {
 
   return ReactDOM.createPortal(
     <div className="pull-conflict-modal-overlay" onClick={handleOverlayClick}>
-      <div className={`pull-conflict-modal${darkMode ? ' theme-dark' : ''}`}>
+      <div className={`pull-conflict-modal${darkMode ? ' theme-dark dark-theme' : ''}`}>
         {/* HEADER */}
         <div className="pull-conflict-modal-header">
           <div className="conflict-warning-icon">
-            <SolidIcon name="informationcircle" width="24" fill="var(--orange9)" />
+            <SolidIcon name="warning" width="24" fill="var(--orange9)" />
           </div>
         </div>
 
@@ -65,38 +82,53 @@ export function PullConflictModal({ show, onClose, conflictGroups = [] }) {
           </div>
 
           <p className="conflict-description">
-            The following resources have naming conflicts with resources already on this branch. ToolJet requires unique
-            names &amp; slugs for apps, data sources, modules, and folders within a branch.
+            The following resources have the same name or slug on this branch. ToolJet requires unique names & slug for
+            apps, data sources, modules, and folders within a branch.
           </p>
 
-          {conflictGroups.map((group, idx) => (
-            <div key={idx} className="conflict-group-wrapper">
-              <div className="conflict-section">
-                <div className="conflict-section-header">
-                  <span>{GROUP_LABEL_MAP[`${group.type}-${group.conflictField}`] || group.label}</span>
-                </div>
+          <div className="conflict-groups-list">
+            {conflictGroups.map((group, idx) => (
+              <div key={idx} className="conflict-group-wrapper">
+                <div className="conflict-section">
+                  <div className="conflict-section-header">
+                    <span>
+                      {CONFLICT_SECTION_HEADER_MAP[`${group.type}-${group.conflictField}`] || group.label}
+                      {group.conflictKey
+                        ? ` - '${group.conflictKey}'`
+                        : group.conflicts?.[0]?.name && ` - '${group.conflicts[0].name}'`}
+                    </span>
+                  </div>
 
-                <div className="conflict-section-body">
-                  {group.conflicts.map((item, itemIdx) => (
-                    <div key={itemIdx} className="conflict-item">
-                      <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
+                  <div className="conflict-section-body">
+                    {group.conflicts.map((item, itemIdx) => (
+                      <div key={itemIdx} className="conflict-item">
+                        <SolidIcon name={TYPE_ICON_MAP[group.type] || 'apps'} width="16" fill="var(--slate9)" />
 
-                      <span className="conflict-item-name">{item.name}</span>
+                        <span className="conflict-item-name">
+                          {group.conflictField === 'slug'
+                            ? item.name
+                            : item.coRelationId
+                            ? `#${item.coRelationId.slice(0, 8)}`
+                            : item.name}
+                        </span>
 
-                      <span className={`conflict-badge conflict-badge--${item.status}`}>
-                        {item.status === 'incoming' ? 'Incoming' : 'Existing'}
-                        {item.coRelationId && <span className="conflict-badge-corel"> ({item.coRelationId})</span>}
-                      </span>
-                    </div>
-                  ))}
+                        {!hideBadges && (
+                          <span className={`conflict-badge conflict-badge--${item.status}`}>
+                            {STATUS_LABEL_MAP[item.status] || item.status}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           <p className="conflict-footer-text">
-            Rename the conflicting resources before pulling again. Read our docs for step-by-step instructions on
-            resolving naming conflicts.
+            {isBranchCreation || isBranchSwitch || isPushConflict
+              ? 'Resolve the conflict before trying again. Read our docs for step-by-step instructions on resolving unique constraint conflicts.'
+              : 'Rename the conflicting resources before pulling again. Read our docs for step-by-step instructions on resolving naming conflicts.'}
           </p>
         </div>
 
@@ -110,7 +142,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [] }) {
             variant="secondary"
             size="md"
             as="a"
-            href="https://docs.tooljet.com"
+            href="https://docs.tooljet.com/docs/beta/unique-constraint/"
             target="_blank"
             rel="noopener noreferrer"
             data-cy="conflict-read-docs-button"

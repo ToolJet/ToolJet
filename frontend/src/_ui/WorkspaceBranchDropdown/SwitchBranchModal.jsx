@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import Fuse from 'fuse.js';
 import AlertDialog from '@/_ui/AlertDialog';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -7,6 +8,7 @@ import { WorkspaceCreateBranchModal } from './CreateBranchModal';
 import { Alert } from '@/_ui/Alert';
 import '@/_styles/switch-branch-modal.scss';
 import { DeleteBranchConfirmModal } from './DeleteBranchConfirmModal';
+import { PullConflictModal } from './WorkspacePullConflictModal';
 import { Tooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
@@ -16,13 +18,18 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
+  const [pullConflictGroups, setPullConflictGroups] = useState(null);
 
-  const { branches, activeBranchId, orgGitConfig, currentBranch } = useWorkspaceBranchesStore((state) => ({
-    branches: state.branches,
-    activeBranchId: state.activeBranchId,
-    orgGitConfig: state.orgGitConfig,
-    currentBranch: state.currentBranch,
-  }));
+  const { branches, activeBranchId, orgGitConfig, currentBranch, remoteBranches, hasMoreRemote, visibleCount } =
+    useWorkspaceBranchesStore((state) => ({
+      branches: state.branches,
+      activeBranchId: state.activeBranchId,
+      orgGitConfig: state.orgGitConfig,
+      currentBranch: state.currentBranch,
+      remoteBranches: state.remoteBranches,
+      hasMoreRemote: state.hasMoreRemote,
+      visibleCount: state.visibleCount,
+    }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
   const organizationId = authenticationService.currentSessionValue?.current_organization_id;
 
@@ -32,19 +39,69 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
 
   useEffect(() => {
     if (show) {
+      actions.resetRemoteBranches();
       setIsLoading(true);
-      actions.fetchBranches().finally(() => setIsLoading(false));
+      Promise.all([actions.fetchBranches(), actions.fetchRemoteBranches().catch(() => {})]).finally(() =>
+        setIsLoading(false)
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
-  // Filter branches by search term
-  const filteredBranches = branches.filter((branch) => {
-    if (!branch.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    // When used for "create app" flow, hide the default branch (user is leaving it)
-    if (onBranchSwitch && (branch.is_default || branch.isDefault)) return false;
-    return true;
-  });
+  const branchSorter = useCallback(
+    (a, b) => {
+      const aIsDefault = a.is_default || a.isDefault;
+      const bIsDefault = b.is_default || b.isDefault;
+      const aIsActive = a.id === activeBranchId;
+      const bIsActive = b.id === activeBranchId;
+      if (aIsDefault && !bIsDefault) return -1;
+      if (!aIsDefault && bIsDefault) return 1;
+      if (aIsActive && !bIsActive) return -1;
+      if (!aIsActive && bIsActive) return 1;
+      const aDate = a.lastCommitAt ? new Date(a.lastCommitAt).getTime() : 0;
+      const bDate = b.lastCommitAt ? new Date(b.lastCommitAt).getTime() : 0;
+      if (bDate !== aDate) return bDate - aDate;
+      // Tiebreaker: branches with the same committedDate (e.g. created from the same source)
+      // are ordered by DB createdAt DESC — more recently created branch appears first.
+      const aCreated = a.createdAt || a.created_at;
+      const bCreated = b.createdAt || b.created_at;
+      const aCreatedMs = aCreated ? new Date(aCreated).getTime() : 0;
+      const bCreatedMs = bCreated ? new Date(bCreated).getTime() : 0;
+      return bCreatedMs - aCreatedMs;
+    },
+    [activeBranchId]
+  );
+  // Full list is always in store — just sort and slice to visibleCount
+  const filteredBranches = useMemo(() => {
+    const all = (remoteBranches || []).filter((branch) => !(onBranchSwitch && (branch.is_default || branch.isDefault)));
+    return [...all].sort(branchSorter).slice(0, visibleCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteBranches, onBranchSwitch, branchSorter, visibleCount]);
+
+  // Fuse instance over all branches (DB-loaded, no commit dates) — rebuilt only when branches list changes
+  const fuse = useMemo(
+    () =>
+      new Fuse(branches || [], {
+        keys: ['name'],
+        threshold: 0.4,
+        includeScore: true,
+        ignoreLocation: true,
+      }),
+    [branches]
+  );
+
+  // Fuzzy search results across ALL branches (not just loaded page)
+  const searchResults = useMemo(() => {
+    if (!searchTerm) return [];
+    return fuse
+      .search(searchTerm)
+      .map((r) => r.item)
+      .filter((b) => !(onBranchSwitch && (b.is_default || b.isDefault)))
+      .sort(branchSorter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fuse, searchTerm, onBranchSwitch, activeBranchId]);
+
+  const displayBranches = searchTerm ? searchResults : filteredBranches;
 
   const handleBranchClick = async (branch) => {
     if (branch.id === activeBranchId) {
@@ -62,7 +119,35 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
         return;
       }
 
+      // Seeded branches (no createdBy, non-default) were created at git sync config time without
+      // workspace data. Pull FIRST before switching — if pull fails the user stays on the modal
+      // on their current branch rather than landing on an empty workspace.
+      const isSeededBranch = !branch.createdBy && !(branch.is_default || branch.isDefault);
+      if (isSeededBranch) {
+        setIsLoading(true);
+        try {
+          await actions.pullWorkspace(branch.name, branch.id);
+        } catch (pullError) {
+          setIsLoading(false);
+          if (pullError?.statusCode === 409) {
+            try {
+              const parsed = JSON.parse(pullError?.data?.message || pullError?.error || '{}');
+              if (parsed?.conflictGroups?.length) {
+                setPullConflictGroups(parsed.conflictGroups);
+                return;
+              }
+            } catch {
+              /* fall through to generic toast */
+            }
+          }
+          toast.error(pullError?.error || pullError?.message || 'Pull failed');
+          return;
+        }
+      }
+
+      // Pull succeeded (or not a seeded branch) — now switch
       await actions.switchBranch(branch.id);
+
       toast.success(`Switched to ${branch.name}`);
       if (onBranchSwitch) {
         onBranchSwitch(branch);
@@ -147,7 +232,7 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
 
           {/* Search Section */}
           <div className="search-section">
-            <label className="section-label">ALL OPEN BRANCHES</label>
+            <label className="section-label">RECENT BRANCHES</label>
             <div className="search-input-wrapper">
               <SolidIcon name="search" width="16" fill="var(--slate11)" />
               <input
@@ -168,13 +253,13 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
                 <div className="spinner"></div>
                 <span>Loading branches...</span>
               </div>
-            ) : filteredBranches.length === 0 ? (
+            ) : displayBranches.length === 0 ? (
               <div className="empty-state">
                 <p>No branches found</p>
               </div>
             ) : (
               <>
-                {filteredBranches.map((branch) => {
+                {displayBranches.map((branch) => {
                   const isCurrentBranch = branch.id === activeBranchId;
                   const isDefaultBranch = branch.is_default || branch.isDefault;
                   return (
@@ -226,6 +311,15 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
                   );
                 })}
                 <Tooltip id="delete-branch-tooltip" place="right" />
+                {hasMoreRemote && !searchTerm && (
+                  <button
+                    className="load-more-btn"
+                    onClick={() => actions.loadMoreRemoteBranches()}
+                    data-cy="workspace-branch-load-more-btn"
+                  >
+                    Load more..
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -277,6 +371,14 @@ export function WorkspaceSwitchBranchModal({ show, onClose, onBranchSwitch }) {
           onDelete={(branchId) => actions.deleteWorkspaceBranch(branchId)}
         />
       )}
+
+      {/* Pull conflict modal — shown when seeded branch auto-pull detects naming conflicts */}
+      <PullConflictModal
+        show={!!pullConflictGroups}
+        conflictGroups={pullConflictGroups || []}
+        onClose={() => setPullConflictGroups(null)}
+        context="branch-switch"
+      />
     </>
   );
 }
