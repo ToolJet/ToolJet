@@ -74,16 +74,7 @@ export const EditorHeader = ({ darkMode, appType }) => {
               </div>
             </div>
 
-            {isModuleEditor && isEditorReadOnly ? (
-              <span
-                className="tw-inline-flex tw-items-center tw-px-2 tw-py-1 tw-text-xs tw-font-medium tw-rounded tw-bg-amber-100 tw-text-amber-800"
-                data-cy="module-readonly-badge"
-              >
-                Read-only — Build with only
-              </span>
-            ) : (
-              <HeaderActions darkMode={darkMode} />
-            )}
+            <HeaderActions darkMode={darkMode} />
 
             <div className="tw-flex tw-flex-row tw-items-center tw-justify-end tw-grow-1 tw-w-full">
               <div className="d-flex align-items-center p-0">

@@ -722,8 +722,27 @@ class HomePageComponent extends React.Component {
         default:
           return false;
       }
-    } else {
-      // Module permissions return true if builder
+    } else if (this.props.appType === 'module') {
+      const modulePerms = currentSession?.module_group_permissions;
+      if (modulePerms) {
+        const canEditModule =
+          modulePerms.is_all_editable || (app?.id && modulePerms.editable_apps_id?.includes(app.id));
+        const canReadModule =
+          canEditModule || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+        switch (action) {
+          case 'create':
+            return user_permissions.module_create;
+          case 'read':
+            return this.isUserOwnerOfApp(user, app) || canReadModule;
+          case 'update':
+            return canEditModule || this.isUserOwnerOfApp(user, app);
+          case 'delete':
+            return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
+          default:
+            return false;
+        }
+      }
+      // CE fallback: any builder can perform all module actions
       return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
     }
   }
@@ -791,7 +810,7 @@ class HomePageComponent extends React.Component {
         }
       })
       .catch(({ error }) => {
-        toast.error('Could not delete the app.');
+        toast.error(error ?? error.message ?? 'Could not delete the app.');
       })
       .finally(() => {
         this.cancelDeleteAppDialog();

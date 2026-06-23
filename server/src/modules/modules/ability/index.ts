@@ -61,7 +61,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     // CLONE/EXPORT/IMPORT: builder or above (unchanged semantics)
     if (superAdmin || isAdmin || isBuilder) {
-      can([FEATURE_KEY.CLONE_MODULE, FEATURE_KEY.EXORT_MODULE, FEATURE_KEY.IMPORT_MODULE], App);
+      can([FEATURE_KEY.CLONE_MODULE, FEATURE_KEY.EXPORT_MODULE, FEATURE_KEY.IMPORT_MODULE], App);
     }
   }
 }

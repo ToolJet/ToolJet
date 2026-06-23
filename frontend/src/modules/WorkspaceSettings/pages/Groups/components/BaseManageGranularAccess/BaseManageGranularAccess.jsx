@@ -344,13 +344,16 @@ class BaseManageGranularAccess extends React.Component {
         }
       });
 
+      // canEdit and canView are mutually exclusive; if both are true in DB (data
+      // migration bug), treat canEdit as the authoritative value and clear canView.
+      const normalizedCanView = appsGroupPermission.canView && !appsGroupPermission.canEdit;
       this.setState({
         ...fixedState,
         modalTitle: `Edit ${granularPermission.type} permissions`,
         resourceType: granularPermission.type,
         initialPermissionState: {
           canEdit: appsGroupPermission.canEdit,
-          canView: appsGroupPermission.canView,
+          canView: normalizedCanView,
           hideFromDashboard: appsGroupPermission.hideFromDashboard,
         },
         selectedResources: selectedResources,
@@ -359,7 +362,7 @@ class BaseManageGranularAccess extends React.Component {
           type: granularPermission.type,
           initialPermissionState: {
             canEdit: appsGroupPermission?.canEdit,
-            canView: appsGroupPermission?.canView,
+            canView: normalizedCanView,
             hideFromDashboard: appsGroupPermission?.hideFromDashboard,
           },
           isAll: !!granularPermission.isAll,

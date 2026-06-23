@@ -316,7 +316,7 @@ describe('FeatureAbilityFactory — modules ability', () => {
       const permissions = makePermissions();
       const ability = buildAbility(permissions);
       expect(ability.can(FEATURE_KEY.CLONE_MODULE, App)).toBe(true);
-      expect(ability.can(FEATURE_KEY.EXORT_MODULE, App)).toBe(true);
+      expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(true);
       expect(ability.can(FEATURE_KEY.IMPORT_MODULE, App)).toBe(true);
     });
 
@@ -328,7 +328,7 @@ describe('FeatureAbilityFactory — modules ability', () => {
       });
       const ability = buildAbility(permissions);
       expect(ability.can(FEATURE_KEY.CLONE_MODULE, App)).toBe(false);
-      expect(ability.can(FEATURE_KEY.EXORT_MODULE, App)).toBe(false);
+      expect(ability.can(FEATURE_KEY.EXPORT_MODULE, App)).toBe(false);
       expect(ability.can(FEATURE_KEY.IMPORT_MODULE, App)).toBe(false);
     });
   });

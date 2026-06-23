@@ -515,6 +515,10 @@ const useAppData = (
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+        } else if (moduleId === 'canvas') {
+          // Module opened as the main editor (not a nested module): needs its own
+          // currentVersionId so saveComponentChanges can reach the correct version endpoint.
+          setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {

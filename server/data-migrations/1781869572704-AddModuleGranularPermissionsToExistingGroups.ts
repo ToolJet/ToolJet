@@ -60,7 +60,7 @@ export class AddModuleGranularPermissionsToExistingGroups1781869572704 implement
           manager.create(AppsGroupPermissions, {
             granularPermissionId: granularPermissions.id,
             canEdit: true,
-            canView: true,
+            canView: false,
             hideFromDashboard: false,
             appType: APP_TYPES.MODULE,
           })

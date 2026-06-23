@@ -36,7 +36,7 @@ export const ConfigHandle = ({
   subContainerIndex,
   isDynamicHeightEnabled,
 }) => {
-  const { moduleId } = useModuleContext();
+  const { moduleId, isModuleEditor } = useModuleContext();
   const isModulesEnabled = useStore((state) => state.license.featureAccess?.modulesEnabled, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id, moduleId)?.component?.name || '', shallow);
@@ -315,15 +315,17 @@ export const ConfigHandle = ({
         <Trash size={14} color="var(--icon-strong)" />
       </ConfigHandleButton>
       {/* Tooltip for invalid license on ModuleViewer */}
-      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') && !isModulesEnabled && (
-        <Tooltip
-          delay={{ show: 500, hide: 50 }}
-          id={`invalid-license-modules-${componentName?.toLowerCase()}`}
-          className="tooltip"
-          isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
-          style={{ textAlign: 'center' }}
-        />
-      )}
+      {(componentType === 'ModuleViewer' || componentType === 'ModuleContainer') &&
+        !isModulesEnabled &&
+        !isModuleEditor && (
+          <Tooltip
+            delay={{ show: 500, hide: 50 }}
+            id={`invalid-license-modules-${componentName?.toLowerCase()}`}
+            className="tooltip"
+            isOpen={_showHandle && (componentType === 'ModuleViewer' || componentType === 'ModuleContainer')}
+            style={{ textAlign: 'center' }}
+          />
+        )}
     </div>
   );
 };

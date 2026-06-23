@@ -1,6 +1,6 @@
 import { AbilityBuilder } from '@casl/ability';
 import { UserAllPermissions } from '@modules/app/types';
-import { FEATURE_KEY } from '../constants';
+import { APP_TYPES, FEATURE_KEY } from '../constants';
 import { App } from '@entities/app.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { FeatureAbility } from './index';
@@ -16,8 +16,11 @@ export function defineAppAbility(
   const isAllAppsEditable = !!userAppPermissions?.isAllEditable;
   const isAllAppsCreatable = !!userPermission?.appCreate;
   const isAllAppsDeletable = !!userPermission?.appDelete;
+  const isAllModulesCreatable = !!userPermission?.moduleCreate;
+  const isAllModulesDeletable = !!userPermission?.moduleDelete;
   const isAllAppsViewable = !!userAppPermissions?.isAllViewable;
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
+  const isCreatingModule = request?.body?.type === APP_TYPES.MODULE;
 
   if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
     can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
@@ -67,9 +70,18 @@ export function defineAppAbility(
 
     if (isEditable) {
       can(
-        [FEATURE_KEY.UPDATE, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS, FEATURE_KEY.UPDATE_ICON],
+        [
+          FEATURE_KEY.UPDATE,
+          FEATURE_KEY.GET_ONE,
+          FEATURE_KEY.GET_BY_SLUG,
+          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
+          FEATURE_KEY.UPDATE_ICON,
+        ],
         App
       );
+      if (isAllModulesDeletable || isAppOwner) {
+        can(FEATURE_KEY.DELETE, App);
+      }
       return;
     }
     if (isViewable) {
@@ -102,7 +114,7 @@ export function defineAppAbility(
     return;
   }
 
-  if (isAllAppsCreatable) {
+  if (isAllAppsCreatable || (isCreatingModule && isAllModulesCreatable)) {
     can(FEATURE_KEY.CREATE, App);
   }
   if (userPermission.appRelease) {

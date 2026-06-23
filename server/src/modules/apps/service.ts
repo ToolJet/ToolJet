@@ -309,7 +309,7 @@ export class AppsService implements IAppsService {
           .getCount();
         if (refCount > 0) {
           throw new BadRequestException(
-            'This module is referenced by other apps. Remove all references before deleting.'
+            'This module is currently used in one or more apps. Remove its dependencies before deleting it.'
           );
         }
       });
