@@ -133,23 +133,45 @@ export default class Microsoft_graph implements QueryService {
       if (_requestOptions.status === 'needs_oauth') return _requestOptions;
       requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
     } else {
-      requestOptions =
-        operation === 'get' || operation === 'delete'
-          ? {
-              method: operation,
-              headers: this.authHeader(accessToken),
-              searchParams: queryParams,
-            }
-          : {
-              method: operation,
-              headers: this.authHeader(accessToken),
-              json: this.parseBodyParams(bodyParams),
-              searchParams: queryParams,
-            };
+      if (operation === 'get' || operation === 'delete') {
+        requestOptions = {
+          method: operation,
+          headers: this.authHeader(accessToken),
+          searchParams: queryParams,
+        };
+      } else if (this.isBinaryUpload(operation, path)) {
+        const fileContent = bodyParams?.['fileContent'] ?? '';
+        const mimeType = bodyParams?.['mimeType'] ?? 'application/octet-stream';
+        const base64Data = fileContent.includes(',') ? fileContent.split(',')[1] : fileContent;
+        requestOptions = {
+          method: operation,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': mimeType,
+          },
+          body: Buffer.from(base64Data, 'base64'),
+          searchParams: queryParams,
+        };
+      } else {
+        requestOptions = {
+          method: operation,
+          headers: this.authHeader(accessToken),
+          json: this.parseBodyParams(bodyParams),
+          searchParams: queryParams,
+        };
+      }
     }
     try {
       const response = await got(url, requestOptions);
-      if (response && response.body) {
+      if (this.isBinaryDownload(operation, path)) {
+        const rawBody = (response as any).rawBody as Buffer;
+        const mimeType = (response.headers?.['content-type'] ?? 'application/octet-stream').split(';')[0].trim();
+        result = {
+          base64: rawBody.toString('base64'),
+          mimeType,
+          size: rawBody.length,
+        };
+      } else if (response && response.body) {
         try {
           result = JSON.parse(response.body);
         } catch (parseError) {
@@ -186,6 +208,16 @@ export default class Microsoft_graph implements QueryService {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
+  }
+
+  private isBinaryUpload(operation: string, path: string): boolean {
+    // Matches only the SharePoint colon-path upload pattern: items/{folder-id}:/{filename}:/content
+    // Does NOT match the OneDrive simple upload: items/{item-id}/content
+    return operation === 'put' && path.includes(':/') && path.endsWith('/content');
+  }
+
+  private isBinaryDownload(operation: string, path: string): boolean {
+    return operation === 'get' && path.endsWith('/content') && !path.includes(':/');
   }
 
   private parseBodyParams(params: Record<string, any>): Record<string, any> {
@@ -279,7 +311,15 @@ export default class Microsoft_graph implements QueryService {
     }
 
     if (!['get', 'delete'].includes(result.method) && params.request) {
-      result.json = this.parseBodyParams(params.request);
+      if (this.isBinaryUpload(result.method, queryOptions.path ?? '')) {
+        const fileContent = params.request?.fileContent ?? '';
+        const mimeType = params.request?.mimeType ?? 'application/octet-stream';
+        const base64Data = fileContent.includes(',') ? fileContent.split(',')[1] : fileContent;
+        result.body = Buffer.from(base64Data, 'base64');
+        result.headers['Content-Type'] = mimeType;
+      } else {
+        result.json = this.parseBodyParams(params.request);
+      }
     }
 
     return result;
