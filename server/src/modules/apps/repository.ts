@@ -424,11 +424,16 @@ export class AppsRepository extends Repository<App> {
       }
     }
 
-    // Slug path: resolve through app_versions.slug
+    // Slug path: resolve through app_versions.slug. Load app.appVersions in the
+    // same join so callers reading app.appVersions (e.g. external-api
+    // autoDeployApp) get a shape consistent with the UUID/workflow paths — no
+    // separate re-fetch. The av.slug filter only narrows the matched version
+    // row; app.appVersions still hydrates the app's full version collection.
     const candidate = await manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
+      .leftJoinAndSelect('app.appVersions', 'appVersions')
       .where('av.slug = :slug', { slug: idOrSlug })
       .getOne();
 
@@ -442,6 +447,7 @@ export class AppsRepository extends Repository<App> {
           .getRepository(AppVersion)
           .createQueryBuilder('av')
           .innerJoinAndSelect('av.app', 'app')
+          .leftJoinAndSelect('app.appVersions', 'appVersions')
           .where('av.slug = :slug', { slug: idOrSlug })
           .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
           .getOne();

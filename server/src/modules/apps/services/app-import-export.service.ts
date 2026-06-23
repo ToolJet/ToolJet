@@ -118,7 +118,8 @@ type NewRevampedComponent =
   | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
-  | 'PopoverMenu';
+  | 'PopoverMenu'
+  | 'Pagination';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -169,6 +170,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
+  'Pagination',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -1396,7 +1398,6 @@ export class AppImportExportService {
       // performLegacyAppImport) so they can write it to app_versions.
       if (!isWorkflow) {
         (importedApp as any).__importMetadata = {
-          slug: appParams.slug || null,
           appName: appParams.name || null,
           icon: appParams.icon || null,
           isPublic: appParams.isPublic ?? false,
@@ -3292,9 +3293,7 @@ export class AppImportExportService {
         // temp apps, partial exports) — fall back to deterministic placeholders so the
         // INSERT doesn't violate the CHECK. Skipped for workflows (they store metadata
         // on apps.* and the constraint is exempt for branch_id=NULL rows).
-        const resolvedSlug = !isWorkflow
-          ? (appVersion.slug ?? importMeta?.slug ?? importedApp.id ?? uuid())
-          : undefined;
+        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? importedApp.id) : undefined;
         const resolvedAppName = !isWorkflow
           ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
           : undefined;
@@ -3571,7 +3570,7 @@ export class AppImportExportService {
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
       ...(importMeta && {
-        slug: importMeta.slug,
+        slug: importedApp.id,
         appName: importMeta.appName,
         icon: importMeta.icon,
         isPublic: importMeta.isPublic,
@@ -4466,6 +4465,13 @@ function migrateProperties(
       }
       if (properties.tooltip === undefined) {
         properties.tooltip = { value: '' };
+      }
+    }
+
+    // Pagination
+    if (componentType === 'Pagination') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
       }
     }
   }
