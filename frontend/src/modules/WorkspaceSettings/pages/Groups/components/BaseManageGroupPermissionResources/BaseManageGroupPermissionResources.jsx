@@ -22,6 +22,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import ModulePermissionsUI from '../ModulePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import VirtualizedUserList from './VirtualizedUserList';
@@ -1017,6 +1018,14 @@ class BaseManageGroupPermissionResources extends React.Component {
                                 </div>
                                 {/* Worklfow Permission */}
                                 <WorkflowPermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
+
+                                {/* Module Permission */}
+                                <ModulePermissionsUI
                                   groupPermission={groupPermission}
                                   disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
