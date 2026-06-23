@@ -7,10 +7,9 @@ import OnboardingBackgroundWrapper from '@/modules/onboarding/components/Onboard
 import { setCookie } from '@/_helpers/cookie';
 import { getSubpath } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
-import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { SignupForm } from '../SignupPage/components';
-import { getPostSignupRedirectPath } from '@/_helpers/platform/utils/auth.utils';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
 const AppSignupPage = () => {
@@ -87,18 +86,7 @@ const AppSignupPage = () => {
         const { current_organization_id, current_organization_slug } = response;
 
         if (current_organization_id || current_organization_slug) {
-          const { email, id, first_name, last_name, organization_id, organization, ...restResponse } = response;
-          const current_user = { email, id, first_name, last_name, organization_id, organization };
-
-          updateCurrentSession({
-            current_user,
-            ...restResponse,
-            authentication_status: null,
-            noWorkspaceAttachedInTheSession: current_organization_id ? false : true,
-            isUserLoggingIn: false,
-          });
-
-          window.location.href = appRedirectPath;
+          onLoginSuccess(response, navigate, appRedirectPath);
         } else {
           // For editions requiring email verification, redirect to app login with redirectTo preserved
           onSuccess();
