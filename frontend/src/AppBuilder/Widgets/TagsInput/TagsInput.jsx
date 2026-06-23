@@ -783,7 +783,7 @@ const TagsInput = ({
   const filteredOptions = useMemo(() => {
     return allOptions
       .filter((opt) => !selected.some((s) => s.value === opt.value))
-      .filter((opt) => serverSideSearch === true || !inputValue || opt.label?.includes(inputValue));
+      .filter((opt) => serverSideSearch === true || !inputValue || String(opt.label ?? '').includes(inputValue));
   }, [allOptions, selected, inputValue, serverSideSearch]);
 
   return (
@@ -894,7 +894,7 @@ const TagsInput = ({
             isMulti
             hideSelectedOptions={true}
             filterOption={(option, inputValue) =>
-              serverSideSearch === true ? true : option.label?.includes(inputValue)
+              serverSideSearch === true ? true : String(option.label ?? '').includes(inputValue)
             }
             closeMenuOnSelect={false}
             tabSelectsValue={false}
