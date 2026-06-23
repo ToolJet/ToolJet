@@ -285,6 +285,17 @@ export class AppsUtilService implements IAppsUtilService {
         // For non-workflows, seed the version's metadata so app_versions stays in sync
         // with the user-facing name/slug/icon/isPublic from the moment the app is created.
         //
+        // branch_id is NOT NULL — resolve the org's default branch when no explicit
+        // branchId was provided (git-sync off, or a default-branch call from the client).
+        const effectiveBranchId: string | undefined =
+          branchId ??
+          (
+            await manager.findOne(WorkspaceBranch, {
+              where: { organizationId: user.organizationId, isDefault: true },
+              select: ['id'],
+            })
+          )?.id;
+
         // Wrap so the partial unique index app_versions_slug_default_branch_unique
         // (slug, type WHERE status='DRAFT' AND branch_id IS NOT NULL AND
         // version_type='version') surfaces a friendly error if the slug placeholder
@@ -297,7 +308,7 @@ export class AppsUtilService implements IAppsUtilService {
               firstPriorityEnv.id,
               null,
               manager,
-              undefined,
+              effectiveBranchId,
               !isWorkflow
                 ? {
                     appName: name,
@@ -311,6 +322,10 @@ export class AppsUtilService implements IAppsUtilService {
             {
               dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
               message: 'This slug is already taken.',
+            },
+            {
+              dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+              message: 'This app name is already taken.',
             },
           ]
         );
