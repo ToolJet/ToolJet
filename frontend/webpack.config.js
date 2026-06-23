@@ -6,7 +6,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
-const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const fs = require('fs');
 const versionPath = path.resolve(__dirname, '.version');
@@ -310,17 +309,20 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        use: ({ resource }) => ({
+        use: () => ({
           loader: '@svgr/webpack',
           options: {
             svgoConfig: {
               plugins: [
                 {
-                  name: 'prefixIds',
-                  cleanupIDs: {
-                    prefix: `svg-${hash(resource)}`,
+                  name: 'preset-default',
+                  params: {
+                    overrides: {
+                      removeViewBox: false,
+                    },
                   },
                 },
+                'prefixIds',
               ],
             },
           },
