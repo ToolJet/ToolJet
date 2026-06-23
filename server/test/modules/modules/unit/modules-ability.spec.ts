@@ -1,4 +1,4 @@
-import { AbilityBuilder, Ability, subject } from '@casl/ability';
+import { AbilityBuilder, Ability } from '@casl/ability';
 import { App } from 'src/entities/app.entity';
 import { FEATURE_KEY } from 'src/modules/modules/constants';
 import { MODULES } from 'src/modules/app/constants/modules';
@@ -12,12 +12,17 @@ import { FeatureAbility, FeatureAbilityFactory } from 'src/modules/modules/abili
 /**
  * Calls defineAbilityFor directly without the NestJS DI / AbilityService.
  * We instantiate the factory with a stub abilityService (unused in defineAbilityFor).
+ *
+ * Pass `request` to simulate the HTTP request object carrying `tj_app` (set by
+ * ValidAppGuard).  The factory resolves ownership/ID checks at build time using
+ * request.tj_app, so tests that exercise the guard call shape (ability.can with
+ * a string resourceId) MUST supply the right tj_app here.
  */
-function buildAbility(permissions: Partial<UserAllPermissions>): FeatureAbility {
+function buildAbility(permissions: Partial<UserAllPermissions>, request?: { tj_app?: App }): FeatureAbility {
   const { can, build } = new AbilityBuilder<FeatureAbility>(Ability as any);
   const factory = new FeatureAbilityFactory({ resourceActionsPermission: jest.fn() } as any);
   // defineAbilityFor is protected — cast to access in tests
-  (factory as any).defineAbilityFor(can, permissions as UserAllPermissions);
+  (factory as any).defineAbilityFor(can, permissions as UserAllPermissions, { moduleName: '', features: [] }, request);
   return build({
     detectSubjectType: (item: any) => item.constructor,
   });
@@ -106,15 +111,26 @@ describe('FeatureAbilityFactory — modules ability', () => {
       expect(ability.can(FEATURE_KEY.DELETE_MODULE, App)).toBe(true);
     });
 
-    it('builder WITHOUT moduleDelete, not admin, not owner → cannot DELETE_MODULE', () => {
-      // Must use an App instance with a non-matching userId; class-level check
-      // returns true whenever any conditional rule exists (CASL behaviour).
+    it('builder WITHOUT moduleDelete, not admin, no tj_app → cannot DELETE_MODULE at class level', () => {
+      // No request.tj_app — factory emits no rule, so class-level check is false.
       const permissions = makePermissions({
         user: { id: 'user-1' } as any,
         userPermission: { ...baseUserPermission(), moduleDelete: false } as any,
       });
       const ability = buildAbility(permissions);
-      expect(ability.can(FEATURE_KEY.DELETE_MODULE, subject(App, appInstance('mod-xyz', 'other-user')))).toBe(false);
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App)).toBe(false);
+    });
+
+    it('builder WITHOUT moduleDelete, tj_app.userId !== user.id → cannot DELETE_MODULE', () => {
+      // tj_app present but owned by someone else — still denied.
+      const permissions = makePermissions({
+        user: { id: 'user-1' } as any,
+        userPermission: { ...baseUserPermission(), moduleDelete: false } as any,
+      });
+      const ability = buildAbility(permissions, { tj_app: appInstance('mod-xyz', 'other-user') });
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App)).toBe(false);
+      // Guard call shape: string resourceId must also be false (no conditional rule emitted)
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App, 'mod-xyz')).toBe(false);
     });
 
     it('admin WITHOUT moduleDelete → can DELETE_MODULE', () => {
@@ -126,29 +142,55 @@ describe('FeatureAbilityFactory — modules ability', () => {
       expect(ability.can(FEATURE_KEY.DELETE_MODULE, App)).toBe(true);
     });
 
-    it('builder WITHOUT moduleDelete, app.userId === user.id → can DELETE_MODULE (owner)', () => {
+    it('builder WITHOUT moduleDelete, tj_app.userId === user.id → can DELETE_MODULE (owner)', () => {
       const userId = 'user-1';
       const permissions = makePermissions({
         user: { id: userId } as any,
         userPermission: { ...baseUserPermission(), moduleDelete: false } as any,
       });
-      const ability = buildAbility(permissions);
-      // Must check against an instance carrying userId so CASL evaluates the condition
-      expect(ability.can(FEATURE_KEY.DELETE_MODULE, subject(App, appInstance('mod-abc', userId)))).toBe(true);
+      // Pass tj_app so factory resolves ownership at build time → unconditional can()
+      const ability = buildAbility(permissions, { tj_app: appInstance('mod-abc', userId) });
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App)).toBe(true);
+      // Guard call shape (string resourceId) must also pass
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App, 'mod-abc')).toBe(true);
     });
 
-    it('builder WITHOUT moduleDelete, app.userId !== user.id → cannot DELETE_MODULE (not owner)', () => {
+    it('builder WITHOUT moduleDelete, tj_app.userId !== user.id → cannot DELETE_MODULE (not owner)', () => {
       const permissions = makePermissions({
         user: { id: 'user-1' } as any,
         userPermission: { ...baseUserPermission(), moduleDelete: false } as any,
       });
-      const ability = buildAbility(permissions);
-      expect(ability.can(FEATURE_KEY.DELETE_MODULE, subject(App, appInstance('mod-abc', 'other-user')))).toBe(false);
+      const ability = buildAbility(permissions, { tj_app: appInstance('mod-abc', 'other-user') });
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App)).toBe(false);
+      // Guard call shape: string resourceId must also be false
+      expect(ability.can(FEATURE_KEY.DELETE_MODULE, App, 'mod-abc')).toBe(false);
+    });
+
+    describe('guard call shape — string resourceId (C1 regression)', () => {
+      it('no moduleDelete + no ownership → false even with string resourceId', () => {
+        const permissions = makePermissions({
+          user: { id: 'user-1' } as any,
+          userPermission: { ...baseUserPermission(), moduleDelete: false } as any,
+        });
+        // This is the exact call the base AbilityGuard makes: ability.can(feature, App, "uuid")
+        const ability = buildAbility(permissions, { tj_app: appInstance('any-uuid', 'other-user') });
+        expect(ability.can(FEATURE_KEY.DELETE_MODULE, App, 'any-uuid')).toBe(false);
+      });
+
+      it('owner → true with string resourceId matching tj_app', () => {
+        const userId = 'user-1';
+        const permissions = makePermissions({
+          user: { id: userId } as any,
+          userPermission: { ...baseUserPermission(), moduleDelete: false } as any,
+        });
+        const ability = buildAbility(permissions, { tj_app: appInstance('owned-uuid', userId) });
+        expect(ability.can(FEATURE_KEY.DELETE_MODULE, App, 'owned-uuid')).toBe(true);
+      });
     });
   });
 
   describe('UPDATE_MODULE', () => {
-    it('builder with editableAppsId=[abc] → can UPDATE_MODULE for App{id:abc}', () => {
+    it('builder with editableAppsId=[abc], tj_app.id=abc → can UPDATE_MODULE', () => {
       const permissions = makePermissions({
         userPermission: {
           ...baseUserPermission(),
@@ -162,11 +204,14 @@ describe('FeatureAbilityFactory — modules ability', () => {
           },
         } as any,
       });
-      const ability = buildAbility(permissions);
-      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, subject(App, appInstance('abc')))).toBe(true);
+      // Factory resolves editableAppsId.includes(tjApp.id) at build time
+      const ability = buildAbility(permissions, { tj_app: appInstance('abc') });
+      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App)).toBe(true);
+      // Guard call shape
+      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App, 'abc')).toBe(true);
     });
 
-    it('builder with editableAppsId=[abc] → cannot UPDATE_MODULE for App{id:xyz}', () => {
+    it('builder with editableAppsId=[abc], tj_app.id=xyz → cannot UPDATE_MODULE (C2 regression)', () => {
       const permissions = makePermissions({
         userPermission: {
           ...baseUserPermission(),
@@ -180,8 +225,11 @@ describe('FeatureAbilityFactory — modules ability', () => {
           },
         } as any,
       });
-      const ability = buildAbility(permissions);
-      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, subject(App, appInstance('xyz')))).toBe(false);
+      // tj_app.id=xyz is NOT in editableAppsId → must be denied
+      const ability = buildAbility(permissions, { tj_app: appInstance('xyz', 'other-user') });
+      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App)).toBe(false);
+      // Guard call shape: string resourceId must also be false
+      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App, 'xyz')).toBe(false);
     });
 
     it('builder with isAllEditable=true → can UPDATE_MODULE any App', () => {
@@ -198,11 +246,12 @@ describe('FeatureAbilityFactory — modules ability', () => {
           },
         } as any,
       });
+      // isAllEditable → unconditional without needing tj_app
       const ability = buildAbility(permissions);
       expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App)).toBe(true);
     });
 
-    it('builder with empty editableAppsId → cannot UPDATE_MODULE', () => {
+    it('builder with empty editableAppsId, no tj_app → cannot UPDATE_MODULE', () => {
       const permissions = makePermissions({
         userPermission: {
           ...baseUserPermission(),
@@ -218,6 +267,47 @@ describe('FeatureAbilityFactory — modules ability', () => {
       });
       const ability = buildAbility(permissions);
       expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App)).toBe(false);
+    });
+
+    it('builder with editableAppsId=[], tj_app owned by user → can UPDATE_MODULE (owner fallback)', () => {
+      const userId = 'user-1';
+      const permissions = makePermissions({
+        user: { id: userId } as any,
+        userPermission: {
+          ...baseUserPermission(),
+          [MODULES.MODULES]: {
+            editableAppsId: [],
+            isAllEditable: false,
+            viewableAppsId: [],
+            isAllViewable: false,
+            hiddenAppsId: [],
+            hideAll: false,
+          },
+        } as any,
+      });
+      const ability = buildAbility(permissions, { tj_app: appInstance('mod-owned', userId) });
+      expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App)).toBe(true);
+    });
+
+    describe('guard call shape — string resourceId (C2 regression)', () => {
+      it('non-empty editableAppsId but wrong app → false even with string resourceId', () => {
+        const permissions = makePermissions({
+          userPermission: {
+            ...baseUserPermission(),
+            [MODULES.MODULES]: {
+              editableAppsId: ['abc'],
+              isAllEditable: false,
+              viewableAppsId: [],
+              isAllViewable: false,
+              hiddenAppsId: [],
+              hideAll: false,
+            },
+          } as any,
+        });
+        // tj_app.id=xyz (not in editableAppsId) → no rule emitted → false
+        const ability = buildAbility(permissions, { tj_app: appInstance('xyz', 'other-user') });
+        expect(ability.can(FEATURE_KEY.UPDATE_MODULE, App, 'xyz')).toBe(false);
+      });
     });
   });
 
