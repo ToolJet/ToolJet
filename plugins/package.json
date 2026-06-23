@@ -30,6 +30,7 @@
     "@tooljet-plugins/common": "file:packages/common",
     "@tooljet-plugins/cosmosdb": "file:packages/cosmosdb",
     "@tooljet-plugins/couchdb": "file:packages/couchdb",
+    "@tooljet-plugins/db2": "file:packages/db2",
     "@tooljet-plugins/databricks": "file:packages/databricks",
     "@tooljet-plugins/dynamodb": "file:packages/dynamodb",
     "@tooljet-plugins/elasticsearch": "file:packages/elasticsearch",
