@@ -12,7 +12,7 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 ## Options
 
-Add or remove tabs from the component. You can also use **Dynamic options** which accepts an array of objects with properties - `title`, `id`, `disabled`, `backgroundColor`. |
+Add or remove tabs from the component. You can also use **Dynamic options** which accepts an array of objects with properties - `title`, `id`, `disable`, `backgroundColor`. 
 
 ## Events
 
@@ -83,6 +83,20 @@ The following actions of the component can be controlled using the component-spe
 | Accent                                         | Sets the accent color.                                                   | Select a theme or choose from color picker.                 |
 | Tab width                                      | Select the tab width.                                                    | Choose between **Auto** or **Equally split**.               |
 | Transition                                     | Choose a transition effect to control how content switches between tabs. | Choose between **Slide** or **None**.                       |
+| Icon            | Sets an icon for the tab.    | Select an icon from the icon picker or click on **fx** to dynamically configure the icon name. |
+| Icon visibility | Controls whether the tab icon is displayed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. | 
+
+The following example shows how to configure `icon` and `iconVisibility` for tabs.
+
+```javascript
+{
+  id: "1",
+  title: "Home",
+  icon: "IconHome2",
+  iconVisibility: true,
+  disable: false
+}
+```
 
 ### Container
 
@@ -96,4 +110,4 @@ The following actions of the component can be controlled using the component-spe
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
-:::
+::: 
