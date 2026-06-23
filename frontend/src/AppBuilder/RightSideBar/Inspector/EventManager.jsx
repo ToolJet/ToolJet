@@ -715,7 +715,7 @@ export const EventManager = ({
               </FieldRow>
             )}
 
-            {['run-query', 'reset-query'].includes(event.actionId) && (
+            {['run-query', 'reset-query', 'abort-query'].includes(event.actionId) && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.query', 'Query')} dataCy="query-label">
                   <div data-cy="query-selection-field">
