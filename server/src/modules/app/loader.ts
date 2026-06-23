@@ -80,7 +80,7 @@ export class AppModuleLoader {
           const level = (() => {
             if (process.env.NODE_ENV === 'development') return 'debug';
             if (process.env.NODE_ENV === 'test') return 'silent';
-            return { all: 'debug', warn: 'warn', error: 'error' }[process.env.ORM_LOGGING] || 'info';
+            return { all: 'debug', warn: 'warn', error: 'error' }[process.env.ORM_LOGGING] || 'warn';
           })();
 
           const autoLogging = process.env.NODE_ENV === 'test' ? false : {
