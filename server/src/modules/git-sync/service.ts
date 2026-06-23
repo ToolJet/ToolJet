@@ -1,54 +1,21 @@
-/* eslint-disable no-prototype-builtins */
 import { Injectable } from '@nestjs/common';
-import {
-  OrganizationGitCreateDto,
-  OrganizationGitStatusUpdateDto,
-  OrganizationGitUpdateDto,
-} from '@dto/organization_git.dto';
+import { ProviderConfigDTO } from './dto/provider-config.dto';
 import { IGitSyncService } from './Interfaces/IService';
 
+// CE stub — strategy-only contract. The EE implementation lives in ee/git-sync/service.ts.
 @Injectable()
 export class GitSyncService implements IGitSyncService {
-  constructor() { }
+  constructor() {}
 
-  async deleteConfig(organizationId: string, organizationGit: string, gitType: string): Promise<void> {
+  async saveProviderConfig(_userId: string, _organizationId: string, _configData: ProviderConfigDTO): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  async createOrganizationGit(orgGitCreateDto: OrganizationGitCreateDto, userOrganizationId: string): Promise<any> {
+  async toggleEnvProviderConfig(_userId: string, _organizationId: string, _configData: any): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  async updateOrgGit(
-    userOrganizationId: string,
-    organizationId: string,
-    updateOrgGitDto: OrganizationGitUpdateDto,
-    gitType: string
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  async updateOrgGitStatus(
-    organizationId: string,
-    id: string,
-    updateOrgGitDto: OrganizationGitStatusUpdateDto
-  ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  async setFinalizeConfig(userId: string, organizationId: string, organizationGitId: string, gitType: string) {
-    throw new Error('Method not implemented.');
-  }
-
-  async getOrganizationById(userOrganizationId: string, organizationId: string, gitType: string) {
-    throw new Error('Method not implemented.');
-  }
-
-  async getOrgGitStatusById(userOrganizationId: string, organizationId: string) {
-    throw new Error('Method not implemented.');
-  }
-
-  async testProviderConnection(userId: string, organizationId: string, payload: any) {
+  async testProviderConnection(_userId: string, _organizationId: string, _payload: any): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

@@ -4,7 +4,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EventsService } from './event.service';
 import { LayoutData } from '../dto/component';
 import { CreateEventHandlerDto } from '../dto/event';
@@ -53,10 +53,10 @@ export class ComponentsService implements IComponentsService {
       ? null
       : await this.beforeComponentCreate(componentIds, pageId, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       await this.createComponentsAndLayouts(componentDiff, pageId, appVersionId, manager);
       return {};
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -102,12 +102,12 @@ export class ComponentsService implements IComponentsService {
 
     const context = await this.beforeComponentUpdate(componentIds, appVersionId, componentDiff);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.updateComponents(componentDiff, appVersionId, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentUpdate(context, componentDiff, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -121,12 +121,12 @@ export class ComponentsService implements IComponentsService {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
     const context = await this.beforeComponentDelete(componentIds, appVersionId);
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const result = await this.deleteComponents(componentIds, appVersionId, isComponentCut, manager);
       if (result?.error) {
         return result;
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     this.afterComponentDelete(context, componentIds, appVersionId, historyUserId, operationTimestamp).catch((err) =>
@@ -143,7 +143,7 @@ export class ComponentsService implements IComponentsService {
   ) {
     const historyUserId = (RequestContext.currentContext?.req as any)?.user?.id;
 
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const parentWrites = this.collectParentWritesFromDiff(componenstLayoutDiff);
       if (Object.keys(parentWrites).length > 0) {
         await this.assertNoParentCycle(parentWrites, appVersionId, manager);
@@ -182,7 +182,7 @@ export class ComponentsService implements IComponentsService {
           }
         }
       }
-    }, appVersionId);
+    });
 
     const operationTimestamp = Date.now();
     if (!skipHistoryCapture) {
@@ -358,7 +358,7 @@ export class ComponentsService implements IComponentsService {
     },
     appVersionId: string
   ) {
-    const result = await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
       const results: {
         created?: number;
         updated?: number;
@@ -407,7 +407,7 @@ export class ComponentsService implements IComponentsService {
       }
 
       return results;
-    }, appVersionId);
+    });
 
     // History capture is handled by EE override
     return result;

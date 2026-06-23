@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -43,6 +43,7 @@ import { WorkspaceAppsResponseDto } from '@modules/external-apis/dto';
 import { DataQuery } from '@entities/data_query.entity';
 import { isUUID } from 'class-validator';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from '@modules/versions/module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 // Permission resource that gates access to each app type. Workflows have their own
 // permission resource; everything else (front-end apps, modules) shares the APP resource.
@@ -61,7 +62,8 @@ export class AppsUtilService implements IAppsUtilService {
     protected readonly versionRepository: VersionRepository,
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly organizationRepository: OrganizationRepository,
-    protected readonly abilityService: AbilityService
+    protected readonly abilityService: AbilityService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
   async create(
     name: string,
@@ -91,11 +93,8 @@ export class AppsUtilService implements IAppsUtilService {
       //                "Foo" doesn't collide with a module "Foo" — apps and modules
       //                share the table but live in separate dashboards.
       if (!isWorkflow && name) {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user.organizationId, isDefault: true },
-          select: ['id'],
-        });
-        if (!defaultBranch) {
+        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        if (!isGitEnabled) {
           const conflictingNameVersion = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'app', 'app.id = av.appId')
@@ -409,15 +408,17 @@ export class AppsUtilService implements IAppsUtilService {
 
   async findAppWithIdOrSlug(slug: string, organizationId: string, branchId?: string): Promise<App> {
     let app: App;
+    const defaultBranchId =
+      (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
 
     if (isUUID(slug)) {
       app = await this.appRepository.findById(slug, organizationId);
       if (!app) {
         /* UUID could also be a slug, try slug lookup as fallback */
-        app = await this.appRepository.findBySlug(slug, organizationId);
+        app = await this.appRepository.findBySlug(slug, organizationId, defaultBranchId);
       }
     } else {
-      app = await this.appRepository.findBySlug(slug, organizationId);
+      app = await this.appRepository.findBySlug(slug, organizationId, defaultBranchId);
     }
 
     if (!app) {
@@ -655,11 +656,8 @@ export class AppsUtilService implements IAppsUtilService {
       //                check here. Filter by app.type so apps and modules can share
       //                names (separate dashboards, separate slug namespaces).
       if (versionParams.appName && !isWorkflow && !branchId) {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId, isDefault: true },
-          select: ['id'],
-        });
-        if (!defaultBranch) {
+        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+        if (!isGitEnabled) {
           const conflictingNameVersion = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'app', 'app.id = av.appId')
@@ -677,15 +675,12 @@ export class AppsUtilService implements IAppsUtilService {
       }
 
       // Write version-level fields to app_versions for non-workflows. Route by git-sync
-      // state (default branch row in workspace_branches), not just by whether branchId is
-      // supplied — the no-branchId case in a git-enabled workspace should still go through
-      // the branch-aware path rather than fanning the write out across NULL branch rows.
+      // state, not just by whether branchId is supplied — the no-branchId case in a
+      // git-enabled workspace should still go through the branch-aware path rather than
+      // fanning the write out across NULL branch rows.
       if (Object.keys(versionParams).length > 0 && !isWorkflow) {
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId, isDefault: true },
-          select: ['id'],
-        });
-        const isGitEnabled = !!defaultBranch;
+        const details = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+        const isGitEnabled = details.isEnabled;
 
         if (isGitEnabled) {
           // Git-sync workspace. Sub-branch metadata edits go to the single BRANCH-type row
@@ -719,15 +714,35 @@ export class AppsUtilService implements IAppsUtilService {
             },
           ]);
         } else {
-          // Non-git-sync flow: all version rows of this app share the same metadata.
-          // Update every app_versions row for this app — no version_type or
-          // branch_id filter — so slug/name/icon/is_public stay in sync across
-          // VERSION rows, BRANCH rows, and any stale non-null branch_id rows
-          // left behind by a previous git-sync session. findAppBySlug's
-          // branchless fallback resolves by app_id without caring which row
-          // back-ed the slug, so keeping all rows consistent is the safest
-          // invariant when git is off.
-          await manager.update(AppVersion, { appId }, versionParams);
+          // Non-git-sync flow: write metadata to the canonical default-branch DRAFT
+          // version row. The DB metadata trigger (propagate_app_version_metadata) then
+          // fans the change out to the app's other version_type='version' rows (published
+          // snapshots), so no manual cross-version propagation is needed here.
+          const defaultBranchId = details.options.defaultBranch?.id;
+          if (defaultBranchId) {
+            await catchDbException(async () => {
+              await manager.update(
+                AppVersion,
+                {
+                  appId,
+                  branchId: defaultBranchId,
+                  versionType: AppVersionType.VERSION,
+                  status: AppVersionStatus.DRAFT,
+                  isStub: false,
+                },
+                versionParams
+              );
+            }, [
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_APP_NAME_BRANCH_UNIQUE,
+                message: 'This app name is already taken.',
+              },
+              {
+                dbConstraint: DataBaseConstraints.APP_VERSION_SLUG_DEFAULT_BRANCH_UNIQUE,
+                message: 'This slug is already taken.',
+              },
+            ]);
+          }
         }
       }
 
@@ -739,6 +754,7 @@ export class AppsUtilService implements IAppsUtilService {
       }
     }, manager);
   }
+
 
   async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
     const { currentEnvironmentId, definition } = body;
@@ -1211,9 +1227,16 @@ export class AppsUtilService implements IAppsUtilService {
       if (gitEnabled) {
         // git-on: latest DRAFT on target branch (parentBranchId ?? defaultBranch.id).
         const targetBranchId = parentBranchId ?? defaultBranch.id;
-        metaQb
-          .andWhere('av.branchId = :targetBranchId', { targetBranchId })
-          .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
+        metaQb.andWhere(
+          new Brackets((qb) => {
+            qb.where('av.branchId = :targetBranchId AND av.status = :draftStatus', {
+              targetBranchId,
+              draftStatus: AppVersionStatus.DRAFT,
+            }).orWhere('av.branchId IS NULL AND av.status = :publishedStatus', {
+              publishedStatus: AppVersionStatus.PUBLISHED,
+            });
+          })
+        );
       }
       // git-off: no extra filter — latest any row per module.
       const metaRows = await metaQb.getMany();
@@ -1258,7 +1281,9 @@ export class AppsUtilService implements IAppsUtilService {
     });
   }
   async findAllOrganizationApps(organizationId: string): Promise<WorkspaceAppsResponseDto[]> {
-    return await this.appRepository.findAllOrganizationApps(organizationId);
+    const defaultBranchId =
+      (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+    return await this.appRepository.findAllOrganizationApps(organizationId, defaultBranchId);
   }
 
   async findTooljetDbTables(appId: string): Promise<{ table_id: string }[]> {
@@ -1303,7 +1328,9 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   async findByAppName(name: string, organizationId: string): Promise<App> {
-    return this.appRepository.findByAppName(name, organizationId);
+    const defaultBranchId =
+      (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+    return this.appRepository.findByAppName(name, organizationId, defaultBranchId);
   }
 
   async findByAppId(appId: string, manager?: EntityManager): Promise<App> {
@@ -1369,7 +1396,9 @@ export class AppsUtilService implements IAppsUtilService {
       //   pin-hit + DRAFT    — pinned directly at editing draft
       //   pin-hit + module never released (moduleCurrentVersionId null)
       //   pin-hit + pin != module's current_version_id
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter((v) => {
         if (v.matchKind === 'no-row' || v.matchKind === 'orphan-fallback' || v.matchKind === 'unpinned-fallback') {
           return true;
@@ -1441,35 +1470,30 @@ export class AppsUtilService implements IAppsUtilService {
    * (AppsUtilService.update writes the DRAFT branch row) so published/released
    * snapshots can't shadow the current metadata.
    */
-  async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
+  async overlayAppMetadata(app: App, _branchId?: string): Promise<void> {
     if (!app || app.type === APP_TYPES.WORKFLOW) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const defaultBranch = await manager.findOne(WorkspaceBranch, {
-        where: { organizationId: app.organizationId, isDefault: true },
-        select: ['id'],
-      });
-      const gitEnabled = !!defaultBranch;
+      const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+      const defaultBranchId = options.defaultBranch?.id;
+      if (!defaultBranchId) return;
 
-      let source: AppVersion | null = null;
-      if (gitEnabled) {
-        const targetBranchId = branchId ?? defaultBranch.id;
-        source = await manager.findOne(AppVersion, {
-          where: { appId: app.id, branchId: targetBranchId, status: AppVersionStatus.DRAFT },
-          order: { updatedAt: 'DESC' },
-          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-        });
-        if (!source && branchId) {
-          throw new BadRequestException(`No DRAFT version found for app ${app.id} on branch ${branchId}.`);
-        }
-      } else {
-        // Git off: pick any version row — every row carries identical metadata.
-        source = await manager.findOne(AppVersion, {
-          where: { appId: app.id },
-          order: { updatedAt: 'DESC' },
-          select: ['id', 'appName', 'slug', 'icon', 'isPublic'],
-        });
-      }
+      // App metadata is the default-branch canonical row (instance-level identity),
+      // regardless of which branch is being edited. is_git_sync=true sorts first (the
+      // authoritative row when git is on); git-off falls back to the latest such row.
+      // This mirrors the DB metadata trigger's own canonical-row selection.
+      const source = await manager
+        .getRepository(AppVersion)
+        .createQueryBuilder('av')
+        .where('av.app_id = :appId', { appId: app.id })
+        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+        .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+        .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
+        .andWhere('av.is_stub = false')
+        .orderBy('av.is_git_sync', 'DESC')
+        .addOrderBy('av.updated_at', 'DESC')
+        .select(['av.id', 'av.appName', 'av.slug', 'av.icon', 'av.isPublic'])
+        .getOne();
 
       if (!source) return;
       if (source.appName != null) app.name = source.appName;

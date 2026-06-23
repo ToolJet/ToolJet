@@ -1,7 +1,6 @@
 import { EntityManager, IsNull } from 'typeorm';
 import { App } from '@entities/app.entity';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 
 /**
@@ -34,32 +33,21 @@ import { APP_TYPES } from '@modules/apps/constants';
  * back to the default branch.
  */
 
-function findDefaultBranch(manager: EntityManager, organizationId: string) {
-  return manager.findOne(WorkspaceBranch, {
-    where: { organizationId, isDefault: true },
-  });
-}
-
+// defaultBranchId — caller-supplied (from GitSyncConfigsUtilService.getDetails.options.defaultBranch?.id).
+// Null when git-sync is off; this util then returns only branchless PUBLISHED versions.
 async function listSavedVersionsOnDefaultBranch(
   manager: EntityManager,
   moduleApp: App,
-  organizationId: string
+  defaultBranchId: string | null
 ): Promise<AppVersion[]> {
-  const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (!defaultBranch) {
-    // Non-git-sync workspace: versions have branch_id = NULL.
-    return manager.find(AppVersion, {
-      where: { appId: moduleApp.id, branchId: IsNull(), versionType: AppVersionType.VERSION, isStub: false },
-      order: { createdAt: 'DESC' },
-    });
-  }
+  if (!defaultBranchId) return [];
   // Include both the DRAFT on the default branch AND branchless PUBLISHED versions.
   // Published versions have branch_id = NULL after the metadata migration detached them.
   const [onBranch, published] = await Promise.all([
     manager.find(AppVersion, {
       where: {
         appId: moduleApp.id,
-        branchId: defaultBranch.id,
+        branchId: defaultBranchId,
         versionType: AppVersionType.VERSION,
         isStub: false,
       },
@@ -89,9 +77,9 @@ export async function listModuleVersions(
   manager: EntityManager,
   moduleApp: App,
   branchId: string | undefined,
-  organizationId: string
+  defaultBranchId: string | null
 ): Promise<AppVersion[]> {
-  const savedVersions = await listSavedVersionsOnDefaultBranch(manager, moduleApp, organizationId);
+  const savedVersions = await listSavedVersionsOnDefaultBranch(manager, moduleApp, defaultBranchId);
   const branchDraft = branchId
     ? await manager.findOne(AppVersion, {
         where: {
@@ -106,17 +94,19 @@ export async function listModuleVersions(
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DRAFT_SENTINEL = '__default_branch_draft__';
 
 /**
  * Resolve a ModuleViewer reference to an actual AppVersion row.
  *
- *   moduleReferenceId is a valid UUID + matches → pinned. Prefer the consumer-branch
- *                                                copy (post git pull); fall back to
- *                                                the default-branch copy.
- *   moduleReferenceId absent / not a UUID       → unpinned. Latest non-stub on the
- *                                                consumer's branch (or default).
- *   moduleReferenceId is a UUID, no match       → orphaned. Fall back to latest saved
- *                                                on the default branch.
+ *   ref is a non-UUID string (versionName)  → Tier 0: look by name on consumer branch
+ *                                              then default. Cross-workspace stable
+ *                                              because versionName is backed by a git tag.
+ *   ref is a valid UUID (moduleReferenceId) → Tier 1: look by module_reference_id on
+ *                                              consumer branch then default. Same-workspace
+ *                                              fast path.
+ *   ref absent / no match                   → unpinned/orphaned fallback: latest non-stub
+ *                                              on the consumer's branch (or default).
  *
  * The UUID guard prevents `where: { moduleReferenceId: <non-uuid> }` from crashing
  * the postgres uuid-typed column lookup with `invalid input syntax for type uuid`.
@@ -126,8 +116,74 @@ export async function resolveModuleRef(
   moduleApp: App,
   moduleReferenceId: string | null | undefined,
   consumerBranchId: string | undefined,
-  organizationId: string
+  defaultBranchId: string | null
 ): Promise<AppVersion | null> {
+  // Tier D — default-branch draft sentinel. Resolves to the DRAFT on the default branch
+  // at query time, ignoring consumerBranchId entirely. Stored when the user explicitly
+  // pins to "main draft" in the inspector. Follows default branch renames automatically
+  // because findDefaultBranch uses isDefault:true, not a hardcoded name.
+  if (moduleReferenceId === DRAFT_SENTINEL) {
+    if (defaultBranchId) {
+      const draftOnDefault = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          branchId: defaultBranchId,
+          status: AppVersionStatus.DRAFT,
+          versionType: AppVersionType.VERSION,
+          isStub: false,
+        },
+        order: { createdAt: 'DESC' },
+      });
+      if (draftOnDefault) return draftOnDefault;
+    }
+    // Default branch or draft not found — fall through to unpinned.
+  }
+
+  // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
+  // Branchless PUBLISHED is checked first: by constraint chk_app_versions_branched_implies_draft,
+  // any branched row MUST be DRAFT — so onConsumer/onDefault can only ever return a DRAFT.
+  // Checking PUBLISHED first prevents a same-named DRAFT on the branch shadowing the real release.
+  if (moduleReferenceId && !UUID_RE.test(moduleReferenceId)) {
+    const versionName = moduleReferenceId;
+    const branchlessForName = await manager.findOne(AppVersion, {
+      where: {
+        appId: moduleApp.id,
+        name: versionName,
+        branchId: IsNull(),
+        status: AppVersionStatus.PUBLISHED,
+        versionType: AppVersionType.VERSION,
+        isStub: false,
+      },
+    });
+    if (branchlessForName) return branchlessForName;
+    if (consumerBranchId) {
+      const onConsumer = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          name: versionName,
+          branchId: consumerBranchId,
+          versionType: AppVersionType.VERSION,
+          isStub: false,
+        },
+      });
+      if (onConsumer) return onConsumer;
+    }
+    if (defaultBranchId) {
+      const onDefault = await manager.findOne(AppVersion, {
+        where: {
+          appId: moduleApp.id,
+          name: versionName,
+          branchId: defaultBranchId,
+          versionType: AppVersionType.VERSION,
+          isStub: false,
+        },
+      });
+      if (onDefault) return onDefault;
+    }
+    // Name not found on any branch — fall through to latest non-stub.
+  }
+
+  // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
   if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
     if (consumerBranchId) {
       const local = await manager.findOne(AppVersion, {
@@ -140,13 +196,12 @@ export async function resolveModuleRef(
       });
       if (local) return local;
     }
-    const defaultBranch = await findDefaultBranch(manager, organizationId);
-    if (defaultBranch) {
+    if (defaultBranchId) {
       const onDefault = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
           moduleReferenceId,
-          branchId: defaultBranch.id,
+          branchId: defaultBranchId,
           isStub: false,
         },
       });
@@ -172,27 +227,22 @@ export async function resolveModuleRef(
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
-  const targetBranchId =
-    consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
-  if (!targetBranchId) {
-    // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
-    // Prefer the active draft — saved versions have a newer createdAt (they are created from
-    // the draft), so a plain DESC sort would return a released version instead of the draft.
-    const draft = await manager.findOne(AppVersion, {
-      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false, status: AppVersionStatus.DRAFT },
-    });
-    return (
-      draft ??
-      (await manager.findOne(AppVersion, {
-        where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
-        order: { createdAt: 'DESC' },
-      }))
-    );
-  }
-  return manager.findOne(AppVersion, {
-    where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
-    order: { createdAt: 'DESC' },
+  const targetBranchId = consumerBranchId ?? defaultBranchId ?? null;
+  if (!targetBranchId) return null;
+  // Prefer the active DRAFT on the target branch. Saved versions have a newer createdAt
+  // (they're forked from the draft), so a plain DESC sort would return a released version
+  // instead of the editable draft — which broke module CRUD in non-git-sync workspaces (#16593,
+  // where non-git-sync apps now live on the default branch). Fall back to latest if no draft.
+  const draft = await manager.findOne(AppVersion, {
+    where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false, status: AppVersionStatus.DRAFT },
   });
+  return (
+    draft ??
+    (await manager.findOne(AppVersion, {
+      where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
+      order: { createdAt: 'DESC' },
+    }))
+  );
 }
 
 /**
@@ -212,7 +262,8 @@ export async function resolveModuleRef(
 export async function reconcileModuleViewerPinsFromDefault(
   manager: EntityManager,
   featureBranchVersionId: string,
-  organizationId: string
+  organizationId: string,
+  defaultBranchId: string | null
 ): Promise<void> {
   const featureVersion = await manager.findOne(AppVersion, {
     where: { id: featureBranchVersionId },
@@ -220,13 +271,12 @@ export async function reconcileModuleViewerPinsFromDefault(
   });
   if (!featureVersion) return;
 
-  const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (!defaultBranch) return;
+  if (!defaultBranchId) return;
 
   const defaultVersion = await manager.findOne(AppVersion, {
     where: {
       appId: featureVersion.appId,
-      branchId: defaultBranch.id,
+      branchId: defaultBranchId,
       versionType: AppVersionType.VERSION,
       isStub: false,
     },
@@ -239,13 +289,15 @@ export async function reconcileModuleViewerPinsFromDefault(
     co_relation_id: string | null;
     moduleAppId: string | null;
     moduleVersionId: string | null;
+    moduleVersionName: string | null;
   };
 
   const readViewers = (appVersionId: string): Promise<ViewerRow[]> =>
     manager.query(
       `SELECT c.id, c.co_relation_id,
               c.properties->'moduleAppId'->>'value' AS "moduleAppId",
-              c.properties->'moduleVersionId'->>'value' AS "moduleVersionId"
+              c.properties->'moduleVersionId'->>'value' AS "moduleVersionId",
+              c.properties->'moduleVersionId'->>'versionName' AS "moduleVersionName"
        FROM components c
        JOIN pages p ON p.id = c.page_id
        WHERE p.app_version_id = $1
@@ -266,7 +318,7 @@ export async function reconcileModuleViewerPinsFromDefault(
     if (!feat.co_relation_id) continue;
     const def = defaultByCoRel.get(feat.co_relation_id);
     if (!def?.moduleVersionId) continue; // nothing to inherit
-    if (feat.moduleVersionId === def.moduleVersionId) continue; // already matches
+    if (feat.moduleVersionId === def.moduleVersionId && feat.moduleVersionName === def.moduleVersionName) continue;
 
     const moduleApp = def.moduleAppId
       ? await manager.findOne(App, {
@@ -278,9 +330,12 @@ export async function reconcileModuleViewerPinsFromDefault(
 
     await manager.query(
       `UPDATE components
-       SET properties = jsonb_set(properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text))
-       WHERE id = $2`,
-      [def.moduleVersionId, feat.id]
+       SET properties = jsonb_set(
+                          jsonb_set(properties::jsonb, '{moduleVersionId,value}', to_jsonb($1::text)),
+                          '{moduleVersionId,versionName}', to_jsonb($2::text)
+                        )
+       WHERE id = $3`,
+      [def.moduleVersionId, def.moduleVersionName ?? '', feat.id]
     );
   }
 }
@@ -324,6 +379,7 @@ export interface ResolvedModuleViewer {
 /**
  * Resolve every ModuleViewer under parentVersionId to the row runtime renders.
  * Priority (mirrors resolveModuleRef):
+ *   0. __default_branch_draft__ sentinel → DRAFT on default branch
  *   1. UUID pin → row.module_reference_id on consumer branch
  *   2. UUID pin → row.module_reference_id on default branch
  *   3. legacy version name → version_type='version' row
@@ -337,7 +393,8 @@ export interface ResolvedModuleViewer {
 export async function resolveAllModuleViewersForVersion(
   manager: EntityManager,
   parentVersionId: string,
-  organizationId: string
+  organizationId: string,
+  defaultBranchId: string | null
 ): Promise<ResolvedModuleViewer[]> {
   const parent = await manager.findOne(AppVersion, {
     where: { id: parentVersionId },
@@ -345,14 +402,14 @@ export async function resolveAllModuleViewersForVersion(
   });
   if (!parent) return [];
 
-  const defaultBranch = await findDefaultBranch(manager, organizationId);
-  const isGitSyncEnabled = !!defaultBranch;
-
   type ViewerRaw = { componentId: string; moduleAppCoRel: string | null; pinnedValue: string };
   const viewers: ViewerRaw[] = await manager.query(
     `SELECT c.id AS "componentId",
             c.properties::jsonb -> 'moduleAppId' ->> 'value' AS "moduleAppCoRel",
-            COALESCE(c.properties::jsonb -> 'moduleVersionId' ->> 'value', '') AS "pinnedValue"
+            COALESCE(
+              NULLIF(c.properties::jsonb -> 'moduleVersionId' ->> 'versionName', ''),
+              COALESCE(c.properties::jsonb -> 'moduleVersionId' ->> 'value', '')
+            ) AS "pinnedValue"
      FROM components c
      JOIN pages p ON p.id = c.page_id
      WHERE p.app_version_id = $1 AND c.type = 'ModuleViewer'`,
@@ -403,7 +460,7 @@ export async function resolveAllModuleViewersForVersion(
     isStub: boolean;
   };
   const moduleAppIds = moduleApps.map((m) => m.id);
-  const relevantBranchIds = [parent.branchId, defaultBranch?.id].filter((x): x is string => !!x);
+  const relevantBranchIds = [parent.branchId, defaultBranchId].filter((x): x is string => !!x);
   const candidateRows: ModVerRow[] = moduleAppIds.length
     ? await manager.query(
         `SELECT v.id, v.name, v.app_id AS "appId",
@@ -505,11 +562,11 @@ export async function resolveAllModuleViewersForVersion(
           )
         : undefined;
       if (onConsumer) return pickKind(onConsumer, 'pin-hit');
-      if (defaultBranch) {
+      if (defaultBranchId) {
         const onDefault = candidates.find(
           (r) =>
             r.moduleReferenceId === pin &&
-            r.branchId === defaultBranch.id &&
+            r.branchId === defaultBranchId &&
             r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
@@ -529,28 +586,42 @@ export async function resolveAllModuleViewersForVersion(
       );
       if (branchless) return pickKind(branchless, 'pin-hit');
     } else if (pin) {
+      // Clause 0: default-branch draft sentinel
+      if (pin === DRAFT_SENTINEL && defaultBranchId) {
+        const draftOnDefault = candidates.find(
+          (r) =>
+            r.branchId === defaultBranchId &&
+            r.status === AppVersionStatus.DRAFT &&
+            r.versionType === AppVersionType.VERSION
+        );
+        if (draftOnDefault) return pickKind(draftOnDefault, 'pin-hit');
+      }
       // Clause 2: version name on a version_type='version' row in this module's app
       const byName = candidates.find((r) => r.name === pin && r.versionType === AppVersionType.VERSION);
       if (byName) return pickKind(byName, 'pin-hit');
       // Clause 3: pin is a branch_name → default-branch version_type='version' row
-      if (branchNameSet.has(pin) && defaultBranch) {
+      if (branchNameSet.has(pin) && defaultBranchId) {
         const onDefault = candidates.find(
           (r) =>
-            r.branchId === defaultBranch.id && r.versionType === AppVersionType.VERSION && r.isStub === false
+            r.branchId === defaultBranchId && r.versionType === AppVersionType.VERSION && r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
       }
     }
 
-    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default, else null-branch when !isGitSyncEnabled.
+    // Orphan / unpinned fallback: non-stub on the consumer's branch, else the active DRAFT
+    // (then latest) on the default branch.
     const fallback =
       (parent.branchId && candidates.find((r) => r.branchId === parent.branchId && r.isStub === false)) ||
-      (defaultBranch && candidates.find((r) => r.branchId === defaultBranch.id && r.isStub === false)) ||
-      // Non-git-sync: prefer active draft over latest-by-date (saved versions have newer
-      // createdAt than the draft they were forked from, so DESC sort would pick the wrong row).
-      (!isGitSyncEnabled &&
-        (candidates.find((r) => r.branchId === null && r.isStub === false && r.status === AppVersionStatus.DRAFT) ||
-          candidates.find((r) => r.branchId === null && r.isStub === false))) ||
+      // Prefer the active DRAFT on the default branch over any other row. Saved versions have
+      // a newer createdAt than the draft they were forked from, so picking latest-by-date would
+      // return a released version — which broke module CRUD in non-git-sync workspaces (#16593,
+      // where non-git-sync apps live on the default branch).
+      (defaultBranchId &&
+        (candidates.find(
+          (r) => r.branchId === defaultBranchId && r.isStub === false && r.status === AppVersionStatus.DRAFT
+        ) ||
+          candidates.find((r) => r.branchId === defaultBranchId && r.isStub === false))) ||
       undefined;
     if (fallback) {
       return pickKind(fallback, pin ? 'orphan-fallback' : 'unpinned-fallback');

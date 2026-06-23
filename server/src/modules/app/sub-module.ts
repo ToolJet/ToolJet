@@ -10,7 +10,7 @@ export abstract class SubModule {
    * bootstrap (e.g. AppsModule.register and FoldersModule.register both pulling
    * UsersModule.register through the dependency graph).
    */
-  private static cachedModules: Map<Function, Array<{ key: string; module: DynamicModule }>> = new Map();
+  private static cachedModules: Map<typeof SubModule, Array<{ key: string; module: DynamicModule }>> = new Map();
 
   /**
    * Build a stable string key from the register() arguments. Default

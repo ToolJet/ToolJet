@@ -6,12 +6,66 @@ import { MODULES } from '@modules/app/constants/modules';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { DefaultDataSourceKind, GetQueryVariables } from './types';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { decode } from 'js-base64';
 
 @Injectable()
 export class DataSourcesRepository extends Repository<DataSource> {
   constructor(private dataSource: typeOrmDS) {
     super(DataSource, dataSource.createEntityManager());
+  }
+
+  // ----- default-branch resolution for data_source_versions -----------------------------
+  //
+  // `is_default` was dropped from data_source_versions; the canonical / gitsync-off fallback
+  // DSV is now the row whose branch_id = the org's DEFAULT workspace branch
+  // (organization_git_sync_branches.is_default = true). Every org always has a default branch
+  // (seeded on creation / backfilled by EnsureDefaultBranchForAllOrganizations).
+  //
+  // These are static, stateless query helpers (they operate on the passed EntityManager), so
+  // they're callable from free functions and transaction callbacks that hold a manager but no
+  // repository instance — import the class and call them directly.
+
+  // The org's default workspace branch id (null only if the org has none, which shouldn't happen).
+  static async resolveDefaultBranchId(manager: EntityManager, organizationId: string): Promise<string | null> {
+    if (!organizationId) return null;
+    const branch = await manager.findOne(WorkspaceBranch, {
+      where: { organizationId, isDefault: true },
+      select: ['id'],
+    });
+    return branch?.id ?? null;
+  }
+
+  // Same, resolved from a data source — joins data_sources → its org's default branch.
+  static async resolveDefaultBranchIdForDataSource(
+    manager: EntityManager,
+    dataSourceId: string
+  ): Promise<string | null> {
+    if (!dataSourceId) return null;
+    const row = await manager
+      .createQueryBuilder(WorkspaceBranch, 'wb')
+      .innerJoin(DataSource, 'ds', 'ds.organization_id = wb.organization_id')
+      .where('ds.id = :dataSourceId', { dataSourceId })
+      .andWhere('wb.is_default = true')
+      .select('wb.id', 'id')
+      .getRawOne();
+    return row?.id ?? null;
+  }
+
+  // The DSV on the data source's org default branch — the canonical / gitsync-off fallback row
+  // that replaces the old `{ dataSourceId, isDefault: true }` lookup. Pass activeOnly to also
+  // require is_active = true.
+  static async findDefaultDsvForDataSource(
+    manager: EntityManager,
+    dataSourceId: string,
+    opts: { activeOnly?: boolean } = {}
+  ): Promise<DataSourceVersion | null> {
+    const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, dataSourceId);
+    if (!defaultBranchId) return null;
+    const where: Record<string, unknown> = { dataSourceId, branchId: defaultBranchId };
+    if (opts.activeOnly) where.isActive = true;
+    return manager.findOne(DataSourceVersion, { where });
   }
 
   async allGlobalDS(
@@ -31,6 +85,9 @@ export class DataSourcesRepository extends Repository<DataSource> {
     const isAdmin = userPermissions.isAdmin;
 
     const manager = this.manager;
+    // Canonical / gitsync-off fallback DSV now lives on the org default branch (the old
+    // is_default = true row). Resolve it once for the fallback joins below.
+    const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
     const query = manager
       .createQueryBuilder(DataSource, 'data_source')
         .leftJoinAndSelect('data_source.plugin', 'plugin')
@@ -82,7 +139,8 @@ export class DataSourcesRepository extends Repository<DataSource> {
           `dsv.data_source_id = data_source.id AND (
             (dsv.branch_id = :branchId AND dsv.is_active = true)
             OR (
-              dsv.is_default = true
+              dsv.branch_id = :defaultBranchId
+              AND dsv.is_active = true
               AND NOT EXISTS (
                 SELECT 1 FROM data_source_versions dsv2
                 WHERE dsv2.data_source_id = data_source.id
@@ -90,17 +148,18 @@ export class DataSourcesRepository extends Repository<DataSource> {
               )
             )
           )`,
-          { branchId }
+          { branchId, defaultBranchId }
         );
         query.addSelect(['dsv.id', 'dsv.name', 'dsv.pulledAt']);
       } else if (environmentId) {
-        // Released versions now read from the main-branch default DSV (is_default = true).
+        // Released versions now read from the org default-branch DSV (the row whose
+        // branch_id = the default workspace branch — formerly is_default = true).
         // Removed: appVersionId-specific DSV lookup (app_version_id dropped from data_source_versions).
-        // if (appVersionId) { ... dsv.app_version_id = :appVersionId ... }
         query.leftJoin(
           'data_source_versions',
           'dsv',
-          'dsv.data_source_id = data_source.id AND dsv.is_default = true'
+          'dsv.data_source_id = data_source.id AND dsv.branch_id = :defaultBranchId AND dsv.is_active = true',
+          { defaultBranchId }
         );
         query.leftJoin(
           'data_source_version_options',

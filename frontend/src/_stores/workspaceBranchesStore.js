@@ -18,6 +18,7 @@ const initialState = {
   orgGitConfig: null,
   isPushing: false,
   isPulling: false,
+  pullingModuleComponentId: null,
   remoteBranches: [],
   visibleCount: 10,
   hasMoreRemote: false,
@@ -159,6 +160,42 @@ export const useWorkspaceBranchesStore = create(
             set({ isPulling: false });
             throw error;
           }
+        },
+
+        async pullApp(appId, tagSha, tagName, tagDescription) {
+          set({ isPulling: true });
+          try {
+            const branchId = get().activeBranchId;
+            const result = await workspaceBranchesService.pullApp(appId, branchId, tagSha, tagName, tagDescription);
+            set({ isPulling: false });
+            return result;
+          } catch (error) {
+            set({ isPulling: false });
+            throw error;
+          }
+        },
+
+        async pullModule(moduleId, tagSha, tagName, tagDescription) {
+          set({ isPulling: true });
+          try {
+            const branchId = get().activeBranchId;
+            const result = await workspaceBranchesService.pullModule(
+              moduleId,
+              tagSha,
+              tagName,
+              tagDescription,
+              branchId
+            );
+            set({ isPulling: false });
+            return result;
+          } catch (error) {
+            set({ isPulling: false });
+            throw error;
+          }
+        },
+
+        setPullingModuleComponentId(componentId) {
+          set({ pullingModuleComponentId: componentId ?? null });
         },
 
         async fetchRemoteBranches() {

@@ -901,8 +901,8 @@ describe('GitSyncController', () => {
           versionType: 'version',
         });
 
-        // The newly-seeded draft on the main branch — not the published v1
-        // (which now has branchId=null after publish detaches it from main).
+        // The newly-seeded DRAFT on the main branch — not the published v1 (which stays on
+        // the default branch as a PUBLISHED row; publish no longer detaches branch_id).
         const newMainDraft = versionsAfterPublish.body.appVersions.find(
           (v: any) => v.branchId === mainBranchId && v.versionType === 'version' && v.status === 'DRAFT'
         );
@@ -3554,28 +3554,29 @@ describe('GitSyncController', () => {
           orphanDstAfter[0].name !== 'matched-rename-dst' || orphanDstAfter[0].is_active === false;
         expect(orphanFreedTheName).toBe(true);
 
-        // (g) Exactly one ACTIVE non-default DSV named 'matched-rename-dst' on
-        //     main → idx_unique_active_name_branch satisfied; it's the matched DS.
+        // (g) Exactly one ACTIVE DSV named 'matched-rename-dst' on the default branch
+        //     (main) → idx_unique_active_name_branch satisfied; it's the matched DS.
         const activeBranchDst = await dataSource.query(
           `SELECT dsv.id, dsv.data_source_id FROM data_source_versions dsv
              INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
             WHERE ds.organization_id = $1 AND dsv.branch_id = $2
               AND LOWER(dsv.name) = LOWER('matched-rename-dst')
-              AND dsv.is_active = true AND dsv.is_default = false`,
+              AND dsv.is_active = true`,
           [orgId, mainBranchId]
         );
         expect(activeBranchDst).toHaveLength(1);
         expect(activeBranchDst[0].data_source_id).toBe(matchedSrcDsId);
 
-        // (h) Exactly one ACTIVE default DSV named 'matched-rename-dst' in the org
-        //     → data_source_version_default_name_organization_id_unique satisfied.
+        // (h) The default-branch row IS the canonical/default DSV now (is_default dropped;
+        //     the default branch holds the canonical row). One active row named
+        //     'matched-rename-dst' on the default branch.
         const activeDefaultDst = await dataSource.query(
           `SELECT dsv.id FROM data_source_versions dsv
              INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
             WHERE ds.organization_id = $1
               AND LOWER(dsv.name) = LOWER('matched-rename-dst')
-              AND dsv.is_active = true AND dsv.is_default = true`,
-          [orgId]
+              AND dsv.is_active = true AND dsv.branch_id = $2`,
+          [orgId, mainBranchId]
         );
         expect(activeDefaultDst).toHaveLength(1);
 
@@ -3704,21 +3705,13 @@ describe('GitSyncController', () => {
           .expect(201);
         const defcolOrphanId: string = defcolOrphanResp.body.id;
 
+        // Move the orphan's DSV onto the default branch (main). With is_default dropped and
+        // branch_id NOT NULL, the default-branch row IS the canonical/default DSV — so this
+        // single row now occupies the org's active-default namespace for 'defcol-shared'.
         await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
           mainBranchId,
           defcolOrphanId,
         ]);
-
-        // Feature-branch DSs get no default DSV, so hand-insert an active default
-        // for the orphan so it occupies the org-wide active-default namespace.
-        // (No other active default 'defcol-shared' exists yet, so the trigger
-        // allows this insert.)
-        const orphanDefaultDsvId = randomUUIDForMeta();
-        await dataSource.query(
-          `INSERT INTO data_source_versions (id, data_source_id, name, is_default, is_active, branch_id)
-           VALUES ($1, $2, 'defcol-shared', true, true, NULL)`,
-          [orphanDefaultDsvId, defcolOrphanId]
-        );
 
         // Distinct same-named DS on feat-e2e-22 → push → merge to main.
         const defcolIncomingResp = await request
@@ -3764,41 +3757,40 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
-        // Trigger satisfied: exactly one ACTIVE default DSV named exactly
-        // 'defcol-shared' in the org.
+        // Exactly one ACTIVE DSV named exactly 'defcol-shared' on the default branch (main)
+        // — the canonical/default row (is_default dropped; default branch holds it).
         const activeDefaultExact = await dataSource.query(
           `SELECT dsv.id FROM data_source_versions dsv
              INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
             WHERE ds.organization_id = $1
               AND dsv.name = 'defcol-shared'
-              AND dsv.is_active = true AND dsv.is_default = true`,
-          [orgId]
+              AND dsv.is_active = true AND dsv.branch_id = $2`,
+          [orgId, mainBranchId]
         );
         expect(activeDefaultExact).toHaveLength(1);
 
-        // Collision was resolved by suffixing one side's default rather than
-        // failing — at least one active default 'defcol-shared_N' now exists.
+        // Collision was resolved by suffixing one side rather than failing — at least one
+        // active 'defcol-shared_N' now exists on the default branch.
         const activeDefaultSuffixed = await dataSource.query(
           `SELECT dsv.id FROM data_source_versions dsv
              INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
             WHERE ds.organization_id = $1
               AND dsv.name LIKE 'defcol-shared%' AND dsv.name <> 'defcol-shared'
-              AND dsv.is_active = true AND dsv.is_default = true`,
-          [orgId]
+              AND dsv.is_active = true AND dsv.branch_id = $2`,
+          [orgId, mainBranchId]
         );
         expect(activeDefaultSuffixed.length).toBeGreaterThanOrEqual(1);
 
-        // Branch index satisfied: exactly one ACTIVE non-default branch DSV named
-        // 'defcol-shared' on main (the colliding side was renamed aside). Which DS
-        // keeps the bare name depends on the deserialize match/rename ordering for
-        // two same-kind data sources, so we assert the invariant (no duplicate
-        // active name) rather than the owner.
+        // idx_unique_active_name_branch satisfied: exactly one ACTIVE DSV named
+        // 'defcol-shared' on main (the colliding side was renamed aside). Which DS keeps the
+        // bare name depends on the deserialize match/rename ordering for two same-kind data
+        // sources, so we assert the invariant (no duplicate active name) rather than the owner.
         const activeBranchDefcol = await dataSource.query(
           `SELECT dsv.data_source_id FROM data_source_versions dsv
              INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
             WHERE ds.organization_id = $1 AND dsv.branch_id = $2
               AND dsv.name = 'defcol-shared'
-              AND dsv.is_active = true AND dsv.is_default = false`,
+              AND dsv.is_active = true`,
           [orgId, mainBranchId]
         );
         expect(activeBranchDefcol).toHaveLength(1);

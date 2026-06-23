@@ -12,6 +12,7 @@ import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 import { AppHistoryModule } from '@modules/app-history/module';
 import { ValidModuleByCorrelationGuard } from './guards/valid-module-by-correlation.guard';
 
@@ -57,6 +58,7 @@ export class VersionModule extends SubModule {
         await ThemesModule.register(configs),
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
+        await GitSyncConfigsModule.register(configs),
       ],
       controllers: isMainImport
         ? [ComponentsController, EventsController, PagesController, VersionController, VersionControllerV2]

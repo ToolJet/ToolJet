@@ -24,6 +24,7 @@ import { InMemoryCacheService } from '@modules/inMemoryCache/in-memory-cache.ser
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
 export class DataSourcesUtilService implements IDataSourcesUtilService {
@@ -35,7 +36,8 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
     protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly inMemoryCacheService: InMemoryCacheService
+    protected readonly inMemoryCacheService: InMemoryCacheService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
 
   /**
@@ -365,9 +367,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               );
               // Seed DSVOs for all environments from default DSV, cloning credentials
               const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId, null, manager);
-              const defaultDsv = await manager.findOne(DataSourceVersion, {
-                where: { dataSourceId: dataSource.id, isDefault: true },
-              });
+              const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
               for (const env of allEnvs) {
                 let sourceOptions: any = {};
                 if (defaultDsv) {
@@ -432,9 +432,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
                 isActive: true,
               })
             );
-            const defaultDsv = await manager.findOne(DataSourceVersion, {
-              where: { dataSourceId: dataSource.id, isDefault: true },
-            });
+            const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
             for (const env of allEnvs) {
               let sourceOptions: any = {};
               if (defaultDsv) {
@@ -496,10 +494,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
-        const isGitEnabled = !!(await manager.findOne(WorkspaceBranch, {
-          where: { organizationId, isDefault: true },
-          select: ['id'],
-        }));
+        const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
 
         if (!isGitEnabled && name) {
           await this.ensureUniqueActiveNameForUpdate(name, dataSourceId, organizationId, manager);
@@ -517,7 +512,14 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         await manager.save(DataSource, updatableParams);
 
         if (shouldUpdateDefault && name) {
-          await manager.update(DataSourceVersion, { dataSourceId, isDefault: true }, { name, updatedAt: new Date() });
+          const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
+          if (defaultBranchId) {
+            await manager.update(
+              DataSourceVersion,
+              { dataSourceId, branchId: defaultBranchId },
+              { name, updatedAt: new Date() }
+            );
+          }
         }
       });
     } finally {
@@ -1337,12 +1339,12 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
       // Create default DataSourceVersion + DataSourceVersionOptions
       const dataSource = await manager.findOne(DataSource, { where: { id: dataSourceId }, select: ['id', 'name'] });
+      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
       const dsv = manager.create(DataSourceVersion, {
         dataSourceId,
         name: dataSource?.name || 'v1',
-        isDefault: true,
         isActive: true,
-        branchId: null,
+        branchId: defaultBranchId,
       });
       const savedDsv = await manager.save(DataSourceVersion, dsv);
 
@@ -1466,9 +1468,10 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       .andWhere('ds.organizationId = :organizationId', { organizationId });
 
     if (branchId) {
-      query.andWhere('dsv.isDefault = false').andWhere('dsv.branchId = :branchId', { branchId });
+      query.andWhere('dsv.branchId = :branchId', { branchId });
     } else {
-      query.andWhere('dsv.isDefault = true');
+      const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(manager, organizationId);
+      query.andWhere('dsv.branchId = :defaultBranchId', { defaultBranchId });
     }
 
     const existing = await query.getOne();

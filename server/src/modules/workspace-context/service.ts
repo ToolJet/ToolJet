@@ -242,10 +242,12 @@ export class WorkspaceContextService {
 
     if (dataSources.length === 0) return [];
 
+    // is_default is gone; the default version is the one on the org default branch.
+    const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchId(this.dataSourcesRepository.manager, organizationId);
     const versions = await this.dataSourcesRepository.manager.find(DataSourceVersion, {
       where: { dataSourceId: In(dataSources.map((ds) => ds.id)) },
-      select: ['id', 'name', 'isDefault', 'isActive', 'branchId', 'createdAt', 'dataSourceId'],
-      order: { isDefault: 'DESC', createdAt: 'ASC' },
+      select: ['id', 'name', 'isActive', 'branchId', 'createdAt', 'dataSourceId'],
+      order: { createdAt: 'ASC' },
     });
 
     const versionsByDs = new Map<string, DataSourceVersionSummary[]>();
@@ -254,7 +256,7 @@ export class WorkspaceContextService {
       list.push({
         id: v.id,
         name: v.name,
-        isDefault: v.isDefault,
+        isDefault: !!defaultBranchId && v.branchId === defaultBranchId,
         isActive: v.isActive,
         branchId: v.branchId ?? null,
         createdAt: v.createdAt,

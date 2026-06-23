@@ -12,6 +12,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 import { DataSourceVersion } from '@entities/data_source_version.entity';
 import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { RequestContext } from '@modules/request-context/service';
 
 const ENV_MEMO_KEY = 'tj_appenv_memo';
@@ -21,9 +22,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
   constructor(protected readonly licenseTermsService: LicenseTermsService) {}
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const defaultDsv = await manager.findOne(DataSourceVersion, {
-        where: { dataSourceId, isDefault: true },
-      });
+      const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceId);
       if (defaultDsv) {
         const dsvo = await manager.findOne(DataSourceVersionOptions, {
           where: { dataSourceVersionId: defaultDsv.id, environmentId },
@@ -306,10 +305,8 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
       // Released versions now fall through to the default DSV path below.
       // if (appVersionId) { ... where: { dataSourceId, appVersionId, isActive: true } ... }
 
-      // Default version path: read from data_source_version_options via default DSV
-      const defaultDsv = await manager.findOne(DataSourceVersion, {
-        where: { dataSourceId, isDefault: true },
-      });
+      // Default version path: read from data_source_version_options via the default-branch DSV
+      const defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSourceId);
       if (defaultDsv) {
         const dsvo = await manager.findOne(DataSourceVersionOptions, {
           where: { dataSourceVersionId: defaultDsv.id, environmentId: envId },
