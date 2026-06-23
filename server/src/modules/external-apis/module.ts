@@ -29,12 +29,14 @@ export class ExternalApiModule extends SubModule {
       ExternalApiUtilService,
       ExternalApisAppsController,
       ExternalApisModulesController,
+      ExternalApisTjdbController,
     } = await this.getProviders(configs, 'external-apis', [
       'controller',
       'service',
       'util.service',
       'controllers/apps.controller',
       'controllers/modules.controller',
+      'controllers/tooljet-db.controller',
     ]);
 
     return {
@@ -67,7 +69,9 @@ export class ExternalApiModule extends SubModule {
         UserRepository,
         AppsRepository,
       ],
-      controllers: isMainImport ? [ExternalApisController, ExternalApisAppsController, ExternalApisModulesController] : [],
+      controllers: isMainImport
+        ? [ExternalApisController, ExternalApisAppsController, ExternalApisModulesController, ExternalApisTjdbController]
+        : [],
       exports: [ExternalApiUtilService],
     };
   }

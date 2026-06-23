@@ -56,9 +56,6 @@ const getDateTimeFormat = (dateDisplayFormat, isTimeChecked, isTwentyFourHrForma
   return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 };
 
-/**
- * Parse date value with timezone support
- */
 const parseDate = ({
   value,
   parseDateFormat,
@@ -68,15 +65,26 @@ const parseDate = ({
   parseInUnixTimestamp,
   isTimeChecked,
 }) => {
-  if (!value) return null;
+  if (value === null || value === undefined || value === '') return null;
+
+  // ISO 8601 strings (strict) and epoch millisecond numbers
+  const parseAsIso = (input, timeZone) => {
+    if (typeof input === 'number') return timeZone ? moment.tz(input, timeZone) : moment(input);
+    return timeZone ? moment.tz(input, moment.ISO_8601, true, timeZone) : moment(input, moment.ISO_8601, true);
+  };
 
   let momentObj;
   if (parseInUnixTimestamp && unixTimestamp) {
     momentObj = unixTimestamp === 'seconds' ? moment.unix(value) : moment(parseInt(value));
   } else if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-    momentObj = moment.tz(value, parseDateFormat, timeZoneValue).tz(timeZoneDisplay);
+    momentObj = moment.tz(value, parseDateFormat, true, timeZoneValue);
+    if (!momentObj.isValid()) momentObj = parseAsIso(value, timeZoneValue);
+    if (!momentObj.isValid()) momentObj = moment.tz(value, parseDateFormat, timeZoneValue);
+    momentObj = momentObj.tz(timeZoneDisplay);
   } else {
-    momentObj = moment(value, parseDateFormat);
+    momentObj = moment(value, parseDateFormat, true);
+    if (!momentObj.isValid()) momentObj = parseAsIso(value);
+    if (!momentObj.isValid()) momentObj = moment(value, parseDateFormat);
   }
 
   return momentObj?.isValid() ? momentObj.toDate() : null;
@@ -161,8 +169,8 @@ export const DatePickerRenderer = ({
             ? moment(date).tz(timeZoneDisplay).format(selectedDateFormat)
             : moment(date).format(selectedDateFormat);
         }
-        if (isTimeChecked && timeZoneValue && timeZoneDisplay) {
-          return moment.tz(date, parseDateFormat, timeZoneValue).tz(timeZoneDisplay).format(selectedDateFormat);
+        if (isTimeChecked && timeZoneDisplay) {
+          return moment(date).tz(timeZoneDisplay).format(selectedDateFormat);
         }
         return moment(date).format(selectedDateFormat);
       }
@@ -180,8 +188,6 @@ export const DatePickerRenderer = ({
       parseInUnixTimestamp,
       unixTimestamp,
       timeZoneDisplay,
-      timeZoneValue,
-      parseDateFormat,
     ]
   );
 

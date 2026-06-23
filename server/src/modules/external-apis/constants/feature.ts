@@ -89,5 +89,9 @@ export const FEATURES: FeaturesConfig = {
       license: LICENSE_FIELD.EXTERNAL_API,
       isPublic: true,
     },
+    [FEATURE_KEY.EXPORT_TJDB_TABLE_AS_CSV]: {
+      license: LICENSE_FIELD.EXTERNAL_API,
+      isPublic: true,
+    },
   },
 };

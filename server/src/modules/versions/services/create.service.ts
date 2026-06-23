@@ -25,6 +25,12 @@ import { WorkflowBundle } from '@entities/workflow_bundle.entity';
 import { App } from '@entities/app.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { IVersionsCreateService } from '../interfaces/services/ICreateService';
+import {
+  parseParentIdAndSuffix,
+  remapFlexContainerChildOrder,
+  remapParentIdForVersionCopy,
+  shouldSkipComponentOnVersionCopy,
+} from '../helpers/version-copy-parent.helper';
 
 @Injectable()
 export class VersionsCreateService implements IVersionsCreateService {
@@ -371,17 +377,6 @@ export class VersionsCreateService implements IVersionsCreateService {
     const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
-    const parseParentIdAndSuffix = (parentIdString: string) => {
-      if (!parentIdString) {
-        return { baseId: null, suffix: null };
-      }
-      const match = parentIdString.match(/([a-fA-F0-9-]{36})-(.+)/);
-      if (match) {
-        return { baseId: match[1], suffix: match[2] };
-      }
-      return { baseId: parentIdString, suffix: null };
-    };
-
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
       if (componentParentId) {
         const { baseId } = parseParentIdAndSuffix(componentParentId);
@@ -456,15 +451,20 @@ export class VersionsCreateService implements IVersionsCreateService {
         await manager.save(newEvent);
       });
 
+      const originalPageComponents = page.components.filter(
+        (component) => !shouldSkipComponentOnVersionCopy(component)
+      );
+      const validComponentIds = new Set(page.components.map((component) => component.id));
+
       const tempNewComponents: Component[] = [];
-      for (const component of page.components) {
+      for (const component of originalPageComponents) {
         const newComponent = new Component();
         newComponent.id = uuid.v4();
         oldComponentToNewComponentMapping[component.id] = newComponent.id;
         tempNewComponents.push(newComponent);
       }
 
-      for (const originalComponent of page.components) {
+      for (const originalComponent of originalPageComponents) {
         const newComponent = tempNewComponents.find(
           (c) => c.id === oldComponentToNewComponentMapping[originalComponent.id]
         );
@@ -500,28 +500,31 @@ export class VersionsCreateService implements IVersionsCreateService {
           // Preserve virtual container parents (canvas-header, canvas-footer) as-is
           // These are not UUID-based and should not be remapped
           if (parentId !== 'canvas-header' && parentId !== 'canvas-footer') {
-            const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(originalComponent, page.components, parentId);
+            const isParentTabOrCalendarFlag = isChildOfTabsOrCalendar(
+              originalComponent,
+              originalPageComponents,
+              parentId
+            );
             const isParentHeaderOrFooterFlag = isChildOfHeaderOrFooter(parentId);
-            const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, page.components);
+            const isKanbanModalChildFlag = isChildOfKanbanModal(parentId, originalPageComponents);
 
             if (isParentTabOrCalendarFlag || isParentHeaderOrFooterFlag) {
-              const { baseId: originalBaseParentId, suffix: originalParentSuffix } = parseParentIdAndSuffix(parentId);
-              const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-              if (mappedBaseParentId) {
-                parentId = `${mappedBaseParentId}-${originalParentSuffix}`;
-              } else {
-                parentId = null;
-              }
+              const { suffix } = parseParentIdAndSuffix(parentId);
+              parentId = remapParentIdForVersionCopy(
+                parentId,
+                oldComponentToNewComponentMapping,
+                validComponentIds,
+                suffix
+              );
             } else if (isKanbanModalChildFlag) {
-              const { baseId: originalBaseParentId } = parseParentIdAndSuffix(parentId);
-              const mappedBaseParentId = oldComponentToNewComponentMapping[originalBaseParentId];
-              if (mappedBaseParentId) {
-                parentId = `${mappedBaseParentId}-modal`;
-              } else {
-                parentId = null;
-              }
+              parentId = remapParentIdForVersionCopy(
+                parentId,
+                oldComponentToNewComponentMapping,
+                validComponentIds,
+                'modal'
+              );
             } else {
-              parentId = oldComponentToNewComponentMapping[parentId];
+              parentId = remapParentIdForVersionCopy(parentId, oldComponentToNewComponentMapping, validComponentIds);
             }
           }
         }
@@ -536,6 +539,8 @@ export class VersionsCreateService implements IVersionsCreateService {
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
+          if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+          if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
           newLayout.componentId = newComponent.id;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 
@@ -592,6 +597,10 @@ export class VersionsCreateService implements IVersionsCreateService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+        // remapped explicitly to the new component ids — otherwise the saved flex-child order
+        // is lost on draft/version creation (issue #5153).
+        remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
         return updateEntityReferences(component, mappings);
       });
 

@@ -704,7 +704,7 @@ export default class MssqlQueryService implements QueryService {
     try {
       knexInstance = await this.buildConnection(sourceOptions);
 
-      const search = typeof queryOptions?.search === 'string' ? queryOptions.search : '';     
+      const search = typeof queryOptions?.search === 'string' ? queryOptions.search : '';
       const searchPattern = `%${search}%`;
       const db = sourceOptions.database;
 
@@ -838,13 +838,18 @@ export default class MssqlQueryService implements QueryService {
     args?: any
   ): Promise<any> {
     try {
+      if (sourceOptions.allow_dynamic_connection_parameters) {
+        if (args?.host != null && args?.host !== '') sourceOptions.host = args.host;
+        if (args?.database != null && args?.database !== '') sourceOptions.database = args.database;
+      }
+
       if (methodName === 'getTables') {
         const isPaginated = !!args?.limit;
         const result = await this.listTables(sourceOptions, undefined, undefined, {
-            search: args?.search,
-            page: args?.page,
-            limit: args?.limit,
-          });
+          search: args?.search,
+          page: args?.page,
+          limit: args?.limit,
+        });
 
         const payload = (result as any)?.data ?? [];
 

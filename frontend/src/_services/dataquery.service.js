@@ -149,11 +149,12 @@ function changeQueryDataSource(id, dataSourceId, versionId, type, kind) {
   );
 }
 
-function invoke(dataSourceId, methodName, environmentId, args) {
+function invoke(dataSourceId, methodName, environmentId, args, resolvedOptions) {
   const body = {
     method: methodName,
     environmentId: environmentId,
     args: args,
+    ...(resolvedOptions ? { resolvedOptions } : {}),
   };
 
   const url = `${config.apiUrl}/data-sources/${dataSourceId}/invoke`;

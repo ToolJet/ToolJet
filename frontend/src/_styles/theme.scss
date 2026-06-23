@@ -325,8 +325,6 @@
 
 @layer utilities {
   .tw-transparent-scrollbar {
-    // scrollbar-color: transparent transparent;
-
     &::-webkit-scrollbar-thumb {
       background: transparent;
     }
@@ -337,10 +335,21 @@
   }
 
   .tw-show-scrollbar {
-    // scrollbar-color: var(--slate8);
+    &::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--slate8);
+      background: var(--interactive-hover);
+      background-clip: padding-box;
+      border: 2px solid transparent;
+      border-radius: 9999px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background: var(--interactive-selected);
+      background-clip: padding-box;
     }
 
     &::-webkit-scrollbar-track {
@@ -13647,7 +13656,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -13983,7 +13993,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -14375,7 +14386,8 @@ tbody {
   }
 }
 
-#popover-basic-2 {
+#popover-basic-2,
+#table-column-popover-basic {
   .sketch-picker {
     left: 7px;
     width: 170px !important;
@@ -15294,6 +15306,12 @@ textarea.tj-text-input-widget {
   @extend .widget-version-identifier;
 }
 
+.widget-version-beta-identifier {
+  background-color: var(--indigo9);
+  @extend .widget-version-identifier;
+  width: 36px;
+}
+
 .tjdb-display-time-pill {
   height: 12px;
   gap: 10px;
@@ -15958,7 +15976,7 @@ section.ai-message-prompt-input-wrapper {
 
   div.input {
     color: var(--text-default, #1b1f24);
-    font-size: 12px;
+    font-size: var(--font-size-large);
     font-style: normal;
     font-weight: 400;
     line-height: 18px;
@@ -16463,13 +16481,6 @@ section.ai-message-prompt-input-wrapper {
   background-color: var(--background-surface-layer-01);
   box-shadow: 0px 0px 1px 0px var(--dropshadow-100700-layer-1, rgba(48, 50, 51, 0.05)),
     0px 8px 16px 0px var(--dropshadow-100400-layer-2, rgba(48, 50, 51, 0.1));
-
-  .input-box-gradient {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    z-index: -1;
-  }
 
   .reactMarkdown {
     * {
