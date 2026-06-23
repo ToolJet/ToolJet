@@ -52,11 +52,11 @@ describe('ExternalApisController — user metadata', () => {
     // ─── PUT ────────────────────────────────────────────────────────────────
 
     describe('PUT /api/ext/workspace/:workspaceId/user/:userId | Update user metadata', () => {
-      it('should return 401 when Authorization header is missing', async () => {
+      it('should return 403 when Authorization header is missing', async () => {
         await request(app.getHttpServer())
           .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
           .send({ userDetails: [{ key: 'role', value: 'admin' }] })
-          .expect(401);
+          .expect(403);
       });
 
       it('should store key-value metadata and return it in the response', async () => {
@@ -150,10 +150,10 @@ describe('ExternalApisController — user metadata', () => {
     // ─── GET ────────────────────────────────────────────────────────────────
 
     describe('GET /api/ext/workspace/:workspaceId/user/:userId | Get user metadata', () => {
-      it('should return 401 when Authorization header is missing', async () => {
+      it('should return 403 when Authorization header is missing', async () => {
         await request(app.getHttpServer())
           .get(`/api/ext/workspace/${orgId}/user/${memberId}`)
-          .expect(401);
+          .expect(403);
       });
 
       it('should return empty userDetails for a user with no metadata', async () => {
