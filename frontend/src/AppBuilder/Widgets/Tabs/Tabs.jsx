@@ -17,6 +17,19 @@ import './tabs.scss';
 const tinycolor = require('tinycolor2');
 const TAB_HEADER_HEIGHT = 49.5;
 
+// Walk up from `el` to the nearest ancestor that can actually scroll vertically.
+const getScrollableParent = (el) => {
+  let node = el?.parentElement;
+  while (node) {
+    const overflowY = window.getComputedStyle(node).overflowY;
+    if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return null;
+};
+
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
     <div
@@ -186,8 +199,16 @@ export const Tabs = function Tabs({
   useEffect(() => {
     if (!parsedScrollToTopOnTabSwitch) return;
     const raf = requestAnimationFrame(() => {
+      // Fixed-height tab: content scrolls inside the tab's own sub-canvas, reset it.
       const scrollEl = document.getElementById(`canvas-${id}-${currentTab}`);
       if (scrollEl) scrollEl.scrollTop = 0;
+      // Finds the nearest scrollable ancestor and align the widget's top to it.
+      const widgetEl = containerRef.current;
+      const scrollParent = getScrollableParent(widgetEl);
+      if (scrollParent && widgetEl) {
+        const delta = widgetEl.getBoundingClientRect().top - scrollParent.getBoundingClientRect().top;
+        scrollParent.scrollTop += delta;
+      }
     });
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
