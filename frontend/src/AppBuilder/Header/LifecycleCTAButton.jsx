@@ -2,6 +2,7 @@ import React from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -50,6 +51,8 @@ const LifecycleCTAButton = () => {
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
+  const isUnsynced = workspaceActiveBranch && selectedVersion?.pulledAt == null && creationMode === 'DEFAULT';
+
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
     if (!isGitSyncConfigured) {
@@ -59,6 +62,18 @@ const LifecycleCTAButton = () => {
         icon: 'commit',
         variant: 'secondary',
         disabled: false,
+        unsynced: false,
+      };
+    }
+
+    if (isUnsynced) {
+      // App has never been pushed to git — show "Commit" with red indicator on any branch
+      return {
+        label: 'Commit',
+        icon: 'refresh',
+        variant: 'secondary',
+        disabled: false,
+        unsynced: true,
       };
     }
 
@@ -69,6 +84,7 @@ const LifecycleCTAButton = () => {
         icon: 'commit',
         variant: 'secondary',
         disabled: false,
+        unsynced: false,
       };
     } else {
       // Feature branch - show "Commit" button
@@ -77,6 +93,7 @@ const LifecycleCTAButton = () => {
         icon: 'commit',
         variant: 'secondary',
         disabled: false,
+        unsynced: false,
       };
     }
   };
@@ -98,17 +115,29 @@ const LifecycleCTAButton = () => {
 
   return (
     <div className="lifecycle-cta-button">
-      <Button
-        variant={config.variant}
-        onClick={handleClick}
-        disabled={config.disabled}
-        data-tooltip-id="editor-header-tooltip"
-        data-tooltip-content={config.tooltip}
-        data-cy="lifecycle-cta-button"
+      <ToolTip
+        message={config.unsynced ? 'App not synced in remote git' : ''}
+        placement="bottom"
+        show={config.unsynced}
       >
-        <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name={config.icon} width="16" />
-        <span>{config.label}</span>
-      </Button>
+        <Button
+          variant={config.variant}
+          onClick={handleClick}
+          disabled={config.disabled}
+          data-tooltip-id="editor-header-tooltip"
+          data-tooltip-content={config.tooltip}
+          data-cy="lifecycle-cta-button"
+          style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+        >
+          <SolidIcon
+            fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
+            viewBox="0 0 16 16"
+            name={config.icon}
+            width="16"
+          />
+          <span>{config.label}</span>
+        </Button>
+      </ToolTip>
     </div>
   );
 };

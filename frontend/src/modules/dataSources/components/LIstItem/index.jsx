@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import cx from 'classnames';
 import { useNavigate } from 'react-router-dom';
 import { GlobalDataSourcesContext } from '../../pages/GlobalDataSourcesPage';
@@ -9,6 +9,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 const DUMMY_DS_LABEL = 'Undefined data source';
 const buildDummyDsTooltip = (coRelationId) =>
@@ -36,6 +37,20 @@ export const ListItem = ({
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
+  const [syncIconHovered, setSyncIconHovered] = useState(false);
+  const { wsCurrentBranch, wsBranches } = useWorkspaceBranchesStore((state) => ({
+    wsCurrentBranch: state.currentBranch,
+    wsBranches: state.branches,
+  }));
+  const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
+  const defaultBranch = wsBranches?.find((b) => b.isDefault || b.is_default);
+  const defaultBranchCreatedAt = defaultBranch?.createdAt || defaultBranch?.created_at;
+  const isUnsynced =
+    wsCurrentBranch &&
+    !isSampleDb &&
+    dataSource?.pulledAt == null &&
+    defaultBranchCreatedAt &&
+    new Date(dataSource.created_at || dataSource.createdAt) < new Date(defaultBranchCreatedAt);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -71,7 +86,7 @@ export const ListItem = ({
     navigate(`/${workspaceId}/data-sources/${dataSource.id}`, { replace: true });
   };
 
-  const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
+  //const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
   const showDeleteButton = !isSampleDb && canDeleteDataSource();
 
   return (
@@ -115,27 +130,52 @@ export const ListItem = ({
             )}
           </div>
         </div>
-        {showDeleteButton && (
+        {isUnsynced ? (
           <div className="col-auto">
-            {}
-            <button
-              title={'Delete'}
-              disabled={disableDelButton}
-              className="ds-delete-btn"
-              onClick={() => onDelete(dataSource)}
-              data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
-            >
-              <div>
-                <SolidIcon
-                  width="14"
-                  height="14"
-                  name="delete"
-                  fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
-                  className={disableDelButton ? 'disabled-button' : ''}
-                />
+            <ToolTip message="Datasource not synced in remote git" placement="right">
+              <div
+                onMouseEnter={() => setSyncIconHovered(true)}
+                onMouseLeave={() => setSyncIconHovered(false)}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  backgroundColor: syncIconHovered ? '#FFEEF0' : 'transparent',
+                  transition: 'background-color 0.15s',
+                  cursor: 'default',
+                }}
+                data-cy="ds-unsynced-badge"
+              >
+                <SolidIcon name="refresh" width="14" fill="#E54D2E" />
               </div>
-            </button>
+            </ToolTip>
           </div>
+        ) : (
+          showDeleteButton && (
+            <div className="col-auto">
+              {}
+              <button
+                title={'Delete'}
+                disabled={disableDelButton}
+                className="ds-delete-btn"
+                onClick={() => onDelete(dataSource)}
+                data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+              >
+                <div>
+                  <SolidIcon
+                    width="14"
+                    height="14"
+                    name="delete"
+                    fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
+                    className={disableDelButton ? 'disabled-button' : ''}
+                  />
+                </div>
+              </button>
+            </div>
+          )
         )}
       </div>
     </ToolTip>
