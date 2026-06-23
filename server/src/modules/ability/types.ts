@@ -19,6 +19,8 @@ export interface UserPermissions {
   appDelete: boolean;
   workflowCreate: boolean;
   workflowDelete: boolean;
+  moduleCreate?: boolean;
+  moduleDelete?: boolean;
   appPromote: boolean;
   appRelease: boolean;
   dataSourceCreate: boolean;

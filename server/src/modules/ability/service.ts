@@ -57,6 +57,8 @@ export class AbilityService extends IAbilityService {
           orgVariableCRUD: acc.orgVariableCRUD,
           workflowCreate: acc.workflowCreate || group.workflowCreate,
           workflowDelete: acc.workflowDelete || group.workflowDelete,
+          moduleCreate: acc.moduleCreate || group.moduleCreate,
+          moduleDelete: acc.moduleDelete || group.moduleDelete,
         };
       }, DEFAULT_USER_PERMISSIONS);
 
