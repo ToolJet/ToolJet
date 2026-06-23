@@ -70,6 +70,13 @@ const sidebars = {
             { type: 'doc', id: 'tooljet-api/groups/delete-group', className: 'sidebar-badge-beta' },
           ],
         },
+        {
+          type: 'category',
+          label: 'ToolJet Database',
+          items: [
+            'tooljet-api/tooljet-db/export-table',
+          ],
+        },
       ],
     },
     {
