@@ -400,7 +400,10 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
     });
 
     // Get CSP whitelisted domains
-    const cspWhitelistedDomains = configService.get<string>('CSP_WHITELISTED_DOMAINS')?.split(',') || [];
+    const cspWhitelistedDomains = (configService.get<string>('CSP_WHITELISTED_DOMAINS') ?? '')
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean);
     logger.log(`CSP whitelisted domains: ${cspWhitelistedDomains.join(', ')}`);
 
     // Configure Helmet
@@ -440,7 +443,15 @@ export function setSecurityHeaders(app: NestExpressApplication, configService: C
               'blob:',
               'www.googletagmanager.com',
             ].concat(cspWhitelistedDomains),
-            'connect-src': ['ws://' + domain, "'self'", '*', 'data:'],
+            'connect-src': [
+              'ws://' + domain,
+              "'self'",
+              'data:',
+              'cdn.jsdelivr.net',
+              'cdn.skypack.dev',
+              'https://esm.sh',
+              'unpkg.com',
+            ].concat(cspWhitelistedDomains),
             'frame-ancestors': ['*'],
             'frame-src': ['*'],
           },
