@@ -82,10 +82,9 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
 
     setIsCreating(true);
     try {
-      const newBranch = await actions.createBranch(branchName.trim(), selectedSourceBranchId);
-      // toast.success(`Branch "${branchName}" created successfully`);
-      toast.success(`Branch was created successfully`);
-      await actions.switchBranch(newBranch.id);
+      // Branch creation runs as a background job — no branch object to switch to yet
+      await actions.createBranch(branchName.trim(), selectedSourceBranchId);
+      toast.success('Creating branch. It will show up in the list once ready.');
       onSuccess?.();
       onClose();
     } catch (error) {
