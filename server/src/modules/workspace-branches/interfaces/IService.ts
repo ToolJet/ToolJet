@@ -26,7 +26,6 @@ export interface IWorkspaceBranchService {
     branchId: string,
     appId?: string
   ): Promise<{ success: boolean; resolvedAppId?: string }>;
-  deleteBranch(organizationId: string, branchId: string, user?: User): Promise<void>;
   // Heavy delete (remote ref + DB cascade) runs on the git-sync queue — the request only enqueues
   deleteWorkspaceBranch(organizationId: string, branchId: string, user?: User): Promise<{ enqueued: boolean }>;
   pushWorkspace(organizationId: string, dto: WorkspacePushDto, user?: User): Promise<{ success: boolean }>;
