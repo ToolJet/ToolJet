@@ -18,14 +18,11 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     // Depends on every org having a default branch (EnsureDefaultBranchForAllOrganizations).
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
-    // ── 1. Flag columns (set from the ORIGINAL branch_id state, before backfill) ──
-    await queryRunner.query(
-      `ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_synced boolean NOT NULL DEFAULT false`
-    );
-    await queryRunner.query(
-      `ALTER TABLE app_versions ADD COLUMN IF NOT EXISTS is_git_sync boolean NOT NULL DEFAULT false`
-    );
-
+    // ── 1. Flag backfill (set from the ORIGINAL branch_id state, before backfill) ──
+    // The is_synced / is_git_sync columns are created up front by the schema migration
+    // AddSyncFlagColumnsToVersions (migrations/) so they exist before any entity-based
+    // data-migration runs; here we only backfill them.
+    //
     // Existing branch-associated rows are the synced/gitsync rows. The rows that
     // are still branch_id IS NULL here are the non-gitsync ones and stay false on
     // both flags even after we backfill their branch_id below. is_stub rows always

@@ -16,15 +16,14 @@ export class MakeDataSourceVersionBranchIdNotNullAndDropIsDefault1781740900000 i
     // dataset can't cancel it mid-way (57014). SET LOCAL reverts on commit/rollback.
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
-    // ── Phase 0: is_synced marker (set from the ORIGINAL branch_id state) ─
-    // Static marker mirroring app_versions.is_synced: the row originated from
-    // gitsync. Set true for rows that already sit on a branch BEFORE the Phase B
-    // backfill — the is_default fallback rows (branch_id IS NULL) stay false, so
-    // non-gitsync data sources remain is_synced = false even after their branch_id
-    // is backfilled below.
-    await queryRunner.query(
-      `ALTER TABLE data_source_versions ADD COLUMN IF NOT EXISTS is_synced boolean NOT NULL DEFAULT false`
-    );
+    // ── Phase 0: is_synced marker backfill (set from the ORIGINAL branch_id state) ─
+    // The is_synced column is created up front by the schema migration
+    // AddSyncFlagColumnsToVersions (migrations/) so it exists before any entity-based
+    // data-migration runs; here we only backfill it. Static marker mirroring
+    // app_versions.is_synced: the row originated from gitsync. Set true for rows that
+    // already sit on a branch BEFORE the Phase B backfill — the is_default fallback rows
+    // (branch_id IS NULL) stay false, so non-gitsync data sources remain is_synced = false
+    // even after their branch_id is backfilled below.
     await queryRunner.query(`UPDATE data_source_versions SET is_synced = true WHERE branch_id IS NOT NULL`);
 
     // ── Phase A: drop the constraints/objects that gate the backfill ─────
