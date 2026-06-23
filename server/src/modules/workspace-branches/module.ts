@@ -10,7 +10,6 @@ import { AppGitModule } from '@modules/app-git/module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
-import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { AppsModule } from '@modules/apps/module';
 import { NotificationsModule } from '@modules/notifications/module';
 
@@ -34,10 +33,10 @@ export class WorkspaceBranchesModule extends SubModule {
       'git-sync-queue.processor',
     ]);
 
-    const { PlatformGitPullService, PlatformGitPushService, PullConflictDetectionService } = await this.getProviders(
+    const { PlatformGitPullService, PlatformGitPushService, GitConflictDetectionService } = await this.getProviders(
       configs,
       'platform-git-sync',
-      ['pull.service', 'push.service', 'pull-conflict-detection.service']
+      ['pull.service', 'push.service', 'git-conflict-detection.service']
     );
 
     return this.cacheModule(cacheKey, {
@@ -57,7 +56,6 @@ export class WorkspaceBranchesModule extends SubModule {
         await FolderAppsModule.register(configs),
         await FoldersModule.register(configs),
         await ImportExportResourcesModule.register(configs),
-        await BackgroundProcessorModule.register(configs),
         await NotificationsModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
@@ -67,7 +65,7 @@ export class WorkspaceBranchesModule extends SubModule {
         FeatureAbilityFactory,
         PlatformGitPullService,
         PlatformGitPushService,
-        PullConflictDetectionService,
+        GitConflictDetectionService,
         ...(isMainImport
           ? [
               DeletionCommitListener,
@@ -82,7 +80,7 @@ export class WorkspaceBranchesModule extends SubModule {
         GitSyncQueueService,
         PlatformGitPullService,
         PlatformGitPushService,
-        PullConflictDetectionService,
+        GitConflictDetectionService,
       ],
     });
   }

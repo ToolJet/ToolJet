@@ -397,7 +397,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
             await this.appEnvironmentUtilService.updateVersionOptions(newOptions, dsv.id, envToUpdate.id, manager);
             // Also update DSV name if DS name changed
             if (name) {
-              await this.ensureUniqueActiveNameForUpdate(name, dataSource.id, organizationId, manager);
+              await this.ensureUniqueActiveNameForUpdate(
+                name,
+                dataSource.id,
+                organizationId,
+                manager,
+                effectiveBranchId
+              );
               await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
             }
           }
@@ -480,6 +486,13 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
 
           // Update DSV name if needed
           if (dsv && name) {
+            await this.ensureUniqueActiveNameForUpdate(
+              name,
+              dataSource.id,
+              organizationId,
+              manager,
+              nonMultiEnvBranchId
+            );
             await manager.update(DataSourceVersion, dsv.id, { name, updatedAt: new Date() });
           }
         }
@@ -1431,14 +1444,34 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     name: string,
     currentDataSourceId: string,
     organizationId: string,
-    manager: EntityManager
+    manager: EntityManager,
+    branchId?: string
   ): Promise<void> {
-    const existing = await manager
-      .createQueryBuilder(DataSource, 'ds')
-      .where('LOWER(ds.name) = LOWER(:name)', { name })
-      .andWhere('ds.organizationId = :organizationId', { organizationId })
-      .andWhere('ds.id != :currentDataSourceId', { currentDataSourceId })
-      .getOne();
+    // Name uniqueness lives entirely on data_source_versions — data_sources.name is no
+    // longer authoritative — so this must query DSVs, not data_sources. Querying
+    // data_sources would also ignore the soft-delete model: deleting a DS on a branch
+    // only flips its DSV to is_active = false (the data_sources row stays), so a stale
+    // data_sources match would wrongly block reusing that name.
+    //
+    // Filter on is_active = true and mirror whichever DB constraint applies to the row
+    // being renamed:
+    //   - on a branch  → idx_unique_active_name_branch (active, non-default, per branch)
+    //   - off a branch → trg_unique_active_default_dsv_name_per_org (active default, per org)
+    const query = manager
+      .createQueryBuilder(DataSourceVersion, 'dsv')
+      .innerJoin(DataSource, 'ds', 'ds.id = dsv.data_source_id')
+      .where('LOWER(dsv.name) = LOWER(:name)', { name })
+      .andWhere('dsv.isActive = true')
+      .andWhere('dsv.dataSourceId != :currentDataSourceId', { currentDataSourceId })
+      .andWhere('ds.organizationId = :organizationId', { organizationId });
+
+    if (branchId) {
+      query.andWhere('dsv.isDefault = false').andWhere('dsv.branchId = :branchId', { branchId });
+    } else {
+      query.andWhere('dsv.isDefault = true');
+    }
+
+    const existing = await query.getOne();
 
     if (existing) {
       throw new BadRequestException(`A data source with name "${name}" already exists in this workspace`);

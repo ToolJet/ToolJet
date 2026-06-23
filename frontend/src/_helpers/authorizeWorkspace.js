@@ -163,11 +163,14 @@ export const authorizeWorkspace = async () => {
           /* CASE-4: For app viewer paths, check if app is public before redirecting to login */
           const pathSegments = getPathname(null, true).split('/').filter(Boolean);
           const appSlug = pathSegments[1]; // /applications/:slug/...
+          const searchParams = new URLSearchParams(window.location.search);
+          const isLocalPreview = !!(searchParams.get('version') || searchParams.get('env'));
           if (appSlug) {
             try {
               const appConfig = await appsService.getAppAuthenticationConfig(appSlug);
-              if (appConfig?.isPublic) {
-                // Public app — let the Viewer load it without authentication
+              //For preview validateSession will handle the authentication and authorization
+              if (appConfig?.isPublic && !isLocalPreview) {
+                // Public app or preview URL — let validateSession in the route handle auth
                 updateCurrentSession({
                   authentication_failed: true,
                   load_app: true,
@@ -267,11 +270,17 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
       if (data.custom_domain && !isCustomDomain() && !isLocalhost && !hasRecentRedirectAttempt()) {
         const slug = data.current_organization_slug || data.current_organization_id;
         const pathWithoutSlug = excludeWorkspaceIdFromURL(window.location.pathname);
+        // App viewer paths (/applications/, /embed-apps/) use no workspace slug prefix on
+        // custom domains — the custom domain identifies the workspace, so the URL format is
+        // /applications/:slug, not /:workspaceSlug/applications/:slug.
+        const isViewerPath = pathWithoutSlug.startsWith('/applications/') || pathWithoutSlug.startsWith('/embed-apps/');
         setRedirectAttempt();
         try {
           const { token } = await sessionTransferService.createTransferToken();
           const redirect = encodeURIComponent(
-            `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
+            isViewerPath
+              ? `${pathWithoutSlug}${window.location.search}${window.location.hash}`
+              : `/${slug}${pathWithoutSlug}${window.location.search}${window.location.hash}`
           );
           window.location.href = `https://${data.custom_domain}/api/session/transfer?token=${token}&redirect=${redirect}`;
           return;
