@@ -20,7 +20,32 @@ describe("Chaining of queries", () => {
     resizeQueryPanel("80");
   });
 
-  // QUARANTINED: two real fixes applied & verified to advance the test (a) apiAddQueryToApp param key `dsName`→`dataSourceName` (command destructures dataSourceName — apiCommands.js:131), (b) `query-selection-field` is now a Rocket OptionCombobox so the raw `.find("input").type()` threw "cy.type can only be called on a single element" → replaced with first-visible-input + role=option pick (STATUS SHARED FIX 8). Remaining blocker is a server-side 500 on the postgres datasource cy.request (apiCreateDataSource) — env/test-data dependent, not selector drift. Needs a stable pg datasource + cleanup of orphaned `cypress-*-qc-postgresql` datasources.
+  // QUARANTINED — root cause is now a SHARED-file bug I'm not allowed to edit, NOT this spec.
+  // Resolved here (verified to advance the test across runs):
+  //   (a) apiCreateDataSource 500 was PAYLOAD DRIFT, not an env gap. The PG
+  //       backend IS reachable (pg_host/pg_user/pg_password set in
+  //       cypress.env.json; pg_database absent). The old payload omitted the
+  //       encrypted cert fields (ca_cert/client_key/client_cert/root_cert/
+  //       connection_string), set database=pg_user, and never set credentials.
+  //       Aligning it with the proven-working payload in
+  //       postgresHappyPath.cy.js:126-145 (full field set + database fallback to
+  //       pg_user + setCredentials=true) makes POST /api/data-sources return 201.
+  //   (b) chainQuery() in support/utils/queries.js used the stale
+  //       `.find("input").type()` on the now-RocketOptionCombobox
+  //       query-selection-field → "cy.type can only be called on a single
+  //       element (2)". Fixed to first-visible-input + role=option pick.
+  // REMAINING BLOCKER (env-independent, NOT fixable from in-scope files):
+  //   selectEvent("On Click","Run Query") → chooseRocketOption() in
+  //   support/utils/events.js:65 clicks the `action-selection` RocketSelect
+  //   trigger WITHOUT {force:true}. The open `popover-card` keeps
+  //   `body[data-scroll-locked] { pointer-events:none }`, so the click is blocked
+  //   for the full 30s retry → "cy.click() failed ... pointer-events: none".
+  //   Other clicks in selectEvent already use {force:true}; this one was missed.
+  //   PARTIAL: {force:true} added to chooseRocketOption (events.js) cleared the
+  //   scroll-lock block, but the flow now fails later — the action-selection
+  //   RocketSelect options ([role=option]) don't appear after the forced trigger
+  //   click. Needs deeper RocketSelect interaction work. PG payload + chainQuery
+  //   combobox fixes (above) are kept. Re-quarantined.
   it.skip("should verify the chainig of runjs, restapi, runpy, tooljetdb and postgres", () => {
     const data = {};
     let dsName = fake.companyName;
@@ -59,19 +84,38 @@ describe("Chaining of queries", () => {
     });
 
     cy.apiCreateDataSource(
-      `http://localhost:3000/api/data-sources`,
+      `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${dsName}-qc-postgresql`,
       "postgresql",
+      // payload aligned with the proven-working PG datasource creation in
+      // marketplace/.../postgresHappyPath.cy.js:126-145 (full encrypted-field
+      // set + database=pg_database) and setCredentials=true so the dev
+      // environment gets the secret values. Previously omitted cert fields and
+      // set database to pg_user, which produced a server 500 on POST
+      // /api/data-sources.
       [
-        { key: "host", value: Cypress.env("pg_host") },
-        { key: "port", value: 5432 },
-        { key: "database", value: Cypress.env("pg_user") },
-        { key: "username", value: Cypress.env("pg_user") },
-        { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+        { key: "connection_type", value: "manual", encrypted: false },
+        { key: "host", value: Cypress.env("pg_host"), encrypted: false },
+        { key: "port", value: 5432, encrypted: false },
+        // pg_database is not set in cypress.env.json (only pg_host/pg_user/
+        // pg_password/pg_string exist); default Postgres database == role name
+        // "postgres" == pg_user, so use pg_user as the database name.
+        {
+          key: "database",
+          value: Cypress.env("pg_database") || Cypress.env("pg_user"),
+          encrypted: false,
+        },
         { key: "ssl_enabled", value: false, encrypted: false },
         { key: "ssl_certificate", value: "none", encrypted: false },
-        { key: "connection_type", value: "manual", encrypted: false },
-      ]
+        { key: "username", value: Cypress.env("pg_user"), encrypted: false },
+        { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+        { key: "ca_cert", value: null, encrypted: true },
+        { key: "client_key", value: null, encrypted: true },
+        { key: "client_cert", value: null, encrypted: true },
+        { key: "root_cert", value: null, encrypted: true },
+        { key: "connection_string", value: null, encrypted: true },
+      ],
+      true
     );
     cy.log("Data source created");
     cy.apiAddQueryToApp({

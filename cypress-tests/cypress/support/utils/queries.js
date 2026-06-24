@@ -53,10 +53,20 @@ export const chainQuery = (currentQuery, trigger) => {
   cy.wait(1000);
   cy.get('[data-cy="query-tab-settings"]').click();
   selectEvent("Query Success", "Run Query");
-  cy.get('[data-cy="query-selection-field"]')
-    .click()
-    .find("input")
-    .type(`{selectAll}{backspace}${trigger}{enter}`);
+  // query-selection-field is now a Rocket OptionCombobox whose InputGroup nests
+  // more than one <input>, so the old `.find("input").type()` threw
+  // "cy.type() can only be called on a single element" (2 elements). Type into
+  // the first visible input, then pick the matching role=option.
+  cy.get('[data-cy="query-selection-field"]').scrollIntoView().click();
+  cy.get('[data-cy="query-selection-field"] input')
+    .filter(":visible")
+    .first()
+    .clear({ force: true })
+    .type(trigger, { force: true });
+  cy.get('[role="option"]')
+    .filter(":visible")
+    .contains(new RegExp(`^\\s*${trigger}\\s*$`, "i"))
+    .click({ force: true });
 };
 
 export const addSuccessNotification = (notification) => {

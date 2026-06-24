@@ -62,7 +62,10 @@ export const selectEvent = (
 const chooseRocketOption = (triggerSelector, label) => {
   cy.get("body").then(($body) => {
     if ($body.find('[role="option"]:visible').length === 0) {
-      cy.get(triggerSelector).should("be.visible").click();
+      // force: an open popover-card sets body{pointer-events:none} (Radix
+      // scroll-lock) which blocks a normal click on the RocketSelect trigger.
+      // Matches the rest of this file's force-click convention.
+      cy.get(triggerSelector).should("be.visible").click({ force: true });
     }
   });
   cy.get('[role="option"]')

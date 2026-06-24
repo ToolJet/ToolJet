@@ -76,7 +76,7 @@ export const Code = ({
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
         validationFn={validationFn}
-        cyLabel=""
+        cyLabel={paramMeta?.showLabel === false ? param.name?.toLowerCase() : ''}
         setCodeEditorView={setCodeEditorView}
         canRefresh={canRefresh}
       />
