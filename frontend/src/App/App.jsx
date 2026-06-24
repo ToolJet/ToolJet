@@ -11,7 +11,9 @@ import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 // Viewer import removed - now handled by ViewerApp.jsx
 // import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
-import { SettingsPage } from '../SettingsPage/SettingsPage';
+
+const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
+
 import { MarketplacePage } from '@/MarketplacePage';
 import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
 import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
@@ -356,7 +358,7 @@ class AppComponent extends React.Component {
                   element={
                     <DesktopOnlyRoute darkMode={darkMode}>
                       <PrivateRoute darkMode={darkMode}>
-                        <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                        <ProfileSettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                       </PrivateRoute>
                     </DesktopOnlyRoute>
                   }

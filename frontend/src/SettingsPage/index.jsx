@@ -1,11 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { authenticationService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Layout from '@/_ui/Layout';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { BreadCrumbContext } from '@/App/App';
+
 import { decodeEntities } from '@/_helpers/utils';
+import { userService } from '@/_services/user.service';
+import { authenticationService } from '@/_services/authentication.service';
+
+import { BreadCrumbContext } from '@/App/App';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Layout from '@/_ui/Layout';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
@@ -338,4 +341,4 @@ function SettingsPage(props) {
   );
 }
 
-export { SettingsPage };
+export default SettingsPage;
