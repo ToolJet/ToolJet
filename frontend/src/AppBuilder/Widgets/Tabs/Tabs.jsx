@@ -202,9 +202,10 @@ export const Tabs = function Tabs({
       // Fixed-height tab: content scrolls inside the tab's own sub-canvas, reset it.
       const scrollEl = document.getElementById(`canvas-${id}-${currentTab}`);
       if (scrollEl) scrollEl.scrollTop = 0;
-      // Finds the nearest scrollable ancestor and align the widget's top to it.
+      // Find the nearest scrollable ancestor and align the widget's top to it.
+      // Fallback to the document root for layouts where the scroll lives on it
       const widgetEl = containerRef.current;
-      const scrollParent = getScrollableParent(widgetEl);
+      const scrollParent = getScrollableParent(widgetEl) || document.scrollingElement;
       if (scrollParent && widgetEl) {
         const delta = widgetEl.getBoundingClientRect().top - scrollParent.getBoundingClientRect().top;
         scrollParent.scrollTop += delta;
