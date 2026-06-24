@@ -1,8 +1,9 @@
-name: Cypress App-Builder
+name: Cypress AppBuilder
 
 on:
   pull_request_target:
     types: [labeled]
+
   workflow_dispatch:
 
 permissions:
@@ -16,95 +17,127 @@ env:
   TIMESTAMP: ${{ github.run_number }}-${{ github.run_attempt }}
 
 jobs:
-  Cypress-App-Builder:
+  Cypress-AppBuilder:
     runs-on: ubuntu-22.04
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-appbuilder-ee')
 
     strategy:
       fail-fast: false
       matrix:
-        edition: >-
-          ${{ 
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') && fromJson('["ce"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-ee') && fromJson('["ee"]') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
-            fromJson('[]')
-          }}
+        edition:
+          - ee
 
     steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 22.15.1
-
-      - name: Set up Git authentication for private submodules
+      - name: Debug labels and matrix edition
         run: |
-          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          echo "Labels: ${{ toJSON(github.event.pull_request.labels.*.name) }}"
+          echo "Matrix edition: ${{ matrix.edition }}"
 
-      - name: Checkout with Submodules
+      - name: Free up disk space
+        run: |
+          echo "Available disk space before cleanup:"
+          df -h
+
+          # Remove unnecessary packages
+          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' '^php.*' '^mongodb-.*' '^mysql-.*' azure-cli google-cloud-sdk hhvm firefox powershell mono-devel || true
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+
+          # Remove large directories
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+          # Clean Docker
+          docker system prune -af --volumes
+
+          echo "Available disk space after cleanup:"
+          df -h
+
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Checking out the correct branch for submodules EE
+            # ← VPN: Connect before any step that needs private resource
+      - name: Set VPN API URL
+        run: |
+          SERVER_HOST=$(echo "${{ secrets.VPN_SERVER }}" | cut -d: -f1)
+          echo "VPN_API_URL=https://${SERVER_HOST}:9100" >> $GITHUB_ENV
+
+      - name: Connect to VPN
+        uses: adishM98/auth-vpn@v2.3.0
+        with:
+          server: ${{ secrets.VPN_SERVER }}
+          api-key: ${{ secrets.VPN_API_KEY }}
+          api-url: ${{ env.VPN_API_URL }}
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Log selected matrix
+        run: |
+          echo "Selected edition: ${{ matrix.edition }}"
+          echo "Matrix: ${{ toJSON(matrix) }}"
+
+      - name: Build EE Docker image
         if: matrix.edition == 'ee'
         run: |
-          git submodule update --init --recursive
-          git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
+          echo "Building EE Docker image..."
+          docker buildx build \
+            --platform=linux/amd64 \
+            -f cypress-tests/cypress-lts.Dockerfile \
+            --build-arg CUSTOM_GITHUB_TOKEN=${{ secrets.CUSTOM_GITHUB_TOKEN }} \
+            --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
+            -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
+            --no-cache \
+            --load \
+            .
 
-      - name: Set up Docker
-        uses: docker-practice/actions-setup-docker@master
+          echo "Pushing EE Docker image..."
+          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
-      - name: Install and build dependencies
-        run: |
-          npm cache clean --force
-          npm install
-          npm install --prefix server
-          npm install --prefix frontend
-          npm run build:plugins
+          echo "Cleaning up build cache..."
+          docker builder prune -af
 
-      - name: Local development setup
-        run: |
-          sudo docker network create tooljet
-          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
-
-      - name: Run PostgREST Docker Container
-        run: |
-          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@localhost:5432/tooljet" \
-          -e PGRST_DB_ANON_ROLE="postgres" \
-          -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
-          postgrest/postgrest:v12.2.0
+          echo "Disk space after build:"
+          df -h
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'ee' || 'ce' }}" >> .env
-          echo "TOOLJET_HOST=http://localhost:8082" >> .env
+          echo "TOOLJET_EDITION=${{ matrix.edition }}" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
-          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=localhost" >> .env
+          echo "PG_HOST=postgres" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
-          echo "PGRST_DB_URI=postgres://postgres:postgres@localhost:5432/tooljet" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
           echo "PGRST_SERVER_PORT=3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
@@ -126,23 +159,86 @@ jobs:
           echo "TOOLJET_SECRET_CONSTANTS__production='{\"envSecret\":\"secret\",\"headerKey\":\"customHeader\",\"ui_url\":\"http://20.29.40.108:4000/production\",\"headerValue\":\"key=value\"}'" >> .env
           echo "SAML_SET_ENTITY_ID_REDIRECT_URL=true" >> .env
 
-      - name: Set up database
+      - name: clean up old docker containers
         run: |
-          npm run --prefix server db:create
-          npm run --prefix server db:reset
+          docker system prune -af --volumes
+          echo "Disk space after Docker cleanup:"
+          df -h
+
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Update docker-compose file
+        run: |
+          # Update docker-compose.yaml with the appropriate image based on edition
+          if [ "${{ matrix.edition }}" = "ce" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce|' docker-compose.yaml
+          elif [ "${{ matrix.edition }}" = "ee" ]; then
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee|' docker-compose.yaml
+          fi
+
+      - name: view docker-compose file
+        run: cat docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: sleep
+        run: sleep 80
+
+      - name: docker logs
+        run: docker-compose logs tooljet
+
+      - name: Wait for the server to be ready
+        run: |
+          echo "Waiting for ToolJet to start (timeout: 700 seconds)..."
+          SUCCESS_FOUND=false
+          TIMEOUT=700
+          ELAPSED=0
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Check for success message in logs
+            if docker-compose logs tooljet 2>/dev/null | grep -qE "TOOLJET APPLICATION STARTED SUCCESSFULLY|Ready to use at http://localhost:82|Ready to use at http://localhost:80"; then
+              echo "Found success message in logs!"
+              SUCCESS_FOUND=true
+              break
+            fi
+
+            echo "Still waiting... (${ELAPSED}s elapsed)"
+            sleep 10
+            ELAPSED=$((ELAPSED + 10))
+          done
+
+          if [ "$SUCCESS_FOUND" = false ]; then
+            echo "Timeout reached without finding success logs"
+            echo "Showing current logs for troubleshooting..."
+            docker-compose logs --tail=100 tooljet
+            exit 1
+          fi
+
+          echo "Server is ready!"
 
       - name: Test database connection
         run: |
+          # Wait for database to be ready
           echo "Testing database connection..."
-          docker exec -i postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "SELECT current_database();"
 
       - name: Create delete_user procedure
         run: |
           echo "Creating delete_users stored procedure..."
-          docker exec -i postgres psql -U postgres -d tooljet_development <<'EOF'
+          docker-compose exec -T postgres psql -U postgres -d tooljet_development -c "
           CREATE OR REPLACE PROCEDURE delete_users(p_emails TEXT[])
           LANGUAGE plpgsql
-          AS $$
+          AS \$\$
           DECLARE
             v_email TEXT;
             v_user_id UUID;
@@ -160,7 +256,10 @@ jobs:
                 RAISE NOTICE '========================================';
                 RAISE NOTICE 'Starting user deletion for email: %', v_email;
 
-                SELECT id INTO v_user_id FROM users WHERE email = v_email;
+                -- Fetch user id
+                SELECT id INTO v_user_id
+                FROM users
+                WHERE email = v_email;
 
                 IF v_user_id IS NULL THEN
                   RAISE NOTICE 'User with email % not found. Skipping.', v_email;
@@ -169,6 +268,7 @@ jobs:
 
                 RAISE NOTICE 'User found with id: %', v_user_id;
 
+                -- Collect organization memberships
                 SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
                 INTO v_organization_ids
                 FROM organization_users
@@ -177,6 +277,7 @@ jobs:
                 RAISE NOTICE 'Found % organizations for user',
                   COALESCE(array_length(v_organization_ids, 1), 0);
 
+                -- Find organizations with that single user
                 IF array_length(v_organization_ids, 1) > 0 THEN
                   SELECT COALESCE(ARRAY_AGG(organization_id), ARRAY[]::UUID[])
                   INTO v_organizations_to_delete
@@ -194,6 +295,7 @@ jobs:
                 RAISE NOTICE 'Found % organizations to delete',
                   COALESCE(array_length(v_organizations_to_delete, 1), 0);
 
+                -- Cascade delete records for orgs slated for removal
                 IF array_length(v_organizations_to_delete, 1) > 0 THEN
                   WITH deleted_apps AS (
                     DELETE FROM apps
@@ -225,6 +327,7 @@ jobs:
                   RAISE NOTICE 'No organizations removed for user %', v_email;
                 END IF;
 
+                -- Delete audit logs for orgs (if any) and user
                 WITH deleted_audit_logs AS (
                   DELETE FROM audit_logs
                   WHERE user_id = v_user_id
@@ -235,39 +338,28 @@ jobs:
                 INTO v_log_message FROM deleted_audit_logs;
                 RAISE NOTICE '%', v_log_message;
 
-                DELETE FROM organization_users WHERE user_id = v_user_id;
-                DELETE FROM users WHERE id = v_user_id;
+                -- Delete organization membership records
+                DELETE FROM organization_users
+                WHERE user_id = v_user_id;
+
+                -- Delete the user
+                DELETE FROM users
+                WHERE id = v_user_id;
 
                 RAISE NOTICE 'Deleted user with id: %', v_user_id;
                 RAISE NOTICE 'User deletion completed for email: %', v_email;
               EXCEPTION
                 WHEN OTHERS THEN
                   RAISE NOTICE 'Error deleting user %: %', v_email, SQLERRM;
+                  -- continue with next email
               END;
             END LOOP;
 
             RAISE NOTICE '========================================';
             RAISE NOTICE 'delete_users procedure finished.';
           END;
-          $$;
-          EOF
+          \$\$;"
           echo "delete_users procedure created successfully"
-
-      - name: sleep 5
-        run: sleep 5
-
-      - name: Start services
-        run: |
-          cd plugins && npm start &
-          cd server && npm run start:dev &
-          cd frontend && npm start &
-
-      - name: Wait for the server to be ready
-        run: |
-          timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:8082; do
-            sleep 5
-          done'
 
       - name: Seeding (Setup Super Admin)
         run: |
@@ -276,7 +368,7 @@ jobs:
             --data-raw '{
               "companyName": "ToolJet",
               "name": "The Developer",
-              "workspaceName": "Tooljet'\''s workspace",
+              "workspaceName": "My workspace",
               "email": "dev@tooljet.io",
               "password": "password"
             }'
@@ -292,6 +384,7 @@ jobs:
               "password": "password"
             }')
           echo "$AUTH_RESPONSE"
+          # Extract org ID and export for the next step via GITHUB_ENV
           ORG_ID=$(echo "$AUTH_RESPONSE" | jq -r '.current_organization_id')
           echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
 
@@ -308,15 +401,12 @@ jobs:
             -H "tj-workspace-id: $TJ_ORG_ID" \
             --data-raw '{"region": "us"}'
 
-      - name: docker logs
-        run: sudo docker logs postgrest
-
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
+          json: ${{ secrets.CYPRESS_SECRETS_MARKETPLACE }}
           dir: "./cypress-tests"
 
       - name: Install Cypress & deps
@@ -325,11 +415,12 @@ jobs:
           working-directory: ./cypress-tests
           runTests: false
 
-      - name: App builder
+      - name: App Builder
         working-directory: ./cypress-tests
         env:
           CELL: "App Builder / ${{ matrix.edition }}"
-          CONFIG_FILE: cypress-app-builder.config.js
+          BROWSER: chrome
+          CONFIG_FILE: cypress-appbuilder.config.js
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
         run: node cy-ci-run.js
 
@@ -357,44 +448,145 @@ jobs:
           name: screenshots-appbuilder-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
 
-  # Cypress-App-builder-Subpath:
-  #   runs-on: ubuntu-22.04
-  #   if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-  #       contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder-subpath')
+       # ← VPN: Disconnect — always runs even if earlier steps fail
+      - name: Disconnect VPN
+        if: always()
+        uses: adishM98/auth-vpn/disconnect@v2.3.0
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ github.event.pull_request.head.ref }}
+  Cypress-AppBuilder-Subpath:
+    runs-on: ubuntu-22.04
 
-  #     - name: Create Cypress environment file
-  #       id: create-json
-  #       uses: jsdaniell/create-json@1.1.2
-  #       with:
-  #         name: "cypress.env.json"
-  #         json: ${{ secrets.CYPRESS_SECRETS }}
-  #         dir: "./cypress-tests"
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-appbuilder-subpath')
 
-  #     - name: App Builder subpath
-  #       uses: cypress-io/github-action@v5
-  #       with:
-  #         working-directory: ./cypress-tests
-  #         config: "baseUrl=http://localhost:80/apps/tooljet/"
-  #         config-file: cypress-app-builder.config.js
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
-  #     - name: Capture Screenshots
-  #       uses: actions/upload-artifact@v4
-  #       if: always()
-  #       with:
-  #         name: screenshots
-  #         path: cypress-tests/cypress/screenshots
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
+        run: |
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx use mybuilder
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: use mybuilder buildx
+        run: docker buildx use mybuilder
+
+      - name: Build docker image
+        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_HOST=http://localhost:80" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=postgrest" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "SUB_PATH=/apps/tooljet/" >> .env
+          echo "NODE_ENV=production" >> .env
+          echo "SERVE_CLIENT=true" >> .env
+          echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
+
+      - name: Pulling the docker-compose file
+        run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
+
+      - name: Run docker-compose file
+        run: docker-compose up -d
+
+      - name: Checking containers
+        run: docker ps -a
+
+      - name: docker logs
+        run: sudo docker logs Tooljet-app
+
+      - name: Wait for the server to be ready
+        run: |
+          timeout 1500 bash -c '
+          until curl --silent --fail http://localhost:80/apps/tooljet/; do
+            sleep 5
+          done'
+
+      - name: Seeding
+        run: docker exec Tooljet-app npm run db:seed:prod
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+      - name: Install Cypress & deps
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./cypress-tests
+          runTests: false
+
+      - name: App Builder subpath
+        working-directory: ./cypress-tests
+        env:
+          CELL: "App Builder subpath"
+          CONFIG_FILE: cypress-appbuilder.config.js
+          CYPRESS_CONFIG: "baseUrl=http://localhost:80/apps/tooljet/"
+        run: node cy-ci-run.js
+
+      - name: Ensure run summary exists
+        if: always()
+        working-directory: ./cypress-tests
+        run: |
+          if [ ! -f summary.json ]; then
+            printf '{"cell":"App Builder subpath","result":"failure","stats":null}\n' > summary.json
+          fi
+          cat summary.json
+
+      - name: Upload run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-summary-appbuilder-subpath
+          path: cypress-tests/summary.json
+          retention-days: 7
+
+      - name: Capture Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots-appbuilder-subpath
+          path: cypress-tests/cypress/screenshots
 
   notify-slack:
-    needs: Cypress-App-Builder
-    # Run after the matrix whenever the test job actually ran (not skipped —
-    # avoids posting on unrelated labels).
-    if: always() && needs.Cypress-App-Builder.result != 'skipped'
+    needs:
+      - Cypress-AppBuilder
+      - Cypress-AppBuilder-Subpath
+    # Run after the matrix whenever at least one test job actually ran (not all
+    # skipped — avoids posting on unrelated labels).
+    if: >-
+      always() &&
+      (needs.Cypress-AppBuilder.result != 'skipped' ||
+       needs.Cypress-AppBuilder-Subpath.result != 'skipped')
     runs-on: ubuntu-latest
     steps:
       # This job runs separately from the matrix, so check out just the script.
@@ -412,7 +604,11 @@ jobs:
       - name: Build Slack payload
         env:
           CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
-          OVERALL: ${{ needs.Cypress-App-Builder.result }}
+          # Red unless every test job that ran passed (skipped cells don't count).
+          OVERALL: >-
+            ${{ (needs.Cypress-AppBuilder.result == 'failure' ||
+                 needs.Cypress-AppBuilder-Subpath.result == 'failure')
+                && 'failure' || 'success' }}
           REPO: ${{ github.repository }}
           ACTOR: ${{ github.actor }}
           # Normalise pull_request_target → pull_request so the script renders PR context.
