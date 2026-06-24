@@ -30,6 +30,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     folderCRUD: true,
     workflowCreate: true,
     workflowDelete: true,
+    moduleCreate: true,
+    moduleDelete: true,
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
@@ -45,6 +47,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     folderCRUD: true,
     workflowCreate: true,
     workflowDelete: true,
+    moduleCreate: true,
+    moduleDelete: true,
     orgConstantCRUD: true,
     dataSourceCreate: true,
     dataSourceDelete: true,
@@ -90,6 +94,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       canEdit: true,
       canView: false,
     },
+    [ResourceType.MODULE]: {
+      canEdit: true,
+      canView: false,
+    },
   },
   [USER_ROLE.END_USER]: {
     [ResourceType.APP]: {
@@ -123,6 +131,10 @@ export const DEFAULT_RESOURCE_PERMISSIONS = {
       },
     },
     [ResourceType.WORKFLOWS]: {
+      canEdit: true,
+      canView: false,
+    },
+    [ResourceType.MODULE]: {
       canEdit: true,
       canView: false,
     },

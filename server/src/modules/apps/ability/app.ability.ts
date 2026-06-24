@@ -22,15 +22,17 @@ export function defineAppAbility(
   const resourceType = UserAllPermissions?.resource[0]?.resourceType;
   const isCreatingModule = request?.body?.type === APP_TYPES.MODULE;
 
-  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin && !isBuilder) {
-    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
-    return;
-  }
-
   // Check if user is the owner of the app
   const app = request?.tj_app;
   const currentUserId = UserAllPermissions?.user?.id;
   const isAppOwner = app && currentUserId && app.userId === currentUserId;
+
+  const isModuleApp = app?.type === APP_TYPES.MODULE;
+
+  if ((resourceType === MODULES.MODULES || isModuleApp) && !isAdmin && !superAdmin && !isBuilder) {
+    can([FEATURE_KEY.GET, FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
+    return;
+  }
 
   // Helper function to check if user can access released environment for an app
   const canAccessReleasedEnv = (appId: string): boolean => {
@@ -48,7 +50,7 @@ export function defineAppAbility(
   // App listing is available to all
   can(FEATURE_KEY.GET, App);
 
-  if (resourceType === MODULES.MODULES && !isAdmin && !superAdmin) {
+  if ((resourceType === MODULES.MODULES || isModuleApp) && !isAdmin && !superAdmin) {
     // Per-module edit/view grants for non-admin builders (Edit vs Build-with)
     const userModulePermissions = userPermission?.[MODULES.MODULES];
     const isAllModulesEditable = !!userModulePermissions?.isAllEditable;

@@ -21,6 +21,14 @@ export class AddModuleCreateDeleteToGroupPermissions1782196835449 implements Mig
         isNullable: false,
       })
     );
+
+    // Backfill existing admin and builder role groups on non-fresh deployments.
+    // On a fresh DB this matches 0 rows (no groups yet); DEFAULT_GROUP_PERMISSIONS covers that path.
+    await queryRunner.query(`
+      UPDATE permission_groups
+      SET module_create = true, module_delete = true
+      WHERE name IN ('admin', 'builder') AND type = 'default'
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
