@@ -77,6 +77,12 @@ export class AppsUtilService implements IAppsUtilService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const isWorkflow = type === APP_TYPES.WORKFLOW;
 
+      // Non-workflow slug placeholder — a fresh UUID, never app.id (mirrors the
+      // co_relation_id convention below). The user renames it later; using a random
+      // value avoids leaking the app id and avoids self-collisions when a row's
+      // app_id changes (e.g. git hydrate re-parent).
+      const slug = uuidv4();
+
       // Non-workflows store the user-facing name on app_versions.app_name. apps.name
       // is NULL for them so the table-level APP_NAME_UNIQUE constraint doesn't fire.
       //
@@ -176,7 +182,7 @@ export class AppsUtilService implements IAppsUtilService {
         //   - app_versions_app_name_branch_id_unique (app_name, branch_id, type)
         //     WHERE version_type='branch' — sub-branch name clash within same type.
         //   - app_versions_slug_branch_id_unique (slug, branch_id, type) WHERE same —
-        //     sub-branch slug clash. Created with app.id as placeholder so it's
+        //     sub-branch slug clash. Created with a random UUID placeholder so it's
         //     unlikely but guard anyway in case a colliding row exists.
         const branchVersion = await catchDbException(
           async () =>
@@ -200,10 +206,10 @@ export class AppsUtilService implements IAppsUtilService {
                 updatedAt: new Date(),
                 ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
                 // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-                // slug defaults to app.id placeholder; user can rename later.
+                // slug defaults to a random UUID placeholder; user can rename later.
                 ...(!isWorkflow && {
                   appName: name,
-                  slug: app.id,
+                  slug,
                   icon: icon ?? null,
                   isPublic: false,
                 }),
@@ -312,7 +318,7 @@ export class AppsUtilService implements IAppsUtilService {
               !isWorkflow
                 ? {
                     appName: name,
-                    slug: app.id,
+                    slug,
                     icon: icon ?? null,
                     isPublic: false,
                   }
@@ -387,10 +393,10 @@ export class AppsUtilService implements IAppsUtilService {
         }
 
         // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-        // slug defaults to app.id placeholder; user can rename later.
+        // slug defaults to a random UUID placeholder; user can rename later.
         if (!isWorkflow) {
           appVersion.appName = name;
-          appVersion.slug = app.id;
+          appVersion.slug = slug;
           appVersion.icon = icon ?? null;
           appVersion.isPublic = false;
         }
@@ -415,6 +421,12 @@ export class AppsUtilService implements IAppsUtilService {
         const coRelationId = uuidv4();
         await manager.update(App, { id: app.id }, { co_relation_id: coRelationId });
         app.co_relation_id = coRelationId;
+      }
+
+      // Mirror the app_versions slug placeholder onto the in-memory App so callers
+      // (e.g. AppsService.create's response) carry the value just written.
+      if (!isWorkflow) {
+        app.slug = slug;
       }
 
       return app;
@@ -658,7 +670,7 @@ export class AppsUtilService implements IAppsUtilService {
           where: { slug: appParams.slug, organizationId, id: Not(appId) },
         });
         if (conflictingApp) {
-          await manager.update(App, conflictingApp.id, { slug: conflictingApp.id });
+          await manager.update(App, conflictingApp.id, { slug: uuidv4() });
         }
       }
 

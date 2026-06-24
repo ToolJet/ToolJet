@@ -1135,7 +1135,7 @@ export class AppImportExportService {
         where: { id: importedApp.id },
       });
       if (newApp.type === APP_TYPES.WORKFLOW) {
-        newApp.slug = importedApp.slug || importedApp.id;
+        newApp.slug = importedApp.slug || uuid();
         await manager.save(newApp);
       }
       return { newApp, resourceMapping };
@@ -3297,10 +3297,10 @@ export class AppImportExportService {
 
         // chk_app_versions_branch_metadata requires app_name AND slug to be non-null
         // whenever branch_id IS NOT NULL. Imports may carry NULL metadata (e.g. hydrate
-        // temp apps, partial exports) — fall back to deterministic placeholders so the
-        // INSERT doesn't violate the CHECK. Skipped for workflows (they store metadata
-        // on apps.* and the constraint is exempt for branch_id=NULL rows).
-        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? importedApp.id) : undefined;
+        // temp apps, partial exports) — fall back to a random UUID placeholder for the
+        // slug so the INSERT doesn't violate the CHECK. Skipped for workflows (they store
+        // metadata on apps.* and the constraint is exempt for branch_id=NULL rows).
+        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? uuid()) : undefined;
         const resolvedAppName = !isWorkflow
           ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
           : undefined;
@@ -3577,7 +3577,7 @@ export class AppImportExportService {
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
       ...(importMeta && {
-        slug: importedApp.id,
+        slug: uuid(),
         appName: importMeta.appName,
         icon: importMeta.icon,
         isPublic: importMeta.isPublic,

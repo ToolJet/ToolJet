@@ -125,7 +125,8 @@ export class AppsService implements IAppsService {
       // workflows these fields are already populated on apps.*.
       if (app.type !== APP_TYPES.WORKFLOW) {
         app.name = name;
-        app.slug = app.id;
+        // slug is set by appsUtilService.create (a random UUID placeholder mirrored
+        // onto the returned app) — do not override it with app.id here.
         app.icon = icon ?? null;
         app.isPublic = false;
       }
