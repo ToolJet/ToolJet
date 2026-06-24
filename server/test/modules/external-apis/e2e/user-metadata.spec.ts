@@ -4,16 +4,15 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createUser, initTestApp, closeTestApp } from 'test-helper';
-import { User } from 'src/entities/user.entity';
 
 jest.setTimeout(120_000);
-
-const getExtAuth = () => `Basic ${process.env.EXTERNAL_API_ACCESS_TOKEN}`;
 
 describe('ExternalApisController — user metadata', () => {
   describe('EE (plan: enterprise)', () => {
     let app: INestApplication;
+    let getExtAuth: () => string;
 
     // Workspace + member shared across all metadata tests
     let orgId: string;
@@ -22,6 +21,8 @@ describe('ExternalApisController — user metadata', () => {
 
     beforeAll(async () => {
       ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
+      const token = app.get(ConfigService).get<string>('EXTERNAL_API_ACCESS_TOKEN');
+      getExtAuth = () => `Basic ${token}`;
 
       // Admin creates the workspace
       const { user: admin } = await createUser(app, { email: 'metadata-admin@tooljet.io' });
@@ -117,6 +118,30 @@ describe('ExternalApisController — user metadata', () => {
           .expect(200);
 
         expect(res.body).toMatchObject({ id: memberId, userDetails: [] });
+      });
+
+      it('should return 400 when userDetails field is missing from request body', async () => {
+        await request(app.getHttpServer())
+          .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
+          .set('Authorization', getExtAuth())
+          .send({ unexpectedField: 'value' })
+          .expect(400);
+      });
+
+      it('should return 400 when userDetails contains entries missing key or value', async () => {
+        await request(app.getHttpServer())
+          .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
+          .set('Authorization', getExtAuth())
+          .send({ userDetails: [{ key: 'missing-value' }] })
+          .expect(400);
+      });
+
+      it('should return 403 when Authorization token is invalid', async () => {
+        await request(app.getHttpServer())
+          .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
+          .set('Authorization', 'Basic invalidtoken')
+          .send({ userDetails: [{ key: 'k', value: 'v' }] })
+          .expect(403);
       });
 
       it('should return 404 when workspaceId does not exist', async () => {
@@ -240,10 +265,51 @@ describe('ExternalApisController — user metadata', () => {
           .expect(404);
       });
 
+      it('should return 403 when Authorization token is invalid', async () => {
+        await request(app.getHttpServer())
+          .get(`/api/ext/workspace/${orgId}/user/${memberId}`)
+          .set('Authorization', 'Basic invalidtoken')
+          .expect(403);
+      });
+
       it('should return 404 when userId does not exist', async () => {
         await request(app.getHttpServer())
           .get(`/api/ext/workspace/${orgId}/user/00000000-0000-0000-0000-000000000000`)
           .set('Authorization', getExtAuth())
+          .expect(404);
+      });
+    });
+
+    // ─── Workspace isolation ─────────────────────────────────────────────────
+
+    describe('Workspace isolation', () => {
+      it('metadata written in workspace A is not readable via workspace B', async () => {
+        // Workspace A — reuse existing orgId + memberId
+        await request(app.getHttpServer())
+          .put(`/api/ext/workspace/${orgId}/user/${memberId}`)
+          .set('Authorization', getExtAuth())
+          .send({ userDetails: [{ key: 'workspace', value: 'A' }] })
+          .expect(200);
+
+        // Workspace B — separate admin, separate workspace; member has no row here
+        const { user: adminB } = await createUser(app, { email: 'isolation-admin-b@tooljet.io' });
+        const orgBId = adminB.defaultOrganizationId;
+
+        // Reading member's metadata through workspace B must 404 — member is not in B
+        await request(app.getHttpServer())
+          .get(`/api/ext/workspace/${orgBId}/user/${memberId}`)
+          .set('Authorization', getExtAuth())
+          .expect(404);
+      });
+
+      it('metadata written in workspace A is not overwritable via workspace B', async () => {
+        const { user: adminB } = await createUser(app, { email: 'isolation-admin-b2@tooljet.io' });
+        const orgBId = adminB.defaultOrganizationId;
+
+        await request(app.getHttpServer())
+          .put(`/api/ext/workspace/${orgBId}/user/${memberId}`)
+          .set('Authorization', getExtAuth())
+          .send({ userDetails: [{ key: 'workspace', value: 'B-overwrite' }] })
           .expect(404);
       });
     });
