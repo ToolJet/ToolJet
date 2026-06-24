@@ -41,10 +41,9 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { wsCurrentBranch, wsActions, wsBranches } = useWorkspaceBranchesStore((state) => ({
+  const { wsCurrentBranch, wsActions } = useWorkspaceBranchesStore((state) => ({
     wsCurrentBranch: state.currentBranch,
     wsActions: state.actions,
-    wsBranches: state.branches,
   }));
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(false);
@@ -292,18 +291,7 @@ export default function AppCard({
     );
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
-  // An app is "unsynced" only when it predates git sync being enabled:
-  //   - pulled_at is null  → never been pushed or pulled
-  //   - app.created_at < defaultBranch.createdAt → app existed before git was set up
-  // New apps created inside a git-enabled workspace have created_at >= defaultBranch.createdAt.
-  const defaultBranch = wsBranches?.find((b) => b.isDefault || b.is_default);
-  const defaultBranchCreatedAt = defaultBranch?.createdAt || defaultBranch?.created_at;
-  const isUnsynced =
-    wsCurrentBranch &&
-    app?.app_versions?.[0]?.pulled_at == null &&
-    appType !== 'workflow' &&
-    defaultBranchCreatedAt &&
-    new Date(app.created_at) < new Date(defaultBranchCreatedAt);
+  const isUnsynced = wsCurrentBranch && app?.app_versions?.[0]?.is_synced === false && appType !== 'workflow';
   return (
     <ToolTip
       message="Modules are not available on your current plan."

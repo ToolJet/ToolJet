@@ -38,19 +38,10 @@ export const ListItem = ({
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
   const [syncIconHovered, setSyncIconHovered] = useState(false);
-  const { wsCurrentBranch, wsBranches } = useWorkspaceBranchesStore((state) => ({
-    wsCurrentBranch: state.currentBranch,
-    wsBranches: state.branches,
-  }));
+  const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
-  const defaultBranch = wsBranches?.find((b) => b.isDefault || b.is_default);
-  const defaultBranchCreatedAt = defaultBranch?.createdAt || defaultBranch?.created_at;
-  const isUnsynced =
-    wsCurrentBranch &&
-    !isSampleDb &&
-    dataSource?.pulledAt == null &&
-    defaultBranchCreatedAt &&
-    new Date(dataSource.created_at || dataSource.createdAt) < new Date(defaultBranchCreatedAt);
+  // Non-plugin DSes are decamelized in the API response (isSynced → is_synced); plugin DSes keep camelCase
+  const isUnsynced = wsCurrentBranch && (dataSource?.is_synced === false || dataSource?.isSynced === false);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {

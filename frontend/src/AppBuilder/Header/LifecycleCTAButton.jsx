@@ -51,7 +51,7 @@ const LifecycleCTAButton = () => {
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-  const isUnsynced = workspaceActiveBranch && selectedVersion?.pulledAt == null && creationMode === 'DEFAULT';
+  const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && selectedVersion?.isSynced === false;
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
