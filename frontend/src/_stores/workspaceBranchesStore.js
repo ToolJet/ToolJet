@@ -58,22 +58,25 @@ export const useWorkspaceBranchesStore = create(
             ]);
 
             const branches = branchData?.branches || [];
+            const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
             // Prefer sessionStorage branch over server-returned activeBranchId
-            const storedBranch = getActiveBranch();
+            const storedBranch = isGitSyncEnabled ? getActiveBranch() : null;
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
-            const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
-            const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
+            const effectiveActiveBranchId = isGitSyncEnabled ? storedBranch?.id || serverActiveBranchId : null;
+            const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
 
-            // Persist resolved branch to sessionStorage
-            if (currentBranch) {
-              setActiveBranch(currentBranch);
+            if (isGitSyncEnabled) {
+              if (currentBranch) setActiveBranch(currentBranch);
+              registerBranchFocusSync();
+            } else {
+              unregisterBranchFocusSync();
+              setActiveBranch(null);
             }
 
-            registerBranchFocusSync();
             set({
               branches,
-              activeBranchId: currentBranch?.id || effectiveActiveBranchId,
-              currentBranch,
+              activeBranchId: isGitSyncEnabled ? currentBranch?.id || effectiveActiveBranchId : null,
+              currentBranch: isGitSyncEnabled ? currentBranch : null,
               orgGitConfig: gitStatus,
               isLoading: false,
               isInitialized: true,
@@ -132,11 +135,14 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async pushWorkspace(commitMessage, targetBranch, options = {}) {
+        async pushWorkspace(commitMessage, targetBranch, options = {}, scope) {
           set({ isPushing: true });
           try {
             const branchId = get().activeBranchId;
-            const result = await workspaceBranchesService.pushWorkspace(commitMessage, targetBranch, branchId, options);
+            const result = await workspaceBranchesService.pushWorkspace(commitMessage, targetBranch, branchId, {
+              ...options,
+              ...(scope && { scope }),
+            });
             set({ isPushing: false });
             return result;
           } catch (error) {
@@ -198,8 +204,15 @@ export const useWorkspaceBranchesStore = create(
           set({ isDeletingBranch: false, deleteBranchError: null });
         },
 
+        clearActiveBranchContext() {
+          unregisterBranchFocusSync();
+          setActiveBranch(null);
+          set({ activeBranchId: null, currentBranch: null });
+        },
+
         reset() {
           unregisterBranchFocusSync();
+          setActiveBranch(null);
           set(initialState);
         },
 
@@ -212,21 +225,24 @@ export const useWorkspaceBranchesStore = create(
             ]);
 
             const branches = branchData?.branches || [];
-            const storedBranch = getActiveBranch();
+            const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
+            const storedBranch = isGitSyncEnabled ? getActiveBranch() : null;
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
-            const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
-            const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
+            const effectiveActiveBranchId = isGitSyncEnabled ? storedBranch?.id || serverActiveBranchId : null;
+            const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
 
-            // Persist resolved branch to sessionStorage
-            if (currentBranch) {
-              setActiveBranch(currentBranch);
+            if (isGitSyncEnabled) {
+              if (currentBranch) setActiveBranch(currentBranch);
+              registerBranchFocusSync();
+            } else {
+              unregisterBranchFocusSync();
+              setActiveBranch(null);
             }
 
-            registerBranchFocusSync();
             set({
               branches,
-              activeBranchId: currentBranch?.id || effectiveActiveBranchId,
-              currentBranch,
+              activeBranchId: isGitSyncEnabled ? currentBranch?.id || effectiveActiveBranchId : null,
+              currentBranch: isGitSyncEnabled ? currentBranch : null,
               orgGitConfig: gitStatus,
               isLoading: false,
               isInitialized: true,

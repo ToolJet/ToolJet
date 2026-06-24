@@ -119,7 +119,7 @@ jobs:
       - name: Wait until backend is reachable
         run: |
           for i in {1..60}; do
-            response=$(curl -s --fail https://gcpstage-server.tooljet.ai/health || true)
+            response=$(curl -s --fail https://gcpstage-server.tooljet.dev/health || true)
             if [[ "$response" == *'"works":"yeah"'* ]]; then
               echo "✅ Backend is up and healthy"
               exit 0
