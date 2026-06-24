@@ -13,7 +13,7 @@ For public released apps, only non-restricted components will be accessible to e
 
 ## Common Use Cases
 
-- **Action buttons**: Hide, Edit, Delete, Approve - buttons from users who shouldn't perform these actions.
+- **Sensitive action buttons**: Hide action buttons such as **Edit**, **Delete**, and **Approve** from users who are not authorized to perform these actions.
 - **Sensitive information display**: Hide salary fields, personal details, or confidential data from unauthorized viewers.
 
 ## Scenarios
