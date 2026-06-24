@@ -1,7 +1,7 @@
 import { fake } from "Fixtures/fake";
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
-import { logout, updateCustomLogoutUrl } from "Support/utils/common";
+import { logout, apiUpdateInstanceSettings } from "Support/utils/common";
 import { allowPersonalWorkspace, passwordToggle, updateInstanceSettings } from "Support/utils/platform/eeCommon";
 
 
@@ -17,6 +17,10 @@ describe('Instance Login', () => {
         cy.intercept('GET', '/api/library_apps').as('appLibrary');
         cy.apiLogin();
         cy.visit('/');
+    });
+    after(() => {
+        cy.apiLogin();
+        apiUpdateInstanceSettings({customLogoutUrl: ''});
     });
 
     it('Should verify personal workspace creation functionality', () => {
@@ -106,7 +110,7 @@ describe('Instance Login', () => {
 
 
         //Set Custom logout url
-        updateCustomLogoutUrl('https://www.google.com/');
+        apiUpdateInstanceSettings({customLogoutUrl: 'https://www.google.com/'});
         cy.wait(1000);
         logout();
         cy.url().should('include', 'https://www.google.com/');
@@ -115,7 +119,7 @@ describe('Instance Login', () => {
         //Reset custom logout url
         cy.apiLogin();
         cy.visit('/');
-        updateCustomLogoutUrl();
+        apiUpdateInstanceSettings({customLogoutUrl: ''});
         cy.wait(1000);
         logout();
         cy.url().should('include', `${Cypress.config("baseUrl")}/login`);

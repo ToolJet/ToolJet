@@ -273,14 +273,14 @@ export const navigateToSettingPage = () => {
   cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 };
 
-export const updateCustomLogoutUrl = (url="") => {
+export const apiUpdateInstanceSettings = (variables) => {
   cy.getAuthHeaders().then((headers) => {
     cy.request({
       method :"PATCH", 
       url:`${Cypress.env("server_host")}/api/login-configs/instance-general`,
       headers: headers,
       body: {
-        customLogoutUrl: url
+        ...variables
       }
     }).then((response) => {
       expect(response.status).to.equal(200);
