@@ -51,11 +51,6 @@ export const Container = ({
     componentType,
   });
 
-  const isWidgetInContainerDragging = useStore(
-    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
-    shallow
-  );
-
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const { borderRadius, borderColor, boxShadow, headerDividerColor } = styles;

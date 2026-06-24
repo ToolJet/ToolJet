@@ -61,6 +61,7 @@ const SHOULD_ADD_BOX_SHADOW_AND_VISIBILITY = [
   'FileButton',
   'ButtonGroupV2',
   'Listview',
+  'FlexContainer',
   'TagsInput',
   'TreeSelect',
   'ModalV2',
@@ -86,7 +87,6 @@ const RenderWidget = ({
 }) => {
   const component = useStore((state) => state.getComponentDefinition(id, moduleId)?.component, shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
-  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
   const componentCount = useStore((state) => state.getContainerChildrenMapping(id)?.length || 0, shallow);
   const getExposedPropertyForAdditionalActions = useStore(
     (state) => state.getExposedPropertyForAdditionalActions,
@@ -276,7 +276,7 @@ const RenderWidget = ({
     if (!collapseWhenHidden) return;
     const contextIndices = normalizeLayoutContext(resolveIndex);
     const handle = requestAnimationFrame(() => {
-      adjustComponentPositions(id, currentLayout, false, contextIndices, moduleId);
+      useStore.getState().scheduleReflow(id, currentLayout, false, contextIndices, moduleId);
     });
     return () => cancelAnimationFrame(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,7 +324,6 @@ const RenderWidget = ({
           onComponentClick={onComponentClick}
           darkMode={darkMode}
           componentName={componentName}
-          adjustComponentPositions={adjustComponentPositions}
           componentCount={componentCount}
           dataCy={`${componentName}`}
           currentMode={currentMode}
