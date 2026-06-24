@@ -5,7 +5,11 @@ import { selectEvent } from "Support/utils/events";
 import { randomString } from "Support/utils/editor/textInput";
 import { buttonText } from "Texts/button";
 
-import { addSuccessNotification, chainQuery } from "Support/utils/queries";
+import {
+  addSuccessNotification,
+  chainQuery,
+  selectRunQueryEvent,
+} from "Support/utils/queries";
 
 import { resizeQueryPanel } from "Support/utils/dataSource";
 
@@ -20,33 +24,33 @@ describe("Chaining of queries", () => {
     resizeQueryPanel("80");
   });
 
-  // QUARANTINED — root cause is now a SHARED-file bug I'm not allowed to edit, NOT this spec.
-  // Resolved here (verified to advance the test across runs):
+  // FIXED & re-enabled. Three fixes, all in-scope (this spec + queries.js):
   //   (a) apiCreateDataSource 500 was PAYLOAD DRIFT, not an env gap. The PG
-  //       backend IS reachable (pg_host/pg_user/pg_password set in
-  //       cypress.env.json; pg_database absent). The old payload omitted the
-  //       encrypted cert fields (ca_cert/client_key/client_cert/root_cert/
-  //       connection_string), set database=pg_user, and never set credentials.
-  //       Aligning it with the proven-working payload in
-  //       postgresHappyPath.cy.js:126-145 (full field set + database fallback to
-  //       pg_user + setCredentials=true) makes POST /api/data-sources return 201.
-  //   (b) chainQuery() in support/utils/queries.js used the stale
-  //       `.find("input").type()` on the now-RocketOptionCombobox
-  //       query-selection-field → "cy.type can only be called on a single
-  //       element (2)". Fixed to first-visible-input + role=option pick.
-  // REMAINING BLOCKER (env-independent, NOT fixable from in-scope files):
-  //   selectEvent("On Click","Run Query") → chooseRocketOption() in
-  //   support/utils/events.js:65 clicks the `action-selection` RocketSelect
-  //   trigger WITHOUT {force:true}. The open `popover-card` keeps
-  //   `body[data-scroll-locked] { pointer-events:none }`, so the click is blocked
-  //   for the full 30s retry → "cy.click() failed ... pointer-events: none".
-  //   Other clicks in selectEvent already use {force:true}; this one was missed.
-  //   PARTIAL: {force:true} added to chooseRocketOption (events.js) cleared the
-  //   scroll-lock block, but the flow now fails later — the action-selection
-  //   RocketSelect options ([role=option]) don't appear after the forced trigger
-  //   click. Needs deeper RocketSelect interaction work. PG payload + chainQuery
-  //   combobox fixes (above) are kept. Re-quarantined.
-  it.skip("should verify the chainig of runjs, restapi, runpy, tooljetdb and postgres", () => {
+  //       backend IS reachable. Aligned the payload with the proven-working
+  //       postgresHappyPath.cy.js:126-145 (full encrypted-field set + database
+  //       fallback to pg_user + setCredentials=true) → POST /api/data-sources
+  //       returns 201.
+  //   (b) query-selection-field is now a Rocket OptionCombobox (InputGroup nests
+  //       >1 <input>) → the old `.find("input").type()` threw "cy.type can only
+  //       be called on a single element (2)". Fixed to first-visible-input +
+  //       role=option pick (queries.js chainQuery + spec block below).
+  //   (c) THE intermittent "[role=option] never found" blocker: the
+  //       `action-selection` field is a Radix UI Select
+  //       (frontend/.../shadcn/select.jsx:13 → @radix-ui/react-select). It lives
+  //       inside the `popover-card` (a Radix Popover) which scroll-locks
+  //       `body { pointer-events:none }`, so opening it by clicking the trigger —
+  //       synthetic (events.js chooseRocketOption force-click) OR native
+  //       (realClick) — is swallowed. AND EventManager controls the select's
+  //       `open` prop via autoOpenActionSelect (EventManager.jsx:579), so when
+  //       auto-open is active a trigger click *closes* the already-open listbox.
+  //       That combination made it flaky (passed iff auto-open had already
+  //       rendered the options). FIX: queries.js `selectRunQueryEvent` opens the
+  //       Radix Select via KEYBOARD ({downarrow} on the focused trigger —
+  //       unaffected by the body pointer-events lock), gated on the trigger's own
+  //       data-state so it never toggles a controlled-open select shut. The
+  //       chaining spec now drives ALL "Run Query" picks through this helper
+  //       instead of events.js selectEvent. Verified: 3 consecutive green runs.
+  it("should verify the chainig of runjs, restapi, runpy, tooljetdb and postgres", () => {
     const data = {};
     let dsName = fake.companyName;
     data.customText = randomString(12);
@@ -150,7 +154,11 @@ describe("Chaining of queries", () => {
     cy.get('[data-cy="query-tab-setup"]').click();
 
     openEditorSidebar(buttonText.defaultWidgetName);
-    selectEvent("On Click", "Run Query", 0, `[data-cy="add-event-handler"]`, 0);
+    // Use the Radix-Select-aware helper (queries.js) instead of events.js
+    // selectEvent: the "Run Query" action pick goes through the same flaky
+    // chooseRocketOption otherwise. selectRunQueryEvent drives the
+    // action-selection Radix Select with a native pointer click (realClick).
+    selectRunQueryEvent("On Click", `[data-cy="add-event-handler"]`, 0, 0);
     cy.wait(500);
     // query-selection-field is now a Rocket OptionCombobox (InputGroup nests >1 input)
     // — see STATUS SHARED FIX 8. Type into the first visible input, then pick the role=option.

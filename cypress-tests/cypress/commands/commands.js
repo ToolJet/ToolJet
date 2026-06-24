@@ -152,17 +152,10 @@ Cypress.Commands.add(
       return mc?.id ? `#${mc.id}` : "#real-canvas";
     };
 
-    // The FIRST real-drag of a spec run silently loses its CDP intercept
-    // (cypress-real-dnd arms `Input.setInterceptDrags` lazily), so react-dnd's
-    // drop fires but no component is created. The intercept warms up after that
-    // first attempt. Rather than depend on a global `cy.realDragInit()` (which
-    // still misses the very first drag), retry the full open→search→drag until
-    // a new component actually appears on the canvas.
-    //
     // Poll for the new widget instead of checking once after a fixed wait: a
     // fixed delay races the render+autosave and triggers a SPURIOUS retry that
     // double-drops the widget (button1 + button2). Only re-drag if no new widget
-    // appears within the poll window (a genuine cold-intercept miss).
+    // appears within the poll window (a genuine cold-intercept SILENT miss).
     const confirmDropOrRetry = (before, pollsLeft, triesLeft) => {
       countWidgets().then((now) => {
         if (now > before) return; // drop succeeded
@@ -175,27 +168,84 @@ Cypress.Commands.add(
       });
     };
 
+    // ----------------------------------------------------------------------
+    // THE COLD-FIRST-DRAG THROW (suite-wide #1 blocker) and how this recovers.
+    //
+    // `cy.realDragAndDrop` → `cy.task("cdpRealDrag")`. On a cold pipeline (spec's
+    // first drag, and re-cold after every apiCreateApp+openApp AUT navigation in
+    // beforeEach) the plugin's CDP `Input.setInterceptDrags` arming is silently
+    // absorbed by Cypress's still-settling automation/snapshot CDP traffic. The
+    // plugin retries ONCE internally, but its warmup (getClient's cached
+    // cdpPromise) runs only ONCE per spec run — NOT per navigation — so a freshly
+    // navigated AUT can exhaust both internal attempts and the task REJECTS:
+    //   "[cypress-real-dnd] No Input.dragIntercepted ...".
+    // A rejected cy.task is a command-queue failure that `.then()` cannot catch,
+    // so the old count-based retry never ran and beforeEach died.
+    //
+    // FIX: drive the drag under a scoped, single-shot `cy.on('fail')` trap. When
+    // the cold-intercept throw fires, the trap re-arms via cy.realDragInit()
+    // (re-runs the plugin warmup), settles, and re-drives the FULL attempt
+    // (open→search→drag→count-poll). Returning false from the trap stops Cypress
+    // from failing the test; the re-queued attempt resumes the command queue.
+    // Any non-cold-intercept error, or exhausting throwTriesLeft, re-throws so we
+    // never mask a genuine failure.
+    //
+    // We use a module-scoped flag (not a closure return) because Cypress invokes
+    // `fail` handlers synchronously at error time; the handler enqueues recovery
+    // commands and returns false. The handler is re-installed on every attempt so
+    // it stays single-shot per drag.
+    // Hold the current trap so we can detach a stale one before installing the
+    // next (a never-fired `once` would otherwise stack and all fire together).
+    let currentTrap = null;
+    const installFailTrap = (throwTriesLeft) => {
+      if (currentTrap) cy.removeListener("fail", currentTrap);
+      const onFail = (err) => {
+        currentTrap = null; // this handler has now fired
+        const msg = (err && err.message) || "";
+        const isColdIntercept = /dragIntercepted|cdpRealDrag/i.test(msg);
+        if (isColdIntercept && throwTriesLeft > 1) {
+          // Recover the cold-intercept THROW: re-arm + re-drive the whole
+          // attempt. The re-armed init re-runs the plugin's mouse-cycle warmup.
+          cy.realDragInit();
+          cy.wait(900);
+          attempt(throwTriesLeft - 1);
+          return false; // swallow this failure; the re-driven attempt continues
+        }
+        throw err; // unrecoverable or out of retries — fail honestly
+      };
+      currentTrap = onFail;
+      cy.on("fail", onFail);
+    };
+
     const attempt = (triesLeft) => {
+      installFailTrap(triesLeft);
       countWidgets().then((before) => {
         openPanelAndSearch();
         // Wait for react-dnd to mark the source draggable before initiating.
         cy.get(sourceSelector, { timeout: 15000 }).should("exist");
+        // Re-arm immediately before each drag: heavy ops since the last arm
+        // (panel toggle, search render) can clear the renderer's intercept.
+        cy.realDragInit();
+        cy.wait(300);
         cy.get("body").then(($body) => {
           cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
             targetX: positionX,
             targetY: positionY,
           });
-          confirmDropOrRetry(before, 16, triesLeft); // up to ~8s for render
+          // Silent-miss recovery (intercept armed, but react-dnd made no
+          // component). The THROW path is handled by the fail-trap above.
+          confirmDropOrRetry(before, 16, triesLeft);
         });
       });
     };
 
-    // Arm the CDP drag intercept before dragging. Without this the intercept
-    // can be disarmed between tests (fresh app per beforeEach), and the next
-    // drag throws `No Input.dragIntercepted` instead of silently missing — a
-    // throw the count-based retry below can't catch. realDragInit re-arms it.
+    // Arm the CDP drag intercept before the first drag (re-runs plugin warmup
+    // for THIS navigation; the plugin only auto-warms once per spec run).
     cy.realDragInit();
-    attempt(3);
+    cy.wait(500);
+    // triesLeft doubles as the THROW retry budget — 4 gives the cold intercept
+    // up to 4 re-arm+re-drive cycles before failing for real.
+    attempt(4);
     cy.waitForAutoSave();
   }
 );

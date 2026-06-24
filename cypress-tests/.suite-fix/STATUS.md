@@ -39,6 +39,31 @@ Server: http://localhost:8082 (must stay up)
 | 20 | newSuits/queries/chainingOfQueries | ⛔ | 1 test quarantined, 1 was already .skip (exit 0, 2 pending). 2 REAL fixes applied & verified to advance: (a) `apiAddQueryToApp` param key `dsName`→`dataSourceName` (apiCommands.js:131 destructures dataSourceName; only 37 of 345 callers used dsName), (b) `query-selection-field` → OptionCombobox first-visible-input + role=option pick (was `cy.type 2 elements`, SHARED FIX 8). (c) PG datasource payload aligned with postgresHappyPath (full encrypted fields + setCredentials) → POST returns 201 (NOT an env block — earlier 500 was payload drift). REMAINING: events.js chooseRocketOption now force-clicks (scroll-lock cleared, verified no regression on green button.cy.js), but the action-selection RocketSelect options ([role=option]) don't appear after the forced click — deeper RocketSelect work needed. Re-quarantined (it.skip). |
 | 21 | component-new/image | ⛔ | All 3 tests QUARANTINED. Spec is hard-wired to a REMOTE fixture app (appbuilder-v3-lts-eetestsystem.tooljet.com/applications/image-app-automation) that no longer exists → redirects to /error/invalid-link (404 app-authentication-config + 403 session). Blocked by missing EXTERNAL test data, not selector drift. Also removed `{baseUrl:null}` (broke the @cypress/code-coverage after-all hook). Spec now clean: 3 pending, exit 0. |
 
+## ✅ COLD-FIRST-DRAG THROW — FIXED (suite-wide #1 blocker)
+`cy.dragAndDropWidget` reliably THREW `[cypress-real-dnd] No Input.dragIntercepted`
+on a spec's first drag and re-cold after every apiCreateApp+openApp navigation in
+beforeEach. Root: `cy.realDragAndDrop`→`cy.task("cdpRealDrag")`; on a cold pipeline
+the plugin's `Input.setInterceptDrags` arm is absorbed by Cypress's settling CDP
+traffic. The plugin's warmup (cached cdpPromise) runs ONCE per spec run, NOT per
+navigation, so both its internal attempts can miss and the TASK REJECTS — an
+un-catchable command-queue failure that killed beforeEach (the count-based retry
+never ran).
+FIX (test-side only, `commands.js dragAndDropWidget` — node_modules untouched):
+(1) re-arm `cy.realDragInit()` before the run AND before EACH drag (per-navigation
+warmup the plugin doesn't do); (2) drive each attempt under a scoped, single-shot
+`cy.on('fail')` trap (`installFailTrap`): on a cold-intercept throw it re-arms +
+re-drives the FULL attempt (open→search→drag→count-poll) and returns false to
+swallow the failure; any other error or exhausted budget (4) re-throws honestly;
+(3) the count-based `confirmDropOrRetry` still handles the SILENT miss.
+VALIDATED: buttonHappyPath un-skipped → 2 pass / 0 fail / 6 pending, exit 0 (and
+run time dropped 6m→1m — no more retry-exhaustion). ZERO dragIntercepted throws in
+any run. Green regression `newSuits/componentsBasics/button.cy.js` still 2/0/1 — no
+regression. componentsBasicHappypath re-quarantined for a DIFFERENT blocker (NOT
+the throw): beforeEach `modifyCanvasSize(1200,900)` shrinks #real-canvas to a
+~2%-wide sliver because the Max-canvas-width field gained a %/px unit
+(CanvasSettings.jsx:78) the shared modifyCanvasSize doesn't set → drop at (300,300)
+lands off-canvas (silent miss) → needs shared modifyCanvasSize + body-util rewrite.
+
 ## CRITICAL root cause — drag command itself (fixed)
 The real-dnd drag was creating NO component (probe: `draggable-widget-button1: no`).
 Chain of causes, all now handled in `commands.js dragAndDropWidget`:
