@@ -2,6 +2,7 @@
 import moment from 'moment';
 import _, { isEmpty } from 'lodash';
 import JSON5 from 'json5';
+import DOMPurify from 'dompurify';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
@@ -687,7 +688,10 @@ export function hasCircularDependency(obj, stack = new Set()) {
 
 export const hightlightMentionedUserInComment = (comment) => {
   var regex = /(\()([^)]+)(\))/g;
-  return comment.replace(regex, '<span class=mentioned-user>$2</span>');
+  // Comments are plain text (composed via react-mentions); strip all HTML so a typed
+  // payload can't survive sanitize, then add only the mention highlight span.
+  const safeComment = DOMPurify.sanitize(comment, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+  return safeComment.replace(regex, '<span class="mentioned-user">$2</span>');
 };
 //   const currentPageId = _ref.currentPageId;
 //   const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
