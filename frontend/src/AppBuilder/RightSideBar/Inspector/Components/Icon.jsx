@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 // eslint-disable-next-line import/no-unresolved
@@ -163,6 +164,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
     isOpen: true,
     children: additionalActions?.map((property) => {
