@@ -1,9 +1,12 @@
 import React from 'react';
 import { toast } from 'react-hot-toast';
-import { MarketplaceCard } from './MarketplaceCard';
-import { pluginsService, marketplaceService } from '@/_services';
 
-export const MarketplacePlugins = () => {
+import { pluginsService } from '@/_services/plugins.service';
+import { marketplaceService } from '@/_services/marketplace.service';
+
+import { MarketplaceCard } from './MarketplaceCard';
+
+const MarketplacePlugins = () => {
   const [installedPlugins, setInstalledPlugins] = React.useState({});
   const [allPlugins, setAllPlugins] = React.useState([]);
 
@@ -59,3 +62,5 @@ export const MarketplacePlugins = () => {
     </div>
   );
 };
+
+export default MarketplacePlugins;

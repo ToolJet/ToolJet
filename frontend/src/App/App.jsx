@@ -14,9 +14,14 @@ import { Authorize as Oauth } from '@/Oauth';
 
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
 
-import { MarketplacePage } from '@/MarketplacePage';
-import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
-import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
+const MarketplacePage = React.lazy(() => import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage'));
+const InstalledPlugins = React.lazy(() =>
+  import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/InstalledPlugins')
+);
+const MarketplacePlugins = React.lazy(() =>
+  import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/MarketplacePlugins')
+);
+
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
