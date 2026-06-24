@@ -176,6 +176,7 @@ export class AbilityUtilService {
       isAllViewable: false,
       hiddenAppsId: [],
       hideAll: false,
+      ownedAppsId: [],
       environmentAccess: {
         development: false,
         staging: false,
@@ -257,6 +258,7 @@ export class AbilityUtilService {
       });
 
       const appsIdOwnedByUser = appsOwnedByUser.map((app) => app.id);
+      userAppsPermissions.ownedAppsId = appsIdOwnedByUser;
       userAppsPermissions.editableAppsId = Array.from(
         new Set([...userAppsPermissions.editableAppsId, ...appsIdOwnedByUser])
       );

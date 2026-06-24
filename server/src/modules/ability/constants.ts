@@ -27,6 +27,7 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
     isAllViewable: false,
     hiddenAppsId: [],
     hideAll: false,
+    ownedAppsId: [],
   },
   [MODULES.WORKFLOWS]: {
     editableWorkflowsId: [],
@@ -42,6 +43,7 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
     isAllViewable: false,
     hiddenAppsId: [],
     hideAll: false,
+    ownedAppsId: [],
   },
 };
 
@@ -58,6 +60,7 @@ export const DEFAULT_USER_APPS_PERMISSIONS: UserAppsPermissions = {
   isAllViewable: false,
   hiddenAppsId: [],
   hideAll: false,
+  ownedAppsId: [],
   environmentAccess: {
     development: false,
     staging: false,

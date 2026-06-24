@@ -34,9 +34,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     // unconditional can() only after the JS-level check passes.
     const tjApp: App | undefined = request?.tj_app;
 
-    // CREATE: module_create permission OR admin/superAdmin
+    // CREATE / IMPORT / CLONE all produce a NEW module → gate on module_create OR admin/superAdmin.
     if (superAdmin || isAdmin || userPermission?.moduleCreate) {
-      can(FEATURE_KEY.CREATE_MODULE, App);
+      can([FEATURE_KEY.CREATE_MODULE, FEATURE_KEY.IMPORT_MODULE, FEATURE_KEY.CLONE_MODULE], App);
     }
 
     // DELETE: module_delete permission OR admin/superAdmin → unconditional grant
@@ -59,9 +59,9 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       }
     }
 
-    // CLONE/EXPORT/IMPORT: builder or above (unchanged semantics)
+    // EXPORT is read-only → builder or above.
     if (superAdmin || isAdmin || isBuilder) {
-      can([FEATURE_KEY.CLONE_MODULE, FEATURE_KEY.EXPORT_MODULE, FEATURE_KEY.IMPORT_MODULE], App);
+      can(FEATURE_KEY.EXPORT_MODULE, App);
     }
   }
 }

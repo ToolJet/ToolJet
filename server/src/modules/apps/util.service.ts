@@ -478,10 +478,12 @@ export class AppsUtilService implements IAppsUtilService {
             userAppPermissions as unknown as UserAppsPermissions
           );
         }
-        return this.addViewableFrontEndAppsFilter(
+        // Modules support hide-from-dashboard on Edit groups (#5135) — use dedicated helpers
+        // that treat editable ids the same as viewable ids for hiding purposes.
+        return this.addViewableModulesFilter(
           viewableAppsQb,
           userAppPermissions as unknown as UserAppsPermissions,
-          viewableApps
+          this.calculateViewableModules(userAppPermissions as unknown as UserAppsPermissions)
         );
       case APP_TYPES.FRONT_END:
       default:
@@ -556,6 +558,60 @@ export class AppsUtilService implements IAppsUtilService {
       return query;
     }
 
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
+    return query;
+  }
+
+  /**
+   * Modules support hide-from-dashboard on Edit groups (#5135 / DEV-63).
+   * Unlike front-end apps, editable module ids are subject to hiding — a builder-role
+   * member can be hidden from the dashboard while still having URL + builder access.
+   *
+   * hideAll → everything hidden (no id in the whitelist).
+   * else    → union of editable ∪ viewable, minus hidden ids.
+   */
+  private calculateViewableModules(userModulePermissions: UserAppsPermissions): string[] {
+    const { ownedAppsId } = userModulePermissions;
+    // Owner exemption is absolute: a creator always sees their own module on the dashboard,
+    // even under hideAll or a hide-from-dashboard group containing the module.
+    if (userModulePermissions.hideAll) {
+      // Everything hidden except owned; [null] keeps the IN-clause valid when nothing is owned.
+      return [null, ...ownedAppsId];
+    }
+    const allPermittedIds = Array.from(
+      new Set([...userModulePermissions.editableAppsId, ...userModulePermissions.viewableAppsId])
+    );
+    return [
+      null,
+      ...allPermittedIds.filter((id) => !userModulePermissions.hiddenAppsId.includes(id) || ownedAppsId.includes(id)),
+    ];
+  }
+
+  private addViewableModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions,
+    viewableModules: string[]
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, hideAll, hiddenAppsId } = userModulePermissions;
+
+    // "All modules" grant with no per-module hides — no restriction needed.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length === 0) {
+      return query;
+    }
+
+    // "All modules" grant but some specific modules are hidden — exclude them (including
+    // edit-via-group ones, unlike the apps filter which exempts editable ids). Owned modules
+    // are always exempt: a creator never loses their own module from the dashboard.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length > 0) {
+      const { ownedAppsId } = userModulePermissions;
+      const hiddenExceptOwned = hiddenAppsId.filter((id) => !ownedAppsId.includes(id));
+      if (hiddenExceptOwned.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenExceptOwned)', { hiddenExceptOwned });
+      }
+      return query;
+    }
+
+    // All other cases (hideAll, or no isAll grant): whitelist of permitted & visible modules.
     query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
     return query;
   }

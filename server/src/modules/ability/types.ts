@@ -55,6 +55,8 @@ export interface UserAppsPermissions {
   isAllViewable: boolean;
   hiddenAppsId: string[];
   hideAll: boolean;
+  // Modules the user owns (apps.user_id). Owner-exempt from hide-from-dashboard.
+  ownedAppsId: string[];
   environmentAccess?: EnvironmentPermissionSet;
   appSpecificEnvironmentAccess?: Record<string, EnvironmentPermissionSet>;
 }
