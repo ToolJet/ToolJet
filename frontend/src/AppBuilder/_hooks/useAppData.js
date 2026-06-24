@@ -16,6 +16,7 @@ import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import useRouter from '@/_hooks/use-router';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
@@ -76,8 +77,7 @@ const useAppData = (
   mode = 'edit',
   { environmentId, versionId } = {},
   moduleMode = false,
-  appSlug,
-  canEdit = true
+  appSlug
 ) => {
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
@@ -515,10 +515,20 @@ const useAppData = (
         if (!moduleMode) {
           updateFeatureAccess();
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          setIsEditorReadOnly(false); // non-module editors are never gated by module read-only
         } else if (moduleId === 'canvas') {
-          // Module opened as the main editor (not a nested module): needs its own
-          // currentVersionId so saveComponentChanges can reach the correct version endpoint.
+          // Module opened as the main editor (not a nested module): AppLoader resets all
+          // stores on mount, so feature access must be reloaded here too — otherwise
+          // modulesEnabled stays false and the ModuleContainer renders with the `disabled`
+          // class (opacity + pointer-events:none), breaking drops/move inside the module.
+          updateFeatureAccess();
+          // Needs its own currentVersionId so saveComponentChanges can reach the correct version endpoint.
           setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
+          // Build-with (view-only) access → read-only editor. Security is enforced server-side;
+          // this only switches the editor UI into read-only (see getShouldFreeze).
+          const moduleOwnerId = appData?.user_id ?? appData?.editing_version?.app?.user_id ?? appData?.app?.user_id;
+          const canEdit = canEditModule(authenticationService.currentSessionValue, appId, moduleOwnerId);
+          setIsEditorReadOnly(!canEdit);
         }
         setAppHomePageId(homePageId, moduleId);
         if (!moduleMode && appData.modules) {
@@ -591,14 +601,6 @@ const useAppData = (
         setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))), moduleId);
         initDependencyGraph(moduleId);
         setCurrentMode(mode, moduleId); // TODO: set mode based on the slug/appDef
-        // Gate Build-with-only module access: canEdit=false → read-only editor
-        // Explicit reset to false handles the case where the user navigates from a
-        // Build-with module to an editable module within the same session (stale true).
-        if (moduleMode) {
-          setIsEditorReadOnly(!canEdit);
-        } else {
-          setIsEditorReadOnly(false); // always reset for non-module editors
-        }
 
         // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
         if (!isPublicAccess && !moduleMode) {
@@ -626,7 +628,7 @@ const useAppData = (
           toast.error('Error fetching module data');
         }
       });
-  }, [setApp, setEditorLoading, currentSession, mode, canEdit]);
+  }, [setApp, setEditorLoading, currentSession, mode]);
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {

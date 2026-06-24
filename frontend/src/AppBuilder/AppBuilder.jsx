@@ -25,18 +25,10 @@ import { useNavigate } from 'react-router-dom';
 // const QueryPanel = lazy(() => import('@/AppBuilder/QueryPanel'));
 
 // TODO: split Loader into separate component and remove editor loading state from Editor
-export const Editor = ({
-  id: appId,
-  darkMode,
-  moduleId = 'canvas',
-  switchDarkMode,
-  appType = 'front-end',
-  canEdit,
-}) => {
+export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, appType = 'front-end' }) => {
   const isModuleEditor = appType === 'module';
-  // canEdit from validate response: absent means true; only false for Build-with-only modules
-  const resolvedCanEdit = canEdit !== false;
-  useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor, undefined, resolvedCanEdit);
+  // Module read-only (Build-with vs Edit) is resolved inside useAppData from the session.
+  useAppData(appId, moduleId, darkMode, 'edit', {}, isModuleEditor);
   const isEditorLoading = useStore((state) => state.loaderStore.modules[moduleId].isEditorLoading, shallow);
   const currentMode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const hasModuleAccess = useStore((state) => state.license.featureAccess?.modulesEnabled);

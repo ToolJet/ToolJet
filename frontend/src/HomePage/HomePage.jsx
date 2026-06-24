@@ -57,6 +57,7 @@ import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 const { iconList, defaultIcon } = configs;
 import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedModal';
+import { canEditModule } from '@/modules/Modules/helpers/modulePermissions';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
 const MAX_APPS_PER_PAGE = 9;
@@ -723,19 +724,23 @@ class HomePageComponent extends React.Component {
           return false;
       }
     } else if (this.props.appType === 'module') {
+      // Admins have implicit full access to all modules
+      if (currentSession?.admin || currentSession?.super_admin) {
+        return true;
+      }
       const modulePerms = currentSession?.module_group_permissions;
       if (modulePerms) {
-        const canEditModule =
-          modulePerms.is_all_editable || (app?.id && modulePerms.editable_apps_id?.includes(app.id));
+        // Shared with the module editor read-only gate (useAppData) so the two can't drift.
+        const canEdit = canEditModule(currentSession, app?.id, app?.user_id);
         const canReadModule =
-          canEditModule || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
+          canEdit || modulePerms.is_all_viewable || (app?.id && modulePerms.viewable_apps_id?.includes(app.id));
         switch (action) {
           case 'create':
             return user_permissions.module_create;
           case 'read':
             return this.isUserOwnerOfApp(user, app) || canReadModule;
           case 'update':
-            return canEditModule || this.isUserOwnerOfApp(user, app);
+            return canEdit;
           case 'delete':
             return user_permissions.module_delete || this.isUserOwnerOfApp(user, app);
           default:
@@ -743,7 +748,7 @@ class HomePageComponent extends React.Component {
         }
       }
       // CE fallback: any builder can perform all module actions
-      return currentSession?.role?.name === 'builder' || currentSession?.super_admin || currentSession?.admin;
+      return currentSession?.role?.name === 'builder';
     }
   }
 

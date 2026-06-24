@@ -160,7 +160,7 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canEdit: !prevState.initialPermissionState.canEdit,
                   canView: prevState.initialPermissionState.canEdit,
-                  ...(!prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                  // hideFromDashboard is preserved when switching Edit ⇄ Build-with (#5135)
                 },
               }));
             }}
@@ -170,7 +170,7 @@ function AddEditResourcePermissionsModal({
                   ...prevState.initialPermissionState,
                   canView: !prevState.initialPermissionState.canView,
                   canEdit: prevState.initialPermissionState.canView,
-                  ...(prevState.initialPermissionState.canEdit && { hideFromDashboard: false }),
+                  // hideFromDashboard is preserved when switching Edit ⇄ Build-with (#5135)
                 },
               }));
             }}
