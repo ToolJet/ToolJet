@@ -317,6 +317,7 @@ describe("App creation", () => {
         );
         cy.clearAndType(commonSelectors.appNameInput, data.appName);
         cy.get(commonSelectors.createAppButton).should("be.enabled").click();
+        //test
     });
 });
 
