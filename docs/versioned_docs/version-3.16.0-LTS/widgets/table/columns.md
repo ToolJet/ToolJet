@@ -73,7 +73,7 @@ This column type is used for columns with text values. Unlike the text column ty
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
+| Text Alignment | Aligns the text within the column cells and the column header.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
 | Text Color | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -96,7 +96,7 @@ Selecting the column type as number will load numerical data in the column cells
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the text within the column.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
+| Text Alignment  | Aligns the text within the column cells and the column header.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
 | Text Color | Modifies the color of the text in the column. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -118,7 +118,7 @@ The text column type can be used for multi-line text.
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
+| Text Alignment | Aligns the text within the column cells and the column header.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
 | Text Color     | Modifies the color of the text in the column.                                                                             | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -157,7 +157,7 @@ The Date Picker type can be used to display dates.
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment   | Aligns the text within the column.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
+| Text Alignment   | Aligns the text within the column cells and the column header.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
 | Text Color   | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -192,7 +192,7 @@ Options can be used to provide values for the select column as an array. You can
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.   |
+| Text Alignment | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.   |
 | Text Color     | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -226,7 +226,7 @@ Options can be used to provide values for the select column as an array. You can
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch. |
+| Text Alignment | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch. |
 | Text Color     | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -248,7 +248,7 @@ The boolean column type can be used to display boolean values. If the value is t
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Alignment | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
+| Alignment | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Checked  | Select color for checked checkbox.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Unchecked | Select color for unchecked checkbox. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
@@ -270,7 +270,7 @@ The image column type can be used to display images.
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
+| Text Alignment | Aligns the text within the column cells and the column header.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.  |
 | Text Color  | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. | 
 
@@ -291,7 +291,7 @@ The image column type can be used to display images.
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
+| Text Alignment  | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Text Color      | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.|
 
@@ -322,7 +322,7 @@ The Rating column type displays an interactive star or heart rating within table
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Alignment | Aligns the rating icons within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch. |
+| Alignment | Aligns the rating icons within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch. |
 | Selected color | Sets the color for selected (filled) rating icons. | Select the color or click on **fx** and input code that programmatically returns a Hex color code (Default: `#EFB82D` for stars, `#EE5B67` for hearts). |
 | Unselected color | Sets the color for unselected (empty) rating icons. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 
@@ -343,7 +343,7 @@ The Rating column type displays an interactive star or heart rating within table
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
+| Text Alignment  | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Text Color | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -363,7 +363,7 @@ The Rating column type displays an interactive star or heart rating within table
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
+| Text Alignment  | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Text Color | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -383,7 +383,7 @@ The Rating column type displays an interactive star or heart rating within table
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
+| Text Alignment  | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Text Color | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -411,7 +411,7 @@ When a user adds a new tag that is not in the predefined list, both the `label` 
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the tag chips within the column. | Set alignment to `left`, `center`, or `right`. |
+| Text Alignment  | Aligns the tag chips within the column cells and the column header. | Set alignment to `left`, `center`, or `right`. |
 | Cell Color | Adjusts the background color of the cell. | Select a color or use **fx** to return a Hex color code. |
 
 ---
@@ -470,7 +470,7 @@ This default column is used to display text.
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
+| Text Alignment | Aligns the text within the column cells and the column header.	| Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
 | Text Color     | Modifies the color of the text in the column. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -493,7 +493,7 @@ The **Dropdown** column type is used to display a dropdown in the column cells u
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment   | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`.    |
+| Text Alignment   | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`.    |
 | Text Color    | Modifies the color of the text in the column.   | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -517,7 +517,7 @@ The multiselect column type is used to show multiple selections or display a dro
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment  | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`.   |
+| Text Alignment  | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`.   |
 | Text Color  | Modifies the color of the text in the column. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -539,7 +539,7 @@ The **Toggle Switch** column type is used to display a toggle switch in the colu
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`.  |
+| Text Alignment | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`.  |
 | Text Color | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color | Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -563,7 +563,7 @@ The **Radio** column type is used to show radio buttons in the column cells, off
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`.       |
+| Text Alignment | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`.       |
 | Text Color | Modifies the color of the text in the column. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -587,7 +587,7 @@ The **Badge** column type is utilized to exhibit labels or tags on the columns, 
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column. | Set alignment to `left`, `center`, or `right`.       |
+| Text Alignment | Aligns the text within the column cells and the column header. | Set alignment to `left`, `center`, or `right`.       |
 | Text Color | Modifies the color of the text in the column. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -611,7 +611,7 @@ Similar to the **Badge** type, the **Multiple Badges** type is used to display m
 
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`.       |
+| Text Alignment | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`.       |
 | Text Color     | Modifies the color of the text in the column.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
@@ -631,7 +631,7 @@ The **Tags** column type is utilized to display an array of tags within the colu
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
-| Text Alignment | Aligns the text within the column.	 | Set alignment to `left`, `center`, or `right`.       |
+| Text Alignment | Aligns the text within the column cells and the column header.	 | Set alignment to `left`, `center`, or `right`.       |
 | Text Color  | Modifies the color of the text in the column. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Cell Color| Adjusts the background color of the cell. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.| 
 
