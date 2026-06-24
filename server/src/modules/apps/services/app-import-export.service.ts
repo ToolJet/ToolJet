@@ -695,7 +695,20 @@ export class AppImportExportService {
       // into per-version files. Workflows leave the export unchanged — apps.* already
       // carries the canonical metadata for them.
       if (appToExport?.type !== APP_TYPES.WORKFLOW) {
-        // this.appsRepository.findById sets app meta data from versions to app
+        // The exported app-level metadata must reflect the VERSION being exported
+        // (e.g. a feature-branch row), not the default-branch canonical overlay that
+        // findById/overlayAppMetadata applies. For an app that only exists on a
+        // feature branch the default-branch row is still a stub, so the overlay
+        // resolves nothing and would serialize null name/icon/slug into git. Read the
+        // metadata from the primary exported version row (the raw app_versions columns)
+        // before stripping the per-version copies so the pushed JSON always carries it.
+        const primary = (versionId && appVersions.find((v) => v.id === versionId)) || appVersions[0];
+        if (primary) {
+          if ((primary as any).appName != null) appToExport.name = (primary as any).appName;
+          if ((primary as any).slug != null) appToExport.slug = (primary as any).slug;
+          if ((primary as any).icon != null) appToExport.icon = (primary as any).icon;
+          if ((primary as any).isPublic != null) appToExport.isPublic = (primary as any).isPublic;
+        }
         for (const v of appVersions) {
           delete (v as any).appName;
           delete (v as any).slug;
