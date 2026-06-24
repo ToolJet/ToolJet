@@ -1,13 +1,5 @@
 import { metrics } from '@opentelemetry/api';
 
-/**
- * OTEL Frontend Metrics — Phase 1 (errors only)
- *
- * Three counters: JS errors, widget errors, query errors.
- * Each carries an app_context label ('released_app' | 'platform') so dashboards
- * can split customer-facing app errors from ToolJet platform errors.
- */
-
 let frontendMeter: any;
 let frontendJsErrorCounter: any;
 let frontendWidgetErrorCounter: any;
