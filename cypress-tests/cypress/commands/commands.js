@@ -250,6 +250,47 @@ Cypress.Commands.add(
   }
 );
 
+/* ===========================================================================
+ * REUSE-AFTER-PLUGIN-FIX: simplified dragAndDropWidget (band-aid removed)
+ * ---------------------------------------------------------------------------
+ * The `cy.on('fail')` trap + `installFailTrap`/`currentTrap`/`onFail` above is
+ * a WORKAROUND for a bug in cypress-real-dnd: `cy.realDragInit()` is a no-op on
+ * a warm (cached) CDP client, so it can't re-arm the intercept after each
+ * apiCreateApp+openApp AUT navigation → the first post-navigation drag THROWS
+ * "No Input.dragIntercepted", which a rejected cy.task can't recover from.
+ *
+ * Once cypress-real-dnd is fixed so `cy.realDragInit()` (or a new
+ * `cy.realDragRewarm()`) ACTUALLY re-runs the arm+warmup on the existing client
+ * — see cypress-tests/CYPRESS_REAL_DND_FIX.md for the exact package change —
+ * the throw stops happening, the fail-trap is no longer needed, and this whole
+ * command collapses to the version below. Delete `installFailTrap`,
+ * `currentTrap`, `onFail`, and the `cy.on('fail')` wiring; keep only the
+ * per-navigation re-arm + the silent-miss poll:
+ *
+ *   const attempt = (triesLeft) => {
+ *     countWidgets().then((before) => {
+ *       openPanelAndSearch();
+ *       cy.get(sourceSelector, { timeout: 15000 }).should("exist");
+ *       cy.realDragInit();   // post-fix: genuinely re-arms+re-warms per nav
+ *       cy.wait(300);
+ *       cy.get("body").then(($body) => {
+ *         cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
+ *           targetX: positionX,
+ *           targetY: positionY,
+ *         });
+ *         confirmDropOrRetry(before, 16, triesLeft); // silent-miss safety net
+ *       });
+ *     });
+ *   };
+ *   cy.realDragInit();
+ *   cy.wait(500);
+ *   attempt(3);
+ *   cy.waitForAutoSave();
+ *
+ * Validate after switching: re-run buttonHappyPath + datePickerHappyPath +
+ * componentsBasics/button.cy.js — all should stay green with NO fail-trap.
+ * =========================================================================== */
+
 Cypress.Commands.add(
   "clearAndTypeOnCodeMirror",
   { prevSubject: "optional" },
