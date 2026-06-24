@@ -475,7 +475,8 @@
 // so the dropdown can't appear above sibling widgets without this.
 // Consistent with `.target.hovered { z-index: 2 }` in Grid.css.
 .target:has(.navigation-widget [data-state='open']),
-.nested-target:has(.navigation-widget [data-state='open']) {
+.nested-target:has(.navigation-widget [data-state='open']),
+.position-absolute:has(.navigation-widget [data-state='open']) {
   z-index: 3;
 }
 
