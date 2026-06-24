@@ -471,56 +471,48 @@ export const createResolvedSlice = (set, get) => {
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
-      if (_exposedValueBatch.isBatching()) {
-        const depPaths = [];
+      const existing = get().resolvedStore.modules[moduleId].exposedValues[type][id];
+
+      // Collect dependency paths only for keys that are an actual change. A key is skipped when:
+      //   - it's a function (setValue/clear etc. are action handlers, never dependency sources), or
+      //   - its value deep-equals the currently resolved value — re-publishing an unchanged value
+      //     (e.g. a component re-emitting its default on mount/reload) must not count as a change,
+      //     otherwise queries with "Run on dependency change" fire on app load.
+      // When `existing` is undefined (first publish) or an array (stale ListView structure) there's
+      // no comparable prior value, so every non-function key counts as changed.
+      const depPaths = Object.entries(values).flatMap(([key, value]) => {
+        if (typeof value === 'function') return [];
+
+        // _.isEqual on an Immer proxy is safe here: Immer's proxy traps are synchronous
+        // and lodash's deep comparison works correctly against them.
+        const unchanged = existing !== undefined && !Array.isArray(existing) && _.isEqual(value, existing[key]);
+        return unchanged ? [] : [{ path: `components.${id}.${key}`, moduleId }];
+      });
+
+      // Writes each key, replacing a missing/stale-array entry with a fresh object first
+      const mutation = (state) => {
+        const entities = state.resolvedStore.modules[moduleId].exposedValues[type];
         Object.entries(values).forEach(([key, value]) => {
-          if (typeof value !== 'function') {
-            depPaths.push({ path: `components.${id}.${key}`, moduleId });
+          if (entities[id] === undefined || Array.isArray(entities[id])) {
+            // Initialize as plain object. The Array.isArray check handles the case where a
+            // component was previously inside a ListView (exposed values stored as a per-row
+            // array) and is moved to the canvas — the stale array must be replaced with a
+            // plain object before setting named properties, otherwise Immer throws because
+            // arrays only support numeric indices.
+            entities[id] = { [key]: value };
+          } else {
+            entities[id][key] = value;
           }
         });
-        _exposedValueBatch.bufferMutation((state) => {
-          Object.entries(values).forEach(([key, value]) => {
-            if (state.resolvedStore.modules[moduleId].exposedValues[type][id] === undefined)
-              state.resolvedStore.modules[moduleId].exposedValues[type][id] = { [key]: value };
-            else state.resolvedStore.modules[moduleId].exposedValues[type][id][key] = value;
-          });
-        }, depPaths);
+      };
+
+      if (_exposedValueBatch.isBatching()) {
+        _exposedValueBatch.bufferMutation(mutation, depPaths);
         return;
       }
 
-      const skipKeys = new Set();
-      set(
-        (state) => {
-          Object.entries(values).forEach(([key, value]) => {
-            const existing = state.resolvedStore.modules[moduleId].exposedValues[type][id];
-            if (existing === undefined || Array.isArray(existing)) {
-              // Initialize as plain object. The Array.isArray check handles the case where a
-              // component was previously inside a ListView (exposed values stored as a per-row
-              // array) and is moved to the canvas — the stale array must be replaced with a
-              // plain object before setting named properties, otherwise Immer throws because
-              // arrays only support numeric indices.
-              state.resolvedStore.modules[moduleId].exposedValues[type][id] = {
-                [key]: value,
-              };
-            } else {
-              // _.isEqual on an Immer proxy is safe here: Immer's proxy traps are synchronous
-              // and lodash's deep comparison works correctly against them.
-              if (_.isEqual(value, existing[key])) {
-                skipKeys.add(key);
-              } else existing[key] = value;
-            }
-          });
-        },
-        false,
-        {
-          type: 'setExposedValues',
-          payload: { id, type, values, moduleId },
-        }
-      );
-      Object.entries(values).forEach(([key, value]) => {
-        if (typeof value !== 'function' && !skipKeys.has(key))
-          scheduleDependencyUpdate(`components.${id}.${key}`, moduleId);
-      });
+      set(mutation, false, { type: 'setExposedValues', payload: { id, type, values, moduleId } });
+      depPaths.forEach(({ path }) => scheduleDependencyUpdate(path, moduleId));
     },
 
     setDefaultExposedValues: (id, parentId, componentType, moduleId = 'canvas') => {
