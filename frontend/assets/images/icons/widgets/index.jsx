@@ -72,6 +72,7 @@ import JSONExplorer from './jsonexplorer.jsx';
 import JSONEditor from './jsoneditor.jsx';
 import Navigation from './navigation.jsx';
 import FileButton from './fileButton.jsx';
+import FlexContainer from './flexcontainer.jsx';
 
 const WidgetIcon = (props) => {
   // TO_DO -> Use widget type instead of widget name
@@ -243,6 +244,8 @@ const WidgetIcon = (props) => {
       return <JSONEditor {...props} />;
     case 'filebutton':
       return <FileButton {...props} />;
+    case 'flexcontainer':
+      return <FlexContainer {...props} />;
     default:
       return <BoundedBox {...props} />;
   }
