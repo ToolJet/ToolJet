@@ -51,9 +51,6 @@ export const initializeAuditLogMetrics = () => {
   platformMeter = metrics.getMeter('tooljet-platform');
   appMeter = metrics.getMeter('tooljet-app');
 
-  // ============ Platform-level metrics ============
-
-  // User Sessions Counter
   userSessionsCounter = platformMeter.createCounter('user.sessions.total', {
     description: 'Total user login/logout events',
     unit: '1',
@@ -515,11 +512,7 @@ function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
   }
 }
 
-// ============================================================================
-// DIRECT STREAMING — bypasses audit-log pipeline for lower latency
-// Call these from service layer (EE util.service.ts, etc.) instead of waiting
-// for the audit log event to be emitted and processed.
-// ============================================================================
+
 
 /**
  * DirectQueryMetricPayload — the minimal data needed to emit query metrics
@@ -543,12 +536,6 @@ export interface DirectQueryMetricPayload {
   query_type?: string; // 'sql' | 'gui' | 'raw' | etc.
 }
 
-/**
- * Record query execution metrics directly to OTEL, bypassing audit logs.
- *
- * Use this in the EE DataQueriesUtilService.runQuery() finally block
- * when ENABLE_OTEL=true, instead of waiting for the audit log pipeline.
- */
 export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
   if (!queryExecutionsCounter) {
     // OTEL not yet initialised — silently skip; never throw from observability code

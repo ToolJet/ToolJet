@@ -5,7 +5,6 @@ import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { appService } from '@/_services';
 import { initFrontendMetrics } from '@/_services/frontend-metrics.service';
-// RootRouter now handles route splitting for viewer isolation
 import { RootRouter } from './RootRouter';
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
@@ -34,7 +33,7 @@ appService
 
     window.public_config = config;
 
-    initFrontendMetrics(); // no-op unless ENABLE_OTEL=true
+    initFrontendMetrics();
 
     const language = config.LANGUAGE || 'en';
     const path = config?.SUB_PATH || '/';

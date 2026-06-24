@@ -400,11 +400,9 @@ export const startOpenTelemetry = async (): Promise<void> => {
     await sdk.start();
     initializeCustomMetrics();
 
-    // Initialize audit log metrics (Track 2: audit-log-derived app metrics)
     const { initializeAuditLogMetrics } = await import('./audit-metrics');
     initializeAuditLogMetrics();
 
-    // Initialize frontend metrics receiver (Track 1: browser telemetry → OTEL)
     const { initializeFrontendMetrics } = await import('./frontend-metrics');
     initializeFrontendMetrics();
 
@@ -424,9 +422,7 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
-// Export audit metrics functions for use in services
 export { recordAuditLogMetric, recordDirectQueryMetric } from './audit-metrics';
-// Export frontend metrics recording for use in the frontend-metrics controller
 export { recordFrontendMetricsBatch } from './frontend-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {

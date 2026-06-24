@@ -5,7 +5,6 @@ import { authenticationService } from '@/_services';
 const FLUSH_INTERVAL_MS = 30_000;
 const MAX_UNIQUE_ERRORS = 50;
 
-// fingerprint → { type, attrs, count, firstSeen }
 let eventMap = new Map();
 let flushTimer = null;
 let initialized = false;
@@ -36,7 +35,6 @@ function getCurrentWorkspaceId() {
   }
 }
 
-/** 'released_app' for /applications/* and /embed-apps/*, 'platform' for everything else. */
 function getAppContext() {
   const path = window.location.pathname;
   return path.startsWith('/applications/') || path.startsWith('/embed-apps/') ? 'released_app' : 'platform';
@@ -108,8 +106,6 @@ export function teardownFrontendMetrics() {
   eventMap.clear();
   initialized = false;
 }
-
-// ── Error helpers ────────────────────────────────────────────────────────────
 
 export function recordJsError(errorMessage, componentStack = '') {
   const msg = String(errorMessage).slice(0, 200);
