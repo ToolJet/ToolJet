@@ -15,7 +15,7 @@ export class TransactionLogger implements LoggerService {
       const level =
         env === 'development' ? 'trace' :
         env === 'test' ? 'error' :
-        ({ all: 'debug', warn: 'warn', error: 'error' }[this.configService.get<string>('ORM_LOGGING')] || 'info');
+        (({ all: 'debug', warn: 'warn', error: 'error' } as Record<string, string>)[this.configService.get('ORM_LOGGING') ?? ''] || 'warn');
 
       TransactionLogger.baseLogger = pino({
         level,
