@@ -471,28 +471,35 @@ export const createResolvedSlice = (set, get) => {
     },
 
     setExposedValues: (id, type, values, moduleId = 'canvas') => {
+      // `existing` is the currently committed exposed-value object for the `component`
       const existing = get().resolvedStore.modules[moduleId].exposedValues[type][id];
 
-      // Collect dependency paths only for keys that are an actual change. A key is skipped when:
+      // "Collect writes and dependency paths only for keys that are an actual change. A key is skipped when:
       //   - it's a function (setValue/clear etc. are action handlers, never dependency sources), or
       //   - its value deep-equals the currently resolved value — re-publishing an unchanged value
       //     (e.g. a component re-emitting its default on mount/reload) must not count as a change,
       //     otherwise queries with "Run on dependency change" fire on app load.
       // When `existing` is undefined (first publish) or an array (stale ListView structure) there's
       // no comparable prior value, so every non-function key counts as changed.
-      const depPaths = Object.entries(values).flatMap(([key, value]) => {
-        if (typeof value === 'function') return [];
+      const writes = [];
+      const depPaths = [];
 
-        // _.isEqual on an Immer proxy is safe here: Immer's proxy traps are synchronous
-        // and lodash's deep comparison works correctly against them.
+      Object.entries(values).forEach(([key, value]) => {
+        const isFunction = typeof value === 'function';
         const unchanged = existing !== undefined && !Array.isArray(existing) && _.isEqual(value, existing[key]);
-        return unchanged ? [] : [{ path: `components.${id}.${key}`, moduleId }];
+
+        if (!isFunction && unchanged) return;
+        writes.push([key, value]);
+
+        if (!isFunction) depPaths.push({ path: `components.${id}.${key}`, moduleId });
       });
 
-      // Writes each key, replacing a missing/stale-array entry with a fresh object first
+      if (writes.length === 0) return;
+
+      // Replaces a missing entry, or a stale array (Immer can't set named keys on an array), with a fresh object before assigning each changed key.
       const mutation = (state) => {
         const entities = state.resolvedStore.modules[moduleId].exposedValues[type];
-        Object.entries(values).forEach(([key, value]) => {
+        writes.forEach(([key, value]) => {
           if (entities[id] === undefined || Array.isArray(entities[id])) {
             // Initialize as plain object. The Array.isArray check handles the case where a
             // component was previously inside a ListView (exposed values stored as a per-row
