@@ -12,7 +12,7 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 ## Options
 
-Add or remove tabs from the component. You can also use **Dynamic options** which accepts an array of objects with properties - `title`, `id`, `disable`, `backgroundColor`. 
+Configure the tabs displayed in the component by adding or removing them manually, or use **Dynamic options** to generate tabs from an array of objects. Each object can include properties such as `title`, `id`, `disable`, `backgroundColor`, `icon`, and `iconVisibility`.
 
 ## Events
 
@@ -59,6 +59,7 @@ The following actions of the component can be controlled using the component-spe
 | Hide tabs | Hides the tab headers while keeping the content visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Render only active tab | When enabled, only renders the currently active tab's content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Switch between sections.` ). |
+| Scroll to top on tab switch | Automatically scrolls the page to the top whenever the active tab changes. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Devices
 
@@ -86,16 +87,10 @@ The following actions of the component can be controlled using the component-spe
 | Icon            | Sets an icon for the tab.    | Select an icon from the icon picker or click on **fx** to dynamically configure the icon name. |
 | Icon visibility | Controls whether the tab icon is displayed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. | 
 
-The following example shows how to configure `icon` and `iconVisibility` for tabs.
+The following syntax shows how to configure `icon` and `iconVisibility` for tabs.
 
 ```javascript
-{
-  id: "1",
-  title: "Home",
-  icon: "IconHome2",
-  iconVisibility: true,
-  disable: false
-}
+icon: "IconHome2", iconVisibility: true
 ```
 
 ### Container
