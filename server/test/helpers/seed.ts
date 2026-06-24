@@ -164,6 +164,14 @@ export async function getAllEnvironments(_nestApp: INestApplication, organizatio
 export async function ensureAppEnvironments(_nestApp: INestApplication, organizationId: string): Promise<AppEnvironment[]> {
   const appEnvironmentRepository: Repository<AppEnvironment> = getDefaultDataSource().getRepository(AppEnvironment);
 
+  // Idempotent: a workspace's envs are seeded once. Re-running (e.g. multiple
+  // createApplication calls in the same org) must not violate the
+  // unique_organization_id_priority constraint.
+  const existing = await appEnvironmentRepository.find({ where: { organizationId } });
+  if (existing.length) {
+    return existing;
+  }
+
   return await Promise.all(
     defaultAppEnvironments.map(async (env) => {
       return await appEnvironmentRepository.save(

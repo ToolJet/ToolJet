@@ -57,14 +57,16 @@ describe('ModuleGranularPermissions (H1)', () => {
     groupId: string,
     orgId: string,
     cookie: string[],
-    body: { isAll: boolean; canEdit: boolean; canView: boolean; appIds?: string[] }
+    body: { isAll: boolean; canEdit: boolean; canView: boolean; appIds?: string[]; name?: string }
   ) {
     return request(nestApp.getHttpServer())
       .post(`/api/v2/group-permissions/${groupId}/granular-permissions/app`)
       .set('tj-workspace-id', orgId)
       .set('Cookie', cookie)
       .send({
-        name: 'Modules',
+        // granular-permission names are unique per group; each permission needs a distinct name
+        name: body.name || (body.canEdit ? 'Modules Edit' : 'Modules Build-with'),
+        groupId,
         isAll: body.isAll,
         type: 'module',
         createResourcePermissionObject: {
