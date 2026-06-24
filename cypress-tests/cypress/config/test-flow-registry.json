@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "flows": {
+    "component": {
+      "triggers": {
+        "url_contains": ["/apps/", "/app-builder/"]
+      },
+      "readers": ["component-config-reader", "component-docs-reader", "scout"],
+      "sample_spec": ".claude/context/spec-samples/appbuilder-component.cy.js",
+      "output_path": "cypress-tests/cypress/e2e/happyPath/appbuilder/commonTestcases/components/{name}/",
+      "plan_doc_path": "docs/test-cases/components/{name}.md",
+      "size_heuristic": "component",
+      "size_overrides_file": "cypress-tests/cypress/config/component-test-matrix.json"
+    },
+    "feature": {
+      "triggers": {
+        "url_contains": ["/users", "/groups", "/workspace-settings", "/profile-settings"]
+      },
+      "readers": ["figma-reader", "clickup-reader", "github-reader", "scout"],
+      "sample_spec": ".claude/context/spec-samples/platform-feature.cy.js",
+      "output_path": "cypress-tests/cypress/e2e/happyPath/platform/commonTestcases/",
+      "plan_doc_path": "docs/test-cases/features/{name}.md",
+      "size_heuristic": "feature",
+      "size_overrides_file": null
+    },
+    "deployed-app": {
+      "triggers": {
+        "url_contains": ["/applications/"]
+      },
+      "readers": ["scout"],
+      "sample_spec": ".claude/context/spec-samples/deployed-app.cy.js",
+      "output_path": "cypress-tests/cypress/e2e/happyPath/deployedApp/",
+      "plan_doc_path": "docs/test-cases/deployed-apps/{name}.md",
+      "size_heuristic": "deployed-app",
+      "size_overrides_file": null
+    },
+    "plugin": {
+      "status": "delegated",
+      "delegates_to_skill": "fix-plugin-spec"
+    },
+    "marketplace": {
+      "status": "reserved"
+    },
+    "workflow": {
+      "status": "reserved"
+    }
+  }
+}

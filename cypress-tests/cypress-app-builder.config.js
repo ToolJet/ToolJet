@@ -78,7 +78,8 @@ module.exports = defineConfig({
     specPattern: [
       // "cypress/e2e/happyPath/appbuilder/commonTestcases/newSuits/**/*.cy.js",
       // "cypress/e2e/happyPath/appbuilder/ceTestcases/**/*.cy.js",
-      "cypress/e2e/happyPath/appbuilder/commonTestcases/newSuits/globalSetingsHappyPath.cy.js"
+      "cypress/e2e/happyPath/appbuilder/commonTestcases/newSuits/globalSetingsHappyPath.cy.js",
+      "cypress/e2e/happyPath/appbuilder/eeTestcases/**/*.cy.js"
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,

@@ -194,7 +194,12 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+      // The trailing `.` is a catch-all so chars not handled by a specific
+      // alternative (e.g. `=`, `?`, `!`, `<`, `>`, `+`, `-`, `/`, `%`, `&`, `|`,
+      // `~`, `^`, backtick) are emitted as single-char tokens instead of being
+      // silently dropped. They fall through to the generic `else` branch in the
+      // reduce below — same as any other regular character.
+      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|\*|"[^"]*"|'[^']*'|[a-zA-Z0-9._]+|\s+|.)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {

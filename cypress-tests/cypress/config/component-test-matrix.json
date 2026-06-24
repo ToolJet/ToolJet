@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "size": {
+    "table": "large",
+    "form": "large",
+    "kanban": "large",
+    "listview": "large",
+    "container": "large",
+    "modal": "large",
+    "tabs": "large",
+    "steps": "large",
+    "button": "small",
+    "text": "small",
+    "textInput": "small",
+    "checkbox": "small",
+    "dropdown": "small",
+    "radioButton": "small"
+  },
+  "notes": "Registry overrides heuristic. Unlisted components fall back to heuristic defined in test-architect."
+}
