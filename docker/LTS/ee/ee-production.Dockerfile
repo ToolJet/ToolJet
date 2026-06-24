@@ -1,3 +1,35 @@
+# Python sandbox runtime is built in its own stage on Debian 13 (trixie) so the
+# venv's interpreter (3.13) matches the final stage. Kept separate so the JS
+# build stage below can stay pinned to node:22.15.1, which the "engines" field
+# in server/package.json requires exactly.
+FROM debian:13-slim AS python-builder
+
+# On Debian 13 (trixie) the default python3 is 3.13. Using the unversioned
+# packages keeps the build aligned with the distro default and avoids pinning a
+# version string that has to be kept in sync with the runtime stage.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create isolated Python environment
+RUN python3 -m venv /opt/python-runtime
+
+# Upgrade pip and install common packages
+RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/python-runtime/bin/pip install --no-cache-dir \
+    numpy==2.1.3 \
+    pandas==2.2.3 \
+    requests==2.31.0 \
+    httpx==0.27.0 \
+    python-dateutil==2.9.0 \
+    pytz==2024.1 \
+    pydantic==2.9.2 \
+    typing-extensions==4.12.2
+
+
 FROM node:22.15.1 AS builder
 
 # Fix for JS heap limit allocation issue
@@ -25,29 +57,6 @@ RUN git clone --depth 1 --branch 3.4 https://github.com/google/nsjail.git && \
     cd nsjail && \
     make && \
     strip nsjail
-
-# Build Python runtime with pre-installed packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create isolated Python environment
-RUN python3.11 -m venv /opt/python-runtime
-
-# Upgrade pip and install common packages
-RUN /opt/python-runtime/bin/pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/python-runtime/bin/pip install --no-cache-dir \
-    numpy==1.26.4 \
-    pandas==2.2.1 \
-    requests==2.31.0 \
-    httpx==0.27.0 \
-    python-dateutil==2.9.0 \
-    pytz==2024.1 \
-    pydantic==2.6.4 \
-    typing-extensions==4.10.0
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -119,7 +128,7 @@ RUN curl -Lo postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/do
     rm postgrest.tar.xz && \
     chmod +x /postgrest
 
-FROM debian:12-slim
+FROM debian:13-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -132,19 +141,24 @@ RUN apt-get update && \
     tar \
     postgresql-client \
     redis \
-    libaio1 \
+    libaio1t64 \
     git \
     openssh-client \
     freetds-dev \
-    python3.11 \
-    python3.11-venv \
-    libprotobuf32 \
+    python3 \
+    python3-venv \
+    libprotobuf32t64 \
     libnl-route-3-200 \
     procps \
     libcap2-bin \
     && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
     && apt-get autoremove -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Debian 13 ships libaio as libaio.so.1t64 (64-bit time_t transition).
+# Oracle Instant Client links against libaio.so.1, so create a compat symlink.
+# NOTE: this path is for amd64. For arm64 use /usr/lib/aarch64-linux-gnu/.
+RUN ln -sf /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
 
 
 RUN curl -O https://nodejs.org/dist/v22.15.1/node-v22.15.1-linux-x64.tar.xz \
@@ -186,7 +200,7 @@ COPY --from=builder /build-nsjail/nsjail/nsjail /usr/local/bin/nsjail
 RUN chmod 4755 /usr/local/bin/nsjail
 
 # Copy Python runtime with pre-installed packages
-COPY --from=builder /opt/python-runtime /opt/python-runtime
+COPY --from=python-builder /opt/python-runtime /opt/python-runtime
 
 # Copy nsjail configuration file
 RUN mkdir -p /etc/nsjail
