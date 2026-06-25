@@ -604,6 +604,8 @@ jobs:
       - name: Build Slack payload
         env:
           CHANNEL: ${{ secrets.SLACK_CHANNEL_ID }}
+          # Suite name rendered in the Slack headline (e.g. "❌ Cypress App Builder Failed").
+          SUITE: App Builder
           # Red unless every test job that ran passed (skipped cells don't count).
           OVERALL: >-
             ${{ (needs.Cypress-AppBuilder.result == 'failure' ||
