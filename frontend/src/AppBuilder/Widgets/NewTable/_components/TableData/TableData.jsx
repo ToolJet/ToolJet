@@ -143,6 +143,12 @@ export const TableData = ({
       return;
     }
     row.toggleSelected();
+    // Set selectedRow then fire onRowClicked synchronously so handlers read the clicked row (no race).
+    setExposedVariables({
+      selectedRow: row?.original ?? {},
+      selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
+    });
+    fireEvent('onRowClicked');
   };
 
   const renderTableHeader = () => {
