@@ -31,8 +31,15 @@ export const DatePickerV2 = ({
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
-  const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
+  const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn, firstDayOfWeek } = properties;
   const placeholder = placeholderProp ?? 'Select date';
+  // Optional first-day-of-week override (0=Sunday..6=Saturday). When unset/invalid,
+  // the prop is omitted so react-datepicker keeps its locale-derived default (backward compatible).
+  const parsedFirstDayOfWeek = firstDayOfWeek === '' || firstDayOfWeek == null ? undefined : Number(firstDayOfWeek);
+  const calendarStartDayProps =
+    Number.isInteger(parsedFirstDayOfWeek) && parsedFirstDayOfWeek >= 0 && parsedFirstDayOfWeek <= 6
+      ? { calendarStartDay: parsedFirstDayOfWeek }
+      : {};
   const inputProps = {
     properties,
     setExposedVariable,
@@ -203,6 +210,7 @@ export const DatePickerV2 = ({
     onCalendarOpen: () => {
       setIsCalendarOpen(true);
     },
+    ...calendarStartDayProps,
   };
 
   const customHeaderProps = {
