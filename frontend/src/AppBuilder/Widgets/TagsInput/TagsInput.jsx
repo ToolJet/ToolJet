@@ -50,6 +50,7 @@ const TagsInput = ({
     dynamicHeight,
     sort,
     enableSearch = true,
+    serverSideSearch,
   } = properties;
 
   const {
@@ -774,12 +775,14 @@ const TagsInput = ({
   const _width = getLabelWidthOfInput(widthType, labelWidth);
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
-  // Filter options to exclude already selected and match input text
+  // Filter options to exclude already selected and match input text.
+  // In server-side search mode the backend owns filtering, so skip the
+  // client-side input match and render all non-selected options as-is.
   const filteredOptions = useMemo(() => {
     return allOptions
       .filter((opt) => !selected.some((s) => s.value === opt.value))
-      .filter((opt) => !inputValue || opt.label?.includes(inputValue));
-  }, [allOptions, selected, inputValue]);
+      .filter((opt) => serverSideSearch === true || !inputValue || String(opt.label ?? '').includes(inputValue));
+  }, [allOptions, selected, inputValue, serverSideSearch]);
 
   return (
     <>
@@ -888,7 +891,9 @@ const TagsInput = ({
             isClearable={false}
             isMulti
             hideSelectedOptions={true}
-            filterOption={(option, inputValue) => option.label?.includes(inputValue)}
+            filterOption={(option, inputValue) =>
+              serverSideSearch === true ? true : String(option.label ?? '').includes(inputValue)
+            }
             closeMenuOnSelect={false}
             tabSelectsValue={false}
             onKeyDown={handleKeyDown}
