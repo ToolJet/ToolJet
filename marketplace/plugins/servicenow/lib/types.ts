@@ -6,11 +6,9 @@ export interface SourceOptions {
   // Basic auth
   username?: string;
   password?: string;
-  // OAuth2 (password grant)
+  // OAuth2 (authorization_code / standard flows)
   client_id?: string;
   client_secret?: string;
-  oauth_username?: string;
-  oauth_password?: string;
   // Action Fabric MCP server endpoint (absolute URL, or path appended to instance_url).
   // Blank → defaults to `${instance_url}/sncapps/mcp-server/mcp/sn_mcp_server_default`.
   mcp_endpoint?: string;

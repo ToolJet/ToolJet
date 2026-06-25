@@ -1,4 +1,17 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
+import {
+  QueryError,
+  QueryResult,
+  QueryService,
+  ConnectionTestResult,
+  User,
+  App,
+  OAuthUnauthorizedClientError,
+  validateAndSetRequestOptionsBasedOnAuthType,
+  validateUrlForSSRF,
+  getSSRFProtectionOptions,
+  getAuthUrl,
+  getRefreshedToken,
+} from '@tooljet-marketplace/common';
 import got, { OptionsOfJSONResponseBody } from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -7,28 +20,30 @@ export default class Servicenow implements QueryService {
     return (instanceUrl || '').replace(/\/+$/, '');
   }
 
-  private async authHeaders(sourceOptions: SourceOptions): Promise<Record<string, string>> {
-    const baseUrl = this.trimUrl(sourceOptions.instance_url);
+  // Resolve auth headers via the shared helper only. No auth_type special-casing here —
+  // validateAndSetRequestOptionsBasedOnAuthType is the single source of truth for every
+  // auth_type (including basic), same as the openapi/restapi plugins.
+  private async authHeaders(
+    sourceOptions: SourceOptions,
+    context?: { user?: User; app?: App }
+  ): Promise<Record<string, string>> {
+    const baseHeaders: Record<string, string> = {};
 
-    if (sourceOptions.auth_type === 'oauth2') {
-      const tokenResponse = await got.post(`${baseUrl}/oauth_token.do`, {
-        form: {
-          grant_type: 'password',
-          client_id: sourceOptions.client_id,
-          client_secret: sourceOptions.client_secret,
-          username: sourceOptions.oauth_username,
-          password: sourceOptions.oauth_password,
-        },
-        responseType: 'json',
-      });
+    try {
+      const validated = await validateAndSetRequestOptionsBasedOnAuthType(sourceOptions as any, context, {
+        headers: baseHeaders,
+      } as any);
 
-      const accessToken = (tokenResponse.body as { access_token?: string })?.access_token;
-      return { Authorization: `Bearer ${accessToken}` };
+      if (validated && validated.status === 'needs_oauth') {
+        // Let the caller handle initiating OAuth; surface an informative error here.
+        throw new QueryError('OAuth authorization required', 'OAuth flow must be completed for this datasource', {});
+      }
+
+      const resolved = (validated && (validated.data as any)) || { headers: baseHeaders };
+      return (resolved.headers as Record<string, string>) || baseHeaders;
+    } catch (err) {
+      throw new QueryError('Failed to resolve auth headers', err.message || String(err), {});
     }
-
-    // Default: basic auth
-    const credentials = Buffer.from(`${sourceOptions.username}:${sourceOptions.password}`).toString('base64');
-    return { Authorization: `Basic ${credentials}` };
   }
 
   private parseBody(body: QueryOptions['body']): Record<string, unknown> {
@@ -39,6 +54,50 @@ export default class Servicenow implements QueryService {
       return body as Record<string, unknown>;
     }
     return JSON.parse(body);
+  }
+
+  // ---- Shared Table-API request builder -----------------------------------
+  // Every Table/Stats API operation (list_tables, list_records, get_record,
+  // create_record, update_record, delete_record, get_table_schema,
+  // get_field_choices, aggregate, list_flows) follows the same shape:
+  // validate URL for SSRF -> build request options -> resolve auth -> apply
+  // SSRF protection options -> got(url). This collapses that into one place
+  // instead of repeating it per case.
+  private async tableRequest(
+    sourceOptions: SourceOptions,
+    context: { user?: User; app?: App } | undefined,
+    url: string,
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    searchParams?: Record<string, string>,
+    json?: Record<string, unknown>
+  ) {
+    await validateUrlForSSRF(url);
+
+    const _requestOptions: OptionsOfJSONResponseBody = {
+      method,
+      headers: {
+        Accept: 'application/json',
+        ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      },
+      responseType: 'json',
+      ...(searchParams && Object.keys(searchParams).length > 0 ? { searchParams } : {}),
+      ...(json !== undefined ? { json } : {}),
+    };
+
+    const validated = await validateAndSetRequestOptionsBasedOnAuthType(
+      sourceOptions as any,
+      context,
+      _requestOptions as any,
+      { url: new URL(url) }
+    );
+    if (validated && (validated as any).status === 'needs_oauth') return validated as any;
+
+    const finalOptions = getSSRFProtectionOptions(
+      undefined,
+      (validated as any).data || _requestOptions
+    ) as OptionsOfJSONResponseBody;
+
+    return got(url, finalOptions);
   }
 
   // ---- Action Fabric (MCP) ------------------------------------------------
@@ -120,21 +179,26 @@ export default class Servicenow implements QueryService {
   // notifications/initialized → <method>. Returns the JSON-RPC result.
   private async mcpRequest(
     sourceOptions: SourceOptions,
+    context: { user?: User; app?: App } | undefined,
     method: string,
     params: Record<string, unknown>
   ): Promise<unknown> {
     const url = this.mcpEndpoint(sourceOptions);
-    const authHeaders = await this.authHeaders(sourceOptions);
+    await validateUrlForSSRF(url);
+    const authHeaders = await this.authHeaders(sourceOptions, context);
     const baseHeaders: Record<string, string> = {
       ...authHeaders,
       'Content-Type': 'application/json',
       Accept: 'application/json, text/event-stream',
     };
 
-    const post = (headers: Record<string, string>, payload: Record<string, unknown>) =>
+    const post = (headers: Record<string, string>, payload: Record<string, unknown>) => {
       // followRedirect:false so a 302 (ServiceNow session/login redirect) surfaces as a
       // real response we can detect, instead of silently following it to an HTML login page.
-      got.post(url, { headers, json: payload, responseType: 'text', throwHttpErrors: true, followRedirect: false });
+      const _req = { headers, json: payload, responseType: 'text', throwHttpErrors: true, followRedirect: false };
+      const finalReq = getSSRFProtectionOptions(undefined, _req as any);
+      return got.post(url, finalReq as any);
+    };
 
     // 1) initialize
     const initRes = await post(baseHeaders, {
@@ -196,23 +260,19 @@ export default class Servicenow implements QueryService {
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
-    dataSourceId?: string
+    dataSourceId?: string,
+    dataSourceUpdatedAt?: string,
+    context?: { user?: User; app?: App }
   ): Promise<QueryResult> {
     const baseUrl = `${this.trimUrl(sourceOptions.instance_url)}/api/now/table`;
     const { operation, table } = queryOptions;
 
     try {
-      const headers = await this.authHeaders(sourceOptions);
-
       let response;
 
       switch (operation) {
         case 'list_tables': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${baseUrl}/sys_db_object`;
           const searchParams: Record<string, string> = {
             sysparm_fields: 'name,label,sys_scope,sys_id',
           };
@@ -227,31 +287,21 @@ export default class Servicenow implements QueryService {
           ) {
             searchParams.sysparm_limit = `${queryOptions.sysparm_limit}`;
           }
-          options.searchParams = searchParams;
-          response = await got(`${baseUrl}/sys_db_object`, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'list_records': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${baseUrl}/${table}`;
           const searchParams = this.buildSearchParams(queryOptions);
-          if (Object.keys(searchParams).length > 0) {
-            options.searchParams = searchParams;
-          }
-          response = await got(`${baseUrl}/${table}`, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'get_record': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`;
           const searchParams: Record<string, string> = {};
           if (queryOptions.sysparm_fields) {
             searchParams.sysparm_fields = `${queryOptions.sysparm_fields}`;
@@ -259,59 +309,51 @@ export default class Servicenow implements QueryService {
           if (queryOptions.sysparm_display_value) {
             searchParams.sysparm_display_value = `${queryOptions.sysparm_display_value}`;
           }
-          if (Object.keys(searchParams).length > 0) {
-            options.searchParams = searchParams;
-          }
-          response = await got(`${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'create_record': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'POST',
-            headers: { ...headers, Accept: 'application/json', 'Content-Type': 'application/json' },
-            responseType: 'json',
-            json: this.parseBody(queryOptions.body),
-          };
-          response = await got(`${baseUrl}/${table}`, options);
+          const url = `${baseUrl}/${table}`;
+          response = await this.tableRequest(
+            sourceOptions,
+            context,
+            url,
+            'POST',
+            undefined,
+            this.parseBody(queryOptions.body)
+          );
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'update_record': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'PATCH',
-            headers: { ...headers, Accept: 'application/json', 'Content-Type': 'application/json' },
-            responseType: 'json',
-            json: this.parseBody(queryOptions.body),
-          };
-          response = await got(`${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`, options);
+          const url = `${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`;
+          response = await this.tableRequest(
+            sourceOptions,
+            context,
+            url,
+            'PATCH',
+            undefined,
+            this.parseBody(queryOptions.body)
+          );
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'delete_record': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'DELETE',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
-          response = await got(`${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`, options);
+          const url = `${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`;
+          response = await this.tableRequest(sourceOptions, context, url, 'DELETE');
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'get_table_schema': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${baseUrl}/sys_dictionary`;
           const searchParams: Record<string, string> = {
             sysparm_query: `name=${table}^elementISNOTEMPTY`,
             sysparm_fields: 'element,column_label,internal_type,reference,mandatory,max_length,read_only,default_value',
-            // Raw values (display_value=false) for introspection: internal_type returns a
-            // clean type string ("string"/"choice"/"reference") and `reference` returns the
-            // target TABLE NAME. With display_value=true, reference fields come back as
-            // { value, display_value, link } objects (breaks schema parsing) and `reference`
-            // returns a label instead of the table name (breaks relationship traversal).
             sysparm_display_value: 'false',
           };
           if (
@@ -321,34 +363,26 @@ export default class Servicenow implements QueryService {
           ) {
             searchParams.sysparm_limit = `${queryOptions.sysparm_limit}`;
           }
-          options.searchParams = searchParams;
-          response = await got(`${baseUrl}/sys_dictionary`, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'get_field_choices': {
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${baseUrl}/sys_choice`;
           const language =
             queryOptions.language !== undefined && `${queryOptions.language}` !== '' ? `${queryOptions.language}` : 'en';
-          options.searchParams = {
+          const searchParams = {
             sysparm_query: `name=${table}^element=${queryOptions.field}^inactive=false^language=${language}^ORDERBYsequence`,
             sysparm_fields: 'label,value,sequence',
           };
-          response = await got(`${baseUrl}/sys_choice`, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'aggregate': {
-          const statsUrl = `${this.trimUrl(sourceOptions.instance_url)}/api/now/stats/${table}`;
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${this.trimUrl(sourceOptions.instance_url)}/api/now/stats/${table}`;
           const searchParams: Record<string, string> = {};
           const count = queryOptions.sysparm_count;
           searchParams.sysparm_count = count !== undefined && `${count}` !== '' ? `${count}` : 'true';
@@ -366,14 +400,14 @@ export default class Servicenow implements QueryService {
               searchParams[key] = `${value}`;
             }
           }
-          options.searchParams = searchParams;
-          response = await got(statsUrl, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
         case 'list_workflows': {
           // Action Fabric MCP: enumerate available workflow tools (subflows).
-          const mcpResult = (await this.mcpRequest(sourceOptions, 'tools/list', {})) as {
+          const mcpResult = (await this.mcpRequest(sourceOptions, context, 'tools/list', {})) as {
             tools?: Array<{ name?: string }>;
           };
           let tools = Array.isArray(mcpResult?.tools) ? mcpResult.tools : [];
@@ -387,7 +421,7 @@ export default class Servicenow implements QueryService {
 
         case 'invoke_workflow': {
           // Action Fabric MCP: invoke a workflow tool (synchronous subflow).
-          const mcpResult = (await this.mcpRequest(sourceOptions, 'tools/call', {
+          const mcpResult = (await this.mcpRequest(sourceOptions, context, 'tools/call', {
             name: queryOptions.workflow,
             arguments: this.parseBody(queryOptions.arguments),
           })) as { content?: unknown; isError?: boolean } | undefined;
@@ -405,11 +439,24 @@ export default class Servicenow implements QueryService {
           // Run a ServiceNow subflow via a customer-provided Scripted REST resource.
           // POSTs { subflow, inputs } and returns the resource's response (flow outputs) as-is.
           const flowUrl = this.flowTriggerEndpoint(sourceOptions);
-          const flowRes = await got.post(flowUrl, {
-            headers: { ...headers, Accept: 'application/json', 'Content-Type': 'application/json' },
+          await validateUrlForSSRF(flowUrl);
+
+          const _requestOptions: OptionsOfJSONResponseBody = {
+            method: 'POST',
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
             json: { subflow: queryOptions.subflow, inputs: this.parseBody(queryOptions.inputs) },
             responseType: 'json',
-          });
+          };
+
+          const validated = await validateAndSetRequestOptionsBasedOnAuthType(
+            sourceOptions as any,
+            context,
+            _requestOptions as any,
+            { url: new URL(flowUrl) }
+          );
+          if (validated && (validated as any).status === 'needs_oauth') return validated as any;
+          const finalOptions = getSSRFProtectionOptions(undefined, (validated as any).data || _requestOptions) as OptionsOfJSONResponseBody;
+          const flowRes = await got.post(flowUrl, finalOptions);
           // Scripted REST wraps a returned value in { result: ... }; unwrap for consistency
           // (so bindings are queries.X.data.outputs, not data.result.outputs).
           const flowBody = flowRes.body as { result?: object | object[] };
@@ -420,13 +467,7 @@ export default class Servicenow implements QueryService {
         }
 
         case 'list_flows': {
-          // Discover ServiceNow subflows via the Table API (sys_hub_flow) — REST alternative
-          // to the MCP list_workflows. internal_name + sys_scope.scope identify a subflow for trigger_flow.
-          const options: OptionsOfJSONResponseBody = {
-            method: 'GET',
-            headers: { ...headers, Accept: 'application/json' },
-            responseType: 'json',
-          };
+          const url = `${baseUrl}/sys_hub_flow`;
           const searchParams: Record<string, string> = {
             sysparm_fields: 'sys_id,name,internal_name,sys_scope.scope,description,active',
             sysparm_query: 'type=subflow^active=true',
@@ -442,8 +483,8 @@ export default class Servicenow implements QueryService {
           ) {
             searchParams.sysparm_limit = `${queryOptions.sysparm_limit}`;
           }
-          options.searchParams = searchParams;
-          response = await got(`${baseUrl}/sys_hub_flow`, options);
+          response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
+          if (response && (response as any).status === 'needs_oauth') return response as any;
           break;
         }
 
@@ -463,6 +504,9 @@ export default class Servicenow implements QueryService {
         data,
       };
     } catch (error) {
+      if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode === 401) {
+        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, error.response?.body || {});
+      }
       throw new QueryError('Query could not be completed', error.message, error.response?.body || {});
     }
   }
@@ -470,18 +514,24 @@ export default class Servicenow implements QueryService {
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
       const baseUrl = this.trimUrl(sourceOptions.instance_url);
-      const headers = await this.authHeaders(sourceOptions);
+      const url = `${baseUrl}/api/now/table/sys_user`;
 
-      await got(`${baseUrl}/api/now/table/sys_user`, {
-        method: 'GET',
-        headers: { ...headers, Accept: 'application/json' },
-        searchParams: { sysparm_limit: '1' },
-        responseType: 'json',
-      });
+      const response = await this.tableRequest(sourceOptions, undefined, url, 'GET', { sysparm_limit: '1' });
+      if (response && (response as any).status === 'needs_oauth') {
+        return { status: 'failed', message: 'OAuth required' };
+      }
 
       return { status: 'ok' };
     } catch (error) {
       return { status: 'failed', message: error.message };
     }
+  }
+
+  authUrl(sourceOptions: SourceOptions): string {
+    return getAuthUrl(sourceOptions as any);
+  }
+
+  async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
+    return getRefreshedToken(sourceOptions, error, userId, isAppPublic);
   }
 }
