@@ -22,6 +22,8 @@ const MarketplacePlugins = React.lazy(() =>
   import(/* webpackChunkName: "marketplace" */ '@/MarketplacePage/MarketplacePlugins')
 );
 
+const WorkspaceSettings = React.lazy(() => import('@/modules/WorkspaceSettings'));
+
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
@@ -39,7 +41,6 @@ import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import {
   onboarding,
   auth,
-  WorkspaceSettings,
   InstanceSettings,
   Settings,
   Workflows,

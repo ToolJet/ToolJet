@@ -1,9 +1,16 @@
 import React from 'react';
-import { BaseWorkspaceSettingsPage } from './components';
-import { withEditionSpecificComponent } from '../common/helpers';
+
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEWorkspaceSettingsPage from '@ee/modules/WorkspaceSettings/components/WorkspaceSettingsPage';
+
+import BaseWorkspaceSettingsPage from './components/BaseWorkspaceSettingsPage';
 
 function WorkspaceSettingsPage(props) {
   return <BaseWorkspaceSettingsPage {...props} />;
 }
 
-export default withEditionSpecificComponent(WorkspaceSettingsPage, 'WorkspaceSettings');
+export default pickEditionSpecificComponent({
+  ce: WorkspaceSettingsPage,
+  ee: EEWorkspaceSettingsPage,
+  cloudSameAsEE: true,
+});

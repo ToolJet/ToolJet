@@ -6,7 +6,7 @@ import AppPermissionsActions from './AppPermissionActionContainer';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import DsPermissionsActions from './DataSourcPermissionActionContainer';
 import WorkflowPermissionsActions from './WorkflowPermissionActionContainer';
-import { RESOURCE_TYPE } from '../../../../index';
+import { RESOURCE_TYPE } from '../../../../constants';
 
 function AddEditResourcePermissionsModal({
   handleClose,

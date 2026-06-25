@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import Layout from '@/_ui/Layout';
+import { toast } from 'react-hot-toast';
+
 import { authenticationService } from '@/_services';
-import { ManageOrgConstantsSettings } from '@/modules/WorkspaceSettings/components';
-import { fetchEdition } from '@/modules/common/helpers/utils';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { fetchEdition } from '@/modules/common/helpers/utils';
+
+import Layout from '@/_ui/Layout';
+import ManageOrgConstantsSettings from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/ManageOrgConstantsSettings';
 
 export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   const navigate = useNavigate();

@@ -11,13 +11,11 @@ import InstanceSettings from './InstanceSettings';
 import onboarding from './onboarding';
 import Settings from './Settings';
 import Workflows from './workflows';
-import WorkspaceSettings from './WorkspaceSettings';
 import Modules from './Modules';
 
 export {
   onboarding,
   auth,
-  WorkspaceSettings,
   InstanceSettings,
   Settings,
   Dashboard,

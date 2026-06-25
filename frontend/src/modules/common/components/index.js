@@ -9,7 +9,6 @@ import SSOAuthModule from './SSOAuthModule';
 import TermsAndPrivacyInfo from './TermsAndPrivacyInfo';
 import BaseImportAppMenu from './BaseImportAppMenu';
 import DisablePasswordLoginModal from './DisablePasswordLoginModal';
-import BaseManageOrgConstants from './BaseManageOrgConstants';
 import BaseSettingsMenu from './BaseSettingsMenu';
 import LeftNavSideBar from './LeftNavSideBar';
 import BaseCreateVersionModal from './BaseCreateVersionModal';
@@ -41,7 +40,6 @@ export {
   TermsAndPrivacyInfo,
   BaseImportAppMenu,
   DisablePasswordLoginModal,
-  BaseManageOrgConstants,
   BaseSettingsMenu,
   LeftNavSideBar,
   BaseCreateVersionModal,

@@ -18,7 +18,7 @@ import { OrganizationList } from '@/modules/dashboard/components';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Constants, redirectToWorkspace } from '@/_helpers/utils';
 import { SearchBox } from '@/_components/SearchBox';
-import { ConstantsEnvironmentsTabs } from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/components';
+import ConstantsEnvironmentsTabs from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/components/ConstantsEnvironmentsTabs';
 
 const MODES = Object.freeze({
   CREATE: 'create',
