@@ -58,7 +58,7 @@ describe(
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-button-App`);
     cy.openApp();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 100);
   });
 
   // QUARANTINED: depends on the SHARED `cy.moveComponent` command

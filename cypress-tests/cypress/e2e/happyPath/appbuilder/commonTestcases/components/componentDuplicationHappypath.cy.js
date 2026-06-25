@@ -15,7 +15,7 @@ describe("Editor- component duplication", { testIsolation: false }, () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-App`);
     cy.openApp();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 100);
 
     data.appName = `${fake.companyName}-App`;
     data.alertMessage = fake.randomSentence;
