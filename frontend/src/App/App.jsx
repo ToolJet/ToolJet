@@ -24,6 +24,8 @@ const MarketplacePlugins = React.lazy(() =>
 
 const WorkspaceSettings = React.lazy(() => import('@/modules/WorkspaceSettings'));
 
+const WorkspaceConstants = React.lazy(() => import('@/WorkspaceConstants'));
+
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
@@ -33,7 +35,6 @@ export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
-import WorkspaceConstants from '@/WorkspaceConstants';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
