@@ -130,7 +130,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
           { environmentId }
         );
         // Select version-specific columns so they appear in raw results
-        query.addSelect(['dsv.id', 'dsv.name', 'dsvo.options']);
+        query.addSelect(['dsv.id', 'dsv.name', 'dsv.isSynced', 'dsvo.options']);
       } else if (branchId) {
         // Branch-aware but no environmentId: prefer branch DSV, fall back to default
         query.leftJoin(
@@ -150,7 +150,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
           )`,
           { branchId, defaultBranchId }
         );
-        query.addSelect(['dsv.id', 'dsv.name']);
+        query.addSelect(['dsv.id', 'dsv.name', 'dsv.isSynced']);
       } else if (environmentId) {
         // Released versions now read from the org default-branch DSV (the row whose
         // branch_id = the default workspace branch — formerly is_default = true).
@@ -266,6 +266,7 @@ export class DataSourcesRepository extends Repository<DataSource> {
             }
             // Attach version id for frontend reference
             (ds as any).versionId = rawRow.dsv_id || null;
+            (ds as any).isSynced = rawRow.dsv_is_synced ?? false;
           }
 
           if (useBranchPath && rawRow) {
