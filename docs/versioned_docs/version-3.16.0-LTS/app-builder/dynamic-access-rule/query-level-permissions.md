@@ -3,6 +3,8 @@ id: query-level
 title: Query Level Permissions
 ---
 
+<PlanBadge type="enterprise" />
+
 Query-level permissions allow you to control which users can execute specific queries. This is crucial for protecting sensitive data operations and ensuring only authorized users can perform query execution.
 
 :::note

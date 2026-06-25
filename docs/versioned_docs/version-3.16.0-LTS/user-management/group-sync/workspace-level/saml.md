@@ -3,16 +3,8 @@ id: saml
 title: SAML
 ---
 
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
- 
+<PlanBadge type="enterprise" />
+
 In ToolJet, you can use the group synchronization feature to automatically update user roles and custom groups from the identity provider. This functionality enables centralized access management, reduces the risk of manual errors, enhances security, and simplifies the user onboarding process. SAML Group Sync is only available at the workspace level.
 
 This guide covers how to set up SAML group synchronization with Okta as identity provider as an example. This can be used as a reference for other IdPs configuration.

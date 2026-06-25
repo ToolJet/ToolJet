@@ -12,41 +12,6 @@
         "getting-started/quickstart-guide",
         {
           "type": "category",
-          "label": "How To",
-          "items": [
-            "how-to/use-url-params-on-load",
-            "how-to/pass-query-params-in-custom-components",
-            "how-to/use-custom-parameters",
-            "how-to/pass-values-in-rest-api",
-            "how-to/build-dynamic-forms",
-            "how-to/setup-rsyslog",
-            "how-to/conditionally-display-components",
-            "how-to/use-inspector",
-            "how-to/use-form-component",
-            "how-to/access-cellvalue-rowdata",
-            "how-to/conditionally-format-table",
-            "how-to/bulk-update-multiple-rows",
-            "how-to/delete-multiple-rows",
-            "how-to/use-server-side-pagination",
-            "how-to/access-currentuser",
-            "how-to/use-axios-in-runjs",
-            "how-to/run-actions-from-runjs",
-            "how-to/intentionally-fail-js-query",
-            "how-to/run-query-at-specified-intervals",
-            "how-to/use-to-py-function-in-runpy",
-            "how-to/access-users-location",
-            "how-to/use-s3-signed-url-to-upload-docs",
-            "how-to/s3-custom-endpoints",
-            "how-to/upload-files-aws",
-            "how-to/upload-files-gcs",
-            "how-to/loading-image-pdf-from-db",
-            "how-to/use-events-on-chart",
-            "how-to/print-multi-tabs-report",
-            "how-to/display-listview-record-on-new-page"
-          ]
-        },
-        {
-          "type": "category",
           "label": "Deployment",
           "items": [
             {
@@ -194,10 +159,13 @@
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
+        "build-with-ai/referencing-app-resources",
         "build-with-ai/integrating-data",
         "build-with-ai/prompting101",
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
+        "build-with-ai/bring-your-own-key",
+        "build-with-ai/tj-ai-enterprise",
         "build-with-ai/ai-credits",
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"
@@ -241,7 +209,9 @@
                 "app-builder/connecting-with-data-sources/creating-managing-queries",
                 "app-builder/connecting-with-data-sources/accessing-query-results",
                 "app-builder/connecting-with-data-sources/transforming-data",
-                "app-builder/connecting-with-data-sources/binding-data-to-components"
+                "app-builder/connecting-with-data-sources/binding-data-to-components",
+                "app-builder/connecting-with-data-sources/run-query-at-specified-intervals",
+                "app-builder/connecting-with-data-sources/use-custom-parameters"
               ]
             },
             {
@@ -275,7 +245,8 @@
                     "app-builder/import-libraries/runpy"
                   ]
                 },
-                "app-builder/custom-code/constants-secrets"
+                "app-builder/custom-code/constants-secrets",
+                "app-builder/custom-code/access-currentuser"
               ]
             },
             {
@@ -308,9 +279,9 @@
           "type": "category",
           "label": "Modules",
           "link": {
-                "type": "doc",
-                "id": "app-builder/modules/overview"
-              },
+            "type": "doc",
+            "id": "app-builder/modules/overview"
+          },
           "items": [
             "app-builder/modules/overview",
             "app-builder/modules/create-module",
@@ -322,9 +293,9 @@
           "type": "category",
           "label": "Embed Application",
           "link": {
-                "type": "doc",
-                "id": "app-builder/embed-app/overview"
-              },
+            "type": "doc",
+            "id": "app-builder/embed-app/overview"
+          },
           "items": [
             "app-builder/embed-app/overview",
             "app-builder/embed-app/public-app",
@@ -343,7 +314,7 @@
                 "widgets/accordion",
                 "widgets/bounded-box",
                 "widgets/button",
-                "widgets/button-group",
+                "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
                 {
@@ -371,15 +342,27 @@
                 "widgets/color-picker",
                 "widgets/container",
                 "widgets/currency-input",
-                "widgets/custom-component",
+                {
+                  "type": "category",
+                  "label": "Custom Component",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/custom-component/custom-component"
+                  },
+                  "items": [
+                    "widgets/custom-component/custom-component",
+                    "widgets/custom-component/pass-query-params-in-custom-components"
+                  ]
+                },
                 "widgets/date-range-picker",
                 "widgets/date-picker-v2",
                 "widgets/datetime-picker-v2",
-                "widgets/datepicker",
                 "widgets/divider",
                 "widgets/dropdown",
                 "widgets/email-input",
                 "widgets/file-picker",
+                "widgets/file-input",
+                "widgets/file-button",
                 {
                   "type": "category",
                   "label": "Form",
@@ -387,26 +370,61 @@
                     "widgets/form/generate-form",
                     "widgets/form/properties",
                     "widgets/form/csa",
-                    "widgets/form/schema"
+                    "widgets/form/schema",
+                    "widgets/form/use-form-component"
                   ]
                 },
                 "widgets/html",
                 "widgets/icon",
                 "widgets/iframe",
-                "widgets/image",
+                {
+                  "type": "category",
+                  "label": "Image",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/image/image"
+                  },
+                  "items": [
+                    "widgets/image/image",
+                    "widgets/image/loading-image-pdf-from-db"
+                  ]
+                },
                 "widgets/json-editor",
                 "widgets/json-explorer",
                 "widgets/kanban",
                 "widgets/key-value-pair",
                 "widgets/link",
-                "widgets/listview",
+                {
+                  "type": "category",
+                  "label": "List View",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/listview/listview"
+                  },
+                  "items": [
+                    "widgets/listview/listview",
+                    "widgets/listview/display-listview-record-on-new-page"
+                  ]
+                },
                 "widgets/map",
                 "widgets/modal-v2",
                 "widgets/multiselect",
+                "widgets/navigation",
                 "widgets/number-input",
                 "widgets/password-input",
                 "widgets/pagination",
-                "widgets/pdf",
+                {
+                  "type": "category",
+                  "label": "PDF",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/pdf/pdf"
+                  },
+                  "items": [
+                    "widgets/pdf/pdf",
+                    "widgets/pdf/loading-image-pdf-from-db"
+                  ]
+                },
                 "widgets/phone-input",
                 "widgets/popover-menu",
                 "widgets/progress-bar",
@@ -437,10 +455,23 @@
                         "widgets/table/serverside-operations/pagination"
                       ]
                     },
-                    "widgets/table/dynamic-column"
+                    "widgets/table/dynamic-column",
+                    "widgets/table/conditional-formatting",
+                    "widgets/table/bulk-row-operations"
                   ]
                 },
-                "widgets/tabs",
+                {
+                  "type": "category",
+                  "label": "Tabs",
+                  "link": {
+                    "type": "doc",
+                    "id": "widgets/tabs/tabs"
+                  },
+                  "items": [
+                    "widgets/tabs/tabs",
+                    "widgets/tabs/print-multi-tabs-report"
+                  ]
+                },
                 "widgets/tags",
                 "widgets/tags-input",
                 "widgets/text-input",
@@ -452,13 +483,47 @@
                 "widgets/time-picker",
                 "widgets/toggle-switch-v2",
                 "widgets/tree-select",
-                "widgets/vertical-divider"
+                "widgets/vertical-divider",
+                 {
+                  "type": "category",
+                  "label": "Legacy Components",
+                  "items": [
+                    {
+                      "type": "link",
+                      "label": "Modal",
+                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/modal"
+                    },
+                    "widgets/datepicker",
+                    {
+                      "type": "link",
+                      "label": "Radio Button",
+                      "href": "https://docs.tooljet.com/docs/3.5.0-LTS/widgets/radio-button"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Dropdown",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/dropdown"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Multiselect",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-lts/widgets/multiselect/"
+                    },
+                    {
+                      "type": "link",
+                      "label": "Range Slider",
+                      "href": "https://docs.tooljet.com/docs/2.50.0-LTS/widgets/range-slider"
+                    },
+                    "widgets/button-group"
+                  ]
+                }
               ]
             },
             {
               "type": "category",
               "label": "Actions Reference",
               "items": [
+                "actions/run-actions-from-runjs",
                 "actions/run-query",
                 "actions/reset-query",
                 "actions/show-alert",
@@ -499,7 +564,20 @@
           "label": "Data Sources Library",
           "items": [
             "data-sources/airtable",
-            "data-sources/s3",
+            {
+              "type": "category",
+              "label": "Amazon S3",
+              "link": {
+                "type": "doc",
+                "id": "data-sources/s3/s3"
+              },
+              "items": [
+                "data-sources/s3/s3",
+                "data-sources/s3/use-s3-signed-url-to-upload-docs",
+                "data-sources/s3/s3-custom-endpoints",
+                "data-sources/s3/upload-files-aws"
+              ]
+            },
             "data-sources/amazonses",
             "data-sources/appwrite",
             "data-sources/athena",
@@ -513,7 +591,18 @@
             "data-sources/databricks",
             "data-sources/dynamodb",
             "data-sources/elasticsearch",
-            "data-sources/gcs",
+            {
+              "type": "category",
+              "label": "Google Cloud Storage",
+              "link": {
+                "type": "doc",
+                "id": "data-sources/gcs/gcs"
+              },
+              "items": [
+                "data-sources/gcs/gcs",
+                "data-sources/gcs/upload-files-gcs"
+              ]
+            },
             "data-sources/googlesheets",
             "data-sources/googlesheetsv2",
             "data-sources/graphql",
@@ -542,13 +631,38 @@
                 "data-sources/restapi/authentication",
                 "data-sources/restapi/querying-rest-api",
                 "data-sources/restapi/metadata-and-cookies",
+                "data-sources/restapi/pass-values-in-rest-api",
                 "data-sources/restapi/multipart-form-data-rest-api"
               ]
             },
             "data-sources/soap-api",
             "data-sources/rethinkdb",
-            "data-sources/run-js",
-            "data-sources/run-py",
+            {
+              "type": "category",
+              "label": "Run JavaScript Code",
+              "link": {
+                "type": "doc",
+                "id": "data-sources/runjs/run-js"
+              },
+              "items": [
+                "data-sources/runjs/run-js",
+                "data-sources/runjs/access-users-location",
+                "data-sources/runjs/use-axios-in-runjs",
+                "data-sources/runjs/intentionally-fail-js-query"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Run Python Code",
+              "link": {
+                "type": "doc",
+                "id": "data-sources/runpy/run-py"
+              },
+              "items": [
+                "data-sources/runpy/run-py",
+                "data-sources/runpy/use-to-py-function-in-runpy"
+              ]
+            },
             "data-sources/saphana",
             "data-sources/sendgrid",
             "data-sources/slack",
@@ -566,9 +680,9 @@
           "label": "Marketplace",
           "collapsed": true,
           "link": {
-                "type": "doc",
-                "id": "marketplace/marketplace-overview"
-              },
+            "type": "doc",
+            "id": "marketplace/marketplace-overview"
+          },
           "items": [
             "marketplace/marketplace-overview",
             {
@@ -597,6 +711,7 @@
                 "marketplace/plugins/marketplace-plugin-harperdb",
                 "marketplace/plugins/marketplace-plugin-hubspot",
                 "marketplace/plugins/marketplace-plugin-hugging_face",
+                "marketplace/plugins/marketplace-plugin-intercom",
                 "marketplace/plugins/marketplace-plugin-jira",
                 "marketplace/plugins/marketplace-plugin-microsoft_graph",
                 "marketplace/plugins/marketplace-plugin-mistral_ai",
@@ -608,11 +723,13 @@
                 "marketplace/plugins/marketplace-plugin-Presto",
                 "marketplace/plugins/marketplace-plugin-prometheus",
                 "marketplace/plugins/marketplace-plugin-qdrant",
+                "marketplace/plugins/marketplace-plugin-quickbooks",
                 "marketplace/plugins/marketplace-plugin-salesforce",
                 "marketplace/plugins/marketplace-plugin-sharepoint",
                 "marketplace/plugins/marketplace-plugin-supabase",
                 "marketplace/plugins/marketplace-plugin-ups",
-                "marketplace/plugins/marketplace-plugin-weaviate"
+                "marketplace/plugins/marketplace-plugin-weaviate",
+                "marketplace/plugins/marketplace-plugin-xero"
               ]
             }
           ]
@@ -851,20 +968,9 @@
               ]
             },
             {
-              "type": "category",
+              "type": "link",
               "label": "SCIM",
-              "link": {
-                "type": "doc",
-                "id": "user-management/sso/scim/overview"
-              },
-              "items": [
-                "user-management/sso/scim/overview",
-                {
-                  "type": "link",
-                  "label": "API References",
-                  "href": "/api/scim"
-                }
-              ]
+              "href": "/api/scim/"
             }
           ]
         },
@@ -1023,8 +1129,7 @@
           "type": "category",
           "label": "Constants",
           "items": [
-            "security/constants/constants",
-            "security/constants/variables"
+            "security/constants/constants"
           ]
         },
         {
@@ -1036,10 +1141,22 @@
           },
           "items": [
             "security/audit-logs/audit-logs",
-            "security/audit-logs/stream-audit-to-datadog"
+            "security/audit-logs/stream-audit-to-datadog",
+            "security/audit-logs/setup-rsyslog"
           ]
         },
-        "security/compliance"
+        {
+          "type": "category",
+          "label": "Compliance",
+          "link": {
+            "type": "doc",
+            "id": "security/compliance/compliance"
+          },
+          "items": [
+            "security/compliance/compliance",
+            "security/compliance/cjis"
+          ]
+        }
       ]
     },
     {
@@ -1049,9 +1166,17 @@
       "collapsible": false,
       "collapsed": true,
       "items": [
-        "tooljet-api",
+        {
+          "type": "link",
+          "label": "ToolJet API",
+          "href": "/api"
+        },
         "user-management/authentication/self-hosted/pat",
-        "development-lifecycle/cicd/gitsync-api"
+        {
+          "type": "link",
+          "label": "GitSync API",
+          "href": "/api/gitsync-api"
+        }
       ]
     },
     {

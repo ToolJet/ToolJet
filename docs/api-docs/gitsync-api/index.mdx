@@ -1,0 +1,38 @@
+---
+id: index
+title: GitSync API
+---
+
+<PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
+
+# GitSync API
+
+The GitSync API lets you programmatically manage the full lifecycle of ToolJet applications within your CI/CD pipelines. Configure git sync, push and pull app versions from GitHub, and automate deployments without touching the ToolJet UI.
+
+Integrate these APIs into Jenkins, GitHub Actions, GitLab CI, or any other pipeline tool.
+
+## Authentication
+
+All requests require a `Basic` access token in the `Authorization` header.
+
+```bash
+Authorization: Basic <access_token>
+```
+
+## Base URL
+
+```
+https://{your-domain}/api/ext
+```
+
+## Endpoints
+
+| Endpoint | Description |
+|:---------|:------------|
+| [`POST /organizations/git`](/api/gitsync-api/add-git-config) | Configure GitHub HTTPS git settings for an organization |
+| [`POST /apps/{appId}/versions/{versionId}/git-sync/push`](/api/gitsync-api/push-app-version) | Push an app version to the configured GitHub repository |
+| [`POST /apps?createMode=git`](/api/gitsync-api/create-app-from-git) | Create a new ToolJet app from a GitHub repository |
+| [`PUT /apps/{appId}?createMode=git`](/api/gitsync-api/sync-pull-app) | Sync and pull the latest changes from GitHub for an existing app |
+| [`POST /apps/{appId}/promote`](/api/gitsync-api/auto-promote-app) | Pull latest changes from Git and promote the app to the next environment |
+| [`POST /apps/{appIdOrSlug}/git-sync/release`](/api/gitsync-api/release-app-version) | Set a specific version as the live released version for an app |

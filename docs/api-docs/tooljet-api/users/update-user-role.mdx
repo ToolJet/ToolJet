@@ -1,0 +1,40 @@
+---
+id: update-user-role
+title: "Update User Role"
+---
+
+<EndpointHeader method="PUT" path="/update-user-role/workspace/{workspaceId}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Updates the role of a user within a specific workspace.
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"UUID of the workspace.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"newRole","type":"string","required":true,"description":"New role to assign.","in":"body"},{"name":"email","type":"string","required":true,"description":"Email of the user whose role is being updated.","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"User not found by email, user not in workspace, removing the last active admin, or user owns apps and no transferring user provided."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"Not available on Community Edition."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X PUT "https://{your-domain}/api/ext/update-user-role/workspace/{workspaceId}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "newRole": "end-user",
+      "email": "user@example.com"
+    }'`} />
+
+**Response:** `200`
+
+</ApiRight>
+</ApiColumns>

@@ -1,0 +1,57 @@
+---
+id: list-users
+title: "List Users"
+---
+
+<EndpointHeader method="GET" path="/Users" />
+
+<ApiColumns>
+<ApiLeft>
+
+Lists all users in the organization.
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Invalid filter syntax."},
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+
+
+
+
+
+<RequestExample code={`curl -X GET "https://{your-domain}/api/scim/v2/Users" \\
+    -H "Authorization: Basic <access_token>"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+  "totalResults": 1,
+  "startIndex": 1,
+  "itemsPerPage": 20,
+  "Resources": [
+    {
+      "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+      "id": "2819c223-7f76-453a-919d-413861904646",
+      "userName": "bjensen@tooljet.com",
+      "name": {
+        "formatted": "Barbara Jensen",
+        "familyName": "Jensen",
+        "givenName": "Barbara"
+      },
+      "emails": [
+        {
+          "value": "bjensen@tooljet.com",
+          "primary": true
+        }
+      ],
+      "active": true
+    }
+  ]
+}`} />
+
+</ApiRight>
+</ApiColumns>

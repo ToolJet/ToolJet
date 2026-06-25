@@ -7,14 +7,14 @@ Use this action to change the page index in the table widget.
 
 ## Options
 
-| Option | Description |
-|--------|-------------|
-| Table   | Select table from the dropdown |
-| Page Index | Numerical value for the page index. ex: `{{2}}` |
-| Debounce | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
+| Option     | Description                                                                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table      | Select table from the dropdown                                                                                                                              |
+| Page Index | Numerical value for the page index. ex: `{{2}}`                                                                                                             |
+| Debounce   | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/how-to/run-actions-from-runjs).
+You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/actions/run-actions-from-runjs/).
 :::
 
 <div style={{textAlign: 'center'}}>

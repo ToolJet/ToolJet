@@ -5,6 +5,10 @@ title: Gemini
 
 The **Google Gemini** Plugin can be integrated with ToolJet to enable the development of context-aware, intelligent chatbots and to support the generation of high-quality, creative text content within applications.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect with Gemini, you will need the **API Key**, which can be generated from **[Google AI Studio](https://aistudio.google.com/apikey)**.
@@ -30,7 +34,7 @@ Use this operation to generate text based on the prompt, system instructions, an
 
 - **Prompt**: The main user input for generating responses.
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **System Prompt**: A predefined instruction guiding the model's tone and behavior.
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
@@ -79,7 +83,7 @@ Use this operation for a chat-like conversation, where the model responds based 
     - **Gemini 3 Pro Preview**
 - **User Prompt**: The user's question or request that the model will respond to.
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **System Prompt**: Provides the model with guidance on the style and type of responses expected.
 - **History**: Keeps track of previous interactions to maintain context in the conversation.

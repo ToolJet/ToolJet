@@ -4,9 +4,12 @@ title: Embed ToolJet Application
 sidebar_label: Overview
 ---
 
+<PlanBadge type="team" />
+
 Embedding a ToolJet application allows you to deliver interactive dashboards, tools, or workflows directly inside other websites or internal portals. Instead of switching between tools, users can interact with your application where they already work, improving efficiency and engagement.
 
 ToolJet applications can be embedded in a variety of scenarios:
+
 - **Customer facing dashboards** – Display personalized analytics directly inside your platform.
 - **Partner or vendor portals** – Provide external stakeholders with secure, scoped access to specific applications.
 - **Internal productivity widgets** – Place internal tools inside intranet pages, wikis, or CRM systems.
@@ -32,10 +35,10 @@ By embedding the feedback form here, we achieved several benefits:
 
 ToolJet allows you to embed applications as either public or private, depending on who should have access and how sensitive the data is.
 
-| Feature            | Public Embed                                              | Private Embed                                                     |
-|:------------------ |:--------------------------------------------------------- |:----------------------------------------------------------------- |
-| **Access**         | Anyone with the embed link or iframe can view             | Restricted to authorized users only                               |
-| **Authentication** | Not required  | Required (Embed Application will follow the SSO of host application) |
-| **Granularity** | Not applicable | Tokens can be scoped to individual user and application |
-| **Use Cases**      | Marketing dashboards, open forms, customer-facing widgets | Internal dashboards, partner portals, sensitive data applications |
-| **How to Embed**   | [Public Application](/docs/app-builder/embed-app/public-app) | [Private Application](/docs/app-builder/embed-app/private-app) |
+| Feature            | Public Embed                                                 | Private Embed                                                        |
+| :----------------- | :----------------------------------------------------------- | :------------------------------------------------------------------- |
+| **Access**         | Anyone with the embed link or iframe can view                | Restricted to authorized users only                                  |
+| **Authentication** | Not required                                                 | Required (Embed Application will follow the SSO of host application) |
+| **Granularity**    | Not applicable                                               | Tokens can be scoped to individual user and application              |
+| **Use Cases**      | Marketing dashboards, open forms, customer-facing widgets    | Internal dashboards, partner portals, sensitive data applications    |
+| **How to Embed**   | [Public Application](/docs/app-builder/embed-app/public-app) | [Private Application](/docs/app-builder/embed-app/private-app)       |

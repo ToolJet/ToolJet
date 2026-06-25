@@ -1,0 +1,31 @@
+---
+id: delete-user
+title: "Delete User"
+---
+
+<EndpointHeader method="DELETE" path="/Users/{id}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Permanently removes a user from the organization.
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"The unique identifier of the user.","in":"path"}]} />
+
+<ErrorsTable errors={[
+  {"status":"401","description":"Missing or invalid Authorization header."},
+  {"status":"403","description":"SCIM provisioning not enabled or insufficient permissions."},
+  {"status":"404","description":"User not found."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X DELETE "https://{your-domain}/api/scim/v2/Users/{id}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json"`} />
+
+**Response:** `204`
+
+</ApiRight>
+</ApiColumns>

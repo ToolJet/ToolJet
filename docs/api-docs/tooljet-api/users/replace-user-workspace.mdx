@@ -1,0 +1,44 @@
+---
+id: replace-user-workspace
+title: "Update User Relationship in Single Workspace"
+---
+
+<EndpointHeader method="PATCH" path="/user/{id}/workspace/{workspaceId}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Updates a user's role, status, or group assignments in a specific workspace. Only the workspace specified in the URL is affected — all other workspace memberships remain unchanged.
+
+<ParamsTable title="Path Parameters" params={[{"name":"id","type":"string","required":true,"description":"UUID of the user.","in":"path"},{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"id","type":"string","required":false,"description":"ID of the workspace (alternative to path parameter).","in":"body"},{"name":"name","type":"string","required":false,"description":"Name of the workspace.","in":"body"},{"name":"status","type":"string","required":false,"description":"User's status in this workspace. Accepted values: active, archived.","in":"body"},{"name":"groups","type":"array","required":false,"description":"List of groups to assign the user to in this workspace.","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"User account is archived, group not found, invalid group type, or end-user/editable group conflict."},
+  {"status":"402","description":"User seat limit exceeded."},
+  {"status":"403","description":"External API disabled, missing EXTERNAL_API license, or invalid Authorization token."},
+  {"status":"404","description":"User not found."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X PATCH "https://{your-domain}/api/ext/user/{id}/workspace/{workspaceId}" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "status": "archived",
+      "groups": [
+        {
+          "name": "all_users"
+        }
+      ]
+    }'`} />
+
+**Response:** `200`
+
+</ApiRight>
+</ApiColumns>

@@ -1,0 +1,49 @@
+---
+id: export-module
+title: "Export Module"
+---
+
+<EndpointHeader method="POST" path="/export/workspace/{workspaceId}/modules/{moduleId}" />
+
+<ApiColumns>
+<ApiLeft>
+
+Exports a module, including its definition and optionally the ToolJet Database table schemas it uses.
+
+
+<ParamsTable title="Path Parameters" params={[{"name":"workspaceId","type":"string","required":true,"description":"The unique identifier of the workspace.","in":"path"},{"name":"moduleId","type":"string","required":true,"description":"The unique identifier of the module to export.","in":"path"}]} />
+
+<ParamsTable title="Query Parameters" params={[{"name":"exportTJDB","type":"boolean","required":false,"description":"When true, bundles the TJDB table schemas into the export payload.","in":"query"}]} />
+
+
+<ErrorsTable errors={[
+  {"status":"400","description":"workspaceId or moduleId is not a valid UUID, or module does not exist / does not belong to workspace."},
+  {"status":"401","description":"Missing or invalid Authorization: Basic token."},
+  {"status":"451","description":"EXTERNAL_API license not active on the instance."},
+  {"status":"500","description":"Unexpected failure in the export pipeline."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/export/workspace/{workspaceId}/modules/{moduleId}?exportTJDB=<exportTJDB>" \\
+    -H "Authorization: Basic <access_token>" \\
+    -H "Content-Type: application/json"`} />
+
+<ResponseExample statusCode="200" body={`{
+  "tooljet_database": [],
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "name": "User Management Module",
+          "type": "module"
+        }
+      }
+    }
+  ],
+  "tooljet_version": "3.16.0"
+}`} />
+
+</ApiRight>
+</ApiColumns>

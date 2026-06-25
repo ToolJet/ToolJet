@@ -18,7 +18,8 @@ module.exports = {
   tagline: 'Low-code framework to Build internal tools and business apps.',
   url: 'https://docs.tooljet.com',
   baseUrl: '/',
-  onBrokenLinks: 'ignore',
+  onBrokenLinks: 'warn',
+  onBrokenAnchors: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
@@ -58,6 +59,13 @@ module.exports = {
         {
           type: 'search',
           position: 'right',
+        },
+        {
+          to: '/api',
+          label: 'API Reference',
+          position: 'right',
+          activeBaseRegex: '^/api',
+          className: 'navbar-api',
         },
         {
           href: 'https://www.tooljet.com/',
@@ -135,7 +143,7 @@ module.exports = {
       ],
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc. All rights reserved.
       <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />
-      <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("c4rgfujgx6jef4722rcjfhj7dlmcipih",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>
+      <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("okh5zgrqwwcsl4ac5rqac309eup0mjb3",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>      
       <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <script>
@@ -297,6 +305,7 @@ module.exports = {
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false, // Set to true if you want to include the beta version in the sidebar
           lastVersion: '3.16.0-LTS',
+          onlyIncludeVersions: process.env.linkCheck ? ['3.16.0-LTS'] : undefined,
           versions: {
             // Uncomment the following line to include the beta version in the sidebar
             // current: {
@@ -342,183 +351,177 @@ module.exports = {
           : undefined,
       },
     ],
-    [
-    'redocusaurus',
-    {
-      openapi: {
-        path: 'openapi',       // scans all folders inside openapi/, e.g., scim, tj-api
-        routeBasePath: '/api', // pages will be /api/scim, /api/tj-api
-      },
-      theme: {
-        primaryColor: '#1890ff', // customize the color
-      },
-    },
-  ],
   ],
   plugins: [
     devServerPlugin,
     'plugin-image-zoom',
     [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'api',
+        path: 'api-docs',
+        routeBasePath: 'api',
+        sidebarPath: require.resolve('./sidebars-api.js'),
+      },
+    ],
+    [
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
           {
-            to: '/docs/',
             from: '/',
+            to: '/docs/',
           },
           {
-            to: 'https://join.slack.com/t/tooljet/shared_invite/zt-38298nyhf-hK7tNkKNPwYSg1BhRU5mTA',
             from: '/docs/slack',
+            to: 'https://join.slack.com/t/tooljet/shared_invite/zt-38298nyhf-hK7tNkKNPwYSg1BhRU5mTA',
           },
           {
-            to: '/docs/security/constants/',
-            from: '/docs/org-management/workspaces/workspace_constants/',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/overview',
-            from: '/docs/gitsync',
-          },
-          {
-            to: '/docs/user-management/role-based-access/access-control',
-            from: '/docs/tutorial/manage-users-groups',
-          },
-          {
-            to: '/docs/security/constants/variables',
-            from: '/docs/org-management/workspaces/workspace-variables-migration',
-          },
-          {
-            to: '/docs/tj-setup/smtp-setup/configuration',
-            from: '/docs/org-management/smtp-configuration/',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/enterprise/superadmin',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/setup',
-            from: '/docs/category/openid-connect',
-          },
-          {
-            to: '/docs/development-lifecycle/release/share-app',
-            from: '/docs/dashboard',
-          },
-          {
-            to: '/docs/security/audit-logs',
-            from: '/docs/enterprise/audit_logs/',
-          },
-          {
-            to: '/docs/tj-setup/org-branding/white-labeling',
-            from: '/docs/enterprise/white-label',
-          },
-          {
-            to: '/docs/tj-setup/licensing/self-hosted',
-            from: '/docs/org-management/licensing/self-hosted',
-          },
-          {
-            to: '/docs/user-management/role-based-access/access-control',
-            from: '/docs/org-management/permissions/',
-          },
-          {
-            to: '/docs/tj-setup/workspaces',
-            from: '/docs/org-management/workspaces/workspace_overview',
-          },
-          {
-            to: '/docs/security/constants/variables',
-            from: '/docs/org-management/workspaces/workspace-variables',
-          },
-          {
-            to: '/docs/development-lifecycle/gitsync/delete-gitsync',
-            from: '/docs/release-management/gitsync/delete-gitsync',
-          },
-          // Commenting out the following redirects to resolve the build error during the 3.16.0-LTS release [Time Constraint]
-          // {
-          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/ssh-config',
-          //   from: '/docs/release-management/gitsync/ssh-config',
-          // },
-          // {
-          //   to: '/docs/development-lifecycle/gitsync/connect-to-git-repo/ssh/gitsync-config',
-          //   from: '/docs/release-management/gitsync/tj-config',
-          // },
-          {
-            to: '/docs/development-lifecycle/environment/self-hosted/multi-environment',
-            from: '/docs/release-management/multi-environment',
-          },
-          {
-            to: '/docs/security/compliance',
             from: '/docs/security/',
+            to: '/docs/security/compliance/',
           },
           {
-            to: '/docs/setup/try-tooljet/',
-            from: '/docs/setup/client/',
-          },
-          {
-            to: '/docs/build-with-ai/overview',
-            from: '/docs/tooljet-ai/overview',
-          },
-          {
-            to: '/docs/tooljet-api',
-            from: '/docs/tutorial/tooljet-api',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/overview',
-            from: '/docs/user-authentication/general-settings',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/instance-login',
-            from: '/docs/user-authentication/password-login',
-          },
-          {
-            to: '/docs/user-management/sso/github',
-            from: '/docs/user-authentication/sso/github',
-          },
-          {
-            to: '/docs/user-management/sso/google',
-            from: '/docs/user-authentication/sso/google',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/setup',
-            from: '/docs/user-authentication/sso/oidc',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/azuread',
-            from: '/docs/user-authentication/sso/openid/azuread/',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/google',
-            from: '/docs/user-authentication/sso/openid/google-openid',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/okta',
-            from: '/docs/user-authentication/sso/openid/okta',
-          },
-          {
-            to: '/docs/user-management/sso/oidc/setup',
-            from: '/docs/user-authentication/sso/openid/setup',
-          },
-          {
-            to: '/docs/user-management/sso/saml/setup',
-            from: '/docs/user-authentication/sso/saml',
-          },
-          {
-            to: '/docs/user-management/onboard-users/overview',
-            from: '/docs/user-authentication/user-lifecycle/',
-          },
-          {
-            to: '/docs/user-management/authentication/self-hosted/workspace-login',
-            from: '/docs/user-authentication/workspace-login',
-          },
-          {
-            to: '/docs/widgets/table/',
-            from: '/docs/widgets/table/table-properties',
-          },
-          {
-            to: '/docs/setup/upgrade-to-v3',
             from: '/docs/setup/cloud-v3-migration',
+            to: '/docs/setup/upgrade-to-v3/',
           },
-          // {
-          //   to: '/docs/workflows/how-to/trigger-workflow-from-app',
-          //   from: '/docs/workflows/trigger-workflow-from-app',
-          // }
+          {
+            from: '/docs/tj-setup/observability-otel',
+            to: '/docs/tj-setup/observability/observability-otel/',
+          },
+          {
+            from: '/docs/how-to/build-dynamic-forms/',
+            to: '/docs/widgets/form/',
+          },
+          {
+            from: '/docs/how-to/use-form-component/',
+            to: '/docs/widgets/form/use-form-component/',
+          },
+          {
+            from: '/docs/how-to/use-events-on-chart',
+            to: '/docs/widgets/chart/',
+          },
+          {
+            from: '/docs/how-to/bulk-update-multiple-rows',
+            to: '/docs/widgets/table/bulk-row-operations/',
+          },
+          {
+            from: '/docs/how-to/delete-multiple-rows',
+            to: '/docs/widgets/table/bulk-row-operations/',
+          },
+          {
+            from: '/docs/how-to/loading-image-pdf-from-db',
+            to: '/docs/widgets/pdf/loading-image-pdf-from-db/',
+          },
+          {
+            from: '/docs/how-to/pass-query-params-in-custom-components',
+            to: '/docs/widgets/custom-component/pass-query-params-in-custom-components/',
+          },
+          {
+            from: '/docs/how-to/access-cellvalue-rowdata',
+            to: '/docs/widgets/table/conditional-formatting/',
+          },
+          {
+            from: '/docs/how-to/conditionally-format-table',
+            to: '/docs/widgets/table/conditional-formatting/',
+          },
+          {
+            from: '/docs/how-to/display-listview-record-on-new-page',
+            to: '/docs/widgets/listview/display-listview-record-on-new-page/',
+          },
+          {
+            from: '/docs/how-to/setup-rsyslog',
+            to: '/docs/security/audit-logs/setup-rsyslog/',
+          },
+          {
+            from: '/docs/how-to/access-currentuser',
+            to: '/docs/app-builder/custom-code/access-currentuser/',
+          },
+          {
+            from: '/docs/how-to/run-actions-from-runjs',
+            to: '/docs/actions/run-actions-from-runjs/',
+          },
+          {
+            from: '/docs/how-to/print-multi-tabs-report',
+            to: '/docs/widgets/tabs/print-multi-tabs-report/',
+          },
+          {
+            from: '/docs/how-to/access-users-location',
+            to: '/docs/data-sources/runjs/access-users-location/',
+          },
+          {
+            from: '/docs/how-to/use-axios-in-runjs',
+            to: '/docs/data-sources/runjs/use-axios-in-runjs/',
+          },
+          {
+            from: '/docs/how-to/intentionally-fail-js-query',
+            to: '/docs/data-sources/runjs/intentionally-fail-js-query/',
+          },
+          {
+            from: '/docs/how-to/pass-values-in-rest-api',
+            to: '/docs/data-sources/restapi/pass-values-in-rest-api/',
+          },
+          {
+            from: '/docs/how-to/use-to-py-function-in-runpy',
+            to: '/docs/data-sources/runpy/use-to-py-function-in-runpy/',
+          },
+          {
+            from: '/docs/how-to/use-s3-signed-url-to-upload-docs',
+            to: '/docs/data-sources/s3/use-s3-signed-url-to-upload-docs/',
+          },
+          {
+            from: '/docs/how-to/s3-custom-endpoints',
+            to: '/docs/data-sources/s3/s3-custom-endpoints/',
+          },
+          {
+            from: '/docs/how-to/upload-files-aws',
+            to: '/docs/data-sources/s3/upload-files-aws/',
+          },
+          {
+            from: '/docs/how-to/upload-files-gcs',
+            to: '/docs/data-sources/gcs/upload-files-gcs/',
+          },
+          {
+            from: '/docs/how-to/use-url-params-on-load',
+            to: '/docs/app-builder/building-ui/pages/',
+          },
+          {
+            from: '/docs/how-to/conditionally-display-components',
+            to: '/docs/app-builder/dynamic-access-rule/component-level/',
+          },
+          {
+            from: '/docs/how-to/use-inspector',
+            to: '/docs/app-builder/debugging/inspector/',
+          },
+          {
+            from: '/docs/how-to/use-server-side-pagination',
+            to: '/docs/widgets/table/serverside-operations/pagination/',
+          },
+          {
+            from: '/docs/how-to/run-query-at-specified-intervals',
+            to: '/docs/app-builder/connecting-with-data-sources/run-query-at-specified-intervals/',
+          },
+          {
+            from: '/docs/how-to/use-custom-parameters',
+            to: '/docs/app-builder/connecting-with-data-sources/use-custom-parameters/',
+          },
+          {
+            from: '/docs/development-lifecycle/branching-and-pr',
+            to: '/docs/beta/branching-and-pr',
+          },
+          {
+            from: '/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars/',
+            to: '/docs/beta/gitsync-env-vars',
+            from: '/docs/tooljet-api/',
+            to: '/api/',
+          },
+          {
+            from: '/docs/development-lifecycle/cicd/gitsync-api/',
+            to: '/api/gitsync-api/',
+          },
+          {
+            from: '/docs/user-management/sso/scim/overview/',
+            to: '/api/scim/',
+          }
         ],
       },
     ],

@@ -5,8 +5,8 @@ title: Sharepoint
 
 ToolJet allows you to connect to Microsoft Sharepoint to perform various operations like managing sites, lists, and items using Microsoft Graph API.
 
-:::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -17,7 +17,7 @@ To connect to a Sharepoint data source in ToolJet, you can either click the **+ 
 You'll need to register your application in Azure Active Directory to get the required credentials. The application needs appropriate Microsoft Graph API permissions.
 :::
 
-To connect to Sharepoint, you need the following details:
+To connect to Sharepoint, you need the following credentials:
 
 - **Client ID**
 - **Client Secret**

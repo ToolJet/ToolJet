@@ -1,0 +1,45 @@
+---
+id: save-app-version
+title: "Save App Version"
+---
+
+<EndpointHeader method="POST" path="/apps/{appIdOrSlug}/versions/save" />
+
+<ApiColumns>
+<ApiLeft>
+
+Creates a new saved version from the app's current draft. If no name is provided, one is auto-generated. The draft must exist before calling this endpoint.
+
+<ParamsTable title="Path Parameters" params={[{"name":"appIdOrSlug","type":"string","required":true,"description":"The app's UUID or slug.","in":"path"}]} />
+
+
+
+<ParamsTable title="Request Body" params={[{"name":"name","type":"string","required":false,"description":"Name for the version. Max 25 characters; cannot contain spaces or the special characters ~^:?*[]\\@{. If omitted, a name is auto-generated.","in":"body"}]} />
+
+<ErrorsTable errors={[
+  {"status":"400","description":"Version name contains disallowed characters or fails git ref validation."},
+  {"status":"404","description":"App not found, or no draft version exists to save."},
+  {"status":"409","description":"Version is already saved — no current draft exists on the app."}
+]} />
+
+</ApiLeft>
+<ApiRight>
+
+<RequestExample code={`curl -X POST "https://{your-domain}/api/ext/apps/{appIdOrSlug}/versions/save" \\
+    -H "Authorization: Bearer <access_token>" \\
+    -H "Content-Type: application/json" \\
+    -d '{"name": "v1.2.0"}'`} />
+
+<ResponseExample statusCode="201" body={`{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "v1.2.0",
+  "appId": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "status": "published",
+  "currentEnvironmentId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "versionType": "version",
+  "createdAt": "2026-06-09T10:00:00.000Z",
+  "updatedAt": "2026-06-09T10:05:00.000Z"
+}`} />
+
+</ApiRight>
+</ApiColumns>

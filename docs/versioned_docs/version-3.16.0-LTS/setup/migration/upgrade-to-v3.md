@@ -241,7 +241,7 @@ If you haven't migrated your local data sources to global data sources, you will
 
 Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants.
 
-For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/security/constants/variables).
+For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/3.5.0-LTS/security/constants/variables).
 
 ## Response Headers and Metadata
 

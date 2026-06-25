@@ -5,8 +5,8 @@ title: Couchbase
 
 ToolJet integrates with Couchbase to leverage its NoSQL database and advanced vector search capabilities. This enables CRUD document operations, SQL++ queries, and Full-Text Search (FTS) within Couchbase databases. Vector store features support semantic search, hybrid queries, and intelligent application development.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection

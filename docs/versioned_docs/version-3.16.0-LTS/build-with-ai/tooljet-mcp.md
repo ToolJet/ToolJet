@@ -3,9 +3,9 @@ id: tooljet-mcp
 title: ToolJet MCP
 ---
 
-<div className="badge badge--self-hosted">   
- <span>Self Hosted</span>
-</div>
+<PlanBadge type="enterprise" />
+<PlanBadge type="self-hosted" />
+
 The [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) is a standard for connecting Large Language Models (LLMs) to platforms like ToolJet. This guide covers how to connect ToolJet to AI tools using MCP, enabling your AI assistants to interact with and manage your ToolJet instance.
 
 ## What is ToolJet MCP?
@@ -41,7 +41,7 @@ Before you begin, you'll need:
 
 ### Step 1: Get an Access Token
 
-Get an access token from your ToolJet instance. You'll need this token to authenticate the MCP server. Refer to the [ToolJet API](https://docs.tooljet.com/docs/tooljet-api#enabling-tooljet-api) documentation for more details on how to generate an API token.
+Get an access token from your ToolJet instance. You'll need this token to authenticate the MCP server. Refer to the [ToolJet API](/api/#enabling-tooljet-api) documentation for more details on how to generate an API token.
 
 ### Step 2: Configure Your AI Tool
 

@@ -24,6 +24,9 @@ Loop node has three important components:
 
 3. **Value**: Represents the current item being processed during each iteration of the loop.
 It can be accessed using the `{{value}}` keyword.
+
+3. **Index**: Represents the index of the current item being processed during each iteration of the loop.
+It can be accessed using the `{{index}}` keyword.
     <img className="screenshot-full img-full" src="/img/workflows/nodes/logic/loop/example.png" alt="Loop Node Example" />
 
 ## Example 1 - Bulk Invoice Reminder Workflow

@@ -5,13 +5,16 @@ title: UPS
 
 By integrating UPS with ToolJet you can track packages, calculate shipping rates, validate addresses, and automate logistics processes, all within your ToolJet applications to enhance operational visibility and reduce manual overhead.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect with UPS you need the following credentials:
-- Client ID
-- Client secret
-- Shipper number
-- Base URL
+- **Client ID**
+- **Client secret**
+- **Shipper number**
 
 You can follow the steps in the [Getting Started with UPS APIs](https://developer.ups.com/get-started) guide to generate these credentials.
 

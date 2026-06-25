@@ -2,16 +2,8 @@
 id: gitlab-config
 title: GitLab Configuration
 ---
-<div className="badge badge--primary heading-badge">   
-  <img 
-    src="/img/badge-icons/premium.svg" 
-    alt="Icon" 
-    width="16" 
-    height="16" 
-  />
- <span>Paid feature</span>
-</div>
 
+<PlanBadge type="enterprise" />
 
 The GitLab configuration for git sync offers a flexible way to connect your ToolJet workspace to a GitLab repository. This setup uses HTTPS, eliminating the need to manage SSH keys and bypassing SSH port blocks. You can also select and switch repository branches directly within the ToolJet interface.
 

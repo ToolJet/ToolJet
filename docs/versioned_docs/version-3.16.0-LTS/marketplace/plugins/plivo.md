@@ -5,8 +5,8 @@ title: Plivo
 
 You can integrate your ToolJet application with Plivo for SMS functionality.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -25,7 +25,7 @@ To use the Plivo plugin, you need the following credentials:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/connection-v2.png" alt="Configuring Plivo In ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/plivo/connection-v3.png" alt="Configuring Plivo In ToolJet" />
 
 </div>
 
@@ -43,6 +43,6 @@ You can use the Send SMS operation to send an SMS to a specified mobile number.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms-v2.png" alt="Send SMS Using plivo" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/plivo/query-v3.png" alt="Send SMS Using plivo" />
 
 </div>

@@ -5,6 +5,10 @@ title: GitHub
 
 ToolJet offers seamless integration with GitHub. This connection allows you to directly interact with GitHub repositories and data.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect to GitHub, you need the following credential:
@@ -12,7 +16,7 @@ To connect to GitHub, you need the following credential:
 
 You'll need a Personal Access Token to access data from private repositories. Public repository data remains accessible without a Personal Access Token.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/connection-v2.png" alt="Marketplace: GitHub" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/connection-v4.png" alt="GitHub data source configuration " />
 
 ## Supported Queries
 
@@ -29,7 +33,7 @@ This operation fetches details for a specified user.
 
 - **Username**: Specify the GitHub username or organization to retrieve their details.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/getuserinfo-v3.png" alt="Marketplace: GitHub" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/get-user-info-v4.png" alt=" GitHub get user info query " />
 
 ### Get Repository
 
@@ -40,7 +44,7 @@ Fetches detailed information about a specific repository.
 - **Owner**: Name of the repository's owner, which can be either a GitHub user or an organization.
 - **Repository**: The exact name of the repository.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/get-repo.png" alt="Marketplace: GitHub" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/get-repo-v4.png" alt="GitHub get repo query" />
 
 ### Get Repository Issues
 
@@ -57,7 +61,7 @@ Generates a list of issues associated with a repository, with options to filter 
 - **Page size**: Desired number of issues per page. Default is 30.
 - **Page number**: Desired page number to fetch issues from. Default is 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/get-issue.png" alt="Marketplace: GitHub" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/get-repo-issues-v4.png" alt="GitHub get repo issues query" />
 
 ### Get Repository Pull Requests
 
@@ -74,4 +78,4 @@ Generates a list of pull requests from a repository, with options to filter them
 - **Page size**: Desired number of issues per page. Default is 30.
 - **Page number**: Desired page number to fetch pull requests from. Default is 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/github/get-pull.png" alt="Marketplace: GitHub" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/github/get-repo-pr-v4.png" alt="GitHub get repo PRs query" />

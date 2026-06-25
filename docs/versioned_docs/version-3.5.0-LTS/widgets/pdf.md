@@ -26,11 +26,11 @@ If the PDF component is integrated into your application, it will only render in
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                        |
-| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| File URL                                       | Under this property, you can enter the URL of the PDF file to display. Base64 format is also supported, the input needs to be prefixed with `data:application/pdf;base64,`.                              |
-| Scale page to width                            | The **Scale page to width** property automatically adjusts the PDF to fill the entire width of the component.                                                                                              |
-| Show page controls                             | By default, when hovering over the PDF file, buttons for the previous and next page, along with the page number, are displayed. They can be toggled on or off using the **Show page controls** toggle.     |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                              |
+| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| File URL                                       | Under this property, you can enter the URL of the PDF file to display. Base64 format is also supported, the input needs to be prefixed with `data:application/pdf;base64,`.                                    |
+| Scale page to width                            | The **Scale page to width** property automatically adjusts the PDF to fill the entire width of the component.                                                                                                  |
+| Show page controls                             | By default, when hovering over the PDF file, buttons for the previous and next page, along with the page number, are displayed. They can be toggled on or off using the **Show page controls** toggle.         |
 | Show the download                              | The **Download** button on the PDF component allows you to download the PDF file. By default, **Show the download** button is enabled. Toggle it off to remove the **Download** button from the PDF component. |
 
 </div>
@@ -78,12 +78,12 @@ To display instructional text when a user hovers over the PDF component, add som
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Configuration Options </div> |
-| :------------------------------------------ | :--------------------------------------------------- | :-------------------------------------------------- |
-| Visibility     | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.  |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>         | <div style={{ width:"100px"}}> Configuration Options </div>                                                                  |
+| :--------------------------------------------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| Visibility                                     | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 :::info
-Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string.
+Checkout **[this](/docs/widgets/image/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string.
 :::
 
 </div>

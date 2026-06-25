@@ -5,8 +5,8 @@ title: Prometheus
 
 ToolJet integrates with Prometheus to help you fetch and display metrics in your app. You can use this plugin to run PromQL queries and show real-time or historical data from your Prometheus server. It’s useful for building internal dashboards to monitor systems and track performance.
 
-:::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -18,9 +18,9 @@ To connect Prometheus with ToolJet, you’ll need the following details:
 - **Prometheus server URL**
 - **Username**
 - **Password**
-- **CA certificate**
+- **CA certificate** or **Client Certificate**
 
-<img className="screenshot-full img-l" src="/img/marketplace/plugins/prometheus/connection.png" alt="Configuring Prometheus in ToolJet" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/connection.png" alt="Configuring Prometheus in ToolJet" />
 
 Once connected, you can start using instant and range queries to fetch metric data from your server.
 
@@ -36,15 +36,24 @@ Fetches the current value of a metric at a single point in time.
 **Required Parameters**
 
 - **Query**: A valid PromQL expression to fetch the metric.
-- **Request method**: Defines how the request is sent (GET or POST)
+- **Request method**: Defines how the request is sent (GET or POST).
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **Time**: Specific timestamp to evaluate the query against.
 - **Timeout**: Maximum duration the query is allowed to run before timing out.
 - **Limit**: Restricts the number of results returned.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/instant.png" alt="Instant Query with PromQL in ToolJet" />
+<img style={{  marginBottom: "15px" }}  className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/instant-query.png" alt="Instant Query with PromQL in ToolJet" />
+
+<details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+status : "success"
+    data : {} 3 keys
+```
+</details>
 
 ### Range Query with PromQL
 
@@ -58,9 +67,18 @@ Retrieves metric data over a specified time range.
 - **Step**: Interval between data points within the time range.
 - **Request method**: Defines how the request is sent (GET or POST).
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **Timeout**: Maximum duration the query is allowed to run before timing out.
 - **Limit**: Restricts the number of results returned.
 
-<img className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/range.png" alt="Range Query with PromQL in ToolJet" />
+<img style={{  marginBottom: "15px" }} className="screenshot-full img-full" src="/img/marketplace/plugins/prometheus/range-query.png" alt="Range Query with PromQL in ToolJet" />
+
+<details id="tj-dropdown">
+  <summary>**Response Example**</summary>
+
+```json
+status : "success"
+    data : {} 2 keys
+```
+</details>

@@ -7,6 +7,10 @@ Qdrant is a vector database which can be integrated with ToolJet to enable effic
 
 At its core, Qdrant operates with points, which are records consisting of a vector and an optional payload which allows you to store additional context or metadata alongside the vectors for more meaningful searches.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect with Qdrant, you will need Qdrant URL and an API key, which can be generated from [Qdrant Cloud Dashboard](https://qdrant.to/cloud).

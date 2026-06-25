@@ -229,6 +229,45 @@ When **false**, passwords will follow the default validations. When **true**, pa
 These validations apply to both the instance and workspace levels.
 :::
 
+#### Configure GitSync via Environment Variables
+
+:::warning BETA
+This feature is currently in beta and is not recommended for production use.
+For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars).
+:::
+
+GitSync can be configured using environment variables instead of the ToolJet UI, useful for self-hosted setups where you want to automate or version-control your GitSync configuration.
+
+ToolJet supports **GitHub (HTTPS)**, **GitLab**, and **Git (SSH)**. For example, to configure GitSync with GitHub (HTTPS), set the following variables:
+
+| **Key** | **Description** |
+| --- | --- |
+| `GITHUB_URL` | The HTTPS URL of your GitHub repository. (e.g. `https://github.com/your-org/your-repo`) |
+| `GITHUB_BRANCH` | The branch to sync with. |
+| `GITHUB_APP_ID` | Your GitHub App ID. |
+| `GITHUB_INSTALLATION_ID` | The installation ID for your GitHub App. |
+| `GITHUB_PRIVATE_KEY` | The private key generated when creating the GitHub App. Escape newlines as `\n`. |
+
+#### Configure License Key via Environment Variable
+
+:::warning BETA
+This feature is currently in beta and is not recommended for production use.
+:::
+
+The license key can be configured via an environment variable to avoid re-entering it through the UI on every new instance. Setting `TJ_LICENSE` ensures the license is applied automatically at startup without any manual configuration.
+
+| **Variable** | **Description** |
+|:--- |:--- |
+| `TJ_LICENSE` | Your ToolJet license key. When set, the license key field on the **Settings** page is populated automatically from this variable. |
+
+**How it works:**
+
+- When `TJ_LICENSE` variable is set, the **Settings** page shows the license key field pre-filled with the placeholder `{{TJ_LICENSE_KEY}}`, indicating the value is sourced from the environment.
+- The field will be disabled and the toggle will be switched to **Env variable** mode automatically.
+- To switch back to entering the key manually via the UI, use the toggle on the **Settings** page to switch to **UI** mode.
+
+<img className="screenshot-full img-m" src="/img/env-vars/prefilled-license-key.png" alt="Prefilled License Key" />
+
 ### Third-Party Integrations
 
 #### Slack

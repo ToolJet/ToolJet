@@ -5,23 +5,27 @@ title: FedEx
 
 Using this plugin, you can integrate FedEx shipping and tracking services directly into your ToolJet apps to fetch shipment details, create shipping labels, track package status, and calculate rates, etc.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect the FedEx plugin to your ToolJet app, you’ll need the following credentials:
 
-- Client ID
-- Client Secret
+- **Client ID**
+- **Client Secret**
 
 If you’re a FedEx® Internal, Compatible, or Integrator Customer or a FedEx® Proprietary Parent/Child Customer, you’ll also need:
 
-- Child Key
-- Child Secret
+- **Child Key**
+- **Child Secret**
 
 Follow [this](https://developer.fedex.com/api/en-us/catalog/authorization/docs.html) to generate the required credentials from the FedEx Developer Portal.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/fedex/connection.png" alt="Marketplace: FedEx" />
 
-## Supported Operation
+## Supported Operations
 
 ### Address Validation
 
@@ -318,10 +322,10 @@ Operation: POST `/address/v1/addresses/resolve`
 
 Operation: POST `/rate/v1/rates/quotes`
 
-**Required Parameters**
+**Required Parameter**
 - requesedShipment
 
-**Optional Parameter**
+**Optional Parameters**
 - accountNumber
 - rateRequestControlParameters
 - carrierCodes

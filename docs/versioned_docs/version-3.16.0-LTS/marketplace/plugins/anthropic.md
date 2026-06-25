@@ -5,11 +5,15 @@ title: Anthropic
 
 Integrating Anthropic with ToolJet enables the creation of interactive chatbots that analyze past messages to generate context-aware responses. These bots can also be customized with defined roles, making them suitable for tasks such as customer support, serving as virtual assistants, or enabling personalized conversations.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To connect with Anthropic, you will need the **API Key**, which can be generated from **[Anthropic Console](https://console.anthropic.com/)**.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/config.png" alt="Anthropic Configuration" />
+<img className="screenshot-full imf-full" src="/img/marketplace/plugins/anthropic/connection-v2.png" alt="Anthropic Configuration" />
 
 ## Supported Operations
 
@@ -38,7 +42,7 @@ This operation processes the user's input and generates appropriate, context-awa
 
 - **Temperature**: Controls the randomness of the response. Accepts values between 0 and 1, with a default of 1.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/query-v2.png" alt="Anthropic Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/query-v2.png" alt="Anthropic Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
