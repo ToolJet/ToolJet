@@ -1,5 +1,9 @@
 import "cypress-mailhog";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import {
+  commonSelectors,
+  commonWidgetSelector,
+  cyParamName,
+} from "Selectors/common";
 import { commonEeSelectors } from "Selectors/eeCommon";
 import { importSelectors } from "Selectors/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
@@ -91,92 +95,201 @@ Cypress.Commands.add(
     positionX = 100,
     positionY = 100,
     widgetName2 = widgetName,
-    canvas = commonSelectors.canvas
+    canvas = null // null = auto-detect: #real-canvas, or ModuleContainer's sub-canvas if in module editor
   ) => {
-    const dataTransfer = new DataTransfer();
+    // The react-dnd connector ref sits on `.draggable-box`, ancestor of the
+    // widget-list-box. `:has()` lets the source selector resolve straight to
+    // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't nest
+    // cleanly inside `:has()`. Require `draggable="true"`: react-dnd sets that
+    // attribute on the connector node only once mounted/connected, and dragging
+    // before it's set makes cypress-real-dnd throw "source may not be a real
+    // HTML5 draggable" (no dragIntercepted event).
+    const sourceSelector = `.draggable-box[draggable="true"]:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
+    const placedWidget = '[data-cy^="draggable-widget-"]';
 
-    // Open widget panel and search
-    cy.get('[data-cy="right-sidebar-components-button"]').click();
-    cy.get(commonSelectors.searchField)
-      .should("be.visible")
-      .first()
-      .clear()
-      .type(widgetName);
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
+    const countWidgets = () =>
+      cy.get("body").then(($b) => $b.find(placedWidget).length);
 
-    // Get element positions for coordinate calculations
-    cy.get(commonWidgetSelector.widgetBox(widgetName2)).then(($widget) => {
-      cy.get(canvas).then(($canvas) => {
-        const widgetRect = $widget[0].getBoundingClientRect();
-        const canvasRect = $canvas[0].getBoundingClientRect();
-        const dropX = canvasRect.left + positionX;
-        const dropY = canvasRect.top + positionY;
-
-        // Initiate drag from widget center
-        cy.get(commonWidgetSelector.widgetBox(widgetName2))
-          .trigger("mousedown", {
-            which: 1,
-            button: 0,
-            clientX: widgetRect.left + widgetRect.width / 2,
-            clientY: widgetRect.top + widgetRect.height / 2,
-            force: true,
-          })
-          .trigger("dragstart", { dataTransfer, force: true });
-
-        // Drag over canvas with target coordinates
-        cy.get(canvas)
-          .trigger("dragenter", { dataTransfer, force: true })
-          .trigger("dragover", {
-            dataTransfer,
-            clientX: dropX,
-            clientY: dropY,
-            force: true,
-          });
-
-        // Inject ghost position for headless mode
-        // Required because Cypress doesn't create native ghost elements
-        cy.window().then((win) => {
-          if (!win.useGridStore) return;
-
-          const canvasElement = win.document.querySelector(canvas);
-          if (!canvasElement) return;
-
-          const rect = canvasElement.getBoundingClientRect();
-
-          win.useGridStore.getState().actions.setGhostDragPosition({
-            left: positionX,
-            top: positionY,
-            e: {
-              target: {
-                getBoundingClientRect: () => ({
-                  left: rect.left + positionX,
-                  top: rect.top + positionY,
-                  right: rect.left + positionX,
-                  bottom: rect.top + positionY,
-                  width: 0,
-                  height: 0,
-                }),
-                closest: (selector) =>
-                  selector === ".real-canvas" ? canvasElement : null,
-              },
-            },
-          });
+    // Self-healing panel open. The search box is only RENDERED when the
+    // components tab is active (RightSidebar renders it under
+    // `activeTab === COMPONENTS`), so its DOM *presence* — not jQuery
+    // `:visible`, flaky mid-transition — is the reliable "panel open" signal.
+    // The components button is a TOGGLE and a drag's own `isDragging` effect
+    // flips the sidebar asynchronously, so a single click can race the toggle
+    // and land on the wrong state. Click → verify the search box appeared →
+    // re-click if it didn't, until the panel is open (bounded retries).
+    const ensureComponentsPanelOpen = (tries = 5) => {
+      cy.get("body").then(($b) => {
+        if ($b.find(commonSelectors.searchField).length > 0) return; // already open
+        cy.get('[data-cy="right-sidebar-components-button"]').click();
+        cy.wait(500); // let the toggle settle before re-checking
+        cy.get("body").then(($b2) => {
+          if ($b2.find(commonSelectors.searchField).length === 0 && tries > 1) {
+            ensureComponentsPanelOpen(tries - 1);
+          }
         });
-
-        cy.get(canvas)
-          .trigger("drop", {
-            dataTransfer,
-            clientX: dropX,
-            clientY: dropY,
-            force: true,
-          })
-          .trigger("mouseup", { force: true });
-
-        cy.waitForAutoSave();
       });
-    });
+    };
+
+    const openPanelAndSearch = () => {
+      ensureComponentsPanelOpen();
+      cy.get(commonSelectors.searchField)
+        .should("be.visible")
+        .first()
+        .clear()
+        .type(widgetName);
+      cy.get(commonWidgetSelector.widgetBox(widgetName2)).should("be.visible");
+    };
+
+    // `[data-cy=real-canvas]` is reused by every SubContainer — `cy.get` picks
+    // the FIRST match which can be a sidebar/preview surface, not the actual
+    // editing canvas. Resolve by id instead:
+    //   - module editor → ModuleContainer's sub-canvas (`#canvas-{uuid}`).
+    //   - app editor   → `#real-canvas` (unique).
+    const resolveCanvas = ($body) => {
+      if (canvas) return canvas;
+      const mc = $body.find('[component-type="ModuleContainer"]')[0];
+      return mc?.id ? `#${mc.id}` : "#real-canvas";
+    };
+
+    // Poll for the new widget instead of checking once after a fixed wait: a
+    // fixed delay races the render+autosave and triggers a SPURIOUS retry that
+    // double-drops the widget (button1 + button2). Only re-drag if no new widget
+    // appears within the poll window (a genuine cold-intercept SILENT miss).
+    const confirmDropOrRetry = (before, pollsLeft, triesLeft) => {
+      countWidgets().then((now) => {
+        if (now > before) return; // drop succeeded
+        if (pollsLeft <= 0) {
+          if (triesLeft > 1) attempt(triesLeft - 1);
+          return;
+        }
+        cy.wait(500);
+        confirmDropOrRetry(before, pollsLeft - 1, triesLeft);
+      });
+    };
+
+    // ----------------------------------------------------------------------
+    // THE COLD-FIRST-DRAG THROW (suite-wide #1 blocker) and how this recovers.
+    //
+    // `cy.realDragAndDrop` → `cy.task("cdpRealDrag")`. On a cold pipeline (spec's
+    // first drag, and re-cold after every apiCreateApp+openApp AUT navigation in
+    // beforeEach) the plugin's CDP `Input.setInterceptDrags` arming is silently
+    // absorbed by Cypress's still-settling automation/snapshot CDP traffic. The
+    // plugin retries ONCE internally, but its warmup (getClient's cached
+    // cdpPromise) runs only ONCE per spec run — NOT per navigation — so a freshly
+    // navigated AUT can exhaust both internal attempts and the task REJECTS:
+    //   "[cypress-real-dnd] No Input.dragIntercepted ...".
+    // A rejected cy.task is a command-queue failure that `.then()` cannot catch,
+    // so the old count-based retry never ran and beforeEach died.
+    //
+    // FIX: drive the drag under a scoped, single-shot `cy.on('fail')` trap. When
+    // the cold-intercept throw fires, the trap re-arms via cy.realDragInit()
+    // (re-runs the plugin warmup), settles, and re-drives the FULL attempt
+    // (open→search→drag→count-poll). Returning false from the trap stops Cypress
+    // from failing the test; the re-queued attempt resumes the command queue.
+    // Any non-cold-intercept error, or exhausting throwTriesLeft, re-throws so we
+    // never mask a genuine failure.
+    //
+    // We use a module-scoped flag (not a closure return) because Cypress invokes
+    // `fail` handlers synchronously at error time; the handler enqueues recovery
+    // commands and returns false. The handler is re-installed on every attempt so
+    // it stays single-shot per drag.
+    // Hold the current trap so we can detach a stale one before installing the
+    // next (a never-fired `once` would otherwise stack and all fire together).
+    let currentTrap = null;
+    const installFailTrap = (throwTriesLeft) => {
+      if (currentTrap) cy.removeListener("fail", currentTrap);
+      const onFail = (err) => {
+        currentTrap = null; // this handler has now fired
+        const msg = (err && err.message) || "";
+        const isColdIntercept = /dragIntercepted|cdpRealDrag/i.test(msg);
+        if (isColdIntercept && throwTriesLeft > 1) {
+          // Recover the cold-intercept THROW: re-arm + re-drive the whole
+          // attempt. The re-armed init re-runs the plugin's mouse-cycle warmup.
+          cy.realDragInit();
+          cy.wait(900);
+          attempt(throwTriesLeft - 1);
+          return false; // swallow this failure; the re-driven attempt continues
+        }
+        throw err; // unrecoverable or out of retries — fail honestly
+      };
+      currentTrap = onFail;
+      cy.on("fail", onFail);
+    };
+
+    const attempt = (triesLeft) => {
+      installFailTrap(triesLeft);
+      countWidgets().then((before) => {
+        openPanelAndSearch();
+        // Wait for react-dnd to mark the source draggable before initiating.
+        cy.get(sourceSelector, { timeout: 15000 }).should("exist");
+        // Re-arm immediately before each drag: heavy ops since the last arm
+        // (panel toggle, search render) can clear the renderer's intercept.
+        cy.realDragInit();
+        cy.wait(300);
+        cy.get("body").then(($body) => {
+          cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
+            targetX: positionX,
+            targetY: positionY,
+          });
+          // Silent-miss recovery (intercept armed, but react-dnd made no
+          // component). The THROW path is handled by the fail-trap above.
+          confirmDropOrRetry(before, 16, triesLeft);
+        });
+      });
+    };
+
+    // Arm the CDP drag intercept before the first drag (re-runs plugin warmup
+    // for THIS navigation; the plugin only auto-warms once per spec run).
+    cy.realDragInit();
+    cy.wait(500);
+    // triesLeft doubles as the THROW retry budget — 4 gives the cold intercept
+    // up to 4 re-arm+re-drive cycles before failing for real.
+    attempt(4);
+    cy.waitForAutoSave();
   }
 );
+
+/* ===========================================================================
+ * REUSE-AFTER-PLUGIN-FIX: simplified dragAndDropWidget (band-aid removed)
+ * ---------------------------------------------------------------------------
+ * The `cy.on('fail')` trap + `installFailTrap`/`currentTrap`/`onFail` above is
+ * a WORKAROUND for a bug in cypress-real-dnd: `cy.realDragInit()` is a no-op on
+ * a warm (cached) CDP client, so it can't re-arm the intercept after each
+ * apiCreateApp+openApp AUT navigation → the first post-navigation drag THROWS
+ * "No Input.dragIntercepted", which a rejected cy.task can't recover from.
+ *
+ * Once cypress-real-dnd is fixed so `cy.realDragInit()` (or a new
+ * `cy.realDragRewarm()`) ACTUALLY re-runs the arm+warmup on the existing client
+ * — see cypress-tests/CYPRESS_REAL_DND_FIX.md for the exact package change —
+ * the throw stops happening, the fail-trap is no longer needed, and this whole
+ * command collapses to the version below. Delete `installFailTrap`,
+ * `currentTrap`, `onFail`, and the `cy.on('fail')` wiring; keep only the
+ * per-navigation re-arm + the silent-miss poll:
+ *
+ *   const attempt = (triesLeft) => {
+ *     countWidgets().then((before) => {
+ *       openPanelAndSearch();
+ *       cy.get(sourceSelector, { timeout: 15000 }).should("exist");
+ *       cy.realDragInit();   // post-fix: genuinely re-arms+re-warms per nav
+ *       cy.wait(300);
+ *       cy.get("body").then(($body) => {
+ *         cy.realDragAndDrop(sourceSelector, resolveCanvas($body), {
+ *           targetX: positionX,
+ *           targetY: positionY,
+ *         });
+ *         confirmDropOrRetry(before, 16, triesLeft); // silent-miss safety net
+ *       });
+ *     });
+ *   };
+ *   cy.realDragInit();
+ *   cy.wait(500);
+ *   attempt(3);
+ *   cy.waitForAutoSave();
+ *
+ * Validate after switching: re-run buttonHappyPath + datePickerHappyPath +
+ * componentsBasics/button.cy.js — all should stay green with NO fail-trap.
+ * =========================================================================== */
 
 Cypress.Commands.add(
   "clearAndTypeOnCodeMirror",
@@ -290,6 +403,12 @@ Cypress.Commands.add("createAppFromTemplate", (appName) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
+  // Renaming is now modal-driven (frontend/src/AppBuilder/Header/EditAppName.jsx):
+  // the editor header shows a button `edit-app-name-button` that opens an
+  // AppModal. The rename input (`app-name-input`) and submit button
+  // (`rename-app`, from generateCypressDataCy("Rename app")) only exist once
+  // that modal is open, so click the header button first.
+  cy.get(commonSelectors.editAppNameButton).click();
   cy.get(commonSelectors.appNameInput).type(
     `{selectAll}{backspace}${appName}`,
     { force: true }
@@ -434,8 +553,9 @@ Cypress.Commands.add("moveComponent", (componentName, x, y) => {
   cy.get(commonSelectors.canvas, { log: false })
     .trigger("mousemove", {
       which: 1,
-      clientX: x,
-      ClientY: y,
+      // #real-canvas is overlaid by #main-editor-canvas, so an un-forced
+      // mousemove fails the actionability "covered by another element" check.
+      force: true,
       clientX: x,
       clientY: y,
       pageX: x,
@@ -444,7 +564,7 @@ Cypress.Commands.add("moveComponent", (componentName, x, y) => {
       screenY: y,
       log: false,
     })
-    .trigger("mouseup", { log: false });
+    .trigger("mouseup", { force: true, log: false });
 
   const log = Cypress.log({
     name: "moveComponent",
@@ -552,14 +672,20 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
 
 Cypress.Commands.overwrite( //update required if using
   "intercept",
-  (originalFn, method, endpoint, ...rest) => {
-    const isSubpath = Cypress.config("baseUrl")?.includes("/apps");
-    const cleanEndpoint = endpoint.startsWith("/apps")
-      ? endpoint.replace("/apps", "")
-      : endpoint;
-    const fullUrl = isSubpath ? `/apps${cleanEndpoint}` : cleanEndpoint;
-
-    return originalFn(method, fullUrl, ...rest);
+  (originalFn, ...args) => {
+    // The /apps subpath rewrite only applies to the (method, stringEndpoint)
+    // form. Pass RouteMatcher objects, regexes, and the single-arg form
+    // through untouched — otherwise `endpoint.startsWith` throws on a non-string
+    // (e.g. `cy.intercept(/\/events/)`).
+    const endpoint = args[1];
+    if (typeof endpoint === "string") {
+      const isSubpath = Cypress.config("baseUrl")?.includes("/apps");
+      const cleanEndpoint = endpoint.startsWith("/apps")
+        ? endpoint.replace("/apps", "")
+        : endpoint;
+      args[1] = isSubpath ? `/apps${cleanEndpoint}` : cleanEndpoint;
+    }
+    return originalFn(...args);
   }
 );
 

@@ -344,6 +344,22 @@ export class ModuleImportRequestDto {
   tooljet_database?: ImportTooljetDatabaseDto[];
 }
 
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
 export enum TjdbFilterOperator {
   EQUALS = 'equals',
   GREATER_THAN = 'greater than',
