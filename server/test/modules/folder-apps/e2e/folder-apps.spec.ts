@@ -10,6 +10,7 @@ import {
   addAppToFolder,
   saveEntity,
   findEntity,
+  updateEntity,
 } from 'test-helper';
 import * as request from 'supertest';
 import { Folder } from '@entities/folder.entity';
@@ -112,7 +113,7 @@ describe('FolderAppsController', () => {
         expect(response.body.id).toBeDefined();
       });
 
-      it('should not add an app to a folder more than once', async () => {
+      it('should be idempotent when adding an app to the same folder twice', async () => {
         const { adminUser, app } = await setupOrganization(nestApp);
 
         // create a new folder
@@ -120,20 +121,23 @@ describe('FolderAppsController', () => {
 
         const loggedUser = await login(nestApp);
 
-        await request(nestApp.getHttpServer())
+        const first = await request(nestApp.getHttpServer())
           .post(`/api/folder-apps`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie)
           .send({ folder_id: folder.id, app_id: app.id });
 
-        const response = await request(nestApp.getHttpServer())
+        expect(first.statusCode).toBe(201);
+
+        const second = await request(nestApp.getHttpServer())
           .post(`/api/folder-apps`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie)
           .send({ folder_id: folder.id, app_id: app.id });
 
-        expect(response.statusCode).toBe(400);
-        expect(response.body.message).toBe('App has already been added to the folder');
+        expect(second.statusCode).toBe(201);
+        expect(second.body.id).toBe(first.body.id);
+        expect(second.body).toMatchObject({ app_id: app.id, folder_id: folder.id });
       });
     });
 
@@ -236,26 +240,28 @@ describe('FolderAppsController', () => {
 
         // Create versions on specific branches
         const versionA = await createApplicationVersion(nestApp, moduleA, { name: 'v1' });
-        await saveEntity(AppVersion, {
-          id: versionA.id,
+        await updateEntity(AppVersion, versionA.id, {
           branchId: branchA.id,
+          appName: 'Module A',
+          slug: `module-a-${versionA.id}`,
         } as any);
 
         const versionB = await createApplicationVersion(nestApp, moduleB, { name: 'v1' });
-        await saveEntity(AppVersion, {
-          id: versionB.id,
+        await updateEntity(AppVersion, versionB.id, {
           branchId: branchB.id,
+          appName: 'Module B',
+          slug: `module-b-${versionB.id}`,
         } as any);
 
-        // Create a module folder and add modules to it
+        // Create a module folder and add modules to it (branch-scoped entries)
         const moduleFolder = await createFolder(nestApp, {
           name: 'Module Folder',
           type: APP_TYPES.MODULE,
           organizationId: adminUser.organizationId,
         });
 
-        await addAppToFolder(nestApp, moduleA, moduleFolder);
-        await addAppToFolder(nestApp, moduleB, moduleFolder);
+        await saveEntity(FolderApp, { appId: moduleA.id, folderId: moduleFolder.id, branchId: branchA.id } as any);
+        await saveEntity(FolderApp, { appId: moduleB.id, folderId: moduleFolder.id, branchId: branchB.id } as any);
 
         // Fetch modules from folder with branchId=A
         const responseBranchA = await request(nestApp.getHttpServer())
@@ -307,9 +313,10 @@ describe('FolderAppsController', () => {
         );
 
         const versionA = await createApplicationVersion(nestApp, moduleA, { name: 'v1' });
-        await saveEntity(AppVersion, {
-          id: versionA.id,
+        await updateEntity(AppVersion, versionA.id, {
           branchId: branchA.id,
+          appName: 'Isolated Module',
+          slug: `isolated-module-${versionA.id}`,
         } as any);
 
         const moduleFolder = await createFolder(nestApp, {
@@ -492,9 +499,10 @@ describe('FolderAppsController', () => {
             false
           );
           const version = await createApplicationVersion(nestApp, mod, { name: 'v1' });
-          await saveEntity(AppVersion, {
-            id: version.id,
+          await updateEntity(AppVersion, version.id, {
             branchId: branchA.id,
+            appName: `Module ${i + 1}`,
+            slug: `module-${i + 1}-${version.id}`,
           } as any);
           modules.push(mod);
         }
@@ -506,7 +514,7 @@ describe('FolderAppsController', () => {
         });
 
         for (const mod of modules) {
-          await addAppToFolder(nestApp, mod, moduleFolder);
+          await saveEntity(FolderApp, { appId: mod.id, folderId: moduleFolder.id, branchId: branchA.id } as any);
         }
 
         // Fetch with page 1 (9 per page, so all 3 should fit)
