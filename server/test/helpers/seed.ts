@@ -25,7 +25,8 @@ import { CreateFileDto } from '@modules/files/dto';
 import * as request from 'supertest';
 import { AppEnvironment } from '@entities/app_environments.entity';
 import { defaultAppEnvironments } from '@helpers/utils.helper';
-import { DataSourceOptions } from '@entities/data_source_options.entity';
+import { DataSourceVersion } from '@entities/data_source_version.entity';
+import { DataSourceVersionOptions } from '@entities/data_source_version_options.entity';
 import { Page } from '@entities/page.entity';
 import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
@@ -666,6 +667,7 @@ export async function createDataSource(
 ): Promise<DataSource> {
   const dataSourceRepository: Repository<DataSource> = getDefaultDataSource().getRepository(DataSource);
 
+  const ds = getDefaultDataSource();
   const dataSource = await dataSourceRepository.save(
     dataSourceRepository.create({
       name,
@@ -675,6 +677,17 @@ export async function createDataSource(
       scope: type === 'static' ? 'global' : 'local',
       createdAt: new Date(),
       updatedAt: new Date(),
+    })
+  );
+
+  // Create default DataSourceVersion required by DataSourceVersionOptions
+  await ds.manager.save(
+    ds.manager.create(DataSourceVersion, {
+      dataSourceId: dataSource.id,
+      name: dataSource.name,
+      isDefault: true,
+      isActive: true,
+      branchId: null,
     })
   );
 
@@ -700,9 +713,8 @@ export async function createDataQuery(_nestApp: INestApplication, { name = 'defa
 }
 
 /** Creates data source options for a specific environment, with Credential records for encrypted values. */
-export async function createDataSourceOption(_nestApp: INestApplication, { dataSource, environmentId, options }: CreateDataSourceOptionParams): Promise<DataSourceOptions> {
+export async function createDataSourceOption(_nestApp: INestApplication, { dataSource, environmentId, options }: CreateDataSourceOptionParams): Promise<DataSourceVersionOptions> {
   const ds = getDefaultDataSource();
-  const dataSourceOptionsRepository = ds.getRepository(DataSourceOptions);
   const credentialRepository = ds.getRepository(Credential);
 
   const parsedOptions: Record<string, { credential_id?: string; encrypted: boolean; value?: string }> = {};
@@ -713,10 +725,7 @@ export async function createDataSourceOption(_nestApp: INestApplication, { dataS
         const credential = await credentialRepository.save(
           credentialRepository.create({ valueCiphertext: opt.value || '' })
         );
-        parsedOptions[opt.key] = {
-          credential_id: credential.id,
-          encrypted: true,
-        };
+        parsedOptions[opt.key] = { credential_id: credential.id, encrypted: true };
       } else {
         parsedOptions[opt.key] = { value: opt.value, encrypted: false };
       }
@@ -725,11 +734,15 @@ export async function createDataSourceOption(_nestApp: INestApplication, { dataS
     Object.assign(parsedOptions, options);
   }
 
-  return await dataSourceOptionsRepository.save(
-    dataSourceOptionsRepository.create({
-      options: parsedOptions,
-      dataSourceId: dataSource.id,
+  const dsv = await ds.manager.findOneOrFail(DataSourceVersion, {
+    where: { dataSourceId: dataSource.id, isDefault: true },
+  });
+
+  return await ds.manager.save(
+    ds.manager.create(DataSourceVersionOptions, {
+      dataSourceVersionId: dsv.id,
       environmentId,
+      options: parsedOptions,
     })
   );
 }

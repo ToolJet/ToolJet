@@ -91,11 +91,13 @@ const SlugInput = () => {
 
   const delayedSlugChange = _.debounce((value, field) => handleInputChange(value, field), 500);
 
-  const { currentBranch } = useWorkspaceBranchesStore();
-  const isDefaultBranch = currentBranch?.is_default || currentBranch?.isDefault;
+  const { currentBranch, orgGitConfig } = useWorkspaceBranchesStore();
+  const isBranchingEnabled = !!(orgGitConfig?.is_branching_enabled || orgGitConfig?.isBranchingEnabled);
+  const isDefaultBranch = isBranchingEnabled && !!(currentBranch?.is_default || currentBranch?.isDefault);
 
   const SlugLabel = () => {
-    const isOnFeatureBranch = currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
+    const isOnFeatureBranch =
+      isBranchingEnabled && !!currentBranch && !currentBranch.is_default && !currentBranch.isDefault;
 
     return (
       <div className="tw-flex tw-items-center tw-gap-1 tw-mb-1">

@@ -33,9 +33,9 @@ const SignupPage = ({ configs, organizationId }) => {
   const inviteOrganizationId = organizationId;
   const paramInviteOrganizationSlug = params.organizationId;
   const redirectTo = location?.search?.split('redirectTo=')[1];
-  if (!paramInviteOrganizationSlug && edition === 'cloud') {
-    window.location.href = envConfigs.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup';
-  }
+  // if (!paramInviteOrganizationSlug && edition === 'cloud') {
+  //   window.location.href = envConfigs.WEBSITE_SIGNUP_URL || 'https://www.tooljet.com/signup';
+  // }
   useEffect(() => {
     fetchWhiteLabelDetails(organizationId);
     const errorMessage = location?.state?.errorMessage;

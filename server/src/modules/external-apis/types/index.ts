@@ -32,6 +32,7 @@ interface Features {
   [FEATURE_KEY.LIST_MODULES]: FeatureConfig;
   [FEATURE_KEY.EXPORT_MODULE]: FeatureConfig;
   [FEATURE_KEY.IMPORT_MODULE]: FeatureConfig;
+  [FEATURE_KEY.EXPORT_TJDB_TABLE_AS_CSV]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

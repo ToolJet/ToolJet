@@ -11,7 +11,7 @@ export enum AppBuilderMode {
 export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(100, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsOptional()
@@ -57,7 +57,7 @@ export class AppUpdateDto {
     return newValue.trim();
   })
   @IsNotEmpty({ message: 'App name should not be empty' })
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(100, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsString()

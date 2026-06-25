@@ -61,7 +61,7 @@ import { DataQueryFolderMapping } from '@entities/data_query_folder_mapping.enti
 import { DataQuery } from '@entities/data_query.entity';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
-import { GitSyncEnvUtilService } from '@ee/organization-env/services/gitsync.util.service';
+import { GitSyncEnvUtilService } from '@modules/organization-env/services/gitsync.util.service';
 import { GITConnectionType, OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 
@@ -991,9 +991,23 @@ export class AppsService implements IAppsService {
 
       // Validate slug uniqueness against other released apps (non-workflow only)
       if (app.type !== 'workflow') {
-        // Get canonical slug from BRANCH version (git-sync) or any version (non-git-sync)
-        const slugVersion = releasedVersion?.slug
-          ? releasedVersion
+        // Resolve canonical slug. Git-sync enabled (org has a default branch row in
+        // organization_git_sync_branches): read the slug off the app_versions row tied
+        // to that default branch — feature-branch rows can carry a different in-flight
+        // slug and must not drive the uniqueness check. Otherwise pick any version row
+        // (every row carries identical metadata when git-sync is off).
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+          select: ['id'],
+        });
+
+        const slugVersion = defaultBranch
+          ? await manager
+              .createQueryBuilder(AppVersion, 'av')
+              .where('av.app_id = :appId', { appId })
+              .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
+              .select('av.slug')
+              .getOne()
           : await manager
               .createQueryBuilder(AppVersion, 'av')
               .where('av.app_id = :appId', { appId })
@@ -1002,14 +1016,26 @@ export class AppsService implements IAppsService {
               .getOne();
 
         if (slugVersion?.slug) {
-          const conflictingReleasedApp = await manager
+          // Slug uniqueness is instance-wide, not scoped to an organization — drop
+          // the organization filter. Git-sync on: pin to the default-branch DRAFT
+          // VERSION row of each other released app; feature-branch / snapshot rows
+          // may temporarily hold a colliding slug and must not block this release.
+          // Git-sync off: any row of any other released app is canonical.
+          const conflictingReleasedAppQb = manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin('apps', 'a', 'a.id = av.app_id')
             .where('av.slug = :slug', { slug: slugVersion.slug })
-            .andWhere('a.organization_id = :orgId', { orgId: user.organizationId })
             .andWhere('a.id != :appId', { appId })
-            .andWhere('a.current_version_id IS NOT NULL')
-            .getOne();
+            .andWhere('a.current_version_id IS NOT NULL');
+
+          if (defaultBranch) {
+            conflictingReleasedAppQb
+              .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
+              .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+              .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT });
+          }
+
+          const conflictingReleasedApp = await conflictingReleasedAppQb.getOne();
           if (conflictingReleasedApp) {
             throw new BadRequestException('Cannot release — slug conflicts with another released app.');
           }

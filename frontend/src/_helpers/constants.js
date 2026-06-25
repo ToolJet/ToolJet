@@ -38,6 +38,7 @@ export const ERROR_TYPES = {
   USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
+  PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
   APP_NOT_ON_BRANCH: 'app-not-on-branch',
   APP_NOT_READY: 'app-not-ready',
 };
