@@ -3,7 +3,7 @@
   "kind": "servicenow",
   "type": "api",
   "schemaVersion": "v1",
-  "operationsMode": "none",
+  "operationsMode": "api-endpoint",
   "description": "Read and write ServiceNow records through the ServiceNow Table API.",
   "httpClient": "got",
   "commonImport": "@tooljet-marketplace/common",
@@ -36,15 +36,13 @@
       {
         "value": "oauth2",
         "name": "OAuth 2.0",
-        "grant": "password",
+        "grant": "authorization_code",
         "fields": [
           { "key": "client_id", "label": "Client ID", "type": "text" },
-          { "key": "client_secret", "label": "Client secret", "type": "password", "encrypted": true },
-          { "key": "oauth_username", "label": "Username", "type": "text" },
-          { "key": "oauth_password", "label": "Password", "type": "password", "encrypted": true }
+          { "key": "client_secret", "label": "Client secret", "type": "password", "encrypted": true }
         ],
-        "tokenEndpoint": "POST {instance_url}/oauth_token.do (application/x-www-form-urlencoded) body: grant_type=password, client_id, client_secret, username, password",
-        "headerBehavior": "Authorization: Bearer <access_token from token endpoint>"
+        "headerBehavior": "Authorization: Bearer <access_token from token endpoint>",
+        "notes": "ServiceNow supports multiple OAuth flows; prefer authorization_code (inbound client) over password grant for standard integration. The plugin's code will delegate OAuth handling to shared helpers."
       }
     ],
     "testConnection": "Resolve the selected auth, then GET {instance_url}/api/now/table/sys_user?sysparm_limit=1. status:'ok' on 2xx, else status:'failed' with message."
@@ -77,6 +75,37 @@
       ]
     },
     {
+      "id": "list_tables",
+      "name": "List Tables",
+      "method": "GET",
+      "path": "/sys_db_object",
+      "params": [
+        { "key": "name_filter", "label": "Name filter", "type": "text", "placeholder": "inc" },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter", "placeholder": "100" }
+      ]
+    },
+    {
+      "id": "get_table_schema",
+      "name": "Get Table Schema",
+      "method": "GET",
+      "path": "/sys_dictionary",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter" }
+      ]
+    },
+    {
+      "id": "get_field_choices",
+      "name": "Get Field Choices",
+      "method": "GET",
+      "path": "/sys_choice",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true },
+        { "key": "field", "label": "Field", "type": "codehinter", "required": true },
+        { "key": "language", "label": "Language", "type": "text", "placeholder": "en" }
+      ]
+    },
+    {
       "id": "create_record",
       "name": "Create Record",
       "method": "POST",
@@ -105,6 +134,28 @@
       "params": [
         { "key": "table", "label": "Table", "type": "codehinter", "required": true, "placeholder": "incident" },
         { "key": "sys_id", "label": "Sys ID", "type": "codehinter", "required": true }
+      ]
+    }
+    ,
+    {
+      "id": "aggregate",
+      "name": "Aggregate / Stats",
+      "method": "GET",
+      "path": "/../stats/{table}",
+      "params": [
+        { "key": "table", "label": "Table", "type": "codehinter", "required": true },
+        { "key": "sysparm_count", "label": "Count", "type": "dropdown", "list": ["true","false"] },
+        { "key": "sysparm_query", "label": "Query", "type": "codehinter" }
+      ]
+    },
+    {
+      "id": "list_flows",
+      "name": "List Flows",
+      "method": "GET",
+      "path": "/sys_hub_flow",
+      "params": [
+        { "key": "name_filter", "label": "Name filter", "type": "text" },
+        { "key": "sysparm_limit", "label": "Limit", "type": "codehinter" }
       ]
     }
   ],
