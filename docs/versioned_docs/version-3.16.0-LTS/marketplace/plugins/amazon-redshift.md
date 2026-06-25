@@ -5,7 +5,9 @@ title: Amazon Redshift
 
 ToolJet can connect to Amazon Redshift, enabling your applications to query data directly from a Redshift cluster.
 
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
 
 ## Configuration
 

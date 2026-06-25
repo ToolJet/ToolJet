@@ -5,6 +5,10 @@ title: Intercom
 
 Using this plugin, you can integrate Intercom with ToolJet to manage customer conversations, support workflows, and user engagement directly from your applications.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
 To make a connection, you first need to create an application in Intercom and obtain an **access token**.

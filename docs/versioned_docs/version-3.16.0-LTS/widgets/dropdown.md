@@ -207,6 +207,7 @@ components.dropdown1.selectOption(2);
 | Background | Sets the background color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Border | Sets the border color of the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Text | Sets the text color of the text entered in the component. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Placeholder text | Sets the color of the placeholder text displayed when no option is selected. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Accent | Sets the color of the border when the dropdown is opened. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Error text | Sets the text color of validation message that displays.  | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
 | Icon | Allows you to select an icon for the component. | Enable the icon visibility, select icon and icon color |

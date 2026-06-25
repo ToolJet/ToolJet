@@ -5,8 +5,8 @@ title: Engagespot
 
 ToolJet connects to your Engagespot account, allowing you to send notifications, create or update users from within your ToolJet application.
 
-:::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins)**.
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
 :::
 
 ## Connection
@@ -41,9 +41,13 @@ You can create query for Engagespot data source to perform several actions such 
 
 ### Create OR Update User
 
-#### Required Parameters
+#### Required Parameter
 
 - **User Identifier** - Unique user identifier.
+
+#### Optional Parameter
+
+- **User Profile JSON** - JSON object containing additional user attributes, such as their email or name, for notification personalization.
 
 <img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/create-query.png" alt="engagespot create user" />
 
@@ -62,7 +66,7 @@ The user profile column accepts any key-value pairs in valid JSON object format.
 
 ### Generate User Token
 
-#### Required Parameters:
+#### Required Parameter
 
 - **User Identifier** - Unique user identifier.
 

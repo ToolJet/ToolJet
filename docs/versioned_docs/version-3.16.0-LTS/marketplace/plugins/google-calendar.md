@@ -5,9 +5,13 @@ title: Google Calendar
 
 ToolJet can connect to Google Calendar to fetch, create, update, and delete calendar events directly from your ToolJet application.
 
+:::info NOTE
+Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#configuring-plugins).
+:::
+
 ## Connection
 
-You will need the following credential to connect with Google Calendar:
+You will need the following credentials to connect with Google Calendar:
  - **Client ID**
  - **Client Secret**
 
@@ -23,17 +27,27 @@ Note: After completing the OAuth flow, the query must be triggered again to load
 
 
 1. Go to **[Google Cloud console](https://console.cloud.google.com/)** and create a project.
+
     <img className="screenshot-full img-full" style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/gc-new-project.png" alt="Create New Project"/>
+
 2. Go to the **[Google Cloud console credentials page](https://console.cloud.google.com/apis/credentials)**, and create an OAuth client ID.
-    <img className="screenshot-full img-full"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/create-oauth.png" alt="General Settings: SSO"/>
+
+ <img className="screenshot-full img-full"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/create-oauth.png" alt="General Settings: SSO"/>
+    
 3. You'll be asked to select user type in consent screen. To allow only users within your workspace, select 'Internal', otherwise,
 select 'External'.
-    <img className="screenshot-full img-full"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/oauth-type.png" alt="General Settings: SSO"/>
+
+<img className="screenshot-full img-full"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/oauth-type.png" alt="General Settings: SSO"/>
+
 4. After configuring the consent screen you will be redirected to OAuth overview page, click on **Create OAuth client**.
+
 5. Then on the Clients page, select the Application type as **Web application**, and give it a name, under Authorised JavaScript origins, set the domain on which ToolJet is hosted and under Authorized redirect URIs, enter the Redirect URL which was generated in ToolJet's data source configuration page.
-    <img className="screenshot-full img-l"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/clients.png" alt="General Settings: SSO"/>
+
+<img className="screenshot-full img-l"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/clients.png" alt="General Settings: SSO"/>
+
 6. Click on **Create** and copy the **Client ID** and **Client Secret**.
-    <img className="screenshot-full img-full"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/client-id.png" alt="General Settings: SSO"/>
+
+<img className="screenshot-full img-full"  style={{ marginTop: '15px' }} src="/img/marketplace/plugins/googlecal/client-id.png" alt="General Settings: SSO"/>
 
 ## Supported Operations
 
