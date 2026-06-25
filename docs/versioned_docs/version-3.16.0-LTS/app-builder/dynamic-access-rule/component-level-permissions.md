@@ -21,7 +21,7 @@ For public released apps, only non-restricted components will be accessible to e
 - When users can view a page but should only interact with specific elements.
 - When building multi-tenant applications where different tenants see different UI elements.
 
-## Configuring Component Level Permissions
+## Configuring Component Level Permission
 
 **Role Required**: Admin or Builder
 
