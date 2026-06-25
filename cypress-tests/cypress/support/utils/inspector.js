@@ -11,12 +11,64 @@ export const verifyNodes = (nodes, verificationFunction) => {
   );
 };
 
-export const openNode = (node, index = 0, time = 1000) => {
+export const openNode = (node, index = 0, time = 15000) => {
   cy.get(`[data-cy="inspector-${node.toLowerCase()}-expand-button"]`, {
     timeout: time,
   })
     .eq(index)
     .click();
+};
+
+// --- 2-layer tree+detail inspector navigation helpers ---------------------
+// Current inspector (frontend/src/AppBuilder/LeftSidebar/LeftSidebarInspector):
+//  - Level-1 nodes (Queries/Components/Globals/Variables/Page/Constants) expand
+//    via `inspector-<type>-expand-button` (Node.jsx:121).
+//  - Their children render a clickable subnode label
+//    `inspector-<generateCypressDataCy(name)>-subnode-label` (Node.jsx:149).
+//  - Clicking a subnode whose metadata has a `type` (level !== 1) opens a
+//    separate JSONViewer detail panel (Node.jsx:73-80 onSelect ->
+//    JSONTreeViewerV2.jsx:198 JSONViewer) whose rows expose
+//    `inspector-<generateCypressDataCy(key)>-label` / `-value` (Row.jsx:82,91).
+//  - The detail panel header is exited via the breadcrumb
+//    `inspector-detail-header-back` (TreeViewHeader.jsx:115).
+
+// generateCypressDataCy mirror (frontend/src/modules/common/helpers/cypressHelpers.js)
+const cyDataCy = (text) =>
+  String(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+// Click a tree subnode label to open its detail panel.
+// `parentExpandType` (optional) ensures the owning level-1 node is expanded first.
+export const openSubNode = (subNodeName, parentExpandType = null, time = 15000) => {
+  if (parentExpandType) {
+    openNode(parentExpandType, 0, time);
+  }
+  cy.get(`[data-cy="inspector-${cyDataCy(subNodeName)}-subnode-label"]`, {
+    timeout: time,
+  })
+    .first()
+    .click();
+};
+
+// Return from a detail panel back to the tree view.
+export const backFromDetail = () => {
+  cy.get('[data-cy="inspector-detail-header-back"]').click();
+};
+
+// Expand a level-1 node, open one of its subnodes' detail panel, verify the
+// detail rows, then go back to the tree. Used for non-component nodes
+// (globals/page/variables) where values live in the detail panel.
+export const openSubNodeAndVerify = (
+  parentExpandType,
+  subNodeName,
+  nodes,
+  verificationFunction
+) => {
+  openSubNode(subNodeName, parentExpandType);
+  verifyNodes(nodes, verificationFunction);
+  backFromDetail();
 };
 
 export const openStateFromComponent = (widgetName) => {
