@@ -233,7 +233,7 @@ These validations apply to both the instance and workspace levels.
 
 :::warning BETA
 This feature is currently in beta and is not recommended for production use.
-For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/development-lifecycle/gitsync/connect-to-git-repo/gitsync-env-vars).
+For full setup instructions, provider-specific keys, and Docker Compose examples, see [Configure GitSync via Environment Variables](/docs/beta/gitsync-env-vars).
 :::
 
 GitSync can be configured using environment variables instead of the ToolJet UI, useful for self-hosted setups where you want to automate or version-control your GitSync configuration.

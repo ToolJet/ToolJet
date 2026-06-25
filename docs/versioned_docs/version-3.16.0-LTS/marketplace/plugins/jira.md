@@ -60,7 +60,7 @@ ToolJet supports the following Jira resources and operations:
 
 - **[Get User](#get-user)**
 - **[Find Users by Query](#find-users-by-query)**
-- **[Find Assignable Users](#find-assignable-users)**
+- **[Find Assignable Users](#assignable-users)**
 
 #### Worklog
 
