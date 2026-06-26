@@ -2,13 +2,13 @@ import React, { useContext, useState } from 'react';
 import cx from 'classnames';
 import Table from '../Table';
 import Sidebar from '../Sidebar';
-import { TooljetDatabaseContext } from '../index';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import Warning from '../Icons/warning.svg';
 import WarningDark from '../Icons/warning-dark.svg';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../Forms/TableForm';
@@ -16,8 +16,7 @@ import { BreadCrumbContext } from '@/App/App';
 import Skeleton from 'react-loading-skeleton';
 
 const TooljetDatabasePage = ({ totalTables, collapseSidebar }) => {
-  const { organizationId, setSelectedTable, setTables, selectedTable, loadingState } =
-    useContext(TooljetDatabaseContext);
+  const { organizationId, setSelectedTable, setTables, selectedTable, loadingState } = useTooljetDatabaseContext();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const emptyMessage = "You don't have any tables yet.";
   const darkMode = localStorage.getItem('darkMode') === 'true';

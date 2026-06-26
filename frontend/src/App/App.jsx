@@ -6,11 +6,12 @@ import { authenticationService, tooljetService, licenseService } from '@/_servic
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
-import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 // Viewer import removed - now handled by ViewerApp.jsx
 // import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
+
+const TooljetDatabase = React.lazy(() => import('@/TooljetDatabase'));
 
 const ProfileSettingsPage = React.lazy(() => import('@/SettingsPage'));
 

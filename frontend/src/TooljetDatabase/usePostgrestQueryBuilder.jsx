@@ -1,9 +1,9 @@
-import { useRef, useContext } from 'react';
+import { useRef } from 'react';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
 import { isEmpty } from 'lodash';
 import { toast } from 'react-hot-toast';
-import { TooljetDatabaseContext } from './index';
+import { useTooljetDatabaseContext } from './TooljetDatabaseContext';
 
 export const usePostgrestQueryBuilder = ({
   organizationId,
@@ -12,7 +12,7 @@ export const usePostgrestQueryBuilder = ({
   setTotalRecords,
   setLoadingState,
 }) => {
-  const { pageSize } = useContext(TooljetDatabaseContext);
+  const { pageSize } = useTooljetDatabaseContext();
 
   const postgrestQueryBuilder = useRef({
     filterQuery: new PostgrestQueryBuilder(),

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useMemo, useEffect, useContext } from 'react';
+import React, { useState, useMemo, useEffect, useContext } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
@@ -7,48 +7,10 @@ import { BreadCrumbContext } from '@/App/App';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
 import { hasBuilderRole } from '@/_helpers/utils';
+import { TooljetDatabaseProvider } from './TooljetDatabaseContext';
 import './styles/styles.scss';
 
-export const TooljetDatabaseContext = createContext({
-  organizationId: null,
-  setOrganizationId: () => {},
-  selectedTable: '',
-  setSelectedTable: () => {},
-  searchParam: '',
-  setSearchParam: () => {},
-  selectedTableData: [],
-  setSelectedTableData: () => {},
-  tables: [],
-  setTables: () => {},
-  columns: [],
-  setColumns: () => {},
-  totalRecords: 0,
-  setTotalRecords: () => {},
-  loadingState: false,
-  setLoadingState: () => {},
-  handleBuildFilterQuery: () => {},
-  handleBuildSortQuery: () => {},
-  buildPaginationQuery: () => {},
-  resetSortQuery: () => {},
-  resetFilterQuery: () => {},
-  queryFilters: {},
-  setQueryFilters: () => {},
-  sortFilters: {},
-  setSortFilters: () => {},
-  selectRows: [],
-  setSelectRows: () => {},
-  pageCount: 1,
-  setPageCount: () => {},
-  pageSize: 50,
-  setPageSize: () => {},
-  handleRefetchQuery: () => {},
-  foreignKeys: [],
-  configurations: {},
-  setForeignKeys: () => [],
-  setConfigurations: () => {},
-});
-
-export const TooljetDatabase = (props) => {
+const TooljetDatabase = (props) => {
   const [organizationId, setOrganizationId] = useState(
     authenticationService?.currentSessionValue?.current_organization_id
   );
@@ -181,10 +143,12 @@ export const TooljetDatabase = (props) => {
       toggleCollapsibleSidebar={toggleCollapsibleSidebar}
     >
       <div className="page-wrapper tooljet-database">
-        <TooljetDatabaseContext.Provider value={value}>
+        <TooljetDatabaseProvider value={value}>
           <TooljetDatabasePage totalTables={tables.length || 0} collapseSidebar={collapseSidebar} />
-        </TooljetDatabaseContext.Provider>
+        </TooljetDatabaseProvider>
       </div>
     </Layout>
   );
 };
+
+export default TooljetDatabase;
