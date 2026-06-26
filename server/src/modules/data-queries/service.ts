@@ -267,7 +267,10 @@ export class DataQueriesService implements IDataQueriesService {
       dataSource: true,
     });
 
-    if (ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
+    // Persisting options on run is an EDITOR authoring convenience.
+    // This endpoint is also hit by app preview, and there the user is consuming, not editing,
+    // so the loaded options must NOT be written back.
+    if (mode !== 'view' && ability.can(FEATURE_KEY.UPDATE_ONE, DataSource, dataSource.id) && !isEmpty(options)) {
       await this.dataQueryRepository.updateOne(dataQueryId, { options });
       dataQuery['options'] = options;
     }
