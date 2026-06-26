@@ -8,11 +8,13 @@ import {
   createApplication,
   createApplicationVersion,
   updateEntity,
+  saveEntity,
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { AppsRepository } from '@modules/apps/repository';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
 
 // initTestApp() can exceed 60s when Jest restarts the worker to free memory
 jest.setTimeout(120_000);
@@ -71,6 +73,66 @@ describe('AppsRepository', () => {
 
         expect(result).toBeNull();
       });
+    });
+  });
+
+  // Regression: PR #16818 changed import to write apps.id as the default-branch
+  // stub slug, so the real slug lives only on the feature-branch row. Both
+  // findAppBySlug (PrivateAppAuthGuard) and findByIdOrSlug (external API) must
+  // fall back to that row instead of returning null.
+  describe('feature-branch slug resolution (PR #16818 regression)', () => {
+    let nestApp: INestApplication;
+    let appsRepository: AppsRepository;
+    let testApp: App;
+    let mainBranchId: string;
+    let featBranchId: string;
+    const featureSlug = 'hydrated-feat-branch-slug';
+
+    beforeAll(async () => {
+      ({ app: nestApp } = await initTestApp());
+      appsRepository = nestApp.get<AppsRepository>(AppsRepository);
+
+      const admin = await createAdmin(nestApp, 'apps-repo-branch-slug@tooljet.io');
+      const orgId = admin.user.organizationId;
+      testApp = await createApplication(nestApp, { name: 'branch-slug-test-app', user: admin.user });
+
+      // Default branch — simulates a git-sync-enabled workspace.
+      const mainBranch = await saveEntity(WorkspaceBranch, { organizationId: orgId, name: 'main', isDefault: true });
+      mainBranchId = mainBranch.id;
+
+      // Feature branch.
+      const featBranch = await saveEntity(WorkspaceBranch, { organizationId: orgId, name: 'feature/test', isDefault: false });
+      featBranchId = featBranch.id;
+
+      // Default-branch version: slug = apps.id (PR #16818 stub placeholder).
+      // chk_app_versions_branch_metadata requires app_name when branch_id is set.
+      const mainVersion = await createApplicationVersion(nestApp, testApp as App & { organizationId: string });
+      await updateEntity(AppVersion, mainVersion.id, { branchId: mainBranchId, slug: testApp.id, appName: 'branch-slug-test-app' });
+
+      // Feature-branch version: holds the real canonical slug.
+      const featVersion = await createApplicationVersion(nestApp, testApp as App & { organizationId: string });
+      await updateEntity(AppVersion, featVersion.id, { branchId: featBranchId, slug: featureSlug, appName: 'branch-slug-test-app' });
+    });
+
+    afterAll(async () => {
+      await closeTestApp(nestApp);
+    }, 60000);
+
+    it('findAppBySlug resolves via the feature-branch row when default-branch has a different slug', async () => {
+      const result = await appsRepository.findAppBySlug(featureSlug);
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(testApp.id);
+    });
+
+    it('findAppBySlug returns null for a completely unknown slug', async () => {
+      const result = await appsRepository.findAppBySlug('completely-unknown-slug-xyz');
+      expect(result).toBeNull();
+    });
+
+    it('findByIdOrSlug resolves via the feature-branch row when default-branch has a different slug', async () => {
+      const result = await appsRepository.findByIdOrSlug(featureSlug);
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe(testApp.id);
     });
   });
 });
