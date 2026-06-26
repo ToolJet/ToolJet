@@ -12,7 +12,39 @@ Certain components, namely **Calendar** and **Kanban**, are restricted from bein
 
 ## Options
 
-Configure the tabs displayed in the component by adding or removing them manually, or use **Dynamic options** to generate tabs from an array of objects. Each object can include properties such as `title`, `id`, `disable`, `backgroundColor`, `icon`, and `iconVisibility`.
+Add, remove, and configure tabs for the component. You can also use **Dynamic options** to generate tabs from an array of objects.
+
+### Dynamic Options
+
+Use **Dynamic options** to populate tabs dynamically from an array of objects and can include the following properties:
+
+| Property | Type   | Description | 
+|--------- |--------|-------------|
+| title    | String | The label displayed on the tab. | 
+| id       | String | A unique identifier for the tab.| 
+| icon     | String | The icon to display alongside the tab title. | 
+| iconVisibility | Boolean	| Controls whether the tab icon is displayed. |
+| backgroundColor | String	| Sets the background color of the tab. |
+| loading | Boolean | Displays the loading state for the tab when set to `true`. |
+| visible  | Boolean | Controls whether the tab is visible. |
+| disable  | Boolean | Disables the tab when set to `true`. |
+
+
+The following example shows the object structure accepted by the Dynamic options property.
+ 
+```javascript
+[
+  {
+    title: "Home",
+    id: "home",
+    visible: true,
+    disable: false,
+    icon: "IconHome2",
+    iconVisibility: true,
+    backgroundColor: "#FFFFFF"
+  }
+]
+```
 
 ## Events
 
@@ -55,11 +87,13 @@ The following actions of the component can be controlled using the component-spe
 | :------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------- |
 | Loading state | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Collapse when hidden | Collapses the component's layout space when it is hidden. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Hide tabs | Hides the tab headers while keeping the content visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Render only active tab | When enabled, only renders the currently active tab's content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Switch between sections.` ). |
 | Scroll to top on tab switch | Automatically scrolls the page to the top whenever the active tab changes. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Dynamic height | Automatically adjusts the component height to fit the content of the active tab. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Switch between sections.` ). |
 
 ## Devices
 
@@ -84,14 +118,6 @@ The following actions of the component can be controlled using the component-spe
 | Accent                                         | Sets the accent color.                                                   | Select a theme or choose from color picker.                 |
 | Tab width                                      | Select the tab width.                                                    | Choose between **Auto** or **Equally split**.               |
 | Transition                                     | Choose a transition effect to control how content switches between tabs. | Choose between **Slide** or **None**.                       |
-| Icon            | Sets an icon for the tab.    | Select an icon from the icon picker or click on **fx** to dynamically configure the icon name. |
-| Icon visibility | Controls whether the tab icon is displayed. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. | 
-
-The following syntax shows how to configure `icon` and `iconVisibility` for tabs.
-
-```javascript
-icon: "IconHome2", iconVisibility: true
-```
 
 ### Container
 
