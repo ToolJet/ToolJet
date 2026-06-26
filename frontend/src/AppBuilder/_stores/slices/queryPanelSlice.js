@@ -8,6 +8,8 @@ import moment from 'moment';
 import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
+import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
+import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -627,6 +629,15 @@ export const createQueryPanelSlice = (set, get) => ({
           moduleId
         );
 
+        // Create AbortController only for fetch-based kinds. For runjs/runpy/workflows,
+        // controller.abort() has no effect on the underlying execution, so registering one
+        // would leave a misleading "aborted-but-still-running" state.
+        const isAbortable = !ABORT_UNSUPPORTED_KINDS.has(query.kind);
+        const abortController = isAbortable ? new AbortController() : null;
+        if (abortController) {
+          queryAbortControllers.set(queryId, abortController);
+        }
+
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options?.code, query?.id, false, mode, parameters, moduleId);
@@ -661,7 +672,8 @@ export const createQueryPanelSlice = (set, get) => ({
               }
               return (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id; //TODO: currentAppEnvironmentId may no longer required. Need to check
             })(),
-            modeStore.modules.canvas.currentMode
+            modeStore.modules.canvas.currentMode,
+            abortController?.signal
           );
         }
 
@@ -776,6 +788,21 @@ export const createQueryPanelSlice = (set, get) => ({
             }
           })
           .catch((e) => {
+            // User-initiated abort — clear loading silently, log to debugger, do not fire failure events
+            if (isAbortError(e)) {
+              setResolvedQuery(queryId, { isLoading: false }, moduleId);
+              get().debugger.log({
+                logLevel: 'warning',
+                type: 'query',
+                kind: query.kind,
+                key: query.name,
+                message: 'Query aborted by user',
+                isQuerySuccessLog: false,
+                errorTarget: 'Queries',
+              });
+              resolve({ status: 'aborted' });
+              return;
+            }
             const { error } = e;
             const errorMessage = typeof error === 'string' ? error : error?.message || 'Unknown error';
             if (mode !== 'view') toast.error(errorMessage);
@@ -786,8 +813,33 @@ export const createQueryPanelSlice = (set, get) => ({
               description: errorMessage,
             });
             resolve({ status: 'failed', message: errorMessage });
+          })
+          .finally(() => {
+            if (abortController && queryAbortControllers.get(queryId) === abortController) {
+              queryAbortControllers.delete(queryId);
+            }
           });
       });
+    },
+
+    /**
+     * Aborts an in-flight query (run or preview) on the client.
+     * Cancels the pending fetch via AbortController. The server keeps processing —
+     * this only stops the client from waiting for the response.
+     */
+    abortQuery: (queryId, moduleId = 'canvas') => {
+      const controller = queryAbortControllers.get(queryId);
+      if (controller) {
+        controller.abort();
+        queryAbortControllers.delete(queryId);
+      }
+      // Always clear loading states — covers both the run path and the preview path,
+      // and recovers any stuck state even if the controller was already cleaned up.
+      const setResolvedQuery = get().setResolvedQuery;
+      if (queryId && setResolvedQuery) setResolvedQuery(queryId, { isLoading: false }, moduleId);
+      get().queryPanel.setIsPreviewQueryLoading(false);
+      get().queryPanel.setPreviewLoading(false);
+      return !!controller;
     },
 
     previewQuery: (
@@ -859,6 +911,13 @@ export const createQueryPanelSlice = (set, get) => ({
       });
 
       return new Promise(function (resolve, reject) {
+        // Create AbortController only for fetch-based preview kinds. See runQuery for rationale.
+        const isAbortable = !ABORT_UNSUPPORTED_KINDS.has(query.kind);
+        const abortController = isAbortable ? new AbortController() : null;
+        if (abortController) {
+          queryAbortControllers.set(query?.id, abortController);
+        }
+
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
@@ -875,7 +934,13 @@ export const createQueryPanelSlice = (set, get) => ({
             query.options?.workflowVersionId
           );
         } else {
-          queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
+          queryExecutionPromise = dataqueryService.preview(
+            query,
+            options,
+            currentVersionId,
+            currentAppEnvironmentId,
+            abortController?.signal
+          );
         }
 
         queryExecutionPromise
@@ -1082,6 +1147,22 @@ export const createQueryPanelSlice = (set, get) => ({
             resolve({ status: data.status, data: finalData });
           })
           .catch((err) => {
+            // User-initiated abort — silent unwind, log to debugger, do not toast
+            if (isAbortError(err)) {
+              setPreviewLoading(false);
+              setIsPreviewQueryLoading(false);
+              get().debugger.log({
+                logLevel: 'warning',
+                type: 'query',
+                kind: query.kind,
+                key: query.name,
+                message: 'Query aborted by user',
+                isQuerySuccessLog: false,
+                errorTarget: 'Queries',
+              });
+              resolve({ status: 'aborted' });
+              return;
+            }
             const { error, data } = err;
             console.log(err, error, data);
             setPreviewLoading(false);
@@ -1089,6 +1170,11 @@ export const createQueryPanelSlice = (set, get) => ({
             setPreviewData(data);
             toast.error(error);
             reject({ error, data });
+          })
+          .finally(() => {
+            if (abortController && queryAbortControllers.get(query?.id) === abortController) {
+              queryAbortControllers.delete(query?.id);
+            }
           });
       });
     },
@@ -1158,6 +1244,10 @@ export const createQueryPanelSlice = (set, get) => ({
               reset: () => {
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.resetQuery(query.name);
+              },
+              abort: () => {
+                const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+                return actions.abortQuery(query.name, moduleId);
               },
               getData: () => {
                 const resolvedState = get().getResolvedState(moduleId);
@@ -1549,6 +1639,10 @@ export const createQueryPanelSlice = (set, get) => ({
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
           },
+          abort: () => {
+            const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
+            return actions.abortQuery(query.name, moduleId);
+          },
           getData: () => {
             const resolvedState = get().getResolvedState(moduleId);
             return resolvedState.queries[key].data;
@@ -1696,6 +1790,11 @@ export const createQueryPanelSlice = (set, get) => ({
         id: selectedQuery?.id,
       };
       previewQuery(query, false, undefined, moduleId);
+    },
+    abortQueryOnShortcut: (moduleId = 'canvas') => {
+      const { queryPanel } = get();
+      const { abortQuery, selectedQuery } = queryPanel;
+      abortQuery(selectedQuery?.id, moduleId);
     },
     toggleQueryPermissionModal: (show) => {
       set((state) => {
