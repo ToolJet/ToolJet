@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppsRepository } from '../repository';
 import { User } from '@entities/user.entity';
+import { isUUID } from 'class-validator';
 
 // Use this Guard IF
 // - param id is passed as app id
@@ -25,11 +26,16 @@ export class ValidAppGuard implements CanActivate {
       throw new BadRequestException('App id or slug must be provided');
     }
 
-    // Fetch the app based on the id or slug
+    // Fetch the app based on the id or slug.
+    // When the editor URL is synced from UUID to slug (replaceEditorURL), refresh
+    // sends the slug string in the :id param. isUUID guards against a TypeORM
+    // UUID parse error — non-UUID ids are treated as slugs via findBySlug.
     const app =
       request.tj_app ||
       (id
-        ? await this.appRepository.findById(id, user.organizationId, versionId, branchId)
+        ? isUUID(id)
+          ? await this.appRepository.findById(id, user.organizationId, versionId, branchId)
+          : await this.appRepository.findBySlug(id, user.organizationId, versionId, branchId)
         : await this.appRepository.findBySlug(slug, user.organizationId, versionId, branchId));
 
     // If app is not found, throw NotFoundException

@@ -107,27 +107,20 @@ export class AppsRepository extends Repository<App> {
         .orderBy('av.updated_at', 'DESC')
         .getOne();
 
-      // 2) Fall back to a branchless row — but only when the candidate app's
-      //    own workspace has no default branch (git sync still off for that
-      //    org). The branchless row is the canonical slug holder in that
-      //    case; if the org has since enabled git, step 1 would have found
-      //    the default-branch row already and this fallback would (correctly)
-      //    not apply.
+      // 2) Fall back to any row with this slug. Step 1 confirmed no
+      //    default-branch row holds it anywhere on the instance, so any
+      //    match here is unambiguous (feature-branch or legacy branchless).
       if (!resolvedVersion) {
         const candidate = await this.dataSource
           .getRepository(AppVersion)
           .createQueryBuilder('av')
           .innerJoinAndSelect('av.app', 'app')
           .where('av.slug = :slug', { slug })
-          .andWhere('av.branch_id IS NULL')
           .orderBy('av.updated_at', 'DESC')
           .getOne();
 
         if (candidate?.app) {
-          const orgDefaultBranchId = await this.getDefaultBranchId(this.manager, candidate.app.organizationId);
-          if (!orgDefaultBranchId) {
-            resolvedVersion = candidate;
-          }
+          resolvedVersion = candidate;
         }
       }
     } else {
@@ -451,7 +444,7 @@ export class AppsRepository extends Repository<App> {
           .where('av.slug = :slug', { slug: idOrSlug })
           .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
           .getOne();
-        if (!resolved?.app) return null;
+        if (!resolved?.app) resolved = candidate;
       }
 
       const app = resolved.app;
