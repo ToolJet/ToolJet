@@ -29,7 +29,21 @@ export class PrivateAppAuthGuard extends AuthGuard('jwt') {
       throw new NotFoundException('App not found. Invalid app id');
     }
 
-    let app = await this.appRepository.findAppBySlug(slug);
+    // When the requesting workspace is known, try a workspace-scoped +
+    // branch-aware lookup first. Feature-branch slugs can be shared across
+    // orgs that pulled from the same git source, so a cross-workspace lookup
+    // (findAppBySlug) would non-deterministically return whichever org's row
+    // was updated most recently. The org-scoped path resolves correctly.
+    const workspaceId = request.headers['tj-workspace-id'] as string;
+    const branchId = request.headers['x-branch-id'] as string;
+
+    let app = workspaceId
+      ? await this.appRepository.findBySlug(slug, workspaceId, undefined, branchId)
+      : null;
+
+    if (!app && !workspaceId) {
+      app = await this.appRepository.findAppBySlug(slug);
+    }
     if (!app) {
       app = await this.appRepository.findByAppId(slug);
     }
