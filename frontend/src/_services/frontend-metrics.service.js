@@ -24,7 +24,7 @@ const _onUnhandledRejection = (event) => {
 };
 
 function isEnabled() {
-  return window.public_config?.ENABLE_OTEL === 'true';
+  return window.public_config?.ENABLE_OTEL_FRONTEND === 'true';
 }
 
 function getCurrentWorkspaceId() {
