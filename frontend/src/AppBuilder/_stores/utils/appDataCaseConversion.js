@@ -1,0 +1,69 @@
+/* Pure, dependency-free key-casing helper for the app-data payload. */
+
+/**
+ * convertAllKeysToSnakeCase
+ *
+ * WHERE IT RUNS
+ *   - Called from the `useAppData` hook, inside the `isPreviewForVersion` branch
+ *     — i.e. the public-app, releasedviewer, preview-for-version and module-viewer load paths.
+ *   - downstream consumers read that metadata in snake_case — which is why the whole payload is swept here.
+ *   - The editor path does NOT use this; it fetches queries separately, already in the right shape.
+ *
+ *   - On above mentioned load paths the backend bundles the app's data queries INSIDE the app json
+ *   - a public/unauthenticated viewer can't make the authenticated data-queries fetch the editor uses,
+ *   - so store in that case is populated using the bundled data queries.
+ *
+ * WHY OPAQUE_VALUE_KEYS EXISTS
+ *   A data query carries a free-form `options` blob:
+ *    - user-authored JSON such as SQL text, the GUI/SQL-mode flag (`activeTab`), query parameters (`defaultValue`),
+ *    - and plugin-specific keys that are intentionally snake_case (`query_timeout`, `where_filters`, `proto_files`…).
+ *
+ *   Running a GENERIC key-casing rewrite over that blob corrupts it:
+ *    — e.g. `sqlQuery` → `sql_query`, `activeTab` → `active_tab`, `defaultValue` → `default_value`.
+ *    - The query then reads `undefined` at runtime,
+ *    - and because the editor auto-saves the in-memory query, the mangled shape gets written back to the DB.
+ *    — This permanently breaks the editor and the released app, not just the preview.
+ *
+ * NOTE
+ *   - `pages` and `events` were already excluded for the same reason
+ *   - they hold component definitions and event-handler option blobs.
+ *   - Data queries are the same category of opaque, user-authored data and belong in this list too.
+ */
+const OPAQUE_VALUE_KEYS = ['pages', 'events', 'dataQueries', 'data_queries'];
+
+export function convertAllKeysToSnakeCase(o) {
+  if (Array.isArray(o)) {
+    return o.map(function (value) {
+      if (typeof value === 'object' && value !== null) {
+        value = convertAllKeysToSnakeCase(value);
+      }
+      return value;
+    });
+  } else if (typeof o === 'object' && o !== null) {
+    const newO = {};
+    for (const origKey in o) {
+      if (Object.prototype.hasOwnProperty.call(o, origKey)) {
+        /**
+         * The wrapper KEY is always renamed, even for opaque subtrees:
+         *   - `pages`/`events` are already lowercase, so this is a no-op;
+         *   - `dataQueries` MUST become `data_queries`, because that's the key the
+         *     query loader in useAppData reads
+         *
+         * For OPAQUE_VALUE_KEYS only the recursion INTO the value is skipped
+         */
+        const newKey = origKey
+          .split(/(?=[A-Z])/)
+          .join('_')
+          .toLowerCase();
+        let value = o[origKey];
+
+        if (!OPAQUE_VALUE_KEYS.includes(origKey) && typeof value === 'object' && value !== null) {
+          value = convertAllKeysToSnakeCase(value);
+        }
+        newO[newKey] = value;
+      }
+    }
+    return newO;
+  }
+  return o;
+}
