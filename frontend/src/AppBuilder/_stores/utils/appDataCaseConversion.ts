@@ -1,5 +1,9 @@
 /* Pure, dependency-free key-casing helper for the app-data payload. */
 
+type JsonPrimitive = string | number | boolean | null | undefined;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+type JsonObject = { [key: string]: JsonValue };
+
 /**
  * convertAllKeysToSnakeCase
  *
@@ -29,20 +33,18 @@
  *   - they hold component definitions and event-handler option blobs.
  *   - Data queries are the same category of opaque, user-authored data and belong in this list too.
  */
-const OPAQUE_VALUE_KEYS = ['pages', 'events', 'dataQueries', 'data_queries'];
+const OPAQUE_VALUE_KEYS: readonly string[] = ['pages', 'events', 'dataQueries', 'data_queries'];
 
-export function convertAllKeysToSnakeCase(o) {
+export function convertAllKeysToSnakeCase(o: JsonValue): JsonValue {
   if (Array.isArray(o)) {
-    return o.map(function (value) {
-      if (typeof value === 'object' && value !== null) {
-        value = convertAllKeysToSnakeCase(value);
-      }
-      return value;
-    });
+    return o.map((value: JsonValue): JsonValue =>
+      typeof value === 'object' && value !== null ? convertAllKeysToSnakeCase(value) : value
+    );
   } else if (typeof o === 'object' && o !== null) {
-    const newO = {};
-    for (const origKey in o) {
-      if (Object.prototype.hasOwnProperty.call(o, origKey)) {
+    const source = o as JsonObject;
+    const newO: JsonObject = {};
+    for (const origKey in source) {
+      if (Object.prototype.hasOwnProperty.call(source, origKey)) {
         /**
          * The wrapper KEY is always renamed, even for opaque subtrees:
          *   - `pages`/`events` are already lowercase, so this is a no-op;
@@ -55,7 +57,7 @@ export function convertAllKeysToSnakeCase(o) {
           .split(/(?=[A-Z])/)
           .join('_')
           .toLowerCase();
-        let value = o[origKey];
+        let value: JsonValue = source[origKey];
 
         if (!OPAQUE_VALUE_KEYS.includes(origKey) && typeof value === 'object' && value !== null) {
           value = convertAllKeysToSnakeCase(value);
