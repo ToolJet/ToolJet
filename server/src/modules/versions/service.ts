@@ -252,7 +252,20 @@ export class VersionService implements IVersionService {
 
       delete appData['editingVersion'];
 
-      const editingVersion = camelizeKeys(appCurrentEditingVersion);
+      /*
+        Data-query `options` are a free-form, mixed-case user blob:
+          - snake_case operation keys (sql_execution, list_rows, table_id, etc)
+          - camelCase keys (activeTab, a nested sqlQuery, etc). 
+
+        camelizeKeys recurses deeply and would rewrite sql_execution → sqlExecution etc.,
+        silently breaking the query when it loads.
+        Detach the data queries, camelize only the rest of the version, then re-attach them
+
+        NOTE — the frontend likewise leaves them untouched (see frontend/src/AppBuilder/_stores/utils/appDataCaseConversion.js)
+      */
+      const { dataQueries: rawDataQueries, ...restEditingVersion } = appCurrentEditingVersion;
+      const editingVersion = camelizeKeys(restEditingVersion);
+      editingVersion['dataQueries'] = rawDataQueries;
 
       // Inject app theme
       const appTheme = await this.organizationThemesUtilService.getTheme(
