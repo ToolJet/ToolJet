@@ -80,8 +80,8 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     }
 
     // Git off (or workflow): fall back to most-recent non-BRANCH non-stub
-    // VERSION row. Every row has branch_id IS NULL in this mode, so this is
-    // deterministic.
+    // VERSION row. These rows live on the org's default branch, and there is a
+    // single non-stub VERSION DRAFT per app here, so this is deterministic.
     const editingVersion = await this.appVersionRepository.findOne({
       where: { appId: app.id, versionType: Not(AppVersionType.BRANCH), isStub: false },
       order: { updatedAt: 'DESC' },

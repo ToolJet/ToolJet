@@ -1369,18 +1369,20 @@ export class AppImportExportService {
       // Non-workflows store the user-facing name on app_versions.app_name and apps.name
       // stays NULL — so the table-level APP_NAME_UNIQUE constraint doesn't catch cross-app
       // collisions. Scoped to git-disabled workspaces only: git-enabled workspaces enforce
-      // uniqueness via the partial unique index on (app_name, branch_id) WHERE
-      // version_type='branch'.
+      // uniqueness via the app_name trigger on the imported branch row. The imported row
+      // lands on the org's default branch (branch_id is NOT NULL now), so pre-flight there.
+      // Type-scoped so an app and a module may share a name (separate dashboards).
       if (!isWorkflow && appParams?.name) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin(App, 'app', 'app.id = av.appId')
+            .innerJoin('organization_git_sync_branches', 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
             .where('av.app_name = :appName', { appName: appParams.name })
-            .andWhere('av.branch_id IS NULL')
             .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
             .andWhere('app.organization_id = :organizationId', { organizationId: user?.organizationId })
+            .andWhere('app.type = :type', { type: appParams.type || APP_TYPES.FRONT_END })
             .getOne();
           if (conflictingNameVersion) {
             throw new BadRequestException('This app name is already taken.');
