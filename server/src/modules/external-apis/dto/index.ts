@@ -469,3 +469,19 @@ export class ExportTjdbTableAsCsvDto {
   @Min(0)
   offset?: number;
 }
+
+export class BanUserDto {
+  @IsEmail()
+  email: string;
+
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+
+export class BanWorkspaceDto {
+  @IsOptional()
+  @IsObject()
+  info?: object;
+}
+

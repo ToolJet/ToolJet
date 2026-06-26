@@ -41,6 +41,7 @@ import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 
 @Injectable()
 export class AuthUtilService implements IAuthUtilService {
@@ -60,7 +61,8 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly profileUtilService: ProfileUtilService,
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
-    protected readonly groupPermissionsRepository: GroupPermissionsRepository
+    protected readonly groupPermissionsRepository: GroupPermissionsRepository,
+    protected readonly userBanListRepository: UserBanListRepository
   ) {}
 
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
@@ -75,6 +77,11 @@ export class AuthUtilService implements IAuthUtilService {
 
     if (user.status !== USER_STATUS.ACTIVE) {
       throw new UnauthorizedException(getUserErrorMessages(user.status));
+    }
+
+    const bannedUser = await this.userBanListRepository.findByEmail(email);
+    if (bannedUser) {
+      throw new UnauthorizedException(JSON.stringify({ errorType: 'USER_BANNED' }));
     }
 
     if (organizationId) {
@@ -141,6 +148,11 @@ export class AuthUtilService implements IAuthUtilService {
 
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User is archived in the workspace');
+    }
+
+    const bannedUser = await this.userBanListRepository.findByEmail(email);
+    if (bannedUser) {
+      throw new UnauthorizedException(JSON.stringify({ errorType: 'USER_BANNED' }));
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);

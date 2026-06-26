@@ -10,7 +10,7 @@ import {
   WORKSPACE_USER_SOURCE,
   WORKSPACE_USER_STATUS,
 } from '@modules/users/constants/lifecycle';
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Organization } from '@entities/organization.entity';
 import { InviteNewUserDto } from '@modules/organization-users/dto/invite-new-user.dto';
 import { OrganizationUser } from '@entities/organization_user.entity';
@@ -37,6 +37,7 @@ import * as uuid from 'uuid';
 import { LicenseOrganizationService } from '@modules/licensing/services/organization.service';
 import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { UserBanListRepository } from '@modules/users/repositories/user-ban-list.repository';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AUDIT_LOGS_REQUEST_CONTEXT_KEY, TOOLJET_EDITIONS } from '@modules/app/constants';
@@ -59,7 +60,8 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService,
     protected readonly organizationRepository: OrganizationRepository,
     protected readonly sessionUtilsService: SessionUtilService,
-    protected readonly licenseOrganizationService: LicenseOrganizationService
+    protected readonly licenseOrganizationService: LicenseOrganizationService,
+    protected readonly userBanListRepository: UserBanListRepository
   ) {}
 
   updateUserMetadata(manager: EntityManager, userId: string, organizationId: string, userMetadata: any) {
@@ -442,6 +444,12 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userParams = this.prepareUserParams(inviteNewUserDto);
+
+      const bannedUser = await this.userBanListRepository.findByEmail(userParams.email);
+      if (bannedUser) {
+        throw new ForbiddenException(JSON.stringify({ errorType: 'USER_BANNED' }));
+      }
+
       const user = await this.validateInvitingUser(userParams.email, currentUser.organizationId, manager);
 
       if (user?.invitationToken) {
