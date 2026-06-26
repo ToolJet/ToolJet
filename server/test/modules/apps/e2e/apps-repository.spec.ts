@@ -118,10 +118,14 @@ describe('AppsRepository', () => {
       await closeTestApp(nestApp);
     }, 60000);
 
-    it('findAppBySlug resolves via the feature-branch row when default-branch has a different slug', async () => {
+    it('findAppBySlug returns null for a feature-branch slug (cross-org safety)', async () => {
+      // findAppBySlug is cross-workspace. Accepting feature-branch rows without
+      // org context risks returning the wrong org's app when the same slug exists
+      // in multiple orgs pulled from the same git source. The guard resolves this
+      // via workspace-scoped findBySlug instead; findAppBySlug correctly returns
+      // null so the guard can take over.
       const result = await appsRepository.findAppBySlug(featureSlug);
-      expect(result).not.toBeNull();
-      expect(result!.id).toBe(testApp.id);
+      expect(result).toBeNull();
     });
 
     it('findAppBySlug returns null for a completely unknown slug', async () => {
