@@ -35,6 +35,7 @@ function AddEditResourcePermissionsModal({
   const initialPermissionStateDs = currentState?.initialPermissionStateDs;
   const errors = currentState?.errors;
   const isAll = currentState?.isAll;
+  //dummy commit for base nothing to see here.
   const getAllResourceText = (resourceType) => {
     switch (resourceType) {
       case RESOURCE_TYPE.APPS:
