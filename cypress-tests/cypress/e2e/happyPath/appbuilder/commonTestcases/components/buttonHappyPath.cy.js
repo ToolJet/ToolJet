@@ -572,9 +572,12 @@ describe(
     cy.get('[data-cy="component-inspector-options"]').click();
     cy.get('[data-cy="component-inspector-delete-button"]').click();
     cy.get('[data-cy="yes-button"]').click();
+    // Assert only the platform-agnostic prefix: the undo hint renders as
+    // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
+    // (componentsSlice.js isMac branch), so matching the full string is flaky.
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Component deleted! (⌘ + Z to undo)"
+      "Component deleted!"
     );
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
     cy.reload();
@@ -587,9 +590,12 @@ describe(
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.realPress("Backspace");
     cy.get('[data-cy="yes-button"]').click();
+    // Assert only the platform-agnostic prefix: the undo hint renders as
+    // "(⌘ + Z to undo)" on macOS but "(Ctrl + Z to undo)" on Linux CI
+    // (componentsSlice.js isMac branch), so matching the full string is flaky.
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Component deleted! (⌘ + Z to undo)"
+      "Component deleted!"
     );
 
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
