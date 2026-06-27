@@ -244,6 +244,24 @@ export const TableExposedVariables = ({
     }
   }, [allowSelection, lastClickedRow, selectedRows, setExposedVariables, showBulkSelector]);
 
+  // Seed selectedRow once on mount from defaultSelectedRow so it isn't empty before the first click; only fills an unset value, never overrides a click.
+  const seededDefaultRowRef = useRef(false);
+  useEffect(() => {
+    if (seededDefaultRowRef.current) return;
+    if (!defaultSelectedRow || !isArray(data) || data.length === 0) return;
+    if (Object.keys(lastClickedRow).length > 0) return;
+    const key = Object.keys(defaultSelectedRow)[0] ?? '';
+    if (!key) return;
+    const value = defaultSelectedRow[key];
+    const index = data.findIndex((item) => item[key] == value);
+    if (index === -1) return;
+    setExposedVariables({
+      selectedRow: data[index],
+      selectedRowId: isNaN(index) ? String(index) : index,
+    });
+    seededDefaultRowRef.current = true;
+  }, [data, defaultSelectedRow, lastClickedRow, setExposedVariables]);
+
   // Clear dataUpdates & changeSet when data is changed
   useEffect(() => {
     if (!hasDataChanged) return;
@@ -287,14 +305,6 @@ export const TableExposedVariables = ({
     hasDataChanged,
     lastClickedRowRef,
   ]);
-
-  useEffect(() => {
-    // onRowClicked event will be fired when a row is clicked
-    // it should be triggered even when allowSelection is false which is handled in the handleRowClick()
-    if (allowSelection && Object.keys(lastClickedRow).length > 0) {
-      fireEvent('onRowClicked');
-    }
-  }, [lastClickedRow, fireEvent, allowSelection]);
 
   useEffect(() => {
     function selectRow(key, value) {
