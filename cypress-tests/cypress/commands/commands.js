@@ -125,6 +125,12 @@ Cypress.Commands.add(
       // it. Don't reuse `widgetBox()` here — its trailing `:eq(0)` doesn't
       // nest cleanly inside `:has()`.
       const sourceSelector = `.draggable-box:has([data-cy=widget-list-box-${cyParamName(widgetName2)}])`;
+      // Re-prime the drag pipeline for the freshly-navigated app document.
+      // Each test creates+opens an app in beforeEach, which resets the
+      // renderer's intercept state; without this the first drag goes cold and
+      // the plugin's retry loop can overrun the 15s task timeout. Priming here
+      // lands the drag on the first attempt.
+      cy.realDragRewarm();
       cy.realDragAndDrop(sourceSelector, resolvedCanvas, {
         targetX: positionX,
         targetY: positionY,
