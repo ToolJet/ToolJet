@@ -318,8 +318,9 @@ const useAppData = (
           // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
         } else {
-          // versionId is the version's module_reference_id (uuid) when pinned, '' when unpinned.
-          // The server resolver handles either; the URL builder omits the `ref` param when empty.
+          // versionId is a versionName string (cross-workspace stable, git-tag-backed) when the
+          // bridge field is populated, a UUID module_reference_id for legacy same-workspace-only
+          // pins, or '' when unpinned. The server resolver handles all three cases.
           appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
         }
       } else if (versionId) {
@@ -474,6 +475,7 @@ const useAppData = (
             isReleasedApp: isReleasedApp,
             appType: appData.type,
             currentVersionId: appData.editing_version?.id || appData.current_version_id,
+            co_relation_id: appData.co_relation_id,
           },
           moduleId
         );
@@ -847,6 +849,7 @@ const useAppData = (
           appGeneratedFromPrompt: appData.appGeneratedFromPrompt,
           aiGenerationMetadata: appData.ai_generation_metadata || {},
           appBuilderMode: appData.appBuilderMode || 'visual',
+          co_relation_id: appData.co_relation_id,
         });
 
         setGlobalSettings(
