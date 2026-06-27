@@ -573,7 +573,7 @@ describe(
     cy.get('[data-cy="component-inspector-delete-button"]').click();
     cy.get('[data-cy="yes-button"]').click();
     cy.verifyToastMessage(
-      `[class=go3958317564]`,
+      commonSelectors.toastMessage,
       "Component deleted! (⌘ + Z to undo)"
     );
     cy.notVisible(commonWidgetSelector.draggableWidget("button1"));
@@ -588,7 +588,7 @@ describe(
     cy.realPress("Backspace");
     cy.get('[data-cy="yes-button"]').click();
     cy.verifyToastMessage(
-      `[class=go3958317564]`,
+      commonSelectors.toastMessage,
       "Component deleted! (⌘ + Z to undo)"
     );
 
