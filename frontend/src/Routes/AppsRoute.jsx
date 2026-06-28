@@ -5,13 +5,13 @@ import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { handleAppAccess } from '@/_helpers/handleAppAccess';
-import { getQueryParams } from '@/_helpers/routes';
+import { handleAppAccess, handleError } from '@/_helpers/handleAppAccess';
+import { getQueryParams, getSubpath } from '@/_helpers/routes';
 import queryString from 'query-string';
 import useStore from '@/AppBuilder/_stores/store';
 import { useMobileRouteGuard } from '@/_hooks/useMobileRouteGuard';
 import { MobileEmptyState } from './MobileBlock';
-import { authenticationService } from '@/_services';
+import { authenticationService, appsService } from '@/_services';
 import { getEnvironmentAccessFromPermissions, getSafeEnvironment } from '@/_helpers/environmentAccess';
 
 export const AppsRoute = ({ children, componentType, darkMode }) => {
@@ -43,9 +43,46 @@ export const AppsRoute = ({ children, componentType, darkMode }) => {
   }, [isValidSession]);
 
   useEffect(() => {
-    if (isInvalidSession) {
+    const validateSession = async () => {
+      if (!isInvalidSession || componentType !== 'viewer') return;
+
+      const { slug, versionId, environmentId } = params;
+      const queryParams = getQueryParams();
+      const isOldLocalPreview = !!(versionId && environmentId);
+      const isLocalPreview = !!(queryParams['env'] || queryParams['version'] || isOldLocalPreview);
+
+      if (!isLocalPreview && !isOldLocalPreview) {
+        /* Released app — check if the plan allows public apps */
+        try {
+          await appsService.validateReleasedApp(slug);
+        } catch (errorResponse) {
+          const editPermission = errorResponse?.error?.editPermission;
+          handleError(componentType, errorResponse, `/apps/${slug}`, editPermission, slug);
+          return;
+        }
+      } else {
+        /* Preview URL — always requires authentication (public and private apps alike). */
+        const previewQueryParams = {
+          ...(queryParams['version'] && { version_name: queryParams['version'] }),
+          ...(queryParams['env'] && { environment_name: queryParams['env'] }),
+        };
+        const apiQueryParams = {
+          ...previewQueryParams,
+          ...(isOldLocalPreview && { version_id: versionId, environment_id: environmentId }),
+          access_type: 'view',
+        };
+
+        try {
+          await appsService.validatePrivateApp(slug, apiQueryParams);
+        } catch (errorResponse) {
+          handleError(componentType, errorResponse);
+          return;
+        }
+      }
       setLoading(false);
-    }
+    };
+
+    validateSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession]);
 

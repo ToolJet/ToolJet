@@ -963,9 +963,23 @@ export class AppsService implements IAppsService {
 
       // Validate slug uniqueness against other released apps (non-workflow only)
       if (app.type !== 'workflow') {
-        // Get canonical slug from BRANCH version (git-sync) or any version (non-git-sync)
-        const slugVersion = releasedVersion?.slug
-          ? releasedVersion
+        // Resolve canonical slug. Git-sync enabled (org has a default branch row in
+        // organization_git_sync_branches): read the slug off the app_versions row tied
+        // to that default branch — feature-branch rows can carry a different in-flight
+        // slug and must not drive the uniqueness check. Otherwise pick any version row
+        // (every row carries identical metadata when git-sync is off).
+        const defaultBranch = await manager.findOne(WorkspaceBranch, {
+          where: { organizationId: user.organizationId, isDefault: true },
+          select: ['id'],
+        });
+
+        const slugVersion = defaultBranch
+          ? await manager
+              .createQueryBuilder(AppVersion, 'av')
+              .where('av.app_id = :appId', { appId })
+              .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
+              .select('av.slug')
+              .getOne()
           : await manager
               .createQueryBuilder(AppVersion, 'av')
               .where('av.app_id = :appId', { appId })

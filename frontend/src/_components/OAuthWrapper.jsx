@@ -6,6 +6,7 @@ import { datasourceService, authenticationService } from '@/_services';
 import { capitalize } from 'lodash';
 import { toast } from 'react-hot-toast';
 import Button from '@/_ui/Button';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Input from '@/_ui/Input';
 import cx from 'classnames';
 import { Modal } from 'react-bootstrap';
@@ -241,26 +242,26 @@ const OAuthWrapper = ({
             <div className="col-auto d-flex gap-2">
               {selectedDataSource?.kind === 'googlesheetsv2' ? (
                 <>
-                  {(!authStatus || authStatus === 'waiting_for_url') && (
-                    <Button
-                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
-                      disabled={isSaving}
-                      onClick={() => authorizeWithProvider()}
-                    >
-                      {t(
-                        `${selectedDataSource.kind}.connect${dataSourceNameCapitalize}`,
-                        `Connect to ${dataSourceNameCapitalize}`
-                      )}
-                    </Button>
-                  )}
-                  <Button
-                    className={`m2 ${isSaving ? ' loading' : ''}`}
+                  <ButtonSolid
+                    className={`m2 googlesheetsv2-save-btn${isSaving ? ' btn-loading' : ''}`}
+                    isLoading={isSaving}
                     disabled={isSaving || isDisabled || !hasFieldsChanged()}
                     onClick={() => saveDataSource()}
-                    variant={localStorage.getItem('OAuthCode') ? 'primary' : 'tertiary'}
+                    variant="tertiary"
                   >
-                    {isSaving ? t('globals.saving', 'Saving...') : t('globals.saveDatasource', 'Save data source')}
-                  </Button>
+                    {t('globals.save', 'Save')}
+                  </ButtonSolid>
+                  {(!authStatus || authStatus === 'waiting_for_url') && (
+                    <ButtonSolid
+                      className={cx('m2', { 'btn-loading': authStatus === 'waiting_for_url' })}
+                      isLoading={authStatus === 'waiting_for_url'}
+                      disabled={isSaving || isDisabled || !hasFieldsChanged()}
+                      onClick={() => authorizeWithProvider()}
+                      variant="primary"
+                    >
+                      {t(`${selectedDataSource.kind}.saveAndConnect${dataSourceNameCapitalize}`, 'Save and Connect')}
+                    </ButtonSolid>
+                  )}
                 </>
               ) : (
                 <>

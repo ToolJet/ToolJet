@@ -294,12 +294,20 @@ export class ComponentsService implements IComponentsService {
 
     const layouts: Record<
       string,
-      { top: number; left: number; width: number; height: number; updatedAt: Date | null }
+      {
+        top: number;
+        left: number;
+        width: number;
+        height: number;
+        widthPx?: number;
+        fillWidth?: boolean;
+        updatedAt: Date | null;
+      }
     > = {};
 
     layoutData.forEach((layout) => {
       if (layout && layout.type) {
-        const { type, top, left, width, height, updatedAt } = layout;
+        const { type, top, left, width, height, widthPx, fillWidth, updatedAt } = layout;
 
         // Note: adjustedLeftValue logic will be handled BEFORE calling this function
         // so 'left' here is already the final desired value for the output.
@@ -312,6 +320,8 @@ export class ComponentsService implements IComponentsService {
           width: width ?? 0,
           height: height ?? 0,
           updatedAt: updatedAt ?? null,
+          ...(widthPx != null ? { widthPx } : {}),
+          ...(fillWidth != null ? { fillWidth } : {}),
         };
       }
     });
@@ -546,6 +556,8 @@ export class ComponentsService implements IComponentsService {
           newLayout.left = layout.left;
           newLayout.width = layout.width;
           newLayout.height = layout.height;
+          if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+          if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
           newLayout.component = component;
           newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
 

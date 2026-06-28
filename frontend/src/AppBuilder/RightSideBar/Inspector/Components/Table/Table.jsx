@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../../inspectorConstants';
 import { renderElement } from '../../Utils';
 import { resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
@@ -703,6 +704,7 @@ export const Table = (props) => {
       },
       // Additional actions section
       {
+        id: ADDITIONAL_ACTIONS_ACCORDION_ID,
         title: 'Additional actions',
         children: additionalActions.map((option) => renderCustomElement(option)),
       },

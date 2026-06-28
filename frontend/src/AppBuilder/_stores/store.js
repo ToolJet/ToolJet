@@ -5,6 +5,7 @@ import { createAppSlice } from './slices/appSlice';
 import { createLoaderSlice } from './slices/loaderSlice';
 import { createLeftSideBarSlice } from './slices/leftSideBarSlice';
 import { createComponentsSlice } from './slices/componentsSlice';
+import { createFlexContainerSlice } from './slices/flexContainerSlice';
 import { createRightSideBarSlice } from './slices/rightSideBarSlice';
 import { createModeSlice } from './slices/modeSlice';
 import { createQueryPanelSlice } from './slices/queryPanelSlice';
@@ -48,6 +49,7 @@ export default create(
       ...createAppSlice(...state),
       ...createLoaderSlice(...state),
       ...createLeftSideBarSlice(...state),
+      ...createFlexContainerSlice(...state),
       ...createComponentsSlice(...state),
       ...createRightSideBarSlice(...state),
       ...createModeSlice(...state),

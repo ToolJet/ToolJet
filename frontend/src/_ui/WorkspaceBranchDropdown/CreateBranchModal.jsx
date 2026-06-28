@@ -6,6 +6,7 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { toast } from 'react-hot-toast';
 import { Alert } from '@/_ui/Alert';
 import cx from 'classnames';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import '@/_styles/create-branch-modal.scss';
 
 const RESERVED_NAMES = ['main', 'master', 'head', 'origin'];
@@ -17,6 +18,7 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   const [validationError, setValidationError] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [sourceBranchId, setSourceBranchId] = useState('');
+  const [conflictGroups, setConflictGroups] = useState(null);
   const dropdownRef = useRef(null);
 
   const { branches, activeBranchId, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
@@ -88,8 +90,21 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
       onClose();
     } catch (error) {
       console.error('Error creating branch:', error);
-      setValidationError(error?.message || 'An unexpected error occurred');
-      toast.error(error?.message || 'Failed to create branch');
+      if (error?.statusCode === 409) {
+        try {
+          const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+          if (parsed?.conflictGroups?.length) {
+            setConflictGroups(parsed.conflictGroups);
+            setIsCreating(false);
+            return;
+          }
+        } catch {
+          /* fall through */
+        }
+      }
+      const msg = error?.data?.message || error?.error || error?.message || 'An unexpected error occurred';
+      setValidationError(msg);
+      toast.error(msg);
       setIsCreating(false);
     }
   };
@@ -103,16 +118,17 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
   };
 
   return (
-    <AlertDialog
-      show={true}
-      closeModal={onClose}
-      title="Create branch"
-      checkForBackground={true}
-      customClassName="create-branch-modal"
-    >
-      <div className="create-branch-modal-body">
-        {/* Create from dropdown */}
-        {/* <div className="form-group">
+    <>
+      <AlertDialog
+        show={true}
+        closeModal={onClose}
+        title="Create branch"
+        checkForBackground={true}
+        customClassName="create-branch-modal"
+      >
+        <div className="create-branch-modal-body">
+          {/* Create from dropdown */}
+          {/* <div className="form-group">
           <label htmlFor="create-from-select" className="form-label">
             Create from branch
           </label>
@@ -172,69 +188,79 @@ export function WorkspaceCreateBranchModal({ onClose, onSuccess }) {
           </div>
         </div> */}
 
-        {/* Branch name input */}
-        <div className="form-group">
-          <label htmlFor="branch-name-input" className="form-label">
-            Branch name
-          </label>
-          <input
-            id="branch-name-input"
-            type="text"
-            className={`branch-modal-form-input ${validationError ? 'form-input-error' : ''}`}
-            placeholder="Enter branch name"
-            value={branchName}
-            onChange={handleBranchNameChange}
-            onKeyDown={handleKeyDown}
-            disabled={isCreating}
-            autoFocus
-            data-cy="branch-name-input"
-          />
-          {validationError && <div className="form-error-message">{validationError}</div>}
-          <div className="form-helper-text">
-            {/* Branch name must be unique and contain only letters, numbers, hyphens, and underscores */}
-            Branch name must be unique and max 50 characters
+          {/* Branch name input */}
+          <div className="form-group">
+            <label htmlFor="branch-name-input" className="form-label">
+              Branch name
+            </label>
+            <input
+              id="branch-name-input"
+              type="text"
+              className={`branch-modal-form-input ${validationError ? 'form-input-error' : ''}`}
+              placeholder="Enter branch name"
+              value={branchName}
+              onChange={handleBranchNameChange}
+              onKeyDown={handleKeyDown}
+              disabled={isCreating}
+              autoFocus
+              data-cy="branch-name-input"
+            />
+            {validationError && <div className="form-error-message">{validationError}</div>}
+            <div className="form-helper-text">
+              {/* Branch name must be unique and contain only letters, numbers, hyphens, and underscores */}
+              Branch name must be unique and max 50 characters
+            </div>
+          </div>
+          {/* Auto-commit checkbox */}
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                className="form-checkbox"
+                checked={autoCommit}
+                onChange={(e) => setAutoCommit(e.target.checked)}
+                disabled={true}
+              />
+              <span className="checkbox-text">
+                Commit changes
+                <span className="checkbox-helper">
+                  Branch will always be created in git to ensure sync with ToolJet
+                </span>
+              </span>
+            </label>
+          </div>
+          {/* Info message */}
+          <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
+            {/* Branch can only be created from the default branch */}
+            Branch can only be created from {defaultGitBranch}
+          </Alert>
+
+          {/* Footer buttons */}
+          <div className="col d-flex justify-content-end gap-2 mt-3">
+            <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
+              Cancel
+            </ButtonSolid>
+            <ButtonSolid
+              variant="primary"
+              onClick={handleCreate}
+              disabled={isCreating || !branchName.trim()}
+              isLoading={isCreating}
+              size="md"
+              data-cy="create-branch-button"
+            >
+              Create branch
+            </ButtonSolid>
           </div>
         </div>
-        {/* Auto-commit checkbox */}
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              className="form-checkbox"
-              checked={autoCommit}
-              onChange={(e) => setAutoCommit(e.target.checked)}
-              disabled={true}
-            />
-            <span className="checkbox-text">
-              Commit changes
-              <span className="checkbox-helper">Branch will always be created in git to ensure sync with ToolJet</span>
-            </span>
-          </label>
-        </div>
-        {/* Info message */}
-        <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
-          {/* Branch can only be created from the default branch */}
-          Branch can only be created from {defaultGitBranch}
-        </Alert>
+      </AlertDialog>
 
-        {/* Footer buttons */}
-        <div className="col d-flex justify-content-end gap-2 mt-3">
-          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
-            Cancel
-          </ButtonSolid>
-          <ButtonSolid
-            variant="primary"
-            onClick={handleCreate}
-            disabled={isCreating || !branchName.trim()}
-            isLoading={isCreating}
-            size="md"
-            data-cy="create-branch-button"
-          >
-            Create branch
-          </ButtonSolid>
-        </div>
-      </div>
-    </AlertDialog>
+      <PullConflictModal
+        show={!!conflictGroups}
+        conflictGroups={conflictGroups || []}
+        onClose={() => setConflictGroups(null)}
+        context="branch-creation"
+      />
+    </>
   );
 }
 

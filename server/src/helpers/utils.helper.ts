@@ -283,7 +283,7 @@ export const generateOrgInviteURL = (
   const subpath = process.env.SUB_PATH;
   return `${fullUrl ? `${effectiveHost}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
     organizationId ? `?oid=${organizationId}` : ''
-  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
+  }${redirectTo ? `&redirectTo=${encodeURIComponent(redirectTo)}` : ''}`;
 };
 
 export function extractFirstAndLastName(fullName: string) {
