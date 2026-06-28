@@ -974,13 +974,21 @@ export class AppsService implements IAppsService {
               .getOne();
 
         if (slugVersion?.slug) {
+          // Mirror the canonical slug model (schema-changes.md): a released app's
+          // public slug is resolved instance-wide and type-scoped by findAppBySlug,
+          // so the release gate must reject the slug if any OTHER released app of the
+          // SAME type holds it anywhere on the instance — case-insensitively. Org
+          // scope would miss cross-workspace routing clashes; type scope lets an app
+          // and a module share a slug, as the write triggers allow. Stubs are skipped
+          // (they carry only a random-UUID placeholder slug).
           const conflictingReleasedApp = await manager
             .createQueryBuilder(AppVersion, 'av')
             .innerJoin('apps', 'a', 'a.id = av.app_id')
-            .where('av.slug = :slug', { slug: slugVersion.slug })
-            .andWhere('a.organization_id = :orgId', { orgId: user.organizationId })
+            .where('LOWER(av.slug) = LOWER(:slug)', { slug: slugVersion.slug })
+            .andWhere('a.type = :appType', { appType: app.type })
             .andWhere('a.id != :appId', { appId })
             .andWhere('a.current_version_id IS NOT NULL')
+            .andWhere('av.is_stub = false')
             .getOne();
           if (conflictingReleasedApp) {
             throw new BadRequestException('Cannot release — slug conflicts with another released app.');
