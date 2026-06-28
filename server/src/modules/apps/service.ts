@@ -963,29 +963,12 @@ export class AppsService implements IAppsService {
 
       // Validate slug uniqueness against other released apps (non-workflow only)
       if (app.type !== 'workflow') {
-        // Resolve canonical slug. Git-sync enabled (org has a default branch row in
-        // organization_git_sync_branches): read the slug off the app_versions row tied
-        // to that default branch — feature-branch rows can carry a different in-flight
-        // slug and must not drive the uniqueness check. Otherwise pick any version row
-        // (every row carries identical metadata when git-sync is off).
-        const defaultBranch = await manager.findOne(WorkspaceBranch, {
-          where: { organizationId: user.organizationId, isDefault: true },
-          select: ['id'],
-        });
-
-        const slugVersion = defaultBranch
-          ? await manager
-              .createQueryBuilder(AppVersion, 'av')
-              .where('av.app_id = :appId', { appId })
-              .andWhere('av.branch_id = :branchId', { branchId: defaultBranch.id })
-              .select('av.slug')
-              .getOne()
-          : await manager
-              .createQueryBuilder(AppVersion, 'av')
-              .where('av.app_id = :appId', { appId })
-              .andWhere('av.slug IS NOT NULL')
-              .select('av.slug')
-              .getOne();
+        // Canonical slug = the metadata source-of-truth row, resolved the same way as
+        // everywhere else (resolveMetadataVersion): git-on → the non-stub DRAFT
+        // version_type='version' row on the default branch; git-off → any non-stub row
+        // on the default branch. Feature-branch in-flight slugs and stub placeholder
+        // slugs are excluded, so they can't drive the uniqueness check.
+        const slugVersion = await this.versionRepository.resolveMetadataVersion(manager, app);
 
         if (slugVersion?.slug) {
           // Mirror the canonical slug model (schema-changes.md): a released app's
