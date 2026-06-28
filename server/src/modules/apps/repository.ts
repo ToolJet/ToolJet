@@ -424,17 +424,28 @@ export class AppsRepository extends Repository<App> {
     const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
     if (!defaultBranchId) return null;
 
-    return manager
-      .getRepository(AppVersion)
-      .createQueryBuilder('av')
-      .where('av.app_id = :appId', { appId: app.id })
-      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+    const base = () =>
+      manager
+        .getRepository(AppVersion)
+        .createQueryBuilder('av')
+        .where('av.app_id = :appId', { appId: app.id })
+        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+        .andWhere('av.is_stub = false');
+
+    // Git-on: the canonical metadata source is the DRAFT version_type='version' row on
+    // the default branch (is_git_sync row first) — prefer it. Git-off apps may not have
+    // that row, so fall back to any non-stub row on the default branch. Metadata
+    // propagation keeps all version_type='version' rows in sync, so the fallback row
+    // carries the same app_name/slug/icon/is_public.
+    const draft = await base()
       .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
       .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
-      .andWhere('av.is_stub = false')
       .orderBy('av.is_git_sync', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
+    if (draft) return draft;
+
+    return base().orderBy('av.is_git_sync', 'DESC').addOrderBy('av.updated_at', 'DESC').getOne();
   }
 
   private overlayMetadata(app: App, version: AppVersion | null): void {

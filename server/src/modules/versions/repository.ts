@@ -266,16 +266,15 @@ export class VersionRepository extends Repository<AppVersion> {
   // Mirrors AppsRepository.resolveMetadataVersion — same rules.
   //
   // Resolution order:
-  //   1. Detect git-sync state via getDefaultBranchId (presence of a default
-  //      workspace_branches row).
-  //   2. Git enabled + explicit branchId → DRAFT row on that branch.
-  //   3. Git enabled + no branchId       → DRAFT row on the default branch.
-  //   4. Git disabled                    → any version row (most recent,
-  //                                        slug-bearing).
+  //   1. Explicit branchId (sub-branch context, git-on) → DRAFT row on that branch.
+  //   2. Default branch, git-on → canonical DRAFT version_type='version' row
+  //      (is_git_sync row first).
+  //   3. Default branch, git-off → any non-stub row (the DRAFT version_type='version'
+  //      row may be absent). Metadata propagation keeps all version_type='version'
+  //      rows in sync, so any default-branch row carries the same metadata.
   //
-  // DRAFT scoping matches the metadata-write paths (AppsUtilService.update
-  // writes the DRAFT row) so published/released snapshots don't shadow current
-  // metadata.
+  // Git-state is no longer inferred from default-branch presence (every org has a
+  // default branch now); steps 2/3 are a graceful fallback that is data-driven.
   async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
@@ -283,28 +282,41 @@ export class VersionRepository extends Repository<AppVersion> {
   ): Promise<AppVersion | null> {
     const { branchId } = options;
     const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
-    const gitEnabled = !!defaultBranchId;
+    if (!defaultBranchId) return null;
 
-    const qb = manager
-      .getRepository(AppVersion)
-      .createQueryBuilder('av')
-      .where('av.app_id = :appId', { appId: app.id });
+    const repo = manager.getRepository(AppVersion);
 
-    if (gitEnabled) {
-      const targetBranchId = branchId ?? defaultBranchId;
-      qb.andWhere('av.branch_id = :branchId', { branchId: targetBranchId }).andWhere('av.status = :status', {
-        status: AppVersionStatus.DRAFT,
-      });
-    } else {
-      qb.andWhere('av.slug IS NOT NULL');
+    // Explicit sub-branch: the DRAFT row on that branch (git-on only path).
+    if (branchId) {
+      const version = await repo
+        .createQueryBuilder('av')
+        .where('av.app_id = :appId', { appId: app.id })
+        .andWhere('av.branch_id = :branchId', { branchId })
+        .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
+        .orderBy('av.updated_at', 'DESC')
+        .getOne();
+      if (!version) {
+        throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
+      }
+      return version;
     }
 
-    const version = await qb.orderBy('av.updated_at', 'DESC').getOne();
+    const base = () =>
+      repo
+        .createQueryBuilder('av')
+        .where('av.app_id = :appId', { appId: app.id })
+        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+        .andWhere('av.is_stub = false');
 
-    if (!version && gitEnabled && branchId) {
-      throw new NotFoundException(`No app version found for app ${app.id} on branch ${branchId}`);
-    }
-    return version;
+    const draft = await base()
+      .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
+      .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
+      .orderBy('av.is_git_sync', 'DESC')
+      .addOrderBy('av.updated_at', 'DESC')
+      .getOne();
+    if (draft) return draft;
+
+    return base().orderBy('av.is_git_sync', 'DESC').addOrderBy('av.updated_at', 'DESC').getOne();
   }
 
   overlayMetadata(app: App, version: AppVersion | null): void {

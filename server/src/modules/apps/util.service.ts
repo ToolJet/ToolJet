@@ -14,7 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from '@entities/data_source.entity';
-import { Brackets, EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, Not, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
@@ -1181,17 +1181,19 @@ export class AppsUtilService implements IAppsUtilService {
 
       // TWO independent rows per module, resolved in bulk (keep SEPARATE):
       //   (1) editingVersion: latest non-branch non-stub VERSION row (the row the editor loads).
-      //   (2) metadata source: git-on => latest DRAFT on target branch; git-off => latest any row.
-      // 1 defaultBranch lookup + 2 bulk DISTINCT ON queries, keyed per module.
+      //   (2) metadata source: git-on => latest DRAFT on target branch; git-off => latest
+      //       row on the default branch (the DRAFT version row may be absent).
+      // 1 getDetails lookup + 2 bulk DISTINCT ON queries, keyed per module.
       const moduleIds = modules.map((m) => m.id);
       const parentBranchId = app.editingVersion?.branchId ?? null;
 
-      // (0) Single defaultBranch lookup (not per module). Modules are never workflows here.
-      const defaultBranch = await manager.findOne(WorkspaceBranch, {
-        where: { organizationId: app.organizationId, isDefault: true },
-        select: ['id'],
-      });
-      const gitEnabled = !!defaultBranch;
+      // (0) Git-sync state + default branch, resolved once (not per module) via the
+      // central util. Git-state is NOT inferred from default-branch presence — every
+      // org has a default branch now, so that heuristic would always read as enabled.
+      const { isEnabled: gitEnabled, options: gitOptions } = await this.gitSyncConfigsUtilService.getDetails(
+        app.organizationId
+      );
+      const defaultBranchId = gitOptions.defaultBranch?.id ?? null;
 
       // (1a) Branch-row preference: latest non-stub row on parentBranchId per module.
       //      When set, the module uses this row and skips fallback + overlay + the no-DRAFT throw.
@@ -1229,20 +1231,16 @@ export class AppsUtilService implements IAppsUtilService {
         .orderBy('av.appId', 'ASC')
         .addOrderBy('av.updatedAt', 'DESC');
       if (gitEnabled) {
-        // git-on: latest DRAFT on target branch (parentBranchId ?? defaultBranch.id).
-        const targetBranchId = parentBranchId ?? defaultBranch.id;
-        metaQb.andWhere(
-          new Brackets((qb) => {
-            qb.where('av.branchId = :targetBranchId AND av.status = :draftStatus', {
-              targetBranchId,
-              draftStatus: AppVersionStatus.DRAFT,
-            }).orWhere('av.branchId IS NULL AND av.status = :publishedStatus', {
-              publishedStatus: AppVersionStatus.PUBLISHED,
-            });
-          })
-        );
+        // git-on: latest DRAFT on the target branch (parentBranchId ?? default branch).
+        const targetBranchId = parentBranchId ?? defaultBranchId;
+        metaQb
+          .andWhere('av.branchId = :targetBranchId', { targetBranchId })
+          .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
+      } else if (defaultBranchId) {
+        // git-off: the DRAFT version_type='version' row may be absent — pick the latest
+        // row on the default branch (metadata is mirrored across the app's version rows).
+        metaQb.andWhere('av.branchId = :defaultBranchId', { defaultBranchId });
       }
-      // git-off: no extra filter — latest any row per module.
       const metaRows = await metaQb.getMany();
       const metaMap = new Map(metaRows.map((v) => [v.appId, v]));
 
