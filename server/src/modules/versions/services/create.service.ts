@@ -642,7 +642,11 @@ export class VersionsCreateService implements IVersionsCreateService {
     for (const event of allEvents) {
       const eventDefinition = updateEntityReferences(event.event, mappings);
 
-      if (eventDefinition?.actionId === 'run-query') {
+      if (
+        eventDefinition?.actionId === 'run-query' ||
+        eventDefinition?.actionId === 'reset-query' ||
+        eventDefinition?.actionId === 'abort-query'
+      ) {
         eventDefinition.queryId = oldDataQueryToNewMapping[eventDefinition.queryId];
       }
 

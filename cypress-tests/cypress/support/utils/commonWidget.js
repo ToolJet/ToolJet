@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { commonWidgetSelector } from "Selectors/common";
+import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { codeMirrorInputLabel, commonWidgetText } from "Texts/common";
 
 export const openAccordion = (
@@ -23,18 +23,39 @@ export const verifyAndModifyParameter = (paramName, value) => {
   cy.get(commonWidgetSelector.parameterLabel(paramName))
     .scrollIntoView()
     .should("have.text", paramName);
-  cy.get(commonWidgetSelector.parameterInputField(paramName))
-    .clearAndTypeOnCodeMirror(" ")
-    .clearAndTypeOnCodeMirror(value);
+  // Re-query the field for each clearAndTypeOnCodeMirror instead of chaining
+  // them: clearAndTypeOnCodeMirror (commands.js) yields the result of its last
+  // realType (often undefined/detached), so chaining a SECOND call onto it
+  // passes that as the prevSubject → `cy.wrap(undefined).realClick()` throws
+  // "Cannot read properties of undefined (reading 'get')" inside
+  // getCypressElementCoordinates.
+  cy.get(commonWidgetSelector.parameterInputField(paramName)).clearAndTypeOnCodeMirror(
+    " "
+  );
+  cy.get(commonWidgetSelector.parameterInputField(paramName)).clearAndTypeOnCodeMirror(
+    value
+  );
 };
 
 export const openEditorSidebar = (widgetName = "") => {
   cy.hideTooltip();
 
-
+  // The canvas config handle no longer exposes a single `<name>-config-handle`
+  // button. Hovering the widget reveals ConfigHandle buttons; the one that
+  // opens the RIGHT Inspector (Properties/Styles/Events) is
+  // `<name>-properties-styles-button` — its onClick sets the CONFIGURATION tab
+  // and setRightSidebarOpen(true)
+  // (frontend/src/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle.jsx:277-288).
+  // The config handle (and its properties-styles button) is `visibility:hidden`
+  // unless the widget is hovered, and the CSS :hover state can be lost between
+  // the realHover and the click (re-render, tooltip, the 1s wait). Force the
+  // click so a momentarily-hidden-but-present button still opens the inspector
+  // (its onClick sets CONFIGURATION + setRightSidebarOpen(true)).
   cy.get(`${commonWidgetSelector.draggableWidget(widgetName)}:eq(0)`).realHover().then(() => {
     cy.wait(1000);
-    cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click();
+    cy.get(commonWidgetSelector.widgetConfigHandle(widgetName)).click({
+      force: true,
+    });
   })
 };
 
@@ -62,11 +83,18 @@ export const verifyAndModifyToggleFx = (
 };
 
 export const addDefaultEventHandler = (message) => {
-  cy.get(commonWidgetSelector.addEventHandlerLink)
-    .should("contain.text", commonWidgetText.addEventHandlerLink)
-    .click();
-  cy.intercept("PUT", "events").as("events");
-  cy.get(commonWidgetSelector.eventHandlerCard).click();
+  // New popover-based add flow (EventManager.jsx): the "Add event handler"
+  // button is a Popover trigger -> opens `add-event-menu` whose options are
+  // `event-trigger-option-<value>`. The default first trigger ("On click") both
+  // creates the handler and opens its config `popover-card`, where the default
+  // action is already "Show Alert". So we only need to pick the trigger and
+  // type the alert message. The old direct `event-handler-card` click is gone.
+  cy.intercept(/\/events(\/|\?|$)/).as("events");
+  cy.get(commonWidgetSelector.addEventHandlerLink).eq(0).click();
+  cy.get('[data-cy="add-event-menu"]').should("be.visible");
+  cy.contains('[data-cy^="event-trigger-option-"]', /^on click$/i).click();
+  cy.wait("@events");
+  cy.get('[data-cy="popover-card"]').should("be.visible");
   cy.wait(1000);
   cy.get(commonWidgetSelector.alertMessageInputField)
     .find('[data-cy*="-input-field"]')
@@ -90,10 +118,17 @@ export const editAndVerifyWidgetName = (
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click({ force: true });
 
+  // The config handle's component-name button is icon/label only and carries
+  // no data-cy; the renamed component's name is shown in the `.component-name-btn`
+  // span inside the `.config-handle`, a sibling of the rendered widget within
+  // the same WidgetWrapper (ConfigHandle.jsx:232-266, WidgetWrapper.jsx:211-225).
+  // Verify the rename by hovering the widget and reading that label from the
+  // enclosing wrapper.
   cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
-  cy.get(commonWidgetSelector.widgetConfigHandle(name))
-    .click()
-    .should("have.text", name);
+  cy.get(commonWidgetSelector.draggableWidget(name))
+    .closest("[component-type]")
+    .find(".config-handle .component-name-btn")
+    .should("contain.text", name);
 };
 
 export const verifyComponentValueFromInspector = (
@@ -142,6 +177,17 @@ export const selectColourFromColourPicker = (
   } else {
     cy.get(commonWidgetSelector.stylePicker(paramName)).eq(hasIndex).click();
   }
+  // The style colour popover now opens on a Theme/Color-picker ToggleGroup
+  // (ee/modules/Appbuilder/components/ColorSwatches/ColorSwatches.jsx:99-118).
+  // It can default to the "Theme" swatches view, which renders no
+  // react-color SketchPicker (no rc-editable-input fields). Click the
+  // "Color picker" toggle (`togglr-button-color`, ToggleGroupItem.jsx:13) so
+  // the editable hex/rgba inputs are present before we type into them.
+  cy.get("body").then(($b) => {
+    if ($b.find('[data-cy="togglr-button-color"]:visible').length > 0) {
+      cy.get('[data-cy="togglr-button-color"]').click();
+    }
+  });
   cy.get(parent)
     .eq(index)
     .then(() => {
@@ -162,6 +208,13 @@ export const selectColourFromColourPicker = (
       );
     });
   cy.waitForAutoSave();
+  // The colour popover (react-bootstrap OverlayTrigger, rootCloseEvent
+  // "mousedown") now contains a large SketchPicker that overlaps the NEXT
+  // colour swatch in the styles list, so leaving it open makes the following
+  // selectColourFromColourPicker's swatch click fail ("covered by another
+  // element"). Dismiss it by clicking the canvas (a real mousedown OUTSIDE the
+  // popover, which the OverlayTrigger's rootClose listens for) before returning.
+  cy.get(commonSelectors.canvas).click("topRight", { force: true });
 };
 
 export const fillBoxShadowParams = (paramLabels, values) => {
@@ -313,7 +366,17 @@ export const verifyLayout = (
 
 export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {
   openEditorSidebar(widgetName);
-  openAccordion(commonWidgetText.accordionGenaral);
+  // The Properties tab no longer has a "General" accordion — the Tooltip field
+  // (tooltip-input-field) now sits directly in the Properties panel (verified in
+  // the Button inspector). Only open a "General" accordion if one is actually
+  // present; otherwise go straight to the tooltip field.
+  cy.get("body").then(($b) => {
+    if (
+      $b.find('[data-cy="widget-accordion-general"]').length > 0
+    ) {
+      openAccordion(commonWidgetText.accordionGenaral);
+    }
+  });
   cy.wait(3000);
   addAndVerifyTooltip(
     commonWidgetSelector.draggableWidget(widgetName),
