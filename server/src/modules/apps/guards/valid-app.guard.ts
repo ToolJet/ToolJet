@@ -4,9 +4,10 @@ import { User } from '@entities/user.entity';
 import { isUUID } from 'class-validator';
 
 // Use this Guard IF
-// - param id is passed as app id
+// - param id is passed as app id OR as a slug (replaceEditorURL swaps the URL
+//   from /apps/<uuid> to /apps/<slug>; refresh sends the slug in :id position)
 // - param slug is passed as app slug
-// IF slug is passed as id/slug -> USE validSlugGuard
+// Non-UUID :id values are treated as slugs via findBySlug (org-scoped).
 // This Guard should be used after jwt auth guard
 @Injectable()
 export class ValidAppGuard implements CanActivate {
