@@ -18,6 +18,7 @@
     "lint-staged": "^16.1.0"
   },
   "scripts": {
+    "setup:hooks": "git config core.hooksPath .githooks",
     "prebuild:plugins": "npm run install:plugins",
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",
