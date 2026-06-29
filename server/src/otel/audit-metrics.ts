@@ -19,7 +19,6 @@ let queryFailuresCounter: any;
 let queryDurationHistogram: any;
 
 // App-level metrics
-let appUsageCounter: any;
 let appActiveUsersGauge: any;
 let appSuccessRateGauge: any;
 let appErrorsCounter: any;
@@ -74,12 +73,6 @@ export const initializeAuditLogMetrics = () => {
   queryDurationHistogram = appMeter.createHistogram('query.duration', {
     description: 'Query execution duration in milliseconds (labeled by mode and environment)',
     unit: 'ms',
-  });
-
-  // App Usage Counter
-  appUsageCounter = appMeter.createCounter('app.usage.total', {
-    description: 'Total app interactions',
-    unit: '1',
   });
 
   // App Active Users Gauge
@@ -203,21 +196,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
   }
 
   try {
-    const {
-      userId,
-      organizationId,
-      resourceType,
-      actionType,
-      resourceName,
-      resourceId,
-      ipAddress,
-      metadata = {},
-    } = auditLogData;
-
-    // Record app-specific metrics
-    if (resourceType === 'APP' || actionType.startsWith('APP_')) {
-      recordAppMetrics(auditLogData);
-    }
+    const { userId, actionType } = auditLogData;
 
     // Record user session metrics
     if (actionType === 'USER_LOGIN' || actionType === 'USER_LOGOUT') {
@@ -236,7 +215,7 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
 
     // Log for debugging (optional, can be removed in production)
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log(`[OTEL Audit Metric] Recorded: ${actionType} on ${resourceType} by user ${userId}`);
+      console.log(`[OTEL Audit Metric] Recorded: ${actionType} by user ${userId}`);
     }
   } catch (error) {
     console.error('Error recording audit log metric:', error);
@@ -332,32 +311,6 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   // Track app success rate
   if (appId !== 'unknown' && appMode !== 'unknown' && environment !== 'unknown') {
     trackAppSuccess(appId, appMode, environment, status === 'success');
-  }
-}
-
-/**
- * Record app usage metrics
- */
-function recordAppMetrics(auditLogData: AuditLogFields) {
-  if (!appUsageCounter) return;
-
-  const { resourceId, resourceName, actionType, organizationId, userId, metadata = {} } = auditLogData;
-
-  const appId = resourceId || metadata['appId'] || 'unknown';
-  const appName = resourceName || metadata['appName'] || 'unknown';
-
-  const labels = {
-    app_id: appId,
-    app_name: appName,
-    action_type: actionType,
-    organization_id: organizationId,
-  };
-
-  appUsageCounter.add(1, labels);
-
-  // Track active users for this app
-  if (appId !== 'unknown') {
-    trackAppActiveUser(appId, userId);
   }
 }
 
