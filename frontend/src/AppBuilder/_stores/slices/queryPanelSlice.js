@@ -82,13 +82,21 @@ export const createQueryPanelSlice = (set, get) => ({
       set((state) => {
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
-          // Keep the query and its datasource in sync within a single state update.
-          // So query editors which key off selectedQuery and read selectedDataSource,
-          // never render against a stale datasource.
           state.queryPanel.selectedDataSource = null;
           return;
         }
+
         const query = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
+        if (!query) {
+          // Unknown/stale id: treat as a deselection rather than leaving `undefined`
+          state.queryPanel.selectedQuery = null;
+          state.queryPanel.selectedDataSource = null;
+          return;
+        }
+
+        // Keep the query and its datasource in sync within a single state update.
+        // So query editors which key off selectedQuery and read selectedDataSource,
+        // never render against a stale datasource.
         state.queryPanel.selectedQuery = query;
         state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(query);
         return;
