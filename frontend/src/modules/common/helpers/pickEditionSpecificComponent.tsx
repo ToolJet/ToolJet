@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import { fetchEdition } from './utils';
 
-const BlankComponent: ComponentType<any> = () => null;
+const BlankComponent: ComponentType = () => null;
 
 type EditionSlots<P> = {
   ce?: ComponentType<P>;
