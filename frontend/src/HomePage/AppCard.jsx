@@ -317,7 +317,8 @@ export default function AppCard({
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}>
-                {isUnsynced && (
+                {/* On hover: refresh icon appears to the left of the 3-dots */}
+                {isUnsynced && focused && (
                   <ToolTip message="App not synced in remote git" placement="top">
                     <div
                       onMouseEnter={() => setSyncIconHovered(true)}
@@ -339,39 +340,59 @@ export default function AppCard({
                     </div>
                   </ToolTip>
                 )}
-                <div visible={focused ? true : undefined}>
-                  {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
-                    <AppMenu
-                      appId={app?.id}
-                      appUserId={app?.user_id}
-                      onMenuOpen={onMenuToggle}
-                      openAppActionModal={appActionModalCallBack}
-                      canCreateApp={canCreateApp()}
-                      canDeleteApp={canDeleteApp(app)}
-                      canUpdateApp={canUpdateApp(app)}
-                      deleteApp={() => deleteApp(app)}
-                      exportApp={() => {
-                        if (isStub && appType !== 'workflow') {
-                          toast.error(
-                            'App contents are still syncing from Git. Open the app to finish loading, then try again.',
-                            { position: 'top-center' }
-                          );
-                          return;
-                        }
-                        exportApp(app);
+                {/* Right slot: refresh icon when not hovering (unsynced), 3-dots when hovering */}
+                {isUnsynced && !focused ? (
+                  <ToolTip message="App not synced in remote git" placement="top">
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '6px',
+                        cursor: 'default',
                       }}
-                      isMenuOpen={setMenuOpen}
-                      popoverVisible={popoverVisible}
-                      setMenuOpen={setMenuOpen}
-                      darkMode={darkMode}
-                      currentFolder={currentFolder}
-                      appType={appType}
-                      appCreationMode={app?.creation_mode || app?.creationMode}
-                      ownedFolders={ownedFolders}
-                      isUnsynced={isUnsynced}
-                    />
-                  )}
-                </div>
+                      data-cy="unsynced-badge-idle"
+                    >
+                      <SolidIcon name="refresh" width="16" fill="#E54D2E" />
+                    </div>
+                  </ToolTip>
+                ) : (
+                  <div visible={focused ? true : undefined}>
+                    {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                      <AppMenu
+                        appId={app?.id}
+                        appUserId={app?.user_id}
+                        onMenuOpen={onMenuToggle}
+                        openAppActionModal={appActionModalCallBack}
+                        canCreateApp={canCreateApp()}
+                        canDeleteApp={canDeleteApp(app)}
+                        canUpdateApp={canUpdateApp(app)}
+                        deleteApp={() => deleteApp(app)}
+                        exportApp={() => {
+                          if (isStub && appType !== 'workflow') {
+                            toast.error(
+                              'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                              { position: 'top-center' }
+                            );
+                            return;
+                          }
+                          exportApp(app);
+                        }}
+                        isMenuOpen={setMenuOpen}
+                        popoverVisible={popoverVisible}
+                        setMenuOpen={setMenuOpen}
+                        darkMode={darkMode}
+                        currentFolder={currentFolder}
+                        appType={appType}
+                        appCreationMode={app?.creation_mode || app?.creationMode}
+                        ownedFolders={ownedFolders}
+                        isUnsynced={isUnsynced}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -38,9 +38,9 @@ export const ListItem = ({
   const navigate = useNavigate();
   const workspaceId = getWorkspaceId();
   const [syncIconHovered, setSyncIconHovered] = useState(false);
+  const [rowHovered, setRowHovered] = useState(false);
   const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
-  // Non-plugin DSes are decamelized in the API response (isSynced → is_synced); plugin DSes keep camelCase
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
   const isUnsynced =
     wsCurrentBranch && isOnDefaultBranch && (dataSource?.is_synced === false || dataSource?.isSynced === false);
@@ -94,6 +94,8 @@ export const ListItem = ({
         className={cx('mx-3 rounded-3 datasources-list', {
           'datasources-list-item': active,
         })}
+        onMouseEnter={() => setRowHovered(true)}
+        onMouseLeave={() => setRowHovered(false)}
       >
         <div
           role="button"
@@ -123,9 +125,10 @@ export const ListItem = ({
             )}
           </div>
         </div>
-        {isUnsynced && (
+        {/* On hover: refresh icon appears to the left of the delete button */}
+        {isUnsynced && rowHovered && (
           <div className="col-auto">
-            <ToolTip message="Datasource not synced in remote git" placement="right">
+            <ToolTip message="Datasource not synced in remote git" placement="top">
               <div
                 onMouseEnter={() => setSyncIconHovered(true)}
                 onMouseLeave={() => setSyncIconHovered(false)}
@@ -147,26 +150,48 @@ export const ListItem = ({
             </ToolTip>
           </div>
         )}
-        {showDeleteButton && (
+        {/* Right slot: refresh icon when not hovering (unsynced), delete button when hovering */}
+        {isUnsynced && !rowHovered ? (
           <div className="col-auto">
-            <button
-              title={'Delete'}
-              disabled={disableDelButton}
-              className="ds-delete-btn"
-              onClick={() => onDelete(dataSource)}
-              data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
-            >
-              <div>
-                <SolidIcon
-                  width="14"
-                  height="14"
-                  name="delete"
-                  fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
-                  className={disableDelButton ? 'disabled-button' : ''}
-                />
+            <ToolTip message="Datasource not synced in remote git" placement="top">
+              <div
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  cursor: 'default',
+                }}
+                data-cy="ds-unsynced-badge-idle"
+              >
+                <SolidIcon name="refresh" width="14" fill="#E54D2E" />
               </div>
-            </button>
+            </ToolTip>
           </div>
+        ) : (
+          showDeleteButton && (
+            <div className="col-auto">
+              <button
+                title={'Delete'}
+                disabled={disableDelButton}
+                className="ds-delete-btn"
+                onClick={() => onDelete(dataSource)}
+                data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+              >
+                <div>
+                  <SolidIcon
+                    width="14"
+                    height="14"
+                    name="delete"
+                    fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
+                    className={disableDelButton ? 'disabled-button' : ''}
+                  />
+                </div>
+              </button>
+            </div>
+          )
         )}
       </div>
     </ToolTip>
