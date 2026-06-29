@@ -15,6 +15,7 @@ export const TreeSelectItem = ({
   parentValue = null,
   activePopover,
   setActivePopover,
+  showSelectionFields = true,
 }) => {
   const optionBtnRef = useRef(null);
   const moreBtnRef = useRef(null);
@@ -136,6 +137,7 @@ export const TreeSelectItem = ({
                 onDeleteItem={onDeleteItem}
                 getResolvedValue={getResolvedValue}
                 parentValue={parentValue}
+                showSelectionFields={showSelectionFields}
               />
             </Overlay>
           </div>

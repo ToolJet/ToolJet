@@ -55,6 +55,7 @@ import { Navigation } from './Components/Navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
+import { Cascader } from './Components/Cascader/Cascader.jsx';
 import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
 const INSPECTOR_HEADER_OPTIONS = [
@@ -145,6 +146,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'IFrame',
   'Navigation',
   'TreeSelect',
+  'Cascader',
   'Accordion',
   'ReorderableList',
   'ColorPicker',
@@ -950,6 +952,8 @@ const GetAccordion = React.memo(
         return <Navigation {...restProps} />;
       case 'TreeSelect':
         return <TreeSelect {...restProps} />;
+      case 'Cascader':
+        return <Cascader {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

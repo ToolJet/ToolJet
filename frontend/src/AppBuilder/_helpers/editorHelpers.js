@@ -7,6 +7,7 @@ import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { DropDown } from '@/AppBuilder/Widgets/DropDown';
 import { DropdownV2 } from '@/AppBuilder/Widgets/DropdownV2/DropdownV2';
+import { Cascader } from '@/AppBuilder/Widgets/Cascader/Cascader';
 import { Checkbox } from '@/AppBuilder/Widgets/Checkbox';
 import { Datepicker } from '@/AppBuilder/Widgets/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
@@ -121,6 +122,7 @@ export const AllComponents = {
   RichTextEditor,
   DropDown,
   DropdownV2,
+  Cascader,
   Checkbox,
   Datepicker,
   DatetimePickerV2,
