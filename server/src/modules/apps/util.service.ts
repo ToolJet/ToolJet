@@ -590,6 +590,7 @@ export class AppsUtilService implements IAppsUtilService {
                 'Tags',
                 'TagsInput',
                 'TreeSelect',
+                'Cascader',
                 'Navigation',
                 'ButtonGroupV2',
               ].includes(currentComponentData?.component?.component) &&

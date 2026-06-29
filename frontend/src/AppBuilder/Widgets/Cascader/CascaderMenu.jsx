@@ -8,11 +8,12 @@ const ROW_STYLE = {
   alignItems: 'center',
   gap: '8px',
   height: '32px',
-  padding: '0 8px',
+  padding: '0 12px',
   borderRadius: '6px',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   fontSize: '14px',
+  lineHeight: '20px',
 };
 
 /**
@@ -128,19 +129,21 @@ const CascaderMenu = forwardRef(
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              padding: '6px 8px',
+              gap: '10px',
+              height: '36px',
+              padding: '0 10px',
               cursor: 'pointer',
-              color: 'var(--cc-placeholder-text)',
-              fontSize: '12px',
-              borderBottom: '1px solid var(--cc-default-border)',
-              marginBottom: '4px',
+              color: 'var(--cc-primary-text)',
+              fontSize: '14px',
+              lineHeight: '20px',
+              borderBottom: '1px solid var(--cc-weak-border, #e4e7eb)',
+              flexShrink: 0,
             }}
             data-cy="cascader-menu-back"
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={14} style={{ flexShrink: 0 }} />
             <span
-              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
               title={breadcrumb.join(' / ')}
             >
               {breadcrumb.join(' / ')}
@@ -152,7 +155,7 @@ const CascaderMenu = forwardRef(
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '2px',
+            padding: '8px',
             maxHeight: '260px',
             overflowY: 'auto',
           }}
@@ -198,11 +201,12 @@ const CascaderMenu = forwardRef(
                       : 'transparent',
                   }}
                 >
-                  {!isParent && (
-                    <span style={{ width: '16px', display: 'inline-flex', flexShrink: 0 }}>
-                      {isSelected && <Check size={16} color={accentColor || 'var(--cc-primary-brand)'} />}
-                    </span>
-                  )}
+                  {/* Reserve the left gutter for every row (parent + leaf) so all
+                      labels align in a single column; the check only renders for the
+                      selected leaf. */}
+                  <span style={{ width: '16px', display: 'inline-flex', flexShrink: 0 }}>
+                    {isSelected && <Check size={16} color={accentColor || 'var(--cc-primary-brand)'} />}
+                  </span>
                   <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }} title={node.label}>
                     {node.label}
                   </span>

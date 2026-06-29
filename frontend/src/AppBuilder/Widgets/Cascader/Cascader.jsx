@@ -127,6 +127,7 @@ export const Cascader = ({
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const _width = getLabelWidthOfInput(widthType, labelWidth);
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
+  const isTopAlignment = alignment === 'top';
 
   const borderColor = getInputBorderColor({
     isFocused,
@@ -204,6 +205,7 @@ export const Cascader = ({
         position: 'relative',
         whiteSpace: 'nowrap',
         width: '100%',
+        height: '100%',
         visibility: isVisible ? 'visible' : 'hidden',
       }}
       onMouseDown={() => {
@@ -230,7 +232,9 @@ export const Cascader = ({
       <div
         className="cascader-actionable-section"
         data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
-        style={{ ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment) }}
+        style={{
+          ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+        }}
       >
         <Popover.Root
           open={isOpen}
@@ -253,7 +257,8 @@ export const Cascader = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                height: _height,
+                height: isTopAlignment ? '100%' : _height,
+                minHeight: _height,
                 padding: '0 10px',
                 borderRadius: Number.parseFloat(fieldBorderRadius),
                 border: `1px solid ${borderColor}`,
@@ -324,8 +329,12 @@ export const Cascader = ({
                 width: menuWidthStyle,
                 minWidth: 'var(--radix-popover-trigger-width)',
                 maxWidth: '420px',
-                padding: '8px',
-                backgroundColor: backgroundColor || 'var(--cc-surface1-surface)',
+                padding: 0,
+                backgroundColor: 'var(--cc-surface1-surface)',
+                border: '1px solid var(--cc-weak-border, #e4e7eb)',
+                borderRadius: '8px',
+                boxShadow: '0px 0px 1px 0px rgba(48,50,51,0.05), 0px 8px 16px 0px rgba(48,50,51,0.1)',
+                overflow: 'hidden',
                 zIndex: 1040,
               }}
             >
