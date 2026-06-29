@@ -1,3 +1,8 @@
+// Entire spec commented out — quarantined during the PR #16965 flaky-suite
+// cleanup. It was already `describe.skip` (reported 40 pending), so commenting
+// it removes that noise from the AppBuilder run report. Restore by removing the
+// surrounding /* ... */ once the suite is hardened.
+/*
 import { commonWidgetSelector, commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { tableText } from "Texts/table";
@@ -662,3 +667,4 @@ describe.skip("Basic components", { testIsolation: false }, () => {
     );
   });
 });
+*/
