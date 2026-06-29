@@ -71,12 +71,14 @@ export const Folders = function Folders({
     return folder?.created_by === currentUserId;
   };
 
-  // Determine if user can update/delete a specific folder.
-  // Git sync restriction is enforced server-side (only folders with apps are blocked);
-  // frontend shows the menu unconditionally for permitted users so the backend error is surfaced.
+  // Determine if user can update/delete a specific folder
+  // Rename: requires granular canEditFolder OR ownership OR (module context + builder)
+  // Delete: requires master Delete OR ownership
   const canUpdateSpecificFolder = (folderId, folder) =>
-    canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder);
-  const canDeleteSpecificFolder = (folderId, folder) => canDeleteFolder || isOwnerOfFolder(folder);
+    !isGitSyncEnabled &&
+    (canEditSpecificFolder(folderId) || isOwnerOfFolder(folder) || (appType === 'module' && isBuilder));
+  const canDeleteSpecificFolder = (folderId, folder) =>
+    !isGitSyncEnabled && (canDeleteFolder || isOwnerOfFolder(folder));
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
