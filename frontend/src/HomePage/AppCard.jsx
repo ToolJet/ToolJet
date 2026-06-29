@@ -291,7 +291,9 @@ export default function AppCard({
     );
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
-  const isUnsynced = wsCurrentBranch && app?.app_versions?.[0]?.is_synced === false && appType !== 'workflow';
+  const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
+  const isUnsynced =
+    wsCurrentBranch && isOnDefaultBranch && app?.app_versions?.[0]?.is_synced === false && appType !== 'workflow';
   return (
     <ToolTip
       message="Modules are not available on your current plan."
@@ -315,7 +317,7 @@ export default function AppCard({
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}>
-                {isUnsynced ? (
+                {isUnsynced && (
                   <ToolTip message="App not synced in remote git" placement="top">
                     <div
                       onMouseEnter={() => setSyncIconHovered(true)}
@@ -336,40 +338,40 @@ export default function AppCard({
                       <SolidIcon name="refresh" width="16" fill="#E54D2E" />
                     </div>
                   </ToolTip>
-                ) : (
-                  <div visible={focused ? true : undefined}>
-                    {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
-                      <AppMenu
-                        appId={app?.id}
-                        appUserId={app?.user_id}
-                        onMenuOpen={onMenuToggle}
-                        openAppActionModal={appActionModalCallBack}
-                        canCreateApp={canCreateApp()}
-                        canDeleteApp={canDeleteApp(app)}
-                        canUpdateApp={canUpdateApp(app)}
-                        deleteApp={() => deleteApp(app)}
-                        exportApp={() => {
-                          if (isStub && appType !== 'workflow') {
-                            toast.error(
-                              'App contents are still syncing from Git. Open the app to finish loading, then try again.',
-                              { position: 'top-center' }
-                            );
-                            return;
-                          }
-                          exportApp(app);
-                        }}
-                        isMenuOpen={setMenuOpen}
-                        popoverVisible={popoverVisible}
-                        setMenuOpen={setMenuOpen}
-                        darkMode={darkMode}
-                        currentFolder={currentFolder}
-                        appType={appType}
-                        appCreationMode={app?.creation_mode || app?.creationMode}
-                        ownedFolders={ownedFolders}
-                      />
-                    )}
-                  </div>
                 )}
+                <div visible={focused ? true : undefined}>
+                  {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                    <AppMenu
+                      appId={app?.id}
+                      appUserId={app?.user_id}
+                      onMenuOpen={onMenuToggle}
+                      openAppActionModal={appActionModalCallBack}
+                      canCreateApp={canCreateApp()}
+                      canDeleteApp={canDeleteApp(app)}
+                      canUpdateApp={canUpdateApp(app)}
+                      deleteApp={() => deleteApp(app)}
+                      exportApp={() => {
+                        if (isStub && appType !== 'workflow') {
+                          toast.error(
+                            'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                            { position: 'top-center' }
+                          );
+                          return;
+                        }
+                        exportApp(app);
+                      }}
+                      isMenuOpen={setMenuOpen}
+                      popoverVisible={popoverVisible}
+                      setMenuOpen={setMenuOpen}
+                      darkMode={darkMode}
+                      currentFolder={currentFolder}
+                      appType={appType}
+                      appCreationMode={app?.creation_mode || app?.creationMode}
+                      ownedFolders={ownedFolders}
+                      isUnsynced={isUnsynced}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>

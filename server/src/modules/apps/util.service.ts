@@ -694,9 +694,12 @@ export class AppsUtilService implements IAppsUtilService {
           if (!branchId) {
             throw new BadRequestException('Branch context is required to update metadata on a git-enabled workspace.');
           }
+          // Match by (appId, branchId) without filtering on versionType so that
+          // pre-git apps (version_type='version') on the default branch are also updated.
+          // Sub-branch apps only have 'branch'-type rows for that branchId, so dropping
+          // the versionType filter is safe for both code paths.
           const canonicalCondition: Record<string, any> = {
             appId,
-            versionType: AppVersionType.BRANCH,
             branchId,
           };
           await catchDbException(async () => {
@@ -1351,6 +1354,8 @@ export class AppsUtilService implements IAppsUtilService {
 
     if (editingVersion?.versionType === AppVersionType.VERSION) {
       if (editingVersion?.status !== AppVersionStatus.DRAFT) return true;
+      // Pre-git (unsynced) apps/modules are not tracked in git yet — allow editing on default branch
+      if (editingVersion?.isSynced === false) return false;
       if (orgGit?.isBranchingEnabled) return true;
     }
 

@@ -340,27 +340,46 @@ export class AppsService implements IAppsService {
           where: { id: appUpdateDto.branch_id, organizationId: app.organizationId },
           select: ['id', 'isDefault'],
         });
-        // Unknown branch → treat as block. Default branch → block (must edit from a
-        // feature branch and let push + merge flow the change to default).
+        // Unknown branch → treat as block. Default branch → block unless the app version
+        // is unsynced (pre-git / never pushed) — those are always editable.
         if (!branch || branch.isDefault) {
-          throw new BadRequestException(
-            `Editing ${blockedFields.join(', ')} isn't allowed on the default branch. Switch to a feature branch in app builder to update.`
-          );
+          const versionToCheck = editingVersionId
+            ? await this.versionRepository.findOne({ where: { id: editingVersionId }, select: ['id', 'isSynced'] })
+            : await this.versionRepository.findOne({
+                where: { appId: app.id, branchId: appUpdateDto.branch_id },
+                select: ['id', 'isSynced'],
+                order: { createdAt: 'DESC' },
+              });
+          if (versionToCheck?.isSynced !== false) {
+            throw new BadRequestException(
+              `Editing ${blockedFields.join(', ')} isn't allowed on the default branch. Switch to a feature branch in app builder to update.`
+            );
+          }
         }
       }
     }
 
     // Rename additionally requires a draft version when git-sync is on (so the new name
     // lands on an editable version, not a published one).
+    // Unsynced apps are exempt — they haven't been pushed to git so they're always editable.
     if (name && name !== app.name && isGitSyncEnabled) {
-      const draftVersion = await this.versionRepository.findOne({
-        where: {
-          appId: app.id,
-          status: AppVersionStatus.DRAFT,
-        },
-      });
-      if (!draftVersion) {
-        throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+      const versionForRename = editingVersionId
+        ? await this.versionRepository.findOne({ where: { id: editingVersionId }, select: ['id', 'isSynced'] })
+        : await this.versionRepository.findOne({
+            where: { appId: app.id, branchId: appUpdateDto.branch_id },
+            select: ['id', 'isSynced'],
+            order: { createdAt: 'DESC' },
+          });
+      if (versionForRename?.isSynced !== false) {
+        const draftVersion = await this.versionRepository.findOne({
+          where: { 
+            appId: app.id,
+             status: AppVersionStatus.DRAFT,
+             },
+        });
+        if (!draftVersion) {
+          throw new BadRequestException('Cannot rename app. Please create a draft version first to rename the app.');
+        }
       }
     }
 

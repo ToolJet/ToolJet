@@ -521,7 +521,11 @@ class DataSourceManagerComponent extends React.Component {
         showValidationErrors={showValidationErrors}
         clearValidationErrorBanner={() => this.setState({ validationError: [] })}
         elementsProps={this.props.formProps?.[kind]}
-        isWorkspaceBranchLocked={this.props.isWorkspaceBranchLocked}
+        isWorkspaceBranchLocked={
+          this.props.isWorkspaceBranchLocked &&
+          this.state.selectedDataSource?.is_synced !== false &&
+          this.state.selectedDataSource?.isSynced !== false
+        }
       />
     );
   };
@@ -1156,7 +1160,9 @@ class DataSourceManagerComponent extends React.Component {
                               autoFocus
                               autoComplete="off"
                               disabled={
-                                this.props.isWorkspaceBranchLocked ||
+                                (this.props.isWorkspaceBranchLocked &&
+                                  selectedDataSource?.is_synced !== false &&
+                                  selectedDataSource?.isSynced !== false) ||
                                 !canUpdateDataSource(selectedDataSource.id) ||
                                 selectedDataSource.is_dummy
                               }

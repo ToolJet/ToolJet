@@ -41,7 +41,9 @@ export const ListItem = ({
   const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
   // Non-plugin DSes are decamelized in the API response (isSynced → is_synced); plugin DSes keep camelCase
-  const isUnsynced = wsCurrentBranch && (dataSource?.is_synced === false || dataSource?.isSynced === false);
+  const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
+  const isUnsynced =
+    wsCurrentBranch && isOnDefaultBranch && (dataSource?.is_synced === false || dataSource?.isSynced === false);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -121,7 +123,7 @@ export const ListItem = ({
             )}
           </div>
         </div>
-        {isUnsynced ? (
+        {isUnsynced && (
           <div className="col-auto">
             <ToolTip message="Datasource not synced in remote git" placement="right">
               <div
@@ -144,29 +146,27 @@ export const ListItem = ({
               </div>
             </ToolTip>
           </div>
-        ) : (
-          showDeleteButton && (
-            <div className="col-auto">
-              {}
-              <button
-                title={'Delete'}
-                disabled={disableDelButton}
-                className="ds-delete-btn"
-                onClick={() => onDelete(dataSource)}
-                data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
-              >
-                <div>
-                  <SolidIcon
-                    width="14"
-                    height="14"
-                    name="delete"
-                    fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
-                    className={disableDelButton ? 'disabled-button' : ''}
-                  />
-                </div>
-              </button>
-            </div>
-          )
+        )}
+        {showDeleteButton && (
+          <div className="col-auto">
+            <button
+              title={'Delete'}
+              disabled={disableDelButton}
+              className="ds-delete-btn"
+              onClick={() => onDelete(dataSource)}
+              data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+            >
+              <div>
+                <SolidIcon
+                  width="14"
+                  height="14"
+                  name="delete"
+                  fill={disableDelButton ? '#E6E8EB' : '#E54D2E'}
+                  className={disableDelButton ? 'disabled-button' : ''}
+                />
+              </div>
+            </button>
+          </div>
         )}
       </div>
     </ToolTip>
