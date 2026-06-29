@@ -273,6 +273,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
   const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
   const queryType = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, raw, etc.
+  const versionName = (metadata as Record<string, any>)?.['versionName'] || (resourceData as Record<string, any>)?.['versionName'] || 'unknown';
 
   const labels = {
     app_id: appId,
@@ -287,6 +288,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
     is_published: isPublished,
     query_text: queryText,
     query_type: queryType,
+    version_name: versionName,
   };
 
   // Count query execution
@@ -311,6 +313,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
       is_published: isPublished,
       query_text: queryText,
       query_type: queryType,
+      version_name: versionName,
     });
 
     // Record app-level error
@@ -534,6 +537,7 @@ export interface DirectQueryMetricPayload {
   errorType?: string;
   queryText?: string; // only if OTEL_INCLUDE_QUERY_TEXT=true
   query_type?: string; // 'sql' | 'gui' | 'raw' | etc.
+  version_name?: string; // app version name (e.g. "v1", "v2")
 }
 
 export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
@@ -558,6 +562,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
       error,
       queryText = '',
       query_type = 'unknown',
+      version_name = 'unknown',
     } = payload;
 
     const isPublished = (app_mode === 'view' || app_mode === 'released') ? 'true' : 'false';
@@ -577,6 +582,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
       is_published: isPublished,
       query_text: qtLabel,
       query_type,
+      version_name,
     };
 
     queryExecutionsCounter.add(1, labels);
@@ -599,6 +605,7 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
           is_published: isPublished,
           query_text: qtLabel,
           query_type,
+          version_name,
         });
       }
       if (appErrorsCounter && appId) {
