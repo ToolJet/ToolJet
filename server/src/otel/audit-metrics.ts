@@ -85,7 +85,7 @@ export const initializeAuditLogMetrics = () => {
   // App Active Users Gauge
   appActiveUsersGauge = appMeter.createObservableGauge('app.active_users', {
     description: 'Number of active users per app (last 15 minutes)',
-    unit: '1',
+    unit: '{users}',
   });
 
   appActiveUsersGauge.addCallback((observableResult: any) => {
@@ -213,11 +213,6 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
       ipAddress,
       metadata = {},
     } = auditLogData;
-
-    // Record query-specific metrics
-    if (actionType === 'DATA_QUERY_RUN') {
-      recordQueryMetrics(auditLogData);
-    }
 
     // Record app-specific metrics
     if (resourceType === 'APP' || actionType.startsWith('APP_')) {
