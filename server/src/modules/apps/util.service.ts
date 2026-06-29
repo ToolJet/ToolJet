@@ -1223,22 +1223,24 @@ export class AppsUtilService implements IAppsUtilService {
         .getMany();
       const editingMap = new Map(editingRows.map((v) => [v.appId, v]));
 
-      // (2) metadata source row per module.
+      // (2) metadata source row per module. Stubs carry only placeholder metadata, so
+      // they never drive the source.
       const metaQb = manager
         .createQueryBuilder(AppVersion, 'av')
         .distinctOn(['av.appId'])
         .where('av.appId IN (:...moduleIds)', { moduleIds })
+        .andWhere('av.isStub = false')
         .orderBy('av.appId', 'ASC')
         .addOrderBy('av.updatedAt', 'DESC');
-      if (gitEnabled) {
-        // git-on: latest DRAFT on the target branch (parentBranchId ?? default branch).
-        const targetBranchId = parentBranchId ?? defaultBranchId;
+      if (gitEnabled && parentBranchId) {
+        // git-on, viewed on a feature branch: version_type='branch' rows are NOT mirrored
+        // by the metadata triggers, so pick that branch's DRAFT row specifically.
         metaQb
-          .andWhere('av.branchId = :targetBranchId', { targetBranchId })
+          .andWhere('av.branchId = :targetBranchId', { targetBranchId: parentBranchId })
           .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
       } else if (defaultBranchId) {
-        // git-off: the DRAFT version_type='version' row may be absent — pick the latest
-        // row on the default branch (metadata is mirrored across the app's version rows).
+        // Default branch (git on or off): metadata is mirrored across the module's
+        // version_type='version' rows, so pick any non-stub row on the default branch.
         metaQb.andWhere('av.branchId = :defaultBranchId', { defaultBranchId });
       }
       const metaRows = await metaQb.getMany();
@@ -1481,7 +1483,7 @@ export class AppsUtilService implements IAppsUtilService {
       if (!defaultBranchId) return;
 
       // App metadata is the default-branch canonical row (instance-level identity),
-      // regardless of which branch is being edited. is_git_sync=true sorts first (the
+      // regardless of which branch is being edited. is_synced=true sorts first (the
       // authoritative row when git is on); git-off falls back to the latest such row.
       // This mirrors the DB metadata trigger's own canonical-row selection.
       const source = await manager
@@ -1492,7 +1494,7 @@ export class AppsUtilService implements IAppsUtilService {
         .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
         .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
         .andWhere('av.is_stub = false')
-        .orderBy('av.is_git_sync', 'DESC')
+        .orderBy('av.is_synced', 'DESC')
         .addOrderBy('av.updated_at', 'DESC')
         .select(['av.id', 'av.appName', 'av.slug', 'av.icon', 'av.isPublic'])
         .getOne();

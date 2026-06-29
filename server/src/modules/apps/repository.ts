@@ -57,7 +57,7 @@ export class AppsRepository extends Repository<App> {
     }
 
     // App slug lives on the default-branch app_versions rows in all cases (git on or off —
-    // every org has a default branch now). Match there; when git is on the is_git_sync=true
+    // every org has a default branch now). Match there; when git is on the is_synced=true
     // row sorts first.
     const resolvedVersion = await this.dataSource
       .getRepository(AppVersion)
@@ -65,7 +65,7 @@ export class AppsRepository extends Repository<App> {
       .innerJoinAndSelect('av.app', 'app')
       .where('av.slug = :slug', { slug })
       .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
-      .orderBy('av.is_git_sync', 'DESC')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -98,14 +98,14 @@ export class AppsRepository extends Repository<App> {
     // exactly one app across all workspaces. Dropping the org scope here is what enables
     // cross-workspace slug lookup (e.g. public app sharing where the requesting user is in a
     // different workspace than the app's owner). Every org has a default branch now, so the
-    // slug always resolves on a default-branch row (is_git_sync=true sorts first when git on).
+    // slug always resolves on a default-branch row (is_synced=true sorts first when git on).
     const resolvedVersion = await this.dataSource
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
       .where('av.slug = :slug', { slug })
-      .orderBy('av.is_git_sync', 'DESC')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -120,14 +120,14 @@ export class AppsRepository extends Repository<App> {
 
   async retrieveAppDataUsingSlug(slug: string): Promise<SessionAppData> {
     // Resolve the app by its default-branch slug row (git on or off — every org has a
-    // default branch). is_git_sync=true sorts first when git is on.
+    // default branch). is_synced=true sorts first when git is on.
     const resolved = await this.dataSource
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
       .where('av.slug = :slug', { slug })
-      .orderBy('av.is_git_sync', 'DESC')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -161,7 +161,7 @@ export class AppsRepository extends Repository<App> {
     defaultBranchId: string | null,
     versionId?: string
   ): Promise<App> {
-    // app_name lives on the default-branch version rows; match there (is_git_sync=true first).
+    // app_name lives on the default-branch version rows; match there (is_synced=true first).
     const resolved = await this.dataSource
       .getRepository(AppVersion)
       .createQueryBuilder('av')
@@ -170,7 +170,7 @@ export class AppsRepository extends Repository<App> {
       .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
       .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
       .andWhere('app.organization_id = :organizationId', { organizationId })
-      .orderBy('av.is_git_sync', 'DESC')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -279,7 +279,7 @@ export class AppsRepository extends Repository<App> {
         .addSelect(`COALESCE(av_meta.is_public, app.is_public) AS "isPublic"`);
 
       // Default (no explicit branch): metadata from the canonical default-branch DRAFT
-      // version row. is_git_sync=true sorts first (the authoritative row when git is on);
+      // version row. is_synced=true sorts first (the authoritative row when git is on);
       // git-off falls back to the latest such row. COALESCE handles workflows (apps.*).
       qb.leftJoin(
         'app_versions',
@@ -290,7 +290,7 @@ export class AppsRepository extends Repository<App> {
              SELECT av_inner.id FROM app_versions av_inner
              WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
                AND av_inner.version_type = 'version' AND av_inner.status = 'DRAFT' AND av_inner.is_stub = false
-             ORDER BY av_inner.is_git_sync DESC, av_inner.updated_at DESC
+             ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
              LIMIT 1
            )`,
         { defaultBranchId }
@@ -320,7 +320,7 @@ export class AppsRepository extends Repository<App> {
       .where('app.organizationId = :organizationId', { organizationId })
       .andWhere('app.type = :type', { type: APP_TYPES.MODULE });
 
-    // Metadata from the canonical default-branch DRAFT version row (is_git_sync=true first;
+    // Metadata from the canonical default-branch DRAFT version row (is_synced=true first;
     // git-off falls back to the latest such row). COALESCE handles workflows (apps.*).
     qb.leftJoin(
       'app_versions',
@@ -331,7 +331,7 @@ export class AppsRepository extends Repository<App> {
            SELECT av_inner.id FROM app_versions av_inner
            WHERE av_inner.app_id = app.id AND av_inner.branch_id = :defaultBranchId
              AND av_inner.version_type = 'version' AND av_inner.status = 'DRAFT' AND av_inner.is_stub = false
-           ORDER BY av_inner.is_git_sync DESC, av_inner.updated_at DESC
+           ORDER BY av_inner.is_synced DESC, av_inner.updated_at DESC
            LIMIT 1
          )`,
       { defaultBranchId }
@@ -380,7 +380,7 @@ export class AppsRepository extends Repository<App> {
       .leftJoinAndSelect('app.appVersions', 'appVersions')
       .innerJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id AND wb.is_default = true')
       .where('av.slug = :slug', { slug: idOrSlug })
-      .orderBy('av.is_git_sync', 'DESC')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
 
@@ -411,7 +411,7 @@ export class AppsRepository extends Repository<App> {
   // App identity (app_name / slug / icon / is_public) is now an instance-level,
   // default-branch concept: the canonical row is the non-stub DRAFT version_type='version'
   // row on the org's DEFAULT branch. When git sync is ON exactly one such row carries
-  // is_git_sync=true (the authoritative row); ORDER BY is_git_sync DESC picks it, and when
+  // is_synced=true (the authoritative row); ORDER BY is_synced DESC picks it, and when
   // git is off it falls back to the latest such row. This mirrors the DB metadata trigger's
   // own canonical-row selection (sync_published_app_version_metadata_from_draft), so code and
   // trigger agree. branchId is intentionally ignored — meta is always the default-branch row
@@ -424,28 +424,20 @@ export class AppsRepository extends Repository<App> {
     const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
     if (!defaultBranchId) return null;
 
-    const base = () =>
-      manager
-        .getRepository(AppVersion)
-        .createQueryBuilder('av')
-        .where('av.app_id = :appId', { appId: app.id })
-        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
-        .andWhere('av.is_stub = false');
-
-    // Git-on: the canonical metadata source is the DRAFT version_type='version' row on
-    // the default branch (is_git_sync row first) — prefer it. Git-off apps may not have
-    // that row, so fall back to any non-stub row on the default branch. Metadata
-    // propagation keeps all version_type='version' rows in sync, so the fallback row
-    // carries the same app_name/slug/icon/is_public.
-    const draft = await base()
-      .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
-      .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
-      .orderBy('av.is_git_sync', 'DESC')
+    // app_name/slug/icon/is_public are mirrored across all non-stub
+    // version_type='version' rows on the default branch by the propagate /
+    // sync-published triggers, so any non-stub default-branch row carries the same
+    // values — no need to single out the DRAFT. Pick the most relevant row
+    // (is_synced row first, then most recent). Works the same git-on or git-off.
+    return manager
+      .getRepository(AppVersion)
+      .createQueryBuilder('av')
+      .where('av.app_id = :appId', { appId: app.id })
+      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+      .andWhere('av.is_stub = false')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
-    if (draft) return draft;
-
-    return base().orderBy('av.is_git_sync', 'DESC').addOrderBy('av.updated_at', 'DESC').getOne();
   }
 
   private overlayMetadata(app: App, version: AppVersion | null): void {

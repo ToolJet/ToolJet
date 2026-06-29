@@ -127,14 +127,27 @@ export class VersionService implements IVersionService {
   }
   async getAllVersions(app: App, branchId?: string): Promise<{ versions: Array<AppVersion> }> {
     const effectiveBranchId = app.type === 'workflow' ? undefined : branchId;
-    const defaultBranchId =
-      app.type === APP_TYPES.MODULE
-        ? ((await this.gitSyncConfigsUtilService.getDetails(app.organizationId)).options.defaultBranch?.id ?? null)
-        : null;
-    const result =
+    let gitEnabled = false;
+    let defaultBranchId: string | null = null;
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      const details = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+      gitEnabled = details.isEnabled;
+      defaultBranchId = details.options.defaultBranch?.id ?? null;
+    }
+    let result =
       app.type === APP_TYPES.MODULE
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, defaultBranchId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
+
+    // Git-sync on: once a synced (gitsync-origin) DRAFT exists, hide the non-synced
+    // DRAFT versions — those are locally-created drafts not yet pushed to git. Synced
+    // drafts and all non-DRAFT (published) versions are kept. Git-off: unchanged.
+    if (gitEnabled && result?.length) {
+      const hasSyncedDraft = result.some((v) => v.status === AppVersionStatus.DRAFT && v.isSynced);
+      if (hasSyncedDraft) {
+        result = result.filter((v) => v.status !== AppVersionStatus.DRAFT || v.isSynced);
+      }
+    }
 
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;

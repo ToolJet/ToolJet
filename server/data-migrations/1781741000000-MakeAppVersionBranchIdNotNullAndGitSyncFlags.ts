@@ -5,10 +5,8 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     // Goal for app_versions:
     //   • branch_id becomes mandatory (NOT NULL).
     //   • add is_synced  — static marker: the row originated from gitsync (set once
-    //                      here from the pre-backfill branch_id state).
-    //   • add is_git_sync — operational flag: under gitsync this is the active
-    //                      default-branch row that runtime picks; toggled later by
-    //                      the application. Initialised identically to is_synced.
+    //                      here from the pre-backfill branch_id state). Also the
+    //                      canonical-row tiebreaker when resolving metadata.
     //   • backfill branch_id = org default branch for the few rows still NULL.
     //   • redefine the name/slug uniqueness triggers so the DEFAULT branch may hold
     //     multiple rows for the SAME app (gitsync-off versions), enforcing
@@ -19,17 +17,17 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     await queryRunner.query(`SET LOCAL statement_timeout = 0`);
 
     // ── 1. Flag backfill (set from the ORIGINAL branch_id state, before backfill) ──
-    // The is_synced / is_git_sync columns are created up front by the schema migration
-    // AddSyncFlagColumnsToVersions (migrations/) so they exist before any entity-based
-    // data-migration runs; here we only backfill them.
+    // The is_synced column is created up front by the schema migration
+    // AddSyncFlagColumnsToVersions (migrations/) so it exists before any entity-based
+    // data-migration runs; here we only backfill it.
     //
     // Existing branch-associated rows are the synced/gitsync rows. The rows that
-    // are still branch_id IS NULL here are the non-gitsync ones and stay false on
-    // both flags even after we backfill their branch_id below. is_stub rows always
-    // have a branch_id, so the is_git_sync requirement for stubs is covered.
+    // are still branch_id IS NULL here are the non-gitsync ones and stay is_synced=false
+    // even after we backfill their branch_id below. is_stub rows always have a
+    // branch_id, so the is_synced requirement for stubs is covered.
     await queryRunner.query(`
       UPDATE app_versions
-      SET is_synced = true, is_git_sync = true
+      SET is_synced = true
       WHERE branch_id IS NOT NULL
     `);
 
@@ -76,11 +74,11 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         FOREIGN KEY (branch_id) REFERENCES organization_git_sync_branches(id) ON DELETE CASCADE
     `);
 
-    // Tighten the single-draft-per-(app,branch) indexes to is_git_sync rows only.
+    // Tighten the single-draft-per-(app,branch) indexes to synced rows only.
     // Gitsync-off can keep multiple entries on the default branch; gitsync-on
     // operates a single row. So per (app_id, branch_id) there must be at most one
-    // is_git_sync row for each is_stub value — one (is_git_sync, non-stub draft)
-    // and one (is_git_sync, stub draft). Rows with is_git_sync = false are exempt.
+    // is_synced row for each is_stub value — one (is_synced, non-stub draft)
+    // and one (is_synced, stub draft). Rows with is_synced = false are exempt.
     await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique`);
     await queryRunner.query(`
       CREATE UNIQUE INDEX app_versions_app_default_branch_draft_unique
@@ -88,7 +86,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         WHERE status = 'DRAFT'::version_status_enum
           AND version_type = 'version'::app_version_type
           AND is_stub = false
-          AND is_git_sync = true
+          AND is_synced = true
     `);
     await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique_ensure_single_stub`);
     await queryRunner.query(`
@@ -97,7 +95,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
         WHERE status = 'DRAFT'::version_status_enum
           AND version_type = 'version'::app_version_type
           AND is_stub = true
-          AND is_git_sync = true
+          AND is_synced = true
     `);
 
     // ── 4. New uniqueness rules ──────────────────────────────────────────────────
@@ -379,7 +377,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           AND version_type = 'version'
           AND status = 'DRAFT'
           AND is_stub = false
-        ORDER BY is_git_sync DESC, updated_at DESC
+        ORDER BY is_synced DESC, updated_at DESC
         LIMIT 1;
 
         IF FOUND THEN
@@ -437,7 +435,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
     `);
 
     // Restore the single-draft-per-(app,branch) indexes to their original predicate
-    // (without is_git_sync) before the column is dropped.
+    // (without the is_synced predicate) before the column is dropped.
     await queryRunner.query(`DROP INDEX IF EXISTS app_versions_app_default_branch_draft_unique`);
     await queryRunner.query(`
       CREATE UNIQUE INDEX app_versions_app_default_branch_draft_unique
@@ -457,8 +455,7 @@ export class MakeAppVersionBranchIdNotNullAndGitSyncFlags1781741000000 implement
           AND branch_id IS NOT NULL
     `);
 
-    // Drop the flag columns.
-    await queryRunner.query(`ALTER TABLE app_versions DROP COLUMN IF EXISTS is_git_sync`);
+    // Drop the flag column.
     await queryRunner.query(`ALTER TABLE app_versions DROP COLUMN IF EXISTS is_synced`);
 
     // Recreate the original four functions + triggers verbatim.

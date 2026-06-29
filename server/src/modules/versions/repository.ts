@@ -267,14 +267,12 @@ export class VersionRepository extends Repository<AppVersion> {
   //
   // Resolution order:
   //   1. Explicit branchId (sub-branch context, git-on) → DRAFT row on that branch.
-  //   2. Default branch, git-on → canonical DRAFT version_type='version' row
-  //      (is_git_sync row first).
-  //   3. Default branch, git-off → any non-stub row (the DRAFT version_type='version'
-  //      row may be absent). Metadata propagation keeps all version_type='version'
-  //      rows in sync, so any default-branch row carries the same metadata.
-  //
-  // Git-state is no longer inferred from default-branch presence (every org has a
-  // default branch now); steps 2/3 are a graceful fallback that is data-driven.
+  //      version_type='branch' rows are NOT mirrored by the metadata triggers, so the
+  //      branch's own DRAFT is the source.
+  //   2. Default branch (git-on or git-off) → any non-stub row. The propagate /
+  //      sync-published triggers mirror app_name/slug/icon/is_public across all
+  //      non-stub version_type='version' rows, so every default-branch row carries the
+  //      same metadata — no need to single out the DRAFT.
   async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
@@ -301,22 +299,19 @@ export class VersionRepository extends Repository<AppVersion> {
       return version;
     }
 
-    const base = () =>
-      repo
-        .createQueryBuilder('av')
-        .where('av.app_id = :appId', { appId: app.id })
-        .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
-        .andWhere('av.is_stub = false');
-
-    const draft = await base()
-      .andWhere('av.version_type = :versionType', { versionType: AppVersionType.VERSION })
-      .andWhere('av.status = :status', { status: AppVersionStatus.DRAFT })
-      .orderBy('av.is_git_sync', 'DESC')
+    // Default branch: app_name/slug/icon/is_public are mirrored across all non-stub
+    // version_type='version' rows by the propagate / sync-published triggers, so any
+    // non-stub default-branch row carries the same values — no need to single out the
+    // DRAFT. Pick the most relevant row (is_synced first, then most recent). Works
+    // the same git-on or git-off.
+    return repo
+      .createQueryBuilder('av')
+      .where('av.app_id = :appId', { appId: app.id })
+      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+      .andWhere('av.is_stub = false')
+      .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
-    if (draft) return draft;
-
-    return base().orderBy('av.is_git_sync', 'DESC').addOrderBy('av.updated_at', 'DESC').getOne();
   }
 
   overlayMetadata(app: App, version: AppVersion | null): void {

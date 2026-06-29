@@ -25,7 +25,7 @@ export class BackfillPublishedVersionMetadataFromDraft1781740850000 implements M
 
     // Canonical DRAFT per app: the non-stub DRAFT version_type='version' row. If more
     // than one exists (git-sync-off can have several), pick the most recently updated
-    // (is_git_sync is not backfilled at this point, so updated_at is the tiebreaker —
+    // (is_synced is not backfilled at this point, so updated_at is the tiebreaker —
     // matching the sync trigger's selection once flags are uniform). Only rows whose
     // values differ are touched, so the migration is idempotent and minimally noisy.
     await queryRunner.query(`

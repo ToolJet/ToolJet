@@ -137,14 +137,9 @@ export class AppVersion extends BaseEntity {
   isPublic: boolean;
 
   // Static origin marker: the row originated from git sync (branch_id was set before backfill).
+  // Also the canonical-row tiebreaker: synced rows sort first when resolving metadata.
   @Column({ name: 'is_synced', default: false })
   isSynced: boolean;
-
-  // Operational flag toggled when git sync is turned on/off. When git sync is ON exactly one
-  // non-stub DRAFT version_type='version' row per (app, default branch) carries is_git_sync=true
-  // — the canonical metadata row. Added in MakeAppVersionBranchIdNotNullAndGitSyncFlags.
-  @Column({ name: 'is_git_sync', default: false })
-  isGitSync: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
