@@ -637,7 +637,7 @@ export default function generateColumnsData({
             ),
             timeZoneValue: column?.timeZoneValue,
             timeZoneDisplay: column?.timeZoneDisplay,
-            unixTimestamp: column?.unixTimestamp,
+            unixTimestamp: column?.unixTimestamp ?? 'seconds',
             parseInUnixTimestamp,
             isTimeChecked,
           };
