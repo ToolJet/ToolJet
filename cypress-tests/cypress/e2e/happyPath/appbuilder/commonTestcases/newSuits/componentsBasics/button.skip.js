@@ -80,7 +80,7 @@ describe('Button Component Tests', { testIsolation: false }, () => {
         cy.apiLogin();
         cy.apiCreateApp(`${fake.companyName}-Button-App`);
         cy.openApp();
-        cy.dragAndDropWidget("Button", 500, 500);
+        cy.dragAndDropWidget("Button", 500, 100);
         cy.get('[data-cy="query-manager-toggle-button"]').click();
     });
 
