@@ -11,14 +11,15 @@ import {
   saveEntity,
   findEntity,
   updateEntity,
-} from 'test-helper';
-import * as request from 'supertest';
-import { Folder } from '@entities/folder.entity';
-import { FolderApp } from '@entities/folder_app.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { AppVersion } from '@entities/app_version.entity';
-import { App } from '@entities/app.entity';
-import { APP_TYPES } from '@modules/apps/constants';
+} from "test-helper";
+import * as request from "supertest";
+import { Folder } from "@entities/folder.entity";
+import { FolderApp } from "@entities/folder_app.entity";
+import { WorkspaceBranch } from "@entities/workspace_branch.entity";
+import { AppVersion } from "@entities/app_version.entity";
+import { App } from "@entities/app.entity";
+import { APP_TYPES } from "@modules/apps/constants";
+import { OrganizationGitSync } from "@entities/organization_git_sync.entity";
 
 async function setupOrganization(nestApp) {
   const adminUserData = await createUser(nestApp, {
@@ -127,17 +128,100 @@ describe('FolderAppsController', () => {
           .set('Cookie', loggedUser.tokenCookie)
           .send({ folder_id: folder.id, app_id: app.id });
 
-        expect(first.statusCode).toBe(201);
+        const firstResponse = await request(nestApp.getHttpServer())
+          .post(`/api/folder-apps`)
+          .set("tj-workspace-id", adminUser.defaultOrganizationId)
+          .set("Cookie", loggedUser.tokenCookie)
+          .send({ folder_id: folder.id, app_id: app.id });
+        expect(firstResponse.statusCode).toBe(201);
 
-        const second = await request(nestApp.getHttpServer())
+        // create() is idempotent for same app+folder — returns the existing entry.
+        const response = await request(nestApp.getHttpServer())
           .post(`/api/folder-apps`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie)
           .send({ folder_id: folder.id, app_id: app.id });
 
-        expect(second.statusCode).toBe(201);
-        expect(second.body.id).toBe(first.body.id);
-        expect(second.body).toMatchObject({ app_id: app.id, folder_id: folder.id });
+        expect(response.statusCode).toBe(201);
+        expect(response.body.id).toBe(firstResponse.body.id);
+      });
+
+      it("should add multiple apps to a folder via app_ids", async () => {
+        const { adminUser } = await setupOrganization(nestApp);
+        const loggedUser = await login(nestApp);
+
+        const folder = await saveEntity(Folder, {
+          name: "bulk-folder",
+          organizationId: adminUser.organizationId,
+        } as any);
+
+        const app2 = await createApplication(nestApp, {
+          user: adminUser,
+          name: "bulk app 2",
+          isPublic: false,
+        }, false);
+        const app3 = await createApplication(nestApp, {
+          user: adminUser,
+          name: "bulk app 3",
+          isPublic: false,
+        }, false);
+
+        const response = await request(nestApp.getHttpServer())
+          .post("/api/folder-apps")
+          .set("tj-workspace-id", adminUser.defaultOrganizationId)
+          .set("Cookie", loggedUser.tokenCookie)
+          .send({ folder_id: folder.id, app_ids: [app2.id, app3.id] });
+
+        expect(response.statusCode).toBe(201);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toHaveLength(2);
+        // bulkCreate does not call decamelizeKeys so the response is camelCase
+        expect(response.body.map((fa) => fa.appId).sort()).toEqual(
+          [app2.id, app3.id].sort(),
+        );
+        expect(response.body.every((fa) => fa.folderId === folder.id)).toBe(true);
+      });
+
+      it("should move apps from another folder when bulk-adding to a new one", async () => {
+        const { adminUser } = await setupOrganization(nestApp);
+        const loggedUser = await login(nestApp);
+
+        const sourceFolder = await saveEntity(Folder, {
+          name: "bulk-source-folder",
+          organizationId: adminUser.organizationId,
+        } as any);
+        const targetFolder = await saveEntity(Folder, {
+          name: "bulk-target-folder",
+          organizationId: adminUser.organizationId,
+        } as any);
+
+        const app1 = await createApplication(nestApp, {
+          user: adminUser,
+          name: "bulk-move-app-1",
+          isPublic: false,
+        }, false);
+        const app2 = await createApplication(nestApp, {
+          user: adminUser,
+          name: "bulk-move-app-2",
+          isPublic: false,
+        }, false);
+
+        // Seed apps in source folder directly (branchId=null, no git-sync context).
+        await saveEntity(FolderApp, { folderId: sourceFolder.id, appId: app1.id } as any);
+        await saveEntity(FolderApp, { folderId: sourceFolder.id, appId: app2.id } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .post("/api/folder-apps")
+          .set("tj-workspace-id", adminUser.defaultOrganizationId)
+          .set("Cookie", loggedUser.tokenCookie)
+          .send({ folder_id: targetFolder.id, app_ids: [app1.id, app2.id] });
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.every((fa) => fa.folderId === targetFolder.id)).toBe(true);
+
+        // Source folder entries must be gone.
+        const remaining = await findEntity(FolderApp, { folderId: sourceFolder.id });
+        expect(remaining).toBeNull();
       });
     });
 
@@ -238,19 +322,24 @@ describe('FolderAppsController', () => {
           false
         );
 
-        // Create versions on specific branches
-        const versionA = await createApplicationVersion(nestApp, moduleA, { name: 'v1' });
+        // Create versions on specific branches.
+        // chk_app_versions_branch_metadata: branch_id NOT NULL requires app_name + slug NOT NULL.
+        const versionA = await createApplicationVersion(nestApp, moduleA, {
+          name: "v1",
+        });
         await updateEntity(AppVersion, versionA.id, {
           branchId: branchA.id,
-          appName: 'Module A',
-          slug: `module-a-${versionA.id}`,
+          appName: moduleA.name,
+          slug: moduleA.id,
         } as any);
 
-        const versionB = await createApplicationVersion(nestApp, moduleB, { name: 'v1' });
+        const versionB = await createApplicationVersion(nestApp, moduleB, {
+          name: "v1",
+        });
         await updateEntity(AppVersion, versionB.id, {
           branchId: branchB.id,
-          appName: 'Module B',
-          slug: `module-b-${versionB.id}`,
+          appName: moduleB.name,
+          slug: moduleB.id,
         } as any);
 
         // Create a module folder and add modules to it (branch-scoped entries)
@@ -260,8 +349,17 @@ describe('FolderAppsController', () => {
           organizationId: adminUser.organizationId,
         });
 
-        await saveEntity(FolderApp, { appId: moduleA.id, folderId: moduleFolder.id, branchId: branchA.id } as any);
-        await saveEntity(FolderApp, { appId: moduleB.id, folderId: moduleFolder.id, branchId: branchB.id } as any);
+        // Seed FolderApp rows with explicit branchIds — the API sets branchId=null.
+        await saveEntity(FolderApp, {
+          folderId: moduleFolder.id,
+          appId: moduleA.id,
+          branchId: branchA.id,
+        } as any);
+        await saveEntity(FolderApp, {
+          folderId: moduleFolder.id,
+          appId: moduleB.id,
+          branchId: branchB.id,
+        } as any);
 
         // Fetch modules from folder with branchId=A
         const responseBranchA = await request(nestApp.getHttpServer())
@@ -312,11 +410,13 @@ describe('FolderAppsController', () => {
           false
         );
 
-        const versionA = await createApplicationVersion(nestApp, moduleA, { name: 'v1' });
+        const versionA = await createApplicationVersion(nestApp, moduleA, {
+          name: "v1",
+        });
         await updateEntity(AppVersion, versionA.id, {
           branchId: branchA.id,
-          appName: 'Isolated Module',
-          slug: `isolated-module-${versionA.id}`,
+          appName: moduleA.name,
+          slug: moduleA.id,
         } as any);
 
         const moduleFolder = await createFolder(nestApp, {
@@ -325,14 +425,21 @@ describe('FolderAppsController', () => {
           organizationId: adminUser.organizationId,
         });
 
-        // Add module but query with different branch
+        // Seed the folder-app with the explicit branchId so the branch filter is meaningful.
+        // addAppToFolder goes through the API and sets branchId=null; a null entry
+        // would return 0 for *any* branch query, making the assertion vacuously true.
+        await saveEntity(FolderApp, {
+          folderId: moduleFolder.id,
+          appId: moduleA.id,
+          branchId: branchA.id,
+        } as any);
+
+        // Query with a branch that has no modules in this folder.
         const branchC = await saveEntity(WorkspaceBranch, {
           name: 'other-branch',
           organizationId: adminUser.organizationId,
           isDefault: false,
         } as any);
-
-        await addAppToFolder(nestApp, moduleA, moduleFolder);
 
         const response = await request(nestApp.getHttpServer())
           .get('/api/apps')
@@ -474,9 +581,182 @@ describe('FolderAppsController', () => {
 
         expect(response.statusCode).toBe(403);
       });
+
+      it("should allow a builder to add their own app to their own folder via single-app path", async () => {
+        const builderData = await createUser(nestApp, {
+          email: "builder-owns-both-single@tooljet.io",
+          groups: ["builder"],
+        });
+        const builderUser = builderData.user;
+        const { tokenCookie: builderCookie } = await login(
+          nestApp,
+          "builder-owns-both-single@tooljet.io",
+          "password",
+        );
+
+        const ownedApp = await createApplication(
+          nestApp,
+          { user: builderUser, name: "builder owned app single" },
+          false,
+        );
+        const ownedFolder = await saveEntity(Folder, {
+          name: "builder owned folder single",
+          type: APP_TYPES.FRONT_END,
+          organizationId: builderUser.organizationId,
+          createdBy: builderUser.id,
+        } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .post("/api/folder-apps")
+          .set("tj-workspace-id", builderUser.defaultOrganizationId)
+          .set("Cookie", builderCookie)
+          .send({ folder_id: ownedFolder.id, app_id: ownedApp.id });
+
+        expect(response.statusCode).toBe(201);
+      });
+
+      it("should allow a builder to bulk-add their own apps to their own folder", async () => {
+        const builderData = await createUser(nestApp, {
+          email: "builder-owns-both-bulk@tooljet.io",
+          groups: ["builder"],
+        });
+        const builderUser = builderData.user;
+        const { tokenCookie: builderCookie } = await login(
+          nestApp,
+          "builder-owns-both-bulk@tooljet.io",
+          "password",
+        );
+
+        const ownedApp1 = await createApplication(
+          nestApp,
+          { user: builderUser, name: "builder bulk app 1" },
+          false,
+        );
+        const ownedApp2 = await createApplication(
+          nestApp,
+          { user: builderUser, name: "builder bulk app 2" },
+          false,
+        );
+        const ownedFolder = await saveEntity(Folder, {
+          name: "builder owned folder bulk",
+          type: APP_TYPES.FRONT_END,
+          organizationId: builderUser.organizationId,
+          createdBy: builderUser.id,
+        } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .post("/api/folder-apps")
+          .set("tj-workspace-id", builderUser.defaultOrganizationId)
+          .set("Cookie", builderCookie)
+          .send({ folder_id: ownedFolder.id, app_ids: [ownedApp1.id, ownedApp2.id] });
+
+        expect(response.statusCode).toBe(201);
+      });
+
+      it("should not allow a builder to bulk-add apps to a folder they do not own", async () => {
+        const adminUserData = await createUser(nestApp, {
+          email: "admin-bulk-gate@tooljet.io",
+          groups: ["end-user", "admin"],
+        });
+        const adminUser = adminUserData.user;
+        const organization = adminUserData.organization;
+
+        await createUser(nestApp, {
+          email: "builder-no-folder-bulk@tooljet.io",
+          groups: ["builder"],
+          organization,
+        });
+        const { tokenCookie: builderCookie } = await login(
+          nestApp,
+          "builder-no-folder-bulk@tooljet.io",
+          "password",
+        );
+
+        const app1 = await createApplication(
+          nestApp,
+          { user: adminUser, name: "admin app bulk 1" },
+          false,
+        );
+        const adminFolder = await saveEntity(Folder, {
+          name: "admin owned folder bulk",
+          type: APP_TYPES.FRONT_END,
+          organizationId: adminUser.organizationId,
+          createdBy: adminUser.id,
+        } as any);
+
+        const response = await request(nestApp.getHttpServer())
+          .post("/api/folder-apps")
+          .set("tj-workspace-id", adminUser.defaultOrganizationId)
+          .set("Cookie", builderCookie)
+          .send({ folder_id: adminFolder.id, app_ids: [app1.id] });
+
+        expect(response.statusCode).toBe(403);
+      });
     });
 
-      it('should align folder count with returned modules across pagination', async () => {
+    it("should align folder count with returned modules across pagination", async () => {
+      const { adminUser } = await setupOrganization(nestApp);
+      const loggedUser = await login(nestApp);
+
+      const branchA = await saveEntity(WorkspaceBranch, {
+        name: "pagination-branch",
+        organizationId: adminUser.organizationId,
+        isDefault: false,
+      } as any);
+
+      // Create 3 modules, all on branchA
+      const modules = [];
+      for (let i = 0; i < 3; i++) {
+        const mod = await createApplication(
+          nestApp,
+          {
+            user: adminUser,
+            name: `Module ${i + 1}`,
+            type: APP_TYPES.MODULE,
+          },
+          false,
+        );
+        const version = await createApplicationVersion(nestApp, mod, {
+          name: "v1",
+        });
+        await updateEntity(AppVersion, version.id, {
+          branchId: branchA.id,
+          appName: mod.name,
+          slug: mod.id,
+        } as any);
+        modules.push(mod);
+      }
+
+      const moduleFolder = await createFolder(nestApp, {
+        name: "Pagination Folder",
+        type: APP_TYPES.MODULE,
+        organizationId: adminUser.organizationId,
+      });
+
+      for (const mod of modules) {
+        await saveEntity(FolderApp, {
+          folderId: moduleFolder.id,
+          appId: mod.id,
+          branchId: branchA.id,
+        } as any);
+      }
+
+      // Fetch with page 1 (9 per page, so all 3 should fit)
+      const response = await request(nestApp.getHttpServer())
+        .get("/api/apps")
+        .query({ folder: moduleFolder.id, type: "module", page: 1 })
+        .set("tj-workspace-id", adminUser.defaultOrganizationId)
+        .set("x-branch-id", branchA.id)
+        .set("Cookie", loggedUser.tokenCookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.apps).toHaveLength(3);
+      expect(response.body.meta.folder_count).toBe(3);
+      expect(response.body.meta.total_pages).toBe(1);
+    });
+
+    describe("GET /api/folder-apps | Default-branch fallback in git-sync orgs", () => {
+      it("should show only default-branch apps when no x-branch-id header and git-sync is configured", async () => {
         const { adminUser } = await setupOrganization(nestApp);
         const loggedUser = await login(nestApp);
 
@@ -486,50 +766,69 @@ describe('FolderAppsController', () => {
           isDefault: false,
         } as any);
 
-        // Create 3 modules, all on branchA
-        const modules = [];
-        for (let i = 0; i < 3; i++) {
-          const mod = await createApplication(
-            nestApp,
-            {
-              user: adminUser,
-              name: `Module ${i + 1}`,
-              type: APP_TYPES.MODULE,
-            },
-            false
-          );
-          const version = await createApplicationVersion(nestApp, mod, { name: 'v1' });
-          await updateEntity(AppVersion, version.id, {
-            branchId: branchA.id,
-            appName: `Module ${i + 1}`,
-            slug: `module-${i + 1}-${version.id}`,
-          } as any);
-          modules.push(mod);
-        }
+        await saveEntity(OrganizationGitSync, {
+          organizationId: adminUser.organizationId,
+        } as any);
+
+        const moduleOnDefault = await createApplication(
+          nestApp,
+          {
+            user: adminUser,
+            name: "DefaultBranchModule",
+            type: APP_TYPES.MODULE,
+          },
+          false,
+        );
+        const versionDefault = await createApplicationVersion(
+          nestApp,
+          moduleOnDefault,
+          { name: "v1" },
+        );
+        await updateEntity(AppVersion, versionDefault.id, {
+          branchId: defaultBranch.id,
+          appName: moduleOnDefault.name,
+          slug: moduleOnDefault.id,
+        } as any);
+
+        const moduleOnFeature = await createApplication(
+          nestApp,
+          {
+            user: adminUser,
+            name: "FeatureBranchModule",
+            type: APP_TYPES.MODULE,
+          },
+          false,
+        );
+        const versionFeature = await createApplicationVersion(
+          nestApp,
+          moduleOnFeature,
+          { name: "v1" },
+        );
+        await updateEntity(AppVersion, versionFeature.id, {
+          branchId: featureBranch.id,
+          appName: moduleOnFeature.name,
+          slug: moduleOnFeature.id,
+        } as any);
 
         const moduleFolder = await createFolder(nestApp, {
           name: 'Pagination Folder',
           type: APP_TYPES.MODULE,
           organizationId: adminUser.organizationId,
         });
-
-        for (const mod of modules) {
-          await saveEntity(FolderApp, { appId: mod.id, folderId: moduleFolder.id, branchId: branchA.id } as any);
-        }
-
-        // Fetch with page 1 (9 per page, so all 3 should fit)
-        const response = await request(nestApp.getHttpServer())
-          .get('/api/apps')
-          .query({ folder: moduleFolder.id, type: 'module', page: 1 })
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('x-branch-id', branchA.id)
-          .set('Cookie', loggedUser.tokenCookie);
-
-        expect(response.statusCode).toBe(200);
-        expect(response.body.apps).toHaveLength(3);
-        expect(response.body.meta.folder_count).toBe(3);
-        expect(response.body.meta.total_pages).toBe(1);
+        // Seed FolderApp rows with explicit branchIds so the branch filter hits.
+        // addAppToFolder goes through the API and sets branchId=null; direct seed is required here.
+        await saveEntity(FolderApp, {
+          folderId: moduleFolder.id,
+          appId: moduleOnDefault.id,
+          branchId: defaultBranch.id,
+        } as any);
+        await saveEntity(FolderApp, {
+          folderId: moduleFolder.id,
+          appId: moduleOnFeature.id,
+          branchId: featureBranch.id,
+        } as any);
       });
     });
+  });
   });
 });
