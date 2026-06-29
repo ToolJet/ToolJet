@@ -1,0 +1,82 @@
+name: Server — affected tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'server/**'
+
+env:
+  FORCE_COLOR: true
+  NODE_OPTIONS: "--max-old-space-size=4096"
+  NODE_ENV: test
+  # Main app DB
+  PG_HOST: postgres
+  PG_PORT: 5432
+  PG_USER: postgres
+  PG_PASS: postgres
+  PG_DB: tooljet_test
+  # ToolJet DB (TJDB feature)
+  TOOLJET_DB: tooljet_db_test
+  TOOLJET_DB_HOST: postgres
+  TOOLJET_DB_PORT: 5432
+  TOOLJET_DB_USER: postgres
+  TOOLJET_DB_PASS: postgres
+  TOOLJET_DB_RECONFIG: true
+  # App secrets required for NestJS bootstrap (e2e)
+  LOCKBOX_MASTER_KEY: lockbox-master-key
+  SECRET_KEY_BASE: secrret-key-base
+
+jobs:
+  server-affected-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container: node:18.18.2-bullseye
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout (full history for merge-base)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch origin/main for merge-base
+        run: git fetch origin main
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-server-
+
+      - name: Install system deps
+        run: apt update && apt install -y postgresql-client
+
+      - name: Install plugins
+        run: |
+          npm --prefix plugins ci
+          npm --prefix plugins run create:client && npm --prefix plugins run create:server
+          npm --prefix plugins run build:packages && npm --prefix plugins run build:server
+
+      - name: Install server deps
+        run: npm --prefix server ci
+
+      - name: Create databases (tooljet_test + tooljet_db_test)
+        run: npm --prefix server run db:create
+
+      - name: Run main DB migrations
+        run: npm --prefix server run db:migrate
+
+      - name: Run affected server tests (unit + e2e)
+        run: bash scripts/test-changed.sh --e2e
