@@ -621,8 +621,11 @@ export default function generateColumnsData({
           const a = rowA.getValue(columnId);
           const b = rowB.getValue(columnId);
 
-          if (!a) return 1;
-          if (!b) return -1;
+          const aIsEmpty = a === null || a === undefined || a === '';
+          const bIsEmpty = b === null || b === undefined || b === '';
+          if (aIsEmpty && bIsEmpty) return 0;
+          if (aIsEmpty) return 1;
+          if (bIsEmpty) return -1;
 
           const isTimeChecked = getResolvedValue(column?.isTimeChecked) ?? false;
           const isDateSelectionEnabled = getResolvedValue(column?.isDateSelectionEnabled) ?? true;
