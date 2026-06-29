@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -6,11 +6,9 @@ import { decodeEntities } from '@/_helpers/utils';
 import { userService } from '@/_services/user.service';
 import { authenticationService } from '@/_services/authentication.service';
 
-import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import Layout from '@/_ui/Layout';
 
-function SettingsPage(props) {
+function SettingsPage() {
   const currentSession = authenticationService.currentSessionValue;
   const email = currentSession?.current_user.email;
   const [fullName, setFullName] = React.useState(
@@ -24,14 +22,8 @@ function SettingsPage(props) {
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
   const [helperText, setHelperText] = useState('');
   const [validPassword, setValidPassword] = useState(true);
-
-  useEffect(() => {
-    updateSidebarNAV('');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   function joinNames(firstName, lastName) {
     if (lastName && lastName.trim() !== '') {
@@ -177,7 +169,7 @@ function SettingsPage(props) {
   };
 
   return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+    <>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
           <div style={{ height: `calc(100vh - 2.5rem - 48px)` }}>
@@ -337,7 +329,7 @@ function SettingsPage(props) {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
 

@@ -6,10 +6,9 @@ import { authenticationService } from '@/_services';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { fetchEdition } from '@/modules/common/helpers/utils';
 
-import Layout from '@/_ui/Layout';
 import ManageOrgConstantsSettings from '@/modules/WorkspaceSettings/components/ManageOrgConstantsSettings/ManageOrgConstantsSettings';
 
-export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
+export default function WorkspaceConstants({ darkMode }) {
   const navigate = useNavigate();
   const { super_admin } = authenticationService?.currentSessionValue ?? {};
 
@@ -25,10 +24,10 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
     }
   }, [canCreateVariableOrConstant]);
   return (
-    <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
+    <>
       <div>
         <ManageOrgConstantsSettings darkMode={darkMode} />
       </div>
-    </Layout>
+    </>
   );
 }
