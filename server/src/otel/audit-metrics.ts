@@ -35,11 +35,11 @@ let appErrorsCounter: any;
 // let datasourceDeletionsCounter: any;
 
 const ACTIVITY_WINDOW_MS = 15 * 60 * 1000;
-const appActiveUsers = new Map<string, Map<string, number>>(); // appId -> Map<userId, lastSeen>
+const appActiveUsers = new Map<string, { name: string; users: Map<string, number> }>(); // appId -> { name, users: Map<userId, lastSeen> }
 
 // Store app success/failure counts for success rate calculation
-// Key format: "appId:app_mode:environment" -> { success: number, failure: number, lastUpdate: number }
-const appSuccessTracking = new Map<string, { success: number; failure: number; lastUpdate: number }>();
+// Key format: "appId:app_mode:environment" -> { success, failure, lastUpdate, appName }
+const appSuccessTracking = new Map<string, { success: number; failure: number; lastUpdate: number; appName: string }>();
 
 /**
  * Initialize audit log metrics
@@ -85,7 +85,8 @@ export const initializeAuditLogMetrics = () => {
     const now = Date.now();
     const cutoffTime = now - ACTIVITY_WINDOW_MS;
 
-    for (const [appId, users] of appActiveUsers.entries()) {
+    for (const [appId, entry] of appActiveUsers.entries()) {
+      const { name: appName, users } = entry;
       // Clean up inactive users
       for (const [userId, lastSeen] of users.entries()) {
         if (lastSeen < cutoffTime) {
@@ -97,6 +98,7 @@ export const initializeAuditLogMetrics = () => {
       if (users.size > 0) {
         observableResult.observe(users.size, {
           app_id: appId,
+          app_name: appName,
         });
       } else {
         // Remove empty app entries
@@ -125,6 +127,7 @@ export const initializeAuditLogMetrics = () => {
 
         observableResult.observe(successRate, {
           app_id: appId,
+          app_name: stats.appName,
           app_mode: appMode,
           environment: environment,
         });
@@ -277,12 +280,12 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
 
   // Track active users per app
   if (appId !== 'unknown') {
-    trackAppActiveUser(appId, userId);
+    trackAppActiveUser(appId, userId, appName);
   }
 
   // Track app success rate
   if (appId !== 'unknown' && appMode !== 'unknown' && environment !== 'unknown') {
-    trackAppSuccess(appId, appMode, environment, status === 'success');
+    trackAppSuccess(appId, appMode, environment, status === 'success', appName);
   }
 }
 
@@ -309,25 +312,28 @@ function recordUserSessionMetrics(auditLogData: AuditLogFields) {
 /**
  * Track active user for an app
  */
-function trackAppActiveUser(appId: string, userId: string) {
+function trackAppActiveUser(appId: string, userId: string, appName: string) {
   if (!appActiveUsers.has(appId)) {
-    appActiveUsers.set(appId, new Map());
+    appActiveUsers.set(appId, { name: appName, users: new Map() });
+  } else {
+    appActiveUsers.get(appId)!.name = appName;
   }
-  appActiveUsers.get(appId)!.set(userId, Date.now());
+  appActiveUsers.get(appId)!.users.set(userId, Date.now());
 }
 
 /**
  * Track app success/failure for success rate calculation
  */
-function trackAppSuccess(appId: string, appMode: string, environment: string, isSuccess: boolean) {
+function trackAppSuccess(appId: string, appMode: string, environment: string, isSuccess: boolean, appName: string) {
   const key = `${appId}:${appMode}:${environment}`;
   const now = Date.now();
 
   if (!appSuccessTracking.has(key)) {
-    appSuccessTracking.set(key, { success: 0, failure: 0, lastUpdate: now });
+    appSuccessTracking.set(key, { success: 0, failure: 0, lastUpdate: now, appName });
   }
 
   const stats = appSuccessTracking.get(key)!;
+  stats.appName = appName;
   if (isSuccess) {
     stats.success += 1;
   } else {
@@ -468,9 +474,9 @@ export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
     }
 
     if (appId && appId !== 'unknown') {
-      trackAppActiveUser(appId, userId);
+      trackAppActiveUser(appId, userId, appName);
       if (app_mode !== 'unknown' && environment !== 'unknown') {
-        trackAppSuccess(appId, app_mode, environment, status === 'success');
+        trackAppSuccess(appId, app_mode, environment, status === 'success', appName);
       }
     }
 
