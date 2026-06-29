@@ -491,9 +491,11 @@ describe('FoldersController', () => {
 
         folders = response.body.folders;
 
-        // In EE with granular folder permissions, app-read access alone does not
-        // grant folder visibility — an explicit folder-level grant is required.
-        expect(folders).toEqual([]);
+        // App-level access surfaces the containing folder: the user can see "App in
+        // folder" in Folder1, so Folder1 appears. Folder2's app is not accessible,
+        // Folder3 and Folder4 are empty — none of those are surfaced.
+        expect(new Set(folders.map((f) => f.name))).toEqual(new Set(['Folder1']));
+        expect(findFolderAppsIn(folders, 'Folder1')).toHaveLength(1);
       });
     });
 
@@ -1145,8 +1147,8 @@ describe('FoldersController', () => {
         expect(response.body.folders).toEqual([]);
       });
 
-      // TC3: end-user with app-level perm but no folder perm still sees nothing (EE)
-      it("end-user with only app-level permission but no folder permission sees no folders", async () => {
+      // TC3: end-user with app-level perm but no folder perm — folder IS surfaced (EE)
+      it("end-user with only app-level permission but no folder permission sees the containing folder", async () => {
         const adminData = await createUser(nestApp, {
           email: "admin@tooljet.io",
         });
@@ -1188,7 +1190,10 @@ describe('FoldersController', () => {
           .set("Cookie", endUserLogin.tokenCookie);
 
         expect(response.statusCode).toBe(200);
-        expect(response.body.folders).toEqual([]);
+        // App-level access surfaces the containing folder — explicit folder permission is not required.
+        expect(response.body.folders).toHaveLength(1);
+        expect(response.body.folders[0].name).toBe("folder-app-only");
+        expect(response.body.folders[0].count).toBe(1);
       });
 
       // TC4: end-user with canViewApps on a specific folder sees only that folder
