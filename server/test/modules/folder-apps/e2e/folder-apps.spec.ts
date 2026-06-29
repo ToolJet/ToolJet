@@ -760,8 +760,13 @@ describe('FolderAppsController', () => {
         const { adminUser } = await setupOrganization(nestApp);
         const loggedUser = await login(nestApp);
 
-        const branchA = await saveEntity(WorkspaceBranch, {
-          name: 'pagination-branch',
+        const defaultBranch = await saveEntity(WorkspaceBranch, {
+          name: 'main',
+          organizationId: adminUser.organizationId,
+          isDefault: true,
+        } as any);
+        const featureBranch = await saveEntity(WorkspaceBranch, {
+          name: 'feature',
           organizationId: adminUser.organizationId,
           isDefault: false,
         } as any);
@@ -811,7 +816,7 @@ describe('FolderAppsController', () => {
         } as any);
 
         const moduleFolder = await createFolder(nestApp, {
-          name: 'Pagination Folder',
+          name: 'Default-branch Folder',
           type: APP_TYPES.MODULE,
           organizationId: adminUser.organizationId,
         });
@@ -827,6 +832,23 @@ describe('FolderAppsController', () => {
           appId: moduleOnFeature.id,
           branchId: featureBranch.id,
         } as any);
+
+        // No x-branch-id → backend resolves the default branch and filters by it.
+        const response = await request(nestApp.getHttpServer())
+          .get("/api/folder-apps")
+          .query({ type: APP_TYPES.MODULE })
+          .set("tj-workspace-id", adminUser.defaultOrganizationId)
+          .set("Cookie", loggedUser.tokenCookie);
+
+        expect(response.statusCode).toBe(200);
+        const folderNames = response.body.folders.map((f: any) => f.name);
+        expect(folderNames).toContain("Default-branch Folder");
+
+        const returnedFolder = response.body.folders.find(
+          (f: any) => f.name === "Default-branch Folder",
+        );
+        // Only the default-branch module should be visible; the feature-branch one is filtered out.
+        expect(returnedFolder.count).toBe(1);
       });
     });
   });
