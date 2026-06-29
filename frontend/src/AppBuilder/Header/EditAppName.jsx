@@ -33,13 +33,15 @@ function EditAppName() {
       workspaceActiveBranch.isDefault ||
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType !== 'branch';
+  const isVersionUnsynced = selectedVersion?.isSynced === false;
   // Workspace-level git sync: every app in a git-enabled org participates in git.
   // Default branch is read-only (rename must happen on a feature branch); rename also
   // requires a draft version regardless of git state.
-  const isRenameDisabled = !isGitSyncEnabled ? false : !isDraftVersion || isOnDefaultBranch;
+  // Exception: unsynced apps (pre-git / never pushed) may be renamed even on default branch.
+  const isRenameDisabled = !isGitSyncEnabled ? false : !isDraftVersion || (isOnDefaultBranch && !isVersionUnsynced);
 
   const getDisabledTooltipMessage = () => {
-    if (isGitSyncEnabled && isOnDefaultBranch) {
+    if (isGitSyncEnabled && isOnDefaultBranch && !isVersionUnsynced) {
       return "Renaming isn't allowed on default branch. Switch branch to update name.";
     }
     if (!isDraftVersion && isGitSyncEnabled) {
