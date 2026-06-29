@@ -3,6 +3,21 @@ import ArrowRight from './Icons/ArrowRight.svg';
 import RightFlex from './Icons/Right-flex.svg';
 import { renderDatatypeIcon } from './constants';
 
+type KeyIcon = {
+  icon: string;
+  columnName: string;
+};
+
+type ChangesComponentProps = {
+  currentPrimaryKeyIcons?: Record<string, KeyIcon>;
+  newPrimaryKeyIcons?: Record<string, KeyIcon>;
+  foreignKeyChanges?: unknown[];
+  existingReferencedTableName?: string;
+  existingReferencedColumnName?: string;
+  currentReferencedTableName?: string;
+  currentReferencedColumnName?: string;
+};
+
 const ChangesComponent = ({
   currentPrimaryKeyIcons = {},
   newPrimaryKeyIcons = {},
@@ -11,7 +26,7 @@ const ChangesComponent = ({
   existingReferencedColumnName = '',
   currentReferencedTableName = '',
   currentReferencedColumnName = '',
-}) => {
+}: ChangesComponentProps) => {
   return (
     <div className="new-changes-container">
       <div className="changes-title">

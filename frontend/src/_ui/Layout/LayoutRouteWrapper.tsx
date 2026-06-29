@@ -5,10 +5,15 @@ import { BreadCrumbContext } from '@/App/App';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import Layout from './index';
 
-const LayoutRouteWrapper = ({ darkMode, switchDarkMode }) => {
+type LayoutRouteWrapperProps = {
+  darkMode: boolean;
+  switchDarkMode: () => void;
+};
+
+const LayoutRouteWrapper = ({ darkMode, switchDarkMode }: LayoutRouteWrapperProps) => {
   const location = useLocation();
 
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext) as { updateSidebarNAV: (value: string) => void };
 
   const initialMountRef = useRef(true);
   const [collapseSidebar, setCollapseSidebar] = useState(false);
