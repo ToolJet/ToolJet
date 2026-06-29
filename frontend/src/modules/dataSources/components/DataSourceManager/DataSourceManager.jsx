@@ -523,8 +523,7 @@ class DataSourceManagerComponent extends React.Component {
         elementsProps={this.props.formProps?.[kind]}
         isWorkspaceBranchLocked={
           this.props.isWorkspaceBranchLocked &&
-          this.state.selectedDataSource?.is_synced !== false &&
-          this.state.selectedDataSource?.isSynced !== false
+          (this.state.selectedDataSource?.is_synced === true || this.state.selectedDataSource?.isSynced === true)
         }
       />
     );
@@ -1161,8 +1160,7 @@ class DataSourceManagerComponent extends React.Component {
                               autoComplete="off"
                               disabled={
                                 (this.props.isWorkspaceBranchLocked &&
-                                  selectedDataSource?.is_synced !== false &&
-                                  selectedDataSource?.isSynced !== false) ||
+                                  (selectedDataSource?.is_synced === true || selectedDataSource?.isSynced === true)) ||
                                 !canUpdateDataSource(selectedDataSource.id) ||
                                 selectedDataSource.is_dummy
                               }
