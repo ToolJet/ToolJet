@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { marketplaceService } from '@/_services';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+
+import { marketplaceService } from '@/_services/marketplace.service';
 
 export function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);

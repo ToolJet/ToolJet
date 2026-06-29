@@ -1,7 +1,7 @@
-import React, { useState, useContext, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
-import { TooljetDatabaseContext } from '../../index';
+import { useTooljetDatabaseContext } from '../../TooljetDatabaseContext';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { FileDropzone } from './FileDropzone';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -18,7 +18,7 @@ function BulkUploadDrawer({
 }) {
   const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { columns, selectedTable } = useContext(TooljetDatabaseContext);
+  const { columns, selectedTable } = useTooljetDatabaseContext();
   const hiddenFileInput = useRef(null);
 
   const onDrop = useCallback((acceptedFiles) => {

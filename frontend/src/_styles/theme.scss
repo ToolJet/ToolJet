@@ -9250,6 +9250,20 @@ tbody {
   }
 }
 
+.layout-header .tj-dashboard-header-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--page-weak);
+  padding-left: 40px;
+  border-bottom: 1px solid var(--border-weak);
+
+  @media only screen and (max-width: 768px) {
+    border-bottom: none;
+  }
+}
+
+
 .dashboard-breadcrumb-header-name:hover {
   text-decoration: none !important;
 }

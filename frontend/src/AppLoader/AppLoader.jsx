@@ -1,9 +1,19 @@
-import React, { useLayoutEffect } from 'react';
+import React, { lazy, useLayoutEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { resetAllStores } from '@/_stores/utils';
-import RenderWorkflow from '@/modules/RenderWorkflow';
+import { TJLoader } from '@/_ui/TJLoader';
+
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
 import RenderAppBuilder from './RenderAppBuilder';
+
+const eeWorkflowEditor = lazy(() => import('@ee/modules/RenderWorkflow'));
+const RenderWorkflow = pickEditionSpecificComponent({
+  ce: () => <Navigate to="/" replace />,
+  ee: eeWorkflowEditor,
+  fallback: <TJLoader />,
+});
 
 const AppLoader = (props) => {
   const { type: appType } = props;

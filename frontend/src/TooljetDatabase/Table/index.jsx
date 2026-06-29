@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useContext, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import cx from 'classnames';
 import { useTable, useRowSelect } from 'react-table';
 import { isBoolean, isEmpty } from 'lodash';
-import { tooljetDatabaseService } from '@/_services';
-import { TooljetDatabaseContext } from '../index';
+import { tooljetDatabaseService } from '@/_services/tooljetDatabase.service';
+import { useTooljetDatabaseContext } from '../TooljetDatabaseContext';
 import { toast } from 'react-hot-toast';
 import { TablePopover } from './ActionsPopover';
 import { CellEditMenu } from '../Menu/CellEditMenu';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { ToolTip } from '@/_components/ToolTip';
 import Skeleton from 'react-loading-skeleton';
 import IndeterminateCheckbox from '@/_ui/IndeterminateCheckbox';
@@ -56,7 +56,7 @@ const Table = ({ collapseSidebar }) => {
     configurations,
     setConfigurations,
     getConfigurationProperty,
-  } = useContext(TooljetDatabaseContext);
+  } = useTooljetDatabaseContext();
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, _setLoading] = useState(false);
