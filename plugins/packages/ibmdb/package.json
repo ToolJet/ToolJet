@@ -1,5 +1,5 @@
 {
-  "name": "@tooljet-plugins/db2",
+  "name": "@tooljet-plugins/ibmdb",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

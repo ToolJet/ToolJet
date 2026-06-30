@@ -6,7 +6,7 @@
   "tj:version": "1.0.0",
   "tj:source": {
     "name": "IBM DB2",
-    "kind": "db2",
+    "kind": "ibmdb",
     "type": "database"
   },
   "properties": {
