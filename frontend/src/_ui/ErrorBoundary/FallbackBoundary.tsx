@@ -76,7 +76,6 @@ class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBo
         ...(ctx && {
           appId: ctx.appId || 'n/a',
           versionId: ctx.versionId || 'n/a',
-          organizationId: ctx.organizationId || 'n/a',
         }),
         ...tags,
       },
@@ -84,7 +83,6 @@ class FallbackBoundary extends React.Component<FallbackBoundaryProps, FallbackBo
         area: label,
         componentStack: errorInfo?.componentStack,
         ...(ctx && {
-          appName: ctx.appName,
           pageId: ctx.pageId,
           environment: ctx.environment,
           mode: ctx.mode,

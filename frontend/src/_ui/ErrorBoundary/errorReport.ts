@@ -1,5 +1,5 @@
 import useStore from '@/AppBuilder/_stores/store';
-import { authenticationService } from '@/_services';
+import { fetchEdition } from '@/modules/common/helpers/utils';
 
 interface ErrorReportInput {
   error?: (Error & { stack?: string }) | null;
@@ -10,10 +10,8 @@ interface ErrorReportInput {
 
 export interface ErrorContext {
   appId?: string;
-  appName?: string;
   versionId?: string;
   pageId?: string;
-  organizationId?: string;
   environment?: string;
   mode?: string;
   tjVersion: string;
@@ -28,7 +26,6 @@ export function getErrorContext(): ErrorContext {
   try {
     const state = useStore.getState() as any;
     context.appId = state?.getAppId?.('canvas');
-    context.appName = state?.appStore?.modules?.canvas?.app?.appName;
     context.versionId = state?.currentVersionId;
     context.pageId = state?.getCurrentPageId?.('canvas');
     context.environment = state?.selectedEnvironment?.name;
@@ -36,31 +33,25 @@ export function getErrorContext(): ErrorContext {
   } catch {
     // store may not be ready; context fields fall back to n/a
   }
-  try {
-    context.organizationId = authenticationService.currentSessionValue?.current_organization_id || undefined;
-  } catch {
-    // session may not be ready
-  }
   return context;
 }
 
 // Builds a copy-pasteable, support-friendly error report from a caught error.
 export function buildErrorReport({ error, errorInfo, label, eventId }: ErrorReportInput = {}): string {
   const ctx = getErrorContext();
+  // Sentry only runs on cloud; the event id is meaningless on CE/EE, so hide it there.
+  const isCloud = fetchEdition() === 'cloud';
 
   const lines = [
     `Area:        ${label || 'Unknown'}`,
     `Error:       ${error?.name || 'Error'}: ${error?.message || String(error || 'Unknown error')}`,
-    `Sentry ID:   ${eventId || 'n/a'}`,
+    ...(isCloud ? [`Sentry ID:   ${eventId || 'n/a'}`] : []),
     `App ID:      ${ctx.appId || 'n/a'}`,
-    `App name:    ${ctx.appName || 'n/a'}`,
     `Version ID:  ${ctx.versionId || 'n/a'}`,
     `Page ID:     ${ctx.pageId || 'n/a'}`,
-    `Org ID:      ${ctx.organizationId || 'n/a'}`,
     `Environment: ${ctx.environment || 'n/a'}`,
     `Mode:        ${ctx.mode || 'n/a'}`,
     `ToolJet:     ${ctx.tjVersion}`,
-    `URL:         ${window?.location?.href || 'n/a'}`,
     `Time:        ${new Date().toISOString()}`,
     '',
     'Stack:',
