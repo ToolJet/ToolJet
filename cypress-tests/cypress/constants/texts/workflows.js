@@ -34,7 +34,7 @@ WHERE table_schema = 'public'
 AND table_type = 'BASE TABLE';`,
   postgresResponseNodeQuery: "return postgresql1.data",
   postgresExpectedValue: "server_side_pagination",
-  
+
   restApiUrl: "http://9.234.17.31:8000/delay/10s",
   restApiResponseNodeQuery: "return restapi1.data",
   restApiExpectedValue: "<!DOCTYPE html>",

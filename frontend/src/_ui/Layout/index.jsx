@@ -15,6 +15,7 @@ import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import UnsavedChangesDialog from '@/modules/dataSources/components/DataSourceManager/UnsavedChangesDialog';
+import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 
 function Layout({
   children,
@@ -84,6 +85,19 @@ function Layout({
     useLicenseStore.getState().actions.fetchFeatureAccess();
     fetchWhiteLabelDetails(authenticationService?.currentSessionValue?.organization_id);
   }, []);
+
+  // Initialize workspace branches store after feature access is available
+  // End users should only see default branch data — skip branch store initialization for them
+  useEffect(() => {
+    if (featureAccess?.gitSync) {
+      const currentSession = authenticationService?.currentSessionValue;
+      const isAdminOrBuilder = currentSession?.admin || currentSession?.user_permissions?.is_builder;
+      const workspaceId = currentSession?.current_organization_id;
+      if (workspaceId && isAdminOrBuilder) {
+        useWorkspaceBranchesStore.getState().actions.initialize(workspaceId);
+      }
+    }
+  }, [featureAccess]);
 
   useEffect(() => {
     let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;

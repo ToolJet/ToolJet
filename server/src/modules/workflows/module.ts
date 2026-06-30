@@ -34,11 +34,11 @@ import { AiModule } from '@modules/ai/module';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { AppPermissionsModule } from '@modules/app-permissions/module';
 import { RolesRepository } from '@modules/roles/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { WorkflowAccessGuard } from './guards/workflow-access.guard';
 import { SubModule } from '@modules/app/sub-module';
 import { UsersModule } from '@modules/users/module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { AppHistoryModule } from '@modules/app-history/module';
 
 const WORKFLOW_SCHEDULE_QUEUE = 'workflow-schedule-queue';
@@ -46,6 +46,10 @@ const WORKFLOW_EXECUTION_QUEUE = 'workflow-execution-queue';
 import { OrganizationRepository } from '@modules/organizations/repository';
 export class WorkflowsModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       WorkflowExecutionsService,
       WorkflowExecutionsController,
@@ -117,7 +121,7 @@ export class WorkflowsModule extends SubModule {
 
     const { OrganizationConstantsService } = await this.getProviders(configs, 'organization-constants', ['service']);
 
-    return {
+    return this.cacheModule(cacheKey, {
       module: WorkflowsModule,
       imports: [
         TypeOrmModule.forFeature([
@@ -181,7 +185,7 @@ export class WorkflowsModule extends SubModule {
         DataSourcesRepository,
         OrganizationConstantRepository,
         VersionRepository,
-        AppGitRepository,
+        OrganizationGitSyncRepository,
         OrganizationRepository,
         AppsService,
         PageService,
@@ -208,17 +212,17 @@ export class WorkflowsModule extends SubModule {
         WorkflowAccessGuard,
         RolesRepository,
         GroupPermissionsRepository,
-        ...(isMainImport ? [
-          WorkflowStreamService,
-          AppsActionsListener,
-          // Only register BullMQ processors and schedule bootstrap when WORKER=true
-          // This allows running dedicated HTTP-only instances and worker instances
-          ...(process.env.WORKER === 'true' ? [
-            WorkflowScheduleProcessor,
-            WorkflowExecutionProcessor,
-            ScheduleBootstrapService,
-          ] : []),
-        ] : []),
+        ...(isMainImport
+          ? [
+              WorkflowStreamService,
+              AppsActionsListener,
+              // Only register BullMQ processors and schedule bootstrap when WORKER=true
+              // This allows running dedicated HTTP-only instances and worker instances
+              ...(process.env.WORKER === 'true'
+                ? [WorkflowScheduleProcessor, WorkflowExecutionProcessor, ScheduleBootstrapService]
+                : []),
+            ]
+          : []),
       ],
       controllers: [
         WorkflowsController,
@@ -227,6 +231,6 @@ export class WorkflowsModule extends SubModule {
         WorkflowSchedulesController,
         WorkflowBundlesController,
       ],
-    };
+    });
   }
 }

@@ -122,6 +122,31 @@ export async function initializeOtel(app: NestExpressApplication, logger: any) {
   }
 }
 
+export async function initializeEnvConfigRegistry(app: NestExpressApplication, logger?: any) {
+  if (!logger) {
+    logger = createLogger('EnvConfigRegistry');
+  }
+  try {
+    const tooljetEdition = getTooljetEdition() as TOOLJET_EDITIONS;
+
+    if (tooljetEdition !== TOOLJET_EDITIONS.EE) {
+      logger.log('Skipping environment config registry initialization for non-EE edition');
+      return;
+    }
+
+    logger.log('Initializing environment config registry...');
+    const importPath = await getImportPath(false, tooljetEdition);
+    const { OrganizationEnvUtilService } = await import(`${importPath}/organization-env/util.service`);
+
+    const orgEnvUtilService = app.get(OrganizationEnvUtilService, { strict: false });
+    await orgEnvUtilService.initialize();
+    logger.log('✅ Environment config registry initialized successfully');
+  } catch (error) {
+    logger.error('❌ Failed to initialize environment config registry:', error);
+    throw error;
+  }
+}
+
 /**
  * Replaces subpath placeholders in static assets
  */

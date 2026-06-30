@@ -23,7 +23,8 @@ import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@whi
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
-import { getPreviewQueryParams } from '@/_helpers/routes';
+import { getPreviewQueryParams, redirectToErrorPage, getSubpath, replaceEditorURL } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 import { useLocation, useParams } from 'react-router-dom';
 import { useMounted } from '@/_hooks/use-mount';
 import useThemeAccess from './useThemeAccess';
@@ -82,6 +83,8 @@ const useAppData = (
   const mounted = useMounted();
   const initModules = useStore((state) => state.initModules);
   moduleMode && !mounted && initModules(moduleId);
+  // Reset per-module slices on in-session pin change — stale graph references old-version IDs.
+  const lastModuleVersionRef = useRef(versionId);
   const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
 
@@ -142,6 +145,13 @@ const useAppData = (
   const setModuleDefinition = useStore((state) => state?.setModuleDefinition ?? noop);
   const getModuleDefinition = useStore((state) => state?.getModuleDefinition ?? noop);
   const deleteModuleDefinition = useStore((state) => state?.deleteModuleDefinition ?? noop);
+  // Subscribe to THIS module's cached definition so the child useAppData effect
+  // re-fires when the parent's pull/version-switch refreshes the cache. Without
+  // this, the effect's deps don't change on pull (versionId stays '' for unpinned)
+  // and the ModuleViewer keeps showing pre-pull content.
+  const cachedModuleDefinitionForApp = useStore((state) =>
+    moduleMode ? state?.modulesStore?.moduleDefinition?.[appId] : null
+  );
 
   const fetchAllModules = useCallback(async () => {
     const allModules = [];
@@ -273,18 +283,63 @@ const useAppData = (
     if (!currentSession) {
       return;
     }
+    let cancelled = false;
+    if (moduleMode && mounted && lastModuleVersionRef.current !== versionId) {
+      initModules(moduleId);
+    }
+    lastModuleVersionRef.current = versionId;
     let appDataPromise;
     const queryParams = moduleMode ? {} : getPreviewQueryParams();
+    const hasPreviewParams = !!(queryParams.version || queryParams.env);
+
+    // Unauthenticated users must not access preview URLs even when the app is public.
+    // load_app=true + authentication_failed=true is the session signal for "public app, no valid JWT".
+    // Without this guard, isPublicAccess below evaluates to true (via the load_app && auth_failed branch)
+    // and fetchAppBySlug is called, serving the released version to unauthenticated preview viewers.
+    if (!moduleMode && hasPreviewParams && currentSession?.load_app && currentSession?.authentication_failed) {
+      const subpath = getSubpath() ?? '';
+      const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `${subpath}/applications/${slug}/login?redirectTo=${redirectTo}`;
+      return;
+    }
+
     const isPublicAccess =
       (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
 
     if (moduleMode) {
-      const moduleDefinition = getModuleDefinition(appId);
-      if (moduleDefinition) {
-        appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+      // The moduleDefinition cached by the parent app reflects the module from the parent's current
+      // branch — not the specific version pinned on this ModuleViewer. Authenticated viewers call the
+      // version API directly to get the correct pinned version. Public (unauthenticated) viewers
+      // can't call that auth-gated API, so they fall back to the cached definition.
+      const isUnauthenticated = currentSession?.load_app && currentSession?.authentication_failed;
+      if (isUnauthenticated) {
+        const moduleDefinition = getModuleDefinition(appId);
+        if (moduleDefinition) {
+          // Deep-clone: Zustand/Immer returns frozen objects, but normalizeQueryTransformationOptions mutates in-place
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(moduleDefinition)));
+        } else {
+          // versionId is the version's module_reference_id (uuid) when pinned, '' when unpinned.
+          // The server resolver handles either; the URL builder omits the `ref` param when empty.
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        }
+      } else if (versionId) {
+        // Pinned: call the by-correlation endpoint with the module_reference_id ref.
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
-        appDataPromise = appService.fetchApp(appId);
+        // Unpinned: in git-sync mode, prefer the parent app's cached module definition
+        // (already loaded for the parent's branch context — matches "follow my branch" semantics).
+        // In non-git-sync mode, skip the cache — it may hold a released version rather than
+        // the active draft. Always hit the server so the draft-preference resolver runs.
+        const orgGit = useStore.getState().orgGit;
+        const isGitSyncEnabled =
+          orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+        const cachedDefinition = isGitSyncEnabled ? getModuleDefinition(appId) : null;
+        if (cachedDefinition) {
+          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
+        } else {
+          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
+        }
       }
     } else {
       if (isPublicAccess) {
@@ -299,8 +354,21 @@ const useAppData = (
     // const appDataPromise = appService.fetchApp(appId);
     appDataPromise
       .then(async (result) => {
+        if (cancelled) return;
+        // Reset the AppBuilder store before populating the new app. The dependency graph and
+        // resolvedStore are module-level singletons that are NOT reset between apps; on clone -> open
+        // the graph still holds the previous app's edges, so setResolvedGlobals below fires a
+        // dependency cascade over them before initDependencyGraph rebuilds — dereferencing resolved
+        // entries that don't exist in the new app and throwing (caught + swallowed -> blank editor).
+        // cleanUpStore installs a fresh graph + clears resolved values so the cascade starts clean.
+        // Canvas-only (mirrors the version-change effect's own cleanUpStore); modules manage their own.
+        if (!moduleMode) cleanUpStore(false);
         let appData = { ...result };
-        let editorEnvironment = result.editorEnvironment;
+        // The module-by-name endpoint returns the module alone, without `editorEnvironment`
+        // (that field is only populated by the parent app's fetchApp response). Fall back to
+        // the environmentId prop so downstream `.id` access doesn't throw and surface a
+        // misleading "Error fetching module data" toast.
+        let editorEnvironment = result.editorEnvironment ?? (moduleMode ? { id: environmentId } : undefined);
         let editingVersion = result.editing_version;
         if (isPreviewForVersion) {
           const rawDataQueries = appData?.data_queries;
@@ -323,10 +391,7 @@ const useAppData = (
           try {
             const queryParams = { slug: slug };
 
-            const viewerEnvironment =
-              moduleMode && isPublicAccess
-                ? { environment: { id: environmentId, name: 'development' } } // This needs to be replaced once the environment is implemented for modules
-                : await appEnvironmentService.getEnvironment(environmentId, queryParams);
+            const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
 
             editorEnvironment = {
               id: viewerEnvironment?.environment?.id,
@@ -344,16 +409,17 @@ const useAppData = (
           }
         }
 
-        if (mode === 'edit') {
+        if (mode === 'edit' && editorEnvironment?.id) {
           constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
         }
         // get the constants for specific environment
-        if (constantsResp) {
-          constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
-            constantsResp?.constants,
-            editorEnvironment?.name
-          );
+        if (!constantsResp) {
+          constantsResp = { constants: [] };
         }
+        constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+          constantsResp?.constants,
+          editorEnvironment?.name
+        );
 
         !moduleMode && setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
 
@@ -375,7 +441,10 @@ const useAppData = (
 
         // handles the getappdataby slug api call. Gets the homePageId from the appData.
         const homePageId =
-          appData.editing_version?.homePageId || appData.editing_version?.home_page_id || appData.home_page_id;
+          appData.editing_version?.homePageId ||
+          appData.editing_version?.home_page_id ||
+          appData.home_page_id ||
+          appData.homePageId;
 
         appTypeRef.current = appData.type;
 
@@ -386,10 +455,10 @@ const useAppData = (
 
         setApp(
           {
-            appName: appData.name,
+            appName: appData.branch_app_name || appData.name,
             appId: appId || appData?.appId || appData?.app_id,
             slug: appData.slug,
-            currentAppEnvironmentId: editorEnvironment.id,
+            currentAppEnvironmentId: editorEnvironment?.id,
             isMaintenanceOn:
               'is_maintenance_on' in result
                 ? result.is_maintenance_on
@@ -405,6 +474,7 @@ const useAppData = (
             appBuilderMode: appData.app_builder_mode || 'visual',
             isReleasedApp: isReleasedApp,
             appType: appData.type,
+            currentVersionId: appData.editing_version?.id || appData.current_version_id,
           },
           moduleId
         );
@@ -426,7 +496,7 @@ const useAppData = (
           window.history.replaceState({ ...window.history.state, usr: restUsrState }, '', window.location.href);
         }
 
-        if (initialLoadRef.current) {
+        if (initialLoadRef.current && !isPublicAccess && mode === 'edit') {
           getAllGlobalDataSourceList(appData.organizationId || appData.organization_id);
         }
 
@@ -496,6 +566,14 @@ const useAppData = (
         };
         const newState = { ...currentState, ...pageInfo };
         window.history.replaceState(newState, '', window.location.href);
+
+        // Sync the browser URL if it was opened with the app UUID but the app has a proper slug
+        if (appData.slug && mode === 'edit' && !moduleMode) {
+          const currentUrlSlug = window.location.pathname.split('/apps/')[1]?.split('/')[0];
+          if (currentUrlSlug && currentUrlSlug !== appData.slug) {
+            replaceEditorURL(appData.slug, startingPage.handle);
+          }
+        }
 
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);
@@ -595,24 +673,37 @@ const useAppData = (
         }
         if (!moduleMode) {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
+          // On workspace feature branches, set releasedVersionId to null so that
+          // selectedVersionId === releasedVersionId doesn't falsely trigger freeze
           updateReleasedVersionId(appData.current_version_id);
         }
 
         startExposedValueBatch();
         setEditorLoading(false, moduleId);
         initialLoadRef.current = false;
-
-        return () => {
-          document.title = retrieveWhiteLabelText();
-        };
       })
-      .catch((error) => {
+      .catch((_error) => {
+        if (cancelled) return;
+        // Surface load failures — this catch otherwise swallows the error and silently blanks the
+        // editor, which makes load-path regressions (e.g. a throw during dependency resolution)
+        // invisible in the console.
+        // eslint-disable-next-line no-console
+        console.error('Error loading app data', _error);
+        setEditorLoading(false, moduleId);
         if (moduleMode) {
-          setEditorLoading(false, moduleId);
           toast.error('Error fetching module data');
+          return;
+        }
+        if (isPublicAccess && _error?.data?.statusCode === 501) {
+          redirectToErrorPage(ERROR_TYPES.URL_UNAVAILABLE, {});
         }
       });
-  }, [setApp, setEditorLoading, currentSession, mode]);
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setApp, setEditorLoading, currentSession, mode, versionId, cachedModuleDefinitionForApp]);
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
@@ -722,7 +813,15 @@ const useAppData = (
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
+    // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
+    // env-dropdown init) are written by two independent async flows. On clone -> editor
+    // open, currentVersionId flips to the new app's version before selectedVersion does,
+    // so firing here would call getAppVersionData(newAppId, previousAppVersionId) -> 404.
+    // Genuine version switches always move both together, so requiring agreement skips
+    // only the stale cross-app window.
+    const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
+
+    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
@@ -742,7 +841,7 @@ const useAppData = (
         const effectiveAppId = appId || appData?.id || appData?.appId || appData?.app_id;
         const isReleasedApp = effectiveAppId && appSlug && !environmentId && !versionId ? true : false; //Condition based on response from validate-private-app-access and validate-released-app-access apis
         setApp({
-          appName: appData.name,
+          appName: appData.branch_app_name || appData.name,
           appId: appData.id,
           slug: appData.slug,
           creationMode: appData.creationMode,
@@ -776,6 +875,13 @@ const useAppData = (
         setCurrentPageId(startingPage.id, moduleId);
         setComponentNameIdMapping(moduleId);
         updateEventsField('events', appData.events, moduleId);
+
+        // Refresh the module-definition cache so unpinned ModuleViewers pick up
+        // post-pull / post-version-switch content without a full page refresh.
+        // Mirrors the initial-load population at the !moduleMode branch above.
+        if (!moduleMode && appData.modules) {
+          setModuleDefinition(appData.modules);
+        }
         // const queryData = await dataqueryService.getAll(currentVersionId);
 
         if (isEnvChanged) {
@@ -796,6 +902,14 @@ const useAppData = (
           fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
           setResolvedConstants(orgConstants);
           setSecrets(orgSecrets);
+        } else if (isVersionChanged) {
+          // Re-fetch datasources on version/branch switch (branch may have different active datasources)
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
+        } else if (isAppHistoryChanged) {
+          // Re-fetch datasources after app-editor git pull (dummy → real DS swap, or freshly
+          // pulled DSes). Without this, queries point to new DS ids but the cached dataSources
+          // slice still has stale rows, so the query setup panel shows an empty Source.
+          fetchGlobalDataSources(organizationId, currentVersionId, selectedEnvironment.id);
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId, mode);

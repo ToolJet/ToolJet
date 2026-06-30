@@ -10,6 +10,7 @@ import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
 import { ABORT_UNSUPPORTED_KINDS, defaultSources } from '@/AppBuilder/QueryManager/constants';
+import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -346,6 +347,11 @@ export const createQueryPanelSlice = (set, get) => ({
           data: [],
           rawData: [],
           id: queryId,
+          metadata: undefined,
+          request: undefined,
+          response: undefined,
+          responseHeaders: undefined,
+          error: undefined,
         },
         moduleId,
         true
@@ -655,6 +661,11 @@ export const createQueryPanelSlice = (set, get) => ({
             data: [],
             rawData: [],
             id: queryId,
+            metadata: undefined,
+            request: undefined,
+            response: undefined,
+            responseHeaders: undefined,
+            error: undefined,
           },
           moduleId
         );
@@ -688,7 +699,9 @@ export const createQueryPanelSlice = (set, get) => ({
           let versionId = currentVersionId;
           // IMPORTANT: This logic needs to be changed when we implement the module versioning
           if (moduleId !== 'canvas') {
-            versionId = get().resolvedStore.modules.canvas.components[moduleId].properties.moduleVersionId;
+            // Read the resolved DB version UUID from the loaded module state, not from the
+            // component property (which stores a stable version name for GitSync portability).
+            versionId = get().appStore.modules[moduleId]?.app?.currentVersionId;
           }
           queryExecutionPromise = dataqueryService.run(
             queryId,
@@ -1652,10 +1665,18 @@ export const createQueryPanelSlice = (set, get) => ({
         formattedParams = { ...parameters };
       }
       const resolvedState = get().getResolvedState(moduleId);
-      const queriesInResolvedState = deepClone(resolvedState.queries);
+      const queriesInResolvedState = {};
       for (const key of Object.keys(resolvedState.queries)) {
-        queriesInResolvedState[key] = {
-          ...queriesInResolvedState[key],
+        // Pre-resolve the query ID once so each getter does a cheap O(1) store
+        // read instead of calling getResolvedState (which iterates all queries
+        // and components on every access).
+        const queryId = get().modules[moduleId]?.queryNameIdMapping?.[key];
+        const getLiveQueryState = () =>
+          queryId
+            ? get().resolvedStore.modules[moduleId]?.exposedValues?.queries?.[queryId]
+            : get().getResolvedState(moduleId).queries[key];
+
+        const queryEntry = {
           run: (params, callbackFns) => {
             if (typeof params !== 'object' || params === null) {
               params = {};
@@ -1669,25 +1690,28 @@ export const createQueryPanelSlice = (set, get) => ({
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.resetQuery(query.name);
           },
+          getData: () => getLiveQueryState()?.data,
+          getRawData: () => getLiveQueryState()?.rawData,
+          getloadingState: () => getLiveQueryState()?.isLoading,
           abort: () => {
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             return actions.abortQuery(query.name, moduleId);
           },
-          getData: () => {
-            const resolvedState = get().getResolvedState(moduleId);
-            return resolvedState.queries[key].data;
-          },
-
-          getRawData: () => {
-            const resolvedState = get().getResolvedState(moduleId);
-            return resolvedState.queries[key].rawData;
-          },
-
-          getloadingState: () => {
-            const resolvedState = get().getResolvedState(moduleId);
-            return resolvedState.queries[key].isLoading;
-          },
         };
+        // Live getters for all state properties so that after
+        // `await queries.x.run()` any field (data, error, request, response,
+        // metadata, responseHeaders, …) reflects the completed run.
+        const reservedMethods = new Set(['run', 'reset', 'getData', 'getRawData', 'getloadingState']);
+        const liveDescriptors = {};
+        for (const prop of Object.keys(resolvedState.queries[key])) {
+          if (reservedMethods.has(prop)) continue;
+          liveDescriptors[prop] = {
+            get: () => getLiveQueryState()?.[prop],
+            enumerable: true,
+          };
+        }
+        Object.defineProperties(queryEntry, liveDescriptors);
+        queriesInResolvedState[key] = queryEntry;
       }
 
       try {
@@ -1704,6 +1728,12 @@ export const createQueryPanelSlice = (set, get) => ({
           'variables',
           'actions',
           'constants',
+          'setTimeout',
+          'setInterval',
+          'clearTimeout',
+          'clearInterval',
+          'requestAnimationFrame',
+          'cancelAnimationFrame',
           ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? ['input'] : []), // Include 'input' only for module,
           ...Object.keys(libraryRegistry),
@@ -1722,6 +1752,12 @@ export const createQueryPanelSlice = (set, get) => ({
           deepClone(resolvedState.variables),
           actions,
           resolvedState?.constants,
+          timerRegistry.trackedSetTimeout.bind(timerRegistry),
+          timerRegistry.trackedSetInterval.bind(timerRegistry),
+          timerRegistry.trackedClearTimeout.bind(timerRegistry),
+          timerRegistry.trackedClearInterval.bind(timerRegistry),
+          timerRegistry.trackedRequestAnimationFrame.bind(timerRegistry),
+          timerRegistry.trackedCancelAnimationFrame.bind(timerRegistry),
           ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
           ...(appType === 'module' ? [resolvedState.input] : []), // Include 'input' only for module
           ...Object.values(libraryRegistry),

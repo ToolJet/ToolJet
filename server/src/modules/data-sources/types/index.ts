@@ -50,10 +50,10 @@ export interface QueryService {
 export { QueryError, OAuthUnauthorizedClientError };
 
 export interface GetQueryVariables {
-  appVersionId?: string;
   environmentId?: string;
   types?: DataSourceTypes[];
   shouldIncludeWorkflows?: boolean;
+  branchId?: string;
 }
 
 export interface UpdateOptions {

@@ -24,7 +24,8 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
       contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee') ||
-      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-ce') ||
+      contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee')
 
     strategy:
       fail-fast: false
@@ -34,8 +35,11 @@ jobs:
             (contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ce') ||
             contains(github.event.pull_request.labels.*.name, 'run-cypress-ce')) && 'ce' ||
             (contains(github.event.pull_request.labels.*.name, 'run-cypress') ||
-            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee')) && 'ee' || ''
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-platform-ee')) && 'ee' ||
+            contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'ee' || ''
             }}
+        label:
+          - ${{ contains(github.event.pull_request.labels.*.name, 'run-cypress-git-sync-ee') && 'gitsync' || 'default' }}
         exclude:
           - edition: ""
 
@@ -94,11 +98,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -118,11 +119,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -398,7 +396,7 @@ jobs:
         env:
           CELL: "Platform / ${{ matrix.edition }}"
           BROWSER: chrome
-          CONFIG_FILE: ${{ matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
+          CONFIG_FILE: ${{ matrix.label == 'gitsync' && 'cypress-gitsync.config.js' || matrix.edition == 'ee' && 'cypress-ee-platform.config.js' || 'cypress-platform.config.js' }}
           CYPRESS_CONFIG: "baseUrl=http://localhost:3000"
           GITHUB_TOKEN: ${{ secrets.CYPRESS_RECORD_KEY }}
           CYPRESS_RECORD_KEY: "ca6a0d5f-b763-4be7-b554-3425a973104e"
@@ -496,11 +494,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -519,11 +514,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -917,11 +909,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -940,11 +929,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -997,7 +983,7 @@ jobs:
           echo "ENABLE_AI_FEATURES=true" >> .env
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
           echo "TJ_AI_GATEWAY_URL=${{ secrets.TJ_AI_GATEWAY_URL }}" >> .env
-          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env         
+          echo "AI_SERVER_URL=${{ secrets.AI_SERVER_URL }}" >> .env
 
       - name: clean up old docker containers
         run: |
@@ -1351,11 +1337,8 @@ jobs:
             -f docker/ce-production.Dockerfile \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing CE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ce
 
           echo "Cleaning up build cache..."
           docker builder prune -af
@@ -1374,11 +1357,8 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.event.pull_request.head.ref }} \
             -t tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee \
             --no-cache \
-            --load \
+            --push \
             .
-
-          echo "Pushing EE Docker image..."
-          docker push tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}-ee
 
           echo "Cleaning up build cache..."
           docker builder prune -af

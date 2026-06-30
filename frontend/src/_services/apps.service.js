@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { getActiveBranchId } from '@/_helpers/active-branch';
 import queryString from 'query-string';
 
 export const appsService = {
@@ -67,10 +68,18 @@ function validatePrivateApp(slug, queryParams) {
 //use default value for type of apps i.e.'front-end'
 function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
+  const branchId = getActiveBranchId();
+  const branchParam = branchId ? `&branch_id=${branchId}` : '';
+  if (page === 0)
+    return fetch(
+      `${config.apiUrl}/apps?all=true&folder=${folder || ''}&type=${type}${
+        searchKey ? `&searchKey=${searchKey}` : ''
+      }${branchParam}`,
+      requestOptions
+    ).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}${branchParam}`,
       requestOptions
     ).then(handleResponse);
 }
@@ -78,10 +87,14 @@ function getAll(page, folder, searchKey, type = 'front-end') {
 // get all addable apps
 function getAllAddableApps() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
+  const branchId = getActiveBranchId();
+  const branchParam = branchId ? `?branch_id=${branchId}` : '';
+  return fetch(`${config.apiUrl}/apps/addable${branchParam}`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -139,11 +152,14 @@ function importApp(app, name) {
 }
 
 function changeIcon(icon, appId) {
+  const body = { icon };
+  const branchId = getActiveBranchId();
+  if (branchId) body.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ icon }),
+    body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
 }
@@ -168,6 +184,8 @@ function getAppByVersion(appId, versionId) {
 }
 
 function saveApp(id, attributes, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) attributes.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
@@ -185,11 +203,14 @@ function getAppUsers(id) {
 }
 
 function setVisibility(appId, visibility) {
+  const body = { app: { is_public: visibility } };
+  const branchId = getActiveBranchId();
+  if (branchId) body.app.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ app: { is_public: visibility } }),
+    body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/public`, requestOptions).then(handleResponse);
 }
@@ -205,19 +226,23 @@ function setMaintenance(appId, value) {
 }
 
 function setSlug(appId, slug) {
+  const body = { app: { slug: slug } };
+  const branchId = getActiveBranchId();
+  if (branchId) body.app.branch_id = branchId;
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ app: { slug: slug } }),
+    body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }
 
 function exportResource(body, appType) {
+  const branchId = getActiveBranchId();
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { ...authHeader(), ...(branchId && { 'x-branch-id': branchId }) },
     body: JSON.stringify(body),
     credentials: 'include',
   };
@@ -229,6 +254,8 @@ function exportResource(body, appType) {
 }
 
 function importResource(body, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
@@ -243,6 +270,8 @@ function importResource(body, appType) {
 }
 
 function cloneResource(body, appType) {
+  const branchId = getActiveBranchId();
+  if (branchId) body.branchId = branchId;
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

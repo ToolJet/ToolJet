@@ -57,33 +57,21 @@ export const selectEvent = (
 };
 
 // Pick an option (by visible label, case-insensitive) from a RocketSelect
-// identified by `triggerSelector` (a Radix UI Select).
-//
-// Opening it is the tricky part: the select's trigger lives inside the
-// `popover-card` (a Radix Popover) which scroll-locks `body{pointer-events:none}`,
-// so a pointer click — synthetic OR real — is swallowed; and EventManager can
-// control the select's `open` prop (autoOpenActionSelect), so clicking an
-// already-open listbox calls onOpenChange(false) and closes it. A force-click
-// therefore opened it only intermittently and timed out otherwise.
-//
-// Robust approach (mirrors selectRunQueryEvent in queries.js): focus the Radix
-// trigger and open via KEYBOARD (ArrowDown — unaffected by the pointer-events
-// lock), but only when it isn't already open, gating on the trigger's own
-// data-state so we never toggle a controlled-open select shut.
+// identified by `triggerSelector`. Only clicks the trigger when the listbox
+// isn't already showing, since some EventManager selects auto-open.
 const chooseRocketOption = (triggerSelector, label) => {
-  cy.get(triggerSelector)
-    .find('button[role="combobox"]')
-    .should("be.visible")
-    .then(($trigger) => {
-      if ($trigger.attr("data-state") !== "open") {
-        cy.wrap($trigger).focus().type("{downarrow}", { force: true });
-      }
-    });
-  cy.get('[role="option"]', { timeout: 15000 }).should("exist");
+  cy.get("body").then(($body) => {
+    if ($body.find('[role="option"]:visible').length === 0) {
+      // force: an open popover-card sets body{pointer-events:none} (Radix
+      // scroll-lock) which blocks a normal click on the RocketSelect trigger.
+      // Matches the rest of this file's force-click convention.
+      cy.get(triggerSelector).should("be.visible").click({ force: true });
+    }
+  });
   cy.get('[role="option"]')
     .filter(":visible")
     .contains(new RegExp(`^\\s*${label}\\s*$`, "i"))
-    .click({ force: true });
+    .click();
 };
 
 // Pick a value from an OptionCombobox (shared.jsx OptionCombobox → Rocket

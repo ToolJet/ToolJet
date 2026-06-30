@@ -41,6 +41,7 @@ export default class LicenseBase {
   private _ai: object;
   private _isExternalApis: boolean;
   private _isAppWhiteLabelling: boolean;
+  private _isEnvMapping: boolean;
   private _plan: string;
   private _isCustomGroups: boolean;
   private _modules: object;
@@ -145,6 +146,7 @@ export default class LicenseBase {
     this._isExternalApis = this.getFeatureValue('externalApi');
     this._isScimEnabled = this.getFeatureValue('scim');
     this._isCustomDomains = this.getFeatureValue('customDomains');
+    this._isEnvMapping = this.getFeatureValue('workspaceEnv');
     this._aiPlan = (licenseData?.ai as any)?.plan || 'credits';
   }
 
@@ -593,6 +595,7 @@ export default class LicenseBase {
       appHistory: this.appHistory,
       appJsLibraries: this.appJsLibraries,
       queryFolders: this.queryFolders,
+      workspaceEnv: this.workspaceEnv,
       aiPlan: this.aiPlan,
     };
   }
@@ -688,6 +691,13 @@ export default class LicenseBase {
       return false;
     }
     return !!this._app?.features?.history;
+  }
+
+  public get workspaceEnv(): boolean {
+    if (this.IsBasicPlan) {
+      return !!this.BASIC_PLAN_TERMS.features?.workspaceEnv;
+    }
+    return this._isEnvMapping;
   }
 
   public get appJsLibraries(): boolean {

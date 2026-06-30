@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Overlay, Popover } from 'react-bootstrap';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { shallow } from 'zustand/shallow';
 import { toast } from 'react-hot-toast';
 import cx from 'classnames';
@@ -10,6 +13,7 @@ import CreateDraftButton from './CreateDraftButton';
 import VersionItemSkeleton from './VersionItemSkeleton';
 import { CreateVersionModal, CreateDraftVersionModal, EditVersionModal } from '.';
 import { ConfirmDialog } from '@/_components';
+import { useGitSyncConfig } from '@/AppBuilder/_hooks/useGitSyncConfig';
 import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
@@ -67,6 +71,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     refreshVersions,
   } = useVersionManagerStore();
 
+  const { isGitSyncEnabled } = useGitSyncConfig();
   const [showCreateDraftModal, setShowCreateDraftModal] = useState(false);
   const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [showEditVersionModal, setShowEditVersionModal] = useState(false);
@@ -76,13 +81,16 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
-  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes
-  // This ensures the filter is correct after page reloads from environment switches
+  // Sync selectedEnvironmentFilter with global currentEnvironment whenever it changes.
+  // Also refresh the version list immediately so VersionActionButtons reflect the new
+  // environment state without waiting for the dropdown to open (e.g. after promote).
   useEffect(() => {
-    if (currentEnvironment) {
-      setSelectedEnvironmentFilter(currentEnvironment);
+    if (!currentEnvironment) return;
+    setSelectedEnvironmentFilter(currentEnvironment);
+    if (appId && currentEnvironment.id) {
+      fetchVersionsForEnvironment(appId, currentEnvironment.id);
     }
-  }, [currentEnvironment, setSelectedEnvironmentFilter]);
+  }, [currentEnvironment?.id, appId, setSelectedEnvironmentFilter, fetchVersionsForEnvironment]);
 
   // Fetch development versions on mount to check for draft status
   useEffect(() => {
@@ -119,12 +127,28 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   // Check if there's a draft in development environment (global check across all environments)
   // Drafts only exist in Development environment
   const hasDraft = developmentVersions.some((v) => v.status === 'DRAFT');
-  const hasPublished = versions.some((v) => v.status === 'PUBLISHED');
 
   // Check if there's only one draft and no other saved versions
-  const draftVersions = developmentVersions.filter((v) => v.status === 'DRAFT');
+  // draftVersions are versions of type 'version' (not branches)
+  const draftVersions = developmentVersions.filter((v) => v.versionType === 'version' && v.status === 'DRAFT');
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
-  const shouldDisableCreateDraft = draftVersions.length > 0 && savedVersions.length === 0;
+
+  // Disable create draft logic:
+  // - Git sync enabled: disable if any draft already exists
+  // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
+  const shouldDisableCreateDraft = isGitSyncEnabled
+    ? draftVersions.length > 0
+    : savedVersions.length === 0 && draftVersions.length > 0;
+
+  // Determine tooltip message based on why create draft is disabled
+  let createDraftDisabledTooltip = '';
+  if (shouldDisableCreateDraft) {
+    if (isGitSyncEnabled) {
+      createDraftDisabledTooltip = 'Draft version already exists.';
+    } else if (savedVersions.length === 0) {
+      createDraftDisabledTooltip = 'Draft version can only be created from saved versions.';
+    }
+  }
 
   // Helper to close dropdown and reset UI state
   const closeDropdown = () => {
@@ -221,8 +245,15 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
     closeDropdown();
   };
 
+  const handleEditVersion = (version) => {
+    setVersionToEdit(version);
+    setShowEditVersionModal(true);
+    closeDropdown();
+  };
+
   // Delete version modal state
   const [deleteVersion, setDeleteVersion] = useState({ versionId: '', versionName: '', showModal: false });
+  const [inUseWarning, setInUseWarning] = useState({ show: false, versionName: '' });
 
   const openDeleteModal = (version) => {
     setDeleteVersion({ versionId: version.id, versionName: version.name, showModal: true });
@@ -249,11 +280,19 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       },
       (error) => {
         toast.dismiss(deletingToast);
-        toast.error(error?.message || 'Failed to delete version');
+        if (error?.error?.startsWith('Cannot delete this version.')) {
+          setInUseWarning({ show: true, versionName: deleteVersion.versionName });
+          resetDeleteModal();
+          return;
+        }
+        toast.error(error?.error || error?.message || 'Failed to delete version');
         resetDeleteModal();
       }
     );
   };
+
+  // Count only actual versions, not sub-branches
+  const versionOnlyCount = versions.filter((v) => v.versionType === 'version').length;
 
   const renderPopover = (overlayProps) => (
     <Popover
@@ -282,7 +321,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         </div>
 
         {/* Search Field - Only show if more than 5 versions */}
-        {versions.length > 5 && (
+        {versionOnlyCount > 5 && (
           <div>
             <VersionSearchField value={searchQuery} onChange={handleSearchChange} />
           </div>
@@ -333,11 +372,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
                   onSelect={() => handleVersionSelect(version)}
                   onPromote={() => handlePromoteDraft(version)}
                   onCreateVersion={() => handleCreateVersion(version)}
-                  onEdit={(v) => {
-                    setVersionToEdit(v);
-                    setShowEditVersionModal(true);
-                    closeDropdown();
-                  }}
+                  onEdit={(v) => handleEditVersion(v)}
                   onDelete={(v) => openDeleteModal(v)}
                   appId={appId}
                   darkMode={darkMode}
@@ -352,7 +387,12 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {/* Divider */}
         <div style={{ height: '1px', backgroundColor: 'var(--border-weak)' }} />
 
-        <CreateDraftButton onClick={handleCreateDraft} disabled={shouldDisableCreateDraft} darkMode={darkMode} />
+        <CreateDraftButton
+          onClick={handleCreateDraft}
+          disabled={shouldDisableCreateDraft}
+          disabledTooltip={createDraftDisabledTooltip}
+          darkMode={darkMode}
+        />
       </Popover.Body>
     </Popover>
   );
@@ -439,18 +479,17 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {...props}
       />
 
-      {/* Edit Version Modal */}
-      <EditVersionModal
-        showEditAppVersion={showEditVersionModal}
-        setShowEditAppVersion={(show) => {
-          setShowEditVersionModal(show);
-          if (!show) {
-            setVersionToEdit(null);
-          }
-        }}
-        versionToEdit={versionToEdit}
-        {...props}
-      />
+      {/* Edit Version Modal — only for non-git-sync workspaces */}
+      {!isGitSyncEnabled && (
+        <EditVersionModal
+          showEditAppVersion={showEditVersionModal}
+          setShowEditAppVersion={(show) => {
+            setShowEditVersionModal(show);
+            if (!show) setVersionToEdit(null);
+          }}
+          versionToEdit={versionToEdit}
+        />
+      )}
 
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
@@ -463,6 +502,74 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         cancelButtonText={'Cancel'}
         cancelButtonType="tertiary"
       />
+
+      {/* In-use warning modal — portalled to body to escape stacking contexts */}
+      {inUseWarning.show &&
+        ReactDOM.createPortal(
+          <div
+            className={darkMode ? 'dark-theme' : ''}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 99999,
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setInUseWarning({ show: false, versionName: '' });
+            }}
+          >
+            <div
+              style={{
+                width: 360,
+                background: 'var(--background-surface-layer-01)',
+                borderRadius: 8,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div style={{ padding: '20px 24px 0' }}>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--background-error-weak)',
+                  }}
+                >
+                  <SolidIcon name="warning" width="24" fill="var(--icon-danger)" />
+                </div>
+              </div>
+              <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-default)', margin: 0 }}>
+                  Dependent apps found!
+                </h3>
+                <p style={{ fontSize: 14, color: 'var(--text-medium)', lineHeight: 1.6, margin: 0 }}>
+                  {`Cannot delete ${inUseWarning.versionName} version of module as it is being used in one or more apps.`}
+                </p>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  padding: '16px 24px',
+                  borderTop: '1px solid var(--border-default)',
+                }}
+              >
+                <ButtonSolid variant="tertiary" onClick={() => setInUseWarning({ show: false, versionName: '' })}>
+                  I understand
+                </ButtonSolid>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 };

@@ -8,12 +8,14 @@ import { GranularPermissionQuerySearchParam } from '../types';
 import { GetUsersResponse } from '../types';
 import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { DataSourcesGroupPermissions } from '@entities/data_sources_group_permissions.entity';
+import { FoldersGroupPermissions } from '@entities/folders_group_permissions.entity';
 import { User } from '@entities/user.entity';
+import { AddableResourceItem } from '../types/granular_permissions';
 
 export interface IGranularPermissionsService {
   create(user: User, createGranularPermissionsDto: CreateGranularPermissionDto): Promise<void>;
-  getAddableApps(organizationId: string): Promise<{ AddableResourceItem }[]>;
-  getAddableDataSources(organizationId: string): Promise<{ AddableResourceItem }[]>;
+  getAddableApps(organizationId: string): Promise<AddableResourceItem[]>;
+  getAddableDataSources(organizationId: string): Promise<AddableResourceItem[]>;
   getAll(
     groupId: string,
     organizationId: string,
@@ -45,13 +47,18 @@ export interface IGroupPermissionsDuplicateService {
     granularPermissionId: string,
     manager: EntityManager
   ): Promise<void>;
+  duplicationFolderPermissions(
+    folderPermissions: FoldersGroupPermissions,
+    granularPermissionId: string,
+    manager: EntityManager
+  ): Promise<void>;
   getDuplicateGroupName(groupToDuplicate: GroupPermissions, manager: EntityManager): Promise<string>;
 }
 
 export interface IGroupPermissionsService {
   create(user: User, name: string): Promise<GroupPermissions>;
   getGroup(organizationId: string, id: string): Promise<{ group: GroupPermissions; isBuilderLevel: boolean }>;
-  getAllGroup(organizationId: string): Promise<GetUsersResponse>;
+  getAllGroup(organizationId: string, user?: User): Promise<GetUsersResponse>;
   updateGroup(id: string, user: User, updateGroupPermissionDto: UpdateGroupPermissionDto): Promise<void>;
   deleteGroup(id: string, user: User): Promise<void>;
   duplicateGroup(groupId: string, user: User, duplicateGroupDto: DuplicateGroupDto): Promise<GroupPermissions>;

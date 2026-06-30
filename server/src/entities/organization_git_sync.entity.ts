@@ -5,12 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
-  JoinTable,
-  OneToMany,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { AppGitSync } from './app_git_sync.entity';
 import { Organization } from './organization.entity';
 import { OrganizationGitSsh } from './gitsync_entities/organization_git_ssh.entity';
 import { OrganizationGitHttps } from './gitsync_entities/organization_git_https.entity';
@@ -38,17 +35,17 @@ export class OrganizationGitSync extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToMany(() => AppGitSync, (appGitSync) => appGitSync.orgGit, { onDelete: 'CASCADE' })
-  @JoinTable({
-    name: 'app_git_sync',
-    joinColumn: {
-      name: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'organization_git_id',
-    },
-  })
-  appGitSync: AppGitSync[];
+  @Column({ name: 'is_branching_enabled', nullable: false, default: true })
+  isBranchingEnabled: boolean;
+
+  @Column({ name: 'schema_version', nullable: false, default: '1.0.0' })
+  schemaVersion: string;
+
+  @Column({ name: 'use_env_config', type: 'boolean', default: false })
+  useEnvConfig: boolean;
+
+  // Not persisted — populated at runtime from OrganizationEnvRegistryService
+  envGitProvider: GITConnectionType | null;
 
   @OneToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
@@ -62,4 +59,8 @@ export class OrganizationGitSync extends BaseEntity {
 
   @OneToOne(() => OrganizationGitLab, (gitLab) => gitLab.orgGitSync, {})
   gitLab: OrganizationGitLab;
+
+  get isEnabled(): boolean {
+    return !!(this.gitSsh?.isEnabled || this.gitHttps?.isEnabled || this.gitLab?.isEnabled);
+  }
 }

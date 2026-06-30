@@ -39,6 +39,8 @@ export const ERROR_TYPES = {
   WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
   RESTRICTED_PREVIEW: 'restricted-preview',
   PUBLIC_APP_PLAN_RESTRICTED: 'public-app-plan-restricted',
+  APP_NOT_ON_BRANCH: 'app-not-on-branch',
+  APP_NOT_READY: 'app-not-ready',
 };
 
 export const ERROR_MESSAGES = {
@@ -97,6 +99,21 @@ export const ERROR_MESSAGES = {
     cta: 'Back to home page',
     queryParams: [],
   },
+  'app-not-on-branch': {
+    title: 'App not available',
+    message:
+      'This app is not available on the current branch. Switch to the correct branch or go back to the dashboard.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'app-not-ready': {
+    title: "App isn't available yet",
+    message: "This app doesn't have a released version yet. Contact your admin to know more",
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
   'no-active-workspace': {
     title: 'No active workspaces',
     message: 'No active workspace were found for this user. Kindly contact admin to know more.',
@@ -145,6 +162,7 @@ export const DEFAULT_ERROR_MESSAGE = {
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
   RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
+  DEFAULT_BRANCH_LOCKED: 'Master branch is locked. Switch branch to update app slug.',
 };
 
 export const DATA_SOURCE_TYPE = {

@@ -46,8 +46,15 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
       // Get app ID from the response (similar to how AppEnvironments.jsx gets it)
       const appId = response.editorVersion?.app?.id || response.editorVersion?.appId;
 
+      const storeState = get();
+      const isModuleApp = storeState.appStore?.modules?.canvas?.app?.appType === 'module';
+      const isWorkflowApp = !!storeState.appStore?.modules?.workflow?.app?.appId;
+      const bypassEnvCheck = isModuleApp || isWorkflowApp;
+
       const hasEditPermission =
-        app_group_permissions?.is_all_editable || (appId && app_group_permissions?.editable_apps_id?.includes(appId));
+        bypassEnvCheck ||
+        app_group_permissions?.is_all_editable ||
+        (appId && app_group_permissions?.editable_apps_id?.includes(appId));
 
       // Check if user is viewer without edit permission
       const isViewOnlyUser = !hasEditPermission;
@@ -96,8 +103,10 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         }
 
         // Check if user has access to the requested environment
-        // Skip this check if user is owner requesting development
-        const skipAccessCheck = isOwner && requestedEnvName === 'development';
+        // Skip this check if user is owner requesting development, or for module/workflow apps
+        // (module/workflow app IDs are absent from app_group_permissions env access maps, so the
+        // access check always falls back to development even when the backend returned a higher env)
+        const skipAccessCheck = (isOwner && requestedEnvName === 'development') || bypassEnvCheck;
 
         if (!skipAccessCheck && requestedEnvName && !hasEnvironmentAccess(environmentAccess, requestedEnvName)) {
           // User doesn't have access, find the closest available environment
@@ -134,16 +143,25 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         );
       }
 
-      set((state) => ({
-        ...state,
-        selectedEnvironment,
-        selectedVersion: response.editorVersion,
-        appVersionEnvironment: response.appVersionEnvironment,
-        shouldRenderPromoteButton: response.shouldRenderPromoteButton,
-        shouldRenderReleaseButton: response.shouldRenderReleaseButton,
-        environments: response.environments,
-        versionsPromotedToEnvironment: [response.editorVersion],
-      }));
+      set((state) => {
+        const stateUpdate = {
+          ...state,
+          selectedEnvironment,
+          selectedVersion: response.editorVersion,
+          appVersionEnvironment: response.appVersionEnvironment,
+          shouldRenderPromoteButton: response.shouldRenderPromoteButton,
+          shouldRenderReleaseButton: response.shouldRenderReleaseButton,
+          environments: response.environments,
+          versionsPromotedToEnvironment: [response.editorVersion],
+        };
+
+        // Clear currentBranch if initial version is not a branch
+        const versionType = response.editorVersion?.versionType || response.editorVersion?.version_type;
+        if (versionType !== 'branch') {
+          stateUpdate.currentBranch = null;
+        }
+        return stateUpdate;
+      });
     } catch (error) {
       console.error('❌ DEBUG - Error while initializing the environment dropdown', error);
     }
@@ -223,7 +241,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     selectedVersionId,
     versionDescription = '',
     onSuccess,
-    onFailure
+    onFailure,
+    versionType = 'version'
   ) => {
     try {
       const editorEnvironment = get().selectedEnvironment.id;
@@ -232,7 +251,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         versionName,
         versionDescription,
         selectedVersionId,
-        editorEnvironment
+        editorEnvironment,
+        versionType
       );
       const editorVersion = {
         id: newVersion.id,
@@ -336,6 +356,8 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
         name: data.editing_version.name,
         current_environment_id: data.editing_version.currentEnvironmentId,
         status: data.editing_version.status,
+        // Preserve versionType from API response to distinguish between regular versions and branch versions
+        versionType: data.editing_version.versionType || data.editing_version.version_type || 'version',
       };
       const appVersionEnvironment = get().environments.find(
         (environment) => environment.id === selectedVersion.current_environment_id
@@ -356,6 +378,12 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           useStore.getState()?.license?.featureAccess
         ),
       };
+
+      // Clear currentBranch if switching to a regular version (not a branch)
+      if (selectedVersion.versionType !== 'branch') {
+        optionsToUpdate.currentBranch = null;
+      }
+
       set((state) => ({ ...state, ...optionsToUpdate }));
       onSuccess(data);
     } catch (error) {
@@ -479,11 +507,13 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
     const hasMultiEnvironmentAccess = get().license?.featureAccess?.multiEnvironment;
     const hasPromotePermission = authenticationService.currentSessionValue?.user_permissions?.app_promote;
     const hasReleasePermission = authenticationService.currentSessionValue?.user_permissions?.app_release;
+    // MODULE apps are not gated by app-level promote/release permissions
+    const isModuleApp = get().appStore?.modules?.canvas?.app?.appType === 'module';
     return {
       canPromote: hasMultiEnvironmentAccess && !isLastEnvironment && !isVersionReleased,
       canRelease: !hasMultiEnvironmentAccess || isLastEnvironment || isVersionReleased,
-      isPromoteVersionEnabled: hasPromotePermission,
-      isReleaseVersionEnabled: hasReleasePermission,
+      isPromoteVersionEnabled: isModuleApp || hasPromotePermission,
+      isReleaseVersionEnabled: isModuleApp || hasReleasePermission,
     };
   },
   createDraftVersionAction: async (appId, selectedVersionId, onSuccess, onFailure) => {

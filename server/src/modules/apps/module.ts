@@ -24,12 +24,16 @@ import { RolesRepository } from '@modules/roles/repository';
 import { UsersModule } from '@modules/users/module';
 import { UserSessionRepository } from '@modules/session/repository';
 import { UserRepository } from '@modules/users/repositories/repository';
-import { AppGitRepository } from '@modules/app-git/repository';
 import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
 import { SubModule } from '@modules/app/sub-module';
+import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 @Module({})
 export class AppsModule extends SubModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
+    const cacheKey = this.buildCacheKey(configs, isMainImport);
+    const cached = this.getCachedModule(cacheKey);
+    if (cached) return cached;
+
     const {
       AppsController,
       WorkflowController,
@@ -54,8 +58,7 @@ export class AppsModule extends SubModule {
       'services/page.util.service',
     ]);
 
-
-    return {
+    return this.cacheModule(cacheKey, {
       module: AppsModule,
       imports: [
         TypeOrmModule.forFeature([App, Page, EventHandler, Organization, Component, VersionRepository]),
@@ -69,7 +72,6 @@ export class AppsModule extends SubModule {
         await AppPermissionsModule.register(configs),
         await AppHistoryModule.register(configs),
         await UsersModule.register(configs),
-        await AppEnvironmentsModule.register(configs),
       ],
       controllers: isMainImport ? [AppsController, WorkflowController] : [],
       providers: [
@@ -77,7 +79,7 @@ export class AppsModule extends SubModule {
         WorkflowService,
         VersionRepository,
         AppsRepository,
-        AppGitRepository,
+        OrganizationGitSyncRepository,
         PageService,
         EventsService,
         AppsUtilService,
@@ -94,6 +96,6 @@ export class AppsModule extends SubModule {
         GroupPermissionsRepository,
       ],
       exports: [AppsUtilService, AppImportExportService],
-    };
+    });
   }
 }

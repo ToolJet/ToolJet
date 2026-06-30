@@ -8,6 +8,16 @@ import { Credential } from '@entities/credential.entity';
 export class CredentialsService {
   constructor(protected readonly encryptionService: EncryptionService) {}
 
+  /**
+   * IMPORTANT: Do not modify this function signature - it is used in data migrations.
+   *
+   * Used in migrations:
+   * - 1752749046662-EncrpyGoogleCalendarClientSecret.ts
+   * - 1681463532466-addMultipleEnvForCEcreatedApps.ts (via filterEncryptedFromOptions helper)
+   *
+   * This function internally calls:
+   * - EncryptionService.encryptColumnValue()
+   */
   async create(value: string, manager?: EntityManager): Promise<Credential> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newCredential = manager.create(Credential, {

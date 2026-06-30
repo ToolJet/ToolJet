@@ -22,14 +22,19 @@ import { SSOConfigs } from '@entities/sso_config.entity';
 import { MetadataUtilService } from '@modules/meta/util.service';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { MODULES } from '@modules/app/constants/modules';
-import { UserAppsPermissions, UserDataSourcePermissions, UserPermissions } from '@modules/ability/types';
+import {
+  UserAppsPermissions,
+  UserDataSourcePermissions,
+  UserFolderPermissions,
+  UserPermissions
+} from '@modules/ability/types';
 import { JwtService } from '@nestjs/jwt';
 import { RolesRepository } from '@modules/roles/repository';
 import { EncryptionService } from '@modules/encryption/service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { RequestContext } from '@modules/request-context/service';
 import { SessionType } from '@modules/external-apis/constants';
-import { incrementActiveSessions, incrementConcurrentUsers, decrementActiveSessions, decrementConcurrentUsers } from '@otel/tracing';
+import { incrementActiveSessions, incrementConcurrentUsers } from '@otel/tracing';
 
 @Injectable()
 export class SessionUtilService {
@@ -44,7 +49,7 @@ export class SessionUtilService {
     protected readonly rolesRepository: RolesRepository,
     protected readonly encryptionService: EncryptionService,
     protected readonly jwtService: JwtService
-  ) { }
+  ) {}
 
   async terminateAllSessions(userId: string): Promise<void> {
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -93,7 +98,8 @@ export class SessionUtilService {
         const clientIp = (request as any)?.clientIp;
         const session: UserSessions = await this.createSession(
           user.id,
-          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
+          `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
+            request?.headers['user-agent'] || 'unknown'
           }`,
           manager
         );
@@ -190,6 +196,7 @@ export class SessionUtilService {
     ssoUserInfo: any;
     appGroupPermissions: UserAppsPermissions;
     dataSourceGroupPermissions: UserDataSourcePermissions;
+    folderGroupPermissions?: UserFolderPermissions;
     role: GroupPermissions;
     groupPermissions: GroupPermissions[];
     userPermissions: UserPermissions;
@@ -199,7 +206,7 @@ export class SessionUtilService {
       user,
       {
         organizationId: user.organizationId,
-        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }],
+        resources: [{ resource: MODULES.APP }, { resource: MODULES.GLOBAL_DATA_SOURCE }, { resource: MODULES.FOLDER }],
       },
       manager
     );
@@ -209,6 +216,7 @@ export class SessionUtilService {
     const superAdmin = userPermissions.isSuperAdmin;
     const appGroupPermissions = userPermissions?.[MODULES.APP];
     const dataSourceGroupPermissions = userPermissions?.[MODULES.GLOBAL_DATA_SOURCE];
+    const folderGroupPermissions = userPermissions?.[MODULES.FOLDER];
     const userDetails = await this.userRepository.getUserDetails(user.id, user.organizationId, manager);
 
     if (superAdmin && !role) {
@@ -231,6 +239,7 @@ export class SessionUtilService {
       superAdmin,
       appGroupPermissions,
       dataSourceGroupPermissions,
+      folderGroupPermissions,
       ssoUserInfo,
       metadata: decryptedMetadata,
       role,
@@ -315,10 +324,10 @@ export class SessionUtilService {
     const now = new Date();
     return new Date(
       now.getTime() +
-      (this.configService.get<string>('USER_SESSION_EXPIRY')
-        ? this.configService.get<number>('USER_SESSION_EXPIRY')
-        : 14400) *
-      60000
+        (this.configService.get<string>('USER_SESSION_EXPIRY')
+          ? this.configService.get<number>('USER_SESSION_EXPIRY')
+          : 14400) *
+          60000
     );
   }
 
@@ -334,7 +343,8 @@ export class SessionUtilService {
 
     const session: UserSessions = await this.createSession(
       user.id,
-      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${request?.headers['user-agent'] || 'unknown'
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        request?.headers['user-agent'] || 'unknown'
       }`,
       manager
     );
@@ -384,9 +394,9 @@ export class SessionUtilService {
         ? currentOrganization
           ? currentOrganization
           : await manager.findOneOrFail(Organization, {
-            where: { id: currentOrganizationId },
-            select: ['slug', 'name', 'id'],
-          })
+              where: { id: currentOrganizationId },
+              select: ['slug', 'name', 'id'],
+            })
         : null;
 
       const noWorkspaceAttachedInTheSession = (await this.checkUserWorkspaceStatus(user.id)) && !isSuperAdmin(user);

@@ -54,7 +54,7 @@ export const openSubNode = (subNodeName, parentExpandType = null, time = 15000) 
 
 // Return from a detail panel back to the tree view.
 export const backFromDetail = () => {
-  cy.get('[data-cy="inspector-detail-header-back-button"]').click();
+  cy.get('[data-cy="inspector-detail-header-back"]').click();
 };
 
 // Expand a level-1 node, open one of its subnodes' detail panel, verify the
