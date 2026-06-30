@@ -22,7 +22,6 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
-  adjustComponentPositions,
   currentLayout,
   componentCount = 0,
   currentMode,
@@ -43,7 +42,6 @@ export const Container = ({
     isDynamicHeightEnabled,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
@@ -52,11 +50,6 @@ export const Container = ({
     subContainerIndex,
     componentType,
   });
-
-  const isWidgetInContainerDragging = useStore(
-    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
-    shallow
-  );
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget

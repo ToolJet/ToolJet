@@ -4,18 +4,22 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
+import { useContainerWidth } from '@/_hooks/useContainerWidth';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 import { debounce } from 'lodash';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import AITripleSparkles from '@/_ui/Icon/solidIcons/AITripleSparkles';
+
+const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 
 const GENERATE_QUERY_SUPPORTED_KINDS = [
   'postgresql',
@@ -25,7 +29,9 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'mysql',
   'mssql',
   'snowflake',
+  'openai',
   'runjs',
+  'databricks',
 ];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
@@ -40,6 +46,9 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+
+  const headerRef = useRef(null);
+  const headerWidth = useContainerWidth(headerRef);
 
   useEffect(() => {
     if (selectedQuery?.name) {
@@ -113,8 +122,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
     { id: 3, label: 'Settings' },
   ];
 
+  const iconOnly = headerWidth > 0 && headerWidth < ICON_ONLY_BUTTON_BREAKPOINT;
+
   return (
-    <div className="row header" style={{ padding: '8px 16px' }}>
+    <div className="row header" style={{ padding: '8px 16px' }} ref={headerRef}>
       <div className="col font-weight-500 p-0">
         {selectedQuery && (
           <NameInput
@@ -152,8 +163,9 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       <div className="query-header-buttons">
         {!(selectedQuery === null || showCreateQuery) && (
           <>
-            <GenerateQueryButton />
-            <RunButton buttonLoadingState={buttonLoadingState} />
+            <GenerateQueryButton iconOnly={iconOnly} />
+            <AbortButton />
+            <RunButton buttonLoadingState={buttonLoadingState} iconOnly={iconOnly} />
             <PreviewButton
               disabled={shouldFreeze}
               onClick={previewButtonOnClick}
@@ -261,13 +273,15 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   );
 };
 
-const RunButton = ({ buttonLoadingState }) => {
+const RunButton = ({ buttonLoadingState, iconOnly }) => {
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const runQuery = useStore((state) => state.queryPanel.runQuery);
   const isInDraft = selectedQuery?.status === 'draft';
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
   const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+Enter';
@@ -280,13 +294,18 @@ const RunButton = ({ buttonLoadingState }) => {
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
-          disabled={isInDraft}
+          disabled={isInDraft || isActive}
           isLoading={isLoading}
-          className={isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
+          iconOnly={iconOnly}
+          className={iconOnly ? '' : isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
           data-cy="query-run-button"
         >
-          Run
-          <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+Enter'}</span>
+          {!iconOnly && (
+            <>
+              Run
+              <span className="query-manager-btn-shortcut">{isMac ? '⌘↩' : 'Ctrl+Enter'}</span>
+            </>
+          )}
         </ButtonComponent>
       </ToolTip>
     </span>
@@ -299,7 +318,7 @@ const hasQueryMention = (text, queryName) => {
   return new RegExp(`(?:^|[ ,])@${escaped}(?=$|[ ,])`).test(text);
 };
 
-const GenerateQueryButton = () => {
+const GenerateQueryButton = ({ iconOnly }) => {
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -308,9 +327,15 @@ const GenerateQueryButton = () => {
   // Derived boolean so the component only re-renders when mention is added/removed, not on every keystroke
   const isQueryMentioned = useStore((state) => hasQueryMention(state.ai?.inputMessage ?? '', queryName));
   const [buttonPressedForQuery, setButtonPressedForQuery] = useState(null);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
 
   if (!featureAccess?.ai) return null;
   if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+  if (isActive) return null;
 
   const isPressed = buttonPressedForQuery === queryName && isQueryMentioned;
 
@@ -354,13 +379,14 @@ const GenerateQueryButton = () => {
           size="medium"
           variant="ghost"
           aria-selected={isPressed}
+          iconOnly={iconOnly}
           className={isPressed ? '!tw-bg-button-outline-hover' : ''}
           onClick={handleGenerateQuery}
           disabled={shouldFreeze}
           data-cy="query-generate-button"
         >
           <AITripleSparkles width="14" height="14" />
-          {buttonLabel}
+          {!iconOnly && buttonLabel}
         </ButtonComponent>
       </span>
     </ToolTip>
@@ -377,6 +403,12 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  // Disable Preview while either run or preview is in flight — Abort first, then re-preview.
+  // Also closes the queryAbortControllers race window for rapid re-clicks.
+  const isActive = isLoading || isPreviewQueryLoading;
   const { t } = useTranslation();
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
@@ -388,11 +420,54 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         variant="outline"
         onClick={onClick}
         // className="!tw-w-[100px]"
-        disabled={!hasPermissions}
+        disabled={!hasPermissions || isActive}
         isLoading={isPreviewQueryLoading}
         data-cy={'query-preview-button'}
       >
         Preview
+      </ButtonComponent>
+    </ToolTip>
+  );
+};
+
+const ABORT_BUTTON_DELAY_MS = 3000;
+
+const AbortButton = () => {
+  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  const abortQuery = useStore((state) => state.queryPanel.abortQuery);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
+
+  const [hasExceededDelay, setHasExceededDelay] = useState(false);
+  useEffect(() => {
+    if (!isActive) {
+      setHasExceededDelay(false);
+      return;
+    }
+    const timer = setTimeout(() => setHasExceededDelay(true), ABORT_BUTTON_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isActive]);
+
+  if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind) || !isActive || !hasExceededDelay) return null;
+
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
+  const shortcutDisplay = `Stop waiting for the response  ${isMac ? '⌘.' : 'Ctrl+.'}`;
+
+  return (
+    <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <ButtonComponent
+        size="medium"
+        variant="outline"
+        onClick={() => abortQuery(selectedQuery?.id)}
+        disabled={!isActive}
+        leadingIcon="circle-slash"
+        data-cy="query-abort-button"
+        isLucid={true}
+      >
+        Abort
       </ButtonComponent>
     </ToolTip>
   );
