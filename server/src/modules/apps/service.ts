@@ -118,15 +118,20 @@ export class AppsService implements IAppsService {
     // For preview/viewer access: enforce access type for users without edit permission
     if (!hasEditPermission) {
       if (app.type === APP_TYPES.MODULE && hasViewPermission) {
-        // Build-with: user can open the module builder read-only
-        return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
-      }
-      // Viewer role: require access_type=view explicitly; reject edit or missing
-      if (accessType?.toLowerCase() !== 'view') {
-        throw new ForbiddenException({
-          organizationId: app.organizationId,
-          type: 'restricted-preview',
-        });
+        // Build-with: user can open the module builder read-only.
+        // If preview params are present we need version resolution — fall through.
+        // Only short-circuit when there is nothing to resolve.
+        if (!versionName && !environmentName && !versionId && !envId) {
+          return plainToClass(ValidateAppAccessResponseDto, { ...response, canEdit: false });
+        }
+      } else {
+        // Viewer role: require access_type=view explicitly; reject edit or missing
+        if (accessType?.toLowerCase() !== 'view') {
+          throw new ForbiddenException({
+            organizationId: app.organizationId,
+            type: 'restricted-preview',
+          });
+        }
       }
     }
     /* If the request comes from preview which needs version id */
@@ -210,6 +215,9 @@ export class AppsService implements IAppsService {
       if (envId) response['environmentName'] = environment.name;
       response['versionId'] = version.id;
       response['environmentId'] = environment.id;
+    }
+    if (!hasEditPermission && app.type === APP_TYPES.MODULE && hasViewPermission) {
+      response['canEdit'] = false;
     }
     return plainToClass(ValidateAppAccessResponseDto, response);
   }

@@ -617,9 +617,12 @@ const useAppData = (
           // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
           // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
           const versionIdToInit = appData.editing_version?.id || appData.current_version_id;
+          // init() populates selectedVersion and selectedEnvironment, which useAppPreviewLink
+          // needs to build the preview URL with correct ?version=...&env=... params.
+          useStore.getState().init(versionIdToInit);
           fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
-        if (!moduleMode) {
+        if (!moduleMode || moduleId === 'canvas') {
           useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
           updateReleasedVersionId(appData.current_version_id);
         }

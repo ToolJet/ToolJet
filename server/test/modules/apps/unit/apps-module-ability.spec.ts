@@ -390,4 +390,43 @@ describe('AppsService.validatePrivateAppAccess — module canEdit behavior', () 
       );
     });
   });
+
+  describe('Case 10: Module + build-with + preview params → resolves version and returns versionId', () => {
+    it('falls through to version resolution and includes versionId in response', async () => {
+      const ability = makeAbility(false, true); // no UPDATE, has GET_BY_SLUG
+      const app = makeApp(APP_TYPES.MODULE);
+      const user = { id: 'user-1' } as any;
+      const fakeVersion = { id: 'ver-uuid', name: 'v1', currentEnvironmentId: 'env-uuid' };
+      const fakeEnv = { id: 'env-uuid', name: 'development' };
+
+      // Stub versionRepository and appsUtilService for the version-resolution path
+      (service as any).versionRepository = {
+        findByName: jest.fn().mockResolvedValue(fakeVersion),
+      };
+      (service as any).appsUtilService = {
+        validateVersionEnvironment: jest.fn().mockResolvedValue(fakeEnv),
+      };
+
+      const dto = { accessType: 'view', versionName: 'v1', environmentName: 'development' };
+      const result = await service.validatePrivateAppAccess(app, ability, user, dto as any);
+
+      expect(result).toBeInstanceOf(ValidateAppAccessResponseDto);
+      expect((result as any).versionId).toBe('ver-uuid');
+      expect((result as any).environmentId).toBe('env-uuid');
+      expect((result as any).canEdit).toBe(false);
+    });
+
+    it('still short-circuits without versionId when no preview params', async () => {
+      const ability = makeAbility(false, true);
+      const app = makeApp(APP_TYPES.MODULE);
+      const user = { id: 'user-1' } as any;
+      const dto = { accessType: 'edit' }; // no versionName / environmentName
+
+      const result = await service.validatePrivateAppAccess(app, ability, user, dto as any);
+
+      expect(result).toBeInstanceOf(ValidateAppAccessResponseDto);
+      expect((result as any).canEdit).toBe(false);
+      expect((result as any).versionId).toBeUndefined();
+    });
+  });
 });
