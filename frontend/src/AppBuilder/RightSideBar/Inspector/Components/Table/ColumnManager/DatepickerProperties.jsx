@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import Select from '@/_ui/Select';
 import { useTranslation } from 'react-i18next';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';

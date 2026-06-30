@@ -197,7 +197,7 @@ export const ModalV2 = function Modal({
   });
   // Memoized: this lands in useDynamicHeight's effect deps. A fresh array per
   // render (e.g. inside a Listview row, where Viewer re-renders on every
-  // canvasUpdater tick) would refire the effect → adjustComponentPositions →
+  // canvasUpdater tick) would refire the effect → scheduleReflow → flushReflows →
   // incrementCanvasUpdater → re-render, freezing the preview in a reflow loop.
   const contextIndices = useMemo(
     () => (contextPath.length > 0 ? contextPath.map((segment) => segment.index) : subContainerIndex),
