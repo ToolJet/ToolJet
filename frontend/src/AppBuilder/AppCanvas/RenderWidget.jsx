@@ -7,6 +7,7 @@ import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before merge
 import { BOX_PADDING } from './appCanvasConstants';
 import WidgetTooltip from './WidgetTooltip';
 import { normalizeLayoutContext } from '@/AppBuilder/_stores/utils/dynamicHeightReflow';
@@ -383,6 +384,7 @@ const RenderWidget = ({
       darkMode={darkMode}
       resetKeys={[id]}
     >
+      <CrashTest message={`🧱 Canvas component (${componentName}) test crash`} />
       <OverlayTrigger
         placement="top"
         delay={{ show: 500, hide: 0 }}

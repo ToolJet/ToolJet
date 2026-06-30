@@ -5,6 +5,7 @@ import JSONTreeViewerV2 from './JSONTreeViewerV2';
 import useIconList from './useIconList';
 import InspectorHeader from './InspectorHeader';
 import { formatInspectorDataMisc, formatInspectorQueryData, noDataFoundChildDataFormat } from './utils';
+import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before merge
 
 import './styles.scss';
 
@@ -151,6 +152,7 @@ const LeftSidebarInspector = ({ darkMode, onClose, moduleId, appType }) => {
       className={`left-sidebar-inspector ${darkMode && 'dark-theme'}`}
       style={{ resize: 'horizontal', minWidth: 288 }}
     >
+      <CrashTest message="🔍 Inspector test crash" />
       <InspectorHeader
         darkMode={darkMode}
         onClose={onClose}

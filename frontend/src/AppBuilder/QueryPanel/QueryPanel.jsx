@@ -13,6 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import QueryKeyHooks from './QueryKeyHooks';
 import FallbackBoundary from '@/_ui/ErrorBoundary/FallbackBoundary';
+import CrashTest from '@/_ui/ErrorBoundary/__CrashTest'; // TEMP: remove before merge
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 
@@ -234,6 +235,7 @@ export const QueryPanel = ({ darkMode }) => {
                     darkMode={darkMode}
                     resetKeys={[selectedQueryId]}
                   >
+                    <CrashTest message="💥 Query manager test crash" />
                     <MemoizedQueryManager darkMode={darkMode} />
                   </FallbackBoundary>
                 </div>
