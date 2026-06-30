@@ -37,6 +37,10 @@ We encourage all our users to practice good security habits to enhance security 
 
 ToolJet does not store data returned from your data sources. ToolJet server acts as a proxy and passes the data as it is to the ToolJet client. The credentials for the data sources are handled by the server and never exposed to the client. For example, if you are making an API request, the query is run from the server and not from the frontend.
 
+:::caution
+Only return data that the current user is allowed to see. ToolJet does not automatically apply server-side row or field filtering to datasource responses before passing them to the client, so filters, limits, and permissions should be enforced in the query, API, or datasource itself.
+:::
+
 
 ## Datasource Credentials
 All the datasource credentials are securely encrypted using `aes-256-gcm`. The credentials are never exposed to the frontend ( ToolJet client ).
@@ -52,4 +56,3 @@ ToolJet takes privacy seriously. Our transparent privacy policies ensure custome
 - **Backups**: ToolJet cloud is hosted on AWS using EKS with autoscaling and regular backups.
 
 If you notice a security vulnerability, please let the team know by sending an email to [security@tooljet.com](mailto:security@tooljet.com). 
-
