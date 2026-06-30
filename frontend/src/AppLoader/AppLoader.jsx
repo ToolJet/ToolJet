@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { resetAllStores } from '@/_stores/utils';
@@ -16,6 +16,24 @@ const AppLoader = (props) => {
       timerRegistry.clearAll();
       resetAppBuilderStore();
     };
+  }, []);
+
+  // Force a hard reload when browser back/forward navigates away from the editor.
+  // This ensures stores (git sync state, branch config, etc.) are fully re-initialized
+  // on the destination page, matching the behavior apps already exhibit.
+  // Use capture phase to fire before React Router's listener can process the navigation.
+  useEffect(() => {
+    const handlePopState = (e) => {
+      // Don't reload for in-app page switches (multi-page navigation within the editor)
+      const navState = e.state?.usr;
+      if (navState?.isSwitchingPage) return;
+      // Prevent React Router from processing this navigation
+      e.stopImmediatePropagation();
+      // The popstate has already updated window.location — reload to that URL.
+      window.location.reload();
+    };
+    window.addEventListener('popstate', handlePopState, true);
+    return () => window.removeEventListener('popstate', handlePopState, true);
   }, []);
 
   switch (appType) {
