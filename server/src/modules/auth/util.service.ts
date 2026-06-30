@@ -65,6 +65,13 @@ export class AuthUtilService implements IAuthUtilService {
     protected readonly userBanListRepository: UserBanListRepository
   ) {}
 
+  async checkUserBanned(email: string): Promise<void> {
+    const bannedUser = await this.userBanListRepository.findByEmail(email);
+    if (bannedUser) {
+      throw new UnauthorizedException(JSON.stringify({ errorType: 'USER_BANNED' }));
+    }
+  }
+
   async validateLoginUser(email: string, password: string, organizationId?: string): Promise<User> {
     const user = await this.userRepository.findByEmail(email, organizationId, [
       WORKSPACE_USER_STATUS.ACTIVE,
