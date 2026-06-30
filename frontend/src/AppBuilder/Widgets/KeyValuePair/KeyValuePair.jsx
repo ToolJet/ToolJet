@@ -63,21 +63,15 @@ export const KeyValuePair = ({
     borderRadius = 6,
     boxShadow = '0px 0px 0px 0px #00000040',
     hoverBackgroundMode = 'auto',
-    hoverBackgroundColor = 'var(--interactive-overlays-fill-hover)',
+    hoverBackgroundColor,
   } = styles;
-
-  // Auto keeps the existing key-value hover color; Manual lets the user pick one.
-  const hoverBackground =
-    hoverBackgroundMode === 'manual'
-      ? hoverBackgroundColor || 'var(--interactive-overlays-fill-hover)'
-      : 'var(--interactive-overlays-fill-hover)';
 
   const containerStyles = {
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     boxShadow,
-    '--kv-hover-bg': hoverBackground,
+    ...(hoverBackgroundMode === 'manual' && hoverBackgroundColor && { '--kv-hover-bg': hoverBackgroundColor }),
   };
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
