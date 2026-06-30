@@ -79,5 +79,6 @@ export { progressbarConfig } from './widgets/progressbar.js';
 export { navigationConfig } from './widgets/navigation.js';
 export { fileButtonConfig } from './widgets/fileButton.js';
 export { buttonGroupV2Config } from './widgets/buttonGroupV2.js';
+export { flexContainerConfig } from './widgets/flexContainer.js';
 
 export { universalProps, combineProperties } from './utils.js';
