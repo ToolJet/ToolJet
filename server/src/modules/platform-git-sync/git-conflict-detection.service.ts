@@ -25,6 +25,7 @@ export class GitConflictDetectionService {
     _organizationId: string,
     _branchId: string,
     _appName: string,
+    _appCoRelationId: string,
     _gitRepoPath: string,
     _referencedModuleCoRelIds: Set<string>,
     _dataSources: Array<{ id: string; name: string }>

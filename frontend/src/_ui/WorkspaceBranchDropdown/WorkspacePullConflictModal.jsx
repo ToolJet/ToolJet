@@ -39,9 +39,9 @@ const STATUS_LABEL_MAP = {
 export function PullConflictModal({ show, onClose, conflictGroups = [], context }) {
   if (!show) return null;
 
-  const isPushConflict = conflictGroups.some((g) =>
-    g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote')
-  );
+  const isImport = context === 'import';
+  const isPushConflict =
+    !isImport && conflictGroups.some((g) => g.conflicts?.some((c) => c.status === 'local' || c.status === 'remote'));
   const isBranchCreation = context === 'branch-creation';
   const isBranchSwitch = context === 'branch-switch';
   const hideBadges = isBranchCreation || isBranchSwitch;
@@ -49,6 +49,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
   const conflictTitles = (() => {
     if (isBranchCreation) return ['Cannot create branch with duplicate data'];
     if (isBranchSwitch) return ['Cannot open branch with duplicate data'];
+    if (isImport) return ['Cannot import with duplicate data'];
     if (isPushConflict) return ['Cannot push with duplicate data'];
     return ['Cannot pull with duplicate data'];
   })();
@@ -126,7 +127,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context 
           </div>
 
           <p className="conflict-footer-text">
-            {isBranchCreation || isBranchSwitch || isPushConflict
+            {isBranchCreation || isBranchSwitch || isPushConflict || isImport
               ? 'Resolve the conflict before trying again. Read our docs for step-by-step instructions on resolving unique constraint conflicts.'
               : 'Rename the conflicting resources before pulling again. Read our docs for step-by-step instructions on resolving naming conflicts.'}
           </p>
