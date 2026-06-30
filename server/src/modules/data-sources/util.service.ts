@@ -644,6 +644,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         'xero',
         'bigquery',
         'databricks',
+        'asana',
       ].includes(dataSource.kind)
     ) {
       const newTokenData = await this.fetchAPITokenFromPlugins(
