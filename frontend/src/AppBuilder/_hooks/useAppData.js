@@ -327,19 +327,10 @@ const useAppData = (
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
-        // Unpinned: in git-sync mode, prefer the parent app's cached module definition
-        // (already loaded for the parent's branch context — matches "follow my branch" semantics).
-        // In non-git-sync mode, skip the cache — it may hold a released version rather than
-        // the active draft. Always hit the server so the draft-preference resolver runs.
-        const orgGit = useStore.getState().orgGit;
-        const isGitSyncEnabled =
-          orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-        const cachedDefinition = isGitSyncEnabled ? getModuleDefinition(appId) : null;
-        if (cachedDefinition) {
-          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
-        } else {
-          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
-        }
+        // Unpinned: always hit the backend — cached definition may be from the default branch,
+        // not the consumer's feature branch. Server resolver correctly returns the current
+        // branch's draft (or 404 if nothing is available there).
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       }
     } else {
       if (isPublicAccess) {
