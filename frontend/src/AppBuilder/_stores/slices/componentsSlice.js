@@ -37,12 +37,22 @@ import {
 import { extractQueryReferences } from '@/AppBuilder/_utils/queryPanel';
 import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
+// ======================
+// SECTION: Query re-run on dependency change
+// ======================
+
 // Debounce timers for query re-runs triggered by dependency changes
 const queryRerunTimers = new Map();
+
+// Modules whose initial-load / page-switch exposed-value flush is in progress.
+// Dependency-triggered query re-runs for those modules are suppressed.
+const suppressedQueryRerunModules = new Set();
 
 // Debounce delay for dependency-triggered query re-runs.
 // RunJS/RunPy are blocked at registerQueryDependencies and never reach here.
 function scheduleQueryRerun(queryId, queryName, kind, moduleId, getStore) {
+  // Skip re-runs cascading from the initial-load / page-switch settle for this module.
+  if (suppressedQueryRerunModules.has(moduleId)) return;
   if (queryRerunTimers.has(queryId)) {
     clearTimeout(queryRerunTimers.get(queryId));
   }
@@ -71,6 +81,16 @@ function clearAllQueryRerunTimers() {
   queryRerunTimers.forEach((timerId) => clearTimeout(timerId));
   queryRerunTimers.clear();
 }
+
+/** Suppress dependency-triggered query re-runs for a given module during initial-load or page-switch settle. */
+export function setSuppressQueryRerun(moduleId, value) {
+  if (value) suppressedQueryRerunModules.add(moduleId);
+  else suppressedQueryRerunModules.delete(moduleId);
+}
+
+// ======================
+// END SECTION: Query re-run on dependency change
+// ======================
 
 // Build the per-row components overlay used when resolving expressions inside
 // a ListView. Without this overlay, `components.<sibling>` is the per-row array

@@ -1,6 +1,6 @@
 import { ValidateEditUserGroupAdditionObject } from '../types';
-import { EntityManager } from 'typeorm';
 import { UserDetailKeyValueDto } from '../dto';
+import { EntityManager } from 'typeorm';
 
 export interface IExternalApiUtilService {
   // generates random password by taking length as the input
@@ -9,7 +9,6 @@ export interface IExternalApiUtilService {
     functionParam: ValidateEditUserGroupAdditionObject,
     manager?: EntityManager
   ): Promise<void>;
-
   updateUserMetadata(
     workspaceId: string,
     userId: string,
@@ -17,9 +16,5 @@ export interface IExternalApiUtilService {
     manager?: EntityManager
   ): Promise<any>;
 
-  getUserMetadata(
-    workspaceId: string,
-    userId: string,
-    manager?: EntityManager
-  ): Promise<any>;
+  getUserMetadata(workspaceId: string, userId: string, manager?: EntityManager): Promise<any>;
 }

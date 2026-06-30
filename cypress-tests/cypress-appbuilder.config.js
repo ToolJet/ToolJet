@@ -88,7 +88,7 @@ module.exports = defineConfig({
     video: false,
     videoUploadOnPasses: false,
     retries: {
-      runMode: 2,
+      runMode: 0,
       openMode: 0,
     },
   },
