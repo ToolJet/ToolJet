@@ -50,7 +50,12 @@ export interface IDataSourcesController {
     authorizeDataSourceOauthDto: AuthorizeDataSourceOauthDto
   ): Promise<void>;
 
-  decryptOptions(options: Record<string, any>): Promise<any>;
+  validateOptions(
+    user: User,
+    dataSourceId: string,
+    environmentId: string,
+    validateOptionsDto: import('../dto').ValidateOptionsDto
+  ): Promise<{ valid: boolean; errors: any[] }>;
 
   invokeDataSourceMethod(
     user: User,

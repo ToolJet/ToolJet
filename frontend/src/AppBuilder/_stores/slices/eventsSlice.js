@@ -152,16 +152,16 @@ export const createEventsSlice = (set, get) => ({
       get().eventsSlice.updateEventsField('eventsCreatedLoader', true, moduleId);
       const appId = get().appStore.modules[moduleId].app.appId;
       const versionId = get().currentVersionId;
-      appVersionService
-        .createAppVersionEventHandler(appId, versionId, event)
-        .then((response) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
-          get().eventsSlice.addEvent(response, moduleId);
-        })
-        .catch((err) => {
-          get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
-          toast.error(err?.error || 'An error occurred while creating the event handler');
-        });
+      try {
+        const response = await appVersionService.createAppVersionEventHandler(appId, versionId, event);
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        get().eventsSlice.addEvent(response, moduleId);
+        return response;
+      } catch (err) {
+        get().eventsSlice.updateEventsField('eventsCreatedLoader', false, moduleId);
+        toast.error(err?.error || 'An error occurred while creating the event handler');
+        return null;
+      }
     },
     bulkCreateAppVersionEventHandlers: async (events, moduleId) => {
       if (!events || events.length === 0) return [];
@@ -421,6 +421,7 @@ export const createEventsSlice = (set, get) => ({
           'onSaveKeyValuePairChanges',
           'onFieldValueChanged',
           'onCancelKeyValuePairChanges',
+          'onRefresh',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables, moduleId);
@@ -644,6 +645,10 @@ export const createEventsSlice = (set, get) => ({
             const { queryId } = event;
             return get().queryPanel.resetQuery(queryId, moduleId);
           }
+          case 'abort-query': {
+            const { queryId } = event;
+            return get().queryPanel.abortQuery(queryId, moduleId);
+          }
           case 'logout': {
             return logoutAction();
           }
@@ -665,7 +670,11 @@ export const createEventsSlice = (set, get) => ({
                 (result, queryParam) => ({
                   ...result,
                   ...{
-                    [getResolvedValue(queryParam[0])]: getResolvedValue(queryParam[1], undefined, customVariables),
+                    [getResolvedValue(queryParam[0], customVariables, moduleId)]: getResolvedValue(
+                      queryParam[1],
+                      customVariables,
+                      moduleId
+                    ),
                   },
                 }),
                 {}
@@ -742,8 +751,6 @@ export const createEventsSlice = (set, get) => ({
             const key = getResolvedValue(event.key, customVariables, moduleId);
             const value = getResolvedValue(event.value, customVariables, moduleId);
 
-            console.log('here--- set-custom-variable', key, value, moduleId);
-
             setVariable(key, value, moduleId);
             return Promise.resolve();
             // customAppVariables[key] = value;
@@ -762,6 +769,17 @@ export const createEventsSlice = (set, get) => ({
 
             // return resp;
           }
+
+          // case 'set-custom-variables': {
+          //   const { setVariables } = get();
+          //   const variables = getResolvedValue(event.variables, customVariables, moduleId);
+
+          //   if (variables && typeof variables === 'object' && !Array.isArray(variables)) {
+          //     setVariables(variables, moduleId);
+          //   }
+
+          //   return Promise.resolve();
+          // }
 
           case 'get-custom-variable': {
             const { getVariable } = get();
@@ -1095,6 +1113,21 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
+      const abortQuery = (queryName = '') => {
+        const query = dataQuery.queries.modules[moduleId].find((query) => query.name === queryName);
+        if (query) {
+          return executeAction(
+            {
+              actionId: 'abort-query',
+              queryId: query.id,
+            },
+            mode,
+            {},
+            moduleId
+          );
+        }
+      };
+
       const setVariable = (key = '', value = '') => {
         if (key) {
           const event = {
@@ -1105,6 +1138,16 @@ export const createEventsSlice = (set, get) => ({
           return executeAction(event, mode, {}, moduleId);
         }
       };
+
+      // const setVariables = (variables = {}) => {
+      //   if (!variables || typeof variables !== 'object' || Array.isArray(variables)) return;
+
+      //   const event = {
+      //     actionId: 'set-custom-variables',
+      //     variables,
+      //   };
+      //   return executeAction(event, mode, {}, moduleId);
+      // };
 
       const getVariable = (key = '') => {
         if (key) {
@@ -1364,6 +1407,7 @@ export const createEventsSlice = (set, get) => ({
       return {
         runQuery,
         setVariable,
+        // setVariables,
         getVariable,
         unsetAllVariables,
         unSetVariable,
@@ -1385,6 +1429,7 @@ export const createEventsSlice = (set, get) => ({
         logError,
         toggleAppMode,
         resetQuery,
+        abortQuery,
         scrollComponentInToView,
       };
     },

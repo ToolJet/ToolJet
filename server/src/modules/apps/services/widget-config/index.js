@@ -80,6 +80,7 @@ import {
   navigationConfig,
   fileButtonConfig,
   buttonGroupV2Config,
+  flexContainerConfig,
   universalProps,
   combineProperties,
 } from '@tooljet/widget-definitions';
@@ -111,6 +112,7 @@ const widgets = {
   textConfig,
   imageConfig,
   containerConfig,
+  flexContainerConfig,
   dropdownConfig, //!Depreciated
   dropdownV2Config,
   multiselectConfig,

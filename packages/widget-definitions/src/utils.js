@@ -1,15 +1,13 @@
 export const universalProps = {
   properties: {},
   general: {
-    tooltip: {
-      type: 'code',
-      displayName: 'Tooltip',
-      validation: { schema: { type: 'string' } },
-    },
+    tooltip: { type: 'code', displayName: 'Tooltip', validation: { schema: { type: 'string' } } },
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: 'code', displayName: 'CSS class', accordian: 'Advanced' },
+  },
   validate: true,
   generalStyles: {
     boxShadow: { type: 'boxShadow', displayName: 'Box Shadow' },
@@ -17,7 +15,9 @@ export const universalProps = {
   definition: {
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: '' },
+    },
     generalStyles: {
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
@@ -31,14 +31,9 @@ export const combineProperties = (widget, universal, isArray = false) => {
     properties: { ...universal.properties, ...widget.properties },
     general: { ...universal.general, ...widget.general },
     others: { ...universal.others, ...widget.others },
-    events: isArray
-      ? [...universal.events, ...widget.events]
-      : { ...universal.events, ...widget.events },
+    events: isArray ? [...universal.events, ...widget.events] : { ...universal.events, ...widget.events },
     styles: { ...universal.styles, ...widget.styles },
     generalStyles: { ...universal.generalStyles, ...widget.generalStyles },
-    exposedVariables: {
-      ...universal.exposedVariables,
-      ...widget.exposedVariables,
-    },
+    exposedVariables: { ...universal.exposedVariables, ...widget.exposedVariables },
   };
 };

@@ -16,6 +16,8 @@ import {
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { repairParentCycles } from 'src/helpers/parent_cycle.helper';
+import { TransactionLogger } from '@modules/logging/service';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
@@ -26,6 +28,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -86,6 +89,7 @@ type NewRevampedComponent =
   | 'DaterangePicker'
   | 'TextArea'
   | 'Container'
+  | 'FlexContainer'
   | 'Tabs'
   | 'Form'
   | 'Image'
@@ -107,7 +111,8 @@ type NewRevampedComponent =
   | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
-  | 'PopoverMenu';
+  | 'PopoverMenu'
+  | 'Pagination';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -136,6 +141,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'DaterangePicker',
   'TextArea',
   'Container',
+  'FlexContainer',
   'Tabs',
   'Form',
   'Image',
@@ -158,6 +164,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
+  'Pagination',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -215,6 +222,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'CodeEditor',
   'ColorPicker',
   'Container',
+  'FlexContainer',
   'CurrencyInput',
   'DatePickerV2',
   'DaterangePicker',
@@ -222,6 +230,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'DropdownV2',
   'EmailInput',
   'Form',
+  'Html',
   'Image',
   'JSONEditor',
   'JSONExplorer',
@@ -250,6 +259,60 @@ const PLACEHOLDER_TEXT_COLOR_COMPONENT_TYPES = ['TextInput', 'PasswordInput', 'N
 
 const MAX_LIMIT_COMPONENT_TYPES = ['MultiselectV2'];
 
+const TOOLTIP_FORMAT_COMPONENT_TYPES = [
+  'Accordion',
+  'AudioRecorder',
+  'Button',
+  'ButtonGroupV2',
+  'Camera',
+  'Checkbox',
+  'CircularProgressBar',
+  'ColorPicker',
+  'Container',
+  'CurrencyInput',
+  'DatePickerV2',
+  'DaterangePicker',
+  'DatetimePickerV2',
+  'Divider',
+  'DropdownV2',
+  'EmailInput',
+  'FileButton',
+  'FileInput',
+  'FilePicker',
+  'Form',
+  'Icon',
+  'IFrame',
+  'Image',
+  'JSONEditor',
+  'JSONExplorer',
+  'Kanban',
+  'KeyValuePair',
+  'Link',
+  'Listview',
+  'ModalV2',
+  'MultiselectV2',
+  'NumberInput',
+  'PasswordInput',
+  'PhoneInput',
+  'PopoverMenu',
+  'ProgressBar',
+  'RadioButtonV2',
+  'RangeSliderV2',
+  'ReorderableList',
+  'StarRating',
+  'Statistics',
+  'Tabs',
+  'Tags',
+  'TagsInput',
+  'Text',
+  'TextArea',
+  'TextInput',
+  'TimePicker',
+  'ToggleSwitchV2',
+  'TreeSelect',
+  'VerticalDivider',
+];
+
 @Injectable()
 export class AppImportExportService {
   constructor(
@@ -258,7 +321,8 @@ export class AppImportExportService {
     protected appEnvironmentUtilService: AppEnvironmentUtilService,
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
-    protected entityManager: EntityManager
+    protected entityManager: EntityManager,
+    protected readonly transactionLogger: TransactionLogger
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -682,6 +746,9 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+        // remapped explicitly on import/export — same gap as draft/version copy (issue #5153).
+        remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
         return updateEntityReferences(component, mappings);
       });
 
@@ -976,6 +1043,8 @@ export class AppImportExportService {
                   newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
+                  if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                  if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -1305,6 +1374,19 @@ export class AppImportExportService {
 
         const pageComponents = importingComponents.filter((component) => component.pageId === page.id);
 
+        // Heal any parent-child cycles in the imported tree BEFORE we begin ID
+        // remapping. A cycle reaching this point (corrupt source app / hand-
+        // edited JSON / git-merge artifact) would otherwise persist verbatim
+        // and freeze the canvas on first open. The helper mutates
+        // component.parent in place on the deterministically-chosen node.
+        const { repairedIds } = repairParentCycles(pageComponents);
+        if (repairedIds.length > 0) {
+          this.transactionLogger.warn(
+            `[app-import] Repaired ${repairedIds.length} parent-child cycle(s) on page ${page.id}. ` +
+              `Components bubbled to canvas root: ${repairedIds.join(', ')}`
+          );
+        }
+
         const newComponentIdsMap = {};
         for (const component of pageComponents) {
           newComponentIdsMap[component.id] = uuid();
@@ -1423,6 +1505,8 @@ export class AppImportExportService {
                 newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
+                if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                 newLayout.component = savedComponent;
 
                 await manager.save(newLayout);
@@ -2766,6 +2850,10 @@ function migrateProperties(
     properties.maxLimit = { value: '' };
   }
 
+  if (TOOLTIP_FORMAT_COMPONENT_TYPES.includes(componentType) && properties.tooltipFormat === undefined) {
+    properties.tooltipFormat = { value: 'plainText' };
+  }
+
   if (!tooljetVersion) {
     return { properties, styles, general, generalStyles, validation };
   }
@@ -3184,6 +3272,13 @@ function migrateProperties(
       }
       if (properties.tooltip === undefined) {
         properties.tooltip = { value: '' };
+      }
+    }
+
+    // Pagination
+    if (componentType === 'Pagination') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
       }
     }
   }

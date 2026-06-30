@@ -1,7 +1,7 @@
 import React, { Suspense, useRef, lazy } from 'react';
 import cx from 'classnames';
 
-import { PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
+import { CANVAS_WIDTHS, PAGE_CANVAS_HEADER_HEIGHT } from './appCanvasConstants';
 import MobileNavigationHeader from './PageMenu/MobileNavigationHeader';
 import { CanvasContentTail } from './CanvasContentTail';
 
@@ -26,6 +26,7 @@ export const MobileLayout = ({
   mainCanvasContainer,
   gridContent,
   canvasHeaderHeight = PAGE_CANVAS_HEADER_HEIGHT,
+  pageLoader = false,
 }) => {
   const mobileCanvasFrameRef = useRef(null);
   const mobileNavSheetContainerRef = useRef(null);
@@ -34,8 +35,12 @@ export const MobileLayout = ({
       key={pageKey}
       ref={mobileCanvasFrameRef}
       data-cy="mobile-canvas-frame"
-      style={{ position: 'relative', transform: 'translateZ(0)' }}
-      className={cx('tj-canvas-area !tw-w-[450px] tw-mx-auto')}
+      style={{
+        position: 'relative',
+        transform: 'translateZ(0)',
+        maxWidth: CANVAS_WIDTHS.deviceWindowWidth,
+      }}
+      className={cx('tj-canvas-area tw-w-full tw-mx-auto')}
     >
       <div
         ref={mobileNavSheetContainerRef}
@@ -70,7 +75,12 @@ export const MobileLayout = ({
           />
         </div>
       )}
-      <CanvasContentTail currentMode={currentMode} appType={appType} isAppDarkMode={isAppDarkMode}>
+      <CanvasContentTail
+        currentMode={currentMode}
+        appType={appType}
+        isAppDarkMode={isAppDarkMode}
+        pageLoader={pageLoader}
+      >
         {mainCanvasContainer}
       </CanvasContentTail>
       <Suspense fallback={null}>

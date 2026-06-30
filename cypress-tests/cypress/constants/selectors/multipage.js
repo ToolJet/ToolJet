@@ -1,56 +1,36 @@
+// Pages UI migrated from the LEFT sidebar to the RightSideBar "Page settings" tab
+// (frontend/src/AppBuilder/RightSideBar/PageSettingsTab/*). Selectors below are
+// verified against that source. Many controls in the new AddEditPagePopup
+// (page name / handle / mark-as-home / hide / disable / events) render as plain
+// inputs/switches WITHOUT data-cy, so those are driven via scoped text in utils.
 export const multipageSelector = {
-  sidebarPageButton: '[data-cy="left-sidebar-page-button"]',
-  pagesLabel: '[data-cy="label-pages"]',
-  addPageIcon: '[data-cy="add-page-button"]',
-  searchPageIcon: '[title="Search"]',
-  pagesPinIcon: '[title="Pin"]',
+  // Right-sidebar trigger — SidebarItem.jsx:32 builds data-cy from tip "Page settings"
+  // via generateCypressDataCy => right-sidebar-page-settings-button
+  pageSettingsButton: '[data-cy="right-sidebar-page-settings-button"]',
 
-  homePageLabel: '[data-cy="pages-name-home"]',
-  homePageIcon: '[data-cy="home-page-icon"]',
-  pageMenuIcon: '[data-cy="page-menu-option-icon"]',
-  pageEventHandler: '[data-cy="header-page-handle"]',
-  pageHandleText: '[data-cy="page-handle-text"]',
-  pageHandleIcon: '[data-cy="page-handler-option-icon"]',
-  renameOptionIcon: '[data-cy="rename-option-icon"]',
+  // Pages-and-navigation panel header — PageSettings.jsx:160,169
+  panelHeaderTitle: ".pages-settings .panel-header-title",
+  panelCloseButton: '[data-cy="pages-close-button"]',
 
-  renameOptionButton: '[data-cy="rename-option-button"]',
-  markHomePageIcon: '[data-cy="mark-home-option-icon"]',
-  markHomePageOptionButton: '[data-cy="mark-home-option-button"]',
-  hidePageOptionIcon: '[data-cy="hide-page-on-app-menu-option-icon"]',
-  hidePageOptionButton: '[data-cy="hide-page-on-app-menu-option-button"]',
+  // Add-new-page menu — AddNewPageMenu.jsx:36 ("New page" button, id="add-new-page")
+  addNewPageButton: "#add-new-page",
 
-  eventHandlersOptionIcon: '[data-cy="event-handlers-option-icon"]',
-  eventHandlerOptionButton: '[data-cy="event-handlers-option-button"]',
+  // Page rows — PageMenuItem.jsx:201 data-cy=`pages-name-${generateCypressDataCy(name)}`
+  pageRow: (name) => `[data-cy="pages-name-${name}"]`,
 
-  disabledDeleteButton:
-    ".menu-options > :nth-child(6)>.unstyled-button.disabled",
-  pagesMenuIcon: '[data-cy="page-global-settings"]',
-  pageHeaderSettings: '[data-cy="page-settings-header"]',
-  disableThePageMenuLabel: '[data-cy="disable-page-menu-label"]',
-  disableMenuDescription: '[data-cy="disable-page-menu-description"]',
-  disableMenuToggle: '[data-cy="disable-page-menu-toggle"]',
+  // AddEditPagePopup (opened by clicking a page row or the New page button) — AddNewPagePopup.jsx
+  addEditPagePopup: "#add-new-page-popup",
+  // first .form-control inside the popup is the Page name input (AddNewPagePopup.jsx:355)
+  pageNameInput: '#add-new-page-popup input.form-control[type="text"]',
+  // Handle invalid feedback — AddNewPagePopup.jsx:382
+  pageHandleInvalidFeedback: '[data-cy="page-handle-invalid-feedback"]',
 
-  hidePageIcon: '[data-cy="icon-hidden"]',
-  deletePageOptionButton: '[data-cy="delete-page-option-button"]',
+  // Delete confirmation modal — DeletePageConfirmationModal.jsx:91,97,99,102
+  deleteModalTitle: ".delete-page-modal .modal-title",
   modalMessage: '[data-cy="modal-message"]',
   modalConfirmButton: '[data-cy="modal-confirm-button"]',
   modalCancelButton: '[data-cy="modal-cancel-button"]',
 
-  modalTitlePageEvents: '[data-cy="modal-title-page-events"]',
-  pageEventsLabel: '[data-cy="page-events-labe"]',
-  addEventHandlerLink: '[data-cy="add-event-handler"]',
-  noEventHandlerMessage: '[data-cy="no-items-banner"]',
-  closeModal: '[data-cy="close-option-button"]',
-  closeIconEvents: '[data-cy="modal-close-button-page-events"]',
-  eventName: '[data-cy="event-name"]',
-
-  labelNoPagesFound: '[data-cy="label-no-pages-found"]',
-
-  modalTitleEditPageHandle: '[data-cy="title-edit-page-handle"]',
-  pageHandleSaveButton: '[data-cy="save-option-button"]',
-  pageHandlePreInputSection: '[data-cy="page-handle-pre-input-section"]',
-  pageHandleInfo: '[data-cy="alert-info-text"]',
-  pageHandleCancelButton: '[data-cy="cancel-option-button"]',
-  pageHandleInputField: '[data-cy="page-handle-input-field"]',
-  pageHandleInvalidFeedback: '[data-cy="page-handle-invalid-feedback"]',
+  // Hidden / home / disabled indicators rendered on the page row (PageMenuItem.jsx:210-233)
+  homePageIcon: ".main-page-icon-wrapper",
 };
