@@ -39,8 +39,10 @@ export const createDataSourceSlice = (set) => ({
         sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],
         loadingDataSources: false,
       });
-
       options?.onSuccess?.(data);
+    }).catch((err) => {
+      console.error('fetchGlobalDataSources failed', err);
+      set({ loadingDataSources: false });
     });
   },
   getAllGlobalDataSourceList: (organizationId, options) => {

@@ -558,6 +558,11 @@ const useAppData = (
               setFolderMappings(folderData.folderMappings ?? []);
             })
             .catch(() => {});
+        } else if (moduleMode && moduleId === 'canvas' && setFolders) {
+          // Modules have no folder structure. Signal foldersReady so the EE QueryFolderTree
+          // renders the flat query list instead of returning null while waiting for fetch.
+          setFolders([]);
+          setFolderMappings([]);
         }
 
         const constants = constantsResp?.constants;
@@ -607,6 +612,11 @@ const useAppData = (
           // Use versionId from URL if available (preview mode), otherwise use editing version
           const versionIdToInit = versionId || appData.editing_version?.id || appData.current_version_id;
           useStore.getState().init(versionIdToInit, envFromQueryParams);
+          fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
+        } else if (!isPublicAccess && moduleMode && moduleId === 'canvas') {
+          // Standalone module editor: load static data sources (RunJS, RestAPI, RunPy) the same
+          // way a regular app editor does. Embedded modules skip this — they inherit the parent's.
+          const versionIdToInit = appData.editing_version?.id || appData.current_version_id;
           fetchGlobalDataSources(appData.organization_id, versionIdToInit, editorEnvironment.id);
         }
         if (!moduleMode) {
