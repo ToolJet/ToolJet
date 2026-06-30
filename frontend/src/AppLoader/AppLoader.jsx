@@ -2,6 +2,8 @@ import React, { useLayoutEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { resetAllStores } from '@/_stores/utils';
+import { resetAllStores as resetAppBuilderStore } from '@/AppBuilder/_stores/utils';
+import { timerRegistry } from '@/AppBuilder/_helpers/timerRegistry';
 import RenderWorkflow from '@/modules/RenderWorkflow';
 import RenderAppBuilder from './RenderAppBuilder';
 
@@ -10,6 +12,10 @@ const AppLoader = (props) => {
 
   useLayoutEffect(() => {
     resetAllStores();
+    return () => {
+      timerRegistry.clearAll();
+      resetAppBuilderStore();
+    };
   }, []);
 
   switch (appType) {
