@@ -179,7 +179,9 @@ const universalProps = {
   },
   others: {},
   events: {},
-  styles: {},
+  styles: {
+    cssClass: { type: "code", displayName: "CSS class", accordian: "Advanced" },
+  },
   validate: true,
   generalStyles: {
     boxShadow: { type: "boxShadow", displayName: "Box Shadow" },
@@ -187,7 +189,9 @@ const universalProps = {
   definition: {
     others: {},
     events: [],
-    styles: {},
+    styles: {
+      cssClass: { value: "" },
+    },
     generalStyles: {
       boxShadow: { value: "0px 0px 0px 0px #00000040" },
     },
