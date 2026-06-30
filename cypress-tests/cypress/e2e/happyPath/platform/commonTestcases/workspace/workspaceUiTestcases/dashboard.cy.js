@@ -300,7 +300,7 @@ describe("dashboard", () => {
 
     cy.exec("ls ./cypress/downloads/").then((result) => {
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      expect(downloadedAppExportFileName).to.contain.string("app");
+      expect(downloadedAppExportFileName).to.contain.string("App");
     });
 
     viewAppCardOptions(data.appName);
