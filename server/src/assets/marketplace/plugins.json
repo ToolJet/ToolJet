@@ -363,5 +363,17 @@
     "id": "intercom",
     "author": "Tooljet",
     "timestamp": "Wed, 16 Apr 2026 10:00:00 GMT"
+  },
+  {
+    "name": "Bilig WorkPaper",
+    "description": "Verify spreadsheet formula readback from a Bilig WorkPaper sidecar",
+    "version": "1.0.0",
+    "id": "bilig_workpaper",
+    "author": "Tooljet",
+    "timestamp": "Sun, 24 May 2026 00:00:00 GMT",
+    "tags": [
+      "AI",
+      "Productivity"
+    ]
   }
 ]

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Bilig WorkPaper datasource",
+  "description": "A schema defining Bilig WorkPaper datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "verify_formula_readback",
+    "sheetName": "Inputs",
+    "address": "B3",
+    "value": "0.4"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select a Bilig WorkPaper operation",
+      "list": [
+        {
+          "value": "verify_formula_readback",
+          "name": "Verify formula readback"
+        }
+      ]
+    },
+    "verify_formula_readback": {
+      "sheetName": {
+        "label": "Sheet name",
+        "key": "sheetName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Inputs",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "address": {
+        "label": "Cell address",
+        "key": "address",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "B3",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "value": {
+        "label": "Value",
+        "key": "value",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "0.4",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "JSON value to write before recalculation. Strings that are not valid JSON are sent as strings."
+      }
+    }
+  }
+}
