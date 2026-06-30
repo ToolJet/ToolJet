@@ -32,21 +32,19 @@ function getConfig() {
   return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey, showAll = false) {
+function getAll(page, folder, searchKey) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const showAllParam = showAll ? '&showAll=true' : '';
-  if (page === 0)
-    return fetch(`${config.apiUrl}/apps?type=front-end${showAllParam}`, requestOptions).then(handleResponse);
+  if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=front-end${showAllParam}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
       requestOptions
     ).then(handleResponse);
 }
 
 function getAllAddableApps() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/addable?showAll=true`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/addable`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {

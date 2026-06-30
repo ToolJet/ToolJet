@@ -382,14 +382,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(
-    user: User,
-    page: number,
-    searchKey: string,
-    type: string,
-    isGetAll: boolean,
-    showAll = false
-  ): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -411,30 +404,14 @@ export class AppsUtilService implements IAppsUtilService {
       organizationId: user.organizationId,
     });
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      let viewableAppsQb: SelectQueryBuilder<AppBase>;
-
-      if (showAll && !this.isSuperAdmin(user)) {
-        viewableAppsQb = manager
-          .createQueryBuilder(AppBase, 'apps')
-          .innerJoin('apps.user', 'user')
-          .addSelect(['user.firstName', 'user.lastName'])
-          .where('apps.organizationId = :organizationId', { organizationId: user.organizationId })
-          .andWhere('apps.type = :type', { type })
-          .orderBy('apps.createdAt', 'DESC');
-        if (isGetAll) {
-          viewableAppsQb.select(['apps.id', 'apps.slug', 'apps.name', 'apps.currentVersionId']);
-        }
-      } else {
-        viewableAppsQb = this.viewableAppsQueryUsingPermissions(
-          user,
-          userPermission[resourceType],
-          manager,
-          searchKey,
-          isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-          type,
-          showAll
-        );
-      }
+      const viewableAppsQb = this.viewableAppsQueryUsingPermissions(
+        user,
+        userPermission[resourceType],
+        manager,
+        searchKey,
+        isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
+        type
+      );
 
       // Eagerly load appVersions for modules
       if (type === APP_TYPES.MODULE && !isGetAll) {
@@ -458,8 +435,7 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string,
-    showAll = false
+    type?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -487,7 +463,7 @@ export class AppsUtilService implements IAppsUtilService {
 
     viewableAppsQb.orderBy('apps.createdAt', 'DESC');
 
-    if (this.isSuperAdmin(user) || showAll) {
+    if (this.isSuperAdmin(user)) {
       return viewableAppsQb;
     }
 
@@ -563,7 +539,7 @@ export class AppsUtilService implements IAppsUtilService {
     return !!(user?.userType === USER_TYPE.INSTANCE);
   }
 
-  async count(user: User, searchKey, type: APP_TYPES, showAll = false): Promise<number> {
+  async count(user: User, searchKey, type: APP_TYPES): Promise<number> {
     let resourceType: MODULES;
 
     switch (type) {
@@ -587,8 +563,7 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         undefined,
-        type,
-        showAll
+        type
       ).getCount();
 
       return apps;

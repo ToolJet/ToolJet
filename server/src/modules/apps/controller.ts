@@ -121,7 +121,6 @@ export class AppsController implements IAppsController {
       folderId: query.folder,
       searchKey: query.searchKey || '',
       type: query.type ?? 'front-end',
-      showAll: query.showAll === 'true',
     };
     return this.appsService.getAllApps(user, AppListDto, false);
   }
@@ -129,7 +128,7 @@ export class AppsController implements IAppsController {
   @InitFeature(FEATURE_KEY.GET)
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('/addable')
-  indexAddable(@User() user: UserEntity, @Query() query: Record<string, string>) {
+  indexAddable(@User() user: UserEntity) {
     return this.appsService.getAllApps(
       user,
       {
@@ -137,7 +136,6 @@ export class AppsController implements IAppsController {
         folderId: null,
         searchKey: '',
         type: 'front-end',
-        showAll: query.showAll === 'true',
       },
       true
     );
