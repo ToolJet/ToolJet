@@ -75,7 +75,7 @@ const useAppData = (
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, versionId } = {},
+  { environmentId, versionId, componentName } = {},
   moduleMode = false,
   appSlug
 ) => {
@@ -692,6 +692,22 @@ const useAppData = (
         console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
+          const versionLabel = versionId || 'unpinned';
+          const moduleName = componentName ?? moduleId;
+          useStore.getState().debugger.log({
+            logLevel: 'error',
+            type: 'module',
+            kind: 'module',
+            key: moduleName,
+            message: `Pinned version "${versionLabel}" unavailable on this branch`,
+            errorTarget: 'Modules',
+            error: {
+              description: _error?.data?.message || 'Module version not found',
+              module: moduleName,
+              version: versionLabel,
+            },
+            timestamp: new Date().toISOString(),
+          });
           toast.error('Error fetching module data');
           return;
         }
