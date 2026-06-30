@@ -19,10 +19,33 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useEditorStore } from '@/_stores/editorStore';
+import type { CascaderMenuRef, CascaderValidationStatus, CascaderValue } from './types';
 import { normalizeTree, findDefaultValue } from './utils';
 import { useCascader } from './useCascader';
 import CascaderMenu from './CascaderMenu';
 import './cascader.scss';
+
+const LabelComponent = Label as React.ComponentType<any>;
+const LoaderComponent = Loader as React.ComponentType<any>;
+const TablerIconComponent = TablerIcon as React.ComponentType<any>;
+
+interface CascaderProps {
+  height: number;
+  validate?: (value: CascaderValue | null) => CascaderValidationStatus;
+  properties: Record<string, any>;
+  styles: Record<string, any>;
+  setExposedVariable: (key: string, value: unknown) => void;
+  setExposedVariables: (variables: unknown) => void;
+  fireEvent: (eventName: string) => void;
+  darkMode?: boolean;
+  onComponentClick?: (id: string) => void;
+  id: string;
+  componentName?: string;
+  validation?: {
+    mandatory?: boolean;
+  };
+  dataCy?: string;
+}
 
 export const Cascader = ({
   height,
@@ -35,10 +58,10 @@ export const Cascader = ({
   darkMode,
   onComponentClick,
   id,
-  componentName,
+  componentName: _componentName,
   validation,
   dataCy,
-}) => {
+}: CascaderProps) => {
   const {
     label,
     placeholder,
@@ -75,7 +98,7 @@ export const Cascader = ({
     labelFontSize,
   } = styles;
 
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const getResolvedValue = useStore((state: any) => state.getResolvedValue, shallow);
 
   // Resolve the option source per the static/dynamic pattern, then normalize.
   const rawSource = !advanced
@@ -123,7 +146,7 @@ export const Cascader = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const controlRef = useRef(null);
-  const menuRef = useRef(null);
+  const menuRef = useRef<CascaderMenuRef | null>(null);
 
   const interactionBlocked = isDisabled || isLoading;
   const hasValue = selection.value !== null && selection.value !== undefined;
@@ -171,19 +194,19 @@ export const Cascader = ({
     setIsOpen((prev) => !prev);
   };
 
-  const handleSelectLeaf = (value) => {
+  const handleSelectLeaf = (value: CascaderValue) => {
     selectLeafFromUI(value);
     setShowValidationError(true);
     setIsOpen(false);
   };
 
-  const handleClear = (e) => {
+  const handleClear = (e: React.MouseEvent<HTMLSpanElement>) => {
     e.stopPropagation();
     clearFromUI();
     setShowValidationError(true);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (interactionBlocked) return;
     if (!isOpen) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
@@ -223,7 +246,7 @@ export const Cascader = ({
         useEditorStore.getState().actions.setHoveredComponent('');
       }}
     >
-      <Label
+      <LabelComponent
         dataCy={dataCy}
         label={label}
         width={labelWidth}
@@ -290,7 +313,7 @@ export const Cascader = ({
               }}
             >
               {iconVisibility && (
-                <TablerIcon
+                <TablerIconComponent
                   iconName={icon}
                   style={{
                     width: '16px',
@@ -326,7 +349,7 @@ export const Cascader = ({
                   </span>
                 )}
                 {isLoading ? (
-                  <Loader width="16" />
+                  <LoaderComponent width="16" />
                 ) : isOpen ? (
                   <TriangleUpArrow width={'18'} fill={'var(--borders-strong)'} />
                 ) : (

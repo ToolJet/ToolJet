@@ -1,8 +1,62 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  type DependencyList,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
-import { buildPathMaps, computeSelection } from './utils';
+import type {
+  CascaderNode,
+  CascaderPathMaps,
+  CascaderSelection,
+  CascaderValidationStatus,
+  CascaderValue,
+} from './types';
+import {
+  buildPathMaps,
+  computeSelection,
+} from './utils';
 
-const useUpdateEffect = (effect, deps) => {
+interface UseCascaderParams {
+  tree: CascaderNode[];
+  pathSeparator?: string;
+  defaultValue?: CascaderValue | null;
+  label: string;
+  visibility: boolean;
+  disabledState: boolean;
+  loadingState: boolean;
+  optionsLoadingState: boolean;
+  setExposedVariable: (key: string, value: unknown) => void;
+  setExposedVariables: (variables: unknown) => void;
+  fireEvent: (eventName: string) => void;
+  validate?: (value: CascaderValue | null) => CascaderValidationStatus;
+  validation?: {
+    mandatory?: boolean;
+  };
+}
+
+interface UseCascaderResult {
+  maps: CascaderPathMaps;
+  selectedValue: CascaderValue | null;
+  selection: CascaderSelection;
+  isVisible: boolean;
+  isDisabled: boolean;
+  isLoading: boolean;
+  isOptionsLoading: boolean;
+  isValid: boolean;
+  validationError: string | null;
+  isMandatory: boolean;
+  showValidationError: boolean;
+  setShowValidationError: Dispatch<SetStateAction<boolean>>;
+  selectLeafFromUI: (value: CascaderValue) => void;
+  clearFromUI: () => void;
+}
+
+const useUpdateEffect = (effect: () => void | (() => void), deps: DependencyList) => {
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -38,7 +92,7 @@ export function useCascader({
   fireEvent,
   validate,
   validation,
-}) {
+}: UseCascaderParams): UseCascaderResult {
   const treeSignature = JSON.stringify(tree);
   // Build path maps from the normalized tree content, not the array identity.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,18 +111,19 @@ export function useCascader({
   fireEventRef.current = fireEvent;
 
   const isValidLeaf = useCallback(
-    (value) => value !== null && value !== undefined && mapsRef.current.leafSet.has(value),
+    (value: unknown): value is CascaderValue =>
+      value !== null && value !== undefined && mapsRef.current.leafSet.has(value as CascaderValue),
     []
   );
 
-  const [selectedValue, setSelectedValue] = useState(() => {
+  const [selectedValue, setSelectedValue] = useState<CascaderValue | null>(() => {
     const initialMaps = buildPathMaps(tree);
     return defaultValue !== null && defaultValue !== undefined && initialMaps.leafSet.has(defaultValue)
       ? defaultValue
       : null;
   });
 
-  const [validationStatus, setValidationStatus] = useState(
+  const [validationStatus, setValidationStatus] = useState<CascaderValidationStatus>(
     validate?.(selectedValue) ?? { isValid: true, validationError: null }
   );
   const [showValidationError, setShowValidationError] = useState(false);
@@ -84,7 +139,7 @@ export function useCascader({
   // Apply a selection (valid leaf value or null). Updates state, exposed
   // variables and validation. Does NOT fire onSelect — callers decide.
   const setSelection = useCallback(
-    (value) => {
+    (value: CascaderValue | null | undefined) => {
       const safeValue = isValidLeaf(value) ? value : null;
       const sel = computeSelection(safeValue, mapsRef.current, sepRef.current);
       setSelectedValue(sel.value);
@@ -99,7 +154,7 @@ export function useCascader({
 
   // === UI handlers ===
   const selectLeafFromUI = useCallback(
-    (value) => {
+    (value: CascaderValue) => {
       const sel = setSelection(value);
       if (sel.value !== null) fireEventRef.current('onSelect');
     },
@@ -125,7 +180,7 @@ export function useCascader({
       isValid: validationStatus.isValid,
       isMandatory,
       // setValue: selects matching least-child; invalid/parent clears (no onSelect).
-      setValue: async function (value) {
+      setValue: async function (value: CascaderValue) {
         if (isValidLeaf(value)) {
           setSelection(value);
           fireEventRef.current('onSelect');
@@ -136,19 +191,19 @@ export function useCascader({
       clearValue: async function () {
         setSelection(null);
       },
-      setLoading: async function (value) {
+      setLoading: async function (value: unknown) {
         setIsLoading(!!value);
         setExposedVariable('isLoading', !!value);
       },
-      setOptionsLoading: async function (value) {
+      setOptionsLoading: async function (value: unknown) {
         setIsOptionsLoading(!!value);
         setExposedVariable('isOptionsLoading', !!value);
       },
-      setVisibility: async function (value) {
+      setVisibility: async function (value: unknown) {
         setIsVisible(!!value);
         setExposedVariable('isVisible', !!value);
       },
-      setDisable: async function (value) {
+      setDisable: async function (value: unknown) {
         setIsDisabled(!!value);
         setExposedVariable('isDisabled', !!value);
       },

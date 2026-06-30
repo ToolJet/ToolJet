@@ -7,7 +7,26 @@ import { TreeSelectOptionsList } from '../TreeSelect/components';
 import { useTreeSelectItemsManager } from '../TreeSelect/hooks';
 import '../TreeSelect/treeSelect.scss';
 
-export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
+const EventManagerComponent = EventManager as React.ComponentType<any>;
+const TreeSelectOptionsListComponent = TreeSelectOptionsList as React.ComponentType<any>;
+
+interface CascaderInspectorProps {
+  componentMeta: Record<string, any>;
+  darkMode?: boolean;
+  [key: string]: any;
+}
+
+interface CascaderInspectorSection {
+  id?: string;
+  title: string;
+  type?: string;
+  properties?: string[];
+  custom?: () => React.ReactNode;
+  isOpen?: boolean;
+  extraProps?: (property: string) => Record<string, any>;
+}
+
+export const Cascader = ({ componentMeta, darkMode, ...restProps }: CascaderInspectorProps) => {
   const {
     layoutPropertyChanged,
     component,
@@ -36,8 +55,8 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
   } = useTreeSelectItemsManager(component, paramUpdated);
 
   // Property organization
-  let additionalActions = [];
-  let dataProperties = [];
+  let additionalActions: string[] = [];
+  let dataProperties: string[] = [];
 
   for (const [key] of Object.entries(componentMeta?.properties || {})) {
     const prop = componentMeta?.properties[key];
@@ -49,7 +68,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
   }
 
   const _renderTreeItems = () => (
-    <TreeSelectOptionsList
+    <TreeSelectOptionsListComponent
       treeItems={treeItems}
       darkMode={darkMode}
       hoveredItemIndex={hoveredItemIndex}
@@ -68,7 +87,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
     />
   );
 
-  const createRenderElement = (property, type = 'properties', extraProps = {}) => {
+  const createRenderElement = (property: string, type = 'properties', extraProps: Record<string, any> = {}) => {
     return renderElement(
       component,
       componentMeta,
@@ -83,11 +102,16 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
     );
   };
 
-  const createAccordionItem = (title, children, isOpen = true, id) => ({ id, title, isOpen, children });
+  const createAccordionItem = (title: string, children: React.ReactNode, isOpen = true, id?: string) => ({
+    id,
+    title,
+    isOpen,
+    children,
+  });
 
   const isAdvanced = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
 
-  const sections = [
+  const sections: CascaderInspectorSection[] = [
     {
       title: 'Data',
       type: 'properties',
@@ -108,7 +132,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
     {
       title: 'Events',
       custom: () => (
-        <EventManager
+        <EventManagerComponent
           sourceId={component?.id}
           eventSourceType="component"
           eventMetaDefinition={componentMeta}
@@ -150,7 +174,7 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
     if (section.custom) {
       return createAccordionItem(section.title, section.custom(), section.isOpen, section.id);
     }
-    const children = section.properties.map((property) => {
+    const children = (section.properties || []).map((property) => {
       const extraProps = section.extraProps ? section.extraProps(property) : {};
       return createRenderElement(property, section.type, extraProps);
     });

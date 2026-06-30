@@ -1,7 +1,21 @@
 import React from 'react';
 
-const Cascader = ({ fill = '#D7DBDF', width = 24, className = '', viewBox = '0 0 49 48' }) => (
-  <svg width={width} height={width} viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+interface CascaderIconProps {
+  fill?: string;
+  width?: number;
+  className?: string;
+  viewBox?: string;
+}
+
+const Cascader = ({ fill = '#D7DBDF', width = 24, className = '', viewBox = '0 0 49 48' }: CascaderIconProps) => (
+  <svg
+    width={width}
+    height={width}
+    viewBox={viewBox}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
     {/* Input field */}
     <rect x="6" y="8" width="37" height="10" rx="3" fill={fill} />
     {/* Dropdown panel */}

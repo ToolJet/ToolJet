@@ -53,7 +53,7 @@ import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
 import Treeselect from './treeselect.jsx';
-import Cascader from './cascader.jsx';
+import Cascader from './cascader';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';

@@ -1,9 +1,22 @@
 import React, { useState, useMemo, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import type { CascaderMenuRef, CascaderNode, CascaderPathMaps, CascaderValue } from './types';
 import { getNodesAtPath } from './utils';
 
-const ROW_STYLE = {
+const LoaderComponent = Loader as React.ComponentType<any>;
+
+interface CascaderMenuProps {
+  tree: CascaderNode[];
+  maps: CascaderPathMaps;
+  selectedValue: CascaderValue | null;
+  optionsLoading: boolean;
+  onSelectLeaf: (value: CascaderValue) => void;
+  menuTextColor?: string;
+  accentColor?: string;
+}
+
+const ROW_STYLE: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
@@ -22,7 +35,7 @@ const ROW_STYLE = {
  * deeper; leaf rows select and close. Keyboard is driven imperatively from the
  * input (via ref) so browser focus stays on the input.
  */
-const CascaderMenu = forwardRef(
+const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
   ({ tree, maps, selectedValue, optionsLoading, onSelectLeaf, menuTextColor, accentColor }, ref) => {
     // Restore the drilldown to the selected leaf's parent level when reopening.
     const initialPath = useMemo(() => {
@@ -32,7 +45,7 @@ const CascaderMenu = forwardRef(
       return [];
     }, [selectedValue, maps]);
 
-    const [activePath, setActivePath] = useState(initialPath);
+    const [activePath, setActivePath] = useState<CascaderValue[]>(initialPath);
     const currentNodes = useMemo(() => getNodesAtPath(tree, activePath), [tree, activePath]);
 
     const firstEnabledIndex = () => currentNodes.findIndex((n) => !n.disabled);
@@ -53,20 +66,20 @@ const CascaderMenu = forwardRef(
 
     const breadcrumb = activePath.map((v) => maps.valueToNode[v]?.label).filter(Boolean);
 
-    const descend = (node) => {
+    const descend = (node: CascaderNode) => {
       if (node.disabled || !node.children) return;
       setActivePath((prev) => [...prev, node.value]);
     };
 
     const goBack = () => setActivePath((prev) => prev.slice(0, -1));
 
-    const activateRow = (node) => {
+    const activateRow = (node?: CascaderNode) => {
       if (!node || node.disabled) return;
       if (node.children) descend(node);
       else onSelectLeaf(node.value);
     };
 
-    const moveHighlight = (dir) => {
+    const moveHighlight = (dir: number) => {
       if (currentNodes.length === 0) return;
       let i = highlightedIndex;
       for (let step = 0; step < currentNodes.length; step++) {
@@ -124,7 +137,7 @@ const CascaderMenu = forwardRef(
         {breadcrumb.length > 0 && (
           <div
             className="cascader-menu-header"
-            onMouseDown={(e) => e.preventDefault()}
+            onMouseDown={(e: React.MouseEvent<HTMLDivElement>) => e.preventDefault()}
             onClick={goBack}
             style={{
               display: 'flex',
@@ -162,7 +175,7 @@ const CascaderMenu = forwardRef(
         >
           {optionsLoading ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80px' }}>
-              <Loader width="18" />
+              <LoaderComponent width="18" />
             </div>
           ) : currentNodes.length === 0 ? (
             <div
@@ -185,7 +198,7 @@ const CascaderMenu = forwardRef(
                 <div
                   key={`${node.value}-${index}`}
                   // preventDefault keeps browser focus on the input (so onBlur doesn't fire on click)
-                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseDown={(e: React.MouseEvent<HTMLDivElement>) => e.preventDefault()}
                   onMouseEnter={() => !node.disabled && setHighlightedIndex(index)}
                   onClick={() => activateRow(node)}
                   data-cy={`cascader-option-${String(node.value)}`}

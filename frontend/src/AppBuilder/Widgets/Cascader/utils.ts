@@ -1,8 +1,21 @@
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
+import type {
+  CascaderNode,
+  CascaderOption,
+  CascaderOptionControlValue,
+  CascaderPathMaps,
+  CascaderSelection,
+  CascaderValue,
+} from './types';
 
-const resolveOptionControlValue = (value, getResolvedValue) => {
+const resolveOptionControlValue = (
+  value: CascaderOptionControlValue,
+  getResolvedValue: (value: unknown) => unknown
+) => {
   const rawValue =
-    value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : value;
+    value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'value')
+      ? (value as { value?: unknown }).value
+      : value;
   return getResolvedValue(rawValue);
 };
 
@@ -17,15 +30,19 @@ const resolveOptionControlValue = (value, getResolvedValue) => {
  *
  * Returns nodes shaped `{ label, value, disabled, children }`.
  */
-export const normalizeTree = (items, getResolvedValue) => {
+export const normalizeTree = (
+  items: unknown,
+  getResolvedValue: (value: unknown) => unknown
+): CascaderNode[] => {
   if (!Array.isArray(items)) return [];
   return items
+    .filter((item): item is CascaderOption => item !== null && typeof item === 'object')
     .filter((item) => resolveOptionControlValue(item?.visible, getResolvedValue) !== false)
     .map((item) => {
       const children = Array.isArray(item?.children) ? normalizeTree(item.children, getResolvedValue) : undefined;
       return {
-        label: getSafeRenderableValue(item?.label),
-        value: item?.value,
+        label: getSafeRenderableValue(item?.label) as string,
+        value: item?.value as CascaderValue,
         disabled: resolveOptionControlValue(item?.disable, getResolvedValue) === true,
         children: children && children.length > 0 ? children : undefined,
       };
@@ -39,13 +56,13 @@ export const normalizeTree = (items, getResolvedValue) => {
  * - leafSet: Set of values that have no children (selectable least-child nodes)
  * - valueToNode: value -> node
  */
-export const buildPathMaps = (tree) => {
-  const valuePathObj = {};
-  const labelPathObj = {};
-  const leafSet = new Set();
-  const valueToNode = {};
+export const buildPathMaps = (tree: CascaderNode[]): CascaderPathMaps => {
+  const valuePathObj: CascaderPathMaps['valuePathObj'] = {};
+  const labelPathObj: CascaderPathMaps['labelPathObj'] = {};
+  const leafSet = new Set<CascaderValue>();
+  const valueToNode: CascaderPathMaps['valueToNode'] = {};
 
-  const walk = (nodes, parentValues = [], parentLabels = []) => {
+  const walk = (nodes: CascaderNode[], parentValues: CascaderValue[] = [], parentLabels: string[] = []) => {
     if (!Array.isArray(nodes)) return;
     for (const node of nodes) {
       const currentValues = [...parentValues, node.value];
@@ -66,7 +83,7 @@ export const buildPathMaps = (tree) => {
 };
 
 /** Empty selection contract — exposed when nothing valid is selected. */
-export const emptySelection = {
+export const emptySelection: CascaderSelection = {
   value: null,
   selectedOption: null,
   pathArray: [],
@@ -78,7 +95,11 @@ export const emptySelection = {
  * Compute the selected exposed-variable bundle for a given leaf value.
  * Returns `emptySelection` when the value is not a selectable leaf.
  */
-export const computeSelection = (value, maps, pathSeparator) => {
+export const computeSelection = (
+  value: CascaderValue | null | undefined,
+  maps: CascaderPathMaps,
+  pathSeparator?: string
+): CascaderSelection => {
   const { valuePathObj, labelPathObj, leafSet, valueToNode } = maps;
   if (value === null || value === undefined || !leafSet.has(value)) {
     return { ...emptySelection };
@@ -100,9 +121,12 @@ export const computeSelection = (value, maps, pathSeparator) => {
  * node whose `default` resolves truthy. Parent nodes and hidden branches are
  * ignored (selection is least-child only). Returns undefined when none.
  */
-export const findDefaultValue = (items, getResolvedValue) => {
+export const findDefaultValue = (
+  items: unknown,
+  getResolvedValue: (value: unknown) => unknown
+): CascaderValue | undefined => {
   if (!Array.isArray(items)) return undefined;
-  for (const item of items) {
+  for (const item of items as CascaderOption[]) {
     if (resolveOptionControlValue(item?.visible, getResolvedValue) === false) continue;
     const children = Array.isArray(item?.children) ? item.children : null;
     if (children && children.length > 0) {
@@ -116,7 +140,7 @@ export const findDefaultValue = (items, getResolvedValue) => {
 };
 
 /** Get the child list at a given drilldown path (array of parent values). */
-export const getNodesAtPath = (tree, pathValues) => {
+export const getNodesAtPath = (tree: CascaderNode[], pathValues: CascaderValue[]): CascaderNode[] => {
   let nodes = tree;
   for (const value of pathValues) {
     const next = nodes?.find((n) => n.value === value);
