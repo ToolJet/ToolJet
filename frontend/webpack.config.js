@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const hash = require('string-hash');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -309,24 +310,35 @@ module.exports = {
       },
       {
         test: /\.svg$/,
-        use: () => ({
-          loader: '@svgr/webpack',
-          options: {
-            svgoConfig: {
-              plugins: [
-                {
-                  name: 'preset-default',
-                  params: {
-                    overrides: {
-                      removeViewBox: false,
+        // `use` is called once per matched resource, so `info.resource` gives the full
+        // file path. We hash it here and pass a plain string to svgo's `prefixIds` plugin.
+        // This prevents ID collisions when many files share the same basename (e.g.
+        // plugins/packages/*/lib/icon.svg all resolve to the same "icon_svg__" prefix by
+        // default, breaking gradients and clip-paths when several icons render on one page).
+        use: (info) => {
+          const prefix = `svg-${hash(info.resource)}`;
+          return {
+            loader: '@svgr/webpack',
+            options: {
+              svgoConfig: {
+                plugins: [
+                  {
+                    name: 'preset-default',
+                    params: {
+                      overrides: {
+                        removeViewBox: false,
+                      },
                     },
                   },
-                },
-                'prefixIds',
-              ],
+                  {
+                    name: 'prefixIds',
+                    params: { prefix },
+                  },
+                ],
+              },
             },
-          },
-        }),
+          };
+        },
       },
       {
         test: /\.css$/,
