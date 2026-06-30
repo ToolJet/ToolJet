@@ -1961,6 +1961,25 @@ export class AppImportExportService {
 
         appResourceMappings.dataSourceMapping[importingDataSource.id] = dataSourceForAppVersion.id;
 
+        const newAppVersionId = appResourceMappings.appVersionMapping[importingAppVersion.id];
+        if (newAppVersionId) {
+          const existingVersionDsv = await manager.findOne(DataSourceVersion, {
+            where: { dataSourceId: dataSourceForAppVersion.id, appVersionId: newAppVersionId },
+          });
+          if (!existingVersionDsv) {
+            await manager.save(
+              manager.create(DataSourceVersion, {
+                dataSourceId: dataSourceForAppVersion.id,
+                name: dataSourceForAppVersion.name || importingDataSource.name || 'v1',
+                isDefault: false,
+                isActive: true,
+                branchId: null,
+                appVersionId: newAppVersionId,
+              })
+            );
+          }
+        }
+
         // TODO: Have version based conditional based on app versions
         // currently we are checking on existence of keys and handling
         // imports accordingly. Would be pragmatic to do:
@@ -3667,6 +3686,7 @@ export class AppImportExportService {
                 isDefault: true,
                 isActive: true,
                 branchId: null,
+                appVersionId: version.id,
               })
             );
           }

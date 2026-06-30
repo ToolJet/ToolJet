@@ -16,11 +16,13 @@ import {
   findEntity,
   updateEntity,
   closeTestApp,
+  getDefaultDataSource,
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppImportExportService } from '@ee/apps/services/app-import-export.service';
+import { DataSourceVersion } from 'src/entities/data_source_version.entity';
 
 // initTestApp() can exceed 60s when Jest restarts the worker to free memory
 jest.setTimeout(120_000);
@@ -258,6 +260,16 @@ describe('EE (plan: enterprise)', () => {
           } as any);
       expect(globalDs).toBeDefined();
       expect(globalDs.name).toBe('test_datasource');
+
+      // Every DSV for the imported data source must be linked to the new app version
+      const importedAppVersionId = importedApp.appVersions[0].id;
+      const dsvs = await getDefaultDataSource().manager.find(DataSourceVersion, {
+        where: { dataSourceId: globalDs.id },
+      });
+      expect(dsvs.length).toBeGreaterThan(0);
+      for (const dsv of dsvs) {
+        expect(dsv.appVersionId).toBe(importedAppVersionId);
+      }
     });
   });
 
