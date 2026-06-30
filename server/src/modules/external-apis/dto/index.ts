@@ -305,23 +305,6 @@ export class ValidatePATSessionDto {
   accessToken: string;
 }
 
-export class UserDetailKeyValueDto {
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-}
-
-export class UpdateUserMetadataDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => UserDetailKeyValueDto)
-  userDetails: UserDetailKeyValueDto[];
-}
-
 export class AutoDeployBodyDto {
   @IsString()
   @IsOptional()
@@ -336,7 +319,9 @@ export class SaveVersionBodyDto {
   @IsString()
   @IsOptional()
   @MaxLength(25, { message: 'Version name cannot be longer than 25 characters' })
-  @Matches(/^[^\s~^:?*[\]\\@{]+$/, { message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).' })
+  @Matches(/^[^\s~^:?*[\]\\@{]+$/, {
+    message: 'Version name contains invalid characters (spaces, ~, ^, :, ?, *, [, ], \\, @, { are not allowed).',
+  })
   name?: string;
 }
 
