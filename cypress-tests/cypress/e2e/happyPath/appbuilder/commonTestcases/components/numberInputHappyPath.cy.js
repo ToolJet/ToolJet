@@ -43,7 +43,7 @@ describe("Number Input widget", { testIsolation: false }, () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-numberinput-App`);
     cy.openApp();
-    cy.dragAndDropWidget("Number Input", 500, 500);
+    cy.dragAndDropWidget("Number Input", 500, 100);
   });
 
   afterEach(() => {

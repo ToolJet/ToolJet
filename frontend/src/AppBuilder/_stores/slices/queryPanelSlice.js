@@ -9,7 +9,7 @@ import axios from 'axios';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { convertMapSet, getQueryVariables } from '@/AppBuilder/_utils/queryPanel';
 import { queryAbortControllers, isAbortError } from '@/AppBuilder/_utils/queryAbort';
-import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
+import { ABORT_UNSUPPORTED_KINDS, defaultSources } from '@/AppBuilder/QueryManager/constants';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
@@ -82,12 +82,42 @@ export const createQueryPanelSlice = (set, get) => ({
       set((state) => {
         if (queryId === null) {
           state.queryPanel.selectedQuery = null;
+          state.queryPanel.selectedDataSource = null;
           return;
         }
+
         const query = get().dataQuery.queries.modules[moduleId].find((query) => query.id === queryId);
+        if (!query) {
+          // Unknown/stale id: treat as a deselection rather than leaving `undefined`
+          state.queryPanel.selectedQuery = null;
+          state.queryPanel.selectedDataSource = null;
+          return;
+        }
+
+        // Keep the query and its datasource in sync within a single state update.
+        // So query editors which key off selectedQuery and read selectedDataSource,
+        // never render against a stale datasource.
         state.queryPanel.selectedQuery = query;
+        state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(query);
         return;
       });
+    },
+    // Resolves the datasource a query belongs to from the loaded datasource lists, falling back to the
+    // built-in/default sources (REST API, RunJS, RunPy, etc.). Single source of truth used both when a query
+    // is selected and when the datasource lists change (see QueryManager).
+    resolveDataSourceForQuery: (query) => {
+      if (!query) return null;
+      const { dataSources, globalDataSources, sampleDataSource } = get();
+      const selectedDS = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
+        .filter(Boolean)
+        .find((datasource) => datasource.id === query?.data_source_id);
+      if (
+        query?.kind in defaultSources &&
+        (!query?.data_source_id || ['runjs', 'runpy'].includes(query?.data_source_id) || !selectedDS)
+      ) {
+        return defaultSources[query?.kind];
+      }
+      return selectedDS || null;
     },
     setIsPreviewQueryLoading: (isPreviewQueryLoading) =>
       set(

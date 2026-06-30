@@ -670,7 +670,11 @@ export const createEventsSlice = (set, get) => ({
                 (result, queryParam) => ({
                   ...result,
                   ...{
-                    [getResolvedValue(queryParam[0])]: getResolvedValue(queryParam[1], undefined, customVariables),
+                    [getResolvedValue(queryParam[0], customVariables, moduleId)]: getResolvedValue(
+                      queryParam[1],
+                      customVariables,
+                      moduleId
+                    ),
                   },
                 }),
                 {}
