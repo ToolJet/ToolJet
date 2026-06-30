@@ -349,7 +349,7 @@ jobs:
 
       - name: Seeding (Setup Super Admin)
         run: |
-          curl 'http://localhost:3000/api/onboarding/setup-super-admin' \
+          curl --fail-with-body 'http://localhost:3000/api/onboarding/setup-super-admin' \
             -H 'Content-Type: application/json' \
             --data-raw '{
               "companyName": "ToolJet",
@@ -358,6 +358,34 @@ jobs:
               "email": "dev@tooljet.io",
               "password": "password"
             }'
+
+      - name: Seeding (Authenticate)
+        run: |
+          AUTH_RESPONSE=$(curl --fail-with-body \
+            -c /tmp/tj_cookies.txt \
+            'http://localhost:3000/api/authenticate' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "email": "dev@tooljet.io",
+              "password": "password"
+            }')
+          echo "$AUTH_RESPONSE"
+          # Extract org ID and export for the next step via GITHUB_ENV
+          ORG_ID=$(echo "$AUTH_RESPONSE" | jq -r '.current_organization_id')
+          echo "TJ_ORG_ID=$ORG_ID" >> $GITHUB_ENV
+
+      - name: Seeding (Complete Onboarding)
+        run: |
+          # Sets onboarding_status = onboarding_completed so the frontend does not
+          # redirect every page visit to /setup, which would break all UI tests.
+          # tj-workspace-id header is required by JwtStrategy to resolve the user.
+          curl --fail-with-body \
+            -b /tmp/tj_cookies.txt \
+            -X POST \
+            'http://localhost:3000/api/onboarding/finish' \
+            -H 'Content-Type: application/json' \
+            -H "tj-workspace-id: $TJ_ORG_ID" \
+            --data-raw '{"region": "us"}'
 
       - name: Create Cypress environment file
         id: create-json
