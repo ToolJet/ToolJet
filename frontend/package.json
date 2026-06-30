@@ -48,6 +48,7 @@
     "@tanstack/react-virtual": "^3.10.8",
     "@textea/json-viewer": "^3.3.2",
     "@tooljet/plugins": "../plugins",
+    "@tooljet/widget-definitions": "../packages/widget-definitions",
     "@uiw/codemirror-theme-github": "^4.21.21",
     "@uiw/codemirror-theme-okaidia": "^4.21.21",
     "@uiw/codemirror-themes-all": "^4.25.4",
@@ -176,6 +177,7 @@
     "zustand": "^4.3.6"
   },
   "devDependencies": {
+    "chokidar": "^3.6.0",
     "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-transform-runtime": "^7.19.6",
@@ -312,7 +314,8 @@
       "node_modules/(?!(react|mpx-error-boundary)/)"
     ],
     "moduleNameMapper": {
-      "@/(.*)": "<rootDir>/src/$1"
+      "@/(.*)": "<rootDir>/src/$1",
+      "@tooljet/widget-definitions": "<rootDir>/../packages/widget-definitions/src/index.js"
     },
     "testEnvironment": "jest-environment-jsdom",
     "moduleDirectories": [
