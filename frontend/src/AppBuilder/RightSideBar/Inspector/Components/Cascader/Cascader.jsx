@@ -99,7 +99,9 @@ export const Cascader = ({ componentMeta, darkMode, ...restProps }) => {
         <>
           {createRenderElement('advanced')}
           {isAdvanced ? createRenderElement('data') : _renderTreeItems()}
-          {createRenderElement('optionsLoadingState')}
+          {/* Default value (static only) renders after the option UI; hidden when dynamic. */}
+          {!isAdvanced && createRenderElement('value')}
+          {isAdvanced && createRenderElement('optionsLoadingState')}
         </>
       ),
     },

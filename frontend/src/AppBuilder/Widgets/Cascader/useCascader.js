@@ -211,7 +211,7 @@ export function useCascader({
   return {
     maps,
     selectedValue,
-    selection, // { value, selectedValue, pathArray, pathLabels, pathString }
+    selection, // { value, selectedOption, pathArray, pathLabels, pathString }
     isVisible,
     isDisabled,
     isLoading,

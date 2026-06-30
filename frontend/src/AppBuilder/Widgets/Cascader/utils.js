@@ -62,7 +62,7 @@ export const buildPathMaps = (tree) => {
 /** Empty selection contract — exposed when nothing valid is selected. */
 export const emptySelection = {
   value: null,
-  selectedValue: null,
+  selectedOption: null,
   pathArray: [],
   pathLabels: [],
   pathString: '',
@@ -82,11 +82,31 @@ export const computeSelection = (value, maps, pathSeparator) => {
   const pathLabels = labelPathObj[value] ?? [];
   return {
     value,
-    selectedValue: { label: node?.label, value: node?.value },
+    selectedOption: { label: node?.label, value: node?.value },
     pathArray,
     pathLabels,
     pathString: pathLabels.join(pathSeparator ?? ''),
   };
+};
+
+/**
+ * Find the selected value from a dynamic-options schema: the first visible leaf
+ * node whose `default` resolves truthy. Parent nodes and hidden branches are
+ * ignored (selection is least-child only). Returns undefined when none.
+ */
+export const findDefaultValue = (items, getResolvedValue) => {
+  if (!Array.isArray(items)) return undefined;
+  for (const item of items) {
+    if (getResolvedValue(item?.visible) === false) continue;
+    const children = Array.isArray(item?.children) ? item.children : null;
+    if (children && children.length > 0) {
+      const found = findDefaultValue(children, getResolvedValue);
+      if (found !== undefined) return found;
+    } else if (getResolvedValue(item?.default) === true) {
+      return item?.value;
+    }
+  }
+  return undefined;
 };
 
 /** Get the child list at a given drilldown path (array of parent values). */

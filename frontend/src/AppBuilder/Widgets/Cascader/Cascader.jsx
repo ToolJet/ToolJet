@@ -9,6 +9,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import TablerIcon from '@/_ui/Icon/TablerIcon';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import { getInputBackgroundColor, getInputBorderColor } from '@/AppBuilder/Widgets/DropdownV2/utils';
@@ -18,7 +19,7 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useEditorStore } from '@/_stores/editorStore';
-import { normalizeTree } from './utils';
+import { normalizeTree, findDefaultValue } from './utils';
 import { useCascader } from './useCascader';
 import CascaderMenu from './CascaderMenu';
 import './cascader.scss';
@@ -42,7 +43,7 @@ export const Cascader = ({
     label,
     placeholder,
     advanced,
-    value: defaultValue,
+    value: selectedValueProp,
     pathSeparator,
     optionsLoadingState,
     loadingState,
@@ -83,6 +84,10 @@ export const Cascader = ({
     ? properties.data
     : [];
   const tree = normalizeTree(rawSource, getResolvedValue);
+
+  // Static options: use the explicit "Selected value" property.
+  // Dynamic options: derive the selected value from the `default: true` leaf in the schema.
+  const defaultValue = advanced ? findDefaultValue(rawSource, getResolvedValue) : selectedValueProp;
 
   const {
     maps,
@@ -152,9 +157,14 @@ export const Cascader = ({
       : menuWidthMode === 'matchContent'
       ? 'auto'
       : 'var(--radix-popover-trigger-width)';
-
-  // Fix the lint error by importing the icon from the correct path
-  const LeadingIcon = iconVisibility && icon && null;
+  const shouldOverridePlaceholderTextColor =
+    typeof placeholderTextColor === 'string' &&
+    placeholderTextColor.length > 0 &&
+    placeholderTextColor !== 'var(--cc-placeholder-text)';
+  const shouldUsePlaceholderTextColorForIcon =
+    shouldOverridePlaceholderTextColor &&
+    (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
+  const computedIconColor = shouldUsePlaceholderTextColorForIcon ? placeholderTextColor : iconColor;
 
   const toggleOpen = () => {
     if (interactionBlocked) return;
@@ -279,8 +289,16 @@ export const Cascader = ({
                 fireEvent('onBlur');
               }}
             >
-              {LeadingIcon && (
-                <LeadingIcon size={18} color={iconColor || 'var(--cc-default-icon)'} style={{ flexShrink: 0 }} />
+              {iconVisibility && (
+                <TablerIcon
+                  iconName={icon}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    color: computedIconColor,
+                    flexShrink: 0,
+                  }}
+                />
               )}
               <span
                 className="cascader-display"

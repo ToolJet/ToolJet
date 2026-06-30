@@ -38,14 +38,18 @@ export const cascaderConfig = {
       },
       accordian: 'Data',
     },
-    // Default selected leaf value (scalar). Parent/missing values clear the selection.
+
     value: {
       type: 'code',
       displayName: 'Default value',
       validation: {
         schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
       },
-      accordian: 'Data',
+      conditionallyRender: {
+        key: 'advanced',
+        value: false,
+      },
+      accordian: 'Options',
     },
     // Separator used to render the selected path in the input and in `pathString`.
     pathSeparator: {
@@ -79,6 +83,10 @@ export const cascaderConfig = {
       displayName: 'Options loading state',
       validation: {
         schema: { type: 'boolean' },
+      },
+      conditionallyRender: {
+        key: 'advanced',
+        value: true,
       },
       accordian: 'Options',
     },
@@ -346,7 +354,7 @@ export const cascaderConfig = {
   exposedVariables: {
     value: null,
     label: '',
-    selectedValue: null,
+    selectedOption: null,
     pathArray: [],
     pathLabels: [],
     pathString: '',
