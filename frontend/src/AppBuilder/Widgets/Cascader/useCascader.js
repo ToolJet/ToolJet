@@ -2,6 +2,20 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import { buildPathMaps, computeSelection } from './utils';
 
+const useUpdateEffect = (effect, deps) => {
+  const hasMounted = useRef(false);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return undefined;
+    }
+
+    return effect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+};
+
 /**
  * Manages all stateful behavior for the Cascader widget:
  * selection + selected-path exposed variables, component-specific actions,
@@ -25,9 +39,11 @@ export function useCascader({
   validate,
   validation,
 }) {
-  const maps = useMemo(() => buildPathMaps(tree), [JSON.stringify(tree)]);
+  const treeSignature = JSON.stringify(tree);
+  // Build path maps from the normalized tree content, not the array identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const maps = useMemo(() => buildPathMaps(tree), [treeSignature]);
 
-  const isInitialRender = useRef(true);
   const isMandatory = validation?.mandatory ?? false;
 
   // Refs so the CSAs registered once on mount always read the latest values.
@@ -40,7 +56,10 @@ export function useCascader({
   const fireEventRef = useRef(fireEvent);
   fireEventRef.current = fireEvent;
 
-  const isValidLeaf = (value) => value !== null && value !== undefined && mapsRef.current.leafSet.has(value);
+  const isValidLeaf = useCallback(
+    (value) => value !== null && value !== undefined && mapsRef.current.leafSet.has(value),
+    []
+  );
 
   const [selectedValue, setSelectedValue] = useState(() => {
     const initialMaps = buildPathMaps(tree);
@@ -75,7 +94,7 @@ export function useCascader({
       setExposedVariable('isValid', vs?.isValid);
       return sel;
     },
-    [setExposedVariable, setExposedVariables]
+    [isValidLeaf, setExposedVariable, setExposedVariables]
   );
 
   // === UI handlers ===
@@ -134,78 +153,60 @@ export function useCascader({
         setExposedVariable('isDisabled', !!value);
       },
     });
-    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Default value property changed → re-apply (no onSelect). Invalid/parent clears.
-  useEffect(() => {
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
     setSelection(defaultValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
   // Option tree or separator changed → refresh selected path, or clear if the
   // selected value is no longer a valid leaf (hidden/removed). No onSelect.
-  useEffect(() => {
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
     setSelection(selectedValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(tree), pathSeparator]);
+  }, [treeSignature, pathSeparator]);
 
   // Reactive label.
-  useEffect(() => {
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
     setExposedVariable('label', label);
-  }, [label, setExposedVariable]);
+  }, [label]);
 
   // Sync CSA-controllable state from properties.
-  useEffect(() => {
-    if (isVisible !== visibility) setIsVisible(visibility);
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
+    setIsVisible(visibility);
     setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
-  useEffect(() => {
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
+    setIsDisabled(disabledState);
     setExposedVariable('isDisabled', disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
-  useEffect(() => {
-    if (isLoading !== loadingState) setIsLoading(loadingState);
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
+    setIsLoading(loadingState);
     setExposedVariable('isLoading', loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
-  useEffect(() => {
-    if (isOptionsLoading !== optionsLoadingState) setIsOptionsLoading(optionsLoadingState);
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
+    setIsOptionsLoading(optionsLoadingState);
     setExposedVariable('isOptionsLoading', optionsLoadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [optionsLoadingState]);
 
   // Re-validate when validation config changes.
-  useEffect(() => {
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
     const vs = validate?.(selectedValue) ?? { isValid: true, validationError: null };
     setValidationStatus(vs);
     setExposedVariable('isValid', vs?.isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validate]);
 
-  useEffect(() => {
-    if (isInitialRender.current) return;
+  useUpdateEffect(() => {
     setExposedVariable('isMandatory', isMandatory);
-  }, [isMandatory, setExposedVariable]);
+  }, [isMandatory]);
 
   const selection = useMemo(
     () => computeSelection(isValidLeaf(selectedValue) ? selectedValue : null, maps, pathSeparator),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedValue, maps, pathSeparator]
+    [isValidLeaf, selectedValue, maps, pathSeparator]
   );
 
   return {

@@ -1,5 +1,11 @@
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 
+const resolveOptionControlValue = (value, getResolvedValue) => {
+  const rawValue =
+    value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : value;
+  return getResolvedValue(rawValue);
+};
+
 /**
  * Recursively normalize a hierarchical option tree for the Cascader.
  *
@@ -14,13 +20,13 @@ import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 export const normalizeTree = (items, getResolvedValue) => {
   if (!Array.isArray(items)) return [];
   return items
-    .filter((item) => getResolvedValue(item?.visible) !== false)
+    .filter((item) => resolveOptionControlValue(item?.visible, getResolvedValue) !== false)
     .map((item) => {
       const children = Array.isArray(item?.children) ? normalizeTree(item.children, getResolvedValue) : undefined;
       return {
         label: getSafeRenderableValue(item?.label),
         value: item?.value,
-        disabled: getResolvedValue(item?.disable) === true,
+        disabled: resolveOptionControlValue(item?.disable, getResolvedValue) === true,
         children: children && children.length > 0 ? children : undefined,
       };
     });
@@ -97,12 +103,12 @@ export const computeSelection = (value, maps, pathSeparator) => {
 export const findDefaultValue = (items, getResolvedValue) => {
   if (!Array.isArray(items)) return undefined;
   for (const item of items) {
-    if (getResolvedValue(item?.visible) === false) continue;
+    if (resolveOptionControlValue(item?.visible, getResolvedValue) === false) continue;
     const children = Array.isArray(item?.children) ? item.children : null;
     if (children && children.length > 0) {
       const found = findDefaultValue(children, getResolvedValue);
       if (found !== undefined) return found;
-    } else if (getResolvedValue(item?.default) === true) {
+    } else if (resolveOptionControlValue(item?.default, getResolvedValue) === true) {
       return item?.value;
     }
   }
