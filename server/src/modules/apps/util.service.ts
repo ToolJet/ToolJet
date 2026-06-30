@@ -1235,16 +1235,12 @@ export class AppsUtilService implements IAppsUtilService {
         .andWhere('av.isStub = false')
         .orderBy('av.appId', 'ASC')
         .addOrderBy('av.updatedAt', 'DESC');
-      if (gitEnabled && parentBranchId) {
-        // git-on, viewed on a feature branch: version_type='branch' rows are NOT mirrored
-        // by the metadata triggers, so pick that branch's DRAFT row specifically.
-        metaQb
-          .andWhere('av.branchId = :targetBranchId', { targetBranchId: parentBranchId })
-          .andWhere('av.status = :draftStatus', { draftStatus: AppVersionStatus.DRAFT });
-      } else if (defaultBranchId) {
-        // Default branch (git on or off): metadata is mirrored across the module's
-        // version_type='version' rows, so pick any non-stub row on the default branch.
-        metaQb.andWhere('av.branchId = :defaultBranchId', { defaultBranchId });
+      // A branch in scope → that branch's row; otherwise the default branch, where every
+      // non-stub row carries the same metadata. Read from any non-stub row — no status /
+      // git-on-off branching.
+      const metaTargetBranchId = parentBranchId ?? defaultBranchId;
+      if (metaTargetBranchId) {
+        metaQb.andWhere('av.branchId = :metaTargetBranchId', { metaTargetBranchId });
       }
       const metaRows = await metaQb.getMany();
       const metaMap = new Map(metaRows.map((v) => [v.appId, v]));

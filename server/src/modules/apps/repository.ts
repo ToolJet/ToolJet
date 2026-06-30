@@ -419,21 +419,21 @@ export class AppsRepository extends Repository<App> {
   private async resolveMetadataVersion(
     manager: EntityManager,
     app: App,
-    _options: { branchId?: string } = {}
+    options: { branchId?: string } = {}
   ): Promise<AppVersion | null> {
-    const defaultBranchId = await this.getDefaultBranchId(manager, app.organizationId);
-    if (!defaultBranchId) return null;
+    const { branchId } = options;
+    // A branch in scope → that branch's row carries the metadata for the view. Otherwise
+    // the default branch, where every non-stub row carries the same app_name/slug/icon/
+    // is_public (propagation triggers). Read from any non-stub row — no version_type /
+    // status / git-on-off branching; is_synced sorts the canonical row first.
+    const targetBranchId = branchId ?? (await this.getDefaultBranchId(manager, app.organizationId));
+    if (!targetBranchId) return null;
 
-    // app_name/slug/icon/is_public are mirrored across all non-stub
-    // version_type='version' rows on the default branch by the propagate /
-    // sync-published triggers, so any non-stub default-branch row carries the same
-    // values — no need to single out the DRAFT. Pick the most relevant row
-    // (is_synced row first, then most recent). Works the same git-on or git-off.
     return manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .where('av.app_id = :appId', { appId: app.id })
-      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+      .andWhere('av.branch_id = :branchId', { branchId: targetBranchId })
       .andWhere('av.is_stub = false')
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
