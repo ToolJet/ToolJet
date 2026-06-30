@@ -163,7 +163,7 @@ export const AddEditPagePopup = forwardRef(({ darkMode, onNestedPopoverOpenChang
   //Nav item with app hooks
   useEffect(() => {
     const fetchApps = async (page) => {
-      const { apps } = await appService.getAll(page);
+      const { apps } = await appService.getAll(page, undefined, undefined, true);
       return apps;
     };
 

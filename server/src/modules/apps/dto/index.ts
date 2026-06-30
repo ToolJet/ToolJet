@@ -126,6 +126,9 @@ export class AppListDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsOptional()
+  showAll?: boolean;
 }
 
 export class VersionReleaseDto {
