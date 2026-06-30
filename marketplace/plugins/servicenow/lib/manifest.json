@@ -1,0 +1,128 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "ServiceNow datasource",
+  "description": "A schema defining ServiceNow datasource",
+  "type": "api",
+  "source": {
+    "name": "ServiceNow",
+    "kind": "servicenow",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": true,
+    "options": {
+      "instance_url": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "encrypted": true
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "encrypted": true
+      },
+      "oauth_username": {
+        "type": "string"
+      },
+      "oauth_password": {
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "basic"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "A single select dropdown to choose credentials",
+      "list": [
+        {
+          "value": "basic",
+          "name": "Basic auth"
+        },
+        {
+          "value": "oauth2",
+          "name": "OAuth 2.0"
+        }
+      ],
+      "commonFields": {
+        "instance_url": {
+          "label": "Instance URL",
+          "key": "instance_url",
+          "type": "text",
+          "description": "https://<instance>.service-now.com"
+        },
+        "mcp_endpoint": {
+          "label": "Action Fabric MCP endpoint",
+          "key": "mcp_endpoint",
+          "type": "text",
+          "description": "Optional. MCP server URL or path. Blank = {instance_url}/sncapps/mcp-server/mcp/sn_mcp_server_default"
+        },
+        "flow_trigger_path": {
+          "label": "Flow trigger path",
+          "key": "flow_trigger_path",
+          "type": "text",
+          "description": "For the Trigger Flow op. Scripted REST resource URL or path, e.g. /api/<scope>/tooljet_flow/run"
+        }
+      }
+    },
+    "basic": {
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "text",
+        "description": "Enter username"
+      },
+      "password": {
+        "label": "Password",
+        "key": "password",
+        "type": "password",
+        "description": "Enter password",
+        "encrypted": true
+      }
+    },
+    "oauth2": {
+      "client_id": {
+        "label": "Client ID",
+        "key": "client_id",
+        "type": "text",
+        "description": "Enter client ID"
+      },
+      "client_secret": {
+        "label": "Client secret",
+        "key": "client_secret",
+        "type": "password",
+        "description": "Enter client secret",
+        "encrypted": true
+      },
+      "oauth_username": {
+        "label": "Username",
+        "key": "oauth_username",
+        "type": "text",
+        "description": "Enter username"
+      },
+      "oauth_password": {
+        "label": "Password",
+        "key": "oauth_password",
+        "type": "password",
+        "description": "Enter password",
+        "encrypted": true
+      }
+    }
+  },
+  "required": [
+    "instance_url"
+  ]
+}
