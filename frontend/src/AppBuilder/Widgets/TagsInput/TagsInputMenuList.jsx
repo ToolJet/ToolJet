@@ -31,8 +31,8 @@ const TagsInputMenuList = ({
   const trimmedInput = inputValue?.trim()?.toLowerCase();
   const isAlreadyExists =
     trimmedInput &&
-    (selectedValues.some((tag) => tag.value?.toLowerCase() === trimmedInput) ||
-      allOptions.some((opt) => opt.value?.toLowerCase() === trimmedInput));
+    (selectedValues.some((tag) => String(tag.value ?? '').toLowerCase() === trimmedInput) ||
+      allOptions.some((opt) => String(opt.value ?? '').toLowerCase() === trimmedInput));
 
   // Only show create footer if value doesn't already exist
   const showCreateFooter = allowNewTags && inputValue?.trim() && !isAlreadyExists;

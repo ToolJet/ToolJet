@@ -63,8 +63,8 @@ export function PullConflictModal({ show, onClose, conflictGroups = [] }) {
           </div>
 
           <p className="conflict-description">
-            The following resources have naming conflicts with resources already on this branch. ToolJet requires unique
-            names &amp; slugs for apps, data sources, modules, and folders within a branch.
+            The following resources have the same name or slug on this branch. ToolJet requires unique names &amp; slug
+            for apps, data sources, modules, and folders within a branch.
           </p>
 
           {conflictGroups.map((group, idx) => (

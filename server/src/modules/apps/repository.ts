@@ -113,6 +113,11 @@ export class AppsRepository extends Repository<App> {
       //    case; if the org has since enabled git, step 1 would have found
       //    the default-branch row already and this fallback would (correctly)
       //    not apply.
+      //    Feature-branch rows are deliberately excluded here: the same slug
+      //    can appear on multiple orgs' feature branches (pulled from the same
+      //    git source), so accepting them without org context risks returning
+      //    the wrong workspace's app. The caller (PrivateAppAuthGuard) handles
+      //    feature-branch slugs via a workspace-scoped findBySlug call first.
       if (!resolvedVersion) {
         const candidate = await this.dataSource
           .getRepository(AppVersion)
@@ -435,6 +440,7 @@ export class AppsRepository extends Repository<App> {
       .innerJoinAndSelect('av.app', 'app')
       .leftJoinAndSelect('app.appVersions', 'appVersions')
       .where('av.slug = :slug', { slug: idOrSlug })
+      .orderBy('av.updated_at', 'DESC')
       .getOne();
 
     if (candidate?.app) {
@@ -451,7 +457,7 @@ export class AppsRepository extends Repository<App> {
           .where('av.slug = :slug', { slug: idOrSlug })
           .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
           .getOne();
-        if (!resolved?.app) return null;
+        if (!resolved?.app) resolved = candidate;
       }
 
       const app = resolved.app;
