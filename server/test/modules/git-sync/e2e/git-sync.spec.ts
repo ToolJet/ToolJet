@@ -1959,80 +1959,11 @@ describe('GitSyncController', () => {
         expect(folderAfterEnsure7.folder_apps.map((fa: any) => fa.app_id).sort()).toEqual(expectedAllFolderAppIds);
         folderAfterEnsure7.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
 
-        step(49, 'orphan delete on default branch: mutated app row gets removed on main pull');
-        // 49. Workspace pull on the DEFAULT branch must remove "orphaned" apps —
-        //     rows whose AppVersion lives on main but whose co_relation_id is
-        //     absent from the incoming git appMeta. Setup: create a feature
-        //     branch + app, then SQL-mutate the AppVersion to look like a
-        //     regular main-branch version. Since the repo never saw this
-        //     co_relation_id, main's pull should drop both the AppVersion and
-        //     the App row (no other branch holds it).
-        const createBranch6Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-6', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat6BranchId: string = createBranch6Resp.body.id;
-        expect(feat6BranchId).toBeDefined();
-
-        const orphanAppResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/apps')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat6BranchId)
-          .send({ icon: 'home', name: 'orphan-on-main', type: 'front-end', branchId: feat6BranchId })
-          .expect(201);
-        const orphanAppId: string = orphanAppResp.body.id;
-        expect(orphanAppId).toBeDefined();
-
-        // Move the AppVersion to main as a regular version. The co_relation_id
-        // is unchanged and was never pushed, so it isn't in main's appMeta —
-        // the orphan sweep should pick it up on pull.
-        await dataSource.query(
-          `UPDATE app_versions
-             SET version_type = 'version', branch_id = $1
-           WHERE app_id = $2`,
-          [mainBranchId, orphanAppId]
-        );
-
-        // Sanity: row was moved to main, exactly one AppVersion exists.
-        const orphanBeforePull = await dataSource.query(
-          `SELECT branch_id, version_type FROM app_versions WHERE app_id = $1`,
-          [orphanAppId]
-        );
-        expect(orphanBeforePull).toHaveLength(1);
-        expect(orphanBeforePull[0].branch_id).toBe(mainBranchId);
-        expect(orphanBeforePull[0].version_type).toBe('version');
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ branchId: mainBranchId })
-          .expect(201);
-
-        // Orphan AppVersion gone. App row gone too — main was the last (and only)
-        // branch holding it after the mutation, so the cascade in
-        // removeOrphanedResources drops the App entity as well.
-        const orphanAvAfterPull = await dataSource.query(`SELECT id FROM app_versions WHERE app_id = $1`, [
-          orphanAppId,
-        ]);
-        expect(orphanAvAfterPull).toHaveLength(0);
-
-        const orphanAppAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanAppId]);
-        expect(orphanAppAfterPull).toHaveLength(0);
-
-        step(50, 'feature-branch pull preserves local-only app (orphan sweep gated to default)');
-        // 50. The orphan sweep is gated to the default branch — pulling a
-        //     feature branch must NOT delete a locally-created, never-pushed
-        //     app. Otherwise a user's in-progress work on a feature branch
-        //     would be silently destroyed on every sync.
+        step(50, 'feature-branch pull preserves local-only app');
+        // 50. Pulling a feature branch must NOT delete a locally-created,
+        //     never-pushed app. Orphan resources are no longer removed on pull
+        //     (they are marked is_synced=false), so in-progress work on a feature
+        //     branch is never silently destroyed on sync.
         const createBranch7Resp = await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches')
@@ -2084,157 +2015,6 @@ describe('GitSyncController', () => {
 
         const localAppAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [localOnlyAppId]);
         expect(localAppAfterPull).toHaveLength(1);
-
-        step(51, 'orphan delete frees name slot for incoming git app with same name');
-        // 51. Exercises the delete-orphans-BEFORE-upsert ordering. Plant an orphan
-        //     "collide-app" on main (corid1). Then create a different "collide-app"
-        //     (corid2) on a separate feature branch, push it, and merge into main.
-        //     Now main's git appMeta carries corid2 with name "collide-app" while
-        //     the DB still has the corid1 orphan with the same name. Pull main:
-        //     the orphan must be deleted first so the corid2 upsert doesn't trip
-        //     the (branch_id, app_name) uniqueness check.
-        const createBranch8Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-8', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat8BranchId: string = createBranch8Resp.body.id;
-        expect(feat8BranchId).toBeDefined();
-
-        const orphanCollideResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/apps')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat8BranchId)
-          .send({ icon: 'home', name: 'collide-app', type: 'front-end', branchId: feat8BranchId })
-          .expect(201);
-        const orphanCollideAppId: string = orphanCollideResp.body.id;
-        expect(orphanCollideAppId).toBeDefined();
-
-        // SQL-mutate the AppVersion onto main as a regular 'version' row so
-        // the orphan sweep sees it (matches the step 49 setup).
-        await dataSource.query(
-          `UPDATE app_versions
-             SET version_type = 'version', branch_id = $1
-           WHERE app_id = $2`,
-          [mainBranchId, orphanCollideAppId]
-        );
-
-        // Sanity: orphan now lives on main with the colliding name.
-        const orphanCollideRows = await dataSource.query(
-          `SELECT branch_id, version_type, app_name FROM app_versions WHERE app_id = $1`,
-          [orphanCollideAppId]
-        );
-        expect(orphanCollideRows).toHaveLength(1);
-        expect(orphanCollideRows[0].branch_id).toBe(mainBranchId);
-        expect(orphanCollideRows[0].version_type).toBe('version');
-        expect(orphanCollideRows[0].app_name).toBe('collide-app');
-
-        // Create same-named app on a fresh feature branch — name check is scoped
-        // per (branchId, version_type='branch'), so this is allowed.
-        const createBranch9Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-9', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat9BranchId: string = createBranch9Resp.body.id;
-        expect(feat9BranchId).toBeDefined();
-
-        const newCollideResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/apps')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat9BranchId)
-          .send({ icon: 'home', name: 'collide-app', type: 'front-end', branchId: feat9BranchId })
-          .expect(201);
-        const newCollideAppId: string = newCollideResp.body.id;
-        expect(newCollideAppId).toBeDefined();
-        expect(newCollideAppId).not.toBe(orphanCollideAppId);
-
-        // Fetch the editing version so we can push it.
-        const newCollideDetail = await request
-          .agent(app.getHttpServer())
-          .get(`/api/apps/${newCollideAppId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat9BranchId)
-          .expect(200);
-        const newCollideEditingVersion =
-          newCollideDetail.body?.editing_version ||
-          newCollideDetail.body?.editingVersion ||
-          newCollideDetail.body?.app?.editing_version;
-        expect(newCollideEditingVersion).toBeDefined();
-        const newCollideVersionId: string = newCollideEditingVersion.id;
-
-        // Push corid2 to feat-e2e-9 so its appMeta carries collide-app.
-        await request
-          .agent(app.getHttpServer())
-          .post(`/api/app-git/gitpush/${newCollideAppId}/${newCollideVersionId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat9BranchId)
-          .send({
-            gitAppName: 'collide-app',
-            versionId: newCollideVersionId,
-            lastCommitMessage: 'collide-app on feat-e2e-9',
-            gitVersionName: 'feat-e2e-9',
-            sourceBranch: 'feat-e2e-9',
-          })
-          .expect(201);
-
-        // Server-side merge feat-e2e-9 → main so main's git appMeta picks up corid2.
-        const collideMergeResp = await fetch(MERGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-          body: JSON.stringify({
-            owner: GIT_REPO_OWNER,
-            repo: `${GIT_REPO_NAME}.git`,
-            source: 'feat-e2e-9',
-            target: 'main',
-            message: 'Land collide-app',
-          }),
-        });
-        const collideMergeBody = await collideMergeResp.json().catch(() => ({}));
-        expect(collideMergeBody.ok).toBe(true);
-
-        // Pull main → orphan corid1 must be deleted first so the corid2 stub
-        // upsert can land without hitting the (branch_id, app_name) constraint.
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ branchId: mainBranchId })
-          .expect(201);
-
-        // Orphan App row is gone (main was its only branch after the mutation).
-        const orphanCollideAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [
-          orphanCollideAppId,
-        ]);
-        expect(orphanCollideAfterPull).toHaveLength(0);
-
-        // Exactly one "collide-app" sits on main now, and it's NOT the orphan id.
-        const collideOnMainAfterPull = await dataSource.query(
-          `SELECT app.id
-             FROM apps app
-             INNER JOIN app_versions av ON av.app_id = app.id
-            WHERE app.organization_id = $1
-              AND app.type = 'front-end'
-              AND av.branch_id = $2
-              AND av.app_name = 'collide-app'`,
-          [orgId, mainBranchId]
-        );
-        expect(collideOnMainAfterPull).toHaveLength(1);
-        expect(collideOnMainAfterPull[0].id).not.toBe(orphanCollideAppId);
 
         step(52, 'data-source workspace push → merge → pull main: DS appears with per-env options');
         // 52. Data-source git-sync lifecycle: create a restapi DS on a feature
@@ -3146,458 +2926,6 @@ describe('GitSyncController', () => {
 
         await writeGitMeta('dataSourceMeta.json', originalDsMeta, 'restore ds meta');
 
-        step(60, 'orphan module + same-name incoming on default → pull succeeds (orphan filter)');
-        // 60. Module variant of step 51: a local orphan module on main shares
-        //     its name with an incoming git module (different corid). The
-        //     orphan-aware conflict detector must exclude the orphan from the
-        //     scan so the pull does not raise 409, after which the orphan
-        //     sweep deletes the orphan and the incoming module is imported.
-        const createBranch12Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-12', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat12BranchId: string = createBranch12Resp.body.id;
-
-        // Orphan module: create on feat-e2e-12, then SQL-mutate its AppVersion
-        // onto main as a 'version' row (mirrors the pattern from steps 49/51).
-        const orphanModResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/modules')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat12BranchId)
-          .send({ icon: 'folderupload', name: 'orphan-mod-collide', type: 'module', branchId: feat12BranchId })
-          .expect(201);
-        const orphanModId: string = orphanModResp.body.id;
-        await dataSource.query(`UPDATE app_versions SET version_type = 'version', branch_id = $1 WHERE app_id = $2`, [
-          mainBranchId,
-          orphanModId,
-        ]);
-
-        // Same-named module on a separate feature branch, push + merge to main.
-        const createBranch13Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-13', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat13BranchId: string = createBranch13Resp.body.id;
-
-        const newModResp = await request
-          .agent(app.getHttpServer())
-          .post('/api/modules')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat13BranchId)
-          .send({ icon: 'folderupload', name: 'orphan-mod-collide', type: 'module', branchId: feat13BranchId })
-          .expect(201);
-        const newModId: string = newModResp.body.id;
-        const newModDetail = await request
-          .agent(app.getHttpServer())
-          .get(`/api/apps/${newModId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat13BranchId)
-          .expect(200);
-        const newModEditing =
-          newModDetail.body?.editing_version ||
-          newModDetail.body?.editingVersion ||
-          newModDetail.body?.app?.editing_version;
-        const newModVersionId: string = newModEditing.id;
-
-        await request
-          .agent(app.getHttpServer())
-          .post(`/api/app-git/gitpush/${newModId}/${newModVersionId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat13BranchId)
-          .send({
-            gitAppName: 'orphan-mod-collide',
-            versionId: newModVersionId,
-            lastCommitMessage: 'collide-mod on feat-e2e-13',
-            gitVersionName: 'feat-e2e-13',
-            sourceBranch: 'feat-e2e-13',
-          })
-          .expect(201);
-
-        const orphanModMergeResp = await fetch(MERGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-          body: JSON.stringify({
-            owner: GIT_REPO_OWNER,
-            repo: `${GIT_REPO_NAME}.git`,
-            source: 'feat-e2e-13',
-            target: 'main',
-            message: 'Land orphan-mod-collide module',
-          }),
-        });
-        expect((await orphanModMergeResp.json().catch(() => ({}))).ok).toBe(true);
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ branchId: mainBranchId })
-          .expect(201);
-
-        // Orphan App row gone (main was its only branch after mutation).
-        const orphanModAfterPull = await dataSource.query(`SELECT id FROM apps WHERE id = $1`, [orphanModId]);
-        expect(orphanModAfterPull).toHaveLength(0);
-
-        // Exactly one 'orphan-mod-collide' module sits on main now.
-        const modOnMainAfterPull = await dataSource.query(
-          `SELECT app.id
-             FROM apps app
-             INNER JOIN app_versions av ON av.app_id = app.id
-            WHERE app.organization_id = $1
-              AND app.type = $2
-              AND av.branch_id = $3
-              AND av.app_name = 'orphan-mod-collide'`,
-          [orgId, 'module', mainBranchId]
-        );
-        expect(modOnMainAfterPull).toHaveLength(1);
-        expect(modOnMainAfterPull[0].id).not.toBe(orphanModId);
-
-        step(61, 'orphan data source + same-name incoming on default → pull succeeds (orphan filter)');
-        // 61. Data-source variant: create a DS on a feature branch, SQL-move
-        //     its DSV onto main as an "orphan" (no matching file in main's
-        //     data-sources/), then create+push a same-named DS on another
-        //     feature branch and merge to main. The orphan-aware detector
-        //     must exclude the orphan DS so the pull succeeds.
-        //
-        // Note on branch ordering: feat15 must be created BEFORE the orphan is
-        // moved onto main. cloneDataSourceVersions runs at branch-create time
-        // and clones every active main-branch DSV into the new branch — if the
-        // orphan already lived on main, feat15 would inherit a DSV for it, the
-        // push from feat15 would re-serialize the orphan into git, and after
-        // merge main would no longer treat it as an orphan. Creating feat15
-        // first keeps the orphan exclusive to main.
-        const createBranch14Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-14', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat14BranchId: string = createBranch14Resp.body.id;
-
-        const createBranch15Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-15', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat15BranchId: string = createBranch15Resp.body.id;
-
-        const orphanDsResp = await request
-          .agent(app.getHttpServer())
-          .post(`/api/data-sources?branch_id=${feat14BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat14BranchId)
-          .send({
-            name: 'orphan-ds-collide',
-            kind: 'restapi',
-            options: restapiCreateOptions,
-            scope: 'global',
-          })
-          .expect(201);
-        const orphanDsId: string = orphanDsResp.body.id;
-
-        // Move the orphan DSV onto main. feat15 doesn't yet have a DSV for
-        // this DS (we created feat15 before the orphan existed), so feat15's
-        // workspace push won't re-serialize the orphan into git — main will
-        // see no matching file in data-sources/ after the merge.
-        await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
-          mainBranchId,
-          orphanDsId,
-        ]);
-
-        const newDsResp_orphan = await request
-          .agent(app.getHttpServer())
-          .post(`/api/data-sources?branch_id=${feat15BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat15BranchId)
-          .send({
-            name: 'orphan-ds-collide',
-            kind: 'restapi',
-            options: restapiCreateOptions,
-            scope: 'global',
-          })
-          .expect(201);
-        const newDsForOrphanTestId: string = newDsResp_orphan.body.id;
-        expect(newDsForOrphanTestId).not.toBe(orphanDsId);
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/push')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat15BranchId)
-          .send({ commitMessage: 'collide-ds on feat-e2e-15', branchId: feat15BranchId })
-          .expect(201);
-
-        const orphanDsMergeResp = await fetch(MERGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-          body: JSON.stringify({
-            owner: GIT_REPO_OWNER,
-            repo: `${GIT_REPO_NAME}.git`,
-            source: 'feat-e2e-15',
-            target: 'main',
-            message: 'Land orphan-ds-collide',
-          }),
-        });
-        expect((await orphanDsMergeResp.json().catch(() => ({}))).ok).toBe(true);
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ branchId: mainBranchId })
-          .expect(201);
-
-        // Orphan DSV on main is deactivated by the deserialize sweep — its
-        // corid is absent from main's data-sources/ after the merge.
-        const orphanDsvAfterPull = await dataSource.query(
-          `SELECT is_active FROM data_source_versions
-            WHERE data_source_id = $1 AND branch_id = $2`,
-          [orphanDsId, mainBranchId]
-        );
-        expect(orphanDsvAfterPull).toHaveLength(1);
-        expect(orphanDsvAfterPull[0].is_active).toBe(false);
-
-        // The new DS pushed from feat15 has its own active DSV on main.
-        // The DS API auto-renames on collision (generateUniqueName), so the
-        // new DS landed with a suffixed name like 'orphan-ds-collide_N'; the
-        // assertion just checks an additional active DSV exists.
-        const newDsvOnMain = await dataSource.query(
-          `SELECT dsv.id, ds.name
-             FROM data_source_versions dsv
-             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
-            WHERE ds.organization_id = $1
-              AND ds.name LIKE 'orphan-ds-collide%'
-              AND ds.id <> $2
-              AND dsv.branch_id = $3
-              AND dsv.is_active = true`,
-          [orgId, orphanDsId, mainBranchId]
-        );
-        expect(newDsvOnMain.length).toBeGreaterThanOrEqual(1);
-
-        step(
-          62,
-          "matched data source renamed into an orphan's active name → pull succeeds (orphan branch DSV renamed)"
-        );
-        // 62. Regression for the matched-rename branch-DSV collision. A data
-        //     source already on main (matched by co_relation_id, present in git)
-        //     is renamed in git to a name an *orphan* DSV on main still holds.
-        //     The orphan rename in deserialize used to run only for brand-new
-        //     data sources (the `!ds` path), so a matched-and-renamed DS tripped
-        //     idx_unique_active_name_branch. The shared guard must now rename the
-        //     orphan branch DSV first so the matched DS can take the name; the
-        //     default-DSV sync must likewise dodge
-        //     data_source_version_default_name_organization_id_unique.
-        //
-        // Branch ordering mirrors step 61: feat-e2e-18 (where we rename) is
-        // created BEFORE the orphan is moved onto main, so the rename branch
-        // never inherits the orphan name via cloneDataSourceVersions.
-
-        // (a) Land a normal DS on main → becomes a matched DS (corid in git).
-        const createBranch16Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-16', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat16BranchId: string = createBranch16Resp.body.id;
-
-        const matchedSrcDsResp = await request
-          .agent(app.getHttpServer())
-          .post(`/api/data-sources?branch_id=${feat16BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat16BranchId)
-          .send({ name: 'matched-rename-src', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
-          .expect(201);
-        const matchedSrcDsId: string = matchedSrcDsResp.body.id;
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/push')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat16BranchId)
-          .send({ commitMessage: 'land matched-rename-src', branchId: feat16BranchId })
-          .expect(201);
-
-        const matchedSrcMergeResp = await fetch(MERGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-          body: JSON.stringify({
-            owner: GIT_REPO_OWNER,
-            repo: `${GIT_REPO_NAME}.git`,
-            source: 'feat-e2e-16',
-            target: 'main',
-            message: 'Land matched-rename-src',
-          }),
-        });
-        expect((await matchedSrcMergeResp.json().catch(() => ({}))).ok).toBe(true);
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ branchId: mainBranchId })
-          .expect(201);
-
-        // (b) Create the rename branch NOW — clones the matched DS, but main has
-        //     no orphan yet, so feat-e2e-18 stays free of the orphan name.
-        const createBranch18Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-18', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat18BranchId: string = createBranch18Resp.body.id;
-
-        // (c) Create an orphan DS named 'matched-rename-dst' and SQL-move its DSV
-        //     onto main (corid never pushed → absent from main's data-sources/).
-        const createBranch17Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-17', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat17BranchId: string = createBranch17Resp.body.id;
-
-        const orphanDstDsResp = await request
-          .agent(app.getHttpServer())
-          .post(`/api/data-sources?branch_id=${feat17BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat17BranchId)
-          .send({ name: 'matched-rename-dst', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
-          .expect(201);
-        const orphanDstDsId: string = orphanDstDsResp.body.id;
-        expect(orphanDstDsId).not.toBe(matchedSrcDsId);
-
-        await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
-          mainBranchId,
-          orphanDstDsId,
-        ]);
-
-        // (d) Rename the matched DS to the orphan's name on feat-e2e-18, push.
-        await request
-          .agent(app.getHttpServer())
-          .put(`/api/data-sources/${matchedSrcDsId}?environment_id=${dsDevEnv.id}&branch_id=${feat18BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat18BranchId)
-          .send({ name: 'matched-rename-dst', options: buildUpdateOptions('http://renamed.url.com') })
-          .expect(200);
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/push')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat18BranchId)
-          .send({ commitMessage: 'rename matched-rename-src → matched-rename-dst', branchId: feat18BranchId })
-          .expect(201);
-
-        const renameMergeResp = await fetch(MERGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-          body: JSON.stringify({
-            owner: GIT_REPO_OWNER,
-            repo: `${GIT_REPO_NAME}.git`,
-            source: 'feat-e2e-18',
-            target: 'main',
-            message: 'Land matched-rename-dst rename',
-          }),
-        });
-        expect((await renameMergeResp.json().catch(() => ({}))).ok).toBe(true);
-
-        // Pull main — previously 500 (idx_unique_active_name_branch); now 201.
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/pull')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ branchId: mainBranchId })
-          .expect(201);
-
-        // (e) Matched DS now carries the orphan's old name on main, active.
-        const matchedSrcAfter = await dataSource.query(
-          `SELECT name, is_active FROM data_source_versions
-            WHERE data_source_id = $1 AND branch_id = $2`,
-          [matchedSrcDsId, mainBranchId]
-        );
-        expect(matchedSrcAfter).toHaveLength(1);
-        expect(matchedSrcAfter[0].is_active).toBe(true);
-        expect(matchedSrcAfter[0].name).toBe('matched-rename-dst');
-
-        // (f) Orphan branch DSV was renamed out of the way and/or deactivated by
-        //     the sweep — either way it no longer holds the active name.
-        const orphanDstAfter = await dataSource.query(
-          `SELECT name, is_active FROM data_source_versions
-            WHERE data_source_id = $1 AND branch_id = $2`,
-          [orphanDstDsId, mainBranchId]
-        );
-        expect(orphanDstAfter).toHaveLength(1);
-        const orphanFreedTheName =
-          orphanDstAfter[0].name !== 'matched-rename-dst' || orphanDstAfter[0].is_active === false;
-        expect(orphanFreedTheName).toBe(true);
-
-        // (g) Exactly one ACTIVE DSV named 'matched-rename-dst' on the default branch
-        //     (main) → idx_unique_active_name_branch satisfied; it's the matched DS.
-        const activeBranchDst = await dataSource.query(
-          `SELECT dsv.id, dsv.data_source_id FROM data_source_versions dsv
-             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
-            WHERE ds.organization_id = $1 AND dsv.branch_id = $2
-              AND LOWER(dsv.name) = LOWER('matched-rename-dst')
-              AND dsv.is_active = true`,
-          [orgId, mainBranchId]
-        );
-        expect(activeBranchDst).toHaveLength(1);
-        expect(activeBranchDst[0].data_source_id).toBe(matchedSrcDsId);
-
-        // (h) The default-branch row IS the canonical/default DSV now (is_default dropped;
-        //     the default branch holds the canonical row). One active row named
-        //     'matched-rename-dst' on the default branch.
-        const activeDefaultDst = await dataSource.query(
-          `SELECT dsv.id FROM data_source_versions dsv
-             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
-            WHERE ds.organization_id = $1
-              AND LOWER(dsv.name) = LOWER('matched-rename-dst')
-              AND dsv.is_active = true AND dsv.branch_id = $2`,
-          [orgId, mainBranchId]
-        );
-        expect(activeDefaultDst).toHaveLength(1);
-
         step(63, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
         // 63. Regression for the CRUD rename check. Deleting a global DS on a
         //     feature branch only soft-deletes its branch DSV (is_active=false);
@@ -3672,100 +3000,49 @@ describe('GitSyncController', () => {
         expect(aAfterDelete).toHaveLength(1);
         expect(aAfterDelete[0].is_active).toBe(false);
 
-        step(
-          64,
-          'incoming DS collides with an orphan that owns an active default DSV → pull succeeds (default-DSV collision resolved)'
+        step(64, 'orphan APP on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        // 64. New orphan flow. An app row that lives on the default branch but is
+        //     absent from git is NOT removed on pull — it is marked is_synced=false
+        //     so it behaves like a never-synced (pre-git) app. Setup mirrors the old
+        //     orphan steps: create on a feature branch, SQL-move the version onto main
+        //     as a synced (is_synced=true) default-branch row. Pull main: the orphan
+        //     sweep flips is_synced→false, the row survives, and GET /api/apps/:id
+        //     reflects is_synced=false on the editing version.
+        const orphanAppBranchResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-orphan-app', sourceBranchId: mainBranchId })
+          .expect(201);
+        const orphanAppBranchId: string = orphanAppBranchResp.body.id;
+
+        const orphanSyncedAppResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', orphanAppBranchId)
+          .send({ icon: 'home', name: 'orphan-synced-app', type: 'front-end', branchId: orphanAppBranchId })
+          .expect(201);
+        const orphanSyncedAppId: string = orphanSyncedAppResp.body.id;
+
+        // Move the version onto main as a previously-pulled, synced default-branch row
+        // (is_synced=true + pulled_at set — the orphan sweep only considers rows that
+        // were actually pulled from git). It was never pushed, so its co_relation_id is
+        // absent from main's appMeta → an orphan.
+        await dataSource.query(
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, pulled_at = now() WHERE app_id = $2`,
+          [mainBranchId, orphanSyncedAppId]
         );
-        // 64. Stresses the org-wide active-default namespace (trigger
-        //     data_source_version_default_name_organization_id_unique). A
-        //     feature-branch-created + SQL-moved orphan (steps 61/62) has no
-        //     default DSV, so we hand-insert one for it: the orphan then occupies
-        //     the org-wide default name 'defcol-shared' while being absent from
-        //     git (its corid was never pushed). A distinct same-named DS is then
-        //     pushed and merged. On pull its branch DSV collides with the orphan's
-        //     (renamed aside by renameConflictingOrphanBranchDsv) and its default
-        //     DSV collides with the orphan's active default (suffixed by
-        //     resolveUniqueDefaultDsvName) — without the fixes this pull 500s on
-        //     idx_unique_active_name_branch / the unique-default trigger.
-        //
-        // Branch ordering (mirrors step 61): the incoming branch is created
-        // BEFORE the orphan lands on main, so it never inherits the orphan name
-        // via cloneDataSourceVersions.
-        const createBranch21Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-21', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat21BranchId: string = createBranch21Resp.body.id;
+        const orphanAppBefore = await dataSource.query(
+          `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
+          [orphanSyncedAppId, mainBranchId]
+        );
+        expect(orphanAppBefore).toHaveLength(1);
+        expect(orphanAppBefore[0].is_synced).toBe(true);
 
-        const createBranch22Resp = await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
-          .send({ name: 'feat-e2e-22', sourceBranchId: mainBranchId })
-          .expect(201);
-        const feat22BranchId: string = createBranch22Resp.body.id;
-
-        // Orphan DS on feat-e2e-21, then SQL-move its branch DSV onto main
-        // (corid never pushed → absent from main's data-sources/).
-        const defcolOrphanResp = await request
-          .agent(app.getHttpServer())
-          .post(`/api/data-sources?branch_id=${feat21BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat21BranchId)
-          .send({ name: 'defcol-shared', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
-          .expect(201);
-        const defcolOrphanId: string = defcolOrphanResp.body.id;
-
-        // Move the orphan's DSV onto the default branch (main). With is_default dropped and
-        // branch_id NOT NULL, the default-branch row IS the canonical/default DSV — so this
-        // single row now occupies the org's active-default namespace for 'defcol-shared'.
-        await dataSource.query(`UPDATE data_source_versions SET branch_id = $1 WHERE data_source_id = $2`, [
-          mainBranchId,
-          defcolOrphanId,
-        ]);
-
-        // Distinct same-named DS on feat-e2e-22 → push → merge to main.
-        const defcolIncomingResp = await request
-          .agent(app.getHttpServer())
-          .post(`/api/data-sources?branch_id=${feat22BranchId}`)
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat22BranchId)
-          .send({ name: 'defcol-shared', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
-          .expect(201);
-        const defcolIncomingId: string = defcolIncomingResp.body.id;
-        expect(defcolIncomingId).not.toBe(defcolOrphanId);
-
-        await request
-          .agent(app.getHttpServer())
-          .post('/api/workspace-branches/push')
-          .set('Cookie', tokenCookie)
-          .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat22BranchId)
-          .send({ commitMessage: 'collide-default-ds on feat-e2e-22', branchId: feat22BranchId })
-          .expect(201);
-
-        const defcolMergeResp = await fetch(MERGE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
-          body: JSON.stringify({
-            owner: GIT_REPO_OWNER,
-            repo: `${GIT_REPO_NAME}.git`,
-            source: 'feat-e2e-22',
-            target: 'main',
-            message: 'Land defcol-shared collide',
-          }),
-        });
-        expect((await defcolMergeResp.json().catch(() => ({}))).ok).toBe(true);
-
-        // Pull main — previously 500 (branch + default unique violations); now 201.
         await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
@@ -3775,41 +3052,143 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
-        // Post-cutover invariants on the default branch (main). With is_default dropped and
-        // branch_id NOT NULL, the default branch holds exactly one DSV per data source and
-        // mirrors git:
-        //  - The incoming DS (merged from feat-e2e-22) is ACTIVE on main. Its name was made
-        //    org-unique at creation (generateUniqueName → 'defcol-shared_2'), so it never
-        //    collides with the orphan on the bare name.
-        //  - The orphan DS (corid never pushed → absent from main's data-sources/) is
-        //    DEACTIVATED by the default-branch pull sweep — the default branch reflects git,
-        //    so a never-pushed DS does not stay active there.
-        //  - No two ACTIVE DSVs share a name on main (idx_unique_active_name_branch).
-        // The earlier "pull returns 201" assertion already covers the original regression
-        // (collision used to 500); these assert the resulting row state.
-        const incomingActiveOnMain = await dataSource.query(
-          `SELECT id FROM data_source_versions
-            WHERE data_source_id = $1 AND branch_id = $2 AND is_active = true`,
-          [defcolIncomingId, mainBranchId]
+        // Row survives (not deleted) and is now unsynced.
+        const orphanAppAfter = await dataSource.query(
+          `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
+          [orphanSyncedAppId, mainBranchId]
         );
-        expect(incomingActiveOnMain).toHaveLength(1);
+        expect(orphanAppAfter).toHaveLength(1);
+        expect(orphanAppAfter[0].is_synced).toBe(false);
 
-        const orphanActiveOnMain = await dataSource.query(
-          `SELECT id FROM data_source_versions
-            WHERE data_source_id = $1 AND branch_id = $2 AND is_active = true`,
-          [defcolOrphanId, mainBranchId]
-        );
-        expect(orphanActiveOnMain).toHaveLength(0);
+        const orphanAppDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${orphanSyncedAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const orphanAppEditing =
+          orphanAppDetail.body?.editing_version ||
+          orphanAppDetail.body?.editingVersion ||
+          orphanAppDetail.body?.app?.editing_version;
+        expect(orphanAppEditing).toBeDefined();
+        expect(orphanAppEditing.is_synced ?? orphanAppEditing.isSynced).toBe(false);
 
-        const duplicateActiveNames = await dataSource.query(
-          `SELECT LOWER(dsv.name) AS name, COUNT(*) AS count
-             FROM data_source_versions dsv
-             INNER JOIN data_sources ds ON ds.id = dsv.data_source_id
-            WHERE ds.organization_id = $1 AND dsv.branch_id = $2 AND dsv.is_active = true
-            GROUP BY LOWER(dsv.name) HAVING COUNT(*) > 1`,
-          [orgId, mainBranchId]
+        step(65, 'orphan MODULE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        // 65. Module variant of step 64. Modules are App rows (type='module') and use
+        //     the same GET /api/apps/:id surface, so the assertions match.
+        const orphanModBranchResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-orphan-mod', sourceBranchId: mainBranchId })
+          .expect(201);
+        const orphanModBranchId: string = orphanModBranchResp.body.id;
+
+        const orphanSyncedModResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/modules')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', orphanModBranchId)
+          .send({ icon: 'folderupload', name: 'orphan-synced-mod', type: 'module', branchId: orphanModBranchId })
+          .expect(201);
+        const orphanSyncedModId: string = orphanSyncedModResp.body.id;
+
+        await dataSource.query(
+          `UPDATE app_versions SET version_type = 'version', branch_id = $1, is_synced = true, pulled_at = now() WHERE app_id = $2`,
+          [mainBranchId, orphanSyncedModId]
         );
-        expect(duplicateActiveNames).toHaveLength(0);
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        const orphanModAfter = await dataSource.query(
+          `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
+          [orphanSyncedModId, mainBranchId]
+        );
+        expect(orphanModAfter).toHaveLength(1);
+        expect(orphanModAfter[0].is_synced).toBe(false);
+
+        const orphanModDetail = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${orphanSyncedModId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const orphanModEditing =
+          orphanModDetail.body?.editing_version ||
+          orphanModDetail.body?.editingVersion ||
+          orphanModDetail.body?.app?.editing_version;
+        expect(orphanModEditing).toBeDefined();
+        expect(orphanModEditing.is_synced ?? orphanModEditing.isSynced).toBe(false);
+
+        step(66, 'orphan DATA SOURCE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        // 66. Data-source variant. Create a DS on a feature branch, SQL-move its DSV
+        //     onto main as synced; pull main flips is_synced→false (the DSV is kept,
+        //     not deactivated/deleted) and GET /api/data-sources reflects it.
+        const orphanDsBranchResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-orphan-ds', sourceBranchId: mainBranchId })
+          .expect(201);
+        const orphanDsBranchId: string = orphanDsBranchResp.body.id;
+
+        const orphanSyncedDsResp = await request
+          .agent(app.getHttpServer())
+          .post(`/api/data-sources?branch_id=${orphanDsBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', orphanDsBranchId)
+          .send({ name: 'orphan-synced-ds', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
+          .expect(201);
+        const orphanSyncedDsId: string = orphanSyncedDsResp.body.id;
+
+        await dataSource.query(
+          `UPDATE data_source_versions SET branch_id = $1, is_synced = true WHERE data_source_id = $2`,
+          [mainBranchId, orphanSyncedDsId]
+        );
+
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        const orphanDsAfter = await dataSource.query(
+          `SELECT is_synced FROM data_source_versions WHERE data_source_id = $1 AND branch_id = $2`,
+          [orphanSyncedDsId, mainBranchId]
+        );
+        expect(orphanDsAfter).toHaveLength(1);
+        expect(orphanDsAfter[0].is_synced).toBe(false);
+
+        const orphanDsListResp = await request
+          .agent(app.getHttpServer())
+          .get(`/api/data-sources/${orgId}?branch_id=${mainBranchId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const orphanDsList = orphanDsListResp.body.data_sources || orphanDsListResp.body.dataSources || [];
+        const orphanDsRow = orphanDsList.find((ds: any) => ds.id === orphanSyncedDsId);
+        expect(orphanDsRow).toBeDefined();
+        expect(orphanDsRow.is_synced ?? orphanDsRow.isSynced).toBe(false);
+
       }, 540000);
     });
   });
