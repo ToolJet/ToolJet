@@ -26,10 +26,10 @@
         "authorize": "Authorize",
         "connect": "Connect",
         "reconnect": "Reconnect",
-        "components": "components",
+        "components": "Components",
         "send": "Send",
-        "noConnection": "could not connect",
-        "connectionVerified": "connection verified",
+        "noConnection": "Connection failed",
+        "connectionVerified": "Connection verified",
         "left": "Left",
         "center": "Center",
         "right": "Right",
@@ -48,37 +48,37 @@
         "release": "Release"
     },
     "errorBoundary": "Something went wrong.",
-    "viewer": "Sorry!. This app is under maintenance",
+    "viewer": "This app is currently under maintenance.",
     "app": {
         "updateAvailable": "Update available",
         "newVersionReleased": "A new version of ToolJet has been released.",
-        "readReleaseNotes": "Read release notes & update",
+        "readReleaseNotes": "View release notes and update",
         "skipVersion": "Skip this version"
     },
-    "stripe": "Please wait while we load the OpenAPI specification for Stripe.",
+    "stripe": "Loading OpenAPI specification for Stripe...",
     "openApi": {
-        "noValidOpenApi": "Valid OpenAPI Spec is not available!.",
+        "noValidOpenApi": "No valid OpenAPI specification found.",
         "selectHost": "Select a host",
         "selectOperation": "Select an operation"
     },
     "slack": {
         "authorize": "Authorize",
-        "connectToolJetToSlack": "{{whiteLabelText}} can connect to Slack and list users, send messages, etc. Please select appropriate permission scopes.",
+        "connectToolJetToSlack": "Connect {{whiteLabelText}} to Slack to list users, send messages, and more. Select the required permission scopes below.",
         "chatWrite": "chat:write",
-        "listUsersAndSendMessage": "Your {{whiteLabelText}} app will be able to list users and send messages to users & channels.",
+        "listUsersAndSendMessage": "Your {{whiteLabelText}} app will be able to list users and send messages to users and channels.",
         "connectSlack": "Connect to Slack"
     },
     "googleSheets": {
         "readOnly": "Read only",
-        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Google sheets, make sure to select read and write access",
-        "readDataFromSheets": "Your {{whiteLabelText}} apps can only read data from Google sheets",
+        "enableReadAndWrite": "To allow your {{whiteLabelText}} apps to modify Google Sheets, select read and write access.",
+        "readDataFromSheets": "Your {{whiteLabelText}} apps can only read data from Google Sheets.",
         "readWrite": "Read and write",
-        "readModifySheets": "Your {{whiteLabelText}} apps can read data from sheets, modify sheets, and more.",
+        "readModifySheets": "Your {{whiteLabelText}} apps can read, modify, and manage Google Sheets.",
         "toGoogleSheets": "to Google Sheets"
     },
     "zendesk": {
-        "enableReadAndWrite": "If you want your {{whiteLabelText}} apps to modify your Zendesk resources, make sure to select read and write access",
-        "readDataFromResources": "Your {{whiteLabelText}} apps can only read data from resources",
+        "enableReadAndWrite": "To allow your {{whiteLabelText}} apps to modify Zendesk resources, select read and write access.",
+        "readDataFromResources": "Your {{whiteLabelText}} apps can only read data from Zendesk resources.",
         "readModifySheets": "Your {{whiteLabelText}} apps can read data from resources, modify resources, and more."
     },
     "profile": {
@@ -90,15 +90,15 @@
         "enterNewPassword": "Enter new password",
         "name": "Name",
         "password": "Password",
-        "acceptInvite": "Accept invite",
-        "successfullyVerifiedEmail": "Successfully verified email",
+        "acceptInvite": "Accept invitation",
+        "successfullyVerifiedEmail": "Email verified successfully.",
         "setupTooljet": "Set up {{whiteLabelText}}"
     },
     "loginSignupPage": {
         "forgotPassword": "Forgot Password",
         "emailAddress": "Email address",
         "enterEmail": "Enter email",
-        "dontHaveAccount": "Don't have account yet?",
+        "dontHaveAccount": "Don't have an account?",
         "enterBusinessEmail": "Enter your business email",
         "alreadyHaveAnAccount": "Already have an account?",
         "resetPassword": "Reset Password",
@@ -106,22 +106,22 @@
         "signUp": "Sign up",
         "createToolJetAccount": "Create an account",
         "password": "Password",
-        "showPassword": "show password",
+        "showPassword": "Show password",
         "loginTo": "Login",
         "yourAccount": "your account",
-        "noLoginMethodsEnabled": "No login methods enabled for this workspace",
-        "emailConfirmLink": "Please check your email for confirmation link",
+        "noLoginMethodsEnabled": "No sign-in methods are configured for this workspace.",
+        "emailConfirmLink": "Check your email for a confirmation link.",
         "newPassword": "New Password",
         "passwordConfirmation": "Password Confirmation",
         "newToTooljet": "New to {{whiteLabelText}}?",
         "newToWorkspace": "New to this workspace?",
-        "enterWorkEmail": "Enter your work email",
+        "enterWorkEmail": "Enter your work email address",
         "enterPassword": "Enter password",
         "forgot": "Forgot?",
         "workEmail": "Email",
         "joinTooljet": "Join {{whiteLabelText}}",
         "getStartedForFree": "Get started for free",
-        "passwordCharacter": "Password must be at least 5 characters",
+        "passwordCharacter": "Password must be at least 5 characters.",
         "enterFullName": "Enter your full name",
         "enterNewPassword": "Enter new password"
     },
@@ -131,7 +131,7 @@
         "shareModal": {
             "makeApplicationPublic": "Make application public",
             "shareableLink": "Shareable app link",
-            "copy": "copy",
+            "copy": "Copy",
             "embeddableLink": "Embedded app link",
             "manageUsers": "Users"
         },
@@ -147,15 +147,15 @@
             "save": "Save",
             "create": "Create Version",
             "editVersion": "Edit version",
-            "deleteVersion": "Do you really want to delete this version ({{version}})?",
+            "deleteVersion": "Are you sure you want to delete version {{version}}? This action cannot be undone.",
             "enterVersionName": "Enter version name",
             "enterVersionDescription": "Enter version description",
-            "versionNameHelper": "Version name must be unique and max 25 characters",
-            "versionDescriptionHelper": "Description must be max 500 characters",
-            "versionAlreadyReleased": "You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes."
+            "versionNameHelper": "Version name must be unique and no longer than 25 characters.",
+            "versionDescriptionHelper": "Description cannot exceed 500 characters.",
+            "versionAlreadyReleased": "This version has already been released and cannot be edited. Create a new version or switch to a different version to make changes."
         },
         "queries": "Queries",
-        "inspectComponent": "Please select a component to inspect",
+        "inspectComponent": "Select a component to inspect.",
         "release": "Release",
         "searchQueries": "Search queries",
         "createQuery": "Create query",
@@ -173,22 +173,22 @@
                         "dataSourceSaved": "Data Source Saved"
                     },
                     "error": {
-                        "noEmptyDsName": "The name of datasource should not be empty"
+                        "noEmptyDsName": "Datasource name cannot be empty."
                     }
                 },
                 "suggestDataSource": "Suggest Datasource",
                 "suggestAnIntegration": "Suggest an integration",
-                "whatLookingFor": "Tell us what you were looking for?",
-                "noResultFound": "Don't see what you were looking for?",
+                "whatLookingFor": "Tell us what you're looking for.",
+                "noResultFound": "Can't find what you're looking for?",
                 "suggest": "Suggest",
                 "addNewDataSource": "Add new datasource",
-                "whiteListIP": "Please white-list our IP address if the data source is not publicly accessible",
+                "whiteListIP": "Add our IP address to your allowlist if the datasource is not publicly accessible.",
                 "copied": "Copied",
                 "copy": "Copy",
                 "saving": "Saving",
                 "noResultsFor": "No results for",
-                "noteTaken": "Thank you, we've taken a note of that!",
-                "goToAllDatasources": "Go to all Datasource",
+                "noteTaken": "Thank you! Your feedback has been noted.",
+                "goToAllDatasources": "View all datasources",
                 "send": "Send"
             },
             "runQueryOnApplicationLoad": "Run this query on application load",
@@ -200,7 +200,7 @@
             "notificationDuration": "Notification duration (s)",
             "events": "Events",
             "transformation": {
-                "transformationToolTip": "Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
+                "transformationToolTip": "Enable transformations to process query results using JavaScript or Python.",
                 "transformations": "Transformations"
             }
         },
@@ -247,8 +247,8 @@
             "markAllAs": "Mark all as",
             "read": "read",
             "un": "un",
-            "youDontHaveany": "You don't have any",
-            "youAreCaughtUp": "You're all caught up!",
+            "youDontHaveany": "No notifications",
+            "youAreCaughtUp": "You're all caught up.",
             "view": "View"
         },
         "organization": {
@@ -263,7 +263,7 @@
                     "title": "Instance logout",
                     "customLogoutUrl": {
                         "label": "Custom logout URL",
-                        "helperText": "Set a personalized logout URL for users logging out of this instance."
+                        "helperText": "Configure a custom logout URL for this instance."
                     }
                 },
                 "menusList": {
@@ -286,7 +286,7 @@
                     "createUser": "Create User",
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
-                    "enterEmail": "Enter email id",
+                    "enterEmail": "Enter email address",
                     "enterFullName": "Enter full name",
                     "inviteNewUsers": "Invite new users"
                 },
@@ -326,31 +326,31 @@
                     "generalSettings": {
                         "title": "General Settings",
                         "enableSignup": "Enable Signup",
-                        "newAccountWillBeCreated": "New account will be created for user's first time SSO sign in",
+                        "newAccountWillBeCreated": "A new account will be created when a user signs in via SSO for the first time.",
                         "allowedDomains": "Allowed domains",
                         "enterDomains": "Enter Domains",
-                        "supportMultiDomains": "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
+                        "supportMultiDomains": "Enter multiple domain names separated by commas. Example: tooljet.com, tooljet.io, yourorganization.com",
                         "loginUrl": "Login URL",
-                        "workspaceLogin": "Use this URL to login directly to this workspace",
+                        "workspaceLogin": "Use this URL to log in directly to this workspace.",
                         "allowDefaultSso": "Allow default SSO",
-                        "ssoAuth": "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by \n workspace level SSO.",
+                        "ssoAuth": "Allow users to sign in using the default SSO configuration. Workspace-level SSO settings can override this.",
                         "customLogoutUrl": "Custom logout URL"
                     },
                     "google": {
                         "title": "Google",
                         "enabled": "Enabled",
                         "disabled": "Disabled",
-                        "clientId": "Client Id",
-                        "enterClientId": "Enter Client Id",
+                        "clientId": "Client ID",
+                        "enterClientId": "Enter Client ID",
                         "redirectUrl": "Redirect URL"
                     },
                     "github": {
                         "title": "GitHub",
                         "hostName": "Host Name",
                         "enterHostName": "Enter Host Name",
-                        "requiredGithub": "Required if GitHub is self hosted",
-                        "clientId": "Client Id",
-                        "enterClientId": "Enter Client Id",
+                        "requiredGithub": "Required only if GitHub is self-hosted.",
+                        "clientId": "Client ID",
+                        "enterClientId": "Enter Client ID",
                         "clientSecret": "Client Secret",
                         "enterClientSecret": "Enter Client Secret",
                         "encrypted": "Encrypted",
@@ -358,8 +358,8 @@
                     },
                     "passwordLogin": "Password Login",
                     "environmentVar": {
-                        "noEnvConfig": "You haven't configured any workspace variables, press the 'Add new variable' button to create one",
-                        "envWillBeDeleted": "Variable will be deleted, do you want to continue?",
+                        "noEnvConfig": "No workspace variables configured. Click 'Add new variable' to create one.",
+                        "envWillBeDeleted": "This variable will be permanently deleted. Do you want to continue?",
                         "addNewVariable": "Add new variable",
                         "variableForm": {
                             "addNewVariable": "Add new variable",
@@ -421,20 +421,20 @@
         },
         "blankPage": {
             "welcomeToToolJet": "Welcome to your new ToolJet workspace",
-            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "getStartedCreateNewApp": "Create a new application or start from a template in the ToolJet Library.",
             "importApplication": "Import an app"
         },
         "foldersSection": {
             "allApplications": "All applications",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
-            "noFolders": "You haven't created any folders. Use folders to organize your apps",
+            "noFolders": "No folders created yet. Use folders to organize your apps.",
             "createFolder": "Create folder",
             "updateFolder": "Update folder",
             "editFolder": "Edit folder",
             "deleteFolder": "Delete folder",
             "folderName": "Folder name",
-            "wishToDeleteFolder": "Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted."
+            "wishToDeleteFolder": "Are you sure you want to delete '{{folderName}}'? Apps in this folder will not be deleted."
         },
         "header": {
             "createNewApplication": "Create an app",
@@ -446,18 +446,18 @@
             "of": "of",
             "to": "to"
         },
-        "noApplicationFound": "No Applications found",
-        "noWorkflowFound": "No workflows found",
+        "noApplicationFound": "No applications found.",
+        "noWorkflowFound": "No workflows found.",
         "thisFolderIsEmpty": "This folder is empty",
         "nonAccessibleFolderApps": "You do not have access to any applications in this folder.",
-        "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
-        "deleteWorkflowAndData": "The workflow {{appName}} and the associated data will be permanently deleted, do you want to continue?",
-        "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
+        "deleteAppAndData": "'{{appName}}' and all associated data will be permanently deleted. This action cannot be undone. Do you want to continue?",
+        "deleteWorkflowAndData": "'{{appName}}' and all associated data will be permanently deleted. This action cannot be undone. Do you want to continue?",
+        "removeAppFromFolder": "This app will be removed from the folder. Do you want to continue?",
         "change": "Change",
         "templateCard": {
             "use": "Use",
             "preview": "Preview",
-            "leadGeneretion": "Lead generetion"
+            "leadGeneretion": "Lead Generation"
         },
         "templateLibraryModal": {
             "select": "Select template",
@@ -471,14 +471,14 @@
         },
         "blankPage": {
             "welcomeToToolJet": "Welcome to your new ToolJet workspace",
-            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "getStartedCreateNewApp": "Create a new workflow or start from a template in the ToolJet Library.",
             "importApplication": "Import an application"
         },
         "foldersSection": {
             "allApplications": "All workflows",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
-            "noFolders": "You haven't created any folders. Use folders to organize your apps",
+            "noFolders": "No folders created yet. Use folders to organize your workflows.",
             "createFolder": "Create folder",
             "updateFolder": "Update folder",
             "editFolder": "Edit folder",
@@ -496,15 +496,15 @@
             "of": "of",
             "to": "to"
         },
-        "noApplicationFound": "No Applications found",
+        "noApplicationFound": "No workflows found.",
         "thisFolderIsEmpty": "This folder is empty",
-        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
+        "deleteAppAndData": "This workflow and all associated data will be permanently deleted. This action cannot be undone. Do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {
             "use": "Use",
             "preview": "Preview",
-            "leadGeneretion": "Lead generetion"
+            "leadGeneretion": "Lead Generation"
         },
         "templateLibraryModal": {
             "select": "Select template",
@@ -521,47 +521,47 @@
         "lastName": "Last name",
         "company": "Company",
         "role": "Role",
-        "pleaseSelect": "Please select",
+        "pleaseSelect": "Select",
         "password": "Password",
         "confirmPassword": "Confirm Password",
-        "clickAndAgree": "By clicking the button below, you agree to our",
+        "clickAndAgree": "By proceeding, you agree to our",
         "termsAndConditions": "Terms and Conditions",
         "finishAccountSetup": "Finish account setup",
-        "acceptInvite": "Accept invite",
+        "acceptInvite": "Accept invitation",
         "accountExists": "Already have an account?",
         "and": "and"
     },
     "onBoarding": {
-        "finishToolJetInstallation": "Finish ToolJet installation",
+        "finishToolJetInstallation": "Complete ToolJet installation",
         "organization": "Organization",
         "name": "Name",
         "email": "Email",
-        "receiveUpdatesFromToolJet": "You will receive updates from the ToolJet team ( 1-2 emails every month, we do not spam )",
+        "receiveUpdatesFromToolJet": "Receive 1–2 monthly updates from the ToolJet team. No spam.",
         "finishSetup": "Finish setup",
         "skip": "Skip"
     },
     "redirectSso": {
         "upgradingTov1.13.0": "Upgrading to v1.13.0 and above.",
-        "fromV1.13.0": "From v1.13.0 we have introduced",
+        "fromV1.13.0": "From v1.13.0, we introduced",
         "multiWorkspace": "Multi-Workspace",
-        "singleSignOnConfig": "The Single Sign-On related configurations are moved from workspace variables to database. Please refer this",
+        "singleSignOnConfig": "Single Sign-On configurations have been moved from workspace variables to the database. Please refer to this",
         "link": "Link",
         "toConfigureSSO": "to configure SSO.",
-        "haveGoogleGithubSSo": "If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then theSSO configurations will be migrated while upgrade but you have to re-configure the redirect URL in the SSO provider side. Redirect URLs for each SSO are given below.",
-        "isMultiWorkspaceEnabled": "If you have enabled Multi-Workspace, then the SSO configurations will not be migrated while upgrade so you have to re-configure the SSO under the respective workspace.",
-        "youHaveEnabled": "You have Enabled",
-        "setupSsoWorkspace": "Please login with password and you can setup sso using workspace",
+        "haveGoogleGithubSSo": "If you have Google or GitHub SSO configurations before upgrade and disabled Multi-Workspace, then the SSO configurations will be migrated during the upgrade but you have to re-configure the redirect URL on the SSO provider side. Redirect URLs for each SSO are given below.",
+        "isMultiWorkspaceEnabled": "If Multi-Workspace is enabled, SSO configurations will not be migrated during the upgrade. Re-configure SSO for each affected workspace.",
+        "youHaveEnabled": "You have enabled",
+        "setupSsoWorkspace": "Log in with your password to set up SSO via the workspace",
         "manageSsoMenu": "Manage SSO menu.",
-        "youHaveDisabled": "You have Disabled",
-        "configureRedirectUrl": "Please configure redirect url in SSO provider side.",
+        "youHaveDisabled": "You have disabled",
+        "configureRedirectUrl": "Please configure the redirect URL on the SSO provider side.",
         "google": "Google",
         "redirectUrl": "Redirect URL:",
         "gitHub": "GitHub"
     },
     "oAuth2": {
         "pleaseWait": "Please wait...",
-        "authSuccess": "Auth successful, you can close this tab now.",
-        "authFailed": "Auth failed"
+        "authSuccess": "Authentication successful. You may close this tab.",
+        "authFailed": "Authentication failed."
     },
     "widgetManager": {
         "commonlyUsed": "commonly used",
@@ -571,7 +571,7 @@
         "others": "others",
         "noResults": "No results found",
         "tryAdjustingFilterMessage": "Try adjusting your search or filter to find what you're looking for.",
-        "clearQuery": "clear query"
+        "clearQuery": "Clear"
     },
     "widget": {
         "common": {
@@ -585,10 +585,10 @@
             "structure": "Structure",
             "data": "Data",
             "additionalActions": "Additional Actions",
-            "documentation": "Read documentation for {{componentMeta}}",
-            "widgetNameEmptyError": "Widget name cannot be empty",
-            "componentNameExistsError": "Component name already exists",
-            "invalidWidgetName": "Invalid widget name. Should be unique and only include letters, numbers and underscore."
+            "documentation": "View documentation for {{componentMeta}}",
+            "widgetNameEmptyError": "Component name cannot be empty.",
+            "componentNameExistsError": "A component with this name already exists.",
+            "invalidWidgetName": "Invalid component name. Names must be unique and may only contain letters, numbers, and underscores."
         },
         "commonProperties": {
             "visibility": "Visibility",
@@ -651,14 +651,14 @@
             "minimumValue": "Minimum value",
             "maximumValue": "Maximum value",
             "format": "Format",
-            "enableTimeSelection": "Enable time selection?",
-            "enableDateSelection": "Enable date selection?",
+            "enableTimeSelection": "Enable time selection",
+            "enableDateSelection": "Enable date selection",
             "disabledDates": "Disabled dates",
             "minDate": "Min Date",
             "maxDate": "Max Date",
             "makeThisFieldMandatory": "Make this field mandatory",
             "setChecked": "Set checked",
-            "status": "status",
+            "status": "Status",
             "defaultStatus": "Default status",
             "checkboxColor": "Checkbox color",
             "optionValues": "Option values",
@@ -690,7 +690,7 @@
             "latitude": "Latitude",
             "longitude": "Longitude",
             "numberOfStars": "Number of stars",
-            "defaultNoOfSelectedStars": "Default no of selected stars",
+            "defaultNoOfSelectedStars": "Default number of selected stars",
             "enableHalfStar": "Enable half star",
             "tooltips": "Tooltips",
             "starColor": "Star color",
@@ -731,7 +731,7 @@
             "highlightColor": "Highlight color",
             "tabWidth": "Tab width",
             "setCurrentTab": "Set current tab",
-            "id": "Id",
+            "id": "ID",
             "timerType": "Timer type",
             "listData": "List data",
             "rowHeight": "Row height",
@@ -742,7 +742,7 @@
             "progress": "Progress",
             "color": "Color",
             "strokeWidth": "Stroke width",
-            "counterClockwise": "Counter clockwise",
+            "counterClockwise": "Counterclockwise",
             "circleRatio": "Circle ratio",
             "colour": "Color",
             "size": "Size",
@@ -765,24 +765,24 @@
             "trackColor": "Track color",
             "timelineData": "Timeline data",
             "hideDate": "Hide date",
-            "svgData": "Svg  data",
+            "svgData": "SVG data",
             "rawHtml": "Raw HTML",
-            "values": "values",
+            "values": "Values",
             "labels": "Labels",
             "defaultSelected": "Default selected",
             "enableMultipleSelection": "Enable multiple selection",
-            "selectedTextColour": "Selected text colour",
+            "selectedTextColour": "Selected text color",
             "selectedBackgroundColor": "Selected background color",
             "fileUrl": "File URL",
             "scalePageToWidth": "Scale page to width",
             "showPageControls": "Show page controls",
             "steps": "Steps",
             "currentStep": "Current step",
-            "stepsSelectable": "Steps selectable",
+            "stepsSelectable": "Selectable steps",
             "theme": "Theme",
             "columns": "Columns",
             "cardData": "Card data",
-            "enableAddCard": "Enable add card",
+            "enableAddCard": "Allow adding cards",
             "width": "Width",
             "minWidth": "Min width",
             "accentColor": "Accent color",
@@ -810,15 +810,15 @@
             "cellBgColor": "Cell background color",
             "dateDisplayformat": "Date format",
             "dateParseformat": "Date",
-            "showTime": "show time",
-            "makeEditable": "make editable",
+            "showTime": "Show time",
+            "makeEditable": "Make editable",
             "buttonText": "Button text",
             "buttonPosition": "Button position",
             "remove": "Remove",
             "addButton": "+ Add button",
             "addColumn": "Add column",
             "addNewColumn": "Add new column",
-            "noActionMessage": "This table doesn't have any action buttons",
+            "noActionMessage": "No action buttons configured.",
             "horizontalAlignment": "Horizontal alignment",
             "textAlignment": "Text alignment",
             "deciamalPlaces": "Decimal Places",
@@ -1018,7 +1018,7 @@
             "text": "Sources",
             "tip": "Add or edit datasources",
             "dataSources": "Data sources",
-            "addDataSource": "+ add data source"
+            "addDataSource": "+ Add data source"
         },
         "Debugger": {
             "text": "Debugger",
@@ -1026,12 +1026,12 @@
             "errors": "Errors",
             "noErrors": "No errors found",
             "noLogs": "No logs found",
-            "clear": "clear"
+            "clear": "Clear"
         },
         "Comments": {
             "text": "Comments",
             "tip": "Toggle comments",
-            "commentBody": "There are no comments to display",
+            "commentBody": "No comments yet.",
             "typeComment": "Type your comment here"
         },
         "Settings": {
