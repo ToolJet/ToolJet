@@ -182,20 +182,7 @@ export async function resolveModuleRef(
       });
       if (onConsumer) return onConsumer;
     }
-    const defaultBranchForName = await findDefaultBranch(manager, organizationId);
-    if (defaultBranchForName) {
-      const onDefault = await manager.findOne(AppVersion, {
-        where: {
-          appId: moduleApp.id,
-          name: versionName,
-          branchId: defaultBranchForName.id,
-          versionType: AppVersionType.VERSION,
-          isStub: false,
-        },
-      });
-      if (onDefault) return onDefault;
-    }
-    // Name not found on any branch — fall through to latest non-stub.
+    // Name not found on branchless PUBLISHED or consumer branch — fall through to orphan guard.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
