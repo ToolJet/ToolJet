@@ -1,4 +1,4 @@
-import { resolveDynamicValues } from '../utils';
+import { resolveDynamicValues, registerResetter } from '../utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
@@ -55,6 +55,7 @@ const buildExposedValueMutation = (componentId, property, value, moduleId) => (s
 
 export const createResolvedSlice = (set, get) => {
   const _exposedValueBatch = createBatchManager(set, get);
+  registerResetter(() => _exposedValueBatch.reset());
 
   // Implicit microtask batch: coalesces dep cascades from setVariable / setExposedValue
   // calls that happen outside an explicit batch window (ListView/Form bracket).
