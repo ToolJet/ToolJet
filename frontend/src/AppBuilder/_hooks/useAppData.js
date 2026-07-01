@@ -194,6 +194,11 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const moduleAppNameFromList = useStore((state) => {
+    if (!moduleMode) return null;
+    const list = state.modulesStore?.modulesList ?? [];
+    return list.find((m) => (m.co_relation_id ?? m.id) === appId)?.name ?? null;
+  });
 
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
@@ -695,7 +700,7 @@ const useAppData = (
             errorTarget: 'Modules',
             error: {
               description: _error?.data?.message || 'Module version not found',
-              module: appName || widgetName,
+              module: appName || moduleAppNameFromList || widgetName,
               version: versionLabel,
             },
             timestamp: new Date().toISOString(),

@@ -170,63 +170,35 @@ export async function resolveModuleRef(
       },
     });
     if (branchlessForName) return branchlessForName;
-    if (consumerBranchId) {
-      const onConsumer = await manager.findOne(AppVersion, {
-        where: {
-          appId: moduleApp.id,
-          name: versionName,
-          branchId: consumerBranchId,
-          versionType: AppVersionType.VERSION,
-          isStub: false,
-        },
-      });
-      if (onConsumer) return onConsumer;
-    }
-    // Name not found on branchless PUBLISHED or consumer branch — fall through to orphan guard.
+    // Name not found on branchless PUBLISHED — fall through to orphan guard.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
+  // git-sync: branched rows are always DRAFTs (chk_app_versions_branched_implies_draft) —
+  // a pin must only resolve to a branchless PUBLISHED row.
+  // non-git-sync: no branch rows exist; branchless lookup with no status filter is correct.
   if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
-    if (consumerBranchId) {
-      const local = await manager.findOne(AppVersion, {
-        where: {
-          appId: moduleApp.id,
-          moduleReferenceId,
-          branchId: consumerBranchId,
-          isStub: false,
-        },
-      });
-      if (local) return local;
-    }
     const defaultBranch = await findDefaultBranch(manager, organizationId);
     if (defaultBranch) {
-      const onDefault = await manager.findOne(AppVersion, {
+      // git-sync: only branchless PUBLISHED.
+      const published = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
           moduleReferenceId,
-          branchId: defaultBranch.id,
+          branchId: IsNull(),
+          status: AppVersionStatus.PUBLISHED,
           isStub: false,
         },
       });
-      if (onDefault) return onDefault;
+      if (published) return published;
     } else {
-      // Non-git-sync workspace: defaultBranch === null means no WorkspaceBranch rows exist.
-      const noGitSync = await manager.findOne(AppVersion, {
+      // Non-git-sync: branchless (all rows are valid, no status filter needed).
+      const byMref = await manager.findOne(AppVersion, {
         where: { appId: moduleApp.id, moduleReferenceId, branchId: IsNull(), isStub: false },
       });
-      if (noGitSync) return noGitSync;
+      if (byMref) return byMref;
     }
-    // Branchless PUBLISHED versions (branch_id = NULL after metadata migration)
-    const branchless = await manager.findOne(AppVersion, {
-      where: {
-        appId: moduleApp.id,
-        moduleReferenceId,
-        branchId: IsNull(),
-        isStub: false,
-      },
-    });
-    if (branchless) return branchless;
-    // id present but no branch/branchless match — orphan fallback below.
+    // id present but no match — orphan fallback below.
   }
 
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
@@ -562,42 +534,23 @@ export async function resolveAllModuleViewersForVersion(
     };
 
     if (pin && UUID_RE.test(pin)) {
-      // Clause 1: id match
-      const byId = candidates.find((r) => r.id === pin);
-      if (byId) return pickKind(byId, 'pin-hit');
-      // Clause 4: module_reference_id on consumer's branch then default then branchless
-      const onConsumer = parent.branchId
-        ? candidates.find(
-            (r) =>
-              r.moduleReferenceId === pin &&
-              r.branchId === parent.branchId &&
-              r.isStub === false
-          )
-        : undefined;
-      if (onConsumer) return pickKind(onConsumer, 'pin-hit');
-      if (defaultBranch) {
-        const onDefault = candidates.find(
+      if (isGitSyncEnabled) {
+        // git-sync: only branchless PUBLISHED (branched rows are always DRAFTs by constraint).
+        const published = candidates.find(
           (r) =>
             r.moduleReferenceId === pin &&
-            r.branchId === defaultBranch.id &&
+            r.branchId === null &&
+            r.status === AppVersionStatus.PUBLISHED &&
             r.isStub === false
         );
-        if (onDefault) return pickKind(onDefault, 'pin-hit');
+        if (published) return pickKind(published, 'pin-hit');
       } else {
-        // Non-git-sync: defaultBranch === null means no WorkspaceBranch rows exist.
-        const onNullBranch = candidates.find(
+        // Non-git-sync: branchless, no status filter.
+        const byMref = candidates.find(
           (r) => r.moduleReferenceId === pin && r.branchId === null && r.isStub === false
         );
-        if (onNullBranch) return pickKind(onNullBranch, 'pin-hit');
+        if (byMref) return pickKind(byMref, 'pin-hit');
       }
-      // Clause 4b: module_reference_id on branchless PUBLISHED versions
-      const branchless = candidates.find(
-        (r) =>
-          r.moduleReferenceId === pin &&
-          r.branchId === null &&
-          r.isStub === false
-      );
-      if (branchless) return pickKind(branchless, 'pin-hit');
     } else if (pin) {
       // Clause 0: default-branch draft sentinel
       if (pin === DRAFT_SENTINEL && defaultBranch) {
