@@ -86,7 +86,6 @@ export const TableRow = ({
           alignItems: 'center',
           textAlign: isButtonColumn ? undefined : cell.column.columnDef?.meta?.horizontalAlignment,
           width: cell.column.getSize(),
-          flex: '0 0 auto',
           ...pinnedStyles,
         };
 
