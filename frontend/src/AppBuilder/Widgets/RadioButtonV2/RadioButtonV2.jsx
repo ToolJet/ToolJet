@@ -254,8 +254,7 @@ export const RadioButtonV2 = ({
           <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
         ) : (
           <div
-            // extra padding gives the keyboard focus ring room so it isn't clipped by the widget bounds
-            className="d-flex tw-px-1 tw-align-middle"
+            className="d-flex tw-align-middle"
             ref={radioBtnRef}
             style={{
               ...computedLayoutStyles,

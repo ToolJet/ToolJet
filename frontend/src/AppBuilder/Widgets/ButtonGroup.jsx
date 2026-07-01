@@ -153,7 +153,7 @@ export const ButtonGroup = function Button({
             {label}
           </p>
         )}
-        <div className="tw-px-1">
+        <div>
           {data?.map((item, index) => (
             <button
               data-cy={`${dataCy}-button-${index}`}

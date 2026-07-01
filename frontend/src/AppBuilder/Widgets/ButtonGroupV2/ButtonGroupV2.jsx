@@ -348,7 +348,7 @@ export const ButtonGroupV2 = (props) => {
               width="20"
             />
           ) : (
-            <div className="button-group-content tw-p-1" style={groupStyles} ref={groupRef}>
+            <div className="button-group-content" style={groupStyles} ref={groupRef}>
               {formattedOptions?.map((option, index) => (
                 <button
                   data-cy={`${dataCy}-button-${index}`}
