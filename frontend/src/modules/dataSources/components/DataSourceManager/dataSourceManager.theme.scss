@@ -1,5 +1,14 @@
 @import '@/_styles/colors.scss';
 
+.googlesheetsv2-save-btn {
+  &:disabled,
+  &:disabled:hover {
+    background: var(--slate3) !important;
+    color: var(--slate8) !important;
+    border: none !important;
+  }
+}
+
 .datasource-version-info-icon {
   display: flex;
   align-items: center;

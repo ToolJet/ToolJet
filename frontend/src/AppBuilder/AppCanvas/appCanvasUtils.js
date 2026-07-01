@@ -17,6 +17,7 @@ import {
   LISTVIEW_CANVAS_PADDING,
   HOVER_CLICK_OUTLINE_BORDER,
 } from './appCanvasConstants';
+import { createDefaultFlexChildLayout } from '@/AppBuilder/Widgets/FlexContainer/flexContainer.utils';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -51,14 +52,17 @@ export const addNewWidgetToTheEditor = (
     parentCanvasType
   );
   const scrollTop = realCanvasRef?.scrollTop;
-  let [left, top] = snapToGrid(subContainerWidth, _left, _top + scrollTop);
+  const subContainerWidths = useGridStore.getState().subContainerWidths;
+  const targetCanvasId = parentId && parentId !== 'canvas' ? parentId : 'canvas';
+  const fallbackGridWidth = subContainerWidth ? subContainerWidth / NO_OF_GRIDS : subContainerWidths.canvas || 1;
+  const gridWidth = subContainerWidths[targetCanvasId] || fallbackGridWidth;
+  let [left, top] = snapToGrid(gridWidth * NO_OF_GRIDS, _left, _top + scrollTop);
 
-  const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
 
   // Adjust widget width based on the dropping canvas width
-  const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  const mainCanvasGridWidth = subContainerWidths.canvas || gridWidth;
+  let width = Math.round((defaultWidth * mainCanvasGridWidth) / gridWidth);
 
   let customLayouts = undefined;
 
@@ -76,6 +80,19 @@ export const addNewWidgetToTheEditor = (
     for (const { name, default_value } of inputItems) {
       componentData.definition.properties[name] = { value: default_value };
     }
+
+    // Module editor's additional-action settings act as the instance defaults;
+    // the instance properties stay editable in the app (override). API responses
+    // snake_case definition keys (see input_items above), so check both forms.
+    const moduleContainerProperties = moduleInfo.moduleContainer?.component.definition.properties;
+    const copyModuleDefault = (snakeKey, camelKey) => {
+      const defaultValue = moduleContainerProperties?.[snakeKey]?.value ?? moduleContainerProperties?.[camelKey]?.value;
+      if (defaultValue !== undefined) {
+        componentData.definition.properties[camelKey] = { value: defaultValue };
+      }
+    };
+    copyModuleDefault('dynamic_height', 'dynamicHeight');
+    copyModuleDefault('collapse_when_hidden', 'collapseWhenHidden');
   }
 
   // Ensure minimum width
@@ -93,6 +110,40 @@ export const addNewWidgetToTheEditor = (
   }
 
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+
+  // When dropping into a FlexContainer, use flex layout fields instead of grid fields
+  const parentComponentType =
+    parentId && parentId !== 'canvas' ? useStore.getState().getComponentTypeFromId(parentId) : null;
+  const isFlexContainerParent = parentComponentType === 'FlexContainer';
+
+  let activeLayoutData;
+  let nonActiveLayoutData;
+
+  if (isFlexContainerParent) {
+    const dropHeightPx = customLayouts ? customLayouts[currentLayout].height : defaultHeight;
+    const dropWidthPx = customLayouts ? customLayouts[currentLayout].width * gridWidth : defaultWidth * gridWidth;
+
+    const flexLayout = createDefaultFlexChildLayout({
+      widthPx: dropWidthPx,
+      height: dropHeightPx,
+    });
+    activeLayoutData = flexLayout;
+    nonActiveLayoutData = { ...flexLayout };
+  } else {
+    activeLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[currentLayout].width : width,
+      height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
+    };
+    nonActiveLayoutData = {
+      top: top,
+      left: left,
+      width: customLayouts ? customLayouts[nonActiveLayout].width : width,
+      height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
+    };
+  }
+
   const newComponent = {
     id: uuidv4(),
     name: componentName,
@@ -101,18 +152,8 @@ export const addNewWidgetToTheEditor = (
       parent: parentId === 'canvas' ? null : parentId,
     },
     layouts: {
-      [currentLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[currentLayout].width : width,
-        height: customLayouts ? customLayouts[currentLayout].height : defaultHeight,
-      },
-      [nonActiveLayout]: {
-        top: top,
-        left: left,
-        width: customLayouts ? customLayouts[nonActiveLayout].width : width,
-        height: customLayouts ? customLayouts[nonActiveLayout].height : defaultHeight,
-      },
+      [currentLayout]: activeLayoutData,
+      [nonActiveLayout]: nonActiveLayoutData,
     },
     withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
   };
@@ -369,6 +410,9 @@ export const getParentWidgetFromId = (parentType, parentId) => {
   return parentType;
 };
 
+export const getDropTargetLabel = (widgetType, slotType) =>
+  slotType === 'header' || slotType === 'footer' ? slotType : widgetType;
+
 export const getTabId = (parentId) => {
   return parentId.split('-').slice(0, -1).join('-');
 };
@@ -387,7 +431,12 @@ export const getSubContainerIdWithSlots = (parentId) => {
 
 export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId, realCanvasRef) => {
   let padding = 2; //Need to update this 2 to correct value for other subcontainers
-  if (componentType === 'Container' || componentType === 'Form' || componentType === 'Accordion') {
+  if (
+    componentType === 'Container' ||
+    componentType === 'Form' ||
+    componentType === 'Accordion' ||
+    componentType === 'FlexContainer'
+  ) {
     padding =
       2 * CONTAINER_FORM_CANVAS_PADDING +
       2 * SUBCONTAINER_CANVAS_BORDER_WIDTH +

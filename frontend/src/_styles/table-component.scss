@@ -159,6 +159,7 @@
       }
 
       .footer-control-btns {
+        // First button
         &> [data-index="0"]:not([data-last="true"]) {
           .tj-tertiary-btn {
             border-top-right-radius: 0 !important;
@@ -166,18 +167,20 @@
           }
         }
 
+        // Last button
         &> [data-last="true"]:not([data-index="0"]) {
           .tj-tertiary-btn {
             border-top-left-radius: 0 !important;
             border-bottom-left-radius: 0 !important;
+            border-left: none !important;
           }
         }
 
+        // Middle buttons
         &> [data-last="false"]:not([data-index="0"]) {
           .tj-tertiary-btn {
             border-radius: 0 !important;
             border-left: none !important;
-            border-right: none !important;
           }
         }
       }
@@ -1228,30 +1231,25 @@
 }
 
 
-.table-column-popover {
-  .popover-body.show-scrollbar {
-    overflow-y: scroll !important;
-    max-height: 80vh !important;
-  }
-}
-
-
-.table-column-popover#popover-basic-2 {
-  z-index: 999 !important;
+.table-column-popover#popover-basic-2,
+.table-column-popover#table-column-popover-basic {
+  z-index: 11 !important;
   min-width: 280px;
-  max-height: 85vh !important;
   background-color: var(--cc-surface1-surface);
+
+  .cm-scroller {
+    overscroll-behavior: unset !important;
+  }
 
   .popover-body {
     display: flex;
     flex-direction: column;
     padding: 16px 0px 16px !important;
     gap: 16px !important;
-    align-self: stretch;
     // background-color: var(--slate1) !important;
     border-radius: 0;
-    overflow-y: auto;
-    max-height: calc(85vh - 40px);
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
 
     .optional-properties-when-editable-true {
       // background-color: var(--slate3);
@@ -1318,6 +1316,23 @@
       gap: 4px;
       flex: 1 0 0;
     }
+  }
+}
+
+// Table-only: force popover to full editor viewport height
+.table-column-popover#table-column-popover-basic {
+  display: flex !important;
+  flex-direction: column !important;
+  height: calc(100vh - 88px) !important;
+  max-height: calc(100vh - 88px) !important;
+
+  .popover-header {
+    flex-shrink: 0;
+  }
+
+  .popover-body {
+    flex: 1;
+    min-height: 0;
   }
 }
 

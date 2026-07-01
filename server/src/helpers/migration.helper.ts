@@ -206,46 +206,40 @@ export const deleteAppHistoryForStructuralMigration = async (
     let totalDeleted = 0;
     let batchNumber = 0;
 
-    // app_history has a self-referential FK: parent_id → app_history.id
-    // (delta rows reference snapshot rows as their parent).
-    // A plain batch DELETE fails with FK violation if a parent snapshot row
-    // is picked before its child delta rows are removed.
+    // app_history has a self-referential FK: parent_id → app_history.id.
+    // The data can have irregular parent references due to a historical bug in
+    // restoreToPoint() that set parentId = targetEntry.id (where targetEntry
+    // could be a delta, not just a snapshot). This means any row type can
+    // reference any other row type, so filtering by history_type or parent_id
+    // is unreliable.
     //
-    // Fix: two-pass delete — the for loop runs two sequential passes:
-    //   Pass 1 (condition = 'AND parent_id IS NOT NULL'):
-    //     Deletes only child/delta rows in batches until none remain.
-    //     The inner while loop breaks when result[1] === 0 (no rows deleted),
-    //     then the for moves to the next iteration.
-    //   Pass 2 (condition = ''):
-    //     No extra filter — deletes all remaining rows. By this point every
-    //     child row is gone, so only parent/snapshot rows (parent_id IS NULL)
-    //     are left. These are now safely deletable since nothing references them.
-    //
-    // The two loops are sequential, not concurrent — Pass 2 never starts until
-    // Pass 1 has fully exhausted. No extra UPDATE writes needed; deletion order
-    // alone satisfies the FK constraint.
-    for (const condition of ['AND parent_id IS NOT NULL', '']) {
-      while (true) {
-        const result = await entityManager.query(
-          `DELETE FROM app_history
-           WHERE id IN (
-             SELECT id FROM app_history
-             WHERE app_version_id = ANY($1)
-             ${condition}
-             LIMIT $2
-           )`,
-          [appVersionIds, batchSize]
-        );
+    // Strategy: repeatedly delete only true leaf nodes — rows in the affected
+    // app versions that are not currently referenced by any other row's parent_id.
+    // Each iteration peels one layer of leaves off the tree until all rows are gone.
+    // The NOT EXISTS subquery is unfiltered by app_version_id so cross-version
+    // references (shouldn't exist, but defensive) also prevent deletion.
+    const leafDeleteSql = `
+      DELETE FROM app_history
+      WHERE id IN (
+        SELECT h.id FROM app_history h
+        WHERE h.app_version_id = ANY($1)
+          AND NOT EXISTS (
+            SELECT 1 FROM app_history child WHERE child.parent_id = h.id
+          )
+        LIMIT $2
+      )`;
 
-        const deleted: number = result[1] ?? 0;
-        if (deleted === 0) break;
+    while (true) {
+      const result = await entityManager.query(leafDeleteSql, [appVersionIds, batchSize]);
 
-        totalDeleted += deleted;
-        batchNumber++;
-        console.log(
-          `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
-        );
-      }
+      const deleted: number = result[1] ?? 0;
+      if (deleted === 0) break;
+
+      totalDeleted += deleted;
+      batchNumber++;
+      console.log(
+        `[${migrationName}] Batch ${batchNumber}: Deleted ${deleted} history entries (total: ${totalDeleted})`
+      );
     }
 
     console.log(

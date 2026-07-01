@@ -28,6 +28,7 @@ import { CodeHinterBtns } from './CodehinterOverlayTriggers';
 import useWorkflowStore from '@/_stores/workflowStore';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { TableColumnContext } from '@/AppBuilder/RightSideBar/Inspector/Components/Table/ColumnManager/TableColumnContext';
+import { useStableCallback } from '@/AppBuilder/_hooks/useStableCallback';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -38,6 +39,22 @@ const langSupport = Object.freeze({
 });
 
 const lineWrappingExtension = EditorView.lineWrapping;
+
+// Hoisted to module scope so their identity never changes: anything fed into the
+// CodeMirror `extensions` prop must stay referentially stable, otherwise
+// react-codemirror dispatches a reconfigure on every render, which permanently
+// grows style-mod's shared stylesheet and degrades the whole session.
+const staticCustomKeyMaps = [
+  ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
+  ...completionKeymap,
+  ...searchKeymap,
+];
+const searchExtension = search({
+  createPanel: handleSearchPanel,
+});
+const tooltipExtension = tooltips({
+  parent: document.body,
+});
 
 const MultiLineCodeEditor = (props) => {
   const {
@@ -133,10 +150,10 @@ const MultiLineCodeEditor = (props) => {
     };
   }, [editorView]);
 
-  const handleChange = (val) => {
+  const handleChange = useStableCallback((val) => {
     currentValueRef.current = val;
     onInputChange && onInputChange(val);
-  };
+  });
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -151,18 +168,21 @@ const MultiLineCodeEditor = (props) => {
   const theme = darkMode ? okaidia : githubLight;
   const langExtention = langSupport[lang] ?? null;
 
-  const setupConfig = {
-    lineNumbers: lineNumbers ?? true,
-    syntaxHighlighting: true,
-    bracketMatching: true,
-    foldGutter: foldGutter,
-    highlightActiveLine: false,
-    autocompletion: hideSuggestion ?? true,
-    highlightActiveLineGutter: false,
-    defaultKeymap: false,
-    completionKeymap: true,
-    searchKeymap: false,
-  };
+  const setupConfig = useMemo(
+    () => ({
+      lineNumbers: lineNumbers ?? true,
+      syntaxHighlighting: true,
+      bracketMatching: true,
+      foldGutter: foldGutter,
+      highlightActiveLine: false,
+      autocompletion: hideSuggestion ?? true,
+      highlightActiveLineGutter: false,
+      defaultKeymap: false,
+      completionKeymap: true,
+      searchKeymap: false,
+    }),
+    [lineNumbers, foldGutter, hideSuggestion]
+  );
 
   function autoCompleteExtensionConfig(context) {
     const hasWorkflowSuggestions =
@@ -183,37 +203,70 @@ const MultiLineCodeEditor = (props) => {
     return getSuggestionsForMultiLine(context, allHints, hints, lang, paramList);
   }
 
-  const customKeyMaps = [
-    ...defaultKeymap.filter((keyBinding) => keyBinding.key !== 'Mod-Enter'), // Remove default keybinding for Mod-Enter
-    ...completionKeymap,
-    ...searchKeymap,
-  ];
+  const customTabKeymap = useMemo(
+    () =>
+      keymap.of([
+        {
+          key: 'Tab',
+          run: (view) => {
+            if (completionStatus(view.state)) {
+              return acceptCompletion(view);
+            }
 
-  const customTabKeymap = keymap.of([
-    {
-      key: 'Tab',
-      run: (view) => {
-        if (completionStatus(view.state)) {
-          return acceptCompletion(view);
-        }
+            const { state } = view;
+            const { selection } = state;
+            const { anchor } = selection.main;
+            const tabSize = 2;
 
-        const { state } = view;
-        const { selection } = state;
-        const { anchor } = selection.main;
-        const tabSize = 2;
+            view.dispatch({
+              changes: { from: anchor, insert: ' '.repeat(tabSize) },
+              selection: { anchor: anchor + tabSize },
+            });
+            return true;
+          },
+        },
+        ...queryPanelKeybindings,
+      ]),
+    [queryPanelKeybindings]
+  );
 
-        view.dispatch({
-          changes: { from: anchor, insert: ' '.repeat(tabSize) },
-          selection: { anchor: anchor + tabSize },
-        });
-        return true;
-      },
-    },
-    ...queryPanelKeybindings,
-  ]);
+  // Stable identity, fresh values: the override function handed to CodeMirror never
+  // changes, but it always delegates to the latest closure (with current hints,
+  // suggestions and paramList). A changing identity here would invalidate the
+  // extensions and force a full editor reconfigure on every render.
+  const overRideFunction = useStableCallback(autoCompleteExtensionConfig);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [paramList]);
+  const editorExtensions = useMemo(
+    () => [
+      langExtention,
+      lineWrappingExtension,
+      searchExtension,
+      tooltipExtension,
+      javascriptLanguage.data.of({
+        autocomplete: overRideFunction,
+      }),
+      python().language.data.of({
+        autocomplete: overRideFunction,
+      }),
+      sql().language.data.of({
+        autocomplete: overRideFunction,
+      }),
+      sass().language.data.of({
+        autocomplete: sassCompletionSource,
+      }),
+      autocompletion({
+        override: [overRideFunction],
+        activateOnTyping: true,
+        compareCompletions: (a, b) => {
+          return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
+        },
+      }),
+      customTabKeymap,
+      keymap.of([...staticCustomKeyMaps]),
+    ],
+    [langExtention, overRideFunction, customTabKeymap]
+  );
+
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
@@ -226,6 +279,14 @@ const MultiLineCodeEditor = (props) => {
     }
     return initialValue;
   }, [initialValue, replaceIdsWithName]);
+
+  // @uiw/react-codemirror annotates external value-prop changes with ExternalChange
+  // and skips calling onChange to avoid echoing. This means currentValueRef stays stale
+  // when the value is set programmatically (e.g. AI-generated code). Sync it here so
+  // that handleOnBlur propagates the correct value when the user clicks Run.
+  useEffect(() => {
+    currentValueRef.current = initialValueWithReplacedIds ?? '';
+  }, [initialValueWithReplacedIds]);
 
   function updateCurrentLineObserver(editorView) {
     if (!editorView || !editorView?.view?.dom) return;
@@ -241,6 +302,13 @@ const MultiLineCodeEditor = (props) => {
       currentLineObserverRef.current.observe(currentLineDiv);
     }
   }
+
+  // `onUpdate` is part of react-codemirror's reconfigure-effect dependencies, so it
+  // must keep a stable identity.
+  const handleEditorUpdate = useStableCallback((view) => {
+    setIsSearchPanelOpen(searchPanelOpen(view.state));
+    updateCurrentLineObserver(view);
+  });
 
   const onAiSuggestionAccept = (newValue) => {
     currentValueRef.current = newValue;
@@ -293,37 +361,7 @@ const MultiLineCodeEditor = (props) => {
                 {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
                 width="100%"
                 theme={theme}
-                extensions={[
-                  langExtention,
-                  lineWrappingExtension,
-                  search({
-                    createPanel: handleSearchPanel,
-                  }),
-                  tooltips({
-                    parent: document.body,
-                  }),
-                  javascriptLanguage.data.of({
-                    autocomplete: overRideFunction,
-                  }),
-                  python().language.data.of({
-                    autocomplete: overRideFunction,
-                  }),
-                  sql().language.data.of({
-                    autocomplete: overRideFunction,
-                  }),
-                  sass().language.data.of({
-                    autocomplete: sassCompletionSource,
-                  }),
-                  autocompletion({
-                    override: [overRideFunction],
-                    activateOnTyping: true,
-                    compareCompletions: (a, b) => {
-                      return a.section.rank - b.section.rank && a.label.localeCompare(b.label);
-                    },
-                  }),
-                  customTabKeymap,
-                  keymap.of([...customKeyMaps]),
-                ]}
+                extensions={editorExtensions}
                 onChange={handleChange}
                 onBlur={handleOnBlur}
                 basicSetup={setupConfig}
@@ -343,10 +381,7 @@ const MultiLineCodeEditor = (props) => {
                     setCodeEditorView(view);
                   }
                 }}
-                onUpdate={(view) => {
-                  setIsSearchPanelOpen(searchPanelOpen(view.state));
-                  updateCurrentLineObserver(view);
-                }}
+                onUpdate={handleEditorUpdate}
               />
             </div>
             {showPreview && (

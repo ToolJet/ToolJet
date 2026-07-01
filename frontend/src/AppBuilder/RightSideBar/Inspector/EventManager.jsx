@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useNewEventAutoPopoverOpen } from './hooks/useNewEventAutoPopoverOpen';
 
 import { ArrowRight, Copy, MousePointerClick, Plus, Trash2 } from 'lucide-react';
 import { ActionTypes } from './ActionTypes';
@@ -107,12 +108,21 @@ export const EventManager = ({
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const lastFocusedEventIndex = useRef(null);
 
+  const {
+    autoOpenActionSelect,
+    markEventCreationPending,
+    cancelPendingEventCreation,
+    onEventHandlersUpdated,
+    dismissEventPopoverAutoOpen,
+  } = useNewEventAutoPopoverOpen(focusedEventIndex, setFocusedEventIndex);
+
   const { t } = useTranslation();
 
   useEffect(() => {
     if (_.isEqual(currentEvents, events)) return;
 
     const sortedEvents = (currentEvents || []).slice().sort((a, b) => a.index - b.index);
+    onEventHandlersUpdated(sortedEvents, events);
     setEvents(sortedEvents, moduleId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentEvents), moduleId]);
@@ -397,7 +407,7 @@ export const EventManager = ({
     });
   }
 
-  function addHandler(eventId) {
+  async function addHandler(eventId) {
     let newEvents = events;
     const eventIndex = newEvents.length;
     const selectedEventId = eventId || Object.keys(eventMetaDefinition?.events)[0];
@@ -423,7 +433,8 @@ export const EventManager = ({
 
     posthogHelper.captureEvent('click_add_event_handler', { widget: postHogEventType });
     //----------------- Posthog Analytics -----------------//
-    createAppVersionEventHandlers({
+    markEventCreationPending();
+    const createdEvent = await createAppVersionEventHandlers({
       name: getDefaultEventName(),
       event: {
         eventId: selectedEventId,
@@ -437,6 +448,7 @@ export const EventManager = ({
       attachedTo: sourceId,
       index: eventIndex,
     });
+    if (!createdEvent) cancelPendingEventCreation();
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -560,7 +572,14 @@ export const EventManager = ({
                 <div data-cy="action-selection">
                   <RocketSelect
                     value={event.actionId}
-                    onValueChange={(value) => handlerChanged(index, 'actionId', value)}
+                    onValueChange={(value) => {
+                      dismissEventPopoverAutoOpen();
+                      handlerChanged(index, 'actionId', value);
+                    }}
+                    open={autoOpenActionSelect && index === focusedEventIndex ? true : undefined}
+                    onOpenChange={(open) => {
+                      if (!open && autoOpenActionSelect) dismissEventPopoverAutoOpen();
+                    }}
                   >
                     <SelectTrigger className="tw-w-full">
                       <SelectValue placeholder={t('globals.select', 'Select') + '...'} />
@@ -715,7 +734,7 @@ export const EventManager = ({
               </FieldRow>
             )}
 
-            {['run-query', 'reset-query'].includes(event.actionId) && (
+            {['run-query', 'reset-query', 'abort-query'].includes(event.actionId) && (
               <>
                 <FieldRow label={t('editor.inspector.eventManager.query', 'Query')} dataCy="query-label">
                   <div data-cy="query-selection-field">
@@ -1133,6 +1152,7 @@ export const EventManager = ({
                                 lastFocusedEventIndex.current = index;
                               } else {
                                 setFocusedEventIndex(null);
+                                dismissEventPopoverAutoOpen();
                               }
                               if (typeof popOverCallback === 'function') popOverCallback(showing);
                             }}
