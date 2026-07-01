@@ -4,7 +4,16 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'server/**'
+      - 'server/src/**'
+      - 'server/test/**'
+      - 'server/ee/**'
+      - 'server/lib/**'
+      - 'server/migrations/**'
+      - 'server/data-migrations/**'
+      - 'server/package.json'
+      - 'server/package-lock.json'
+      - 'server/tsconfig.json'
+      - 'server/ormconfig.ts'
 
 env:
   FORCE_COLOR: true
