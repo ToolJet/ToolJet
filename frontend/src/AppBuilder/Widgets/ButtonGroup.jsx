@@ -153,7 +153,7 @@ export const ButtonGroup = function Button({
             {label}
           </p>
         )}
-        <div>
+        <div className="tw-px-1">
           {data?.map((item, index) => (
             <button
               data-cy={`${dataCy}-button-${index}`}
@@ -168,7 +168,7 @@ export const ButtonGroup = function Button({
               key={index}
               disabled={disabledState}
               className={
-                'group-button overflow-hidden focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:-tw-outline-offset-2'
+                'group-button overflow-hidden focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
               }
               onClick={(event) => {
                 event.stopPropagation();

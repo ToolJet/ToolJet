@@ -348,7 +348,7 @@ export const ButtonGroupV2 = (props) => {
               width="20"
             />
           ) : (
-            <div className="button-group-content" style={groupStyles} ref={groupRef}>
+            <div className="button-group-content tw-p-1" style={groupStyles} ref={groupRef}>
               {formattedOptions?.map((option, index) => (
                 <button
                   data-cy={`${dataCy}-button-${index}`}
@@ -367,7 +367,7 @@ export const ButtonGroupV2 = (props) => {
                   key={index}
                   disabled={option.isDisabled}
                   className={
-                    'button-group-button focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:-tw-outline-offset-2'
+                    'button-group-button focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
                   }
                   onClick={(event) => {
                     event.stopPropagation();
