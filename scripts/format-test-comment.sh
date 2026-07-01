@@ -43,9 +43,11 @@ function formatSection(data, label) {
     const mod = extractModule(suite.name || suite.testFilePath);
     for (const t of (suite.assertionResults || suite.testResults || [])) {
       const title = [...(t.ancestorTitles || []), t.title].join(' › ');
-      rows.push(`| \`${mod}\` | ${title} | ${statusIcon(t.status)} |`);
+      const safeTitle = title.replace(/\|/g, '\\|');
+      rows.push(`| \`${mod}\` | ${safeTitle} | ${statusIcon(t.status)} |`);
       if (t.status === 'failed') {
-        const msg = (t.failureMessages || []).join('\n').slice(0, 500);
+        const raw = (t.failureMessages || []).join('\n').slice(0, 500);
+        const msg = raw.replace(/\x1b\[[0-9;]*m/g, '');
         failures.push({ mod, title, msg });
       }
     }
