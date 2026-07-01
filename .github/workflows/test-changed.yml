@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: Checkout (full history for merge-base)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
         run: git fetch origin main
 
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
