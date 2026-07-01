@@ -45,6 +45,10 @@ while IFS= read -r file; do
       mod=$(echo "$file" | sed 's|server/src/modules/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
       ;;
+    server/test/modules/*)
+      mod=$(echo "$file" | sed 's|server/test/modules/\([^/]*\)/.*|\1|')
+      MODULES+=("$mod")
+      ;;
     server/ee/*)
       mod=$(echo "$file" | sed 's|server/ee/\([^/]*\)/.*|\1|')
       MODULES+=("$mod")
