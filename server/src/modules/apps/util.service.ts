@@ -1479,7 +1479,7 @@ export class AppsUtilService implements IAppsUtilService {
    * (AppsUtilService.update writes the DRAFT branch row) so published/released
    * snapshots can't shadow the current metadata.
    */
-  async overlayAppMetadata(app: App, _branchId?: string): Promise<void> {
+  async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
     if (!app || app.type === APP_TYPES.WORKFLOW) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
@@ -1487,12 +1487,13 @@ export class AppsUtilService implements IAppsUtilService {
       const defaultBranchId = options.defaultBranch?.id;
       if (!defaultBranchId) return;
 
+      const versionRepo = manager.getRepository(AppVersion);
+
       // App metadata is the default-branch canonical row (instance-level identity),
       // regardless of which branch is being edited. is_synced=true sorts first (the
       // authoritative row when git is on); git-off falls back to the latest such row.
       // This mirrors the DB metadata trigger's own canonical-row selection.
-      const source = await manager
-        .getRepository(AppVersion)
+      let source = await versionRepo
         .createQueryBuilder('av')
         .where('av.app_id = :appId', { appId: app.id })
         .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
@@ -1503,6 +1504,24 @@ export class AppsUtilService implements IAppsUtilService {
         .addOrderBy('av.updated_at', 'DESC')
         .select(['av.id', 'av.appName', 'av.slug', 'av.icon', 'av.isPublic'])
         .getOne();
+
+      // Fallback: a git-synced app pulled only onto a feature branch has no
+      // default-branch canonical row, so the primary lookup finds nothing and the
+      // response would carry null name/slug (seen on the first open after a branch is
+      // created, before its stub is hydrated). Overlay from the active branch's own
+      // non-stub row instead — mirrors AppsRepository.resolveMetadataVersion so the
+      // guard overlay and this response overlay agree.
+      if (!source && branchId && branchId !== defaultBranchId) {
+        source = await versionRepo
+          .createQueryBuilder('av')
+          .where('av.app_id = :appId', { appId: app.id })
+          .andWhere('av.branch_id = :branchId', { branchId })
+          .andWhere('av.is_stub = false')
+          .orderBy('av.is_synced', 'DESC')
+          .addOrderBy('av.updated_at', 'DESC')
+          .select(['av.id', 'av.appName', 'av.slug', 'av.icon', 'av.isPublic'])
+          .getOne();
+      }
 
       if (!source) return;
       if (source.appName != null) app.name = source.appName;
