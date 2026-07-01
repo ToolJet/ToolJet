@@ -19,6 +19,7 @@
 
 - Use `@/` path alias (maps to `frontend/src/`): `import Button from '@/_ui/Button'`.
 - No deep relative paths (`../../..` is a smell).
+- Avoid barrel files (re-export-only `index.*` files). Import directly from the source module. ESLint (`no-barrel-files`) warns on barrel re-exports in `src/`. Exception: `ee/` is barrel-heavy by architecture.
 
 ## State Management
 
@@ -46,3 +47,4 @@
 - Missing `key` props in `.map()`
 - Missing `shallow` in `useStore` selectors
 - Direct DOM manipulation (except canvas drop calculations)
+- Barrel files outside `ee/` (`export * from` or `export { X } from` in index files)
