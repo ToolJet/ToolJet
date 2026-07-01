@@ -4,4 +4,5 @@
 #set -euo pipefail
 
 #ROOT=$(git rev-parse --show-toplevel)
-#exec "$ROOT/scripts/test-changed.sh"
+# temporarily disabled — jest-coverage.config resolution issue to fix separately
+# exec "$ROOT/scripts/test-changed.sh"

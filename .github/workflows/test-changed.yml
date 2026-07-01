@@ -75,8 +75,22 @@ jobs:
       - name: Mark repo as safe for git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Fetch origin/main for merge-base
-        run: git fetch origin main
+      - name: Fetch base branch for merge-base
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Checkout submodules — branch-match with pinned fallback
+        run: |
+          PR_BRANCH="${{ github.head_ref }}"
+          for sub in server/ee frontend/ee; do
+            [ -d "$sub" ] || continue
+            git config --global --add safe.directory "$GITHUB_WORKSPACE/$sub"
+            if git -C "$sub" fetch origin "$PR_BRANCH" 2>/dev/null; then
+              git -C "$sub" checkout FETCH_HEAD
+              echo "$sub: using branch $PR_BRANCH"
+            else
+              echo "$sub: branch $PR_BRANCH not found in remote — keeping pinned commit"
+            fi
+          done
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -108,6 +122,7 @@ jobs:
         run: bash scripts/test-changed.sh --e2e
         env:
           NODE_ENV: test
+          BASE_BRANCH: ${{ github.base_ref }}
 
       - name: Format test results comment
         if: always()

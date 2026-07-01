@@ -19,9 +19,10 @@ done
 ROOT=$(git rev-parse --show-toplevel)
 SERVER_DIR="$ROOT/server"
 
-# Resolve merge base against origin/main; fall back to running everything.
-if ! MERGE_BASE=$(git merge-base HEAD origin/main 2>/dev/null); then
-  echo "warn: could not resolve merge base with origin/main — running all server unit tests"
+# Resolve merge base against the PR base branch (or main as local fallback).
+BASE_BRANCH="${BASE_BRANCH:-main}"
+if ! MERGE_BASE=$(git merge-base HEAD "origin/${BASE_BRANCH}" 2>/dev/null); then
+  echo "warn: could not resolve merge base with origin/${BASE_BRANCH} — running all server unit tests"
   RUN_ALL=true
   SERVER_FILES=""
 else
