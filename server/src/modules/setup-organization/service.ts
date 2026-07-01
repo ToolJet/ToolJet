@@ -20,7 +20,7 @@ export class SetupOrganizationsService implements ISetupOrganizationsService {
     if (user?.email) {
       const bannedUser = await this.userBanListRepository.findByEmail(user.email);
       if (bannedUser) {
-        throw new ForbiddenException(JSON.stringify({ errorType: 'USER_BANNED' }));
+        throw new ForbiddenException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
       }
     }
 

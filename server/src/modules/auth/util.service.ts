@@ -68,7 +68,7 @@ export class AuthUtilService implements IAuthUtilService {
   async checkUserBanned(email: string): Promise<void> {
     const bannedUser = await this.userBanListRepository.findByEmail(email);
     if (bannedUser) {
-      throw new UnauthorizedException(JSON.stringify({ errorType: 'USER_BANNED' }));
+      throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
     }
   }
 
@@ -88,7 +88,7 @@ export class AuthUtilService implements IAuthUtilService {
 
     const bannedUser = await this.userBanListRepository.findByEmail(email);
     if (bannedUser) {
-      throw new UnauthorizedException(JSON.stringify({ errorType: 'USER_BANNED' }));
+      throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
     }
 
     if (organizationId) {
@@ -159,7 +159,7 @@ export class AuthUtilService implements IAuthUtilService {
 
     const bannedUser = await this.userBanListRepository.findByEmail(email);
     if (bannedUser) {
-      throw new UnauthorizedException(JSON.stringify({ errorType: 'USER_BANNED' }));
+      throw new UnauthorizedException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);

@@ -447,7 +447,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       const bannedUser = await this.userBanListRepository.findByEmail(userParams.email);
       if (bannedUser) {
-        throw new ForbiddenException(JSON.stringify({ errorType: 'USER_BANNED' }));
+        throw new ForbiddenException('This account has been suspended by ToolJet. Contact ToolJet support for help.');
       }
 
       const user = await this.validateInvitingUser(userParams.email, currentUser.organizationId, manager);
