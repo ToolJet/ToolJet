@@ -340,6 +340,7 @@ export const CurrencyInput = (props) => {
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}
             id={`component-${id}`}
+            disabled={disabledState}
             aria-disabled={disabledState}
             aria-busy={loading}
             aria-required={isMandatory}
