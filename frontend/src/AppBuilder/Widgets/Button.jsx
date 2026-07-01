@@ -213,9 +213,8 @@ export const Button = function Button(props) {
       <button
         className={cx(
           'overflow-hidden jet-btn',
-          // accessible keyboard focus — outline (not ring) so it's immune to the inline
-          // boxShadow, and inset (negative offset) so it isn't clipped by the widget bounds
-          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:-tw-outline-offset-2'
+          // accessible keyboard focus — outline (not ring) so it's immune to the inline boxShadow
+          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
         )}
         style={computedStyles}
         onClick={handleClick}
