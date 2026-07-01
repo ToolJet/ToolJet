@@ -1,5 +1,6 @@
 import DependencyGraph from './DependencyClass';
 import { createBatchManager } from '../batchManager';
+import { registerResetter } from '../utils';
 
 const initialState = {
   dependencyGraph: {
@@ -16,6 +17,22 @@ export const createDependencySlice = (set, get) => {
   // so flush must return { ...state } to notify Zustand instead of relying on draft patches.
   // No dep path cascade needed here (this batch is for graph construction, not runtime updates).
   const _depBatch = createBatchManager(set, get, { useShallowReturn: true });
+  registerResetter(() => _depBatch.reset());
+  // The canvas graph instance lives inside the captured initial state and is mutated
+  // in place across sessions (Immer can't draft class instances), so the state replace
+  // in resetAllStores restores a graph still holding the previous app's nodes. Recreate
+  // it after the state reset so the next app session starts from an empty graph.
+  registerResetter(
+    () =>
+      set(
+        (state) => {
+          state.dependencyGraph.modules = { canvas: { graph: new DependencyGraph() } };
+        },
+        false,
+        'resetDependencyGraph'
+      ),
+    { phase: 'post' }
+  );
 
   return {
     ...initialState,
