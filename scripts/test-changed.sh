@@ -76,16 +76,34 @@ cd "$SERVER_DIR"
 
 echo "--- Unit tests ---"
 if [[ -n "$PATTERN" ]]; then
-  npm run test -- --testPathPattern="$PATTERN"
+  if [[ "${CI:-}" == "true" ]]; then
+    npm run test -- --testPathPattern="$PATTERN" --json --outputFile /tmp/tj-unit-results.json
+  else
+    npm run test -- --testPathPattern="$PATTERN"
+  fi
 else
-  npm run test
+  if [[ "${CI:-}" == "true" ]]; then
+    npm run test -- --json --outputFile /tmp/tj-unit-results.json
+  else
+    npm run test
+  fi
 fi
 
 if [[ "$RUN_E2E" == "true" ]]; then
   echo "--- E2e tests ---"
   if [[ -n "$PATTERN" ]]; then
-    npm run test:e2e -- --testPathPatterns "$PATTERN" --ci
+    if [[ "${CI:-}" == "true" ]]; then
+      mkdir -p /tmp/tj-e2e-json
+      npm run test:e2e -- --testPathPatterns "$PATTERN" --ci --json-output-dir /tmp/tj-e2e-json
+    else
+      npm run test:e2e -- --testPathPatterns "$PATTERN" --ci
+    fi
   else
-    npm run test:e2e -- --ci
+    if [[ "${CI:-}" == "true" ]]; then
+      mkdir -p /tmp/tj-e2e-json
+      npm run test:e2e -- --ci --json-output-dir /tmp/tj-e2e-json
+    else
+      npm run test:e2e -- --ci
+    fi
   fi
 fi

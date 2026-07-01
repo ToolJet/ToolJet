@@ -31,6 +31,8 @@ jobs:
   server-affected-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      pull-requests: write
     container: node:18.18.2-bullseye
     services:
       postgres:
@@ -80,3 +82,44 @@ jobs:
 
       - name: Run affected server tests (unit + e2e)
         run: bash scripts/test-changed.sh --e2e
+
+      - name: Format test results comment
+        if: always()
+        env:
+          UNIT_JSON: /tmp/tj-unit-results.json
+          E2E_JSON_DIR: /tmp/tj-e2e-json
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          bash scripts/format-test-comment.sh > /tmp/comment-body.md
+          cat /tmp/comment-body.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Post test results to PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/comment-body.md', 'utf8');
+            const marker = '<!-- tj-test-results -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
