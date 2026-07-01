@@ -58,6 +58,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          submodules: recursive
 
       - name: Mark repo as safe for git
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -113,7 +115,8 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('/tmp/comment-body.md', 'utf8');
+            const body = fs.existsSync('/tmp/comment-body.md') ? fs.readFileSync('/tmp/comment-body.md', 'utf8') : '';
+            if (!body.trim()) { core.warning('Test results comment body is empty — skipping post'); return; }
             const marker = '<!-- tj-test-results -->';
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,

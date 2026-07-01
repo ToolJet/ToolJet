@@ -22,6 +22,7 @@ const RUN_URL          = process.env.RUN_URL          || '';
 const GITHUB_RUN_NUMBER = process.env.GITHUB_RUN_NUMBER || '?';
 
 function extractModule(filePath) {
+  if (!filePath) return 'unknown';
   const m = filePath.match(/test\/modules\/([^/]+)\//);
   return m ? m[1] : path.basename(path.dirname(filePath));
 }
@@ -39,8 +40,8 @@ function formatSection(data, label) {
   const failures = [];
 
   for (const suite of data.testResults) {
-    const mod = extractModule(suite.testFilePath);
-    for (const t of suite.testResults) {
+    const mod = extractModule(suite.name || suite.testFilePath);
+    for (const t of (suite.assertionResults || suite.testResults || [])) {
       const title = [...(t.ancestorTitles || []), t.title].join(' › ');
       rows.push(`| \`${mod}\` | ${title} | ${statusIcon(t.status)} |`);
       if (t.status === 'failed') {
@@ -100,7 +101,7 @@ if (fs.existsSync(E2E_JSON_DIR)) {
 // Collect module names across all results
 const modules = new Set();
 for (const d of [unitData, e2eData].filter(Boolean)) {
-  for (const s of d.testResults) modules.add(extractModule(s.testFilePath));
+  for (const s of d.testResults) modules.add(extractModule(s.name || s.testFilePath));
 }
 const moduleList = [...modules].sort().map(m => `\`${m}\``).join(', ') || '_all_';
 
