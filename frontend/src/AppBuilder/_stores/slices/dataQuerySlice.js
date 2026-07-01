@@ -645,6 +645,11 @@ export const createDataQuerySlice = (set, get) => ({
             const updatedSelectedQuery = updatedQueriesValue.find((q) => q.id === currentSelectedQueryId);
             if (updatedSelectedQuery) {
               state.queryPanel.selectedQuery = updatedSelectedQuery;
+              /** Keep selectedDataSource in sync
+               *  - This path mutates selectedQuery directly (not via setSelectedQuery)
+               *  - so re-resolve the datasource here to avoid rendering against a stale one.
+               */
+              state.queryPanel.selectedDataSource = get().queryPanel.resolveDataSourceForQuery(updatedSelectedQuery);
             }
           }
         },

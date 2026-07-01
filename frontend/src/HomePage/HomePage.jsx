@@ -546,7 +546,7 @@ class HomePageComponent extends React.Component {
 
       const data = await appsService.exportResource(requestBody);
 
-      const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+      const appName = app.name.replace(/\s+/g, '-');
       const fileName = `${appName}-export-${new Date().getTime()}`;
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
