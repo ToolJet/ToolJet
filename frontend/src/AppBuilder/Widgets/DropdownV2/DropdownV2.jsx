@@ -79,6 +79,7 @@ export const DropdownV2 = ({
     sort,
     showClearBtn,
     showSearchInput,
+    serverSideSearch,
   } = properties;
   const {
     selectedTextColor,
@@ -568,6 +569,7 @@ export const DropdownV2 = ({
             }}
             options={selectOptions}
             filterOption={(option, input) => {
+              if (serverSideSearch === true) return true; // server mode: render all options, no client-side filtering
               if (!input) return true;
               const needle = input.toLowerCase();
               const label = String(option?.label ?? '').toLowerCase();
@@ -585,6 +587,7 @@ export const DropdownV2 = ({
             aria-label={!labelAutoWidth && labelWidth == 0 && label?.length != 0 ? label : undefined}
             isLoading={isDropdownLoading}
             showSearchInput={showSearchInput}
+            serverSideSearch={serverSideSearch}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}

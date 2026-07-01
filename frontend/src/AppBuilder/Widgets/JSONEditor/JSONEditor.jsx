@@ -133,6 +133,7 @@ export const JSONEditor = function JSONEditor(props) {
       {
         '.cm-scroller': {
           backgroundColor: backgroundColor,
+          flexGrow: 1,
         },
       },
       { dark: darkMode }
