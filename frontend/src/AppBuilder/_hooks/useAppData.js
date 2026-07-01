@@ -15,7 +15,6 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
-import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
@@ -616,18 +615,7 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
-      setSuppressQueryRerun(moduleId, true);
-
-      // The flush runs the initial-settle dependency cascade synchronously.
-      // Suppress dependency-triggered query re-runs for THIS module during that window,
-      // so queries don't run on load when components publish their initial exposed values.
-      // Only Genuine post-load changes cascade outside this window and rerun as expected.
-      try {
-        flushExposedValueBatch();
-      } finally {
-        setSuppressQueryRerun(moduleId, false);
-      }
-
+      flushExposedValueBatch();
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
