@@ -1,3 +1,4 @@
+/** @jest-config-loader ts-node */
 import type { Config } from '@jest/types';
 import { coverageConfig } from './jest-coverage.config';
 
