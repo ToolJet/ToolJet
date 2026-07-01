@@ -62,6 +62,7 @@ import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import { TriangleAlert } from 'lucide-react';
 
 import { appTypeToDisplayNameMapping } from './helper';
@@ -118,6 +119,7 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: null,
       importingApp: false,
       importingGitAppOperations: {},
+      gitImportConflictGroups: null,
       latestCommitData: null,
       selectedImportBranch: null,
       remoteBranches: [],
@@ -1077,6 +1079,21 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${workspaceId}/apps/${data.app.id}`);
       })
       .catch((error) => {
+        if (error?.statusCode === 409) {
+          try {
+            const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+            if (parsed?.conflictGroups?.length) {
+              this.setState({
+                gitImportConflictGroups: parsed.conflictGroups,
+                importingApp: false,
+                showGitRepositoryImportModal: false,
+              });
+              return;
+            }
+          } catch {
+            /* fall through to inline error */
+          }
+        }
         this.setState({ importingGitAppOperations: { message: error?.error } });
       })
       .finally(() => {
@@ -1467,11 +1484,6 @@ class HomePageComponent extends React.Component {
       validationMessage = { message: 'App name cannot be empty' };
     } else if (newAppName.length > 100) {
       validationMessage = { message: 'App name cannot exceed 100 characters' };
-    } else {
-      const matchingApp = Object.values(appsFromRepos).find((app) => app.git_app_name === newAppName.trim());
-      if (matchingApp?.app_name_exist === 'EXIST') {
-        validationMessage = { message: 'App name already exists' };
-      }
     }
     if (newAppName.length > MAX_LENGTH) {
       this.setState({
@@ -1492,20 +1504,20 @@ class HomePageComponent extends React.Component {
       selectedAppRepo: newVal,
       importedAppName: selectedApp?.git_app_name,
     });
-    if (selectedApp?.app_name_exist === 'EXIST') {
-      this.setState({
-        importingGitAppOperations: { message: 'App name already exists' },
-        fetchingLatestCommitData: true,
-        latestCommitData: null,
-      });
-    } else {
-      this.setState({
-        importingGitAppOperations: {},
-        fetchingLatestCommitData: true,
-        latestCommitData: null,
-        selectedVersionOption: null,
-      });
-    }
+    // if (selectedApp?.app_name_exist === 'EXIST') {
+    //   this.setState({
+    //     importingGitAppOperations: { message: 'App name already exists' },
+    //     fetchingLatestCommitData: true,
+    //     latestCommitData: null,
+    //   });
+    // } else {
+    this.setState({
+      importingGitAppOperations: {},
+      fetchingLatestCommitData: true,
+      latestCommitData: null,
+      selectedVersionOption: null,
+    });
+    // }
 
     try {
       const data = await gitSyncService.checkForUpdatesByAppName(selectedApp?.git_app_name, selectedImportBranch);
@@ -1824,6 +1836,12 @@ class HomePageComponent extends React.Component {
               this.fetchApps(1, this.state.currentFolder.id);
               this.setState({ showSwitchBranchForChangeIcon: false, showChangeIconModal: true });
             }}
+          />
+          <PullConflictModal
+            show={!!this.state.gitImportConflictGroups}
+            conflictGroups={this.state.gitImportConflictGroups || []}
+            onClose={() => this.setState({ gitImportConflictGroups: null })}
+            context="import"
           />
           <AppActionModal
             modalStates={{
