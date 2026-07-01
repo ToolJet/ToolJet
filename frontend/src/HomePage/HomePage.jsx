@@ -1313,11 +1313,7 @@ class HomePageComponent extends React.Component {
     };
 
     const showCreateAppButtonTooltip = () => {
-      if (this.props.appType === 'module') {
-        return true;
-      } else {
-        return this.canCreateApp();
-      }
+      return this.canCreateApp();
     };
     const modalConfigs = {
       create: {
