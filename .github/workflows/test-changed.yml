@@ -31,6 +31,9 @@ env:
   TOOLJET_DB_USER: postgres
   TOOLJET_DB_PASS: postgres
   TOOLJET_DB_RECONFIG: true
+  # Redis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
   # App secrets required for NestJS bootstrap (e2e)
   LOCKBOX_MASTER_KEY: lockbox-master-key
   SECRET_KEY_BASE: secrret-key-base
@@ -49,6 +52,13 @@ jobs:
           POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
