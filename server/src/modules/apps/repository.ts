@@ -1,5 +1,5 @@
 import { App } from '@entities/app.entity';
-import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
+import { AppVersion, AppVersionType } from '@entities/app_version.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -58,13 +58,19 @@ export class AppsRepository extends Repository<App> {
 
     // App slug lives on the default-branch app_versions rows in all cases (git on or off —
     // every org has a default branch now). Match there; when git is on the is_synced=true
-    // row sorts first.
+    // row sorts first. Some callers (e.g. private-app-auth.guard) don't resolve the default
+    // branch themselves and pass null/undefined; resolve it here so the slug still matches
+    // its default-branch row. Without this the query becomes `av.branch_id = NULL` and every
+    // git-off app (whose rows live on the default branch) 404s.
+    const resolvedDefaultBranchId = defaultBranchId ?? (await this.getDefaultBranchId(this.manager, organizationId));
+    if (!resolvedDefaultBranchId) return null;
+
     const resolvedVersion = await this.dataSource
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
       .where('av.slug = :slug', { slug })
-      .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
+      .andWhere('av.branch_id = :branchId', { branchId: resolvedDefaultBranchId })
       .orderBy('av.is_synced', 'DESC')
       .addOrderBy('av.updated_at', 'DESC')
       .getOne();
