@@ -69,3 +69,57 @@ export function convertAllKeysToSnakeCase(o: JsonValue): JsonValue {
   }
   return o;
 }
+
+/*
+ * Query option keys that this normalizer coerces snake_case → camelCase.
+ * These are the app-level flags the query editors read in camelCase.
+ */
+const QUERY_OPTION_KEYS_TO_NORMALIZE = [
+  'enableTransformation',
+  'transformationLanguage',
+  'runOnPageLoad',
+  'runOnDependencyChange',
+  'requestConfirmation',
+  'requestConfirmationFx',
+  'confirmationMessage',
+  'showSuccessNotification',
+  'successMessage',
+  'notificationDuration',
+  'disableQuery',
+  'disabledMessage',
+];
+
+const toSnakeCase = (camel: string): string => camel.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
+
+type QueryLike = { options?: Record<string, unknown> };
+
+/**
+ * normalizeQueryTransformationOptions
+ *
+ * NO-OP FOR CORRECTLY-STORED DATA (post backend-serialization unification)
+ *  - The editor writes these keys camelCase, they are stored verbatim, and all the backend endpoints now return the `options` blob verbatim
+ *  - so the whitelisted keys arrive camelCase everywhere and the guard below (`options[snakeKey] !== undefined`) never fires. 
+ *
+ * WHY IT'S KEPT (a cheap, idempotent safety net)
+ *  - It still HEALS rows that already have these keys stored snake_case
+ *  - e.g. legacy apps corrupted by the historical run-persist casing bug, or apps imported / git-synced with snake option keys.
+ *  - For those, deleting this would silently break the flag (a query would stop running on page load, transformation would read as off, etc.).
+ *  - It can be removed only after a one-time DB backfill that rewrites those stored keys.
+ */
+export function normalizeQueryTransformationOptions<T extends QueryLike>(query: T): T {
+  if (!query?.options) return query;
+
+  let options: Record<string, unknown> | undefined;
+  for (const camelKey of QUERY_OPTION_KEYS_TO_NORMALIZE) {
+    const snakeKey = toSnakeCase(camelKey);
+    if (query.options[snakeKey] !== undefined) {
+      // Clone lazily on first hit so the original options object is never touched.
+      if (!options) options = { ...query.options };
+      const value = options[snakeKey];
+      delete options[snakeKey];
+      if (options[camelKey] === undefined) options[camelKey] = value;
+    }
+  }
+
+  return options ? { ...query, options } : query;
+}
