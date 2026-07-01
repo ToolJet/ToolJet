@@ -91,6 +91,8 @@ jobs:
 
       - name: Run main DB migrations
         run: npm --prefix server run db:migrate
+        env:
+          NODE_ENV: development
 
       - name: Run affected server tests (unit + e2e)
         run: bash scripts/test-changed.sh --e2e
