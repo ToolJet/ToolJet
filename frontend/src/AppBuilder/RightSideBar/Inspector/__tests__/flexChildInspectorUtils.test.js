@@ -1,5 +1,9 @@
-jest.mock('../Components/FlexChildLayoutPanel', () => ({
+jest.mock('../Components/FlexContainer/FlexChildLayoutPanel', () => ({
   FlexChildLayoutPanel: () => null,
+}));
+
+jest.mock('@/_helpers/utils', () => ({
+  resolveReferences: (value) => value,
 }));
 
 import { injectFlexChildWidthBeforeAdditionalActions } from '../Components/FlexContainer/flexChildInspectorUtils';
