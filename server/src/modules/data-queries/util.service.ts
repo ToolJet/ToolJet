@@ -379,6 +379,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
           appId: appToUse?.id || 'unknown',
           appName: effectiveAppName || 'unknown',
           dataSourceType: dataSource?.kind || 'unknown',
+          mode: mode || 'unknown',
         };
 
         const auditData = {
