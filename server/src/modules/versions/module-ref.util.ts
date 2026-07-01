@@ -130,17 +130,19 @@ export async function resolveModuleRef(
   consumerBranchId: string | undefined,
   organizationId: string
 ): Promise<AppVersion | null> {
+  const defaultBranch = await findDefaultBranch(manager, organizationId);
+  const isGitSyncEnabled = !!defaultBranch;
+
   // Tier D — default-branch draft sentinel. Resolves to the DRAFT on the default branch
   // at query time, ignoring consumerBranchId entirely. Stored when the user explicitly
   // pins to "main draft" in the inspector. Follows default branch renames automatically
   // because findDefaultBranch uses isDefault:true, not a hardcoded name.
   if (moduleReferenceId === DRAFT_SENTINEL) {
-    const defaultBranchForDraft = await findDefaultBranch(manager, organizationId);
-    if (defaultBranchForDraft) {
+    if (defaultBranch) {
       const draftOnDefault = await manager.findOne(AppVersion, {
         where: {
           appId: moduleApp.id,
-          branchId: defaultBranchForDraft.id,
+          branchId: defaultBranch.id,
           status: AppVersionStatus.DRAFT,
           versionType: AppVersionType.VERSION,
           isStub: false,
@@ -154,9 +156,11 @@ export async function resolveModuleRef(
   }
 
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).
-  // Branchless PUBLISHED is checked first: by constraint chk_app_versions_branched_implies_draft,
-  // any branched row MUST be DRAFT — so onConsumer/onDefault can only ever return a DRAFT.
-  // Checking PUBLISHED first prevents a same-named DRAFT on the branch shadowing the real release.
+  // git-sync: branchless PUBLISHED only — branched rows are always DRAFTs by constraint
+  //   chk_app_versions_branched_implies_draft, so checking PUBLISHED first prevents a
+  //   same-named branch DRAFT shadowing the real release.
+  // non-git-sync: also check branchless any-status — DRAFTs are valid specific pins and
+  //   all rows are branchless (no WorkspaceBranch rows exist).
   if (moduleReferenceId && !UUID_RE.test(moduleReferenceId)) {
     const versionName = moduleReferenceId;
     const branchlessForName = await manager.findOne(AppVersion, {
@@ -170,7 +174,14 @@ export async function resolveModuleRef(
       },
     });
     if (branchlessForName) return branchlessForName;
-    // Name not found on branchless PUBLISHED — fall through to orphan guard.
+    if (!isGitSyncEnabled) {
+      const branchlessDraft = await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, name: versionName, branchId: IsNull(),
+                 versionType: AppVersionType.VERSION, isStub: false },
+      });
+      if (branchlessDraft) return branchlessDraft;
+    }
+    // Name not found — fall through to orphan guard.
   }
 
   // Tier 1 — UUID lookup (moduleReferenceId, same-workspace fast path).
@@ -178,8 +189,7 @@ export async function resolveModuleRef(
   // a pin must only resolve to a branchless PUBLISHED row.
   // non-git-sync: no branch rows exist; branchless lookup with no status filter is correct.
   if (moduleReferenceId && UUID_RE.test(moduleReferenceId)) {
-    const defaultBranch = await findDefaultBranch(manager, organizationId);
-    if (defaultBranch) {
+    if (isGitSyncEnabled) {
       // git-sync: only branchless PUBLISHED.
       const published = await manager.findOne(AppVersion, {
         where: {
@@ -205,8 +215,7 @@ export async function resolveModuleRef(
   // If a ref was provided but no tier matched, return null — don't silently load the wrong version.
   if (moduleReferenceId) return null;
 
-  const targetBranchId =
-    consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
+  const targetBranchId = consumerBranchId ?? defaultBranch?.id;
   if (!targetBranchId) {
     // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
     // Prefer the active draft — saved versions have a newer createdAt (they are created from
