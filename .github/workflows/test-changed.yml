@@ -18,7 +18,6 @@ on:
 env:
   FORCE_COLOR: true
   NODE_OPTIONS: "--max-old-space-size=4096"
-  NODE_ENV: test
   # Main app DB
   PG_HOST: postgres
   PG_PORT: 5432
@@ -91,11 +90,11 @@ jobs:
 
       - name: Run main DB migrations
         run: npm --prefix server run db:migrate
-        env:
-          NODE_ENV: development
 
       - name: Run affected server tests (unit + e2e)
         run: bash scripts/test-changed.sh --e2e
+        env:
+          NODE_ENV: test
 
       - name: Format test results comment
         if: always()
