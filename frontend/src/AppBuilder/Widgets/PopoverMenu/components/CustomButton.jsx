@@ -153,7 +153,7 @@ export const CustomButton = forwardRef((props, forwardedRef) => {
       <button
         className={cx(
           'overflow-hidden jet-btn',
-          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:-tw-outline-offset-2'
+          'focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-interactive-focus-outline focus-visible:tw-outline-offset-2'
         )}
         style={computedStyles}
         {...(trigger === 'click' && {
