@@ -81,9 +81,9 @@ cd "$SERVER_DIR"
 echo "--- Unit tests ---"
 if [[ -n "$PATTERN" ]]; then
   if [[ "${CI:-}" == "true" ]]; then
-    npm run test -- --testPathPattern="$PATTERN" --json --outputFile /tmp/tj-unit-results.json
+    npm run test -- --testPathPatterns="$PATTERN" --json --outputFile /tmp/tj-unit-results.json
   else
-    npm run test -- --testPathPattern="$PATTERN"
+    npm run test -- --testPathPatterns="$PATTERN"
   fi
 else
   if [[ "${CI:-}" == "true" ]]; then
