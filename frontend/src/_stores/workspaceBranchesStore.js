@@ -24,6 +24,7 @@ const initialState = {
   hasMoreRemote: false,
   isDeletingBranch: false,
   deleteBranchError: null,
+  hasUnsyncedDatasources: false,
 };
 
 // Helper to resolve current branch from branches list + active ID
@@ -199,6 +200,10 @@ export const useWorkspaceBranchesStore = create(
 
         setPullingModuleComponentId(componentId) {
           set({ pullingModuleComponentId: componentId ?? null });
+        },
+
+        setHasUnsyncedDatasources(value) {
+          set({ hasUnsyncedDatasources: value });
         },
 
         async fetchRemoteBranches() {

@@ -10,6 +10,7 @@ import { ToolTip } from '@/_components';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { decodeEntities, getWorkspaceId } from '@/_helpers/utils';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
 const DUMMY_DS_LABEL = 'Undefined data source';
 const buildDummyDsTooltip = (coRelationId) =>
@@ -39,6 +40,7 @@ export const ListItem = ({
   const workspaceId = getWorkspaceId();
   const [syncIconHovered, setSyncIconHovered] = useState(false);
   const [rowHovered, setRowHovered] = useState(false);
+  const [pushModalOpen, setPushModalOpen] = useState(false);
   const wsCurrentBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isSampleDb = dataSource.type == DATA_SOURCE_TYPE.SAMPLE;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
@@ -83,6 +85,7 @@ export const ListItem = ({
   const showDeleteButton = !isSampleDb && canDeleteDataSource();
 
   return (
+    <>
     <ToolTip
       placement="right"
       show={toolTipText ? true : false}
@@ -128,10 +131,11 @@ export const ListItem = ({
         {/* On hover: refresh icon appears to the left of the delete button */}
         {isUnsynced && rowHovered && (
           <div className="col-auto">
-            <ToolTip message="Datasource not synced in remote git" placement="top">
+            <ToolTip message="Click to push datasource to git" placement="top">
               <div
                 onMouseEnter={() => setSyncIconHovered(true)}
                 onMouseLeave={() => setSyncIconHovered(false)}
+                onClick={() => setPushModalOpen(true)}
                 style={{
                   width: '24px',
                   height: '24px',
@@ -141,7 +145,7 @@ export const ListItem = ({
                   borderRadius: '4px',
                   backgroundColor: syncIconHovered ? '#FFEEF0' : 'transparent',
                   transition: 'background-color 0.15s',
-                  cursor: 'default',
+                  cursor: 'pointer',
                 }}
                 data-cy="ds-unsynced-badge"
               >
@@ -155,6 +159,7 @@ export const ListItem = ({
           <div className="col-auto">
             <ToolTip message="Datasource not synced in remote git" placement="top">
               <div
+                onClick={() => setPushModalOpen(true)}
                 style={{
                   width: '24px',
                   height: '24px',
@@ -162,7 +167,7 @@ export const ListItem = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '4px',
-                  cursor: 'default',
+                  cursor: 'pointer',
                 }}
                 data-cy="ds-unsynced-badge-idle"
               >
@@ -195,5 +200,15 @@ export const ListItem = ({
         )}
       </div>
     </ToolTip>
+    {PushAppsModal && isUnsynced && (
+      <PushAppsModal
+        show={pushModalOpen}
+        onClose={() => setPushModalOpen(false)}
+        resourceType="datasource"
+        resourceName={dataSource.name}
+        onSuccess={() => setPushModalOpen(false)}
+      />
+    )}
+    </>
   );
 };

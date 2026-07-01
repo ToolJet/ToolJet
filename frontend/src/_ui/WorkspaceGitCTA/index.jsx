@@ -5,14 +5,18 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceGitSyncModal } from '@/_ui/WorkspaceGitSyncModal';
 import { toast } from 'react-hot-toast';
+import { ToolTip } from '@/_components';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
 export function WorkspaceGitCTA({ showCommit = true }) {
   const [showModal, setShowModal] = useState(false);
   const [initialTab, setInitialTab] = useState('push');
-  const { currentBranch, orgGitConfig, actions } = useWorkspaceBranchesStore((state) => ({
+  const [showDsSyncModal, setShowDsSyncModal] = useState(false);
+  const { currentBranch, orgGitConfig, actions, hasUnsyncedDatasources } = useWorkspaceBranchesStore((state) => ({
     currentBranch: state.currentBranch,
     orgGitConfig: state.orgGitConfig,
     actions: state.actions,
+    hasUnsyncedDatasources: state.hasUnsyncedDatasources,
   }));
 
   const featureAccess = useLicenseStore((state) => state.featureAccess);
@@ -64,11 +68,36 @@ export function WorkspaceGitCTA({ showCommit = true }) {
           </Button>
         </div>
       )}
+
+      {showCommit && isOnDefaultBranch && hasUnsyncedDatasources && (
+        <ToolTip message="There are data source which are not synced in remote git" placement="bottom">
+          <div className="lifecycle-cta-button">
+            <Button
+              variant="secondary"
+              onClick={() => setShowDsSyncModal(true)}
+              data-cy="workspace-ds-sync-button"
+              style={{ borderColor: '#E54D2E', color: '#E54D2E' }}
+            >
+              <SolidIcon fill="#E54D2E" name="refresh" width="16" />
+              <span>Sync</span>
+            </Button>
+          </div>
+        </ToolTip>
+      )}
+
       {showModal && (
         <WorkspaceGitSyncModal
           isOnDefaultBranch={isOnDefaultBranch}
           initialTab={initialTab}
           onClose={() => setShowModal(false)}
+        />
+      )}
+      {PushAppsModal && showDsSyncModal && (
+        <PushAppsModal
+          show={showDsSyncModal}
+          onClose={() => setShowDsSyncModal(false)}
+          resourceType="datasource"
+          onSuccess={() => setShowDsSyncModal(false)}
         />
       )}
     </>
