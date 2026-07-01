@@ -9,6 +9,7 @@ import { EntityManager, MoreThan } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { VersionsCreateService } from './services/create.service';
 import { camelizeKeys, decamelizeKeys } from 'humps';
+import { serializeDataQueries } from '@modules/data-queries/serialization.helper';
 import { PageService } from '@modules/apps/services/page.service';
 import { EventsService } from '@modules/apps/services/event.service';
 import { AppsUtilService } from '@modules/apps/util.service';
@@ -253,19 +254,14 @@ export class VersionService implements IVersionService {
       delete appData['editingVersion'];
 
       /*
-        Data-query `options` are a free-form, mixed-case user blob:
-          - snake_case operation keys (sql_execution, list_rows, table_id, etc)
-          - camelCase keys (activeTab, a nested sqlQuery, etc). 
-
-        camelizeKeys recurses deeply and would rewrite sql_execution → sqlExecution etc.,
-        silently breaking the query when it loads.
-        Detach the data queries, camelize only the rest of the version, then re-attach them
-
-        NOTE — the frontend likewise leaves them untouched (see frontend/src/AppBuilder/_stores/utils/appDataCaseConversion.js)
+        Data-query contains `options` which are a free-form, mixed-case blob (snake_case alongside camelCase keys).
+        Strip them here so the rest of the version envelope can be camelized safely below.
+        `camelizeKeys` recurses deeply and would silently break queries if they stayed on the version object.
       */
-      const { dataQueries: rawDataQueries, ...restEditingVersion } = appCurrentEditingVersion;
-      const editingVersion = camelizeKeys(restEditingVersion);
-      editingVersion['dataQueries'] = rawDataQueries;
+      const serializedDataQueries = serializeDataQueries(appCurrentEditingVersion?.dataQueries);
+      delete appCurrentEditingVersion['dataQueries'];
+
+      const editingVersion = camelizeKeys(appCurrentEditingVersion);
 
       // Inject app theme
       const appTheme = await this.organizationThemesUtilService.getTheme(
@@ -295,6 +291,7 @@ export class VersionService implements IVersionService {
       return {
         ...appData,
         editing_version: editingVersion,
+        data_queries: serializedDataQueries,
         pages: this.appUtilService.mergeDefaultComponentData(pagesForVersion),
         events: eventsForVersion,
         should_freeze_editor: shouldFreezeEditor,

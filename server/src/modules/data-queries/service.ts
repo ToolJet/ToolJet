@@ -5,8 +5,8 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { Response } from 'express';
 import { DataQueryRepository } from './repository';
-import { decode } from 'js-base64';
 import { decamelizeKeys } from 'humps';
+import { serializeDataQueries } from './serialization.helper';
 import { CreateDataQueryDto, IUpdatingReferencesOptions, ListTablesDto, UpdateDataQueryDto } from './dto';
 import { AppAbility } from '@modules/app/decorators/ability.decorator';
 import { FEATURE_KEY } from './constants';
@@ -120,29 +120,7 @@ export class DataQueriesService implements IDataQueriesService {
 
   async getAll(user: User, app: App, versionId: string, mode?: string) {
     const queries = await this.dataQueryRepository.getAll(versionId);
-    const serializedQueries = [];
-
-    // serialize
-    for (const query of queries) {
-      delete query['dataSource'];
-
-      const decamelizeQuery = decamelizeKeys(query);
-
-      decamelizeQuery['options'] = query.options;
-
-      if (query.plugin) {
-        decamelizeQuery['plugin'].manifest_file.data = JSON.parse(
-          decode(query.plugin.manifestFile.data.toString('utf8'))
-        );
-        decamelizeQuery['plugin'].icon_file.data = query.plugin.iconFile.data.toString('utf8');
-      }
-
-      serializedQueries.push(decamelizeQuery);
-    }
-
-    const response = { data_queries: serializedQueries };
-
-    return response;
+    return { data_queries: serializeDataQueries(queries) };
   }
 
   async create(user: User, dataSource: DataSource, dataQueryDto: CreateDataQueryDto) {
