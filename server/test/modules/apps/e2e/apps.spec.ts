@@ -120,6 +120,69 @@ describe('AppsController', () => {
           await logout(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
+
+        it('should be able to create app even after a module app was viewed by another user in the same server instance', async () => {
+          // Regression test: FeatureAbilityGuard (server/src/modules/app/guards/ability.guard.ts)
+          // is a singleton and stores the last-seen app on `this.resource`. Viewing/loading a
+          // "module" type app leaves that field set to `type: 'module'`. A subsequent create
+          // request (which has no app in context) then has its ability resolved against the
+          // MODULES.MODULES resource type instead of MODULES.APP, so a builder's `app_create`
+          // grant is silently ignored and the create is rejected with 403.
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            groups: ['all_users', 'admin'],
+          });
+
+          const adminLogin = await login(app);
+          adminUserData['tokenCookie'] = adminLogin.tokenCookie;
+
+          const organization = adminUserData.organization;
+
+          const moduleApp = await createApplication(app, {
+            name: 'Some Module',
+            user: adminUserData.user,
+            type: 'module',
+          });
+          await createApplicationVersion(app, moduleApp);
+
+          // Admin views the module -- this populates the FeatureAbilityGuard singleton's
+          // `this.resource` with the module app (type: 'module').
+          const moduleGetResponse = await request(app.getHttpServer())
+            .get(`/api/apps/${moduleApp.id}`)
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(moduleGetResponse.statusCode).toBe(200);
+
+          const builderUserData = await createUser(app, {
+            email: 'flaky-builder@tooljet.io',
+            groups: ['all_users', 'builder', 'app-creator'],
+            organization,
+          });
+
+          const customGroup = await findEntityOrFail(GroupPermissions, {
+            organizationId: organization.id,
+            name: 'app-creator',
+          } as any);
+          await updateEntity(GroupPermissions, customGroup.id, { appCreate: true });
+
+          const builderLogin = await login(app, 'flaky-builder@tooljet.io');
+          builderUserData['tokenCookie'] = builderLogin.tokenCookie;
+
+          const createResponse = await request(app.getHttpServer())
+            .post(`/api/apps`)
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', builderUserData['tokenCookie'])
+            .send({
+              name: 'Builder App',
+              type: 'front-end',
+            });
+
+          expect(createResponse.statusCode).toBe(201);
+
+          await logout(app, adminUserData['tokenCookie'], organization.id);
+          await logout(app, builderUserData['tokenCookie'], organization.id);
+        });
       });
 
       it('should create app with default values', async () => {

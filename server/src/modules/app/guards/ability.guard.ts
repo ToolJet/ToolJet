@@ -52,9 +52,10 @@ export abstract class AbilityGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const user = request.user;
       const app: App = request.tj_app;
-      if (app) {
-        this.setResourceObject(app);
-      }
+      // Guard instances are singleton-scoped in Nest's DI container, so `this.resource`
+      // persists across requests. It must always be overwritten (even with undefined) so a
+      // request with no app in context can't inherit a stale value set by an earlier request.
+      this.setResourceObject(app);
 
       if (!features?.length) {
         return false;
