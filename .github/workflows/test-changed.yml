@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       pull-requests: write
-    container: node:18.18.2-bullseye
+    container: node:22.15.1-bullseye
     services:
       postgres:
         image: postgres
