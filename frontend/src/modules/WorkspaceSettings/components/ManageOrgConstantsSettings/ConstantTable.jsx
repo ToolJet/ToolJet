@@ -144,6 +144,7 @@ const ConstantTable = ({
                             <div
                               onClick={() => toggleShowValue(constant.id)}
                               data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-constant-visibility`}
+                              style={{ cursor: 'pointer' }}
                             >
                               {!showValues[constant.id] ? (
                                 <EyeHide
