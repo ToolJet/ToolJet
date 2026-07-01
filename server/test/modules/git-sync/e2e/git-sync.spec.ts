@@ -985,7 +985,7 @@ describe('GitSyncController', () => {
           })
           .expect(200);
 
-        step(24, 'change icon to sentfast on feat-e2e-2');
+        step(25, 'change icon to sentfast on feat-e2e-2');
         await request
           .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}/icons`)
@@ -995,7 +995,7 @@ describe('GitSyncController', () => {
           .send({ icon: 'sentfast', branch_id: feat2BranchId })
           .expect(200);
 
-        step(24, 'flip is_public=true on feat-e2e-2');
+        step(26, 'flip is_public=true on feat-e2e-2');
         await request
           .agent(app.getHttpServer())
           .put(`/api/apps/${hydratedApp.id}/public`)
@@ -1005,7 +1005,7 @@ describe('GitSyncController', () => {
           .send({ app: { is_public: true, branch_id: feat2BranchId } })
           .expect(200);
 
-        step(25, 'gitpush commit feat-e2e-2 (name + slug + icon + is_public)');
+        step(27, 'gitpush commit feat-e2e-2 (name + slug + icon + is_public)');
         await request
           .agent(app.getHttpServer())
           .post(`/api/app-git/gitpush/${hydratedApp.id}/${feat2VersionId}`)
@@ -1021,7 +1021,7 @@ describe('GitSyncController', () => {
           })
           .expect(201);
 
-        step(26, 'merge feat-e2e-2 → main on Gitea');
+        step(28, 'merge feat-e2e-2 → main on Gitea');
         const merge2Resp = await fetch(MERGE_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: BASIC },
@@ -1036,7 +1036,7 @@ describe('GitSyncController', () => {
         const merge2Body = await merge2Resp.json().catch(() => ({}));
         expect(merge2Body.ok).toBe(true);
 
-        step(27, 'switch to main & list apps → still pre-pull name testing-app-1');
+        step(29, 'switch to main & list apps → still pre-pull name testing-app-1');
         // 27. Before pulling, main's local snapshot still reflects the
         //     previous merge (name=testing-app-1).
         const appsBeforePull = await request
@@ -1050,7 +1050,7 @@ describe('GitSyncController', () => {
         expect(appsBeforePull.body.apps).toHaveLength(1);
         expect(appsBeforePull.body.apps[0].name).toBe('testing-app-1');
 
-        step(28, 'check-updates on main → hasUpdates true (merge commit ahead)');
+        step(30, 'check-updates on main → hasUpdates true (merge commit ahead)');
         const checkUpdatesAfterMerge = await request
           .agent(app.getHttpServer())
           .get('/api/workspace-branches/check-updates')
@@ -1062,7 +1062,7 @@ describe('GitSyncController', () => {
         expect(checkUpdatesAfterMerge.body.hasUpdates).toBe(true);
         expect(checkUpdatesAfterMerge.body.latestCommit.sha).toEqual(expect.any(String));
 
-        step(29, 'pull main');
+        step(31, 'pull main');
         await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
@@ -1072,7 +1072,7 @@ describe('GitSyncController', () => {
           .send({ branchId: mainBranchId })
           .expect(201);
 
-        step(30, 'list apps on main → name testing-app-2 (slug still stub uuid)');
+        step(32, 'list apps on main → name testing-app-2 (slug still stub uuid)');
         const appsAfterPull = await request
           .agent(app.getHttpServer())
           .get('/api/apps')
@@ -1085,7 +1085,7 @@ describe('GitSyncController', () => {
         const renamedApp = appsAfterPull.body.apps[0];
         expect(renamedApp.name).toBe('testing-app-2');
 
-        step(31, 'pull-from-builder + ensure-draft → new draft version id');
+        step(33, 'pull-from-builder + ensure-draft → new draft version id');
         const builderPull = await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
@@ -1107,7 +1107,7 @@ describe('GitSyncController', () => {
         const draftVersionId: string = ensureDraftResp.body.draftVersionId;
         expect(draftVersionId).toBeDefined();
 
-        step(32, 'GET draft version → name + slug + icon + is_public propagated');
+        step(34, 'GET draft version → name + slug + icon + is_public propagated');
         const draftDetail = await request
           .agent(app.getHttpServer())
           .get(`/api/v2/apps/${hydratedApp.id}/versions/${draftVersionId}`)
@@ -1121,7 +1121,7 @@ describe('GitSyncController', () => {
         expect(draftDetail.body.icon).toBe('sentfast');
         expect(draftDetail.body.isPublic).toBe(true);
 
-        step(33, 'GET published v1 → editing_version PUBLISHED + inherits main draft name/slug');
+        step(35, 'GET published v1 → editing_version PUBLISHED + inherits main draft name/slug');
         // 33. Hitting the saved (PUBLISHED) v1 should still resolve as
         //     published, but the app-level name+slug come from the latest
         //     main-branch draft — both versions on the same branch share
@@ -1164,7 +1164,7 @@ describe('GitSyncController', () => {
             }
           });
 
-        step(34, 'promote v1 through envs (dev → staging → production) + release');
+        step(36, 'promote v1 through envs (dev → staging → production) + release');
         // 34. Promote the saved v1 through each environment. The promote body
         //     carries the CURRENT env — the server moves the version to the
         //     next env in priority order. Two promotes cover dev → staging →
@@ -1209,7 +1209,7 @@ describe('GitSyncController', () => {
           .send({ versionToBeReleased: publishedV1Id })
           .expect(200);
 
-        step(35, 'released-app access + slug lookup + default env (production)');
+        step(37, 'released-app access + slug lookup + default env (production)');
         const validateAccess = await request
           .agent(app.getHttpServer())
           .get('/api/apps/validate-released-app-access/testing-app-2-slug')
@@ -1258,7 +1258,7 @@ describe('GitSyncController', () => {
 
         await request.agent(app.getHttpServer()).get('/api/apps/slugs/testing-app-2-slug').expect(200);
 
-        step(36, 'feat-e2e-3: duplicate app name (testing-app-2) → 400');
+        step(38, 'feat-e2e-3: duplicate app name (testing-app-2) → 400');
         // 36. Create another feature branch. Posting an app with a name that
         //     already exists in the workspace must be rejected.
         const createBranch3Resp = await request
@@ -1285,7 +1285,7 @@ describe('GitSyncController', () => {
           })
           .expect(400);
 
-        step(37, 'feat-e2e-3: unique name OK; duplicate slug 4xx; unique slug OK');
+        step(39, 'feat-e2e-3: unique name OK; duplicate slug 4xx; unique slug OK');
         // 37. Same branch, fresh name → create succeeds. PUTting the existing
         //     slug must fail; a unique slug must succeed.
         const createApp3Resp = await request
@@ -1331,7 +1331,7 @@ describe('GitSyncController', () => {
           .send({ app: { slug: 'testing-app-3-slug', branch_id: feat3BranchId } })
           .expect(200);
 
-        step(38, 'commit + merge feat-e2e-3 → main, verify name + slug');
+        step(40, 'commit + merge feat-e2e-3 → main, verify name + slug');
         // 38. Push the third feature branch, merge into main, pull, and
         //     confirm both testing-app-2 and testing-app-3 surface with
         //     their slugs after a builder-pull + ensure-draft.
@@ -1411,7 +1411,7 @@ describe('GitSyncController', () => {
         expect(app3DraftDetail.body.name).toBe('testing-app-3');
         expect(app3DraftDetail.body.slug).toBe('testing-app-3-slug');
 
-        step(39, 'create feat-e2e-4 branch off main; create testing-app-4 & testing-app-5');
+        step(41, 'create feat-e2e-4 branch off main; create testing-app-4 & testing-app-5');
         // 39. Fresh feature branch + two apps to exercise folder membership.
         const createBranch4Resp = await request
           .agent(app.getHttpServer())
@@ -1446,7 +1446,7 @@ describe('GitSyncController', () => {
         const app5Id: string = createApp5Resp.body.id;
         expect(app5Id).toBeDefined();
 
-        step(40, 'create folder test-folder-1');
+        step(42, 'create folder test-folder-1');
         // 40. Folders are org-scoped (not branch-scoped) — no x-branch-id needed.
         const createFolderResp = await request
           .agent(app.getHttpServer())
@@ -1463,7 +1463,7 @@ describe('GitSyncController', () => {
         const folderId: string = createFolderResp.body.id;
         expect(folderId).toBeDefined();
 
-        step(41, 'list folders on feat-e2e-4 → test-folder-1 present with 0 apps');
+        step(43, 'list folders on feat-e2e-4 → test-folder-1 present with 0 apps');
         // 41. The folder is visible on the branch but has no folder_apps rows yet.
         const foldersInitial = await request
           .agent(app.getHttpServer())
@@ -1478,7 +1478,7 @@ describe('GitSyncController', () => {
         expect(newFolderInitial.count).toBe(0);
         expect(newFolderInitial.folder_apps).toEqual([]);
 
-        step(42, 'add testing-app-4 to test-folder-1');
+        step(44, 'add testing-app-4 to test-folder-1');
         // 42. Single-app add → folder_apps row scoped to feat-e2e-4.
         await request
           .agent(app.getHttpServer())
@@ -1489,7 +1489,7 @@ describe('GitSyncController', () => {
           .send({ folder_id: folderId, app_id: app4Id })
           .expect(201);
 
-        step(43, 'list folders → test-folder-1 count = 1 (branch-scoped folder_app)');
+        step(45, 'list folders → test-folder-1 count = 1 (branch-scoped folder_app)');
         const foldersAfterAdd = await request
           .agent(app.getHttpServer())
           .get('/api/folder-apps')
@@ -1507,7 +1507,7 @@ describe('GitSyncController', () => {
           branch_id: feat4BranchId,
         });
 
-        step(44, 'bulk add testing-app-4 & testing-app-5 to test-folder-1 (single request)');
+        step(46, 'bulk add testing-app-4 & testing-app-5 to test-folder-1 (single request)');
         // 44. Bulk add — app4 already present (idempotent), app5 newly added.
         await request
           .agent(app.getHttpServer())
@@ -1518,7 +1518,7 @@ describe('GitSyncController', () => {
           .send({ app_ids: [app4Id, app5Id], folder_id: folderId })
           .expect(201);
 
-        step(45, 'list folders → test-folder-1 count = 2');
+        step(47, 'list folders → test-folder-1 count = 2');
         const foldersAfterBulk = await request
           .agent(app.getHttpServer())
           .get('/api/folder-apps')
@@ -1534,7 +1534,7 @@ describe('GitSyncController', () => {
         expect(appIdsInFolder).toEqual([app4Id, app5Id].sort());
         folderWithTwo.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(feat4BranchId));
 
-        step(46, 'commit app4 & app5, merge feat-e2e-4 → main, pull, validate folder mapping on main');
+        step(48, 'commit app4 & app5, merge feat-e2e-4 → main, pull, validate folder mapping on main');
         // 46. Folder membership rides through git: foldered apps serialize under
         //     apps/<folder>/<app>/, so after merge+pull the mapping is recreated
         //     on main (as NEW App rows sharing co_relation_id, scoped to main's branch_id).
@@ -1645,7 +1645,7 @@ describe('GitSyncController', () => {
         expect(mainFolderAppIds).toEqual([mainApp4.id, mainApp5.id].sort());
         folderOnMain.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
 
-        step(47, 'hydration failure: invalid repo URL surfaces hydration_error on GET /apps/:id');
+        step(49, 'hydration failure: invalid repo URL surfaces hydration_error on GET /apps/:id');
         // 47. Force the lazy re-hydration path (a non-stub draft whose
         //     remote_updated_at is newer than pulled_at), repoint the workspace
         //     git config at a non-existent repo, and confirm GET /apps/:id stays
@@ -1729,7 +1729,7 @@ describe('GitSyncController', () => {
         expect(healthyResp.body.is_hydration_tried).toBe(false);
         expect(healthyResp.body.not_hydrated_reason).toBe('already-up-to-date');
 
-        step(48, 'per-app pull via ensure-draft preserves folder mapping (sibling check to step 46)');
+        step(50, 'per-app pull via ensure-draft preserves folder mapping (sibling check to step 48)');
         // 48. Step 46 verified folder propagation through a workspace pull. Here we
         //     exercise the per-app pull endpoint (POST /api/workspace-branches/ensure-draft):
         //     push two more foldered apps from a new feature branch, merge, do the
@@ -1959,7 +1959,7 @@ describe('GitSyncController', () => {
         expect(folderAfterEnsure7.folder_apps.map((fa: any) => fa.app_id).sort()).toEqual(expectedAllFolderAppIds);
         folderAfterEnsure7.folder_apps.forEach((fa: any) => expect(fa.branch_id).toBe(mainBranchId));
 
-        step(50, 'feature-branch pull preserves local-only app');
+        step(51, 'feature-branch pull preserves local-only app');
         // 50. Pulling a feature branch must NOT delete a locally-created,
         //     never-pushed app. Orphan resources are no longer removed on pull
         //     (they are marked is_synced=false), so in-progress work on a feature
@@ -2926,7 +2926,7 @@ describe('GitSyncController', () => {
 
         await writeGitMeta('dataSourceMeta.json', originalDsMeta, 'restore ds meta');
 
-        step(63, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
+        step(60, 'delete data source A on a branch, then rename B → A → succeeds (branch-aware name check)');
         // 63. Regression for the CRUD rename check. Deleting a global DS on a
         //     feature branch only soft-deletes its branch DSV (is_active=false);
         //     the data_sources row survives. The rename validation used to query
@@ -3000,7 +3000,7 @@ describe('GitSyncController', () => {
         expect(aAfterDelete).toHaveLength(1);
         expect(aAfterDelete[0].is_active).toBe(false);
 
-        step(64, 'orphan APP on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        step(61, 'orphan APP on default branch: pull marks is_synced=false (not deleted), GET reflects it');
         // 64. New orphan flow. An app row that lives on the default branch but is
         //     absent from git is NOT removed on pull — it is marked is_synced=false
         //     so it behaves like a never-synced (pre-git) app. Setup mirrors the old
@@ -3074,7 +3074,7 @@ describe('GitSyncController', () => {
         expect(orphanAppEditing).toBeDefined();
         expect(orphanAppEditing.is_synced ?? orphanAppEditing.isSynced).toBe(false);
 
-        step(65, 'orphan MODULE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        step(62, 'orphan MODULE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
         // 65. Module variant of step 64. Modules are App rows (type='module') and use
         //     the same GET /api/apps/:id surface, so the assertions match.
         const orphanModBranchResp = await request
@@ -3132,7 +3132,7 @@ describe('GitSyncController', () => {
         expect(orphanModEditing).toBeDefined();
         expect(orphanModEditing.is_synced ?? orphanModEditing.isSynced).toBe(false);
 
-        step(66, 'orphan DATA SOURCE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
+        step(63, 'orphan DATA SOURCE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
         // 66. Data-source variant. Create a DS on a feature branch, SQL-move its DSV
         //     onto main as synced; pull main flips is_synced→false (the DSV is kept,
         //     not deactivated/deleted) and GET /api/data-sources reflects it.
@@ -3188,6 +3188,317 @@ describe('GitSyncController', () => {
         const orphanDsRow = orphanDsList.find((ds: any) => ds.id === orphanSyncedDsId);
         expect(orphanDsRow).toBeDefined();
         expect(orphanDsRow.is_synced ?? orphanDsRow.isSynced).toBe(false);
+
+        // ------------------------------------------------------------------
+        // App-meta propagation across all default-branch versions
+        // ------------------------------------------------------------------
+        // Verifies the DB trigger that copies app identity (app_name / slug /
+        // icon) onto EVERY app_versions row on the branch whose draft was just
+        // updated — and, crucially, that editing metadata on a *different*
+        // feature branch leaves the default-branch rows untouched (branch
+        // isolation) until the change is committed and pulled back.
+        //
+        // Flow: create app on a feature branch → push → merge → single-app
+        // pull onto main (NOT a workspace pull) → save (publish) → assert the
+        // default branch holds one PUBLISHED + one DRAFT row sharing meta →
+        // rename/reslug/re-icon on a second feature branch → assert the main
+        // rows are unchanged → push + merge + single-app pull → assert the new
+        // meta has propagated to BOTH main rows.
+
+        const metaAppName = 'meta-prop-app';
+
+        step(64, 'meta-prop: create app on feat-meta-prop-1 & push');
+        const metaBranch1Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-meta-prop-1', sourceBranchId: mainBranchId })
+          .expect(201);
+        const metaBranch1Id: string = metaBranch1Resp.body.id;
+
+        const metaCreateResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch1Id)
+          .send({ icon: 'home', name: metaAppName, type: 'front-end', branchId: metaBranch1Id })
+          .expect(201);
+        const metaAppId: string = metaCreateResp.body.id;
+
+        // Reads all default-branch (main) version rows for the meta-prop app.
+        const metaRowsOnMain = (): Promise<
+          Array<{ status: string; version_type: string; app_name: string; slug: string; icon: string }>
+        > =>
+          dataSource.query(
+            `SELECT status, version_type, app_name, slug, icon
+               FROM app_versions
+              WHERE app_id = $1 AND branch_id = $2
+              ORDER BY status`,
+            [metaAppId, mainBranchId]
+          );
+
+        const metaAppOnBranch1 = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${metaAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch1Id)
+          .expect(200);
+        const metaBranch1Version = metaAppOnBranch1.body?.editing_version || metaAppOnBranch1.body?.editingVersion;
+        const metaBranch1VersionId: string = metaBranch1Version.id;
+
+        // Snapshot feat-meta-prop-1's own row meta. Nothing after this edits or
+        // pulls into this branch, so it must stay byte-for-byte identical — the
+        // negative counterpart to the default-branch propagation checks below.
+        const branch1MetaAtCreate = (
+          await dataSource.query(`SELECT app_name, slug, icon FROM app_versions WHERE app_id = $1 AND branch_id = $2`, [
+            metaAppId,
+            metaBranch1Id,
+          ])
+        )[0];
+        expect(branch1MetaAtCreate).toMatchObject({ app_name: metaAppName, icon: 'home' });
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${metaAppId}/${metaBranch1VersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch1Id)
+          .send({
+            gitAppName: metaAppName,
+            versionId: metaBranch1VersionId,
+            lastCommitMessage: 'meta-prop: initial',
+            gitVersionName: 'feat-meta-prop-1',
+            sourceBranch: 'feat-meta-prop-1',
+          })
+          .expect(201);
+
+        step(65, 'meta-prop: merge feat-meta-prop-1 → main, then SINGLE-APP pull onto main');
+        const metaMerge1 = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-meta-prop-1',
+            target: 'main',
+            message: 'Land feat-meta-prop-1',
+          }),
+        });
+        expect((await metaMerge1.json().catch(() => ({}))).ok).toBe(true);
+
+        // Single-app pull (NOT the workspace pull): hydrates just this app onto
+        // main and returns the draft version the editor would open.
+        const metaPull1 = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull-app')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ appId: metaAppId, branchId: mainBranchId })
+          .expect(201);
+        expect(metaPull1.body.success).toBe(true);
+
+        // Resolve the freshly-hydrated main draft version.
+        const metaAppOnMain = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${metaAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const metaMainDraft = metaAppOnMain.body?.editing_version || metaAppOnMain.body?.editingVersion;
+        const metaMainDraftId: string = metaMainDraft.id;
+        expect(metaMainDraftId).toBeDefined();
+
+        step(66, 'meta-prop: save the version (publish v1) → main holds 1 PUBLISHED + 1 DRAFT sharing meta');
+        // "Save" == publish the draft to v1 and cut the git tag (mirrors the
+        // editor's save flow). handleDefaultBranchPublish keeps the published
+        // row on the default branch AND seeds a fresh DRAFT — so main now has
+        // exactly two version rows for this app.
+        const metaCheckTag = await request
+          .agent(app.getHttpServer())
+          .get(`/api/app-git/${metaAppId}/check-tag`)
+          .query({ versionName: 'v1' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        expect(metaCheckTag.body.exists).toBe(false);
+
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/v2/apps/${metaAppId}/versions/${metaMainDraftId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ is_user_switched_version: false, name: 'v1', description: 'meta-prop save', status: 'PUBLISHED' })
+          .expect(200);
+
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/${metaAppId}/versions/${metaMainDraftId}/tag`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ message: 'meta-prop save' })
+          .expect(201);
+
+        // On save there must be two default-branch rows: one PUBLISHED, one
+        // DRAFT — and both carry identical app_name / slug / icon.
+        const rowsAfterSave = await metaRowsOnMain();
+        expect(rowsAfterSave).toHaveLength(2);
+        const publishedRow = rowsAfterSave.find((r) => r.status === 'PUBLISHED');
+        const draftRow = rowsAfterSave.find((r) => r.status === 'DRAFT');
+        expect(publishedRow).toBeDefined();
+        expect(draftRow).toBeDefined();
+        expect(publishedRow.version_type).toBe('version');
+        expect(draftRow.version_type).toBe('version');
+        // Capture the canonical meta the default branch settled on.
+        const originalMeta = { app_name: publishedRow.app_name, slug: publishedRow.slug, icon: publishedRow.icon };
+        expect(originalMeta.app_name).toBe(metaAppName);
+        expect(originalMeta.icon).toBe('home');
+        // Both rows share the same meta.
+        expect(draftRow.app_name).toBe(originalMeta.app_name);
+        expect(draftRow.slug).toBe(originalMeta.slug);
+        expect(draftRow.icon).toBe(originalMeta.icon);
+
+        step(67, 'meta-prop: edit name/slug/icon on feat-meta-prop-2 → default-branch meta MUST NOT change');
+        const metaBranch2Resp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ name: 'feat-meta-prop-2', sourceBranchId: mainBranchId })
+          .expect(201);
+        const metaBranch2Id: string = metaBranch2Resp.body.id;
+
+        const metaAppOnBranch2 = await request
+          .agent(app.getHttpServer())
+          .get(`/api/apps/${metaAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch2Id)
+          .expect(200);
+        const metaBranch2Version = metaAppOnBranch2.body?.editing_version || metaAppOnBranch2.body?.editingVersion;
+        const metaBranch2VersionId: string = metaBranch2Version.id;
+
+        // Rename + reslug + re-icon on the feature branch only.
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/apps/${metaAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch2Id)
+          .send({ app: { name: 'meta-prop-app-v2', editingVersionId: metaBranch2VersionId, branch_id: metaBranch2Id } })
+          .expect(200);
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/apps/${metaAppId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch2Id)
+          .send({ app: { slug: 'meta-prop-slug-v2', branch_id: metaBranch2Id } })
+          .expect(200);
+        await request
+          .agent(app.getHttpServer())
+          .put(`/api/apps/${metaAppId}/icons`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch2Id)
+          .send({ icon: 'sentfast', branch_id: metaBranch2Id })
+          .expect(200);
+
+        // The feature-branch row reflects the new meta …
+        const branch2Rows = await dataSource.query(
+          `SELECT app_name, slug, icon FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
+          [metaAppId, metaBranch2Id]
+        );
+        expect(branch2Rows).toHaveLength(1);
+        expect(branch2Rows[0]).toMatchObject({ app_name: 'meta-prop-app-v2', slug: 'meta-prop-slug-v2', icon: 'sentfast' });
+
+        // … but the DEFAULT-branch rows are untouched — editing a feature
+        // branch must not mutate the default branch's identity.
+        const rowsAfterBranchEdit = await metaRowsOnMain();
+        expect(rowsAfterBranchEdit).toHaveLength(2);
+        rowsAfterBranchEdit.forEach((r) => {
+          expect(r.app_name).toBe(originalMeta.app_name);
+          expect(r.slug).toBe(originalMeta.slug);
+          expect(r.icon).toBe(originalMeta.icon);
+        });
+
+        step(68, 'meta-prop: push + merge feat-meta-prop-2, single-app pull → new meta on ALL default-branch rows');
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${metaAppId}/${metaBranch2VersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', metaBranch2Id)
+          .send({
+            gitAppName: 'meta-prop-app-v2',
+            versionId: metaBranch2VersionId,
+            lastCommitMessage: 'meta-prop: rename + reslug + re-icon',
+            gitVersionName: 'feat-meta-prop-2',
+            sourceBranch: 'feat-meta-prop-2',
+          })
+          .expect(201);
+
+        const metaMerge2 = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-meta-prop-2',
+            target: 'main',
+            message: 'Land feat-meta-prop-2',
+          }),
+        });
+        expect((await metaMerge2.json().catch(() => ({}))).ok).toBe(true);
+
+        // Single-app pull again: updates main's draft with the merged content,
+        // and the propagation trigger fans the new meta out to every row on the
+        // default branch (both the PUBLISHED and the DRAFT).
+        const metaPull2 = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull-app')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .send({ appId: metaAppId, branchId: mainBranchId })
+          .expect(201);
+        expect(metaPull2.body.success).toBe(true);
+
+        const rowsAfterPull = await metaRowsOnMain();
+        expect(rowsAfterPull).toHaveLength(2);
+        // ALL default-branch rows now carry the updated identity.
+        rowsAfterPull.forEach((r) => {
+          expect(r.app_name).toBe('meta-prop-app-v2');
+          expect(r.slug).toBe('meta-prop-slug-v2');
+          expect(r.icon).toBe('sentfast');
+        });
+        // Still exactly one PUBLISHED + one DRAFT.
+        expect(rowsAfterPull.filter((r) => r.status === 'PUBLISHED')).toHaveLength(1);
+        expect(rowsAfterPull.filter((r) => r.status === 'DRAFT')).toHaveLength(1);
+
+        // Negative: feat-meta-prop-1 was never edited nor pulled into. Its row
+        // meta must be exactly what it was at creation — propagation on the
+        // default branch (and on feat-meta-prop-2) must not leak across into an
+        // unrelated branch's rows.
+        const branch1RowsFinal = await dataSource.query(
+          `SELECT app_name, slug, icon FROM app_versions WHERE app_id = $1 AND branch_id = $2`,
+          [metaAppId, metaBranch1Id]
+        );
+        expect(branch1RowsFinal).toHaveLength(1);
+        expect(branch1RowsFinal[0]).toMatchObject(branch1MetaAtCreate);
+        // And explicitly NOT the v2 identity that landed on the default branch.
+        expect(branch1RowsFinal[0].app_name).not.toBe('meta-prop-app-v2');
+        expect(branch1RowsFinal[0].slug).not.toBe('meta-prop-slug-v2');
+        expect(branch1RowsFinal[0].icon).not.toBe('sentfast');
 
       }, 540000);
     });
