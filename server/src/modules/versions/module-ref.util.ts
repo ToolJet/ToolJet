@@ -136,7 +136,8 @@ export async function resolveModuleRef(
       });
       if (draftOnDefault) return draftOnDefault;
     }
-    // Default branch or draft not found — fall through to unpinned.
+    // Default branch or draft not found — explicit pin, so fail clean instead of silent fallback.
+    return null;
   }
 
   // Tier 0 — versionName lookup (non-UUID ref, cross-workspace stable).

@@ -15,6 +15,7 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
+import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
@@ -75,7 +76,7 @@ const useAppData = (
   moduleId,
   darkMode,
   mode = 'edit',
-  { environmentId, versionId } = {},
+  { environmentId, versionId, componentName } = {},
   moduleMode = false,
   appSlug
 ) => {
@@ -327,19 +328,10 @@ const useAppData = (
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
-        // Unpinned: in git-sync mode, prefer the parent app's cached module definition
-        // (already loaded for the parent's branch context — matches "follow my branch" semantics).
-        // In non-git-sync mode, skip the cache — it may hold a released version rather than
-        // the active draft. Always hit the server so the draft-preference resolver runs.
-        const orgGit = useStore.getState().orgGit;
-        const isGitSyncEnabled =
-          orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
-        const cachedDefinition = isGitSyncEnabled ? getModuleDefinition(appId) : null;
-        if (cachedDefinition) {
-          appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
-        } else {
-          appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
-        }
+        // Unpinned: always hit the backend — cached definition may be from the default branch,
+        // not the consumer's feature branch. Server resolver correctly returns the current
+        // branch's draft (or 404 if nothing is available there).
+        appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       }
     } else {
       if (isPublicAccess) {
@@ -692,6 +684,22 @@ const useAppData = (
         console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
+          const versionLabel = versionId || 'unpinned';
+          const moduleName = componentName ?? moduleId;
+          useStore.getState().debugger.log({
+            logLevel: 'error',
+            type: 'module',
+            kind: 'module',
+            key: moduleName,
+            message: `Pinned version "${versionLabel}" unavailable on this branch`,
+            errorTarget: 'Modules',
+            error: {
+              description: _error?.data?.message || 'Module version not found',
+              module: moduleName,
+              version: versionLabel,
+            },
+            timestamp: new Date().toISOString(),
+          });
           toast.error('Error fetching module data');
           return;
         }
@@ -708,7 +716,18 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
-      flushExposedValueBatch();
+      setSuppressQueryRerun(moduleId, true);
+
+      // The flush runs the initial-settle dependency cascade synchronously.
+      // Suppress dependency-triggered query re-runs for THIS module during that window,
+      // so queries don't run on load when components publish their initial exposed values.
+      // Only Genuine post-load changes cascade outside this window and rerun as expected.
+      try {
+        flushExposedValueBatch();
+      } finally {
+        setSuppressQueryRerun(moduleId, false);
+      }
+
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {

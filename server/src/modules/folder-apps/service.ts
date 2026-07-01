@@ -140,15 +140,6 @@ export class FolderAppsService implements IFolderAppsService {
     if (isAdmin) return folders;
 
     if (user.roleGroup === USER_ROLE.END_USER) {
-      if (folderPermissions) {
-        if (folderPermissions.isAllViewable) {
-          return folders.filter((folder) => folder.folderApps.length > 0);
-        }
-
-        const viewableFolderIds = new Set(folderPermissions.viewableFoldersId || []);
-        return folders.filter((folder) => viewableFolderIds.has(folder.id) && folder.folderApps.length > 0);
-      }
-
       return folders.filter((folder) => folder.folderApps.length > 0);
     }
 
@@ -165,9 +156,9 @@ export class FolderAppsService implements IFolderAppsService {
         ...(folderPermissions.viewableFoldersId || []),
       ]);
 
-      // Show folders with explicit granular access OR folders created by this user.
-      // When accessibleFolderIds is empty (no granular access), only show user-created folders.
-      return folders.filter((f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id);
+      return folders.filter(
+        (f) => accessibleFolderIds.has(f.id) || f.createdBy === user.id || f.folderApps.length > 0
+      );
     }
 
     // No folder permissions object at all (CE / unconfigured EE) → show all folders

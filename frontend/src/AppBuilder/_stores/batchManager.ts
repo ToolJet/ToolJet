@@ -49,6 +49,18 @@ export function createBatchManager<S extends StoreWithDependencies>(
   return {
     isBatching: () => _depth > 0,
 
+    // Drops any open batch without applying it. For store resets: an async flow
+    // (e.g. switchPage's doSwitch) can open a batch and then never flush because its
+    // owner unmounted — this closure state survives resetAllStores, so it must be
+    // cleared explicitly or every subsequent write stays buffered forever.
+    reset: () => {
+      _depth = 0;
+      _mutations = [];
+      _depPaths = [];
+      _postFlushKeys = new Set();
+      _postFlushCallbacks = [];
+    },
+
     startBatch: () => {
       _depth++;
       if (_depth === 1) {
