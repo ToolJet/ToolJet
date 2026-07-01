@@ -51,6 +51,9 @@ export class OrganizationGitSync extends BaseEntity {
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
 
+  // For env-config orgs the relation rows usually don't exist in the DB; runtime hydration
+  // (see GitSyncConfigsUtilService.getDetails + BaseGitUtilService.findOrgGitByOrganizationId)
+  // overwrites these fields with env-resolved configs via an `as` cast at the assignment site.
   @OneToOne(() => OrganizationGitSsh, (gitSsh) => gitSsh.orgGitSync, {})
   gitSsh: OrganizationGitSsh;
 

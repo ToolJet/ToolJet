@@ -460,7 +460,7 @@ class HomePageComponent extends React.Component {
   };
 
   deleteApp = (app) => {
-    if (this.isWorkspaceBranchLocked()) {
+    if (this.isWorkspaceBranchLocked(app)) {
       this.setState({ appToBeDeleted: app, showSwitchBranchForDelete: true });
       return;
     }
@@ -880,9 +880,12 @@ class HomePageComponent extends React.Component {
     return this.props.appType === 'front-end' || this.props.appType === 'module';
   };
 
-  isWorkspaceBranchLocked = () => {
+  isWorkspaceBranchLocked = (app) => {
     const state = useWorkspaceBranchesStore.getState();
     if (!state.isInitialized || !state.orgGitConfig) return false;
+
+    // Unsynced apps (pre-git or not yet pushed) are always mutable, even on master
+    if (app?.app_versions?.[0]?.is_synced === false) return false;
 
     // Branching affects folder mutations for front-end apps and modules.
     // Workflows are not branch-scoped, so folder operations there remain unrestricted.
@@ -1173,7 +1176,7 @@ class HomePageComponent extends React.Component {
         this.fetchAddToFolderApps();
         break;
       case 'change-icon':
-        if (this.isWorkspaceBranchLocked()) {
+        if (this.isWorkspaceBranchLocked(app)) {
           this.setState({
             appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
             showSwitchBranchForChangeIcon: true,
@@ -1192,7 +1195,7 @@ class HomePageComponent extends React.Component {
         });
         break;
       case 'clone-app':
-        if (this.isWorkspaceBranchLocked()) {
+        if (this.isWorkspaceBranchLocked(app)) {
           this.setState({
             appOperations: { ...appOperations, selectedApp: app, selectedIcon: app?.icon },
             showSwitchBranchForClone: true,
@@ -1205,7 +1208,7 @@ class HomePageComponent extends React.Component {
         });
         break;
       case 'rename-app': {
-        if (this.isWorkspaceBranchLocked()) {
+        if (this.isWorkspaceBranchLocked(app)) {
           toast.error("Renaming isn't allowed on master. Switch branch to update name.");
           break;
         }

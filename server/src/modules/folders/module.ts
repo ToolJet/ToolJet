@@ -1,7 +1,7 @@
 import { FeatureAbilityFactory } from './ability';
 import { SubModule } from '@modules/app/sub-module';
 import { DynamicModule } from '@nestjs/common';
-import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
+import { GitSyncConfigsModule } from '@modules/git-sync-configs/module';
 
 export class FoldersModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -17,8 +17,9 @@ export class FoldersModule extends SubModule {
 
     return this.cacheModule(cacheKey, {
       module: FoldersModule,
+      imports: [await GitSyncConfigsModule.register(configs)],
       controllers: isMainImport ? [FoldersController] : [],
-      providers: [FoldersUtilService, FoldersService, FeatureAbilityFactory, OrganizationGitSyncRepository],
+      providers: [FoldersUtilService, FoldersService, FeatureAbilityFactory],
       exports: [FoldersUtilService],
     });
   }

@@ -262,7 +262,13 @@ export const GlobalDataSourcesPage = (props) => {
   const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
     setEnvironmentLoading(true);
     globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      setSelectedDataSource({ ...data });
+      // Preserve isSynced flags: the environment endpoint doesn't include them, but we need them
+      // to correctly gate credential editing on the default branch (synced DSes must stay locked).
+      setSelectedDataSource((prev) => ({
+        ...data,
+        isSynced: prev?.isSynced,
+        is_synced: prev?.is_synced,
+      }));
       setEnvironmentLoading(false);
     });
   };

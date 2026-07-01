@@ -25,14 +25,16 @@ export class DataSourceVersion {
   @Column({ name: 'version_from_id', nullable: true })
   versionFromId: string;
 
-  @Column({ name: 'is_default', default: false })
-  isDefault: boolean;
-
   @Column()
   name: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
+
+  // Static origin marker: true when the row originated from git sync (branch_id was set
+  // before backfill). Added in MakeDataSourceVersionBranchIdNotNullAndDropIsDefault.
+  @Column({ name: 'is_synced', default: false })
+  isSynced: boolean;
 
 
   // FIXME: misnamed. Stores a content hash (truncated sha256 of the DS's git JSON,

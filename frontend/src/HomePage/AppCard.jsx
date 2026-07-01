@@ -48,6 +48,7 @@ export default function AppCard({
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
+  const [syncIconHovered, setSyncIconHovered] = useState(false);
   const tooltipRef = useRef(null);
 
   const handleEditClick = async (e) => {
@@ -290,6 +291,9 @@ export default function AppCard({
     );
   }
   const isStub = app?.app_versions?.[0]?.is_stub;
+  const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
+  const isUnsynced =
+    wsCurrentBranch && isOnDefaultBranch && app?.app_versions?.[0]?.is_synced === false && appType !== 'workflow';
   return (
     <ToolTip
       message="Modules are not available on your current plan."
@@ -312,36 +316,82 @@ export default function AppCard({
                   </div>
                 </div>
               </div>
-              <div visible={focused ? true : undefined}>
-                {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
-                  <AppMenu
-                    appId={app?.id}
-                    appUserId={app?.user_id}
-                    onMenuOpen={onMenuToggle}
-                    openAppActionModal={appActionModalCallBack}
-                    canCreateApp={canCreateApp()}
-                    canDeleteApp={canDeleteApp(app)}
-                    canUpdateApp={canUpdateApp(app)}
-                    deleteApp={() => deleteApp(app)}
-                    exportApp={() => {
-                      if (isStub && appType !== 'workflow') {
-                        toast.error(
-                          'App contents are still syncing from Git. Open the app to finish loading, then try again.',
-                          { position: 'top-center' }
-                        );
-                        return;
-                      }
-                      exportApp(app);
-                    }}
-                    isMenuOpen={setMenuOpen}
-                    popoverVisible={popoverVisible}
-                    setMenuOpen={setMenuOpen}
-                    darkMode={darkMode}
-                    currentFolder={currentFolder}
-                    appType={appType}
-                    appCreationMode={app?.creation_mode || app?.creationMode}
-                    ownedFolders={ownedFolders}
-                  />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}>
+                {/* On hover: refresh icon appears to the left of the 3-dots */}
+                {isUnsynced && focused && (
+                  <ToolTip message="App not synced in remote git" placement="top">
+                    <div
+                      onMouseEnter={() => setSyncIconHovered(true)}
+                      onMouseLeave={() => setSyncIconHovered(false)}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '6px',
+                        backgroundColor: syncIconHovered ? '#FFEEF0' : 'transparent',
+                        transition: 'background-color 0.15s',
+                        cursor: 'default',
+                      }}
+                      data-cy="unsynced-badge"
+                    >
+                      <SolidIcon name="refresh" width="16" fill="#E54D2E" />
+                    </div>
+                  </ToolTip>
+                )}
+                {/* Right slot: refresh icon when not hovering (unsynced), 3-dots when hovering */}
+                {isUnsynced && !focused ? (
+                  <ToolTip message="App not synced in remote git" placement="top">
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '6px',
+                        cursor: 'default',
+                      }}
+                      data-cy="unsynced-badge-idle"
+                    >
+                      <SolidIcon name="refresh" width="16" fill="#E54D2E" />
+                    </div>
+                  </ToolTip>
+                ) : (
+                  <div visible={focused ? true : undefined}>
+                    {(canDeleteApp(app) || canUpdateApp(app) || appType === 'module') && (
+                      <AppMenu
+                        appId={app?.id}
+                        appUserId={app?.user_id}
+                        onMenuOpen={onMenuToggle}
+                        openAppActionModal={appActionModalCallBack}
+                        canCreateApp={canCreateApp()}
+                        canDeleteApp={canDeleteApp(app)}
+                        canUpdateApp={canUpdateApp(app)}
+                        deleteApp={() => deleteApp(app)}
+                        exportApp={() => {
+                          if (isStub && appType !== 'workflow') {
+                            toast.error(
+                              'App contents are still syncing from Git. Open the app to finish loading, then try again.',
+                              { position: 'top-center' }
+                            );
+                            return;
+                          }
+                          exportApp(app);
+                        }}
+                        isMenuOpen={setMenuOpen}
+                        popoverVisible={popoverVisible}
+                        setMenuOpen={setMenuOpen}
+                        darkMode={darkMode}
+                        currentFolder={currentFolder}
+                        appType={appType}
+                        appCreationMode={app?.creation_mode || app?.creationMode}
+                        ownedFolders={ownedFolders}
+                        isUnsynced={isUnsynced}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             </div>

@@ -1,5 +1,4 @@
 import { AppVersion, AppVersionStatus, AppVersionType } from '@entities/app_version.entity';
-import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { VersionRepository } from './repository';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
@@ -24,6 +23,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { v4 as uuid } from 'uuid';
 import { APP_TYPES } from '@modules/apps/constants';
 import { resolveAllModuleViewersForVersion, ResolvedModuleViewer } from './module-ref.util';
+import { GitSyncConfigsUtilService } from '@modules/git-sync-configs/util.service';
 
 @Injectable()
 export class VersionUtilService implements IVersionUtilService {
@@ -34,7 +34,8 @@ export class VersionUtilService implements IVersionUtilService {
     protected readonly createVersionService: VersionsCreateService,
     protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
     protected readonly organizationGitSyncRepository: OrganizationGitSyncRepository,
-    protected readonly appHistoryUtilService: AppHistoryUtilService
+    protected readonly appHistoryUtilService: AppHistoryUtilService,
+    protected readonly gitSyncConfigsUtilService: GitSyncConfigsUtilService
   ) {}
   protected mergeDeep(target, source, seen = new WeakMap()) {
     if (!this.isObject(target)) {
@@ -100,15 +101,9 @@ export class VersionUtilService implements IVersionUtilService {
 
     if (appVersionUpdateDto?.status && appVersion.status !== appVersionUpdateDto.status) {
       editableParams['status'] = appVersionUpdateDto.status;
-      // chk_app_versions_branched_implies_draft (1779300000000) requires
-      // non-DRAFT rows to be branchless. Detach branch_id in the SAME UPDATE
-      // as the status flip so the row never lands in the violating state
-      // mid-transaction. handleDefaultBranchPublish below still fires for the
-      // default-branch publish path; its own branch_id detach (line 245)
-      // becomes an idempotent no-op once we've done it inline here.
-      if (appVersionUpdateDto.status !== AppVersionStatus.DRAFT && appVersion.branchId) {
-        editableParams['branchId'] = null;
-      }
+      // branch_id is NOT NULL now and the old chk_app_versions_branched_implies_draft CHECK
+      // was dropped — PUBLISHED version rows live on the default branch, so the status flip
+      // no longer detaches branch_id (the row keeps its default-branch id).
     }
     if (
       appVersionUpdateDto?.description !== undefined &&
@@ -176,11 +171,8 @@ export class VersionUtilService implements IVersionUtilService {
     });
     if (!parentApp?.organizationId) return;
 
-    const defaultBranch = await manager.findOne(WorkspaceBranch, {
-      where: { organizationId: parentApp.organizationId, isDefault: true },
-      select: ['id'],
-    });
-    if (!defaultBranch || defaultBranch.id !== appVersion.branchId) return;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(parentApp.organizationId);
+    if (!options.defaultBranch || options.defaultBranch.id !== appVersion.branchId) return;
 
     // Source from the latest version row by updated_at — the just-published
     // row has the freshest updated_at after the UPDATE that triggered this
@@ -210,7 +202,7 @@ export class VersionUtilService implements IVersionUtilService {
         appId: appVersion.appId,
         status: AppVersionStatus.DRAFT,
         versionType: AppVersionType.VERSION,
-        branchId: defaultBranch.id,
+        branchId: options.defaultBranch.id,
         // Modules pin to a version via module_reference_id. Each new version gets a
         // fresh uuid (mirrors createVersion line 347) — never leave it NULL for a
         // module, or ModuleViewer pin resolution against this draft fails.
@@ -243,9 +235,11 @@ export class VersionUtilService implements IVersionUtilService {
       await this.createVersionService.setupNewVersion(newDraft, sourceVersion, parentApp.organizationId, manager);
     }
 
-    // Step 2: detach branch_id from the just-published row. Delegated via the
-    // repository to keep the DB write centralised.
-    await this.versionRepository.updateVersion(appVersion.id, { branchId: null }, manager);
+    // The just-published row stays on the default branch (branch_id is no longer detached
+    // to NULL — published version rows now live on the default branch). Cross-version
+    // metadata is kept consistent by the DB triggers: the new DRAFT propagates its metadata
+    // to all version_type='version' rows, and published rows pull from the DRAFT — so no
+    // manual branch_id detach or metadata fan-out is needed here.
   }
 
   async fetchVersions(appId: string): Promise<AppVersion[]> {
@@ -421,7 +415,9 @@ export class VersionUtilService implements IVersionUtilService {
       //   orphan-fallback    — UUID pin matched no row; runtime drifts to active draft
       //   unpinned-fallback  — pin empty; runtime drifts to active draft
       //   pin-hit + DRAFT    — pin points directly at the editing draft
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter(
         (v) =>
           v.matchKind === 'no-row' ||
@@ -480,7 +476,9 @@ export class VersionUtilService implements IVersionUtilService {
     try {
       // Resolve pins; flag row below target env priority. Strict: no-row, orphan-fallback,
       // unpinned-fallback also block — runtime fallback isn't a stable promote target.
-      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId);
+      const defaultBranchId =
+        (await this.gitSyncConfigsUtilService.getDetails(organizationId)).options.defaultBranch?.id ?? null;
+      const resolved = await resolveAllModuleViewersForVersion(manager, versionId, organizationId, defaultBranchId);
       const offenders = resolved.filter((v) => {
         if (
           v.matchKind === 'no-row' ||
