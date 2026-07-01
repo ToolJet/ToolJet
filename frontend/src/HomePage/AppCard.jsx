@@ -18,6 +18,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -49,6 +50,7 @@ export default function AppCard({
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const [syncIconHovered, setSyncIconHovered] = useState(false);
+  const [pushModalOpen, setPushModalOpen] = useState(false);
   const tooltipRef = useRef(null);
 
   const handleEditClick = async (e) => {
@@ -295,6 +297,7 @@ export default function AppCard({
   const isUnsynced =
     wsCurrentBranch && isOnDefaultBranch && app?.app_versions?.[0]?.is_synced === false && appType !== 'workflow';
   return (
+    <>
     <ToolTip
       message="Modules are not available on your current plan."
       placement="bottom"
@@ -319,10 +322,11 @@ export default function AppCard({
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}>
                 {/* On hover: refresh icon appears to the left of the 3-dots */}
                 {isUnsynced && focused && (
-                  <ToolTip message="App not synced in remote git" placement="top">
+                  <ToolTip message="Click to push app to git" placement="top">
                     <div
                       onMouseEnter={() => setSyncIconHovered(true)}
                       onMouseLeave={() => setSyncIconHovered(false)}
+                      onClick={() => setPushModalOpen(true)}
                       style={{
                         width: '28px',
                         height: '28px',
@@ -332,7 +336,7 @@ export default function AppCard({
                         borderRadius: '6px',
                         backgroundColor: syncIconHovered ? '#FFEEF0' : 'transparent',
                         transition: 'background-color 0.15s',
-                        cursor: 'default',
+                        cursor: 'pointer',
                       }}
                       data-cy="unsynced-badge"
                     >
@@ -344,6 +348,7 @@ export default function AppCard({
                 {isUnsynced && !focused ? (
                   <ToolTip message="App not synced in remote git" placement="top">
                     <div
+                      onClick={() => setPushModalOpen(true)}
                       style={{
                         width: '28px',
                         height: '28px',
@@ -351,7 +356,7 @@ export default function AppCard({
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: '6px',
-                        cursor: 'default',
+                        cursor: 'pointer',
                       }}
                       data-cy="unsynced-badge-idle"
                     >
@@ -437,5 +442,18 @@ export default function AppCard({
         </div>
       </div>
     </ToolTip>
+    {PushAppsModal && isUnsynced && (
+      <PushAppsModal
+        show={pushModalOpen}
+        onClose={() => setPushModalOpen(false)}
+        resourceType={appType === 'module' ? 'module' : 'app'}
+        resourceName={app.name}
+        appName={app.name}
+        appGitId={app.id}
+        versionId={app.editing_version?.id ?? app.app_versions?.[0]?.id}
+        onSuccess={() => setPushModalOpen(false)}
+      />
+    )}
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -7,6 +7,7 @@ import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { toast } from 'react-hot-toast';
+import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -18,16 +19,22 @@ import { toast } from 'react-hot-toast';
 const LifecycleCTAButton = () => {
   const { moduleId } = useModuleContext();
 
-  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isGitSyncConfigured } = useStore(
-    (state) => ({
-      selectedVersion: state.selectedVersion,
-      toggleGitSyncModal: state.toggleGitSyncModal,
-      creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
-      featureAccess: state?.license?.featureAccess,
-      isGitSyncConfigured: state.isGitSyncConfigured,
-    }),
-    shallow
-  );
+  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isGitSyncConfigured, appId, appName, appType } =
+    useStore(
+      (state) => ({
+        selectedVersion: state.selectedVersion,
+        toggleGitSyncModal: state.toggleGitSyncModal,
+        creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
+        featureAccess: state?.license?.featureAccess,
+        isGitSyncConfigured: state.isGitSyncConfigured,
+        appId: state.appStore.modules[moduleId]?.app?.appId,
+        appName: state.appStore.modules[moduleId]?.app?.appName,
+        appType: state.appStore.modules[moduleId]?.app?.appType,
+      }),
+      shallow
+    );
+
+  const [showPushModal, setShowPushModal] = useState(false);
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
@@ -67,9 +74,9 @@ const LifecycleCTAButton = () => {
     }
 
     if (isUnsynced) {
-      // App has never been pushed to git — show "Commit" with red indicator on any branch
+      // App has never been pushed to git — show "Sync" with red indicator
       return {
-        label: 'Commit',
+        label: 'Sync',
         icon: 'refresh',
         variant: 'secondary',
         disabled: false,
@@ -101,6 +108,10 @@ const LifecycleCTAButton = () => {
   const config = getButtonConfig();
   const handleClick = async () => {
     // Guard Commit button on feature branches — check remote branch still exists
+    if (isUnsynced) {
+      setShowPushModal(true);
+      return;
+    }
     if (!isOnDefaultBranch && isGitSyncConfigured && workspaceActiveBranch?.name) {
       const existsOnRemote = await wsActions.checkBranchExistsOnRemote(workspaceActiveBranch.name);
       if (!existsOnRemote) {
@@ -114,6 +125,18 @@ const LifecycleCTAButton = () => {
   };
 
   return (
+    <>
+    {showPushModal && (
+      <PushAppsModal
+        show={showPushModal}
+        onClose={() => setShowPushModal(false)}
+        appGitId={appId}
+        versionId={selectedVersion?.id}
+        appName={appName}
+        resourceType={appType === 'module' ? 'module' : 'app'}
+        onSuccess={() => setShowPushModal(false)}
+      />
+    )}
     <div className="lifecycle-cta-button">
       <ToolTip
         message={config.unsynced ? 'App not synced in remote git' : ''}
@@ -139,6 +162,7 @@ const LifecycleCTAButton = () => {
         </Button>
       </ToolTip>
     </div>
+    </>
   );
 };
 
