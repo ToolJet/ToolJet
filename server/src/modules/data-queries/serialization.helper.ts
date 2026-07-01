@@ -15,42 +15,24 @@ import { decode } from 'js-base64';
  *      (camel cross-cutting keys like runOnPageLoad alongside intentionally-snake
  *      plugin keys like sql_execution). It must never be key-transformed.
  *
- * `plugin`, `plugins`, `dataSource` and `options` are detached BEFORE decamelizing
- * so their internals are never mangled (e.g. a pre-decoded plugin manifest object
- * would otherwise get its keys snake_cased). The plugin is then re-attached via
- * serializePlugin, which decodes the manifest/icon idempotently — whether the
- * source repo shipped a raw Buffer (getAll) or a pre-decoded object (findVersion).
+ * `dataSource` and `options` are handled in serializeDataQuery (dropped / kept verbatim).
+ * `plugin`/`plugins` go through serializePlugin; `plugins` is preserved because the frontend's
+ * isQueryRunnable checks it.
  */
-
-const decodeFileData = (file: any): any => {
-  if (!file || file.data === undefined || file.data === null) return file?.data;
-  // Raw buffer from the DB → base64-decode + JSON.parse (getAll path).
-  if (Buffer.isBuffer(file.data)) {
-    return JSON.parse(decode(file.data.toString('utf8')));
-  }
-  // Already decoded object (findVersion pre-decodes the manifest) → use as-is.
-  return file.data;
-};
 
 export function serializePlugin(plugin: any): any {
   if (!plugin) return undefined;
 
-  // Detach the heavy data payloads so decamelizeKeys never recurses into
-  // manifest/icon internals.
-  const manifestFile = plugin.manifestFile;
-  const iconFile = plugin.iconFile;
-  const strippedPlugin = { ...plugin };
-  if (strippedPlugin.manifestFile) strippedPlugin.manifestFile = { ...manifestFile, data: undefined };
-  if (strippedPlugin.iconFile) strippedPlugin.iconFile = { ...iconFile, data: undefined };
+  const out = decamelizeKeys(plugin);
 
-  const out = decamelizeKeys(strippedPlugin);
-
-  if (manifestFile) {
-    out['manifest_file'] = { ...out['manifest_file'], data: decodeFileData(manifestFile) };
+  // getAll ships the manifest/icon as raw DB buffers → base64-decode them (the original logic).
+  // Viewer paths (findVersion) pre-decode the manifest and don't load the icon, so we only
+  // touch raw buffers and leave already-decoded / absent values untouched.
+  if (Buffer.isBuffer(plugin.manifestFile?.data)) {
+    out['manifest_file'].data = JSON.parse(decode(plugin.manifestFile.data.toString('utf8')));
   }
-  if (iconFile) {
-    const data = Buffer.isBuffer(iconFile.data) ? iconFile.data.toString('utf8') : iconFile.data;
-    out['icon_file'] = { ...out['icon_file'], data };
+  if (Buffer.isBuffer(plugin.iconFile?.data)) {
+    out['icon_file'].data = plugin.iconFile.data.toString('utf8');
   }
 
   return out;
@@ -67,6 +49,9 @@ export function serializeDataQuery(query: any): any {
 
   if (plugin) {
     serialized['plugin'] = serializePlugin(plugin);
+  }
+  if (plugins) {
+    serialized['plugins'] = plugins.map(serializePlugin);
   }
 
   return serialized;
