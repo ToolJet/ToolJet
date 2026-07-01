@@ -107,6 +107,7 @@ export class App extends BaseEntity {
     threadId?: string | null;
     chatMessages?: any[];
     interrupt?: boolean;
+    interruptId?: string | null;
     moduleDescription?: string;
   };
 
