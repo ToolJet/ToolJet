@@ -10,6 +10,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { PageHelperService } from './page.util.service';
 import * as _ from 'lodash';
 import * as uuid from 'uuid';
@@ -459,6 +460,12 @@ export class PageService implements IPageService {
           }
         }
         component.parent = parentId;
+      }
+
+      for (const component of clonedComponents) {
+        // FlexContainer childOrder holds raw child ids (not a {{...}} binding); remap after
+        // the full componentsIdMap is built so flex-child order survives page clone (#5153).
+        remapFlexContainerChildOrder(component, componentsIdMap);
       }
 
       await manager.save(clonedComponents);

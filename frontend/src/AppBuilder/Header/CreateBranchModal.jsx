@@ -9,10 +9,12 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Alert } from '@/_ui/Alert';
 import AlertDialog from '@/_ui/AlertDialog';
 import cx from 'classnames';
+import { PullConflictModal } from '@/_ui/WorkspaceBranchDropdown/WorkspacePullConflictModal';
 import '@/_styles/create-branch-modal.scss';
 
 export function CreateBranchModal({ onClose, onSuccess, appId, organizationId }) {
   const [branchName, setBranchName] = useState('');
+  const [conflictGroups, setConflictGroups] = useState(null);
   const orgGitConfig = useWorkspaceBranchesStore((state) => state.orgGitConfig);
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const LATEST_MAIN_OPTION = { label: `Latest (${defaultGitBranch})`, commitSha: null };
@@ -131,6 +133,17 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
       }
     } catch (error) {
       console.error('Error creating branch:', error);
+      if (error?.statusCode === 409) {
+        try {
+          const parsed = JSON.parse(error?.data?.message || error?.error || '{}');
+          if (parsed?.conflictGroups?.length) {
+            setConflictGroups(parsed.conflictGroups);
+            return;
+          }
+        } catch {
+          /* fall through */
+        }
+      }
       const msg = error?.data?.message || error?.message || 'Failed to create branch';
       setValidationError(msg);
       toast.error(msg);
@@ -148,131 +161,142 @@ export function CreateBranchModal({ onClose, onSuccess, appId, organizationId })
   };
 
   return (
-    <AlertDialog
-      show={true}
-      closeModal={onClose}
-      title="Create branch"
-      checkForBackground={true}
-      customClassName="create-branch-modal"
-    >
-      <div className="create-branch-modal-body">
-        {/* Draft warning message */}
-        {isDraftVersionActive && (
-          <div className="draft-warning-message">
-            <SolidIcon name="information" width="16" />
-            <span>A draft version exists. Commit or discard it before creating a new branch.</span>
-          </div>
-        )}
+    <>
+      <AlertDialog
+        show={true}
+        closeModal={onClose}
+        title="Create branch"
+        checkForBackground={true}
+        customClassName="create-branch-modal"
+      >
+        <div className="create-branch-modal-body">
+          {/* Draft warning message */}
+          {isDraftVersionActive && (
+            <div className="draft-warning-message">
+              <SolidIcon name="information" width="16" />
+              <span>A draft version exists. Commit or discard it before creating a new branch.</span>
+            </div>
+          )}
 
-        {/* Create from dropdown — shows "Latest (main)" + app-specific git tags */}
-        <div className="form-group">
-          <label htmlFor="create-from-select" className="form-label">
-            Create from
-          </label>
-          <div className="custom-dropdown" ref={dropdownRef}>
-            <button
-              type="button"
-              className={cx('custom-dropdown-trigger', { 'is-open': isDropdownOpen })}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              disabled={isCreating || isLoadingTags}
-            >
-              <div className="custom-dropdown-value">
-                <span className="version-name">{isLoadingTags ? 'Loading...' : selectedOption.label}</span>
-                {!selectedOption.commitSha && !isLoadingTags && (
-                  <span className={cx('status-badge', 'status-badge-released')}>Default</span>
-                )}
-              </div>
-              <SolidIcon name="cheverondown" width="16" />
-            </button>
-            {isDropdownOpen && (
-              <div className="custom-dropdown-menu">
-                {dropdownOptions.map((option, idx) => {
-                  const isSelected = option.label === selectedOption.label;
-                  return (
-                    <div
-                      key={idx}
-                      className={cx('dropdown-item', { 'is-selected': isSelected })}
-                      onClick={() => {
-                        setSelectedOption(option);
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      {isSelected && (
-                        <div className="check-icon">
-                          <SolidIcon name="tick" width="16" />
-                        </div>
-                      )}
-                      {!isSelected && <div className="check-icon-placeholder" />}
-                      <div className="item-content">
-                        <div className="item-header">
-                          <span className="item-name">{option.label}</span>
-                          {!option.commitSha && (
-                            <span className={cx('status-badge', 'status-badge-released')}>Default</span>
-                          )}
+          {/* Create from dropdown — shows "Latest (main)" + app-specific git tags */}
+          <div className="form-group">
+            <label htmlFor="create-from-select" className="form-label">
+              Create from
+            </label>
+            <div className="custom-dropdown" ref={dropdownRef}>
+              <button
+                type="button"
+                className={cx('custom-dropdown-trigger', { 'is-open': isDropdownOpen })}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                disabled={isCreating || isLoadingTags}
+              >
+                <div className="custom-dropdown-value">
+                  <span className="version-name">{isLoadingTags ? 'Loading...' : selectedOption.label}</span>
+                  {!selectedOption.commitSha && !isLoadingTags && (
+                    <span className={cx('status-badge', 'status-badge-released')}>Default</span>
+                  )}
+                </div>
+                <SolidIcon name="cheverondown" width="16" />
+              </button>
+              {isDropdownOpen && (
+                <div className="custom-dropdown-menu">
+                  {dropdownOptions.map((option, idx) => {
+                    const isSelected = option.label === selectedOption.label;
+                    return (
+                      <div
+                        key={idx}
+                        className={cx('dropdown-item', { 'is-selected': isSelected })}
+                        onClick={() => {
+                          setSelectedOption(option);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        {isSelected && (
+                          <div className="check-icon">
+                            <SolidIcon name="tick" width="16" />
+                          </div>
+                        )}
+                        {!isSelected && <div className="check-icon-placeholder" />}
+                        <div className="item-content">
+                          <div className="item-header">
+                            <span className="item-name">{option.label}</span>
+                            {!option.commitSha && (
+                              <span className={cx('status-badge', 'status-badge-released')}>Default</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Branch name input */}
+          <div className="form-group">
+            <label htmlFor="branch-name-input" className="form-label">
+              Branch name
+            </label>
+            <input
+              id="branch-name-input"
+              type="text"
+              className={`branch-modal-form-input ${validationError ? 'form-input-error' : ''}`}
+              placeholder="Enter branch name"
+              value={branchName}
+              onChange={handleBranchNameChange}
+              onKeyDown={handleKeyDown}
+              disabled={isCreating}
+              autoFocus
+              data-cy="branch-name-input"
+            />
+            {validationError && <div className="form-error-message">{validationError}</div>}
+            <div className="form-helper-text">Branch name must be unique and max 50 characters</div>
+          </div>
+
+          {/* Auto-commit checkbox */}
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input type="checkbox" className="form-checkbox" checked={true} disabled={true} />
+              <span className="checkbox-text">
+                Commit changes
+                <span className="checkbox-helper">
+                  Branch will always be created in git to ensure sync with ToolJet
+                </span>
+              </span>
+            </label>
+          </div>
+
+          {/* Info message */}
+          <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
+            Branch can only be created from {defaultGitBranch}
+          </Alert>
+
+          {/* Footer buttons */}
+          <div className="col d-flex justify-content-end gap-2 mt-3">
+            <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
+              Cancel
+            </ButtonSolid>
+            <ButtonSolid
+              variant="primary"
+              onClick={handleCreateBranch}
+              disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingTags}
+              isLoading={isCreating}
+              size="md"
+              data-cy="create-branch-button"
+            >
+              Create branch
+            </ButtonSolid>
           </div>
         </div>
+      </AlertDialog>
 
-        {/* Branch name input */}
-        <div className="form-group">
-          <label htmlFor="branch-name-input" className="form-label">
-            Branch name
-          </label>
-          <input
-            id="branch-name-input"
-            type="text"
-            className={`branch-modal-form-input ${validationError ? 'form-input-error' : ''}`}
-            placeholder="Enter branch name"
-            value={branchName}
-            onChange={handleBranchNameChange}
-            onKeyDown={handleKeyDown}
-            disabled={isCreating}
-            autoFocus
-            data-cy="branch-name-input"
-          />
-          {validationError && <div className="form-error-message">{validationError}</div>}
-          <div className="form-helper-text">Branch name must be unique and max 50 characters</div>
-        </div>
-
-        {/* Auto-commit checkbox */}
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input type="checkbox" className="form-checkbox" checked={true} disabled={true} />
-            <span className="checkbox-text">
-              Commit changes
-              <span className="checkbox-helper">Branch will always be created in git to ensure sync with ToolJet</span>
-            </span>
-          </label>
-        </div>
-
-        {/* Info message */}
-        <Alert placeSvgTop={true} svg="warning-icon" cls="create-branch-info">
-          Branch can only be created from {defaultGitBranch}
-        </Alert>
-
-        {/* Footer buttons */}
-        <div className="col d-flex justify-content-end gap-2 mt-3">
-          <ButtonSolid variant="tertiary" onClick={onClose} disabled={isCreating} size="md" data-cy="cancel-button">
-            Cancel
-          </ButtonSolid>
-          <ButtonSolid
-            variant="primary"
-            onClick={handleCreateBranch}
-            disabled={isCreating || isDraftVersionActive || !branchName.trim() || isLoadingTags}
-            isLoading={isCreating}
-            size="md"
-            data-cy="create-branch-button"
-          >
-            Create branch
-          </ButtonSolid>
-        </div>
-      </div>
-    </AlertDialog>
+      <PullConflictModal
+        show={!!conflictGroups}
+        conflictGroups={conflictGroups || []}
+        onClose={() => setConflictGroups(null)}
+        context="branch-creation"
+      />
+    </>
   );
 }

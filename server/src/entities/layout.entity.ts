@@ -24,6 +24,12 @@ export class Layout {
   @Column({ type: 'double precision' })
   height: number;
 
+  @Column({ type: 'double precision', name: 'width_px', nullable: true })
+  widthPx: number | null;
+
+  @Column({ type: 'boolean', name: 'fill_width', nullable: true })
+  fillWidth: boolean | null;
+
   @Column({ name: 'component_id' })
   componentId: string;
 

@@ -113,6 +113,11 @@ export class AppsRepository extends Repository<App> {
       //    case; if the org has since enabled git, step 1 would have found
       //    the default-branch row already and this fallback would (correctly)
       //    not apply.
+      //    Feature-branch rows are deliberately excluded here: the same slug
+      //    can appear on multiple orgs' feature branches (pulled from the same
+      //    git source), so accepting them without org context risks returning
+      //    the wrong workspace's app. The caller (PrivateAppAuthGuard) handles
+      //    feature-branch slugs via a workspace-scoped findBySlug call first.
       if (!resolvedVersion) {
         const candidate = await this.dataSource
           .getRepository(AppVersion)
@@ -424,12 +429,18 @@ export class AppsRepository extends Repository<App> {
       }
     }
 
-    // Slug path: resolve through app_versions.slug
+    // Slug path: resolve through app_versions.slug. Load app.appVersions in the
+    // same join so callers reading app.appVersions (e.g. external-api
+    // autoDeployApp) get a shape consistent with the UUID/workflow paths — no
+    // separate re-fetch. The av.slug filter only narrows the matched version
+    // row; app.appVersions still hydrates the app's full version collection.
     const candidate = await manager
       .getRepository(AppVersion)
       .createQueryBuilder('av')
       .innerJoinAndSelect('av.app', 'app')
+      .leftJoinAndSelect('app.appVersions', 'appVersions')
       .where('av.slug = :slug', { slug: idOrSlug })
+      .orderBy('av.updated_at', 'DESC')
       .getOne();
 
     if (candidate?.app) {
@@ -442,10 +453,11 @@ export class AppsRepository extends Repository<App> {
           .getRepository(AppVersion)
           .createQueryBuilder('av')
           .innerJoinAndSelect('av.app', 'app')
+          .leftJoinAndSelect('app.appVersions', 'appVersions')
           .where('av.slug = :slug', { slug: idOrSlug })
           .andWhere('av.branch_id = :branchId', { branchId: defaultBranchId })
           .getOne();
-        if (!resolved?.app) return null;
+        if (!resolved?.app) resolved = candidate;
       }
 
       const app = resolved.app;

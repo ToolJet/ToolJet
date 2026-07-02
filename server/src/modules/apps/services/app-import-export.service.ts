@@ -31,6 +31,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -97,6 +98,7 @@ type NewRevampedComponent =
   | 'DaterangePicker'
   | 'TextArea'
   | 'Container'
+  | 'FlexContainer'
   | 'Tabs'
   | 'Form'
   | 'Image'
@@ -118,7 +120,8 @@ type NewRevampedComponent =
   | 'ColorPicker'
   | 'ButtonGroupV2'
   | 'ModalV2'
-  | 'PopoverMenu';
+  | 'PopoverMenu'
+  | 'Pagination';
 
 const DefaultDataSourceNames: DefaultDataSourceName[] = [
   'restapidefault',
@@ -147,6 +150,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'DaterangePicker',
   'TextArea',
   'Container',
+  'FlexContainer',
   'Tabs',
   'Form',
   'Image',
@@ -169,6 +173,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'ButtonGroupV2',
   'ModalV2',
   'PopoverMenu',
+  'Pagination',
 ];
 
 const PartialRevampedComponents: PartialRevampedComponent[] = [
@@ -238,6 +243,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'CodeEditor',
   'ColorPicker',
   'Container',
+  'FlexContainer',
   'CurrencyInput',
   'DatePickerV2',
   'DaterangePicker',
@@ -245,6 +251,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'DropdownV2',
   'EmailInput',
   'Form',
+  'Html',
   'Image',
   'JSONEditor',
   'JSONExplorer',
@@ -1116,7 +1123,12 @@ export class AppImportExportService {
         appParams = { ...appParams.appV2 };
       }
 
-      if (!appParams?.name) {
+      // appParams.name can be null when the file was exported from a git-enabled
+      // workspace where the module only exists on a feature branch (no default-branch
+      // DRAFT version → resolveMetadataVersion returns null → app.name stays null).
+      // appName (user-provided) is always used as the final name (line below), so
+      // allow it as a fallback here to avoid a spurious 400 on device imports.
+      if (!appParams?.name && !appName) {
         throw new BadRequestException('Invalid params for app import');
       }
 
@@ -1336,11 +1348,17 @@ export class AppImportExportService {
           if (co_relation_id) {
             component.co_relation_id = co_relation_id; // Set the coRelationId
           }
+          // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+          // remapped explicitly on import/export — same gap as draft/version copy (issue #5153).
+          remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
           updateEntityReferences(component, mappings);
           return component;
         });
       } else {
         toUpdateComponents = components.filter((component) => {
+          // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+          // remapped explicitly on import/export — same gap as draft/version copy (issue #5153).
+          remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
           return updateEntityReferences(component, mappings);
         });
       }
@@ -1467,7 +1485,6 @@ export class AppImportExportService {
       // performLegacyAppImport) so they can write it to app_versions.
       if (!isWorkflow) {
         (importedApp as any).__importMetadata = {
-          slug: appParams.slug || null,
           appName: appParams.name || null,
           icon: appParams.icon || null,
           isPublic: appParams.isPublic ?? false,
@@ -1786,6 +1803,8 @@ export class AppImportExportService {
                   newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
+                  if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                  if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -2419,6 +2438,8 @@ export class AppImportExportService {
                 newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
+                if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                 newLayout.component = savedComponent;
                 newLayout.co_relation_id = layout.id;
 
@@ -3434,9 +3455,7 @@ export class AppImportExportService {
         // temp apps, partial exports) — fall back to deterministic placeholders so the
         // INSERT doesn't violate the CHECK. Skipped for workflows (they store metadata
         // on apps.* and the constraint is exempt for branch_id=NULL rows).
-        const resolvedSlug = !isWorkflow
-          ? (appVersion.slug ?? importMeta?.slug ?? importedApp.id ?? uuid())
-          : undefined;
+        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? importedApp.id) : undefined;
         const resolvedAppName = !isWorkflow
           ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
           : undefined;
@@ -3713,7 +3732,7 @@ export class AppImportExportService {
       updatedAt: new Date(),
       ...(importedApp.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
       ...(importMeta && {
-        slug: importMeta.slug,
+        slug: importedApp.id,
         appName: importMeta.appName,
         icon: importMeta.icon,
         isPublic: importMeta.isPublic,
@@ -4608,6 +4627,13 @@ function migrateProperties(
       }
       if (properties.tooltip === undefined) {
         properties.tooltip = { value: '' };
+      }
+    }
+
+    // Pagination
+    if (componentType === 'Pagination') {
+      if (properties.loadingState === undefined) {
+        properties.loadingState = { value: '{{false}}' };
       }
     }
   }

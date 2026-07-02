@@ -48,8 +48,22 @@ export const create = (fn) => {
   return store;
 };
 
+// Slice factories hold state in closures (e.g. batch managers) that setState-based
+// resetters can't reach. Slices register an explicit resetter here so resetAllStores
+// clears that closure state too.
+// phase 'post' runs AFTER the state replace — needed when the resetter must repair
+// values inside the restored initial state (e.g. class instances that were mutated
+// in place, which the captured initialState shares by reference).
+const postResetters = [];
+export const registerResetter = (fn, { phase = 'pre' } = {}) => {
+  (phase === 'post' ? postResetters : resetters).push(fn);
+};
+
 export const resetAllStores = () => {
   for (const resetter of resetters) {
+    resetter();
+  }
+  for (const resetter of postResetters) {
     resetter();
   }
 };

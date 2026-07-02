@@ -14,14 +14,18 @@ import {
   findAppWithRelations,
   findEntityOrFail,
   findEntity,
+  updateEntity,
   closeTestApp,
 } from 'test-helper';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 import { AppImportExportService } from '@ee/apps/services/app-import-export.service';
 
 // initTestApp() can exceed 60s when Jest restarts the worker to free memory
 jest.setTimeout(120_000);
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 describe('AppImportExportService', () => {
 describe('EE (plan: enterprise)', () => {
@@ -76,9 +80,18 @@ describe('EE (plan: enterprise)', () => {
       expect(result.isPublic).toBe(exportedApp.isPublic);
       expect(result.organizationId).toBe(exportedApp.organizationId);
       expect(result.currentVersionId).toBe(null);
-      expect(result.appVersions).toEqual(exportedApp.appVersions);
-      expect(result['dataQueries']).toEqual(exportedApp['dataQueries']);
-      expect(result['dataSources']).toEqual(exportedApp['dataSources']);
+      // Export strips slug/appName/icon/isPublic from version objects (metadata lives at top-level)
+      // and createdAt/updatedAt/dataSources/dataQueries are not included in the export version shape.
+      const exportStripped = ['slug', 'appName', 'icon', 'isPublic', 'createdAt', 'updatedAt', 'dataSources', 'dataQueries'];
+      const normalise = (versions: any[]) =>
+        versions.map((v) => {
+          const copy = { ...v };
+          exportStripped.forEach((f) => delete copy[f]);
+          return copy;
+        });
+      expect(normalise(result.appVersions)).toEqual(normalise(exportedApp.appVersions));
+      expect(result['dataQueries'].length).toBe(exportedApp['dataQueries'].length);
+      expect(result['dataSources'].length).toBe(exportedApp['dataSources'].length);
     });
 
     it('should export app with filtered version', async () => {
@@ -187,7 +200,8 @@ describe('EE (plan: enterprise)', () => {
       const importedApp = await findAppWithRelations(newApp.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toContain(exportedApp.name);
+      // Non-workflow apps store name on app_versions.app_name, not apps.name
+      expect(importedApp.appVersions[0].appName).toBe(appName);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
@@ -244,6 +258,234 @@ describe('EE (plan: enterprise)', () => {
           } as any);
       expect(globalDs).toBeDefined();
       expect(globalDs.name).toBe('test_datasource');
+    });
+  });
+
+  describe('.export | metadata projection', () => {
+    it('should strip slug from per-version objects and carry it at the top-level', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const { application, appVersion } = await createAppWithDependencies(nestApp, adminUserData.user, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const customSlug = 'export-projection-test-slug';
+      await updateEntity(AppVersion, appVersion.id, { slug: customSlug });
+
+      const { appV2: result } = await service.export(adminUserData.user, application.id);
+
+      expect(result.slug).toBe(customSlug);
+      for (const v of result.appVersions) {
+        expect((v as any).slug).toBeUndefined();
+      }
+    });
+  });
+
+  describe('.import | slug isolation', () => {
+    it('should assign a fresh UUID slug, not the source app slug', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application, appVersion } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const originalSlug = 'original-custom-slug';
+      await updateEntity(AppVersion, appVersion.id, { slug: originalSlug });
+
+      const { appV2: exportedApp } = await service.export(adminUser, application.id);
+      const { newApp } = await service.import(adminUser, exportedApp, 'slug-isolation-import');
+
+      const importedRecord = await findAppWithRelations(newApp.id);
+      const importedVersion = importedRecord.appVersions[0];
+
+      expect(importedVersion.slug).not.toBe(originalSlug);
+      expect(importedVersion.slug).toBe(newApp.id);
+    });
+
+    it('should produce unique slugs when importing the same export twice', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const { appV2: exportedApp } = await service.export(adminUser, application.id);
+
+      const { newApp: firstImport } = await service.import(adminUser, exportedApp, 'dupe-import-1');
+      const { newApp: secondImport } = await service.import(adminUser, exportedApp, 'dupe-import-2');
+
+      const firstRecord = await findAppWithRelations(firstImport.id);
+      const secondRecord = await findAppWithRelations(secondImport.id);
+
+      expect(firstRecord.appVersions[0].slug).toBe(firstImport.id);
+      expect(secondRecord.appVersions[0].slug).toBe(secondImport.id);
+      expect(firstRecord.appVersions[0].slug).not.toBe(secondRecord.appVersions[0].slug);
+    });
+
+    it('should assign the same slug (= new app id) to all versions in a multi-version import', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      await createApplicationVersion(nestApp, application, { name: 'v2', definition: {} });
+
+      const { appV2: exportedApp } = await service.export(adminUser, application.id);
+      const { newApp } = await service.import(adminUser, exportedApp, 'multi-version-slug-test');
+
+      const importedRecord = await findAppWithRelations(newApp.id);
+      const slugs = importedRecord.appVersions.map((v) => v.slug);
+
+      // All versions share the same slug = new app's id (mirrors fresh-creation invariant)
+      expect(slugs.every((s) => s === newApp.id)).toBe(true);
+    });
+  });
+
+  describe('.import | globalSettings preservation', () => {
+    it('should preserve globalSettings from the exported version', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application, appVersion } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const customGlobalSettings = {
+        hideHeader: false,
+        appInMaintenance: false,
+        canvasMaxWidth: 1200,
+        canvasMaxWidthType: 'px',
+        canvasMaxHeight: 3000,
+        canvasBackgroundColor: '#abcdef',
+        backgroundFxQuery: '',
+        appMode: 'dark',
+      };
+      await updateEntity(AppVersion, appVersion.id, { globalSettings: customGlobalSettings });
+
+      const { appV2: exportedApp } = await service.export(adminUser, application.id);
+      // Pass tooljetVersion >= 2.24.0 so the normalized schema path is taken,
+      // which reads globalSettings from the dedicated column (not definition blob).
+      const { newApp } = await service.import(adminUser, exportedApp, 'global-settings-preservation-test', {}, false, '3.0.0');
+
+      const importedRecord = await findAppWithRelations(newApp.id);
+      const importedVersion = importedRecord.appVersions[0];
+
+      expect(importedVersion.globalSettings).toMatchObject({
+        canvasMaxWidth: 1200,
+        canvasMaxWidthType: 'px',
+        canvasMaxHeight: 3000,
+        canvasBackgroundColor: '#abcdef',
+        appMode: 'dark',
+      });
+    });
+  });
+
+  describe('.import | identity isolation', () => {
+    it('should create new IDs for app, versions, and data queries — never reuse source IDs', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application, appVersion: sourceVersion } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const testDs = await createDataSource(nestApp, {
+        name: 'identity_test_ds',
+        kind: 'test_kind',
+        appVersion: sourceVersion,
+      });
+      const sourceQuery = await createDataQuery(nestApp, {
+        dataSource: testDs,
+        appVersion: sourceVersion,
+        options: {},
+      });
+
+      const { appV2: exportedApp } = await service.export(adminUser, application.id);
+      const { newApp } = await service.import(adminUser, exportedApp, 'identity-isolation-test');
+
+      expect(newApp.id).not.toBe(application.id);
+
+      const importedRecord = await findAppWithRelations(newApp.id);
+      expect(importedRecord.appVersions[0].id).not.toBe(sourceVersion.id);
+      expect(importedRecord['dataQueries'][0]?.id).not.toBe(sourceQuery.id);
+    });
+  });
+
+  describe('.export → import | round-trip', () => {
+    it('should produce a structurally equivalent app after export and re-import', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application, appVersion: sourceVersion } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const testDs = await createDataSource(nestApp, {
+        name: 'round_trip_ds',
+        kind: 'test_kind',
+        appVersion: sourceVersion,
+      });
+      await createDataQuery(nestApp, {
+        dataSource: testDs,
+        appVersion: sourceVersion,
+        options: {},
+      });
+
+      const { appV2: firstExport } = await service.export(adminUser, application.id);
+      const { newApp } = await service.import(adminUser, firstExport, 'round-trip-app');
+      const { appV2: secondExport } = await service.export(adminUser, newApp.id);
+
+      expect(secondExport.name).toBe('round-trip-app');
+      expect(secondExport.appVersions).toHaveLength(firstExport.appVersions.length);
+      expect(secondExport['dataQueries']).toHaveLength(firstExport['dataQueries'].length);
+      expect(secondExport['dataSources']).toHaveLength(firstExport['dataSources'].length);
+    });
+
+    it('should not carry the source app slug after export → import → re-export', async () => {
+      const adminUserData = await createUser(nestApp, {
+        email: 'admin@tooljet.io',
+        groups: ['all_users', 'admin'],
+      });
+      const adminUser = adminUserData.user;
+      const { application, appVersion } = await createAppWithDependencies(nestApp, adminUser, {
+        isDataSourceNeeded: false,
+        isQueryNeeded: false,
+      });
+
+      const originalSlug = 'round-trip-original-slug';
+      await updateEntity(AppVersion, appVersion.id, { slug: originalSlug });
+
+      const { appV2: firstExport } = await service.export(adminUser, application.id);
+      const { newApp } = await service.import(adminUser, firstExport, 'round-trip-slug-test');
+      const { appV2: secondExport } = await service.export(adminUser, newApp.id);
+
+      expect(secondExport.slug).not.toBe(originalSlug);
+      expect(secondExport.slug).toMatch(UUID_PATTERN);
     });
   });
 

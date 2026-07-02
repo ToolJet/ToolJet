@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { IExternalApiUtilService } from './Interfaces/IUtilService';
 import { ValidateEditUserGroupAdditionObject } from './types';
-import { EntityManager } from 'typeorm';
 import { UserDetailKeyValueDto } from './dto';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class ExternalApiUtilService implements IExternalApiUtilService {

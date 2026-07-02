@@ -15,6 +15,7 @@ import { camelCase, isEmpty, mapKeys, noop } from 'lodash';
 import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
+import { setSuppressQueryRerun } from '@/AppBuilder/_stores/slices/componentsSlice';
 import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList } from '../_utils/misc';
 import { shallow } from 'zustand/shallow';
@@ -327,11 +328,14 @@ const useAppData = (
         // Pinned: call the by-correlation endpoint with the module_reference_id ref.
         appDataPromise = appVersionService.getModuleVersionData(appId, versionId, mode);
       } else {
-        // Unpinned: prefer the parent app's cached module definition (already loaded
-        // for the parent's branch context — matches "follow my branch" semantics).
-        // Fall back to the by-correlation endpoint with no ref → server resolver
-        // returns the latest non-stub on the consumer's branch.
-        const cachedDefinition = getModuleDefinition(appId);
+        // Unpinned: in git-sync mode, prefer the parent app's cached module definition
+        // (already loaded for the parent's branch context — matches "follow my branch" semantics).
+        // In non-git-sync mode, skip the cache — it may hold a released version rather than
+        // the active draft. Always hit the server so the draft-preference resolver runs.
+        const orgGit = useStore.getState().orgGit;
+        const isGitSyncEnabled =
+          orgGit?.git_ssh?.is_enabled || orgGit?.git_https?.is_enabled || orgGit?.git_lab?.is_enabled;
+        const cachedDefinition = isGitSyncEnabled ? getModuleDefinition(appId) : null;
         if (cachedDefinition) {
           appDataPromise = Promise.resolve(JSON.parse(JSON.stringify(cachedDefinition)));
         } else {
@@ -352,6 +356,14 @@ const useAppData = (
     appDataPromise
       .then(async (result) => {
         if (cancelled) return;
+        // Reset the AppBuilder store before populating the new app. The dependency graph and
+        // resolvedStore are module-level singletons that are NOT reset between apps; on clone -> open
+        // the graph still holds the previous app's edges, so setResolvedGlobals below fires a
+        // dependency cascade over them before initDependencyGraph rebuilds — dereferencing resolved
+        // entries that don't exist in the new app and throwing (caught + swallowed -> blank editor).
+        // cleanUpStore installs a fresh graph + clears resolved values so the cascade starts clean.
+        // Canvas-only (mirrors the version-change effect's own cleanUpStore); modules manage their own.
+        if (!moduleMode) cleanUpStore(false);
         let appData = { ...result };
         // The module-by-name endpoint returns the module alone, without `editorEnvironment`
         // (that field is only populated by the parent app's fetchApp response). Fall back to
@@ -674,6 +686,11 @@ const useAppData = (
       })
       .catch((_error) => {
         if (cancelled) return;
+        // Surface load failures — this catch otherwise swallows the error and silently blanks the
+        // editor, which makes load-path regressions (e.g. a throw during dependency resolution)
+        // invisible in the console.
+        // eslint-disable-next-line no-console
+        console.error('Error loading app data', _error);
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           toast.error('Error fetching module data');
@@ -692,7 +709,18 @@ const useAppData = (
 
   useEffect(() => {
     if (isComponentLayoutReady && isLicenseFetched) {
-      flushExposedValueBatch();
+      setSuppressQueryRerun(moduleId, true);
+
+      // The flush runs the initial-settle dependency cascade synchronously.
+      // Suppress dependency-triggered query re-runs for THIS module during that window,
+      // so queries don't run on load when components publish their initial exposed values.
+      // Only Genuine post-load changes cascade outside this window and rerun as expected.
+      try {
+        flushExposedValueBatch();
+      } finally {
+        setSuppressQueryRerun(moduleId, false);
+      }
+
       mode === 'edit' && initSuggestions(moduleId);
 
       const loadLibrariesAndRun = async () => {
@@ -787,7 +815,15 @@ const useAppData = (
     const isVersionChanged = currentVersionId && previousVersion && currentVersionId != previousVersion;
     const isAppHistoryChanged = restoreTimestamp != previousRestoreTimestamp;
 
-    if (isEnvChanged || isVersionChanged || isAppHistoryChanged) {
+    // currentVersionId (set by fetchApp -> setApp) and selectedVersion (set by the
+    // env-dropdown init) are written by two independent async flows. On clone -> editor
+    // open, currentVersionId flips to the new app's version before selectedVersion does,
+    // so firing here would call getAppVersionData(newAppId, previousAppVersionId) -> 404.
+    // Genuine version switches always move both together, so requiring agreement skips
+    // only the stale cross-app window.
+    const isVersionConsistent = selectedVersion?.id && selectedVersion.id === currentVersionId;
+
+    if (isEnvChanged || (isVersionChanged && isVersionConsistent) || isAppHistoryChanged) {
       setEditorLoading(true, moduleId);
       clearSelectedComponents();
       if (isEnvChanged) {
