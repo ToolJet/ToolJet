@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 import { authenticationService, appService, sessionService } from '@/_services';
+import { teardownFrontendMetrics } from '@/_services/frontend-metrics.service';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { getPrivateRoute } from '@/_helpers/routes';
@@ -48,6 +49,7 @@ function BaseSettingsMenu({
     }
   };
   async function handleLogout() {
+    teardownFrontendMetrics();
     // Get latest config first to ensure we have the most up-to-date custom logout url
     await appService
       .getConfig()

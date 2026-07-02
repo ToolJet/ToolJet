@@ -9,10 +9,9 @@ import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
-import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
-import { PeriodicExportingMetricReader, AggregationTemporality } from '@opentelemetry/sdk-metrics';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -41,47 +40,29 @@ const sanitizeObject = (obj: any) => {
 // SDK instance - created lazily in startOpenTelemetry()
 let sdk: NodeSDK | null = null;
 
-// Function to create the SDK (called only when startOpenTelemetry is invoked)
-// NOTE: URLs, headers, and resource are read here — AFTER loadEnvVars() has run —
-// so .env file values are correctly picked up.
+// NOTE: createSDK is called lazily — AFTER loadEnvVars() — so .env values are correctly picked up.
 function createSDK(): NodeSDK {
-  const traceUrl = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
-  const metricsUrl = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
-  const authHeader = process.env.OTEL_HEADER ? { Authorization: process.env.OTEL_HEADER } : {};
-
-  // Define the trace exporter
-  const traceExporter = new OTLPTraceExporter({
-    url: traceUrl,
-    ...(process.env.OTEL_HEADER ? { headers: authHeader } : {}),
-  });
-
-  // Define the metric exporter
-  // Dynatrace (and many other backends) require DELTA temporality.
-  // The OTLPMetricExporter defaults to CUMULATIVE, which Dynatrace silently drops.
-  // Set OTEL_METRICS_TEMPORALITY=cumulative for backends like Prometheus' OTLP receiver.
-  const metricExporter = new OTLPMetricExporter({
-    url: metricsUrl,
-    ...(process.env.OTEL_HEADER ? { headers: authHeader } : {}),
-    temporalityPreference:
-      process.env.OTEL_METRICS_TEMPORALITY === 'cumulative'
-        ? AggregationTemporality.CUMULATIVE
-        : AggregationTemporality.DELTA,
-  });
-
-  // Define the log exporter
-  // TODO:
-  // Add logs exporter when stable support for JS is available. Track here:
-  // https://github.com/open-telemetry/opentelemetry-js
-
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.SERVICE_NAME || 'tooljet',
     [ATTR_SERVICE_VERSION]: globalThis.TOOLJET_VERSION || process.env.SERVICE_VERSION || 'unknown',
     [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
   });
+  const traceUrl = process.env.OTEL_EXPORTER_OTLP_TRACES || 'http://localhost:4318/v1/traces';
+  const metricsUrl = process.env.OTEL_EXPORTER_OTLP_METRICS || 'http://localhost:4318/v1/metrics';
+  const authHeader: Record<string, string> | undefined = process.env.OTEL_HEADER
+    ? { Authorization: process.env.OTEL_HEADER }
+    : undefined;
+
+  const traceExporter = new OTLPTraceExporter({ url: traceUrl, headers: authHeader });
+
+  const metricExporter = new OTLPMetricExporter({
+    url: metricsUrl,
+    headers: authHeader,
+  });
 
   return new NodeSDK({
-    resource: resource,
-    traceExporter: traceExporter,
+    resource,
+    traceExporter,
     spanProcessor: new BatchSpanProcessor(traceExporter),
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
@@ -120,6 +101,7 @@ function createSDK(): NodeSDK {
         },
       }),
       new NestInstrumentation(),
+      // PinoInstrumentation omitted: only supports pino <10, ToolJet uses pino 10.x.
       new PgInstrumentation({
         enhancedDatabaseReporting: true,
         responseHook: (span: Span, responseInfo: any) => {
@@ -143,7 +125,6 @@ function createSDK(): NodeSDK {
           }
         },
       }),
-      new PinoInstrumentation(),
     ],
   });
 }
@@ -372,6 +353,7 @@ const initializeCustomMetrics = () => {
     description: 'API request duration in milliseconds',
     unit: 'ms',
   });
+
 };
 
 export function recordApiHit(attrs: { route: string; method: string }) {
@@ -396,8 +378,7 @@ process.on('SIGTERM', () => {
   }
 
   if (sdk) {
-    sdk
-      .shutdown()
+    sdk.shutdown()
       .then(() => {
         if (process.env.OTEL_LOG_LEVEL === 'debug') {
           console.log('OpenTelemetry instrumentation shutdown successfully');
@@ -412,7 +393,6 @@ process.on('SIGTERM', () => {
 
 export const startOpenTelemetry = async (): Promise<void> => {
   try {
-    // Create SDK lazily (only when this function is called)
     if (!sdk) {
       sdk = createSDK();
     }
@@ -420,9 +400,12 @@ export const startOpenTelemetry = async (): Promise<void> => {
     await sdk.start();
     initializeCustomMetrics();
 
-    // Initialize audit log metrics
     const { initializeAuditLogMetrics } = await import('./audit-metrics');
     initializeAuditLogMetrics();
+
+    const { initializeFrontendMetrics } = await import('./frontend-metrics');
+    initializeFrontendMetrics();
+
     // Start proactive cleanup interval
     cleanupInterval = setInterval(cleanupInactiveUsers, CLEANUP_INTERVAL_MS);
 
@@ -439,8 +422,8 @@ export const startOpenTelemetry = async (): Promise<void> => {
   }
 };
 
-// Export audit metrics function for use in services
-export { recordAuditLogMetric } from './audit-metrics';
+export { recordAuditLogMetric, recordDirectQueryMetric } from './audit-metrics';
+export { recordFrontendMetricsBatch } from './frontend-metrics';
 // Helper function to track user activity on each authenticated request
 export const trackUserActivity = (attributes: {
   workspaceId: string;
@@ -562,6 +545,7 @@ export const decrementActiveSessions = (attributes: {
   }
 };
 
+
 // ============================================================================
 // AUTO-START: Initialize OTEL SDK immediately when this module is imported
 // This MUST run before any other modules (http, pg, express, etc.) are loaded
@@ -599,14 +583,18 @@ loadEnvVars();
 if (process.env.ENABLE_OTEL === 'true') {
   process.on('uncaughtException', (err: any) => {
     if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+      // OTEL SDK emits these when the remote OTLP endpoint closes the connection.
+      // Suppress them so the observability transport never crashes the server.
       if (process.env.OTEL_LOG_LEVEL === 'debug') {
         console.error('[OTEL] Suppressed transport error (server still running):', err.code, err.message);
       }
       return;
     }
-    // For non-OTEL errors, log and exit — throwing inside uncaughtException causes a re-emit loop.
-    console.error('[OTEL] Uncaught non-transport exception:', err);
-    // process.exit(1);
+    // For all other uncaught exceptions: log but do NOT exit.
+    // Plugin async/sync mismatches (e.g. missing await before connect()) can surface here
+    // and killing the server for those would be far worse than continuing.
+    // Node.js default behaviour (exit) is intentionally NOT restored here.
+    console.error('[OTEL] Uncaught exception (server continuing):', err);
   });
 }
 

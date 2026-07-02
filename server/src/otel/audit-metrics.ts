@@ -2,26 +2,15 @@ import { metrics } from '@opentelemetry/api';
 import { AuditLogFields } from '@modules/audit-logs/types';
 
 /**
- * OTEL Metrics for Audit Logs
- *
- * This module provides OpenTelemetry metrics instrumentation for audit logs.
- * It tracks various app-based metrics by streaming audit log events to the OTEL collector.
- *
- * Metrics are separated into two categories:
- * - Platform metrics: Platform-level operations (user management, org settings, etc.)
- * - App metrics: App-specific operations (query execution, app usage, etc.)
+ * OTEL Metrics for app-level activity (sourced from audit log events).
+ * Platform-level audit log counters (audit.logs.*) are intentionally excluded —
+ * those duplicate what the audit log storage already tracks.
  */
 
-// Meters for different metric categories
 let platformMeter: any;
 let appMeter: any;
 
 // Platform-level metrics
-let auditLogCounter: any;
-let auditLogActionCounter: any;
-let auditLogResourceCounter: any;
-let auditLogUserActivityGauge: any;
-let auditLogOrganizationActivityGauge: any;
 let userSessionsCounter: any;
 
 // App-level query metrics (with mode and environment tracking)
@@ -30,31 +19,27 @@ let queryFailuresCounter: any;
 let queryDurationHistogram: any;
 
 // App-level metrics
-let appUsageCounter: any;
 let appActiveUsersGauge: any;
 let appSuccessRateGauge: any;
 let appErrorsCounter: any;
 
-// App lifecycle metrics
-let appCreationsCounter: any;
-let appUpdatesCounter: any;
-let appDeletionsCounter: any;
-let appReleasesCounter: any;
+// App lifecycle metrics — disabled for now; will route to Google Analytics
+// let appCreationsCounter: any;
+// let appUpdatesCounter: any;
+// let appDeletionsCounter: any;
+// let appReleasesCounter: any;
 
-// Data source lifecycle metrics
-let datasourceCreationsCounter: any;
-let datasourceUpdatesCounter: any;
-let datasourceDeletionsCounter: any;
+// Data source lifecycle metrics — disabled for now; will route to Google Analytics
+// let datasourceCreationsCounter: any;
+// let datasourceUpdatesCounter: any;
+// let datasourceDeletionsCounter: any;
 
-// Store recent activity for gauges (last 15 minutes)
-const ACTIVITY_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const userActivity = new Map<string, { count: number; lastUpdate: number }>();
-const organizationActivity = new Map<string, { count: number; lastUpdate: number }>();
-const appActiveUsers = new Map<string, Map<string, number>>(); // appId -> Map<userId, lastSeen>
+const ACTIVITY_WINDOW_MS = 15 * 60 * 1000;
+const appActiveUsers = new Map<string, { name: string; users: Map<string, number> }>(); // appId -> { name, users: Map<userId, lastSeen> }
 
 // Store app success/failure counts for success rate calculation
-// Key format: "appId:mode:environment" -> { success: number, failure: number, lastUpdate: number }
-const appSuccessTracking = new Map<string, { success: number; failure: number; lastUpdate: number }>();
+// Key format: "appId:app_mode:environment" -> { success, failure, lastUpdate, appName }
+const appSuccessTracking = new Map<string, { success: number; failure: number; lastUpdate: number; appName: string }>();
 
 /**
  * Initialize audit log metrics
@@ -65,83 +50,6 @@ export const initializeAuditLogMetrics = () => {
   platformMeter = metrics.getMeter('tooljet-platform');
   appMeter = metrics.getMeter('tooljet-app');
 
-  // ============ Platform-level metrics ============
-
-  // Counter: Total audit log events
-  auditLogCounter = platformMeter.createCounter('audit.logs.total', {
-    description: 'Total number of audit log events',
-    unit: '1',
-  });
-
-  // Counter: Audit log events by action type
-  auditLogActionCounter = platformMeter.createCounter('audit.logs.actions', {
-    description: 'Number of audit log events by action type',
-    unit: '1',
-  });
-
-  // Counter: Audit log events by resource type
-  auditLogResourceCounter = platformMeter.createCounter('audit.logs.resources', {
-    description: 'Number of audit log events by resource type',
-    unit: '1',
-  });
-
-  // Gauge: Active users by organization (based on recent audit logs)
-  auditLogUserActivityGauge = platformMeter.createObservableGauge('audit.logs.active_users', {
-    description: 'Number of active users by organization (based on audit log activity in last 15 minutes)',
-    unit: '1',
-  });
-
-  auditLogUserActivityGauge.addCallback((observableResult: any) => {
-    const now = Date.now();
-    const cutoffTime = now - ACTIVITY_WINDOW_MS;
-
-    // Clean up old entries and aggregate by organization
-    const orgUserCounts = new Map<string, Set<string>>();
-
-    for (const [key, value] of userActivity.entries()) {
-      if (value.lastUpdate < cutoffTime) {
-        userActivity.delete(key);
-      } else {
-        // key format: "orgId:userId"
-        const [orgId, userId] = key.split(':');
-        if (!orgUserCounts.has(orgId)) {
-          orgUserCounts.set(orgId, new Set());
-        }
-        orgUserCounts.get(orgId)!.add(userId);
-      }
-    }
-
-    // Report metrics for each organization
-    for (const [orgId, users] of orgUserCounts.entries()) {
-      observableResult.observe(users.size, {
-        organization_id: orgId,
-      });
-    }
-  });
-
-  // Gauge: Activity count by organization
-  auditLogOrganizationActivityGauge = platformMeter.createObservableGauge('audit.logs.organization_activity', {
-    description: 'Number of audit log events by organization in last 15 minutes',
-    unit: '1',
-  });
-
-  auditLogOrganizationActivityGauge.addCallback((observableResult: any) => {
-    const now = Date.now();
-    const cutoffTime = now - ACTIVITY_WINDOW_MS;
-
-    // Clean up old entries
-    for (const [orgId, activity] of organizationActivity.entries()) {
-      if (activity.lastUpdate < cutoffTime) {
-        organizationActivity.delete(orgId);
-      } else {
-        observableResult.observe(activity.count, {
-          organization_id: orgId,
-        });
-      }
-    }
-  });
-
-  // User Sessions Counter (platform-level)
   userSessionsCounter = platformMeter.createCounter('user.sessions.total', {
     description: 'Total user login/logout events',
     unit: '1',
@@ -167,23 +75,18 @@ export const initializeAuditLogMetrics = () => {
     unit: 'ms',
   });
 
-  // App Usage Counter
-  appUsageCounter = appMeter.createCounter('app.usage.total', {
-    description: 'Total app interactions',
-    unit: '1',
-  });
-
   // App Active Users Gauge
   appActiveUsersGauge = appMeter.createObservableGauge('app.active_users', {
     description: 'Number of active users per app (last 15 minutes)',
-    unit: '1',
+    unit: '{users}',
   });
 
   appActiveUsersGauge.addCallback((observableResult: any) => {
     const now = Date.now();
     const cutoffTime = now - ACTIVITY_WINDOW_MS;
 
-    for (const [appId, users] of appActiveUsers.entries()) {
+    for (const [appId, entry] of appActiveUsers.entries()) {
+      const { name: appName, users } = entry;
       // Clean up inactive users
       for (const [userId, lastSeen] of users.entries()) {
         if (lastSeen < cutoffTime) {
@@ -195,6 +98,7 @@ export const initializeAuditLogMetrics = () => {
       if (users.size > 0) {
         observableResult.observe(users.size, {
           app_id: appId,
+          app_name: appName,
         });
       } else {
         // Remove empty app entries
@@ -217,13 +121,14 @@ export const initializeAuditLogMetrics = () => {
       if (stats.lastUpdate < cutoffTime) {
         appSuccessTracking.delete(key);
       } else {
-        const [appId, mode, environment] = key.split(':');
+        const [appId, appMode, environment] = key.split(':');
         const total = stats.success + stats.failure;
         const successRate = total > 0 ? (stats.success / total) * 100 : 100;
 
         observableResult.observe(successRate, {
           app_id: appId,
-          mode: mode,
+          app_name: stats.appName,
+          app_mode: appMode,
           environment: environment,
         });
       }
@@ -236,58 +141,20 @@ export const initializeAuditLogMetrics = () => {
     unit: '1',
   });
 
-  // App Lifecycle Counters
-  appCreationsCounter = appMeter.createCounter('app.creations.total', {
-    description: 'Total number of app creations',
-    unit: '1',
-  });
+  // App Lifecycle Counters — disabled; will route to Google Analytics
+  // appCreationsCounter = appMeter.createCounter('app.creations.total', { description: 'Total number of app creations', unit: '1' });
+  // appUpdatesCounter = appMeter.createCounter('app.updates.total', { description: 'Total number of app updates', unit: '1' });
+  // appDeletionsCounter = appMeter.createCounter('app.deletions.total', { description: 'Total number of app deletions', unit: '1' });
+  // appReleasesCounter = appMeter.createCounter('app.releases.total', { description: 'Total number of app releases', unit: '1' });
 
-  appUpdatesCounter = appMeter.createCounter('app.updates.total', {
-    description: 'Total number of app updates',
-    unit: '1',
-  });
+  // Data Source Lifecycle Counters — disabled; will route to Google Analytics
+  // datasourceCreationsCounter = appMeter.createCounter('datasource.creations.total', { description: 'Total number of datasource creations', unit: '1' });
+  // datasourceUpdatesCounter = appMeter.createCounter('datasource.updates.total', { description: 'Total number of datasource updates', unit: '1' });
+  // datasourceDeletionsCounter = appMeter.createCounter('datasource.deletions.total', { description: 'Total number of datasource deletions', unit: '1' });
 
-  appDeletionsCounter = appMeter.createCounter('app.deletions.total', {
-    description: 'Total number of app deletions',
-    unit: '1',
-  });
-
-  appReleasesCounter = appMeter.createCounter('app.releases.total', {
-    description: 'Total number of app releases',
-    unit: '1',
-  });
-
-  // Data Source Lifecycle Counters
-  datasourceCreationsCounter = appMeter.createCounter('datasource.creations.total', {
-    description: 'Total number of datasource creations',
-    unit: '1',
-  });
-
-  datasourceUpdatesCounter = appMeter.createCounter('datasource.updates.total', {
-    description: 'Total number of datasource updates',
-    unit: '1',
-  });
-
-  datasourceDeletionsCounter = appMeter.createCounter('datasource.deletions.total', {
-    description: 'Total number of datasource deletions',
-    unit: '1',
-  });
-
-  console.log('✅ Audit log metrics initialized with separate meters:');
-  console.log('   Platform metrics (tooljet-platform):');
-  console.log('     - audit.logs.total, audit.logs.actions, audit.logs.resources');
-  console.log('     - audit.logs.active_users, audit.logs.organization_activity');
-  console.log('     - user.sessions.total');
-  console.log('   App metrics (tooljet-app):');
-  console.log('     - query.executions.total (with mode/environment), query.failures.total, query.duration');
-  console.log('     - app.usage.total, app.active_users, app.success_rate, app.errors.total');
-  console.log('     - app.creations.total, app.updates.total, app.deletions.total, app.releases.total');
-  console.log('     - datasource.creations.total, datasource.updates.total, datasource.deletions.total');
-  console.log('');
-  console.log('⚙️  Configuration:');
-  console.log(`   OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled' : 'disabled (default)'}`);
-  if (process.env.OTEL_INCLUDE_QUERY_TEXT === 'true') {
-    console.log('   ⚠️  WARNING: query_text creates high cardinality metrics - use OTEL Collector to drop in production');
+  if (process.env.OTEL_LOG_LEVEL === 'debug') {
+    console.log('[OTEL] Audit log metrics initialized (tooljet-platform + tooljet-app meters)');
+    console.log(`[OTEL] OTEL_INCLUDE_QUERY_TEXT: ${process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? 'enabled (high cardinality)' : 'disabled'}`);
   }
 };
 
@@ -300,96 +167,30 @@ export const recordAuditLogMetric = (auditLogData: AuditLogFields,isOtelEnabled?
    if (!isOtelEnabled) {
    return;
  }
-  if (!auditLogCounter) {
+  if (!userSessionsCounter) {
     console.warn('Audit log metrics not initialized. Skipping metric recording.');
     return;
   }
 
   try {
-    const {
-      userId,
-      organizationId,
-      resourceType,
-      actionType,
-      resourceName,
-      resourceId,
-      ipAddress,
-      metadata = {},
-    } = auditLogData;
-
-    // Prepare common attributes
-    const commonAttributes = {
-      organization_id: organizationId,
-      user_id: userId,
-      resource_type: resourceType,
-      action_type: actionType,
-    };
-
-    // Record total audit log counter
-    auditLogCounter.add(1, commonAttributes);
-
-    // Record action-specific counter
-    auditLogActionCounter.add(1, {
-      action_type: actionType,
-      resource_type: resourceType,
-      organization_id: organizationId,
-    });
-
-    // Record resource-specific counter
-    auditLogResourceCounter.add(1, {
-      resource_type: resourceType,
-      organization_id: organizationId,
-    });
-
-    // Update user activity gauge data
-    const userActivityKey = `${organizationId}:${userId}`;
-    userActivity.set(userActivityKey, {
-      count: (userActivity.get(userActivityKey)?.count || 0) + 1,
-      lastUpdate: Date.now(),
-    });
-
-    // Update organization activity gauge data
-    if (organizationActivity.has(organizationId)) {
-      const current = organizationActivity.get(organizationId)!;
-      organizationActivity.set(organizationId, {
-        count: current.count + 1,
-        lastUpdate: Date.now(),
-      });
-    } else {
-      organizationActivity.set(organizationId, {
-        count: 1,
-        lastUpdate: Date.now(),
-      });
-    }
-
-    // Record query-specific metrics
-    if (actionType === 'DATA_QUERY_RUN') {
-      recordQueryMetrics(auditLogData);
-    }
-
-    // Record app-specific metrics
-    if (resourceType === 'APP' || actionType.startsWith('APP_')) {
-      recordAppMetrics(auditLogData);
-    }
+    const { userId, actionType } = auditLogData;
 
     // Record user session metrics
     if (actionType === 'USER_LOGIN' || actionType === 'USER_LOGOUT') {
       recordUserSessionMetrics(auditLogData);
     }
 
-    // Record app lifecycle metrics
-    if (actionType === 'APP_CREATE' || actionType === 'APP_UPDATE' || actionType === 'APP_DELETE' || actionType === 'APP_RELEASE') {
-      recordAppLifecycleMetrics(auditLogData);
-    }
-
-    // Record datasource lifecycle metrics
-    if (actionType === 'DATA_SOURCE_CREATE' || actionType === 'DATA_SOURCE_UPDATE' || actionType === 'DATA_SOURCE_DELETE') {
-      recordDataSourceLifecycleMetrics(auditLogData);
-    }
+    // App + datasource lifecycle metrics disabled — will route to Google Analytics
+    // if (actionType === 'APP_CREATE' || actionType === 'APP_UPDATE' || actionType === 'APP_DELETE' || actionType === 'APP_RELEASE') {
+    //   recordAppLifecycleMetrics(auditLogData);
+    // }
+    // if (actionType === 'DATA_SOURCE_CREATE' || actionType === 'DATA_SOURCE_UPDATE' || actionType === 'DATA_SOURCE_DELETE') {
+    //   recordDataSourceLifecycleMetrics(auditLogData);
+    // }
 
     // Log for debugging (optional, can be removed in production)
     if (process.env.OTEL_LOG_LEVEL === 'debug') {
-      console.log(`[OTEL Audit Metric] Recorded: ${actionType} on ${resourceType} by user ${userId}`);
+      console.log(`[OTEL Audit Metric] Recorded: ${actionType} by user ${userId}`);
     }
   } catch (error) {
     console.error('Error recording audit log metric:', error);
@@ -412,17 +213,16 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
   const error = metadata['error'];
   const errorType = metadata['errorType'] || categorizeError(error);
 
-  // New labels for mode and environment tracking
-  const mode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit' or 'view'
-  const environment = metadata['environment'] || resourceData['environment'] || 'unknown'; // environment name
-  const isReleased = mode === 'view' ? 'true' : 'false';
+  const appMode = metadata['mode'] || resourceData['mode'] || 'unknown'; // 'edit', 'view', or 'released'
+  const environment = metadata['environment'] || resourceData['environment'] || 'unknown';
+  const isPublished = (appMode === 'view' || appMode === 'released') ? 'true' : 'false';
 
-  // Extract query from parsedQueryOptions (camelCase from queryStatus.getMetaData())
-  // Only include query text if explicitly enabled (to avoid high cardinality)
+  // Only include query text if explicitly enabled (to avoid high cardinality in Prometheus)
   const includeQueryText = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true';
   const parsedQueryOptions = metadata['parsedQueryOptions'] || {};
   const queryText = includeQueryText ? (parsedQueryOptions['query'] || '') : '';
-  const queryMode = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, etc.
+  const queryType = parsedQueryOptions['mode'] || 'unknown'; // sql, gui, raw, etc.
+  const versionName = (metadata as Record<string, any>)?.['versionName'] || (resourceData as Record<string, any>)?.['versionName'] || 'unknown';
 
   const labels = {
     app_id: appId,
@@ -432,11 +232,12 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
     data_source_type: dataSourceType,
     organization_id: organizationId,
     status: status,
-    mode: mode, // NEW: edit or view
-    environment: environment, // NEW: environment name
-    is_released: isReleased, // NEW: boolean string
-    query_text: queryText, // NEW: actual SQL/query text
-    query_mode: queryMode, // NEW: sql or gui
+    app_mode: appMode,
+    environment: environment,
+    is_published: isPublished,
+    query_text: queryText,
+    query_type: queryType,
+    version_name: versionName,
   };
 
   // Count query execution
@@ -456,11 +257,12 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
       error_type: errorType,
       data_source_type: dataSourceType,
       organization_id: organizationId,
-      mode: mode,
+      app_mode: appMode,
       environment: environment,
-      is_released: isReleased,
+      is_published: isPublished,
       query_text: queryText,
-      query_mode: queryMode,
+      query_type: queryType,
+      version_name: versionName,
     });
 
     // Record app-level error
@@ -469,7 +271,7 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
         app_id: appId,
         app_name: appName,
         error_type: errorType,
-        mode: mode,
+        app_mode: appMode,
         environment: environment,
         organization_id: organizationId,
       });
@@ -478,38 +280,12 @@ function recordQueryMetrics(auditLogData: AuditLogFields) {
 
   // Track active users per app
   if (appId !== 'unknown') {
-    trackAppActiveUser(appId, userId);
+    trackAppActiveUser(appId, userId, appName);
   }
 
   // Track app success rate
-  if (appId !== 'unknown' && mode !== 'unknown' && environment !== 'unknown') {
-    trackAppSuccess(appId, mode, environment, status === 'success');
-  }
-}
-
-/**
- * Record app usage metrics
- */
-function recordAppMetrics(auditLogData: AuditLogFields) {
-  if (!appUsageCounter) return;
-
-  const { resourceId, resourceName, actionType, organizationId, userId, metadata = {} } = auditLogData;
-
-  const appId = resourceId || metadata['appId'] || 'unknown';
-  const appName = resourceName || metadata['appName'] || 'unknown';
-
-  const labels = {
-    app_id: appId,
-    app_name: appName,
-    action_type: actionType,
-    organization_id: organizationId,
-  };
-
-  appUsageCounter.add(1, labels);
-
-  // Track active users for this app
-  if (appId !== 'unknown') {
-    trackAppActiveUser(appId, userId);
+  if (appId !== 'unknown' && appMode !== 'unknown' && environment !== 'unknown') {
+    trackAppSuccess(appId, appMode, environment, status === 'success', appName);
   }
 }
 
@@ -536,25 +312,28 @@ function recordUserSessionMetrics(auditLogData: AuditLogFields) {
 /**
  * Track active user for an app
  */
-function trackAppActiveUser(appId: string, userId: string) {
+function trackAppActiveUser(appId: string, userId: string, appName: string) {
   if (!appActiveUsers.has(appId)) {
-    appActiveUsers.set(appId, new Map());
+    appActiveUsers.set(appId, { name: appName, users: new Map() });
+  } else {
+    appActiveUsers.get(appId)!.name = appName;
   }
-  appActiveUsers.get(appId)!.set(userId, Date.now());
+  appActiveUsers.get(appId)!.users.set(userId, Date.now());
 }
 
 /**
  * Track app success/failure for success rate calculation
  */
-function trackAppSuccess(appId: string, mode: string, environment: string, isSuccess: boolean) {
-  const key = `${appId}:${mode}:${environment}`;
+function trackAppSuccess(appId: string, appMode: string, environment: string, isSuccess: boolean, appName: string) {
+  const key = `${appId}:${appMode}:${environment}`;
   const now = Date.now();
 
   if (!appSuccessTracking.has(key)) {
-    appSuccessTracking.set(key, { success: 0, failure: 0, lastUpdate: now });
+    appSuccessTracking.set(key, { success: 0, failure: 0, lastUpdate: now, appName });
   }
 
   const stats = appSuccessTracking.get(key)!;
+  stats.appName = appName;
   if (isSuccess) {
     stats.success += 1;
   } else {
@@ -563,104 +342,156 @@ function trackAppSuccess(appId: string, mode: string, environment: string, isSuc
   stats.lastUpdate = now;
 }
 
-/**
- * Record app lifecycle metrics (create, update, delete, release)
- */
-function recordAppLifecycleMetrics(auditLogData: AuditLogFields) {
-  const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
+// App lifecycle metrics — will route to Google Analytics
+// function recordAppLifecycleMetrics(auditLogData: AuditLogFields) {
+//   const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
+//   const appSlug = resourceData['appSlug'] || resourceId || 'unknown';
+//   const isPublic = resourceData['isPublic'] || false;
+//   const labels = { app_id: resourceId, app_name: resourceName || 'unknown', app_slug: appSlug, is_public: String(isPublic), organization_id: organizationId };
+//   switch (actionType) {
+//     case 'APP_CREATE': if (appCreationsCounter) appCreationsCounter.add(1, labels); break;
+//     case 'APP_UPDATE': if (appUpdatesCounter) { const updatedFields = resourceData['updatedFields'] || []; appUpdatesCounter.add(1, { ...labels, updated_fields: Array.isArray(updatedFields) ? updatedFields.join(',') : String(updatedFields) }); } break;
+//     case 'APP_DELETE': if (appDeletionsCounter) appDeletionsCounter.add(1, labels); break;
+//     case 'APP_RELEASE': if (appReleasesCounter) appReleasesCounter.add(1, { ...labels, environment: resourceData['environmentName'] || 'unknown', version: resourceData['releasedVersionName'] || 'unknown' }); break;
+//   }
+// }
 
-  const appSlug = resourceData['appSlug'] || resourceId || 'unknown';
-  const isPublic = resourceData['isPublic'] || false;
+// Datasource lifecycle metrics — will route to Google Analytics
+// function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
+//   const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
+//   const labels: any = { datasource_id: resourceId, datasource_name: resourceName || 'unknown', datasource_kind: resourceData['dataSourceKind'] || 'unknown', datasource_scope: resourceData['dataSourceScope'] || 'unknown', organization_id: organizationId, environment_id: resourceData['environmentId'] || 'unknown' };
+//   if (resourceData['appId']) labels['app_id'] = resourceData['appId'];
+//   switch (actionType) {
+//     case 'DATA_SOURCE_CREATE': if (datasourceCreationsCounter) datasourceCreationsCounter.add(1, labels); break;
+//     case 'DATA_SOURCE_UPDATE': if (datasourceUpdatesCounter) { const u = resourceData['updatedFields'] || []; datasourceUpdatesCounter.add(1, { ...labels, updated_fields: Array.isArray(u) ? u.join(',') : String(u) }); } break;
+//     case 'DATA_SOURCE_DELETE': if (datasourceDeletionsCounter) datasourceDeletionsCounter.add(1, labels); break;
+//   }
+// }
 
-  const labels = {
-    app_id: resourceId,
-    app_name: resourceName || 'unknown',
-    app_slug: appSlug,
-    is_public: String(isPublic),
-    organization_id: organizationId,
-  };
 
-  switch (actionType) {
-    case 'APP_CREATE':
-      if (appCreationsCounter) {
-        appCreationsCounter.add(1, labels);
-      }
-      break;
-    case 'APP_UPDATE':
-      if (appUpdatesCounter) {
-        const updatedFields = resourceData['updatedFields'] || [];
-        appUpdatesCounter.add(1, {
-          ...labels,
-          updated_fields: Array.isArray(updatedFields) ? updatedFields.join(',') : String(updatedFields),
-        });
-      }
-      break;
-    case 'APP_DELETE':
-      if (appDeletionsCounter) {
-        appDeletionsCounter.add(1, labels);
-      }
-      break;
-    case 'APP_RELEASE':
-      if (appReleasesCounter) {
-        const environmentName = resourceData['environmentName'] || 'unknown';
-        const releasedVersionName = resourceData['releasedVersionName'] || 'unknown';
-        appReleasesCounter.add(1, {
-          ...labels,
-          environment: environmentName,
-          version: releasedVersionName,
-        });
-      }
-      break;
-  }
-}
 
 /**
- * Record datasource lifecycle metrics (create, update, delete)
+ * DirectQueryMetricPayload — the minimal data needed to emit query metrics
+ * directly without going through the audit-log pipeline.
  */
-function recordDataSourceLifecycleMetrics(auditLogData: AuditLogFields) {
-  const { actionType, resourceId, resourceName, resourceData = {}, organizationId } = auditLogData;
+export interface DirectQueryMetricPayload {
+  userId: string;
+  organizationId: string;
+  appId: string;
+  appName?: string;
+  queryId: string;
+  queryName?: string;
+  dataSourceType: string;
+  app_mode: string; // 'edit' | 'view' | 'released'
+  environment: string; // environment name
+  status: 'success' | 'failure' | string;
+  duration?: number; // ms
+  error?: string;
+  errorType?: string;
+  queryText?: string; // only if OTEL_INCLUDE_QUERY_TEXT=true
+  query_type?: string; // 'sql' | 'gui' | 'raw' | etc.
+  version_name?: string; // app version name (e.g. "v1", "v2")
+}
 
-  const dataSourceKind = resourceData['dataSourceKind'] || 'unknown';
-  const dataSourceScope = resourceData['dataSourceScope'] || 'unknown';
-  const appId = resourceData['appId'] || null;
-  const environmentId = resourceData['environmentId'] || 'unknown';
-
-  const labels = {
-    datasource_id: resourceId,
-    datasource_name: resourceName || 'unknown',
-    datasource_kind: dataSourceKind,
-    datasource_scope: dataSourceScope,
-    organization_id: organizationId,
-    environment_id: environmentId,
-  };
-
-  // Add appId only if it's not null (for app-scoped datasources)
-  if (appId) {
-    labels['app_id'] = appId;
+export const recordDirectQueryMetric = (payload: DirectQueryMetricPayload) => {
+  if (!queryExecutionsCounter) {
+    // OTEL not yet initialised — silently skip; never throw from observability code
+    return;
   }
 
-  switch (actionType) {
-    case 'DATA_SOURCE_CREATE':
-      if (datasourceCreationsCounter) {
-        datasourceCreationsCounter.add(1, labels);
-      }
-      break;
-    case 'DATA_SOURCE_UPDATE':
-      if (datasourceUpdatesCounter) {
-        const updatedFields = resourceData['updatedFields'] || [];
-        datasourceUpdatesCounter.add(1, {
-          ...labels,
-          updated_fields: Array.isArray(updatedFields) ? updatedFields.join(',') : String(updatedFields),
+  try {
+    const {
+      userId,
+      organizationId,
+      appId,
+      appName = 'unknown',
+      queryId,
+      queryName = 'unknown',
+      dataSourceType,
+      app_mode,
+      environment,
+      status,
+      duration,
+      error,
+      queryText = '',
+      query_type = 'unknown',
+      version_name = 'unknown',
+    } = payload;
+
+    const isPublished = (app_mode === 'view' || app_mode === 'released') ? 'true' : 'false';
+    const errorType = payload.errorType || categorizeError(error);
+    const qtLabel = process.env.OTEL_INCLUDE_QUERY_TEXT === 'true' ? queryText : '';
+
+    const labels = {
+      app_id: appId || 'unknown',
+      app_name: appName,
+      query_id: queryId,
+      query_name: queryName,
+      data_source_type: dataSourceType,
+      organization_id: organizationId,
+      status,
+      app_mode,
+      environment,
+      is_published: isPublished,
+      query_text: qtLabel,
+      query_type,
+      version_name,
+    };
+
+    queryExecutionsCounter.add(1, labels);
+
+    if (duration !== undefined && typeof duration === 'number') {
+      queryDurationHistogram.record(duration, labels);
+    }
+
+    if (status === 'failure' || error) {
+      if (queryFailuresCounter) {
+        queryFailuresCounter.add(1, {
+          app_id: appId || 'unknown',
+          app_name: appName,
+          query_name: queryName,
+          error_type: errorType,
+          data_source_type: dataSourceType,
+          organization_id: organizationId,
+          app_mode,
+          environment,
+          is_published: isPublished,
+          query_text: qtLabel,
+          query_type,
+          version_name,
         });
       }
-      break;
-    case 'DATA_SOURCE_DELETE':
-      if (datasourceDeletionsCounter) {
-        datasourceDeletionsCounter.add(1, labels);
+      if (appErrorsCounter && appId) {
+        appErrorsCounter.add(1, {
+          app_id: appId,
+          app_name: appName,
+          error_type: errorType,
+          app_mode,
+          environment,
+          organization_id: organizationId,
+        });
       }
-      break;
+    }
+
+    if (appId && appId !== 'unknown') {
+      trackAppActiveUser(appId, userId, appName);
+      if (app_mode !== 'unknown' && environment !== 'unknown') {
+        trackAppSuccess(appId, app_mode, environment, status === 'success', appName);
+      }
+    }
+
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.log(
+        `[OTEL Direct] query metric: app=${appId} query=${queryId} app_mode=${app_mode} env=${environment} status=${status} duration=${duration}ms`
+      );
+    }
+  } catch (err) {
+    // Observability must never break the application
+    if (process.env.OTEL_LOG_LEVEL === 'debug') {
+      console.error('[OTEL] Error in recordDirectQueryMetric:', err);
+    }
   }
-}
+};
 
 /**
  * Categorize error type from error message
@@ -684,8 +515,6 @@ function categorizeError(error: any): string {
  * Clear activity data (useful for testing)
  */
 export const clearActivityData = () => {
-  userActivity.clear();
-  organizationActivity.clear();
   appActiveUsers.clear();
   appSuccessTracking.clear();
 };
