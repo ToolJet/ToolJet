@@ -100,6 +100,10 @@ const RenderWidget = ({
   );
 
   const resolvedStyles = useStore((state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.styles, shallow);
+  // Per-widget custom CSS class is gated by the `customStyling` enterprise license flag.
+  // When the license is absent we skip applying the class to the DOM, but the saved value
+  // stays in the schema/DB so it re-applies if the license is re-enabled.
+  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
   const fireEvent = useStore((state) => state.eventsSlice.fireEvent, shallow);
   const resolvedGeneralProperties = useStore(
     (state) => state.getResolvedComponent(id, resolveIndex, moduleId)?.general,
@@ -294,17 +298,26 @@ const RenderWidget = ({
     : resolvedGeneralProperties?.tooltipFormat;
   const hasUserTooltip = !!userTooltipContent?.toString().trim();
 
+  // User-defined CSS class(es), gated by the customStyling license. Trimmed + whitespace-collapsed.
+  const userCssClass = hasCustomStyling ? (resolvedStyles?.cssClass ?? '').trim().replace(/\s+/g, ' ') : '';
+  const isDisabledOrLoading =
+    !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading);
+  const innerWidgetClassName = [
+    'canvas-component',
+    inCanvas && `_tooljet-${component?.component} _tooljet-${component?.name}`,
+    isDisabledOrLoading && 'disabled',
+    userCssClass,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   const innerWidget = (
     <div
       style={{
         height: '100%',
         padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
       }}
-      className={`canvas-component ${inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''} ${
-        !['Modal', 'ModalV2', 'CircularProgressBar'].includes(component.component) && (isDisabled || isLoading)
-          ? 'disabled'
-          : ''
-      }`} //required for custom CSS
+      className={innerWidgetClassName}
       data-cy={`draggable-widget-${componentName}`}
     >
       <TrackedSuspense fallback={null}>
