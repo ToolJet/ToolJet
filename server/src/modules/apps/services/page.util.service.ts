@@ -2,7 +2,7 @@ import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
 import { Injectable } from '@nestjs/common';
 import { EventsService } from './event.service';
 import { Page } from 'src/entities/page.entity';
-import { dbTransactionForAppVersionAssociationsUpdate, dbTransactionWrap } from 'src/helpers/database.helper';
+import { dbTransactionForAppVersionAssociationsUpdate, getDBConnection } from 'src/helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { CreatePageDto } from '../dto/page';
 import { IPageHelperService } from '../interfaces/services/IPageUtilService';
@@ -15,20 +15,11 @@ export class PageHelperService implements IPageHelperService {
   ) {}
 
   public async fetchPages(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
-    let allPages = [];
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      allPages = await manager.find(Page, {
-        where: {
-          appVersionId,
-          isPageGroup: false,
-        },
-        order: {
-          index: 'ASC',
-        },
-      });
-
-      return allPages;
-    }, manager);
+    const m = manager ?? getDBConnection();
+    return m.find(Page, {
+      where: { appVersionId, isPageGroup: false },
+      order: { index: 'ASC' },
+    });
   }
 
   public async findFirstPagesByVersionIds(

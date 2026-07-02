@@ -149,14 +149,12 @@ export class PageService implements IPageService {
 
   async findPagesForVersion(appVersionId: string, manager?: EntityManager): Promise<Page[]> {
     const allPages = await this.pageHelperService.fetchPages(appVersionId, manager);
-    const pagesWithComponents = await Promise.all(
-      allPages.map(async (page) => {
-        const components = await this.componentsService.getAllComponents(page.id, manager);
-        delete page.appVersionId;
-        return { ...page, components, restricted: false };
-      })
-    );
-    return pagesWithComponents as unknown as Page[];
+    const pageIds = allPages.map((p) => p.id);
+    const componentsByPage = await this.componentsService.getAllComponentsForPages(pageIds, manager);
+    return allPages.map((page) => {
+      delete page.appVersionId;
+      return { ...page, components: componentsByPage.get(page.id) ?? {}, restricted: false };
+    }) as unknown as Page[];
   }
 
   async findOne(id: string): Promise<Page> {
