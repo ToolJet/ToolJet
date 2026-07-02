@@ -6,6 +6,7 @@ import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { toast } from 'react-hot-toast';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
@@ -21,20 +22,30 @@ import { gitSyncService } from '@/_services';
 const LifecycleCTAButton = () => {
   const { moduleId } = useModuleContext();
 
-  const { selectedVersion, toggleGitSyncModal, creationMode, featureAccess, isGitSyncConfigured, appId, appName, appType } =
-    useStore(
-      (state) => ({
-        selectedVersion: state.selectedVersion,
-        toggleGitSyncModal: state.toggleGitSyncModal,
-        creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
-        featureAccess: state?.license?.featureAccess,
-        isGitSyncConfigured: state.isGitSyncConfigured,
-        appId: state.appStore.modules[moduleId]?.app?.appId,
-        appName: state.appStore.modules[moduleId]?.app?.appName,
-        appType: state.appStore.modules[moduleId]?.app?.appType,
-      }),
-      shallow
-    );
+  const {
+    selectedVersion,
+    toggleGitSyncModal,
+    creationMode,
+    featureAccess,
+    isGitSyncConfigured,
+    appId,
+    appName,
+    appType,
+  } = useStore(
+    (state) => ({
+      selectedVersion: state.selectedVersion,
+      toggleGitSyncModal: state.toggleGitSyncModal,
+      creationMode: state.appStore.modules[moduleId]?.app?.creationMode,
+      featureAccess: state?.license?.featureAccess,
+      isGitSyncConfigured: state.isGitSyncConfigured,
+      appId: state.appStore.modules[moduleId]?.app?.appId,
+      appName: state.appStore.modules[moduleId]?.app?.appName,
+      appType: state.appStore.modules[moduleId]?.app?.appType,
+    }),
+    shallow
+  );
+
+  const draftVersion = useVersionManagerStore((state) => state.draftVersion);
 
   const [showPushModal, setShowPushModal] = useState(false);
   const [pushValidationError, setPushValidationError] = useState(null);
@@ -61,7 +72,11 @@ const LifecycleCTAButton = () => {
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-  const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && selectedVersion?.isSynced === false;
+  // An app is unsynced when its draft has never been pulled on main (isSynced=false).
+  // Pushing to a feature branch alone doesn't count — isSynced becomes true only after
+  // a pull on main. We check the draft (not selectedVersion) so switching to an old saved
+  // version with isSynced=false doesn't incorrectly re-trigger the Sync button.
+  const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && draftVersion?.isSynced === false;
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
@@ -143,51 +158,51 @@ const LifecycleCTAButton = () => {
 
   return (
     <>
-    {showPushModal && (
-      <PushAppsModal
-        show={showPushModal}
-        onClose={() => setShowPushModal(false)}
-        appGitId={appId}
-        versionId={selectedVersion?.id}
-        appName={appName}
-        resourceType={appType === 'module' ? 'module' : 'app'}
-        onSuccess={() => setShowPushModal(false)}
-      />
-    )}
-    {pushValidationError && (
-      <PushValidationErrorModal
-        show={!!pushValidationError}
-        onClose={() => setPushValidationError(null)}
-        errorType={pushValidationError.errorType}
-        resourceType={pushValidationError.resourceType}
-        affectedResources={pushValidationError.affectedResources}
-      />
-    )}
-    <div className="lifecycle-cta-button">
-      <ToolTip
-        message={config.unsynced ? 'App not synced in remote git' : ''}
-        placement="bottom"
-        show={config.unsynced}
-      >
-        <Button
-          variant={config.variant}
-          onClick={handleClick}
-          disabled={config.disabled}
-          data-tooltip-id="editor-header-tooltip"
-          data-tooltip-content={config.tooltip}
-          data-cy="lifecycle-cta-button"
-          style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+      {showPushModal && (
+        <PushAppsModal
+          show={showPushModal}
+          onClose={() => setShowPushModal(false)}
+          appGitId={appId}
+          versionId={selectedVersion?.id}
+          appName={appName}
+          resourceType={appType === 'module' ? 'module' : 'app'}
+          onSuccess={() => setShowPushModal(false)}
+        />
+      )}
+      {pushValidationError && (
+        <PushValidationErrorModal
+          show={!!pushValidationError}
+          onClose={() => setPushValidationError(null)}
+          errorType={pushValidationError.errorType}
+          resourceType={pushValidationError.resourceType}
+          affectedResources={pushValidationError.affectedResources}
+        />
+      )}
+      <div className="lifecycle-cta-button">
+        <ToolTip
+          message={config.unsynced ? 'App not synced in remote git' : ''}
+          placement="bottom"
+          show={config.unsynced}
         >
-          <SolidIcon
-            fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
-            viewBox="0 0 16 16"
-            name={config.icon}
-            width="16"
-          />
-          <span>{config.label}</span>
-        </Button>
-      </ToolTip>
-    </div>
+          <Button
+            variant={config.variant}
+            onClick={handleClick}
+            disabled={config.disabled}
+            data-tooltip-id="editor-header-tooltip"
+            data-tooltip-content={config.tooltip}
+            data-cy="lifecycle-cta-button"
+            style={config.unsynced ? { borderColor: '#E54D2E' } : undefined}
+          >
+            <SolidIcon
+              fill={config.unsynced ? '#E54D2E' : 'var(--icon-accent)'}
+              viewBox="0 0 16 16"
+              name={config.icon}
+              width="16"
+            />
+            <span>{config.label}</span>
+          </Button>
+        </ToolTip>
+      </div>
     </>
   );
 };

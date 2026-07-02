@@ -498,7 +498,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             <span className="tj-text-sm" style={{ fontWeight: 500, color: 'var(--text-default)' }}>
               Versions
             </span>
-            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && (
+            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && hasSyncedDraft && (
               <Button
                 variant="outline"
                 size="small"
