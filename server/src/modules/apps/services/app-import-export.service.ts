@@ -347,6 +347,77 @@ export class AppImportExportService {
     protected readonly transactionLogger: TransactionLogger
   ) {}
 
+  /**
+   * Reverse lookup: given app slugs (as stored on `app_versions.slug`), return their
+   * owning apps' `co_relation_id`s. Used by the import path to back-fill
+   * `pages.target_corelation_id` and `event.correlationId` for dumps that only carry
+   * legacy slugs.
+   *
+   * Restricted to `apps.type = 'front-end'` because go-to-app navigation and
+   * cross-app page targets only point at front-end apps (modules and workflows are
+   * never valid targets). This matches the two backfill migrations
+   * (1781645306551 / 1781645376435).
+   *
+   * Tie-breaker mirrors `findAppBySlug`'s runtime priority so the import resolves the
+   * same logical app a click would:
+   *   1. Default-branch row (`organization_git_sync_branches.is_default = true`)
+   *   2. Branchless row (`av.branch_id IS NULL`, for git-disabled orgs)
+   *   3. Anything else (sub-branches, stale tag snapshots after rename)
+   *   Within tier: newest `updated_at`, then `id` for determinism.
+   */
+  protected async resolveCorelationIdsBySlugs(
+    manager: EntityManager,
+    slugs: string[],
+    organizationId: string
+  ): Promise<Map<string, string>> {
+    const distinct = Array.from(new Set((slugs || []).filter(Boolean)));
+    if (distinct.length === 0) return new Map();
+
+    const rows = await manager
+      .createQueryBuilder(App, 'app')
+      .innerJoin(AppVersion, 'av', 'av.appId = app.id AND av.slug IS NOT NULL')
+      .leftJoin(WorkspaceBranch, 'wb', 'wb.id = av.branch_id')
+      .where('av.slug IN (:...slugs)', { slugs: distinct })
+      .andWhere('app.organizationId = :organizationId', { organizationId })
+      .andWhere('app.co_relation_id IS NOT NULL')
+      .andWhere(`app.type = 'front-end'`)
+      .select('av.slug', 'slug')
+      .addSelect('app.co_relation_id', 'coRelationId')
+      .orderBy(
+        `CASE WHEN wb.is_default = true THEN 0
+              WHEN av.branch_id IS NULL THEN 1
+              ELSE 2 END`,
+        'ASC'
+      )
+      .addOrderBy('av.updatedAt', 'DESC')
+      .addOrderBy('av.id', 'ASC')
+      .getRawMany<{ slug: string; coRelationId: string }>();
+
+    const result = new Map<string, string>();
+    for (const row of rows) {
+      if (row.slug && row.coRelationId && !result.has(row.slug)) {
+        result.set(row.slug, row.coRelationId);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Rewrite a single go-to-app event blob:
+   *    replace legacy `slug` with `correlationId` if the slug resolves in the target org.
+   * Mirrors the migration's transformation so dumps that predate `1777900000000-BackfillGoToAppEventSlugWithCorrelationId` get normalized on import.
+   */
+  private rewriteGoToAppBlob(blob: any, slugToCo: Map<string, string>): any {
+    if (blob?.actionId !== 'go-to-app' || blob.correlationId || !blob.slug) return blob;
+
+    const co = slugToCo.get(blob.slug);
+    if (!co) return blob;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { slug, ...rest } = blob;
+    return { ...rest, correlationId: co };
+  }
+
   private getEventHandlerName(event: any): string {
     if (typeof event?.name === 'string' && event.name.trim()) {
       return event.name.trim();
@@ -1638,6 +1709,15 @@ export class AppImportExportService {
         let updateHomepageId = null;
 
         if (updatedDefinition?.pages) {
+          const legacyPageValues = Object.values(updatedDefinition.pages) as any[];
+          const legacySlugsForVersion = legacyPageValues
+            .filter((p) => p?.type === 'app' && !p?.targetCorelationId && p?.appId)
+            .map((p) => p.appId as string);
+          const slugToCoRelationId =
+            legacySlugsForVersion.length > 0
+              ? await this.resolveCorelationIdsBySlugs(manager, legacySlugsForVersion, user.organizationId)
+              : new Map<string, string>();
+
           for (const pageId of Object.keys(updatedDefinition?.pages)) {
             const page = updatedDefinition.pages[pageId];
 
@@ -1688,6 +1768,9 @@ export class AppImportExportService {
               isPageGroup: page.isPageGroup,
               pageGroupIndex: page.pageGroupIndex || null,
               icon: page.icon || null,
+              targetCorelationId:
+                page.targetCorelationId ??
+                (page.type === 'app' && page.appId ? (slugToCoRelationId.get(page.appId) ?? null) : null),
             });
             const pageCreated = await manager.save(newPage);
 
@@ -1743,6 +1826,37 @@ export class AppImportExportService {
 
             //Event handlers
 
+            // Normalize go-to-app blobs (legacy `slug` → `correlationId`) for every event
+            // on this page — including those nested inside Table widgets (per-action and
+            // per-toggle-column). If we omitted them, table-scoped go-to-app handlers would
+            // keep the deprecated `slug` key on import.
+            const collectLegacySlug = (e) =>
+              e?.actionId === 'go-to-app' && !e.correlationId && e.slug ? [e.slug] : [];
+
+            const tableEventBlobs = (savedComponents || []).flatMap((comp) => {
+              if (comp?.type !== 'Table') return [];
+              const blobs = [];
+              for (const action of comp.properties?.actions?.value || []) {
+                for (const ev of action.events || []) blobs.push(ev);
+              }
+              for (const column of comp.properties?.columns?.value || []) {
+                if (column?.columnType !== 'toggle') continue;
+                for (const ev of column.events || []) blobs.push(ev);
+              }
+              return blobs;
+            });
+
+            const legacyGoToAppSlugsForPage = [
+              ...pageEvents.flatMap(collectLegacySlug),
+              ...componentEvents.flatMap((eo) => (eo.event || []).flatMap(collectLegacySlug)),
+              ...tableEventBlobs.flatMap(collectLegacySlug),
+            ];
+
+            const slugToCoForPage =
+              legacyGoToAppSlugsForPage.length > 0
+                ? await this.resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugsForPage, user.organizationId)
+                : new Map<string, string>();
+
             if (pageEvents.length > 0) {
               await Promise.all(
                 pageEvents.map(async (event, index) => {
@@ -1750,7 +1864,7 @@ export class AppImportExportService {
                     name: this.getEventHandlerName(event),
                     sourceId: pageCreated.id,
                     target: Target.page,
-                    event: event,
+                    event: this.rewriteGoToAppBlob(event, slugToCoForPage),
                     index: pageEvents.index || index,
                     appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                   };
@@ -1770,7 +1884,7 @@ export class AppImportExportService {
                       name: this.getEventHandlerName(event),
                       sourceId: appResourceMappings.componentsMapping[eventObj.componentId],
                       target: Target.component,
-                      event: event,
+                      event: this.rewriteGoToAppBlob(event, slugToCoForPage),
                       index: eventObj.index || index,
                       appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                     });
@@ -1797,7 +1911,7 @@ export class AppImportExportService {
                         name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableAction,
-                        event: { ...event, ref: action.name },
+                        event: { ...this.rewriteGoToAppBlob(event, slugToCoForPage), ref: action.name },
                         index: event.index ?? index,
                         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                       });
@@ -1813,7 +1927,7 @@ export class AppImportExportService {
                         name: this.getEventHandlerName(event),
                         sourceId: component.id,
                         target: Target.tableColumn,
-                        event: { ...event, ref: column.name },
+                        event: { ...this.rewriteGoToAppBlob(event, slugToCoForPage), ref: column.name },
                         index: event.index ?? index,
                         appVersionId: appResourceMappings.appVersionMapping[importingAppVersion.id],
                       });
@@ -1879,6 +1993,19 @@ export class AppImportExportService {
     isGitApp = false
   ): Promise<AppResourceMappings> {
     appResourceMappings = { ...appResourceMappings };
+
+    // Normalize go-to-app event blobs:
+    // legacy dumps store `event.slug`; current schema stores `event.correlationId`.
+    // Resolve & rewrite in place once so every downstream EventHandler create picks up the migrated blob automatically.
+    const legacyGoToAppSlugs = (importingEvents || [])
+      .filter((e) => e?.event?.actionId === 'go-to-app' && !e.event.correlationId && e.event.slug)
+      .map((e) => e.event.slug as string);
+    if (legacyGoToAppSlugs.length > 0) {
+      const slugToCo = await this.resolveCorelationIdsBySlugs(manager, legacyGoToAppSlugs, user.organizationId);
+      for (const handler of importingEvents) {
+        handler.event = this.rewriteGoToAppBlob(handler.event, slugToCo);
+      }
+    }
 
     // Dedupe key for folder mappings across ALL version iterations.
     // The DB enforces UNIQUE(child_id, child_type). In git exports, queries are cloned
@@ -2124,7 +2251,21 @@ export class AppImportExportService {
       const oldNewIdMap = {};
       const pageGroupIdArr = [];
 
+      // Back-fill `targetCorelationId` for app-type pages that only carry the legacy
+      // slug-in-`appId`. Single batched lookup per app version to avoid N+1.
+      const legacySlugsToResolve = pagesOfAppVersion
+        .filter((p) => p.type === 'app' && !p.targetCorelationId && p.appId)
+        .map((p) => p.appId as string);
+      const slugToCoRelationId =
+        legacySlugsToResolve.length > 0
+          ? await this.resolveCorelationIdsBySlugs(manager, legacySlugsToResolve, user.organizationId)
+          : new Map<string, string>();
+
       for (const page of pagesOfAppVersion) {
+        const resolvedTargetCorelationId =
+          page.targetCorelationId ??
+          (page.type === 'app' && page.appId ? (slugToCoRelationId.get(page.appId) ?? null) : null);
+
         const newPage = manager.create(Page, {
           name: page.name,
           handle: page.handle,
@@ -2142,6 +2283,7 @@ export class AppImportExportService {
           openIn: page.openIn || PageOpenIn.SAME_TAB,
           url: page.url || null,
           appId: page.appId || '',
+          targetCorelationId: resolvedTargetCorelationId,
         });
 
         const pageCreated = await manager.save(newPage);
