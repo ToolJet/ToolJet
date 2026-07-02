@@ -1,0 +1,108 @@
+.left-sidebar-dependency-viewer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .dependency-viewer-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .dependency-viewer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    padding-bottom: 48px;
+  }
+
+  .dependency-viewer-empty {
+    color: var(--text-placeholder, #6a727c);
+    font-size: 12px;
+    padding: 8px 4px;
+  }
+
+  .dependency-viewer-row {
+    border-radius: 6px;
+
+    .dependency-viewer-row-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      cursor: pointer;
+      border-radius: 6px;
+
+      &:hover {
+        background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.1));
+      }
+
+      &.selected {
+        background: var(--interactive-overlays-fill-selected, rgba(66, 99, 235, 0.1));
+      }
+
+      .dependency-viewer-chevron-wrapper {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        padding: 2px;
+        border-radius: 4px;
+
+        &:hover {
+          background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.15));
+        }
+      }
+
+      .dependency-viewer-chevron {
+        color: var(--icon-default, #6a727c);
+        transition: transform 0.15s ease;
+
+        &.expanded {
+          transform: rotate(90deg);
+        }
+      }
+
+      .dependency-viewer-component-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-default, #1b1f24);
+        min-width: 0;
+        flex: 1;
+      }
+
+      .dependency-viewer-row-graph-btn {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding: 2px;
+        border-radius: 4px;
+        color: var(--icon-default, #6a727c);
+        visibility: hidden;
+
+        &:hover {
+          background: var(--interactive-overlays-fill-hover, rgba(136, 144, 153, 0.15));
+          color: var(--text-default, #1b1f24);
+        }
+      }
+
+      &:hover .dependency-viewer-row-graph-btn {
+        visibility: visible;
+      }
+
+      .dependency-viewer-count {
+        flex-shrink: 0;
+        font-size: 10px;
+        line-height: 16px;
+        padding: 0 6px;
+        border-radius: 8px;
+        background: var(--surfaces-surface-03, #e4e7eb);
+        color: var(--text-secondary, #6a727c);
+      }
+    }
+
+    .dependency-viewer-row-body {
+      padding: 2px 8px 8px 26px;
+    }
+  }
+}
