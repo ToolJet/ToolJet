@@ -8,8 +8,10 @@ import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 
 export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
+  const { moduleId } = useModuleContext();
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
@@ -75,6 +77,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           handleCellValueChange,
           searchText: '',
           columnForAddNewRow: true,
+          moduleId,
         }).filter(Boolean),
       ].filter(Boolean),
     [
@@ -86,6 +89,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
       newEmptyRow,
       addNewRowDetails,
       addNewRowDetailsLength,
+      moduleId,
     ]
   );
 
