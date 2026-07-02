@@ -97,7 +97,7 @@
     "@sentry/nestjs": "^10.24.0",
     "@temporalio/activity": "^1.11.6",
     "@temporalio/client": "^1.11.6",
-    "@temporalio/worker": "^1.11.6",
+    "@temporalio/worker": "^1.17.2",
     "@temporalio/workflow": "^1.11.6",
     "@tooljet/plugins": "../plugins",
     "acorn": "^8.13.0",
