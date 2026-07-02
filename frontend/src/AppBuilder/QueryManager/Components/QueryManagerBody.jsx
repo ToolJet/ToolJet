@@ -72,6 +72,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
 
   // Clear the focus field value from options
   const cleanFocusedFields = (newOptions) => {
+    if (!defaultOptions.current) return newOptions;
     const diffFields = diff(newOptions, defaultOptions.current);
     const updatedOptions = { ...newOptions };
     Object.keys(diffFields).forEach((key) => {
