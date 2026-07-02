@@ -4,14 +4,7 @@
 
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import {
-  resetDB,
-  createUser,
-  initTestApp,
-  closeTestApp,
-  createApplication,
-  createApplicationVersion,
-} from 'test-helper';
+import { createUser, initTestApp, closeTestApp, createApplication, createApplicationVersion } from 'test-helper';
 import { APP_TYPES } from '@modules/apps/constants';
 
 jest.setTimeout(120_000);
@@ -66,13 +59,13 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
   });
 
-  beforeEach(async () => {
-    await resetDB();
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   afterAll(async () => {
     await closeTestApp(app);
-  });
+  }, 60000);
 
   // ---------------------------------------------------------------------------
   // GET /api/ext/workspace/:workspaceId/modules
@@ -81,9 +74,7 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
   describe('GET /api/ext/workspace/:workspaceId/modules', () => {
     it('returns 403 without Authorization header', async () => {
       const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-      await request(app.getHttpServer())
-        .get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`)
-        .expect(403);
+      await request(app.getHttpServer()).get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`).expect(403);
     });
 
     it('returns 400 for non-UUID workspaceId', async () => {
@@ -427,5 +418,120 @@ describe('ExternalApisModulesController (EE enterprise)', () => {
       expect(listing.total).toBe(1);
       expect(listing.modules[0].name).toBe('Portable Module');
     });
+
+    it('returns 400 when a front-end app JSON is sent to the module import endpoint', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const frontendApp = await createApplication(app, { name: 'Frontend App', user, type: APP_TYPES.FRONT_END });
+      await createApplicationVersion(app, frontendApp);
+
+      // Export the front-end app via the apps export endpoint
+      const exportRes = await request(app.getHttpServer())
+        .post(`/api/ext/export/workspace/${orgId}/apps/${frontendApp.id}`)
+        .set('Authorization', getExtAuth())
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${orgId}/modules`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: exportRes.body.tooljet_version ?? '1.0.0',
+          app: exportRes.body.app,
+          tooljet_database: exportRes.body.tooljet_database ?? [],
+        })
+        .expect(400);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // POST /api/ext/import/workspace/:workspaceId/apps — module JSON rejection
+  // ---------------------------------------------------------------------------
+
+  describe('POST /api/ext/import/workspace/:workspaceId/apps', () => {
+    it('returns 400 when a module JSON is sent to the app import endpoint', async () => {
+      const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+      const orgId = user.defaultOrganizationId;
+
+      const mod = await createApplication(app, { name: 'Source Module', user, type: APP_TYPES.MODULE });
+      await createApplicationVersion(app, mod);
+
+      const exportBody = await exportModule(app.getHttpServer(), orgId, mod.id);
+
+      await request(app.getHttpServer())
+        .post(`/api/ext/import/workspace/${orgId}/apps`)
+        .set('Authorization', getExtAuth())
+        .send({
+          tooljet_version: exportBody.tooljet_version,
+          app: exportBody.app,
+          tooljet_database: exportBody.tooljet_database ?? [],
+        })
+        .expect(400);
+    });
+  });
+});
+
+describe('ExternalApisModulesController (EE plan: starter)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ee', plan: 'starter' }));
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
+  }, 60000);
+
+  it('GET /api/ext/workspace/:workspaceId/modules returns 403 — externalApi not included in starter plan', async () => {
+    const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+    await request(app.getHttpServer())
+      .get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`)
+      .set('Authorization', getExtAuth())
+      .expect(451);
+  });
+});
+
+describe('ExternalApisModulesController (CE)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await initTestApp({ edition: 'ce' }));
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  afterAll(async () => {
+    await closeTestApp(app);
+  }, 60000);
+
+  it('GET /api/ext/workspace/:workspaceId/modules returns 404 — route not registered on CE', async () => {
+    const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+    await request(app.getHttpServer())
+      .get(`/api/ext/workspace/${user.defaultOrganizationId}/modules`)
+      .set('Authorization', getExtAuth())
+      .expect(404);
+  });
+
+  it('POST /api/ext/export/workspace/:workspaceId/modules/:moduleId returns 404 — route not registered on CE', async () => {
+    const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+    await request(app.getHttpServer())
+      .post(`/api/ext/export/workspace/${user.defaultOrganizationId}/modules/${NONEXISTENT_UUID}`)
+      .set('Authorization', getExtAuth())
+      .expect(404);
+  });
+
+  it('POST /api/ext/import/workspace/:workspaceId/modules returns 404 — route not registered on CE', async () => {
+    const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+    await request(app.getHttpServer())
+      .post(`/api/ext/import/workspace/${user.defaultOrganizationId}/modules`)
+      .set('Authorization', getExtAuth())
+      .send({ tooljet_version: '1.0.0' })
+      .expect(404);
   });
 });

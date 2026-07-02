@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "QuickBooks datasource",
+  "description": "A schema defining QuickBooks datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "",
+      "key": "quickbooks_operation",
+      "type": "react-component-api-endpoint",
+      "description": "Single select dropdown for operation",
+      "specUrl": "@spec/quickbooks/accounting"
+    }
+  }
+}

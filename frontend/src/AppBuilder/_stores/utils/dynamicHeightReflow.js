@@ -2,10 +2,15 @@ import {
   BOX_PADDING,
   CONTAINER_FORM_CANVAS_PADDING,
   HIDDEN_COMPONENT_HEIGHT,
+  MODAL_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  TAB_CANVAS_PADDING,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { isTruthyOrZero } from '@/_helpers/appUtils';
 import { isProperNumber } from '../utils';
+
+// Tabs tab-strip rendered height (49.5 ul + 0.5 border in Tabs.jsx).
+const TABS_TAB_BAR_HEIGHT = 50;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // Dynamic-Height Reflow — max-over-all-blockers layout engine.
@@ -183,6 +188,17 @@ export const sortByCanonicalPosition = (componentIds, currentLayout, currentPage
       return firstLeft - secondLeft;
     }
 
+    // updatedAt tiebreaker — for widgets sharing the exact same (top, left)
+    // (e.g. multiple collapseWhenHidden widgets dropped on top of each other),
+    // the most recently positioned widget renders at the bottom of the stack.
+    // Server's createComponentWithLayout response exposes layout.updatedAt.
+    const firstUpdatedAt = firstLayout?.updatedAt ? new Date(firstLayout.updatedAt).getTime() : null;
+    const secondUpdatedAt = secondLayout?.updatedAt ? new Date(secondLayout.updatedAt).getTime() : null;
+
+    if (firstUpdatedAt !== null && secondUpdatedAt !== null && firstUpdatedAt !== secondUpdatedAt) {
+      return firstUpdatedAt - secondUpdatedAt;
+    }
+
     return firstId.localeCompare(secondId);
   });
 };
@@ -283,6 +299,7 @@ const getExtraContainerHeight = ({
   getResolvedValue,
   getComponentDefinition,
   isAccordionExpanded,
+  hideTabs,
 }) => {
   let extraHeight = 0;
   let nextCurrentMax = currentMax;
@@ -314,18 +331,44 @@ const getExtraContainerHeight = ({
         nextCurrentMax = lastFieldset.offsetHeight;
       }
     } else {
+      // FormUtils.getBodyHeight subtracts (headerHeight + 10) and
+      // (footerHeight + 14) plus a 20px floor. To make body fit `currentMax`
+      // tightly without overflow, add the same back here.
+      extraHeight += 20;
       if (showHeader && isProperNumber(headerHeight)) {
-        extraHeight += headerHeight;
+        extraHeight += headerHeight + 10;
       }
       if (showFooter && isProperNumber(footerHeight)) {
-        extraHeight += footerHeight;
+        extraHeight += footerHeight + 14;
       }
-      extraHeight += 20;
     }
   } else if (componentType === 'Tabs') {
-    extraHeight = 40;
+    // Tab pane chrome: TAB_CANVAS_PADDING (8) top + bottom around the
+    // SubContainer canvas, plus the tab strip (50) unless `hideTabs` is on
+    // (strip becomes `display:none`). +16 covers the .real-canvas
+    // `calc(100% + 3.5px)` extension plus the ~7px scrollHeight overshoot
+    // that growing leaf widgets (e.g. TextArea labels) report past their
+    // moveable-box height.
+    extraHeight = TAB_CANVAS_PADDING * 2 + 16 + (hideTabs ? 0 : TABS_TAB_BAR_HEIGHT);
+  } else if (componentType === 'ModalV2') {
+    // Modal body chrome: MODAL_CANVAS_PADDING (5) top + bottom around the
+    // SubContainer canvas (stylesFactory.js modalBody) + safety for the
+    // `.real-canvas` `calc(100% + 1px)` extension. Plus 12px per shown
+    // header/footer slot — Modal.jsx composes totalHeight from the
+    // *configured* header/footer heights, but each slot actually renders
+    // ~10px taller (HorizontalSlot pad + 1px border), so that gap has to be
+    // padded into the body content height or the body clips.
+    const { properties = {} } = getResolvedComponent(componentId, contextIndices) || {};
+    extraHeight = MODAL_CANVAS_PADDING * 2 + 8;
+    if (properties.showHeader) extraHeight += 12;
+    if (properties.showFooter) extraHeight += 12;
   } else if (componentType === 'Listview' && normalizeLayoutContext(contextIndices)) {
-    extraHeight -= 40;
+    // Listview row context: previously `-= 40` to cancel the historical +50
+    // buffer (net +10 chrome per row). Buffer is gone, so set the row's
+    // chrome directly: +15 covers each row's small internal padding plus
+    // a sub-pixel/safety margin against children that report `scrollHeight`
+    // a few px past their `offsetHeight` (e.g. label-bumped TextArea).
+    extraHeight = 15;
   }
 
   return { extraHeight, currentMax: nextCurrentMax, skipContentHeightCalculation };
@@ -386,10 +429,11 @@ export const resolveListviewHeightFromRows = ({
       : rowHeights.reduce((totalHeight, rowHeight) => totalHeight + rowHeight, 0);
 
   // Fixed allowances: per-row bottom border (list mode only), pagination bar,
-  // outer padding.
+  // outer chrome (7px padding × 2 = 14 + 1px outer border × 2 = 2 + 2 safety
+  // for `.real-canvas` `calc(100% + 1px)` extension and rounding drift).
   const borderAllowance = componentProperties.showBorder && mode === 'list' ? rowCount : 0;
   const paginationAllowance = componentProperties.enablePagination ? 61 : 0;
-  const outerPaddingAllowance = 14;
+  const outerPaddingAllowance = 18;
 
   return stackedRowsHeight + borderAllowance + paginationAllowance + outerPaddingAllowance;
 };
@@ -624,6 +668,7 @@ export const resolveContainerHeight = ({
     getResolvedValue,
     getComponentDefinition,
     isAccordionExpanded,
+    hideTabs: component?.properties?.hideTabs === true,
   });
 
   currentMax = nextCurrentMax;
@@ -632,13 +677,11 @@ export const resolveContainerHeight = ({
     return containerHeight;
   }
 
-  // Container/Accordion floor on canonical height; other types add a 50px
-  // breathing buffer on top of content (Tabs/Form/etc.).
-  if (['Container', 'Accordion'].includes(componentType)) {
-    return Math.max(currentMax + extraHeight, containerHeight);
-  }
-
-  return Math.max(currentMax + 50 + extraHeight, containerHeight);
+  // Every container type's `extraHeight` now accounts for its own chrome
+  // (Container/Accordion: padding+border+header; Form: header/footer/body
+  // gutter; Tabs: strip + pane padding; ModalV2: body padding + borders).
+  // Floor at canonical so the container never drops below its authored size.
+  return Math.max(currentMax + extraHeight, containerHeight);
 };
 
 // The changed widget's target height:
@@ -660,6 +703,7 @@ export const resolveWidgetMeasuredHeight = ({
   isContainer,
   visibility,
   containerHeight,
+  calculateMoveableBoxHeightWithId,
 }) => {
   if (isContainer && (componentType !== 'Listview' || normalizeLayoutContext(contextIndices))) {
     return containerHeight;
@@ -674,16 +718,59 @@ export const resolveWidgetMeasuredHeight = ({
     contextIndices
   )?.height;
 
+  // Fallback when the DOM can't be measured (invisible widget, hidden ancestor
+  // subtree, or missing element). Prefer the calc-bumped canonical so top-
+  // aligned input widgets don't get pinned at their raw authored height (40)
+  // — WidgetWrapper renders them at the bumped height (60) once visible, and
+  // a temp.height written here becomes the finalHeight on visibility flip.
+  const fallbackHeight = () => {
+    if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      const definition = currentPageComponents?.[componentId];
+      const stylesDefinition = definition?.component?.definition?.styles;
+      const calc = calculateMoveableBoxHeightWithId(componentId, currentLayout, stylesDefinition);
+      if (typeof calc === 'number') return calc;
+    }
+    return getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+  };
+
+  // Invisible widget: we can't measure it, so return what WidgetWrapper would
+  // render it at when visible — calc-bumped canonical. Floor any prior temp at
+  // this value too: a stale temp written before the bump (or under a previous
+  // alignment) must not pin the widget below its rendered visible height,
+  // because temp.height becomes finalHeight on the next visibility flip.
   if (!visibility) {
-    return existingHeight ?? getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ?? 0;
+    const bumped = fallbackHeight();
+    if (existingHeight != null) return Math.max(existingHeight, bumped);
+    return bumped;
   }
 
-  return (
-    element?.offsetHeight ??
-    existingHeight ??
-    getCanonicalLayout(componentId, currentLayout, currentPageComponents)?.height ??
-    0
-  );
+  // Hidden ancestor subtree (inactive tab pane, collapsed accordion, closed
+  // modal) → offsetHeight reads 0 even though the widget itself is visible
+  // per its visibility flag. Returning that 0 would write temp.height=0 and
+  // poison every subsequent reflow: gridSlice's resolvedHeights treats 0 as
+  // a valid existing value (0 != null) and replays it for siblings, which
+  // collapse to height:0 in WidgetWrapper. Fall through to the last known /
+  // calc-bumped canonical height so the widget keeps its slot until it's
+  // actually measurable.
+  if (element && element.offsetParent === null) {
+    return existingHeight ?? fallbackHeight();
+  }
+
+  // Same anti-poisoning guard for the show transition: when a widget with
+  // an inner `height:100%` child (e.g., NewTable) flips from hidden to
+  // visible, the outer wrapper is briefly set to `height:auto` by
+  // useDynamicHeight before this measurement runs. With inner `100%`
+  // resolving against an auto parent, the layout pass returns ~0px for one
+  // frame. Trusting that 0 would propagate as delta = 0 − priorHeight, e.g.,
+  // -350, collapsing every downstream sibling above its canonical top.
+  // Treat 0 as "not yet measurable" and prefer the last known / canonical
+  // height instead — no visible widget legitimately renders at 0.
+  const measuredHeight = element?.offsetHeight;
+  if (measuredHeight === 0) {
+    return existingHeight ?? fallbackHeight();
+  }
+
+  return measuredHeight ?? existingHeight ?? fallbackHeight();
 };
 
 // Blocker enumeration — returns every widget canonically above `targetId`
@@ -820,7 +907,28 @@ export const buildReflowPatch = ({
   inFlowMap,
   resolvedHeights,
   collapseWhenHiddenMap,
+  calculateMoveableBoxHeightWithId,
+  getComponentDefinition,
 }) => {
+  // Effective canonical height = `calculateMoveableBoxHeightWithId`, which
+  // bumps top-aligned input widgets by TOP_ALIGNMENT_HEIGHT_INCREMENT (20px)
+  // to make room for the label that stacks above the control. WidgetWrapper
+  // already renders edit mode at this bumped height, so the author placed
+  // downstream siblings relative to it. View mode (dynamic height) starts at
+  // the raw canonical and grows to the bumped height — without this lookup,
+  // reflow would propagate the bump as a +20 delta and push siblings past
+  // their authored positions. Falls back to raw canonical when the calc
+  // helpers aren't passed (defensive — every caller in this codebase passes
+  // them) or for non-input widgets where the calc returns canonical anyway.
+  const getEffectiveCanonicalHeight = (componentId) => {
+    if (typeof calculateMoveableBoxHeightWithId === 'function') {
+      const definition = getComponentDefinition?.(componentId);
+      const stylesDefinition = definition?.component?.definition?.styles;
+      const calc = calculateMoveableBoxHeightWithId(componentId, currentLayout, stylesDefinition);
+      if (typeof calc === 'number') return calc;
+    }
+    return currentPageComponents?.[componentId]?.layouts?.[currentLayout]?.height ?? 0;
+  };
   const sortedComponentIds = sortByCanonicalPosition(componentIds, currentLayout, currentPageComponents);
   const connectedIds = getConnectedLaneComponentIds(
     sortedComponentIds,
@@ -843,7 +951,12 @@ export const buildReflowPatch = ({
   const changedKey = getDynamicLayoutKey(changedComponentId, contextIndices);
   const changedCanonical = getCanonicalLayout(changedComponentId, currentLayout, currentPageComponents);
   const changedNewHeight = resolvedHeights[changedComponentId] ?? changedCanonical?.height ?? 0;
-  const changedOldHeight = temporaryLayouts?.[changedKey]?.height ?? changedCanonical?.height ?? 0;
+  // Old-height baseline is the calc-bumped canonical, NOT the raw canonical.
+  // Author placed siblings relative to the bumped height (visible in editor),
+  // so a view-mode widget rendering at the bumped height represents zero
+  // delta — not a +20 growth.
+  const changedOldHeight =
+    temporaryLayouts?.[changedKey]?.height ?? getEffectiveCanonicalHeight(changedComponentId) ?? 0;
   const delta = changedNewHeight - changedOldHeight;
   const isChangedOutOfFlow = inFlowMap[changedComponentId] === false;
   // Accordion collapse is the one case where a widget shrinks far below
@@ -935,10 +1048,79 @@ export const buildReflowPatch = ({
     // blocker loop doesn't inflate T past its true resting position.
     const collapsedCanonical = Math.max(0, targetTopCanonical - totalOutOfFlowSlot - totalAccordionShrinkage);
 
+    // Shadowing: when an in-flow blocker fully covers the target's
+    // horizontal lane, that blocker has already integrated every collapse
+    // happening above it (its own reflow pass ran top-to-bottom earlier
+    // and computed its `currentBottom` against the same out-of-flow set).
+    // Far-up blockers ABOVE the shadower would re-apply that collapse
+    // through canonical-gap math — but their slot-subtraction only counts
+    // out-of-flow widgets that overlap the *target's* (narrower) lane, so
+    // the cumulative gap they propose is too large. The shadower's
+    // constraint is the truthful one for everything sitting below it.
+    //
+    // Pick the LOWEST (canonically closest to target) in-flow blocker
+    // that fully covers target's lane. In-flow blockers strictly above
+    // that shadower are skipped — their contribution is already baked
+    // into the shadower's currentBottom.
+    const targetLeft = targetCanonical.left ?? 0;
+    const targetRight = targetLeft + (targetCanonical.width ?? 0);
+    let shadowerCanonicalTop = -Infinity;
+    let shadower = null;
+    for (let si = blockers.length - 1; si >= 0; si--) {
+      const v = blockers[si];
+      if (!v.isInFlow) continue;
+      const vLeft = v.canonicalLayout?.left ?? 0;
+      const vWidth = v.canonicalLayout?.width ?? 0;
+      const vRight = vLeft + vWidth;
+      if (vLeft <= targetLeft && vRight >= targetRight) {
+        shadowerCanonicalTop = v.canonicalLayout?.top ?? 0;
+        shadower = v;
+        break;
+      }
+    }
+
+    // When a shadower exists, replace `collapsedCanonical` with a floor
+    // anchored on the shadower. Reason: the original `collapsedCanonical`
+    // sums every out-of-flow slot in target's lane — which double-counts
+    // collapse that the shadower already absorbed. For widgets in narrow
+    // lanes, the lane-specific OOF total is smaller than what the shadower
+    // already integrated, so the original floor pins the target lower than
+    // where the shadower-based gap would put it (e.g., button row drifts
+    // below dropdown row in a multi-column layout). Anchoring the floor on
+    // the shadower keeps row partners aligned without breaking the
+    // structural-rest contract.
+    let effectiveCollapsedCanonical = collapsedCanonical;
+    if (shadower) {
+      const shadowerCanonicalBottom = shadowerCanonicalTop + getEffectiveCanonicalHeight(shadower.id);
+      let belowShadowerSubtraction = 0;
+      for (const [uid, slot] of slotSize) {
+        const uTop = outOfFlowTopsById.get(uid) ?? 0;
+        if (uTop >= shadowerCanonicalBottom && uTop < targetTopCanonical) {
+          belowShadowerSubtraction += slot;
+        }
+      }
+      const shadowerFloor =
+        shadower.currentBottom + (targetTopCanonical - shadowerCanonicalBottom) - belowShadowerSubtraction;
+      effectiveCollapsedCanonical = Math.max(0, shadowerFloor);
+    }
+
     // Baseline for delta propagation: existing temp if present (captures any
     // prior push/pull), otherwise the collapsed canonical (captures hide-
     // collapse on mount).
-    const baseTop = existingTemp?.top ?? collapsedCanonical;
+    //
+    // For GROW/SHRINK (changed widget in flow), use the *plain*
+    // `collapsedCanonical` — NOT `effectiveCollapsedCanonical`. The shadower
+    // adjustment baked into the latter uses `shadower.currentBottom`, which
+    // for the changed widget (or any blocker already pushed by it) already
+    // includes the growth that `delta` is about to add via `proposedTop`.
+    // Letting it leak in here double-counts the push and cascades downstream
+    // — a 50→70 textarea grew the next widget's gap by 40 instead of 20, and
+    // the widget below that by 60. The shadower floor still feeds `otherMax`
+    // below, where it's combined via `max()` instead of added, so the narrow-
+    // lane drift case (the original reason for the shadower fallback) stays
+    // covered. HIDE/SHOW (out-of-flow) keeps the shadower-anchored fallback
+    // because that path does no delta addition.
+    const baseTop = existingTemp?.top ?? (isChangedOutOfFlow ? effectiveCollapsedCanonical : collapsedCanonical);
 
     let nextTop;
 
@@ -982,14 +1164,16 @@ export const buildReflowPatch = ({
       // `collapsedCanonical` is the long-standing contract that widgets
       // (including Listview row templates) rely on to stay stable; only
       // the Accordion-shrink-below-canonical case needs to bypass it.
-      let otherMax = allowShrinkPullUp ? 0 : collapsedCanonical;
+      let otherMax = allowShrinkPullUp ? 0 : effectiveCollapsedCanonical;
       let hasInFlowBlocker = false;
       for (let vi = 0; vi < blockers.length; vi++) {
         const v = blockers[vi];
         if (!v.isInFlow) continue;
+        const vCanonicalTopForShadow = v.canonicalLayout?.top ?? 0;
+        if (vCanonicalTopForShadow < shadowerCanonicalTop) continue;
         hasInFlowBlocker = true;
         const vCanonicalTop = v.canonicalLayout?.top ?? 0;
-        const vCanonicalBottom = vCanonicalTop + (v.canonicalLayout?.height ?? 0);
+        const vCanonicalBottom = vCanonicalTop + getEffectiveCanonicalHeight(v.id);
         // Canonical-overlap correction (scoped to collapse-on-hide blockers
         // only — the dynamic-height grow/shrink path keeps its original
         // canonical math). When V opted into collapseWhenHidden AND target's
@@ -1040,7 +1224,14 @@ export const buildReflowPatch = ({
           const wTop = w.canonicalLayout?.top ?? 0;
           if (wTop < vCanonicalBottom || wTop >= targetTopCanonical) continue;
           const wCurrentHeight = w.currentBottom - w.currentTop;
-          const wCanonicalHeight = w.canonicalLayout?.height ?? 0;
+          // Use the effective canonical (calc-bumped) height for the same
+          // reason as `changedOldHeight`/`vCanonicalBottom` above: for
+          // top-aligned input widgets, the author placed siblings around the
+          // bumped height, so a current rendering at that bumped height is
+          // zero delta, not a +20 inflation. Without this swap, the sandwich
+          // case (V above → W=changed top-label input → T below) would
+          // re-introduce the same push that the other call sites fixed.
+          const wCanonicalHeight = getEffectiveCanonicalHeight(w.id);
           inFlowDelta += wCurrentHeight - wCanonicalHeight;
         }
         const canonicalGap = targetTopCanonical - vCanonicalBottomForGap - subtraction;
@@ -1048,14 +1239,14 @@ export const buildReflowPatch = ({
         if (constraint > otherMax) otherMax = constraint;
       }
       if (allowShrinkPullUp && !hasInFlowBlocker) {
-        otherMax = collapsedCanonical;
+        otherMax = effectiveCollapsedCanonical;
       }
 
       // On hide transitions (changed is going out of flow), existing temp
       // reflects the pre-hide layout — T needs to collapse to the structural
       // position regardless of its prior temp. In that case, ignore the
       // delta-propagation baseline and use the structural max directly.
-      nextTop = isChangedOutOfFlow ? Math.max(otherMax, collapsedCanonical) : Math.max(proposedTop, otherMax);
+      nextTop = isChangedOutOfFlow ? Math.max(otherMax, effectiveCollapsedCanonical) : Math.max(proposedTop, otherMax);
     }
 
     const currentEffectiveLayout = getEffectiveLayout(

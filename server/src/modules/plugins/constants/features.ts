@@ -13,5 +13,8 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.DEPENDENT_PLUGINS]: {},
     [FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS]: {},
     [FEATURE_KEY.UNINSTALL_PLUGINS]: {},
+    [FEATURE_KEY.GET_SPEC]: {
+      isPublic: true,
+    },
   },
 };

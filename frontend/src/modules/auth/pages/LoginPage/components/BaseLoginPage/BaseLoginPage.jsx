@@ -8,7 +8,7 @@ import { getRedirectTo } from '@/_helpers/routes';
 import { setCookie } from '@/_helpers/cookie';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
-import { GeneralFeatureImage } from '@/modules/common/components';
+import LoginPageRightPanel from '@/modules/auth/components/LoginPageRightPanel/LoginPageRightPanel';
 import { LoginForm } from '..';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
@@ -95,7 +95,7 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
           whiteLabelText={whiteLabelText}
         />
       )}
-      RightSideComponent={GeneralFeatureImage}
+      RightSideComponent={LoginPageRightPanel}
     />
   );
 };
