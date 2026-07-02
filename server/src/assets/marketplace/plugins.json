@@ -363,5 +363,13 @@
     "id": "intercom",
     "author": "Tooljet",
     "timestamp": "Wed, 16 Apr 2026 10:00:00 GMT"
+  },
+  {
+    "name": "Asana",
+    "description": "Plugin for Asana project and task management",
+    "version": "1.0.0",
+    "id": "asana",
+    "author": "Tooljet",
+    "timestamp": "Sun, 29 Jun 2025 00:00:00 GMT"
   }
 ]
