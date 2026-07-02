@@ -1,0 +1,110 @@
+---
+id: platform-overview
+title: Platform Overview
+sidebar_label: Platform Overview
+---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
+
+# Platform Overview
+
+ToolJet is an open-source low-code platform for building internal tools. Engineering teams use it to ship admin panels, operational dashboards, approval workflows, and data management applications in days instead of months.
+
+## The Problem It Solves
+
+Internal tools are expensive to build and maintain. A custom admin panel takes a senior engineer 2–3 weeks from scratch, another week to wire up authentication and permissions, and an ongoing commitment to maintain as the underlying data schema evolves. Multiply that across 10–15 internal tools and you're looking at one or two engineers perpetually occupied with tooling that doesn't ship product.
+
+ToolJet compresses that cycle. A developer connects to a data source, drags in a table and a form, wires up queries, configures permissions, and ships. The same tool takes hours, not weeks. Operations, finance, and support teams can then maintain and extend those apps without filing engineering tickets for every change.
+
+## What ToolJet Is
+
+Four integrated layers that work as a single platform:
+
+<CapabilityGrid items={[
+  {
+    icon: '🎨',
+    title: 'Visual App Builder',
+    description: 'Drag-and-drop UI with 60+ production-ready components: tables, forms, charts, kanban, calendars, file pickers, and custom code embeds. No frontend framework required.',
+  },
+  {
+    icon: '🔌',
+    title: 'Data Layer',
+    description: 'A query builder that connects directly to your existing data sources — SQL databases, REST, GraphQL, SaaS tools. Run queries, surface results, write back. Includes a built-in Postgres-backed database for lightweight storage.',
+  },
+  {
+    icon: '⚡',
+    title: 'Workflow Automation',
+    description: 'A visual node-based builder for backend logic, scheduled jobs, webhook handlers, and multi-step processes. Workflows run server-side with no frontend required.',
+  },
+  {
+    icon: '🤖',
+    title: 'AI Development',
+    description: 'Generate application scaffolding from natural language. An MCP bridge connects AI coding agents (Cursor, Copilot, Claude, Cline, Windsurf) to a live ToolJet instance for programmatic app building.',
+  },
+  {
+    icon: '🏗️',
+    title: 'Self-hosting',
+    description: 'Deploy on Docker, Kubernetes, AWS ECS, GCP Cloud Run, Azure, DigitalOcean, or on-premise. Run air-gapped if required. No data leaves your infrastructure.',
+  },
+  {
+    icon: '🔐',
+    title: 'Enterprise Governance',
+    description: 'Role-based access control, SSO across all major IdPs, audit logs, multi-environment promotion, and GitSync-backed CI/CD. Built for teams with compliance requirements.',
+  },
+]} />
+
+## Who Uses ToolJet
+
+- **Platform and infrastructure teams** building internal tooling infrastructure: user management consoles, configuration dashboards, deployment controls, incident response tools.
+- **Operations and data teams** needing to act on live data without waiting for engineering cycles: approval queues, case management, reporting dashboards, data quality tooling.
+- **Engineering-enabled product teams** iterating on internal workflows before committing to a custom build: intake forms, routing logic, notification systems.
+
+## Deployment Options
+
+<CapabilityGrid cols={3} items={[
+  {
+    icon: '☁️',
+    title: 'ToolJet Cloud',
+    description: 'Managed infrastructure with no ops overhead. Up and running in minutes.',
+  },
+  {
+    icon: '🐳',
+    title: 'Self-hosted',
+    description: 'Docker Compose, Kubernetes (GKE, AKS, EKS), AWS ECS, GCP Cloud Run, Azure, DigitalOcean, Helm, OpenShift.',
+  },
+  {
+    icon: '🔒',
+    title: 'Air-gapped / On-premise',
+    description: 'Fully network-isolated deployment for regulated industries. No data leaves your infrastructure.',
+  },
+]} />
+
+Full deployment details are in [Deployment & Infrastructure](/evaluate/deployment).
+
+## Pricing
+
+For current pricing and tier details, see the [ToolJet pricing page](https://www.tooljet.com/pricing).
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need to ship multiple internal tools without building custom frontends',
+    'You have data residency or compliance requirements that require self-hosting',
+    'You want operations teams to be self-sufficient without engineering tickets',
+    "You're consolidating spreadsheet-based or homegrown tools onto a single platform",
+  ]}
+  notGood={[
+    "Customer-facing products with high brand or design requirements",
+    "Complex ML/AI pipelines — ToolJet can surface model outputs but isn't a training platform",
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🎨" title="App Builder & Components" description="What the visual builder looks like and what it can produce." href="/evaluate/app-builder" />
+  <NavCard icon="⚖️" title="Compare & Choose" description="How ToolJet stacks up against Retool, Appsmith, and others you may be evaluating." href="/evaluate/compare" />
+</NavCardGrid>
