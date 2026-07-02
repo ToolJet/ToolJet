@@ -29,7 +29,7 @@ import NotificationBanner from '@/_components/NotificationBanner';
 import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 
-export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
+export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null }) => {
   const { t } = useTranslation();
   const { moduleId } = useModuleContext();
   const getResolvedValue = useStore((state) => state.getResolvedValue);
@@ -164,7 +164,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     return (
       <div className={cx({ 'disabled ': isFreezed })}>
         <Transformation
-          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+          renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
           changeOption={optionchanged}
           options={options ?? {}}
           darkMode={darkMode}
@@ -236,7 +236,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
             )}
         </div>
         <ElementToRender
-          renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+          renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
           key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
