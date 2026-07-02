@@ -81,13 +81,16 @@ const Switch = ({
           aria-hidden={!visibility}
           aria-required={isMandatory}
           aria-invalid={!isValid}
-          className="form-check-input "
+          className="form-check-input tw-peer"
           checked={on}
           onChange={onChange}
           onClick={onClick}
         />
 
-        <span style={sliderStyle}>
+        <span
+          className="peer-focus-visible:tw-ring-2 peer-focus-visible:tw-ring-interactive-focus-outline peer-focus-visible:tw-ring-offset-1"
+          style={sliderStyle}
+        >
           <span style={circleStyle}></span>
         </span>
       </div>
