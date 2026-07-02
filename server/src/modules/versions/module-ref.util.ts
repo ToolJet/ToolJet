@@ -46,7 +46,13 @@ async function listSavedVersionsOnDefaultBranch(
   organizationId: string
 ): Promise<AppVersion[]> {
   const defaultBranch = await findDefaultBranch(manager, organizationId);
-  if (!defaultBranch) return [];
+  if (!defaultBranch) {
+    // Non-git-sync workspace: versions have branch_id = NULL.
+    return manager.find(AppVersion, {
+      where: { appId: moduleApp.id, branchId: IsNull(), versionType: AppVersionType.VERSION, isStub: false },
+      order: { createdAt: 'DESC' },
+    });
+  }
   // Include both the DRAFT on the default branch AND branchless PUBLISHED versions.
   // Published versions have branch_id = NULL after the metadata migration detached them.
   const [onBranch, published] = await Promise.all([
@@ -145,6 +151,12 @@ export async function resolveModuleRef(
         },
       });
       if (onDefault) return onDefault;
+    } else {
+      // Non-git-sync workspace: defaultBranch === null means no WorkspaceBranch rows exist.
+      const noGitSync = await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, moduleReferenceId, branchId: IsNull(), isStub: false },
+      });
+      if (noGitSync) return noGitSync;
     }
     // Branchless PUBLISHED versions (branch_id = NULL after metadata migration)
     const branchless = await manager.findOne(AppVersion, {
@@ -162,7 +174,21 @@ export async function resolveModuleRef(
   // Unpinned OR orphaned: latest non-stub on consumer's branch (or default).
   const targetBranchId =
     consumerBranchId ?? (await findDefaultBranch(manager, organizationId))?.id;
-  if (!targetBranchId) return null;
+  if (!targetBranchId) {
+    // Non-git-sync workspace: no WorkspaceBranch rows exist, versions have branch_id = NULL.
+    // Prefer the active draft — saved versions have a newer createdAt (they are created from
+    // the draft), so a plain DESC sort would return a released version instead of the draft.
+    const draft = await manager.findOne(AppVersion, {
+      where: { appId: moduleApp.id, branchId: IsNull(), isStub: false, status: AppVersionStatus.DRAFT },
+    });
+    return (
+      draft ??
+      (await manager.findOne(AppVersion, {
+        where: { appId: moduleApp.id, branchId: IsNull(), isStub: false },
+        order: { createdAt: 'DESC' },
+      }))
+    );
+  }
   return manager.findOne(AppVersion, {
     where: { appId: moduleApp.id, branchId: targetBranchId, isStub: false },
     order: { createdAt: 'DESC' },
@@ -320,6 +346,7 @@ export async function resolveAllModuleViewersForVersion(
   if (!parent) return [];
 
   const defaultBranch = await findDefaultBranch(manager, organizationId);
+  const isGitSyncEnabled = !!defaultBranch;
 
   type ViewerRaw = { componentId: string; moduleAppCoRel: string | null; pinnedValue: string };
   const viewers: ViewerRaw[] = await manager.query(
@@ -336,16 +363,25 @@ export async function resolveAllModuleViewersForVersion(
   const coRels = Array.from(new Set(viewers.map((v) => v.moduleAppCoRel).filter((x): x is string => !!x)));
 
   // Oldest app per co_relation_id wins — mirrors guard's findOne ASC. Hydrate may dup.
+  // COALESCE: apps.name can be null for modules created via certain paths; fall back to
+  // app_versions.app_name (snapshotted at version creation, reliably populated).
   type ModuleAppRow = { id: string; coRel: string; name: string; currentVersionId: string | null };
   const moduleApps: ModuleAppRow[] = coRels.length
     ? await manager.query(
-        `SELECT DISTINCT ON (co_relation_id)
-                id, co_relation_id AS "coRel", name, current_version_id AS "currentVersionId"
-         FROM apps
-         WHERE co_relation_id::text = ANY($1)
-           AND type = $2
-           AND organization_id = $3
-         ORDER BY co_relation_id, created_at ASC`,
+        `SELECT DISTINCT ON (a.co_relation_id)
+                a.id,
+                a.co_relation_id AS "coRel",
+                COALESCE(a.name, (
+                  SELECT av.app_name FROM app_versions av
+                  WHERE av.app_id = a.id AND av.app_name IS NOT NULL
+                  ORDER BY av.created_at DESC LIMIT 1
+                )) AS "name",
+                a.current_version_id AS "currentVersionId"
+         FROM apps a
+         WHERE a.co_relation_id::text = ANY($1)
+           AND a.type = $2
+           AND a.organization_id = $3
+         ORDER BY a.co_relation_id, a.created_at ASC`,
         [coRels, APP_TYPES.MODULE, organizationId]
       )
     : [];
@@ -477,6 +513,12 @@ export async function resolveAllModuleViewersForVersion(
             r.isStub === false
         );
         if (onDefault) return pickKind(onDefault, 'pin-hit');
+      } else {
+        // Non-git-sync: defaultBranch === null means no WorkspaceBranch rows exist.
+        const onNullBranch = candidates.find(
+          (r) => r.moduleReferenceId === pin && r.branchId === null && r.isStub === false
+        );
+        if (onNullBranch) return pickKind(onNullBranch, 'pin-hit');
       }
       // Clause 4b: module_reference_id on branchless PUBLISHED versions
       const branchless = candidates.find(
@@ -500,10 +542,15 @@ export async function resolveAllModuleViewersForVersion(
       }
     }
 
-    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default.
+    // Orphan / unpinned fallback: latest non-stub on consumer's branch, else default, else null-branch when !isGitSyncEnabled.
     const fallback =
       (parent.branchId && candidates.find((r) => r.branchId === parent.branchId && r.isStub === false)) ||
       (defaultBranch && candidates.find((r) => r.branchId === defaultBranch.id && r.isStub === false)) ||
+      // Non-git-sync: prefer active draft over latest-by-date (saved versions have newer
+      // createdAt than the draft they were forked from, so DESC sort would pick the wrong row).
+      (!isGitSyncEnabled &&
+        (candidates.find((r) => r.branchId === null && r.isStub === false && r.status === AppVersionStatus.DRAFT) ||
+          candidates.find((r) => r.branchId === null && r.isStub === false))) ||
       undefined;
     if (fallback) {
       return pickKind(fallback, pin ? 'orphan-fallback' : 'unpinned-fallback');

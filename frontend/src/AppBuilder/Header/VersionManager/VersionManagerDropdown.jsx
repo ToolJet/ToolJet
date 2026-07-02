@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Overlay, Popover } from 'react-bootstrap';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { shallow } from 'zustand/shallow';
 import { toast } from 'react-hot-toast';
 import cx from 'classnames';
@@ -250,6 +253,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
 
   // Delete version modal state
   const [deleteVersion, setDeleteVersion] = useState({ versionId: '', versionName: '', showModal: false });
+  const [inUseWarning, setInUseWarning] = useState({ show: false, versionName: '' });
 
   const openDeleteModal = (version) => {
     setDeleteVersion({ versionId: version.id, versionName: version.name, showModal: true });
@@ -276,6 +280,11 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
       },
       (error) => {
         toast.dismiss(deletingToast);
+        if (error?.error?.startsWith('Cannot delete this version.')) {
+          setInUseWarning({ show: true, versionName: deleteVersion.versionName });
+          resetDeleteModal();
+          return;
+        }
         toast.error(error?.error || error?.message || 'Failed to delete version');
         resetDeleteModal();
       }
@@ -493,6 +502,74 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         cancelButtonText={'Cancel'}
         cancelButtonType="tertiary"
       />
+
+      {/* In-use warning modal — portalled to body to escape stacking contexts */}
+      {inUseWarning.show &&
+        ReactDOM.createPortal(
+          <div
+            className={darkMode ? 'dark-theme' : ''}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 99999,
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setInUseWarning({ show: false, versionName: '' });
+            }}
+          >
+            <div
+              style={{
+                width: 360,
+                background: 'var(--background-surface-layer-01)',
+                borderRadius: 8,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div style={{ padding: '20px 24px 0' }}>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--background-error-weak)',
+                  }}
+                >
+                  <SolidIcon name="warning" width="24" fill="var(--icon-danger)" />
+                </div>
+              </div>
+              <div style={{ padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-default)', margin: 0 }}>
+                  Dependent apps found!
+                </h3>
+                <p style={{ fontSize: 14, color: 'var(--text-medium)', lineHeight: 1.6, margin: 0 }}>
+                  {`Cannot delete ${inUseWarning.versionName} version of module as it is being used in one or more apps.`}
+                </p>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  padding: '16px 24px',
+                  borderTop: '1px solid var(--border-default)',
+                }}
+              >
+                <ButtonSolid variant="tertiary" onClick={() => setInUseWarning({ show: false, versionName: '' })}>
+                  I understand
+                </ButtonSolid>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 };

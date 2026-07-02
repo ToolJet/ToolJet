@@ -79,6 +79,7 @@ import { progressbarConfig } from './progressbar';
 import { navigationConfig } from './navigation';
 import { fileButtonConfig } from './fileButton';
 import { buttonGroupV2Config } from './buttonGroupV2';
+import { flexContainerConfig } from './flexContainer';
 
 export {
   buttonConfig,
@@ -162,4 +163,5 @@ export {
   progressbarConfig,
   navigationConfig,
   fileButtonConfig,
+  flexContainerConfig,
 };

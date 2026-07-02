@@ -72,7 +72,9 @@ function getAll(page, folder, searchKey, type = 'front-end') {
   const branchParam = branchId ? `&branch_id=${branchId}` : '';
   if (page === 0)
     return fetch(
-      `${config.apiUrl}/apps?all=true&folder=${folder || ''}&type=${type}${branchParam}`,
+      `${config.apiUrl}/apps?all=true&folder=${folder || ''}&type=${type}${
+        searchKey ? `&searchKey=${searchKey}` : ''
+      }${branchParam}`,
       requestOptions
     ).then(handleResponse);
   else
@@ -237,9 +239,10 @@ function setSlug(appId, slug) {
 }
 
 function exportResource(body, appType) {
+  const branchId = getActiveBranchId();
   const requestOptions = {
     method: 'POST',
-    headers: authHeader(),
+    headers: { ...authHeader(), ...(branchId && { 'x-branch-id': branchId }) },
     body: JSON.stringify(body),
     credentials: 'include',
   };

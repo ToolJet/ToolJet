@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import { ABORT_UNSUPPORTED_KINDS } from '@/AppBuilder/QueryManager/constants';
 import { shallow } from 'zustand/shallow';
 import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
@@ -24,6 +25,8 @@ const ICON_ONLY_BUTTON_BREAKPOINT = 700;
 const GENERATE_QUERY_SUPPORTED_KINDS = [
   'postgresql',
   'openapi',
+  'gmail',
+  'googlecalendar',
   'mongodb',
   'bigquery',
   'mysql',
@@ -31,6 +34,7 @@ const GENERATE_QUERY_SUPPORTED_KINDS = [
   'snowflake',
   'openai',
   'runjs',
+  'databricks',
 ];
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
@@ -163,6 +167,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
         {!(selectedQuery === null || showCreateQuery) && (
           <>
             <GenerateQueryButton iconOnly={iconOnly} />
+            <AbortButton />
             <RunButton buttonLoadingState={buttonLoadingState} iconOnly={iconOnly} />
             <PreviewButton
               disabled={shouldFreeze}
@@ -279,6 +284,8 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
   const isLoading = useStore(
     (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
   );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
   const shortcutDisplay = isMac ? 'Run query ⌘↩' : 'Run query Ctrl+Enter';
@@ -291,7 +298,7 @@ const RunButton = ({ buttonLoadingState, iconOnly }) => {
           variant="secondary"
           onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true, undefined, true)}
           leadingIcon="play"
-          disabled={isInDraft}
+          disabled={isInDraft || isActive}
           isLoading={isLoading}
           iconOnly={iconOnly}
           className={iconOnly ? '' : isMac ? '!tw-w-[88px]' : '!tw-w-[120px]'}
@@ -325,9 +332,15 @@ const GenerateQueryButton = ({ iconOnly }) => {
   const isQueryMentioned = useStore((state) => hasQueryMention(state.ai?.inputMessage ?? '', queryName));
   const [buttonPressedForQuery, setButtonPressedForQuery] = useState(null);
   const isAiBlockedByBranch = useIsAiBlockedOnDefaultBranch();
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
 
   if (!featureAccess?.ai) return null;
   if (!GENERATE_QUERY_SUPPORTED_KINDS.includes(selectedDataSource?.kind)) return null;
+  if (isActive) return null;
 
   const isPressed = buttonPressedForQuery === queryName && isQueryMentioned;
 
@@ -395,6 +408,12 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         canDeleteDataSource()
       : true;
   const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  // Disable Preview while either run or preview is in flight — Abort first, then re-preview.
+  // Also closes the queryAbortControllers race window for rapid re-clicks.
+  const isActive = isLoading || isPreviewQueryLoading;
   const { t } = useTranslation();
   const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
 
@@ -406,11 +425,54 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         variant="outline"
         onClick={onClick}
         // className="!tw-w-[100px]"
-        disabled={!hasPermissions}
+        disabled={!hasPermissions || isActive}
         isLoading={isPreviewQueryLoading}
         data-cy={'query-preview-button'}
       >
         Preview
+      </ButtonComponent>
+    </ToolTip>
+  );
+};
+
+const ABORT_BUTTON_DELAY_MS = 3000;
+
+const AbortButton = () => {
+  const selectedQuery = useStore((state) => state.queryPanel.selectedQuery);
+  const abortQuery = useStore((state) => state.queryPanel.abortQuery);
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const isPreviewQueryLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
+  const isActive = isLoading || isPreviewQueryLoading;
+
+  const [hasExceededDelay, setHasExceededDelay] = useState(false);
+  useEffect(() => {
+    if (!isActive) {
+      setHasExceededDelay(false);
+      return;
+    }
+    const timer = setTimeout(() => setHasExceededDelay(true), ABORT_BUTTON_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [isActive]);
+
+  if (ABORT_UNSUPPORTED_KINDS.has(selectedQuery?.kind) || !isActive || !hasExceededDelay) return null;
+
+  const isMac = typeof navigator !== 'undefined' && navigator?.userAgent?.toLowerCase().includes('mac');
+  const shortcutDisplay = `Stop waiting for the response  ${isMac ? '⌘.' : 'Ctrl+.'}`;
+
+  return (
+    <ToolTip message={shortcutDisplay} placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <ButtonComponent
+        size="medium"
+        variant="outline"
+        onClick={() => abortQuery(selectedQuery?.id)}
+        disabled={!isActive}
+        leadingIcon="circle-slash"
+        data-cy="query-abort-button"
+        isLucid={true}
+      >
+        Abort
       </ButtonComponent>
     </ToolTip>
   );
