@@ -164,6 +164,10 @@ export class VersionUtilService implements IVersionUtilService {
   private async handleDefaultBranchPublish(appVersion: AppVersion, manager: EntityManager): Promise<void> {
     if (appVersion.versionType !== AppVersionType.VERSION) return;
     if (!appVersion.branchId) return;
+    // Unsynced apps (never pushed to git) behave like a non-git workspace — publishing
+    // shouldn't auto-seed a continuity draft. The user explicitly creates a new draft
+    // when ready, same as in a non-git workspace.
+    if (appVersion.isSynced === false) return;
 
     const parentApp = await manager.findOne(App, {
       where: { id: appVersion.appId },

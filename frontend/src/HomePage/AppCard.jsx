@@ -19,6 +19,8 @@ import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
+import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
+import { gitSyncService } from '@/_services';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -51,7 +53,26 @@ export default function AppCard({
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
   const [syncIconHovered, setSyncIconHovered] = useState(false);
   const [pushModalOpen, setPushModalOpen] = useState(false);
+  const [pushValidationError, setPushValidationError] = useState(null);
   const tooltipRef = useRef(null);
+
+  const handlePushClick = async () => {
+    try {
+      const rt = appType === 'module' ? 'module' : 'app';
+      const result = await gitSyncService.validatePush(app.id, rt);
+      if (!result.valid) {
+        setPushValidationError({
+          errorType: result.errorType,
+          resourceType: result.resourceType || rt,
+          affectedResources: result.affectedResources || [],
+        });
+        return;
+      }
+    } catch {
+      // validation endpoint unavailable — fall through to push modal
+    }
+    setPushModalOpen(true);
+  };
 
   const handleEditClick = async (e) => {
     // When workspace branching is active, verify current branch still exists on remote
@@ -326,7 +347,7 @@ export default function AppCard({
                     <div
                       onMouseEnter={() => setSyncIconHovered(true)}
                       onMouseLeave={() => setSyncIconHovered(false)}
-                      onClick={() => setPushModalOpen(true)}
+                      onClick={handlePushClick}
                       style={{
                         width: '28px',
                         height: '28px',
@@ -348,7 +369,7 @@ export default function AppCard({
                 {isUnsynced && !focused ? (
                   <ToolTip message="App not synced in remote git" placement="top">
                     <div
-                      onClick={() => setPushModalOpen(true)}
+                      onClick={handlePushClick}
                       style={{
                         width: '28px',
                         height: '28px',
@@ -452,6 +473,15 @@ export default function AppCard({
         appGitId={app.id}
         versionId={app.editing_version?.id ?? app.app_versions?.[0]?.id}
         onSuccess={() => setPushModalOpen(false)}
+      />
+    )}
+    {pushValidationError && (
+      <PushValidationErrorModal
+        show={!!pushValidationError}
+        onClose={() => setPushValidationError(null)}
+        errorType={pushValidationError.errorType}
+        resourceType={pushValidationError.resourceType}
+        affectedResources={pushValidationError.affectedResources}
       />
     )}
     </>

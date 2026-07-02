@@ -8,6 +8,8 @@ import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { toast } from 'react-hot-toast';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
+import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
+import { gitSyncService } from '@/_services';
 
 /**
  * LifecycleCTAButton - Dynamic button that shows git operations based on branch type
@@ -35,6 +37,7 @@ const LifecycleCTAButton = () => {
     );
 
   const [showPushModal, setShowPushModal] = useState(false);
+  const [pushValidationError, setPushValidationError] = useState(null);
 
   const isGitSyncEnabled = featureAccess?.gitSync;
 
@@ -109,6 +112,20 @@ const LifecycleCTAButton = () => {
   const handleClick = async () => {
     // Guard Commit button on feature branches — check remote branch still exists
     if (isUnsynced) {
+      try {
+        const rt = appType === 'module' ? 'module' : 'app';
+        const result = await gitSyncService.validatePush(appId, rt);
+        if (!result.valid) {
+          setPushValidationError({
+            errorType: result.errorType,
+            resourceType: result.resourceType || rt,
+            affectedResources: result.affectedResources || [],
+          });
+          return;
+        }
+      } catch {
+        // validation endpoint unavailable — fall through to push modal
+      }
       setShowPushModal(true);
       return;
     }
@@ -135,6 +152,15 @@ const LifecycleCTAButton = () => {
         appName={appName}
         resourceType={appType === 'module' ? 'module' : 'app'}
         onSuccess={() => setShowPushModal(false)}
+      />
+    )}
+    {pushValidationError && (
+      <PushValidationErrorModal
+        show={!!pushValidationError}
+        onClose={() => setPushValidationError(null)}
+        errorType={pushValidationError.errorType}
+        resourceType={pushValidationError.resourceType}
+        affectedResources={pushValidationError.affectedResources}
       />
     )}
     <div className="lifecycle-cta-button">
