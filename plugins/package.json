@@ -76,7 +76,7 @@
     "tar": "^7.5.3"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.2",
+    "@types/jest": "^30.0.0",
     "@types/node-int64": "^0.4.32",
     "@types/nodemailer": "^6.4.7",
     "@types/oracledb": "^5.2.2",
@@ -86,7 +86,7 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-jest": "^24.7.0",
     "eslint-plugin-prettier": "^3.4.1",
-    "jest": "^27.5.1",
+    "jest": "^30.4.2",
     "lerna": "^9.0.3",
     "prettier": "^2.8.3",
     "rimraf": "^3.0.2",
