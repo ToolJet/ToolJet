@@ -315,7 +315,7 @@ export default function AppCard({
   const isStub = app?.app_versions?.[0]?.is_stub;
   const isOnDefaultBranch = !!(wsCurrentBranch?.is_default || wsCurrentBranch?.isDefault);
   const isUnsynced =
-    wsCurrentBranch && isOnDefaultBranch && app?.editing_version?.is_synced === false && appType !== 'workflow';
+    wsCurrentBranch && isOnDefaultBranch && app?.app_versions?.[0]?.is_synced === false && appType !== 'workflow';
   return (
     <>
       <ToolTip
