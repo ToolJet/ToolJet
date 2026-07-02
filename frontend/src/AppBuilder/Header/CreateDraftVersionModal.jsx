@@ -45,6 +45,11 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
   const savedVersions = developmentVersions.filter((version) => version.status !== 'DRAFT');
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
 
+  // Unsynced apps (never pushed to git) behave like a non-git workspace for this modal —
+  // no branch-name auto-fill, user picks their own draft name. isSynced propagates from
+  // the source version being created from (see `createVersion` in versions/util.service.ts).
+  const isAppGitTracked = isGitSyncEnabled && selectedVersionForCreation?.isSynced !== false;
+
   useEffect(() => {
     if (appId) {
       fetchDevelopmentVersions(appId);
@@ -96,7 +101,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
       return;
     }
 
-    if (!isGitSyncEnabled) {
+    if (!isAppGitTracked) {
       if (!versionName || versionName.trim() === '') {
         toast.error('Version name should not be empty');
         return;
@@ -113,8 +118,8 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
 
     setIsCreatingVersion(true);
 
-    const draftName = isGitSyncEnabled ? defaultBranch : versionName.trim();
-    const draftDescription = isGitSyncEnabled ? 'Latest commit to main will appear here' : '';
+    const draftName = isAppGitTracked ? defaultBranch : versionName.trim();
+    const draftDescription = isAppGitTracked ? 'Latest commit to main will appear here' : '';
 
     //TODO: pass environmentId to the func
     createNewVersionAction(
@@ -175,7 +180,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
           }}
         >
           <div className="create-draft-version-body">
-            {!isGitSyncEnabled && (
+            {!isAppGitTracked && (
               <div className="col mt-3 mb-3">
                 <label className="form-label mb-1 ms-1" data-cy="version-name-label">
                   {t('editor.appVersionManager.versionName', 'Version Name')}
@@ -221,7 +226,7 @@ const CreateDraftVersionModal = ({ showCreateAppVersion, setShowCreateAppVersion
             <Alert
               placeSvgTop={true}
               svg="warning-icon"
-              cls={`create-draft-version-alert ${isGitSyncEnabled ? 'git-sync-enabled' : 'git-sync-disabled'}`}
+              cls={`create-draft-version-alert ${isAppGitTracked ? 'git-sync-enabled' : 'git-sync-disabled'}`}
             >
               <div
                 className="d-flex align-items-center"

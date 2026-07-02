@@ -147,10 +147,13 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
 
   // Disable create draft logic:
-  // - Git sync enabled: disable if any draft already exists
+  // - Git sync enabled: disable if a synced draft already exists. Unsynced apps (never
+  //   pushed to git) are exempt from the single-draft rule and behave like a non-git
+  //   workspace — see `createVersion` in versions/util.service.ts.
   // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
+  const hasSyncedDraft = draftVersions.some((v) => v.isSynced !== false);
   const shouldDisableCreateDraft = isGitSyncEnabled
-    ? draftVersions.length > 0
+    ? hasSyncedDraft
     : savedVersions.length === 0 && draftVersions.length > 0;
 
   // Determine tooltip message based on why create draft is disabled
@@ -691,8 +694,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {...props}
       />
 
-      {/* Edit Version Modal — only for non-git-sync workspaces */}
-      {!isGitSyncEnabled && (
+      {/* Edit Version Modal — non-git-sync workspaces, or unsynced apps (never pushed to
+          git) that behave like a non-git workspace for editing purposes */}
+      {(!isGitSyncEnabled || versionToEdit?.isSynced === false) && (
         <EditVersionModal
           showEditAppVersion={showEditVersionModal}
           setShowEditAppVersion={(show) => {

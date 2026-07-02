@@ -227,6 +227,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'updatedAt',
           'publishedAt',
           'releasedAt',
+          'isSynced',
         ],
       });
     });

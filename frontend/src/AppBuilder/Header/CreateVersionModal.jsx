@@ -219,7 +219,9 @@ const CreateVersionModal = ({
       //     });
       // }
 
-      if (isGitSyncEnabled && effectiveIsBranchingEnabled) {
+      // Apps never pushed to git (isSynced === false) have no commit history to tag —
+      // treat the save like a non-git workspace and skip tagging silently.
+      if (isGitSyncEnabled && effectiveIsBranchingEnabled && selectedVersionForCreation?.isSynced !== false) {
         gitSyncService
           .createGitTag(
             appId,

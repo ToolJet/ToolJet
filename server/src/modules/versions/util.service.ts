@@ -210,6 +210,9 @@ export class VersionUtilService implements IVersionUtilService {
         co_relation_id: sourceVersion?.co_relation_id ?? appVersion.co_relation_id,
         parentVersionId: sourceVersion?.id ?? appVersion.id,
         currentEnvironmentId: firstPriorityEnv?.id ?? sourceVersion?.currentEnvironmentId ?? null,
+        // Inherit sync state — the just-published row was synced, so the continuity
+        // draft seeded from it should stay marked synced too.
+        isSynced: sourceVersion?.isSynced ?? appVersion.isSynced ?? false,
         isStub: false,
         appName: (sourceVersion as any)?.appName ?? (appVersion as any)?.appName ?? null,
         slug: (sourceVersion as any)?.slug ?? (appVersion as any)?.slug ?? null,
@@ -307,7 +310,11 @@ export class VersionUtilService implements IVersionUtilService {
             branchId: branchId ?? IsNull(),
           },
         });
-        if (existingDraftVersion) {
+        // Unsynced apps (never pushed to git) are exempt from the single-draft rule —
+        // they behave like a non-git workspace until their first push/tag makes them
+        // synced, at which point isSynced propagates to future drafts and this reverts
+        // to enforcing one draft at a time.
+        if (existingDraftVersion && existingDraftVersion.isSynced !== false) {
           throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
         }
       }
@@ -342,6 +349,10 @@ export class VersionUtilService implements IVersionUtilService {
           versionType: versionType ? versionType : AppVersionType.VERSION,
           createdBy: user.id,
           co_relation_id: app.co_relation_id,
+          // Inherit sync state from the source version — an app that's already synced to
+          // git should stay marked synced for its new draft, not reset to false and get
+          // treated as a never-pushed app.
+          isSynced: versionFrom?.isSynced ?? false,
           ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
           ...(!isWorkflow && {
