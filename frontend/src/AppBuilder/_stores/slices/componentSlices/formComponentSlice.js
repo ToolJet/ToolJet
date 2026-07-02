@@ -374,7 +374,7 @@ export const createFormComponentSlice = (set, get) => ({
                     pageComponent.component.definition[defType][propName] = {};
                   }
                   for (const [attrName, attrValue] of Object.entries(propValue)) {
-                    lodashSet(pageComponent, ['definition', defType, propName, attrName], attrValue);
+                    lodashSet(pageComponent.component, ['definition', defType, propName, attrName], attrValue);
                   }
                 }
               }
