@@ -22,6 +22,7 @@ import { ToolTip } from '@/_components/ToolTip';
 import Avatar from '@/_ui/Avatar';
 import DataSourcePermissionsUI from '../DataSourcePermissionsUI';
 import WorkflowPermissionsUI from '../WorkflowPermissionsUI';
+import ModulePermissionsUI from '../ModulePermissionsUI';
 import AppPromoteReleasePermissionsUI from '../AppPromoteReleasePermissionsUI';
 import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import VirtualizedUserList from './VirtualizedUserList';
@@ -534,7 +535,7 @@ class BaseManageGroupPermissionResources extends React.Component {
     // Treat both basic and starter plans as restricted plans
     const isBasicPlan = featureAccess === undefined ? false : isExpired || !isLicenseValid || plan === 'starter';
     const isPaidPlan = featureAccess === undefined ? false : !isExpired && isLicenseValid && plan !== 'starter';
-    const { customGroups: isFeatureEnabled } = featureAccess || {};
+    const { customGroups: isFeatureEnabled, modulesEnabled: isModulesEnabled } = featureAccess || {};
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
     const showPermissionInfo =
@@ -1023,6 +1024,14 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   updateState={this.updateParamState}
                                 />
 
+                                {/* Module Permission */}
+                                <ModulePermissionsUI
+                                  groupPermission={groupPermission}
+                                  disablePermissionUpdate={disableNonPromoteReleasePermissions}
+                                  updateGroupPermission={this.updateGroupPermission}
+                                  updateState={this.updateParamState}
+                                />
+
                                 {/* Data source */}
                                 <DataSourcePermissionsUI
                                   groupPermission={groupPermission}
@@ -1132,6 +1141,7 @@ class BaseManageGroupPermissionResources extends React.Component {
                       darkMode={this.props.darkMode}
                       isBasicPlan={isBasicPlan}
                       isFeatureEnabled={isFeatureEnabled}
+                      isModulesEnabled={isModulesEnabled}
                       hasEndUsers={hasEndUsers}
                     />
                   </aside>

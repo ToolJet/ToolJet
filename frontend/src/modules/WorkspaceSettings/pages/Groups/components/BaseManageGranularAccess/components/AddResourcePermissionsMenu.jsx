@@ -17,6 +17,8 @@ function AddResourcePermissionsMenu({
         return 'apps';
       case RESOURCE_TYPE.WORKFLOWS:
         return 'workflows';
+      case RESOURCE_TYPE.MODULES:
+        return 'apps';
       case RESOURCE_TYPE.DATA_SOURCES:
         return 'datasource';
       default:
@@ -27,6 +29,7 @@ function AddResourcePermissionsMenu({
   const resourceNameMapping = {
     [RESOURCE_TYPE.APPS]: 'Apps',
     [RESOURCE_TYPE.WORKFLOWS]: 'Workflows',
+    [RESOURCE_TYPE.MODULES]: 'Modules',
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
   };
 
@@ -49,16 +52,20 @@ function AddResourcePermissionsMenu({
                 onClick={() => {
                   openAddPermissionModal(resource);
                 }}
-                disabled={currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES}
+                disabled={
+                  currentGroupPermission.name === 'end-user' &&
+                  [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource)
+                }
                 data-cy={`add-${resource.toLowerCase()}-button`}
               >
                 <OverlayTrigger
                   key={index}
                   placement="right"
                   overlay={
-                    currentGroupPermission.name === 'end-user' && resource === RESOURCE_TYPE.DATA_SOURCES ? (
+                    currentGroupPermission.name === 'end-user' &&
+                    [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource) ? (
                       <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
-                        End-user cannot access data sources
+                        End-user cannot access {resourceNameMapping[resource].toLowerCase()}
                       </Tooltip>
                     ) : (
                       <></>

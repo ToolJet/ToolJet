@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
@@ -43,6 +43,7 @@ import { PagePermission } from '@entities/page_permissions.entity';
 import { PageUser } from '@entities/page_users.entity';
 import { APP_TYPES } from '@modules/apps/constants';
 import { UsersUtilService } from '@modules/users/util.service';
+import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataQueryFolder } from '@entities/data_query_folder.entity';
 import { DataQueryFolderMapping, ChildType } from '@entities/data_query_folder_mapping.entity';
 import { QueryPermission } from '@entities/query_permissions.entity';
@@ -322,7 +323,8 @@ export class AppImportExportService {
     protected usersUtilService: UsersUtilService,
     protected componentsService: ComponentsService,
     protected entityManager: EntityManager,
-    protected readonly transactionLogger: TransactionLogger
+    protected readonly transactionLogger: TransactionLogger,
+    protected readonly abilityService: AbilityService
   ) {}
 
   private getEventHandlerName(event: any): string {
@@ -593,6 +595,24 @@ export class AppImportExportService {
             .distinct(true)
             .getMany()
         : [];
+
+    // Gate: if any referenced module is missing, the user must have module_create permission
+    if (appParams?.modules?.length > 0) {
+      const missingModules = appParams.modules.filter(
+        (m) => !existingModules.find((existing) => existing.name === m?.appV2?.name)
+      );
+      if (missingModules.length > 0) {
+        const perms = await this.abilityService.resourceActionsPermission(user, {
+          organizationId: user.organizationId,
+        });
+        const canCreateModule = perms.isSuperAdmin || perms.isAdmin || !!perms.moduleCreate;
+        if (!canCreateModule) {
+          throw new ForbiddenException(
+            "This app requires creating modules, but you don't have permission to create modules. Contact admin."
+          );
+        }
+      }
+    }
 
     // Process each module from the import data
     if (appParams?.modules?.length > 0) {

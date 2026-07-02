@@ -28,10 +28,7 @@ import { LICENSE_FIELD } from '@modules/licensing/constants';
 import { AppBase } from '@entities/app_base.entity';
 import { MODULES } from '@modules/app/constants/modules';
 import { componentTypes } from './services/widget-config';
-import { cloneDeep } from 'lodash';
-import { merge } from 'lodash';
-import { mergeWith } from 'lodash';
-import { isArray } from 'lodash';
+import { cloneDeep, isArray, merge, mergeWith } from 'lodash';
 import { UserAppsPermissions, UserWorkflowPermissions } from '@modules/ability/types';
 import { AbilityService } from '@modules/ability/interfaces/IService';
 import { IAppsUtilService } from './interfaces/IUtilService';
@@ -382,7 +379,7 @@ export class AppsUtilService implements IAppsUtilService {
       .getOne();
   }
 
-  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean): Promise<AppBase[]> {
+  async all(user: User, page: number, searchKey: string, type: string, isGetAll: boolean, context?: string): Promise<AppBase[]> {
     //Migrate it to app utility files
     let resourceType: MODULES;
 
@@ -394,7 +391,7 @@ export class AppsUtilService implements IAppsUtilService {
         resourceType = MODULES.APP;
         break;
       case APP_TYPES.MODULE:
-        resourceType = MODULES.APP;
+        resourceType = MODULES.MODULES;
         break;
       default:
         resourceType = MODULES.APP;
@@ -410,7 +407,8 @@ export class AppsUtilService implements IAppsUtilService {
         manager,
         searchKey,
         isGetAll ? ['id', 'slug', 'name', 'currentVersionId'] : undefined,
-        type
+        type,
+        context
       );
 
       // Eagerly load appVersions for modules
@@ -435,7 +433,8 @@ export class AppsUtilService implements IAppsUtilService {
     manager: EntityManager,
     searchKey?: string,
     select?: Array<string>,
-    type?: string
+    type?: string,
+    context?: string
   ): SelectQueryBuilder<AppBase> {
     const viewableAppsQb = manager
       .createQueryBuilder(AppBase, 'apps')
@@ -470,8 +469,22 @@ export class AppsUtilService implements IAppsUtilService {
     const viewableApps = this.calculateViewableFrontEndApps(userAppPermissions as unknown as UserAppsPermissions);
 
     switch (type) {
+      // Modules are now permission-scoped (H1): filter to the user's editable ∪ viewable ∪ owned
+      // module ids, exactly like front-end apps. Previously modules were returned unfiltered.
       case APP_TYPES.MODULE:
-        return viewableAppsQb;
+        if (context === 'picker') {
+          return this.addPickerModulesFilter(
+            viewableAppsQb,
+            userAppPermissions as unknown as UserAppsPermissions
+          );
+        }
+        // Modules support hide-from-dashboard on Edit groups (#5135) — use dedicated helpers
+        // that treat editable ids the same as viewable ids for hiding purposes.
+        return this.addViewableModulesFilter(
+          viewableAppsQb,
+          userAppPermissions as unknown as UserAppsPermissions,
+          this.calculateViewableModules(userAppPermissions as unknown as UserAppsPermissions)
+        );
       case APP_TYPES.FRONT_END:
       default:
         return this.addViewableFrontEndAppsFilter(
@@ -535,6 +548,88 @@ export class AppsUtilService implements IAppsUtilService {
     return query;
   }
 
+  /**
+   * Picker context: include hidden modules (hide_from_dashboard is irrelevant for the picker).
+   * Still intersects with the user's permitted module sets — never returns unfiltered.
+   * isAllEditable || isAllViewable → no id filter (user can see all modules in the org).
+   * Otherwise → apps.id IN (editableAppsId ∪ viewableAppsId).
+   */
+  private addPickerModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, editableAppsId, viewableAppsId } = userModulePermissions;
+
+    if (isAllEditable || isAllViewable) {
+      // User can access all modules — no id restriction needed.
+      return query;
+    }
+
+    const viewableModules = Array.from(new Set([...editableAppsId, ...viewableAppsId]));
+
+    if (viewableModules.length === 0) {
+      query.andWhere('1 = 0'); // user has no module access
+      return query;
+    }
+
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
+    return query;
+  }
+
+  /**
+   * Modules support hide-from-dashboard on Edit groups (#5135 / DEV-63).
+   * Unlike front-end apps, editable module ids are subject to hiding — a builder-role
+   * member can be hidden from the dashboard while still having URL + builder access.
+   *
+   * hideAll → everything hidden (no id in the whitelist).
+   * else    → union of editable ∪ viewable, minus hidden ids.
+   */
+  private calculateViewableModules(userModulePermissions: UserAppsPermissions): string[] {
+    const { ownedAppsId } = userModulePermissions;
+    // Owner exemption is absolute: a creator always sees their own module on the dashboard,
+    // even under hideAll or a hide-from-dashboard group containing the module.
+    if (userModulePermissions.hideAll) {
+      // Everything hidden except owned; [null] keeps the IN-clause valid when nothing is owned.
+      return [null, ...ownedAppsId];
+    }
+    const allPermittedIds = Array.from(
+      new Set([...userModulePermissions.editableAppsId, ...userModulePermissions.viewableAppsId])
+    );
+    return [
+      null,
+      ...allPermittedIds.filter((id) => !userModulePermissions.hiddenAppsId.includes(id) || ownedAppsId.includes(id)),
+    ];
+  }
+
+  private addViewableModulesFilter(
+    query: SelectQueryBuilder<AppBase>,
+    userModulePermissions: UserAppsPermissions,
+    viewableModules: string[]
+  ): SelectQueryBuilder<AppBase> {
+    const { isAllEditable, isAllViewable, hideAll, hiddenAppsId } = userModulePermissions;
+
+    // "All modules" grant with no per-module hides — no restriction needed.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length === 0) {
+      return query;
+    }
+
+    // "All modules" grant but some specific modules are hidden — exclude them (including
+    // edit-via-group ones, unlike the apps filter which exempts editable ids). Owned modules
+    // are always exempt: a creator never loses their own module from the dashboard.
+    if ((isAllEditable || isAllViewable) && !hideAll && hiddenAppsId.length > 0) {
+      const { ownedAppsId } = userModulePermissions;
+      const hiddenExceptOwned = hiddenAppsId.filter((id) => !ownedAppsId.includes(id));
+      if (hiddenExceptOwned.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenExceptOwned)', { hiddenExceptOwned });
+      }
+      return query;
+    }
+
+    // All other cases (hideAll, or no isAll grant): whitelist of permitted & visible modules.
+    query.andWhere('apps.id IN (:...viewableModules)', { viewableModules });
+    return query;
+  }
+
   protected isSuperAdmin(user: User) {
     return !!(user?.userType === USER_TYPE.INSTANCE);
   }
@@ -548,6 +643,9 @@ export class AppsUtilService implements IAppsUtilService {
         break;
       case APP_TYPES.FRONT_END:
         resourceType = MODULES.APP;
+        break;
+      case APP_TYPES.MODULE:
+        resourceType = MODULES.MODULES;
         break;
       default:
         resourceType = MODULES.APP;
@@ -667,15 +765,13 @@ export class AppsUtilService implements IAppsUtilService {
 
       const moduleAppIds = moduleComponents.map((moduleComponent) => moduleComponent.properties.moduleAppId.value);
 
-      const modules =
-        moduleAppIds.length > 0
-          ? await manager
-              .createQueryBuilder(App, 'app')
-              .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
-              .distinct(true)
-              .getMany()
-          : [];
-      return modules;
+      return moduleAppIds.length > 0
+        ? await manager
+            .createQueryBuilder(App, 'app')
+            .where('app.id IN (:...moduleAppIds)', { moduleAppIds })
+            .distinct(true)
+            .getMany()
+        : [];
     });
     return modules;
   }

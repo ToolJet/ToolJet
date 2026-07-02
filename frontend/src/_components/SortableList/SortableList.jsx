@@ -17,7 +17,8 @@ export function SortableList({ items, onChange, renderItem }) {
     // })
   );
 
-  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed);
+  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed || state.isEditorReadOnly);
+  const isEditorReadOnly = useStore((state) => state.isEditorReadOnly);
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
 
   return (
@@ -25,7 +26,10 @@ export function SortableList({ items, onChange, renderItem }) {
       sensors={sensors}
       onDragEnd={({ active, over }) => {
         if (shouldFreeze) {
-          enableReleasedVersionPopupState();
+          if (!isEditorReadOnly) {
+            enableReleasedVersionPopupState(); // only show version popup for version-frozen state
+          }
+          // For isEditorReadOnly, silently block — the banner explains why
           return;
         }
         if (over) {
