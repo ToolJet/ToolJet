@@ -488,14 +488,19 @@ const useAppData = (
           // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
         }
 
-        // Add page id and handle to the state on initial load
-        const currentState = window.history.state || {};
-        const pageInfo = {
-          id: startingPage.id,
-          handle: startingPage.handle,
-        };
-        const newState = { ...currentState, ...pageInfo };
-        window.history.replaceState(newState, '', window.location.href);
+        // Add page id and handle to the state on initial load.
+        // Only the main app may write the browser history entry — an embedded module instance
+        // runs this same hook and would otherwise overwrite history.state.id with the module's
+        // page id, which the canvas page lookup can't resolve (blanks the page on back/forward).
+        if (!moduleMode) {
+          const currentState = window.history.state || {};
+          const pageInfo = {
+            id: startingPage.id,
+            handle: startingPage.handle,
+          };
+          const newState = { ...currentState, ...pageInfo };
+          window.history.replaceState(newState, '', window.location.href);
+        }
 
         setCurrentPageHandle(startingPage.handle, moduleId);
         setCurrentPageId(startingPage.id, moduleId);
