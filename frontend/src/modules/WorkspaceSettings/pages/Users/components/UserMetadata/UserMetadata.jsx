@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEUserMetadata from '@ee/modules/WorkspaceSettings/components/UserMetadata';
 
-const UserMetadata = () => {
-  return <></>;
-};
+const UserMetadata = pickEditionSpecificComponent({
+  ee: EEUserMetadata,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(UserMetadata, 'WorkspaceSettings');
+export default UserMetadata;

@@ -1,8 +1,9 @@
-import React from 'react';
-import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
+import { pickEditionSpecificComponent } from '@/modules/common/helpers/pickEditionSpecificComponent';
+import EEConstantsEnvironmentsTabs from '@ee/modules/WorkspaceSettings/components/ConstantsEnvironmentsTabs';
 
-const ConstantsEnvironmentsTabs = () => {
-  return <></>;
-};
+const ConstantsEnvironmentsTabs = pickEditionSpecificComponent({
+  ee: EEConstantsEnvironmentsTabs,
+  cloudSameAsEE: true,
+});
 
-export default withEditionSpecificComponent(ConstantsEnvironmentsTabs, 'WorkspaceSettings');
+export default ConstantsEnvironmentsTabs;
