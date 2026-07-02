@@ -18,7 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@aws-sdk/client-bedrock": "^3.840.0",
-    "@aws-sdk/client-bedrock-runtime": "^3.842.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1063.0",
     "@tooljet-marketplace/common": "^1.0.0"
   },
   "devDependencies": {
