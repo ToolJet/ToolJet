@@ -424,7 +424,7 @@ export const modalV2Config = {
     styles: {
       icon: { value: 'IconAlignBoxBottomLeft' },
       iconVisibility: { value: false },
-      iconColor: { value: 'var(--cc-default-icon)' },
+      iconColor: { value: 'var(--cc-surface1-surface)' },
       direction: { value: 'left' },
       headerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
       footerBackgroundColor: { value: 'var(--cc-surface1-surface)' },
@@ -432,7 +432,7 @@ export const modalV2Config = {
       triggerButtonBackgroundColor: { value: 'var(--cc-primary-brand)' },
       triggerButtonHoverBackgroundMode: { value: 'auto' },
       triggerButtonHoverBackgroundColor: { value: 'var(--cc-primary-brand)' },
-      triggerButtonTextColor: { value: '#ffffffff' },
+      triggerButtonTextColor: { value: 'var(--cc-surface1-surface)' },
       triggerButtonTextSize: { value: '{{14}}' },
       triggerButtonFontWeight: { value: 'normal' },
       triggerButtonContentAlignment: { value: 'center' },
