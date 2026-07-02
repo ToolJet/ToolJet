@@ -30,6 +30,8 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { Page } from 'src/entities/page.entity';
+import { Component } from 'src/entities/component.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 /** @group platform */
@@ -1878,6 +1880,64 @@ describe('AppsController', () => {
             anotherOrgAdminUserData['tokenCookie'],
             anotherOrgAdminUserData.user.defaultOrganizationId
           );
+        });
+      });
+
+      describe('modules', () => {
+        it('should include a module embedded via ModuleViewer in a non-current (draft) version', async () => {
+          // Bug repro: VersionsService.getVersion() -> AppsUtilService.fetchModules(app, false, undefined)
+          // ignores the version actually being previewed and falls back to app.currentVersionId
+          // when resolving which version's pages to scan for ModuleViewer components. So a module
+          // embedded only in a draft (non-current) version is silently omitted from the preview
+          // response, forcing the frontend to fall back to a direct fetch that can 403 if the
+          // builder's module permission was revoked.
+          const adminUserData = await createUser(app, {
+            email: 'admin@tooljet.io',
+            groups: ['all_users', 'admin'],
+          });
+
+          const loggedUser = await login(app);
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const moduleApp = await createApplication(app, {
+            name: 'Some Module',
+            user: adminUserData.user,
+            type: 'module',
+          });
+          await createApplicationVersion(app, moduleApp);
+
+          const application = await createApplication(app, {
+            name: 'Host App',
+            user: adminUserData.user,
+          });
+
+          // v1 becomes the released/current version - it has no module embedded.
+          const currentVersion = await createApplicationVersion(app, application, { name: 'v1' });
+          await updateEntity(App, application.id, { currentVersionId: currentVersion.id } as any);
+
+          // v2 is an unreleased draft that embeds the module via a ModuleViewer component.
+          const draftVersion = await createApplicationVersion(app, application, { name: 'v2' });
+          const draftPage = await findEntityOrFail(Page, { appVersionId: draftVersion.id } as any);
+
+          await saveEntity(Component, {
+            name: 'moduleViewer1',
+            type: 'ModuleViewer',
+            pageId: draftPage.id,
+            properties: { moduleAppId: { value: moduleApp.id } },
+            styles: {},
+            validation: {},
+          });
+
+          const response = await request(app.getHttpServer())
+            .get(`/api/v2/apps/${application.id}/versions/${draftVersion.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          const moduleIds = (response.body.modules || []).map((m: any) => m.id);
+          expect(moduleIds).toContain(moduleApp.id);
+
+          await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
       });
 
