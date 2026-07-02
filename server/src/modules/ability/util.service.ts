@@ -367,10 +367,10 @@ export class AbilityUtilService {
     }, manager);
 
     // Resolve folder-level permissions (owned folders + granular folder permissions) into app IDs.
-    // editableFolderDerivedAppIds: user can edit apps in these folders → full environment access.
-    // viewableFolderDerivedAppIds: user can only view apps in these folders → released access only.
-    // Keeping them separate prevents end-users with view-only folder permissions from getting
-    // development/staging/production environment access (which would show them the Preview CTA).
+    // Folders are environment-agnostic: any folder-derived access — edit or view — grants full
+    // environment access (see the grant loop below). editableFolderDerivedAppIds and
+    // viewableFolderDerivedAppIds are still tracked separately because they also drive
+    // editableAppsId/viewableAppsId (app management UI), which does distinguish edit vs. view.
     {
       const manager = getConnectionInstance().manager;
       const editableFolderDerivedAppIds = new Set<string>();
@@ -444,24 +444,26 @@ export class AbilityUtilService {
           .getRawMany();
         const allFolderAppIds = allFolderApps.map((row) => row.appId);
 
-        if (allFoldersEditable && !userAppsPermissions.isAllEditable) {
-          userAppsPermissions.editableAppsId = Array.from(
-            new Set([
-              ...userAppsPermissions.editableAppsId,
-              ...allFolderAppIds,
-            ]),
-          );
-          // userAppsPermissions.viewableAppsId = Array.from(
-          //   new Set([...userAppsPermissions.viewableAppsId, ...allFolderAppIds])
-          // ); // TODO: check if we need to add apps to viewable list as well.
+        if (allFoldersEditable) {
+          if (!userAppsPermissions.isAllEditable) {
+            userAppsPermissions.editableAppsId = Array.from(
+              new Set([
+                ...userAppsPermissions.editableAppsId,
+                ...allFolderAppIds,
+              ]),
+            );
+          }
           allFolderAppIds.forEach((id) => editableFolderDerivedAppIds.add(id));
-        } else if (allFoldersViewable) {
-          userAppsPermissions.viewableAppsId = Array.from(
-            new Set([
-              ...userAppsPermissions.viewableAppsId,
-              ...allFolderAppIds,
-            ]),
-          );
+        }
+        if (allFoldersViewable) {
+          if (!userAppsPermissions.isAllViewable) {
+            userAppsPermissions.viewableAppsId = Array.from(
+              new Set([
+                ...userAppsPermissions.viewableAppsId,
+                ...allFolderAppIds,
+              ]),
+            );
+          }
           allFolderAppIds.forEach((id) => viewableFolderDerivedAppIds.add(id));
         }
       }
@@ -504,37 +506,18 @@ export class AbilityUtilService {
         folderAppIds.forEach((id) => viewableFolderDerivedAppIds.add(id));
       }
 
-      // Editable folder apps: grant full environment access (builder context).
-      for (const appId of editableFolderDerivedAppIds) {
+      // Folders are environment-agnostic: any folder-derived access — edit or view — grants
+      // full environment access. This only ever widens access, never narrows an explicit grant.
+      for (const appId of new Set([
+        ...editableFolderDerivedAppIds,
+        ...viewableFolderDerivedAppIds,
+      ])) {
         userAppsPermissions.appSpecificEnvironmentAccess![appId] = {
           development: true,
           staging: true,
           production: true,
           released: true,
         };
-      }
-
-      // View-only folder apps: union released=true into whatever is already present.
-      // Do NOT overwrite — the user may already have explicit dev/staging/production access
-      // via a custom group app-level permission; stripping that would be a regression.
-      // What folder view access must NEVER do is add dev/staging/production on its own,
-      // because that would render the Preview CTA for end-users who can only access
-      // released versions.
-      for (const appId of viewableFolderDerivedAppIds) {
-        if (editableFolderDerivedAppIds.has(appId)) continue;
-
-        const existing =
-          userAppsPermissions.appSpecificEnvironmentAccess![appId];
-        if (existing) {
-          existing.released = true;
-        } else {
-          userAppsPermissions.appSpecificEnvironmentAccess![appId] = {
-            development: false,
-            staging: false,
-            production: false,
-            released: true,
-          };
-        }
       }
     }
 
