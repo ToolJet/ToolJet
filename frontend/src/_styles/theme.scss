@@ -14063,6 +14063,17 @@ tbody {
   border-radius: 8px;
 }
 
+// Shared tooltip style for long (up to 100-char) app/module/workflow names:
+// wrap into a readable box instead of bootstrap's cramped default or a wide single line.
+.long-name-tooltip {
+  .tooltip-inner {
+    max-width: 210px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+  }
+}
+
 #inspector-tabpane-properties {
   .accordion {
     .accordion-item:last-child {
@@ -15203,6 +15214,12 @@ textarea.tj-text-input-widget {
   @extend .widget-version-identifier;
 }
 
+.widget-version-beta-identifier {
+  background-color: var(--indigo9);
+  @extend .widget-version-identifier;
+  width: 36px;
+}
+
 .tjdb-display-time-pill {
   height: 12px;
   gap: 10px;
@@ -15867,7 +15884,7 @@ section.ai-message-prompt-input-wrapper {
 
   div.input {
     color: var(--text-default, #1b1f24);
-    font-size: 12px;
+    font-size: var(--font-size-large);
     font-style: normal;
     font-weight: 400;
     line-height: 18px;

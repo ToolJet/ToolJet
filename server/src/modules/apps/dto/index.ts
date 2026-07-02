@@ -11,7 +11,7 @@ export enum AppBuilderMode {
 export class AppCreateDto {
   @IsNotEmpty()
   @IsString()
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(100, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsOptional()
@@ -52,12 +52,9 @@ export class AppUpdateDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => {
-    const newValue = sanitizeInput(value);
-    return newValue.trim();
-  })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsNotEmpty({ message: 'App name should not be empty' })
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
+  @MaxLength(100, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsString()

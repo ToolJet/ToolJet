@@ -853,7 +853,7 @@ export class AppsUtilService implements IAppsUtilService {
     // INNER JOIN enforces branch scope; skip EE NOT EXISTS predicate (~600x subplan cost)
     const willInnerJoinOnBranch =
       !!branchId &&
-      ((type === APP_TYPES.MODULE && !isGetAll) || type === APP_TYPES.FRONT_END);
+      (type === APP_TYPES.MODULE || type === APP_TYPES.FRONT_END);
     const qb = this.viewableAppsQueryUsingPermissions(
       user,
       userPermission[resourceType],
@@ -882,7 +882,7 @@ export class AppsUtilService implements IAppsUtilService {
       ORDER BY av_pick.is_stub ASC, av_pick.updated_at DESC
       LIMIT 1
     )`;
-    if (type === APP_TYPES.MODULE && !isGetAll) {
+    if (type === APP_TYPES.MODULE) {
       if (branchId) {
         qb.innerJoinAndSelect('apps.appVersions', 'appVersions', branchPick, { branchId });
       } else {
@@ -952,7 +952,11 @@ export class AppsUtilService implements IAppsUtilService {
     // TypeORM accepts `appVersions.<col>` only because `appVersions` is a real
     // entity-mapped join. Derived tables / subquery aliases break the pagination
     // wrapper, so we keep this in plain entity terms.
-    if (branchId && type !== APP_TYPES.WORKFLOW) {
+    // Only reference the `appVersions` alias when the caller signals it will add
+    // the INNER JOIN via applyAppVersionsJoin (_skipBranchScope=true). Without
+    // that join, ordering by appVersions columns triggers PostgreSQL error 42P01
+    // ("missing FROM-clause entry for table appversions").
+    if (branchId && type !== APP_TYPES.WORKFLOW && _skipBranchScope) {
       viewableAppsQb
         .orderBy('appVersions.isStub', 'ASC')
         .addOrderBy('appVersions.updatedAt', 'DESC')

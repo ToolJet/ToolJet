@@ -92,7 +92,7 @@ function del(id, versionId) {
   return fetch(`${config.apiUrl}/data-queries/${id}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, resolvedOptions, options, versionId, environmentId, mode) {
+function run(queryId, resolvedOptions, options, versionId, environmentId, mode, signal) {
   const body = {
     resolvedOptions: resolvedOptions,
     options: options,
@@ -107,24 +107,37 @@ function run(queryId, resolvedOptions, options, versionId, environmentId, mode) 
     url = `${config.apiUrl}/data-queries/${queryId}/run`;
   }
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(url, requestOptions)
     .then(handleResponse)
     .catch((err) => {
+      if (err.name === 'AbortError') throw err;
       const errorType = err instanceof TypeError ? 'network_error' : 'server_error';
       recordQueryError(queryId, null, errorType);
       throw err;
     });
 }
 
-function preview(query, options, versionId, environmentId) {
+function preview(query, options, versionId, environmentId, signal) {
   const body = {
     query,
     options: options,
     app_version_id: versionId,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+    signal,
+  };
   return fetch(
     `${config.apiUrl}/data-queries/${query?.id}/versions/${versionId}/preview${
       environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
