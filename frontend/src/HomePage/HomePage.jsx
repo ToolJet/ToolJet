@@ -1991,6 +1991,8 @@ class HomePageComponent extends React.Component {
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.appType === 'workflow'
                         ? this.props.t('homePage.noWorkflowFound', 'No Workflows found')
+                        : this.props.appType === 'module'
+                        ? this.props.t('homePage.noModuleFound', 'No Modules found')
                         : this.props.t('homePage.noApplicationFound', 'No Applications found')}
                     </span>
                   </div>
