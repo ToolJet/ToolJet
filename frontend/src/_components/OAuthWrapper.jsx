@@ -29,14 +29,20 @@ const OAuthWrapper = ({
   const [authStatus, setAuthStatus] = useState(null);
   const { t } = useTranslation();
   const [initialOptions, setInitialOptions] = useState(null);
+  const [initialName, setInitialName] = useState(null);
   useEffect(() => {
     if (selectedDataSource?.id && !initialOptions) {
       setInitialOptions(options);
+      setInitialName(selectedDataSource.name);
     }
   }, [selectedDataSource?.id, options, initialOptions]);
 
   const hasFieldsChanged = () => {
     if (!selectedDataSource?.id || !initialOptions) {
+      return true;
+    }
+
+    if (selectedDataSource?.name !== initialName) {
       return true;
     }
 
