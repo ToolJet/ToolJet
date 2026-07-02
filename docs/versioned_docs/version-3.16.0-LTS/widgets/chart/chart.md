@@ -15,6 +15,39 @@ Under the `Title` property, you can enter a title that displays at the top of th
 
 To activate the Plotly JSON Schema, switch on the `Use Plotly JSON Schema` toggle. Additionally, for dynamic configuration, click on **fx** to input a logical expression that enables or disables it as needed.
 
+When using Plotly JSON schema mode, the `shapes` array inside the `layout` object is fully supported. Shapes are rendered on top of the chart and can be used to draw circles, rectangles, lines, or paths — useful for highlighting regions or annotating data.
+
+**Example:**
+
+```json
+{
+  "data": [
+    { "x": [1.5, 3.5], "y": [0.75, 2.5], "mode": "text", "type": "scatter" }
+  ],
+  "layout": {
+    "shapes": [
+      {
+        "type": "circle",
+        "xref": "x",
+        "yref": "y",
+        "x0": 1, "y0": 1, "x1": 3, "y1": 3,
+        "line": { "color": "rgba(50, 171, 96, 1)" }
+      },
+      {
+        "type": "circle",
+        "xref": "x",
+        "yref": "y",
+        "fillcolor": "rgba(50, 171, 96, 0.7)",
+        "x0": 3, "y0": 3, "x1": 4, "y1": 4,
+        "line": { "color": "rgba(50, 171, 96, 1)" }
+      }
+    ]
+  }
+}
+```
+
+Refer to the [Plotly shapes documentation](https://plotly.com/javascript/shapes/) for the full list of supported shape types and properties.
+
 ## Component specific actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

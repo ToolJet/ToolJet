@@ -45,6 +45,7 @@ You can reorder fields by dragging them in the Fields list. Use the **Add new fi
 
 | Event | Description |
 | :------------ | :---------- |
+| Field clicked | Triggered when the user clicks on a field row. The `lastClickedField` variable is updated before this event fires. |
 | Save changes | Triggered when the user clicks the **Save changes** button after editing one or more field values. |
 
 :::info
@@ -67,6 +68,7 @@ The following actions of the component can be controlled using the component-spe
 | :---------- | :---------- | :------------ |
 | data | Holds the original data object passed to the component. | `{{components.keyvaluepair1.data}}` |
 | changeSet | Contains only the fields that have been modified by the user but not yet saved. Returns an empty object when there are no pending changes. | `{{components.keyvaluepair1.changeSet}}` |
+| lastClickedField | An object updated when a field row is clicked. Contains two fields: `key` (the field's data key) and `value` (the field's current value). Updated before the **Field clicked** event fires. | `{{components.keyvaluepair1.lastClickedField}}` |
 | isLoading | Indicates if the component is in a loading state. | `{{components.keyvaluepair1.isLoading}}` |
 | isVisible | Indicates if the component is visible. | `{{components.keyvaluepair1.isVisible}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.keyvaluepair1.isDisabled}}` |
