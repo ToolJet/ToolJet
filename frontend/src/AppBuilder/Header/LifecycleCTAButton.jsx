@@ -6,7 +6,6 @@ import { ToolTip } from '@/_components';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { shallow } from 'zustand/shallow';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
-import { useVersionManagerStore } from '@/_stores/versionManagerStore';
 import { toast } from 'react-hot-toast';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
@@ -45,7 +44,7 @@ const LifecycleCTAButton = () => {
     shallow
   );
 
-  const draftVersion = useVersionManagerStore((state) => state.draftVersion);
+  const developmentVersions = useStore((state) => state.developmentVersions);
 
   const [showPushModal, setShowPushModal] = useState(false);
   const [pushValidationError, setPushValidationError] = useState(null);
@@ -72,11 +71,12 @@ const LifecycleCTAButton = () => {
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-  // An app is unsynced when its draft has never been pulled on main (isSynced=false).
-  // Pushing to a feature branch alone doesn't count — isSynced becomes true only after
-  // a pull on main. We check the draft (not selectedVersion) so switching to an old saved
-  // version with isSynced=false doesn't incorrectly re-trigger the Sync button.
-  const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && draftVersion?.isSynced === false;
+  // App is unsynced when NO version has ever been pulled on main (isSynced=true).
+  // Checking a single version (draft or selectedVersion) is unreliable — the draft may not
+  // exist (unsynced app with all drafts published) or may be an old saved version with
+  // isSynced=false on an app that IS in git. Scanning all developmentVersions is robust.
+  const isAppSyncedToGit = developmentVersions?.some((v) => v.isSynced === true);
+  const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   // Determine button state based on git configuration and branch type
   const getButtonConfig = () => {
