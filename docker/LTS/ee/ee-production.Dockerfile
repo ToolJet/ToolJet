@@ -90,6 +90,10 @@ RUN npm --prefix plugins prune --production
 
 ENV TOOLJET_EDITION=ee
 
+# Copy shared widget-definitions package (required by frontend + server file: dependency)
+COPY ./packages/widget-definitions/package.json ./packages/widget-definitions/package.json
+COPY ./packages/widget-definitions/src/ ./packages/widget-definitions/src/
+
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
@@ -215,6 +219,8 @@ COPY --from=builder --chown=appuser:0 /app/plugins/node_modules ./app/plugins/no
 COPY --from=builder --chown=appuser:0 /app/plugins/packages/common ./app/plugins/packages/common
 COPY --from=builder --chown=appuser:0 /app/plugins/package.json ./app/plugins/package.json
 COPY --from=builder --chown=appuser:0 /app/frontend/build ./app/frontend/build
+# copy widget-definitions (server node_modules symlinks to this)
+COPY --from=builder --chown=appuser:0 /app/packages/widget-definitions ./app/packages/widget-definitions
 COPY --from=builder --chown=appuser:0 /app/server/package.json ./app/server/package.json
 COPY --from=builder --chown=appuser:0 /app/server/.version ./app/server/.version
 COPY --from=builder --chown=appuser:0 /app/server/ee/keys ./app/server/ee/keys
