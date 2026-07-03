@@ -147,16 +147,20 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
   const savedVersions = developmentVersions.filter((v) => v.status !== 'DRAFT');
 
   // Disable create draft logic:
-  // - Git sync enabled: disable if any draft already exists
+  // - Git sync enabled + synced app: disable if a synced draft already exists (one
+  //   draft per branch rule).
+  // - Git sync enabled + unsynced app (never pushed to git): no synced draft exists,
+  //   so it falls through to the same rule as a non-git workspace — need at least one
+  //   saved version to create a draft from. See `createVersion` in versions/util.service.ts.
   // - Git sync disabled: disable if no published versions AND a draft exists (need published version to create from)
-  const shouldDisableCreateDraft = isGitSyncEnabled
-    ? draftVersions.length > 0
-    : savedVersions.length === 0 && draftVersions.length > 0;
+  const hasSyncedDraft = draftVersions.some((v) => v.isSynced !== false);
+  const needsSavedVersion = savedVersions.length === 0 && draftVersions.length > 0;
+  const shouldDisableCreateDraft = isGitSyncEnabled ? hasSyncedDraft || needsSavedVersion : needsSavedVersion;
 
   // Determine tooltip message based on why create draft is disabled
   let createDraftDisabledTooltip = '';
   if (shouldDisableCreateDraft) {
-    if (isGitSyncEnabled) {
+    if (isGitSyncEnabled && hasSyncedDraft) {
       createDraftDisabledTooltip = 'Draft version already exists.';
     } else if (savedVersions.length === 0) {
       createDraftDisabledTooltip = 'Draft version can only be created from saved versions.';
@@ -495,7 +499,7 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
             <span className="tj-text-sm" style={{ fontWeight: 500, color: 'var(--text-default)' }}>
               Versions
             </span>
-            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && (
+            {(selectedEnvironmentFilter || currentEnvironment)?.name === 'development' && hasSyncedDraft && (
               <Button
                 variant="outline"
                 size="small"
@@ -691,8 +695,9 @@ const VersionManagerDropdown = ({ darkMode = false, ...props }) => {
         {...props}
       />
 
-      {/* Edit Version Modal — only for non-git-sync workspaces */}
-      {!isGitSyncEnabled && (
+      {/* Edit Version Modal — non-git-sync workspaces, or unsynced apps (never pushed to
+          git) that behave like a non-git workspace for editing purposes */}
+      {(!isGitSyncEnabled || versionToEdit?.isSynced === false) && (
         <EditVersionModal
           showEditAppVersion={showEditVersionModal}
           setShowEditAppVersion={(show) => {

@@ -838,11 +838,11 @@ export class AppsUtilService implements IAppsUtilService {
     branchId?: string
   ): Promise<AppBase[]> {
     const qb = await this.buildViewableAppsQuery(user, type, searchKey, isGetAll, branchId, this.appRepository.manager);
-    if (isGetAll) return qb.getMany();
-    return qb
-      .take(APPS_PAGE_SIZE)
-      .skip(APPS_PAGE_SIZE * (page - 1))
-      .getMany();
+    const apps = isGetAll
+      ? await qb.getMany()
+      : await qb.take(APPS_PAGE_SIZE).skip(APPS_PAGE_SIZE * (page - 1)).getMany();
+    await this.stampIsAppSynced(apps, branchId, type);
+    return apps;
   }
 
   async allWithCount(
@@ -857,7 +857,23 @@ export class AppsUtilService implements IAppsUtilService {
       .take(APPS_PAGE_SIZE)
       .skip(APPS_PAGE_SIZE * (page - 1))
       .getManyAndCount();
+    await this.stampIsAppSynced(apps, branchId, type);
     return { apps, totalCount };
+  }
+
+  // Batch-check whether any version on the branch has been pulled on main (isSynced=true).
+  // Mirrors the app builder's developmentVersions.some(v => v.isSynced === true) check.
+  // Only runs for FRONT_END apps in the git-sync flow (branchId present) — no-op for
+  // all other app types and all non-git flows.
+  private async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
+    if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
+    const rows: { app_id: string }[] = await this.appRepository.manager.query(
+      `SELECT DISTINCT app_id FROM app_versions
+       WHERE app_id = ANY($1::uuid[]) AND branch_id = $2::uuid AND is_synced = true`,
+      [apps.map((a) => a.id), branchId]
+    );
+    const syncedIds = new Set(rows.map((r) => r.app_id));
+    apps.forEach((a) => ((a as any).isAppSynced = syncedIds.has(a.id)));
   }
 
   private async buildViewableAppsQuery(
