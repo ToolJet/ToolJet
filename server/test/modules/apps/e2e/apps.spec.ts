@@ -1884,58 +1884,75 @@ describe('AppsController', () => {
       });
 
       describe('modules', () => {
-        it('should include a module embedded via ModuleViewer in a non-current (draft) version', async () => {
-          // Bug repro: VersionsService.getVersion() -> AppsUtilService.fetchModules(app, false, undefined)
-          // ignores the version actually being previewed and falls back to app.currentVersionId
-          // when resolving which version's pages to scan for ModuleViewer components. So a module
-          // embedded only in a draft (non-current) version is silently omitted from the preview
-          // response, forcing the frontend to fall back to a direct fetch that can 403 if the
-          // builder's module permission was revoked.
-          const adminUserData = await createUser(app, {
-            email: 'admin@tooljet.io',
-            groups: ['all_users', 'admin'],
-          });
+        // Collects every page id across a rendered module. A module rendered off the
+        // wrong version (arbitrary findVersion(undefined)) or as an empty shell will
+        // NOT carry its own version's page, so matching the module's Home page id
+        // proves the module resolved its real version. (Asserting on components would
+        // need Layout rows, since getAllComponents inner-joins on layout.type.)
+        const pageIdsOf = (renderedModule: any): string[] => (renderedModule?.pages || []).map((page: any) => page?.id);
 
-          const loggedUser = await login(app);
-          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+        // Builds a module app (no release lifecycle, so no currentVersionId) plus a
+        // host app whose previewed version embeds it via a ModuleViewer.
+        const seedHostWithModule = async (user: any) => {
+          const moduleApp = await createApplication(app, { name: 'Some Module', user, type: 'module' });
+          const moduleVersion = await createApplicationVersion(app, moduleApp);
+          const moduleHomePage = await findEntityOrFail(Page, { appVersionId: moduleVersion.id } as any);
 
-          const moduleApp = await createApplication(app, {
-            name: 'Some Module',
-            user: adminUserData.user,
-            type: 'module',
-          });
-          await createApplicationVersion(app, moduleApp);
-
-          const application = await createApplication(app, {
-            name: 'Host App',
-            user: adminUserData.user,
-          });
-
-          // v1 becomes the released/current version - it has no module embedded.
-          const currentVersion = await createApplicationVersion(app, application, { name: 'v1' });
-          await updateEntity(App, application.id, { currentVersionId: currentVersion.id } as any);
-
-          // v2 is an unreleased draft that embeds the module via a ModuleViewer component.
-          const draftVersion = await createApplicationVersion(app, application, { name: 'v2' });
-          const draftPage = await findEntityOrFail(Page, { appVersionId: draftVersion.id } as any);
-
+          const application = await createApplication(app, { name: 'Host App', user });
+          const hostVersion = await createApplicationVersion(app, application, { name: 'v1' });
+          const hostPage = await findEntityOrFail(Page, { appVersionId: hostVersion.id } as any);
           await saveEntity(Component, {
             name: 'moduleViewer1',
             type: 'ModuleViewer',
-            pageId: draftPage.id,
+            pageId: hostPage.id,
             properties: { moduleAppId: { value: moduleApp.id } },
             styles: {},
             validation: {},
           });
 
+          return { moduleApp, application, hostVersion, moduleHomePage };
+        };
+
+        it('getVersion (preview) returns the embedded module rendered from its own version', async () => {
+          // Modules have no release lifecycle, so a module's currentVersionId is never
+          // set. getVersion must resolve the module's own version to render it inline;
+          // otherwise the module is dropped/mis-rendered and the frontend falls back to
+          // a direct GET /api/apps/:moduleId that 403s a builder without module perms.
+          const adminUserData = await createUser(app, { email: 'admin@tooljet.io', groups: ['all_users', 'admin'] });
+          const loggedUser = await login(app);
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const { moduleApp, application, hostVersion, moduleHomePage } = await seedHostWithModule(adminUserData.user);
+
           const response = await request(app.getHttpServer())
-            .get(`/api/v2/apps/${application.id}/versions/${draftVersion.id}`)
+            .get(`/api/v2/apps/${application.id}/versions/${hostVersion.id}`)
             .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
             .set('Cookie', adminUserData['tokenCookie']);
 
           expect(response.statusCode).toBe(200);
-          const moduleIds = (response.body.modules || []).map((m: any) => m.id);
-          expect(moduleIds).toContain(moduleApp.id);
+          const renderedModule = (response.body.modules || []).find((m: any) => m.id === moduleApp.id);
+          expect(renderedModule).toBeDefined();
+          expect(pageIdsOf(renderedModule)).toContain(moduleHomePage.id);
+
+          await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+        });
+
+        it('getOne (builder) returns the embedded module rendered from its own version', async () => {
+          const adminUserData = await createUser(app, { email: 'admin2@tooljet.io', groups: ['all_users', 'admin'] });
+          const loggedUser = await login(app, 'admin2@tooljet.io');
+          adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+          const { moduleApp, application, moduleHomePage } = await seedHostWithModule(adminUserData.user);
+
+          const response = await request(app.getHttpServer())
+            .get(`/api/apps/${application.id}`)
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', adminUserData['tokenCookie']);
+
+          expect(response.statusCode).toBe(200);
+          const renderedModule = (response.body.modules || []).find((m: any) => m.id === moduleApp.id);
+          expect(renderedModule).toBeDefined();
+          expect(pageIdsOf(renderedModule)).toContain(moduleHomePage.id);
 
           await logout(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
