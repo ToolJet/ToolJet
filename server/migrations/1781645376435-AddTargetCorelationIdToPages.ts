@@ -37,6 +37,8 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
  * Lookup is scoped to the page's organization (via source app → org) to avoid
  * cross-workspace slug collisions.
  */
+const MIGRATION_NAME = 'AddTargetCorelationIdToPages1781645376435';
+
 export class AddTargetCorelationIdToPages1781645376435 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Step 3 backfill is a single multi-join UPDATE across the whole pages table —
@@ -66,6 +68,18 @@ export class AddTargetCorelationIdToPages1781645376435 implements MigrationInter
     `);
 
     try {
+      const [{ count }] = await queryRunner.query(`
+        SELECT COUNT(*) FROM pages
+        WHERE app_id IS NOT NULL AND app_id <> '' AND type = 'app'
+      `);
+      const total = parseInt(count, 10);
+      console.log(`${MIGRATION_NAME}: [START] Backfill pages.target_corelation_id | Total candidates: ${total}`);
+
+      if (total === 0) {
+        console.log(`${MIGRATION_NAME}: [SUCCESS] Finished. No candidate pages found.`);
+        return;
+      }
+
       // Step 3: Backfill target_corelation_id by treating pages.app_id as a slug
       // and resolving it against app_versions.slug within the same organization as
       // the page's source app. DISTINCT ON ensures one update per page; the
@@ -105,6 +119,19 @@ export class AddTargetCorelationIdToPages1781645376435 implements MigrationInter
         ) sub
         WHERE p.id = sub.page_id
       `);
+
+      // The column was just created, so every non-null value came from this backfill.
+      const [{ resolved }] = await queryRunner.query(
+        `SELECT COUNT(*) AS resolved FROM pages WHERE target_corelation_id IS NOT NULL`
+      );
+      const resolvedCount = parseInt(resolved, 10);
+      const percentage = ((resolvedCount / total) * 100).toFixed(1);
+      console.log(`${MIGRATION_NAME}: [PROGRESS] Resolved ${resolvedCount}/${total} (${percentage}%)`);
+      console.log(
+        `${MIGRATION_NAME}: [SUCCESS] Finished. Resolved: ${resolvedCount}, unresolved (target_corelation_id left NULL): ${
+          total - resolvedCount
+        }`
+      );
     } finally {
       // Step 4: Drop the temp index — runtime lookups go through co_relation_id,
       // not slug, so the index is dead weight after the backfill completes.

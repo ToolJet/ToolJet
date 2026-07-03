@@ -60,6 +60,7 @@ export class BackfillGoToAppEventSlugWithCorrelationId1781645306551 implements M
 
     try {
       let lastId = '00000000-0000-0000-0000-000000000000';
+      let totalProcessed = 0;
       let totalUpdated = 0;
 
       while (true) {
@@ -157,11 +158,16 @@ export class BackfillGoToAppEventSlugWithCorrelationId1781645306551 implements M
           totalUpdated += updateMap.size;
         }
 
-        const percentage = total > 0 ? ((totalUpdated / total) * 100).toFixed(1) : '0.0';
-        console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalUpdated}/${total} (${percentage}%)`);
+        totalProcessed += rows.length;
+        const percentage = total > 0 ? ((totalProcessed / total) * 100).toFixed(1) : '0.0';
+        console.log(`${MIGRATION_NAME}: [PROGRESS] ${totalProcessed}/${total} (${percentage}%) | updated: ${totalUpdated}`);
       }
 
-      console.log(`${MIGRATION_NAME}: [SUCCESS] Finished. Total updated: ${totalUpdated}`);
+      console.log(
+        `${MIGRATION_NAME}: [SUCCESS] Finished. Processed: ${totalProcessed}, updated: ${totalUpdated}, unresolved (slug kept): ${
+          totalProcessed - totalUpdated
+        }`
+      );
     } finally {
       await queryRunner.query(`DROP INDEX IF EXISTS tmp_idx_av_slug_event_lookup`);
     }
