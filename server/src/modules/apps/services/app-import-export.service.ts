@@ -2894,26 +2894,18 @@ export class AppImportExportService {
     organizationId: string,
     branchId?: string
   ): Promise<void> {
-    // Resolve target branch: use explicit branchId, or fall back to default branch
-    let targetBranchId = branchId;
-    if (!targetBranchId) {
-      const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
-      if (!options.defaultBranch?.id) return;
-      targetBranchId = options.defaultBranch.id;
-    }
-
-    // Check if a branch-specific DSV already exists
-    const existingBranchDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
-    });
-    if (existingBranchDsv) return;
-
-    // Find the default DSV to copy from
-    // const defaultDsv = await manager.findOne(DataSourceVersion, {
-    //   where: { dataSourceId: dataSource.id, isDefault: true },
-    // });
+    // Ensure the default DSV first — independent of any git branch. The default
+    // DSV (is_default=true, branch_id=null) is the data source's canonical version
+    // and must exist for every real data source. Dummy / optionless data sources
+    // skip the options-driven DSV creation in the import loop (gated on
+    // `importingDataSource.options`), and a non-git workspace has no branch to
+    // trigger the branch path below — so without ensuring it here the DS ends up
+    // with zero DSVs (queries bound, but the DS unusable on the data source page).
+    // Find-or-create keeps it idempotent: option-bearing DSes already created their
+    // default DSV upstream and just match here. Resolve via the repository helper —
+    // this branch's DataSourceVersion has no `isDefault` column; the helper encodes
+    // the canonical-default lookup.
     let defaultDsv = await DataSourcesRepository.findDefaultDsvForDataSource(manager, dataSource.id);
-    // if (!defaultDsv) return;
     if (!defaultDsv) {
       const defaultBranchId = await DataSourcesRepository.resolveDefaultBranchIdForDataSource(manager, dataSource.id);
       defaultDsv = await manager.save(
@@ -2941,6 +2933,25 @@ export class AppImportExportService {
         );
       }
     }
+
+    // Resolve target branch for the branch-specific DSV: use explicit branchId, or
+    // fall back to the default branch. Non-git workspaces have no branches — the
+    // default DSV ensured above is all that's needed, so stop here.
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      if (!defaultBranch) return;
+      targetBranchId = defaultBranch.id;
+    }
+
+    // Check if a branch-specific DSV already exists
+    const existingBranchDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
+    });
+    if (existingBranchDsv) return;
 
     // Create branch-specific DSV
     const branchDsv = await manager.save(
