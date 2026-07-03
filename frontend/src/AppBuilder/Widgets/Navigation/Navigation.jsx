@@ -8,7 +8,6 @@ import { useCalculateOverflow } from './hooks/useCalculateOverflow';
 import { findItemById, findParentGroup } from './utils';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
-import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
 
@@ -219,8 +218,6 @@ export const Navigation = function Navigation(props) {
     currentMode,
   } = props;
 
-  const { moduleId } = useModuleContext();
-
   const {
     orientation,
     displayStyle,
@@ -322,12 +319,7 @@ export const Navigation = function Navigation(props) {
     if (disabledState) return;
     applySelection(item);
 
-    // The ordering (item → component) is enforced by the onNavigationItemClicked handler
-    const allEvents = useStore.getState().eventsSlice?.getModuleEvents?.(moduleId) || [];
-    const navEvents = allEvents.filter((e) => e.sourceId === id);
-    const itemEvents = navEvents.filter((e) => e?.event?.ref === item.id);
-    const componentEvents = navEvents.filter((e) => !e?.event?.ref);
-    fireEvent('onNavigationItemClicked', { itemEvents, componentEvents });
+    fireEvent('onNavigationItemClicked', { itemId: item.id });
   };
 
   // Actions
