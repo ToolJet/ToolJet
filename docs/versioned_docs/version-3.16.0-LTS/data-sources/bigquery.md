@@ -9,10 +9,24 @@ ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 
 To establish a connection with the **BigQuery** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose BigQuery as the data source.
 
-ToolJet requires the following to connect to your BigQuery:
+### OAuth 2.0 
 
-- **Private key**
-- **Scope**
+ToolJet requires the following to make an OAuth connection with your BigQuery:
+
+- **Project ID**: Enter the Google Cloud project ID that contains your BigQuery datasets.
+- **Region**: Select the region where your BigQuery resources are located.
+- **Client ID**: Enter the OAuth 2.0 Client ID obtained from your Google Cloud project.
+- **Client Secret**: Enter the OAuth 2.0 Client Secret associated with the Client ID.
+
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/connection-oauth.png" alt=" Bigquery Oauth connection " />
+
+### Service Account
+
+ToolJet requires the following to make a Service Account connection with your BigQuery:
+
+- **Private Key**: Enter the JSON private key for your Google Cloud service account.
+- **Scope**: Specify the OAuth scope required to access BigQuery resources.
+- **Region**: Select the region where your BigQuery resources are located.
 
 :::warning
 When entering multiple scopes, separate them using spaces. Using any other character may cause errors.
@@ -27,7 +41,7 @@ How to get a Private key?
 3. Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
 4. Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-v3.png" alt="Adding Bigquery Connection" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/bigquery/connection-service-acc.png" alt="Bigquery service account connection" />
 
 **The JSON file should look like this:**
 
@@ -47,153 +61,362 @@ How to get a Private key?
 }
 ```
 
-## Querying BigQuery
+## Querying BigQuery in SQL Mode
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the **BigQuery** datasource added in previous step.
-3. Select the desired operation from the dropdown and enter the required parameters.
-4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+3. Select **SQL mode** from the dropdown.
+4. Enter the SQL query and configure optional parameters if required.
+5. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-listops.png" alt="Bigquery list all operations" />
+### SQL Parameter Syntax
+
+When using parameters in BigQuery SQL queries, use the `@parameter_name` syntax for named parameters. Unlike other SQL data sources in ToolJet, BigQuery does not use the `:parameter_name` syntax.
+
+**Example:**
+
+```sql
+SELECT
+    word,
+    word_count
+  FROM
+    `bigquery-public-data.samples.shakespeare`
+  WHERE
+    corpus = @corpus
+  AND
+    word_count >= @min_word_count
+  ORDER BY
+    word_count DESC;
+```
+
+In this example, `@corpus` and `@min_word_count` are named query parameters. 
+
+BigQuery supports query parameters only when using GoogleSQL. Query parameters can be used only for values and cannot replace identifiers such as table names, column names, or other parts of the SQL statement.
+
+**Required Parameter**
+- SQL Query: The GoogleSQL query to execute.
+
+**Optional Parameters**
+- SQL Parameters: Define named query parameters used in the SQL query. 
+- Query options: Configure execution options such as location, dry run, priority, etc. 
+- Query results options: Configure how query results are returned.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/bigquery/sql-mode.png" alt="Bigquery sql mode" />
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/app-builder/custom-code/transform-data)
 :::
 
-## Supported Operations
+## Querying BigQuery in GUI Mode
 
-- **[Query](#query)**
-- **[List Datasets](#list-datasets)**
-- **[List Tables](#list-tables)**
-- **[Get Dataset Info](#get-dataset-info)**
-- **[Insert Record ](#insert-record)**
-- **[Delete Record ](#delete-record)**
-- **[Update Record](#update-record)**
-- **[Create View](#create-view)**
-- **[Create Table](#create-table)**
-- **[Delete Table](#create-table)**
+GUI mode can be used to query Bigquery data source without writing queries.
+
+1. Create a new query and select the Bigquery data source.
+2. Select **GUI mode** from the dropdown.
+3. Choose the operation you want to perform.
+4. Enter the required parameters for the selected operation.
+5. Click on the **Preview** button to view the output or click on **Run** button to trigger the query.
 
 ### Query
 
-This operation returns the data based on the **Query**.
+Retrieve data from a BigQuery table by configuring query options.
 
-**Note**: Follow the reference given in **Google Cloud** about the operations: **[Query options](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)** and **[Query results options](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)**.
+**Required Parameter**
+- Query: Enter the GoogleSQL query to execute.
 
-#### Required Parameters
+**Optional Parameters**
+- SQL Parameters: Specify values for named query parameters referenced in the SQL query.
+- Query options: Configure query execution options such as location or priority.
+- Query result options: Configure how query results are returned.
 
-- Query
-- Query options
-- Query results options
-
-<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-query-v3.png" alt="BQ query"/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/gui-query.png" alt="Bigquery GUI mode Query" />
 
 ### List Datasets
 
-This operation returns the list of datasets.
+Retrieve all datasets available in the selected BigQuery project.
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-datasets.png" alt="BQ list datasets"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-list.png" alt="Bigquery GUI mode List datasets" />
 
 ### List Tables
 
-This operation returns the list of tables within a dataset.
+Retrieve all tables from a selected dataset.
 
-#### Required Parameter
+**Required Parameter**
+- Dataset ID: Select the dataset from which to list the tables.
 
-- Dataset Id
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-list-tables.png" alt="BQ list tables"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-list-tables.png" alt="Bigquery GUI mode List tables" />
 
 ### Get Dataset Info
 
-This operation allows the users to retrieve the metadata for a specific dataset.
+Retrieve metadata and details for a selected dataset.
 
-#### Required Parameters
+**Required Parameter**
+- Dataset ID: Select the dataset whose details you want to retrieve.
 
-- Dataset Id
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-get-dataset-info.png" alt="BQ get dataset info"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-get-dataset.png" alt="Bigquery GUI mode Get dataset info" />
 
 ### Create Table
 
-This operation is used to create a table.
+Create a new table within a selected dataset.
 
-#### Required Parameters
+**Required Parameters**
+- Dataset ID: Select the dataset in which the table will be created.
+- Table ID: Enter a unique identifier for the new table.
+- Options: Specify the table schema and any additional BigQuery table creation options in JSON format.
 
-- Table Id
-- Dataset Id
-- Options
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+{
+  "schema": [
+    {
+      "name": "order_id",
+      "type": "STRING"
+    },
+    {
+      "name": "customer_name",
+      "type": "STRING"
+    },
+    {
+      "name": "product_name",
+      "type": "STRING"
+    },
+    {
+      "name": "quantity",
+      "type": "INTEGER"
+    },
+    {
+      "name": "order_amount",
+      "type": "FLOAT"
+    },
+    {
+      "name": "order_status",
+      "type": "STRING"
+    },
+    {
+      "name": "order_date",
+      "type": "DATE"
+    }
+  ],
+  "location": "US"
+}
+```
+</details>
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-create-table-v4.png"  alt="BQ create tables"/>
-
-**NOTE:** Visit https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
+<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-create.png" alt="Bigquery GUI mode Create table" />
 
 ### Delete Table
 
-This operation is used to delete a table.
+Delete an existing table from a dataset.
 
-#### Required Parameters
+**Required Parameters**
+- Dataset ID: Select the dataset in which the table will be deleted.
+- Table ID: Select the table to delete.
 
-- Table Id
-- Dataset Id
-
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-delete-table-v3.png" alt="BQ delete tables"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-delete-table.png" alt="Bigquery GUI mode Delete table" />
 
 ### Create View
 
-This operation is used to create a view.
+Create a BigQuery view using a SQL query.
 
-#### Required Parameters
+**Required Parameters**
+- Dataset ID: Select the dataset where the view will be created.
+- Table ID: Select the source table from which the view will be created.
+- View name: Enter a unique name for the view.
+- View columns: Specify the columns to include in the view.
 
-- Table Id
-- Dataset Id
-- View name
-- View columns
-- Condition
-- Query options
-- Query results options
+**Optional Parameters**
+- Condition: Filter the rows included in the view.
+- Query options: Configure query execution options such as location or dry run.
+- Query results options: Configure how query results are returned.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-create-view.png" alt="BQ create view"/>
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/gui-create-view.png" alt="Bigquery GUI mode Create view" />
 
 ### Insert Record
 
-This operation is used to insert a record.
+Insert a single row into a table.
 
-#### Required parameters:
+**Required Parameters**
+- Dataset ID: Select the dataset that contains the table.
+- Table ID: Select the table into which the record will be inserted.
+- Rows: Specify the record to insert in JSON format.
 
-- Table Id
-- Dataset Id
-- Rows
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  {
+  "employee_id": "1001",
+  "employee_name": "John Smith",
+  "department": "Engineering",
+  "email": "john.smith@example.com",
+  "salary": 85000,
+  "is_active": true
+  }
+]
+```
+</details>
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/bigquery/bq-insert-v3.png" alt="BQ insert"/>
+<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-insert.png" alt="Bigquery GUI mode Insert record" />
 
 ### Delete Record
 
-Use this operation to delete a record.
+Delete rows from a table based on specified conditions.
 
-#### Required parameters:
+**Required Parameters**
+- Dataset ID: Select the dataset from which the record will be deleted.
+- Table ID: Select the source table from which the record will be deleted.
 
-- Table Id
-- Dataset Id
-- Condition
-- Query options
-- Query results options
+**Optional Parameters**
+- Condition: Specify a filter to delete matching records. If omitted, all records in the selected table are deleted.
+- Query options: Configure query execution options such as location or dry run.
+- Query results options: Configure how query results are returned.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-delete-rec.png"  alt="BQ delete" />
-
-:::warning
-NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
-:::
+<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/gui-delete-record.png" alt="Bigquery GUI mode Delete record" />
 
 ### Update Record
 
-Use this operation to update a record.
+Update existing rows in a table based on specified conditions.
 
-#### Required parameters:
+**Required Parameters**
+- Dataset ID: Select the dataset that contains the table.
+- Table ID: Select the table where the records will be updated.
+- Columns:	Specify the column values to update.
 
-- Table Id
-- Dataset Id
-- Columns
-- Condition
-- Query results options
+**Optional Parameters**
+- Condition: Specify a filter to update only matching records. If omitted, all records in the selected table are updated.
+- Query options: Configure query execution options such as location.
+- Query results options:	Configure how query results are returned.
 
-<img className="screenshot-full img-l" src="/img/datasource-reference/bigquery/bq-update-rec.png" alt="BQ update" />
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+{
+  "department": "Engineering",
+  "designation": "Senior Software Engineer",
+  "salary": 95000,
+  "is_active": true
+}
+```
+</details>
+
+<img style={{marginTop:'15px'}} className="screenshot-full img-l" src="/img/datasource-reference/bigquery/gui-update.png" alt="Bigquery GUI mode Update record" />
+
+### Bulk Insert
+
+Insert multiple rows into a table in a single operation.
+
+**Required Parameters**
+- Dataset ID: Select the dataset that contains the table.
+- Table ID: Select the table into which the records will be inserted.
+- Records to Insert: Specify the records to insert as an array of JSON objects.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  {
+    "employee_id": "1001",
+    "employee_name": "John Smith",
+    "department": "Engineering",
+    "designation": "Software Engineer",
+    "salary": 85000,
+    "joining_date": "2026-01-15"
+  },
+  {
+    "employee_id": "1002",
+    "employee_name": "Emily Johnson",
+    "department": "Sales",
+    "designation": "Sales Executive",
+    "salary": 72000,
+    "joining_date": "2026-02-01"
+  },
+  {
+    "employee_id": "1003",
+    "employee_name": "Michael Brown",
+    "department": "Human Resources",
+    "designation": "HR Manager",
+    "salary": 90000,
+    "joining_date": "2025-11-10"
+  }
+]
+```
+</details>
+
+<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-bulk-insert.png" alt="Bigquery GUI mode Bulk insert" />
+
+### Bulk Update using Primary Key
+
+Update multiple rows by matching their primary key values.
+
+**Required Parameters**
+- Dataset ID: Select the dataset that contains the table.
+- Table ID: Select the table containing the records to update.
+- Primary key column(s): Specify the column(s) used to identify the records to update.
+- Records to update: Specify the records to update as an array of JSON objects.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  {
+    "employee_id": "101",
+    "designation": "Senior Software Engineer",
+    "salary": 95000,
+    "department": "Engineering"
+  },
+  {
+    "employee_id": "102",
+    "designation": "Sales Manager",
+    "salary": 82000,
+    "department": "Sales"
+  },
+  {
+    "employee_id": "103",
+    "designation": "HR Director",
+    "salary": 110000,
+    "department": "Human Resources"
+  }
+]
+```
+</details>
+
+<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-bulk-update.png" alt="Bigquery GUI mode Bulk update" />
+
+### Bulk Upsert using Primary Key
+
+Insert new rows or update existing rows based on their primary key values.
+
+**Required Parameters**
+- Dataset ID: Select the dataset that contains the table.
+- Table ID: Select the table in which the records will be inserted or updated.
+- Primary key column(s): Specify the column(s) used to identify existing records.
+- Records to upsert: Specify the records to insert or update as an array of JSON objects.
+
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
+[
+  {
+    "employee_id": "101",
+    "designation": "Senior Software Engineer",
+    "salary": 95000,
+    "department": "Engineering"
+  },
+  {
+    "employee_id": "104",
+    "designation": "Operations Head",
+    "salary": 77000,
+    "department": "HR"
+  },
+  {
+    "employee_id": "105",
+    "designation": "Developer Advocate",
+    "salary": 65000,
+    "department": "Development"
+  }
+]
+```
+</details>
+
+<img style={{marginTop:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/bigquery/gui-bulk-upsert.png" alt="Bigquery GUI mode Bulk upsert" />
