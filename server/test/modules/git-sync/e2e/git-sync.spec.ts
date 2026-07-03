@@ -3043,6 +3043,20 @@ describe('GitSyncController', () => {
         expect(orphanAppBefore).toHaveLength(1);
         expect(orphanAppBefore[0].is_synced).toBe(true);
 
+        // App-object level: the list endpoint stamps is_app_synced = true when the app
+        // has any is_synced=true version on the branch. Before the orphan sweep it does.
+        const orphanListBefore = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const orphanAppInListBefore = orphanListBefore.body.apps.find((a: any) => a.id === orphanSyncedAppId);
+        expect(orphanAppInListBefore).toBeDefined();
+        expect(orphanAppInListBefore.is_app_synced ?? orphanAppInListBefore.isAppSynced).toBe(true);
+
         await request
           .agent(app.getHttpServer())
           .post('/api/workspace-branches/pull')
@@ -3073,6 +3087,21 @@ describe('GitSyncController', () => {
           orphanAppDetail.body?.app?.editing_version;
         expect(orphanAppEditing).toBeDefined();
         expect(orphanAppEditing.is_synced ?? orphanAppEditing.isSynced).toBe(false);
+
+        // App-object level: after the orphan sweep flips the version is_synced=false, the
+        // app has no synced version on the branch → is_app_synced must be false too (the
+        // app survives in the list, just unsynced).
+        const orphanListAfter = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .set('x-branch-id', mainBranchId)
+          .expect(200);
+        const orphanAppInListAfter = orphanListAfter.body.apps.find((a: any) => a.id === orphanSyncedAppId);
+        expect(orphanAppInListAfter).toBeDefined();
+        expect(orphanAppInListAfter.is_app_synced ?? orphanAppInListAfter.isAppSynced).toBe(false);
 
         step(62, 'orphan MODULE on default branch: pull marks is_synced=false (not deleted), GET reflects it');
         // 65. Module variant of step 64. Modules are App rows (type='module') and use

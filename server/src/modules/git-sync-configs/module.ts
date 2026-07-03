@@ -2,7 +2,6 @@ import { DynamicModule } from '@nestjs/common';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
 import { GitSyncConfigsRepository } from './repository';
-import { RemoteBranchCacheService } from '@ee/git-sync/remote-branch-cache.service';
 
 // Self-contained module — does NOT import any other module. LicenseModule is global so
 // its services (LicenseTermsService) are available without an explicit import; the same
@@ -15,11 +14,19 @@ export class GitSyncConfigsModule extends SubModule {
     const cached = this.getCachedModule(cacheKey);
     if (cached) return cached;
 
-    const { GitSyncConfigsController, GitSyncConfigsService, GitSyncConfigsUtilService } = await this.getProviders(
-      configs,
-      'git-sync-configs',
-      ['controller', 'service', 'util.service']
-    );
+    const {
+      GitSyncConfigsController,
+      GitSyncConfigsService,
+      GitSyncConfigsUtilService,
+      RemoteBranchCacheService,
+      GitObjectCacheService,
+    } = await this.getProviders(configs, 'git-sync-configs', [
+      'controller',
+      'service',
+      'util.service',
+      'services/remote-branch-cache.service',
+      'services/git-object-cache.service',
+    ]);
 
     return this.cacheModule(cacheKey, {
       module: GitSyncConfigsModule,
@@ -30,8 +37,9 @@ export class GitSyncConfigsModule extends SubModule {
         GitSyncConfigsUtilService,
         FeatureAbilityFactory,
         RemoteBranchCacheService,
+        GitObjectCacheService,
       ],
-      exports: [GitSyncConfigsUtilService],
+      exports: [GitSyncConfigsUtilService, RemoteBranchCacheService, GitObjectCacheService],
     });
   }
 }
