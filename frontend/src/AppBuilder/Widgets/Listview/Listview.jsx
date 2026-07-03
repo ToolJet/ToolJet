@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useExposedValueBatch } from '@/AppBuilder/_hooks/useExposedValueBatch';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 // import { SubContainer } from '../SubContainer';
 import { Pagination } from '@/_components/Pagination';
 import _ from 'lodash';
@@ -94,6 +95,9 @@ export const Listview = function Listview({
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
   const parentRef = useRef(null);
+  // Disabled list blocks the mouse via `data-disabled`; `inert` also removes the row components from
+  // the tab order (runtime only — keeps the builder editable).
+  useDisableInert(parentRef, disabledState);
 
   // Dynamic-height toggle-off transition: drop this Listview's own inflated
   // temp (widget-level + per-row heights). Done once at the widget level so
