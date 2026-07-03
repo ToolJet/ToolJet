@@ -194,6 +194,11 @@ const useAppData = (
   const licenseStatus = useStore((state) => state.isLicenseValid());
   const organizationId = useStore((state) => state.appStore.modules[moduleId].app.organizationId);
   const appName = useStore((state) => state.appStore.modules[moduleId].app.appName);
+  const moduleAppNameFromList = useStore((state) => {
+    if (!moduleMode) return null;
+    const list = state.modulesStore?.modulesList ?? [];
+    return list.find((m) => (m.co_relation_id ?? m.id) === appId)?.name ?? null;
+  });
 
   // Used to trigger app refresh flow after restoring app history
   const restoreTimestamp = useStore((state) => state.restoreTimestamp);
@@ -685,17 +690,17 @@ const useAppData = (
         setEditorLoading(false, moduleId);
         if (moduleMode) {
           const versionLabel = versionId || 'unpinned';
-          const moduleName = componentName ?? moduleId;
+          const widgetName = componentName ?? moduleId;
           useStore.getState().debugger.log({
             logLevel: 'error',
             type: 'module',
             kind: 'module',
-            key: moduleName,
-            message: `Pinned version "${versionLabel}" unavailable on this branch`,
+            key: widgetName,
+            message: 'Module version not found, re-select the version to load it',
             errorTarget: 'Modules',
             error: {
               description: _error?.data?.message || 'Module version not found',
-              module: moduleName,
+              module: appName || moduleAppNameFromList || widgetName,
               version: versionLabel,
             },
             timestamp: new Date().toISOString(),
