@@ -822,7 +822,9 @@ class BaseManageGranularAccess extends React.Component {
                     name={
                       resourceType === RESOURCE_TYPE.APPS
                         ? 'apps'
-                        : resourceType === RESOURCE_TYPE.WORKFLOWS || resourceType === RESOURCE_TYPE.MODULES
+                        : resourceType === RESOURCE_TYPE.MODULES
+                        ? 'modules'
+                        : resourceType === RESOURCE_TYPE.WORKFLOWS
                         ? 'workflows'
                         : 'datasource'
                     }
