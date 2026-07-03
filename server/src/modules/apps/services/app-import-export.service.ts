@@ -1490,7 +1490,7 @@ export class AppImportExportService {
         icon: isWorkflow ? appParams.icon : null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: isWorkflow ? false : null,
-        co_relation_id: appParams?.id,
+        co_relation_id: coRelationId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
