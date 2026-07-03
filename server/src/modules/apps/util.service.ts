@@ -985,23 +985,29 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
-    // hideFromDashboard wins over editable/viewable grants
-    const visibleEditableAppsId = userAppPermissions.editableAppsId.filter(
-      (id) => !userAppPermissions.hiddenAppsId.includes(id)
-    );
-    const visibleViewableAppsId = userAppPermissions.viewableAppsId.filter(
-      (id) => !userAppPermissions.hiddenAppsId.includes(id)
+    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
+      (id) => !userAppPermissions.editableAppsId.includes(id)
     );
 
-    const explicitVisibleApps = Array.from(new Set([...visibleEditableAppsId, ...visibleViewableAppsId]));
+    const explicitVisibleApps = Array.from(
+      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
+    );
 
     // hideAll => strict allow-list mode (explicit grants only)
     if (userAppPermissions.hideAll) {
       return [null, ...explicitVisibleApps];
     }
 
-    // normal mode => editable and viewable grants, minus hidden
-    return [null, ...explicitVisibleApps];
+    // normal mode => editable always visible, viewable minus hidden (non-editable)
+    return [
+      null,
+      ...Array.from(
+        new Set([
+          ...userAppPermissions.editableAppsId,
+          ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
+        ])
+      ),
+    ];
   }
 
   private addViewableFrontEndAppsFilter(
