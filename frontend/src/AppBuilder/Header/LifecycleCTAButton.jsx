@@ -71,11 +71,14 @@ const LifecycleCTAButton = () => {
       workspaceActiveBranch.name === defaultBranchName
     : selectedVersion?.versionType === 'version' || selectedVersion?.versionType !== 'branch';
 
-  // App is unsynced when NO version has ever been pulled on main (isSynced=true).
-  // Checking a single version (draft or selectedVersion) is unreliable — the draft may not
-  // exist (unsynced app with all drafts published) or may be an old saved version with
-  // isSynced=false on an app that IS in git. Scanning all developmentVersions is robust.
-  const isAppSyncedToGit = developmentVersions?.some((v) => v.isSynced === true);
+  // App is synced only when its main-branch draft (status=DRAFT, versionType=version) has
+  // isSynced=true. Filtering to DRAFT+version-type excludes feature-branch versions
+  // (versionType=branch) — getVersionsByEnvironment has no branchId filter, so feature-branch
+  // drafts with isSynced=true (set on push) would otherwise falsely mark the app as synced
+  // on main before it has ever been pulled there.
+  const isAppSyncedToGit = developmentVersions?.some(
+    (v) => v.isSynced === true && v.status === 'DRAFT' && (v.versionType === 'version' || v.version_type === 'version')
+  );
   const isUnsynced = workspaceActiveBranch && isOnDefaultBranch && !isAppSyncedToGit;
 
   // Determine button state based on git configuration and branch type
