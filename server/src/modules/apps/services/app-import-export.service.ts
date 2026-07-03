@@ -1459,6 +1459,22 @@ export class AppImportExportService {
         }
       }
 
+      // Preserve the source's logical identity (co_relation_id) so cross-app references
+      // (go-to-app event correlationId, pages.target_corelation_id, module refs) heal once
+      // the referenced app is imported into this workspace. If an app here already carries
+      // that identity, this import is a copy of it — mint a fresh identity so existing
+      // references keep resolving to the original deterministically. Git imports skip the
+      // conflict check: branch rows of the same logical app intentionally share the id.
+      const sourceCoRelationId = appParams?.co_relation_id ?? appParams?.id;
+      let coRelationId = sourceCoRelationId ?? uuid();
+      if (!isGitApp && sourceCoRelationId) {
+        const identityHolder = await manager.findOne(App, {
+          where: { co_relation_id: sourceCoRelationId, organizationId: user?.organizationId },
+          select: ['id'],
+        });
+        if (identityHolder) coRelationId = uuid();
+      }
+
       const appId = uuid();
       // Workflows still carry name/slug/icon/isPublic on apps.*; non-workflow metadata
       // lives on app_versions. apps.slug stays NULL for non-workflows — Postgres allows
