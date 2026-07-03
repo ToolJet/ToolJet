@@ -1074,6 +1074,11 @@ export class AppsUtilService implements IAppsUtilService {
    * An entry is set for every app row the query returns. Callers distinguish:
    *   - row missing or row present but both null  → app doesn't exist in this workspace
    *   - row present, `currentVersionId` null      → app exists but has no released version
+   *
+   * Multiple app rows can share one co_relation_id: git-sync branch rows by design, and
+   * legacy duplicate imports (pre conflict-check) in plain workspaces. The ORDER BY +
+   * first-wins loop makes the pick deterministic: prefer a released row, then the most
+   * recently updated, then lowest id.
    */
   async findAppDataByCorelationIds(
     coRelationIds: string[],
@@ -1101,9 +1106,15 @@ export class AppsUtilService implements IAppsUtilService {
         .select('app.co_relation_id', 'coRelationId')
         .addSelect('app.currentVersionId', 'currentVersionId')
         .addSelect('COALESCE(released.slug, MIN(av.slug))', 'slug')
-        .groupBy('app.co_relation_id')
+        .groupBy('app.id')
+        .addGroupBy('app.co_relation_id')
         .addGroupBy('app.currentVersionId')
-        .addGroupBy('released.slug');
+        .addGroupBy('released.slug')
+        // Deterministic winner among rows sharing a co_relation_id (git branch rows,
+        // legacy duplicate imports): released row first, then newest, then lowest id.
+        .orderBy('CASE WHEN app.current_version_id IS NULL THEN 1 ELSE 0 END', 'ASC')
+        .addOrderBy('app.updated_at', 'DESC')
+        .addOrderBy('app.id', 'ASC');
 
       if (branchId) {
         qb.andWhere((sub) => {
@@ -1125,6 +1136,8 @@ export class AppsUtilService implements IAppsUtilService {
       }>();
       const result = new Map<string, { slug: string | null; currentVersionId: string | null }>();
       for (const row of rows) {
+        // Rows arrive best-first (see ORDER BY) — keep the first per co_relation_id.
+        if (result.has(row.coRelationId)) continue;
         result.set(row.coRelationId, {
           slug: row.slug ?? null,
           currentVersionId: row.currentVersionId ?? null,
