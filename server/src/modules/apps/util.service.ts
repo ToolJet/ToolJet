@@ -985,29 +985,23 @@ export class AppsUtilService implements IAppsUtilService {
   }
 
   private calculateViewableFrontEndApps(userAppPermissions: UserAppsPermissions): string[] {
-    const hiddenNonEditable = userAppPermissions.hiddenAppsId.filter(
-      (id) => !userAppPermissions.editableAppsId.includes(id)
+    // hideFromDashboard wins over editable/viewable grants
+    const visibleEditableAppsId = userAppPermissions.editableAppsId.filter(
+      (id) => !userAppPermissions.hiddenAppsId.includes(id)
+    );
+    const visibleViewableAppsId = userAppPermissions.viewableAppsId.filter(
+      (id) => !userAppPermissions.hiddenAppsId.includes(id)
     );
 
-    const explicitVisibleApps = Array.from(
-      new Set([...userAppPermissions.editableAppsId, ...userAppPermissions.viewableAppsId])
-    );
+    const explicitVisibleApps = Array.from(new Set([...visibleEditableAppsId, ...visibleViewableAppsId]));
 
     // hideAll => strict allow-list mode (explicit grants only)
     if (userAppPermissions.hideAll) {
       return [null, ...explicitVisibleApps];
     }
 
-    // normal mode => editable always visible, viewable minus hidden (non-editable)
-    return [
-      null,
-      ...Array.from(
-        new Set([
-          ...userAppPermissions.editableAppsId,
-          ...userAppPermissions.viewableAppsId.filter((id) => !hiddenNonEditable.includes(id)),
-        ])
-      ),
-    ];
+    // normal mode => editable and viewable grants, minus hidden
+    return [null, ...explicitVisibleApps];
   }
 
   private addViewableFrontEndAppsFilter(
@@ -1016,7 +1010,18 @@ export class AppsUtilService implements IAppsUtilService {
     viewableApps: string[]
   ): SelectQueryBuilder<AppBase> {
     const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
-    if (isAllEditable) return query;
+    const { hiddenAppsId } = userAppPermissions;
+
+    if (isAllEditable) {
+      // Builder with "all apps editable" — still respect hideFromDashboard settings.
+      if (hideAll) {
+        // All apps hidden from dashboard; none should appear.
+        query.andWhere('1 = 0');
+      } else if (hiddenAppsId.length > 0) {
+        query.andWhere('apps.id NOT IN (:...hiddenApps)', { hiddenApps: hiddenAppsId });
+      }
+      return query;
+    }
 
     if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll)) {
       query.andWhere('apps.id IN (:...viewableApps)', {
@@ -1025,8 +1030,8 @@ export class AppsUtilService implements IAppsUtilService {
       return query;
     }
 
-    const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
-    if (!userAppPermissions.hideAll && isAllViewable && hiddenApps.length > 0) {
+    const hiddenApps = hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+    if (!hideAll && isAllViewable && hiddenApps.length > 0) {
       query.andWhere('apps.id NOT IN (:...hiddenApps)', {
         hiddenApps,
       });
