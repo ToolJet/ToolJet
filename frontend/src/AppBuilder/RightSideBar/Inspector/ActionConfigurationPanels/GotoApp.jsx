@@ -56,7 +56,7 @@ export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, compone
               // building works without a reload AND the validator can distinguish "missing target" from "no released version".
               upsertLinkedApp(
                 value,
-                { slug: selected.slug ?? null, currentVersionId: selected.currentVersionId ?? null },
+                { slug: selected?.slug ?? null, currentVersionId: selected?.currentVersionId ?? null },
                 moduleId
               );
             }}

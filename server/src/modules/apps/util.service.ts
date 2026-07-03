@@ -1089,62 +1089,63 @@ export class AppsUtilService implements IAppsUtilService {
     const ids = Array.from(new Set((coRelationIds || []).filter(Boolean)));
     if (ids.length === 0) return new Map();
 
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const releasedJoin = branchId
-        ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
-        : 'released.id = app.currentVersionId';
-      const avJoin = branchId
-        ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
-        : 'av.appId = app.id AND av.slug IS NOT NULL';
+    // Single read-only statement — no transaction needed.
+    const mgr = manager ?? getConnectionInstance().manager;
 
-      const qb = manager
-        .createQueryBuilder(App, 'app')
-        .leftJoin(AppVersion, 'released', releasedJoin, branchId ? { branchId } : undefined)
-        .leftJoin(AppVersion, 'av', avJoin, branchId ? { branchId } : undefined)
-        .where('app.co_relation_id IN (:...ids)', { ids })
-        .andWhere('app.organizationId = :organizationId', { organizationId })
-        .select('app.co_relation_id', 'coRelationId')
-        .addSelect('app.currentVersionId', 'currentVersionId')
-        .addSelect('COALESCE(released.slug, MIN(av.slug))', 'slug')
-        .groupBy('app.id')
-        .addGroupBy('app.co_relation_id')
-        .addGroupBy('app.currentVersionId')
-        .addGroupBy('released.slug')
-        // Deterministic winner among rows sharing a co_relation_id (git branch rows,
-        // legacy duplicate imports): released row first, then newest, then lowest id.
-        .orderBy('CASE WHEN app.current_version_id IS NULL THEN 1 ELSE 0 END', 'ASC')
-        .addOrderBy('app.updated_at', 'DESC')
-        .addOrderBy('app.id', 'ASC');
+    const releasedJoin = branchId
+      ? 'released.id = app.currentVersionId AND released.branch_id = :branchId'
+      : 'released.id = app.currentVersionId';
+    const avJoin = branchId
+      ? 'av.appId = app.id AND av.slug IS NOT NULL AND av.branch_id = :branchId'
+      : 'av.appId = app.id AND av.slug IS NOT NULL';
 
-      if (branchId) {
-        qb.andWhere((sub) => {
-          const exists = sub
-            .subQuery()
-            .select('1')
-            .from(AppVersion, 'scope')
-            .where('scope.appId = app.id')
-            .andWhere('scope.branch_id = :branchId', { branchId })
-            .getQuery();
-          return 'EXISTS ' + exists;
-        });
-      }
+    const qb = mgr
+      .createQueryBuilder(App, 'app')
+      .leftJoin(AppVersion, 'released', releasedJoin, branchId ? { branchId } : undefined)
+      .leftJoin(AppVersion, 'av', avJoin, branchId ? { branchId } : undefined)
+      .where('app.co_relation_id IN (:...ids)', { ids })
+      .andWhere('app.organizationId = :organizationId', { organizationId })
+      .select('app.co_relation_id', 'coRelationId')
+      .addSelect('app.currentVersionId', 'currentVersionId')
+      .addSelect('COALESCE(released.slug, MIN(av.slug))', 'slug')
+      .groupBy('app.id')
+      .addGroupBy('app.co_relation_id')
+      .addGroupBy('app.currentVersionId')
+      .addGroupBy('released.slug')
+      // Deterministic winner among rows sharing a co_relation_id (git branch rows,
+      // legacy duplicate imports): released row first, then newest, then lowest id.
+      .orderBy('CASE WHEN app.current_version_id IS NULL THEN 1 ELSE 0 END', 'ASC')
+      .addOrderBy('app.updated_at', 'DESC')
+      .addOrderBy('app.id', 'ASC');
 
-      const rows = await qb.getRawMany<{
-        coRelationId: string;
-        slug: string | null;
-        currentVersionId: string | null;
-      }>();
-      const result = new Map<string, { slug: string | null; currentVersionId: string | null }>();
-      for (const row of rows) {
-        // Rows arrive best-first (see ORDER BY) — keep the first per co_relation_id.
-        if (result.has(row.coRelationId)) continue;
-        result.set(row.coRelationId, {
-          slug: row.slug ?? null,
-          currentVersionId: row.currentVersionId ?? null,
-        });
-      }
-      return result;
-    }, manager);
+    if (branchId) {
+      qb.andWhere((sub) => {
+        const exists = sub
+          .subQuery()
+          .select('1')
+          .from(AppVersion, 'scope')
+          .where('scope.appId = app.id')
+          .andWhere('scope.branch_id = :branchId', { branchId })
+          .getQuery();
+        return 'EXISTS ' + exists;
+      });
+    }
+
+    const rows = await qb.getRawMany<{
+      coRelationId: string;
+      slug: string | null;
+      currentVersionId: string | null;
+    }>();
+    const result = new Map<string, { slug: string | null; currentVersionId: string | null }>();
+    for (const row of rows) {
+      // Rows arrive best-first (see ORDER BY) — keep the first per co_relation_id.
+      if (result.has(row.coRelationId)) continue;
+      result.set(row.coRelationId, {
+        slug: row.slug ?? null,
+        currentVersionId: row.currentVersionId ?? null,
+      });
+    }
+    return result;
   }
 
   /**
@@ -1155,12 +1156,16 @@ export class AppsUtilService implements IAppsUtilService {
    * Entries are only present for ids whose app row exists in this organization. The
    * frontend uses an absent entry as the "target deleted" signal, and a present entry
    * with null `currentVersionId` as the "target has no released version" signal.
+   *
+   * `branchId` may be a lazy provider — it is only awaited when the response actually
+   * references linked apps, so zero-link app loads (the common case) never pay for a
+   * branch lookup.
    */
   async collectLinkedAppsForResponse(
     pages: any[],
     events: any[],
     organizationId: string,
-    branchId?: string,
+    branchId?: string | (() => Promise<string | undefined>),
     manager?: EntityManager
   ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>> {
     const ids = new Set<string>();
@@ -1172,7 +1177,8 @@ export class AppsUtilService implements IAppsUtilService {
     }
     if (ids.size === 0) return {};
 
-    const meta = await this.findAppDataByCorelationIds(Array.from(ids), organizationId, branchId, manager);
+    const resolvedBranchId = typeof branchId === 'function' ? await branchId() : branchId;
+    const meta = await this.findAppDataByCorelationIds(Array.from(ids), organizationId, resolvedBranchId, manager);
 
     const result: Record<string, { slug: string | null; currentVersionId: string | null }> = {};
     for (const [id, info] of meta) {

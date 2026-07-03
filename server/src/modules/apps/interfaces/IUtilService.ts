@@ -29,7 +29,7 @@ export interface IAppsUtilService {
     pages: any[],
     events: any[],
     organizationId: string,
-    branchId?: string,
+    branchId?: string | (() => Promise<string | undefined>),
     manager?: EntityManager
   ): Promise<Record<string, { slug: string | null; currentVersionId: string | null }>>;
 }
