@@ -341,6 +341,21 @@ export const createEventsSlice = (set, get) => ({
         }
       }
 
+      // Per-menu-item events for the Navigation widget. The clicked item's own
+      // events (itemEvents, scoped by event.ref === item.id) run first, then the
+      // component-level onClick events (componentEvents) — the precedence defined
+      // in the issue. Both lists are pre-filtered in the widget and passed via options.
+      if (eventName === 'onNavigationItemClicked') {
+        const { itemEvents = [], componentEvents = [] } = options;
+        const byIndex = (a, b) => (a?.index ?? 0) - (b?.index ?? 0);
+        const orderedEvents = [...itemEvents.slice().sort(byIndex), ...componentEvents.slice().sort(byIndex)];
+        for (const event of orderedEvents) {
+          if (event?.event?.actionId && !event?.event?.disabled) {
+            await get().eventsSlice.executeAction(event.event, mode, customVariables, moduleId);
+          }
+        }
+      }
+
       if (eventName === 'onCalendarEventSelect') {
         const { id, calendarEvent } = options;
         setExposedValue(id, 'selectedEvent', calendarEvent);

@@ -64,6 +64,7 @@ export const EventManager = ({
   hideEmptyEventsAlert,
   callerQueryId,
   customEventRefs = undefined,
+  excludeRefEvents = false,
   callerQueryName,
   component,
 }) => {
@@ -98,6 +99,10 @@ export const EventManager = ({
       if (event.event.ref !== customEventRefs.ref) {
         return false;
       }
+    } else if (excludeRefEvents && event.event?.ref) {
+      // Hide sub-element (ref-scoped) events from a component-level panel,
+      // e.g. per-menu-item Navigation events should not appear at the component level.
+      return false;
     }
 
     return event.sourceId === sourceId && event.target === eventSourceType;
@@ -1328,7 +1333,7 @@ export const EventManager = ({
           <EmptyDescription>
             {t(
               'editor.inspector.eventManager.emptyDescription',
-              'Add events to make your component interactive — like button clicks or form submissions'
+              'Add events to define how this component responds to user actions.'
             )}
           </EmptyDescription>
         </EmptyHeader>
