@@ -1,13 +1,9 @@
 import React from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
-import { useInput } from './BaseComponents/hooks/useInput';
+import { useControlledInput } from './BaseComponents/hooks/useControlledInput';
 
 export const TextInput = (props) => {
-  const transformedProps = {
-    ...props,
-    inputType: 'TextInput',
-  };
-  const inputLogic = useInput(transformedProps);
+  const inputLogic = useControlledInput(props);
   const showClearBtn = props.properties?.showClearBtn;
   const handleClear = () => {
     inputLogic.setInputValue('');
