@@ -342,6 +342,8 @@ const RenderWidget = ({
           currentMode={currentMode}
           subContainerIndex={subContainerIndex}
           componentType={componentType}
+          moduleId={moduleId}
+          resolveIndex={resolveIndex}
         />
       </TrackedSuspense>
     </div>
