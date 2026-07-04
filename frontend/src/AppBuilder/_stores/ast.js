@@ -1,5 +1,10 @@
 const acorn = require('acorn');
 const walk = require('acorn-walk');
+const { getCachedAst } = require('@/AppBuilder/_utils/resolverCache');
+
+// Memoized parse: both consumers below only READ the AST (collect ranges/paths
+// and then do string surgery), so identical expression strings share one tree.
+const parseCached = (expression) => getCachedAst(expression, (expr) => acorn.parse(expr, { ecmaVersion: 2020 }));
 
 function findExpression(input) {
   const matches = [];
@@ -235,7 +240,7 @@ function replaceIdsInExpression(
   uuidMappings
 ) {
   try {
-    const ast = acorn.parse(expression, { ecmaVersion: 2020 });
+    const ast = parseCached(expression);
     const replacements = [];
 
     walk.simple(ast, {
@@ -307,7 +312,7 @@ function replaceIdsInExpression(
 
 function parseExpression(expression, componentIdNameMapping, queryIdNameMapping, uuidMappings) {
   try {
-    const ast = acorn.parse(expression, { ecmaVersion: 2020 });
+    const ast = parseCached(expression);
     const references = [];
     const validRootObjects = {
       components: true,
