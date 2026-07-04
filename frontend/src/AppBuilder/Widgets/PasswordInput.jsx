@@ -2,10 +2,10 @@ import React from 'react';
 import { IconEyeClosed, IconEye } from '@tabler/icons-react';
 
 import { BaseInput } from './BaseComponents/BaseInput';
-import { useInput } from './BaseComponents/hooks/useInput';
+import { useControlledInput } from './BaseComponents/hooks/useControlledInput';
 
 export const PasswordInput = (props) => {
-  const inputLogic = useInput(props);
+  const inputLogic = useControlledInput(props);
   const toggleVisibility = () => {
     inputLogic.setIconVisibility(!inputLogic.iconVisibility);
   };

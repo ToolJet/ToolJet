@@ -1,9 +1,9 @@
 import React from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
-import { useInput } from './BaseComponents/hooks/useInput';
+import { useControlledInput } from './BaseComponents/hooks/useControlledInput';
 
 export const EmailInput = (props) => {
-  const inputLogic = useInput(props);
+  const inputLogic = useControlledInput(props);
   const additionalInputProps = {
     autocomplete: 'email',
     name: 'email',

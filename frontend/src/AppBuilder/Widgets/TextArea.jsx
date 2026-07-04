@@ -1,11 +1,11 @@
 import React, { useLayoutEffect, useCallback } from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
-import { useInput } from './BaseComponents/hooks/useInput';
+import { useControlledInput } from './BaseComponents/hooks/useControlledInput';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 
 export const TextArea = (props) => {
-  const inputLogic = useInput(props);
+  const inputLogic = useControlledInput(props);
   const { properties, height, width, id, currentLayout, currentMode, subContainerIndex, componentType } = props;
   const { inputRef, value } = inputLogic;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
