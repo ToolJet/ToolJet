@@ -1,55 +1,46 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { default as ReactCurrencyInput, formatValue } from 'react-currency-input-field';
+import { default as ReactCurrencyInput } from 'react-currency-input-field';
 import {
-  useInput,
   getLabelFontSize,
   getWidthTypeOfComponentStyles,
   getLabelWidthOfInput,
 } from '../BaseComponents/hooks/useInput';
+import { useControlledInput } from '../BaseComponents/hooks/useControlledInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
 import { CurrencyMap } from './constants';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { parseValueToNumber } from './utils';
 
-// Parse value to number based on the number format
-// Always returns a number for consistent exposed value
-export const parseValueToNumber = (val, numberFormat) => {
-  if (val === undefined || val === null || val === '') return 0;
-
-  const strVal = String(val);
-
-  // Check if value is a raw number (no commas, just digits and optionally one decimal point)
-  // This handles the case after format switch when we store "1234.56"
-  if (/^-?\d+\.?\d*$/.test(strVal)) {
-    return parseFloat(strVal) || 0;
-  }
-
-  let normalized;
-  if (numberFormat === 'eu') {
-    // European format: dot is group separator, comma is decimal
-    // e.g., "1.234,56" → "1234.56"
-    normalized = strVal.replace(/\./g, '').replace(',', '.');
-  } else {
-    // US/UK format: comma is group separator, dot is decimal
-    // e.g., "1,234.56" → "1234.56"
-    normalized = strVal.replace(/,/g, '');
-  }
-  return parseFloat(normalized) || 0;
-};
+// Re-export: definition moved to ./utils so the CurrencyInput contract
+// (_engine/contracts.ts) can share it without importing a React component.
+export { parseValueToNumber } from './utils';
 
 export const CurrencyInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
-  const transformedProps = {
+  const { id, properties, styles, componentName, darkMode, fireEvent, dataCy } = props;
+  const {
+    label,
+    placeholder,
+    decimalPlaces,
+    isCountryChangeEnabled,
+    defaultCountry = 'US',
+    showFlag = true,
+    numberFormat = 'us',
+    showClearBtn,
+  } = properties;
+
+  const inputLogic = useControlledInput({
     ...props,
-    inputType: 'currency',
-  };
-  const inputLogic = useInput(transformedProps);
+    // CSA parameters the contract reducers read from current state.
+    contractState: { decimalPlaces, numberFormat },
+  });
 
   const {
     inputRef,
     labelRef,
+    dispatch,
     visibility,
     loading,
     disable,
@@ -64,18 +55,7 @@ export const CurrencyInput = (props) => {
     handleFocus,
     value,
     country,
-    setCountry,
   } = inputLogic;
-  const {
-    label,
-    placeholder,
-    decimalPlaces,
-    isCountryChangeEnabled,
-    defaultCountry = 'US',
-    showFlag = true,
-    numberFormat = 'us',
-    showClearBtn,
-  } = properties;
 
   // Track previous number format to detect format changes
   const previousNumberFormat = useRef(numberFormat);
@@ -104,9 +84,12 @@ export const CurrencyInput = (props) => {
 
   const onInputValueChange = (value) => {
     handlePhoneCurrencyInputChange(value);
-    setExposedVariables({
-      country: country,
-    });
+  };
+
+  const setCountryCode = (code, { fireOnChange = false } = {}) => {
+    const commands = [{ kind: 'INVOKE_CSA', componentId: id, action: 'setCountryCode', args: [code] }];
+    if (fireOnChange) commands.push({ kind: 'FIRE_EVENT', componentId: id, event: 'onChange' });
+    dispatch(commands);
   };
 
   const {
@@ -178,17 +161,9 @@ export const CurrencyInput = (props) => {
   const clearButtonTop = defaultAlignment === 'top' && hasLabel ? 'calc(50% + 10px)' : '50%';
   const clearButtonTransform = 'translateY(-50%)';
 
-  const formattedValue = (value) => {
-    return formatValue({
-      value: `${value}`,
-      groupSeparator: separators.groupSeparator,
-      decimalSeparator: separators.decimalSeparator,
-    });
-  };
-
   useEffect(() => {
     if (!isInitialRender.current) {
-      setCountry(defaultCountry);
+      setCountryCode(defaultCountry);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
@@ -207,38 +182,11 @@ export const CurrencyInput = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numberFormat]);
 
+  // Derived exposures (parsed value / formattedValue / country) moved into
+  // CurrencyInputContract — every setValue/setCountryCode patch carries them.
+  // Declared after the guarded effects so their mount pass still sees true.
   useEffect(() => {
-    if (!isInitialRender.current) {
-      setExposedVariables({
-        country: country,
-        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country, value, numberFormat]);
-
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setExposedVariables({
-        value: parseValueToNumber(value, numberFormat),
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, numberFormat]);
-
-  useEffect(() => {
-    if (isInitialRender.current) {
-      setExposedVariables({
-        country: country,
-        formattedValue: `${CurrencyMap[country]?.prefix} ${formattedValue(value)}`,
-        value: parseValueToNumber(value, numberFormat),
-        setCountryCode: (code) => {
-          setCountry(code);
-        },
-      });
-      isInitialRender.current = false;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    isInitialRender.current = false;
   }, []);
 
   const labelClasses = { labelContainer: defaultAlignment === 'top' && 'tw-flex-shrink-0' };
@@ -312,8 +260,7 @@ export const CurrencyInput = (props) => {
             showFlag={showFlag}
             onChange={(selectedOption) => {
               if (selectedOption) {
-                setCountry(selectedOption.value);
-                fireEvent('onChange');
+                setCountryCode(selectedOption.value, { fireOnChange: true });
               }
             }}
             componentId={id}

@@ -29,8 +29,10 @@ export interface DispatchCtx {
   /** Current exposed values of this component (row-scoped where relevant) —
    *  reducers read current state from here (e.g. phone country). */
   getCurrentExposed?: () => Record<string, unknown>;
-  /** Row-aware validator from RenderWidget; folds isValid into value patches. */
-  validate?: (value: unknown) => { isValid?: boolean } | undefined;
+  /** Row-aware validator from RenderWidget; folds isValid into value patches.
+   *  Receives the full patch so wrappers can read sibling keys (phone strips
+   *  the calling code of the patch's target country before validating). */
+  validate?: (value: unknown, patch?: Record<string, unknown>) => { isValid?: boolean } | undefined;
   fireEvent?: (eventName: string, ...args: unknown[]) => void;
   /** Effect-registry key for row instances (`componentId` or `componentId:row`). */
   rowKey?: string;
@@ -88,7 +90,7 @@ const storeBackend: CommandBackend = (commands, ctx) => {
       // Validation stays widget-side in Phase 3; fold isValid into the same
       // write batch so one dispatch = one cascade (matches today's cost).
       if ('value' in patch && ctx.validate) {
-        const status = ctx.validate(patch.value);
+        const status = ctx.validate(patch.value, patch);
         if (status && 'isValid' in status) patch.isValid = status.isValid;
       }
       ctx.setExposedVariables(patch);

@@ -29,7 +29,16 @@ interface UseControlledInputArgs {
   properties: Record<string, any>;
   styles: Record<string, any>;
   validation?: Record<string, any>;
-  validate?: (value: unknown) => { isValid?: boolean; validationError?: string } | undefined;
+  /** `patch` is the full reducer patch — lets phone validate against the
+   *  patch's target country instead of a stale one. */
+  validate?: (
+    value: unknown,
+    patch?: Record<string, unknown>
+  ) => { isValid?: boolean; validationError?: string } | undefined;
+  /** Extra CURRENT values contract reducers read alongside exposed state —
+   *  resolved properties that parameterize CSA semantics (e.g. currency's
+   *  decimalPlaces/numberFormat). Exposed keys always win on collision. */
+  contractState?: Record<string, unknown>;
   setExposedVariables: (variables: Record<string, unknown>) => void;
   fireEvent: (eventName: string, ...args: unknown[]) => void;
   componentType: string;
@@ -55,6 +64,7 @@ export const useControlledInput = ({
   moduleId,
   resolveIndex,
   width,
+  contractState,
 }: UseControlledInputArgs) => {
   const isInitialRender = useRef(true);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>();
@@ -84,6 +94,17 @@ export const useControlledInput = ({
     echoRef.current = next;
     setEchoTick((tick) => tick + 1);
   }, []);
+  // Widget-originated input keeps its RAW echo (e.g. currency "12," while the
+  // contract stores parsed 12) — the lock stops onPatch from overwriting it
+  // with the normalized value. CSA/external patches still refresh the echo.
+  const echoLockRef = useRef(false);
+  const setEchoRaw = useCallback(
+    (next: unknown) => {
+      setEcho(next);
+      echoLockRef.current = true;
+    },
+    [setEcho]
+  );
   const value = echoRef.current === NO_ECHO ? storeValue : echoRef.current;
   useEffect(() => {
     if (echoRef.current !== NO_ECHO && Object.is(storeValue, echoRef.current)) echoRef.current = NO_ECHO;
@@ -103,7 +124,14 @@ export const useControlledInput = ({
   /* ── Dispatch context: latest-ref so mount-registered CSA dispatchers never
      go stale ────────────────────────────────────────────────────────────── */
   const currentExposedRef = useRef<Record<string, unknown>>({});
-  currentExposedRef.current = { value, country, isVisible: visibility, isDisabled: disable, isLoading: loading };
+  currentExposedRef.current = {
+    ...contractState,
+    value,
+    country,
+    isVisible: visibility,
+    isDisabled: disable,
+    isLoading: loading,
+  };
   const validationStatusRef = useRef(validationStatus);
   validationStatusRef.current = validationStatus;
 
@@ -118,7 +146,10 @@ export const useControlledInput = ({
     fireEvent,
     rowKey,
     onPatch: (patch) => {
-      if ('value' in patch) setEcho(patch.value);
+      if ('value' in patch) {
+        if (echoLockRef.current) echoLockRef.current = false;
+        else setEcho(patch.value);
+      }
     },
   };
 
@@ -199,6 +230,12 @@ export const useControlledInput = ({
       isVisible: properties.visibility,
       isDisabled: disabledState || loadingState,
     };
+    // Fold the contract's setValue over the default so the mount snapshot
+    // carries the SAME normalization/derived keys as every later write
+    // (number NaN→null, currency parsed value/formattedValue/country, phone
+    // E.164 rebase/countryCode/formattedValue).
+    const initReducer = contract?.stateActions?.setValue;
+    if (initReducer) Object.assign(exposed, initReducer(currentExposedRef.current, [properties.value ?? '']));
     for (const action of Object.keys(contract?.stateActions ?? {})) {
       exposed[action] = async (...args: unknown[]) => {
         const commands: EngineCommand[] = [{ kind: 'INVOKE_CSA', componentId: id, action, args }];
@@ -224,24 +261,23 @@ export const useControlledInput = ({
   /* ── Mutations: user input → commands ─────────────────────────────────── */
   const setInputValue = useCallback(
     (nextValue: unknown) => {
-      setEcho(nextValue);
+      setEchoRaw(nextValue);
       dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [nextValue] }]);
     },
-    [dispatch, id, setEcho]
+    [dispatch, id, setEchoRaw]
   );
 
   const handleChange = (e: any) => {
-    setEcho(e.target.value);
+    setEchoRaw(e.target.value);
     dispatch([
       { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [e.target.value] },
       { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
     ]);
   };
 
-  // NOTE - only used by Currency input (not phone); currency/phone semantics
-  // land with their contracts (Phase 3a steps 5-6).
+  // Used by Currency and Phone: raw input value + onChange in one dispatch.
   const handlePhoneCurrencyInputChange = (nextValue: unknown) => {
-    setEcho(nextValue);
+    setEchoRaw(nextValue);
     dispatch([
       { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [nextValue] },
       { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
@@ -271,7 +307,7 @@ export const useControlledInput = ({
 
   const handleKeyUp = (e: any) => {
     if (e.key === 'Enter') {
-      setEcho(e.target.value);
+      setEchoRaw(e.target.value);
       dispatch([
         { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [e.target.value] },
         { kind: 'FIRE_EVENT', componentId: id, event: 'onEnterPressed' },
@@ -282,6 +318,8 @@ export const useControlledInput = ({
   return {
     inputRef,
     labelRef,
+    /** Escape hatch for widget-specific commands (phone/currency setCountryCode). */
+    dispatch,
     value,
     visibility,
     loading,

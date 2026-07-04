@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
-import { useInput } from './BaseComponents/hooks/useInput';
+import { useControlledInput } from './BaseComponents/hooks/useControlledInput';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NumberInput = (props) => {
-  const inputLogic = useInput({
+  const inputLogic = useControlledInput({
     ...props,
     properties: {
       ...props.properties,
@@ -65,7 +65,7 @@ export const NumberInput = (props) => {
     props.fireEvent('onChange');
   };
 
-  const numberControls = !inputLogic.isResizing && (
+  const numberControls = (
     <div className="tw-w-5 tw-z-[2] tw-shrink-0 tw-self-stretch tw-flex tw-flex-col tw-border-0 tw-border-l tw-border-solid tw-border-[var(--cc-default-border)]">
       <div
         onClick={handleIncrement}
@@ -82,12 +82,6 @@ export const NumberInput = (props) => {
       </div>
     </div>
   );
-
-  useEffect(() => {
-    if (isNaN(inputLogic.value) || inputLogic.value === '') {
-      props.setExposedVariable('value', null);
-    }
-  }, [inputLogic.value]);
 
   return (
     <BaseInput

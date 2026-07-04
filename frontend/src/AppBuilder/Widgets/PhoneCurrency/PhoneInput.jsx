@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
-import Input, { getCountries, getCountryCallingCode } from 'react-phone-number-input/input';
+import Input, { getCountries } from 'react-phone-number-input/input';
 import { getCountryCallingCodeSafe } from './utils';
 // eslint-disable-next-line import/no-unresolved
 import en from 'react-phone-number-input/locale/en';
@@ -9,8 +9,8 @@ import {
   getLabelFontSize,
   getLabelWidthOfInput,
   getWidthTypeOfComponentStyles,
-  useInput,
 } from '../BaseComponents/hooks/useInput';
+import { useControlledInput } from '../BaseComponents/hooks/useControlledInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { IconX } from '@tabler/icons-react';
 import Label from '@/_ui/Label';
@@ -18,15 +18,33 @@ import { CountrySelect } from './CountrySelect';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 
 export const PhoneInput = (props) => {
-  const { id, properties, styles, componentName, darkMode, setExposedVariables, fireEvent, dataCy } = props;
-  const transformedProps = {
+  const { id, properties, styles, componentName, darkMode, fireEvent, dataCy } = props;
+  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
+
+  // Validation applies to the national number: strip the calling code of the
+  // patch's target country (falls back to the last rendered country for the
+  // hook's render-time validation, which passes no patch).
+  const countryRef = useRef(defaultCountry);
+  const validateRef = useRef(props.validate);
+  validateRef.current = props.validate;
+  const validatePhone = useCallback(
+    (val, patch) => {
+      const activeCountry = patch?.country ?? countryRef.current;
+      const code = getCountryCallingCodeSafe(activeCountry);
+      return validateRef.current?.(`${val ?? ''}`.replace(`+${code}`, ''));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.validate] // identity change re-triggers the hook's isValid re-exposure
+  );
+
+  const inputLogic = useControlledInput({
     ...props,
-    inputType: 'phone',
-  };
-  const inputLogic = useInput(transformedProps);
+    validate: validatePhone,
+  });
   const {
     inputRef,
     labelRef,
+    dispatch,
     visibility,
     loading,
     disable,
@@ -38,12 +56,11 @@ export const PhoneInput = (props) => {
     isMandatory,
     handleBlur,
     handleFocus,
+    handlePhoneCurrencyInputChange,
     value,
     country,
-    setCountry,
-    setPhoneInputValue,
   } = inputLogic;
-  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US', showClearBtn } = properties;
+  countryRef.current = country;
 
   const {
     textColor,
@@ -91,41 +108,14 @@ export const PhoneInput = (props) => {
     []
   );
 
-  /**
-   * Changes the active country and re-bases the current value onto its calling code.
-   *   - Strips the previously applied calling code prefix from the current value, and prepends the new country's calling code.
-   *   - Updates the country and input value states.
-   *
-   * NOTE -
-   * `react-phone-number-input` expects `value` to be an E.164 number consistent with the `country` prop.
-   * Changing `country` alone leaves the old calling code on `value` (e.g. country "US" + "+91XXXXXXXXXX" still holds IN);
-   * the library then mangles the number and fires a corrective `onChange`, which can spiral into a re-render loop.
-   */
+  // Country change (dropdown / defaultCountry binding) — the E.164 rebase +
+  // country/calling-code resolution live in PhoneInputContract.setCountryCode.
   const onCountryChange = (nextCountry) => {
-    const newCode = getCountryCallingCodeSafe(nextCountry);
-    if (!newCode) return;
-
-    const oldCode = getCountryCallingCodeSafe(country);
-
-    let localNumber = `${value ?? ''}`.replace(/\D/g, '');
-    if (oldCode && localNumber.startsWith(`${oldCode}`)) {
-      localNumber = localNumber.slice(`${oldCode}`.length);
-    }
-
-    const nextValue = localNumber ? `+${newCode}${localNumber}` : '';
-
-    // Return early so a re-resolved-but-unchanged country won't trigger re-renders.
-    if (nextCountry === country && nextValue === value) return;
-
-    setCountry(nextCountry);
-    // Pass nextCountry so the value is validated/published against the new country,
-    // since the `country` state closure isn't updated until the re-render.
-    setPhoneInputValue(nextValue, nextCountry);
+    dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setCountryCode', args: [nextCountry] }]);
   };
 
   const onInputValueChange = (value) => {
-    setPhoneInputValue(value);
-    fireEvent('onChange');
+    handlePhoneCurrencyInputChange(value);
   };
 
   const handleKeyUp = (e) => {
@@ -135,37 +125,16 @@ export const PhoneInput = (props) => {
   };
 
   useEffect(() => {
-    if (isInitialRender.current) {
-      setExposedVariables({
-        country: country,
-        countryCode: `+${getCountryCallingCodeSafe(country)}`,
-        formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-        value: value,
-      });
-      isInitialRender.current = false;
-    }
-  }, []);
-
-  // Accepts either a country code ('CN') or a calling code ('+86'),
-  // then routes through onCountryChange, which re-bases the value onto the new calling code and ignores an unresolvable country.
-  useEffect(() => {
-    setExposedVariables({
-      setCountryCode: (code) => {
-        const resolvedCountry = getCountryCallingCodeSafe(code)
-          ? code
-          : getCountries().find((c) => `+${getCountryCallingCode(c)}` === code) || '';
-        onCountryChange(resolvedCountry);
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country, value]);
-
-  useEffect(() => {
     if (!isInitialRender.current) {
       onCountryChange(defaultCountry);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultCountry]);
+
+  // Declared after the guarded effects so their mount pass still sees true.
+  useEffect(() => {
+    isInitialRender.current = false;
+  }, []);
 
   const disabledState = disable || loading;
 
