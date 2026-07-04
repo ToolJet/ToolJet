@@ -861,15 +861,16 @@ export class AppsUtilService implements IAppsUtilService {
     return { apps, totalCount };
   }
 
-  // Batch-check whether any version on the branch has been pulled on main (isSynced=true).
-  // Mirrors the app builder's developmentVersions.some(v => v.isSynced === true) check.
+  // Batch-check whether the DRAFT default-branch version has been pulled (isSynced=true).
+  // Mirrors the app builder's developmentVersions.some(v => v.isSynced && v.status=DRAFT && v.versionType=version) check.
   // Only runs for FRONT_END apps in the git-sync flow (branchId present) — no-op for
   // all other app types and all non-git flows.
   private async stampIsAppSynced(apps: AppBase[], branchId?: string, type?: string): Promise<void> {
     if (!branchId || !apps.length || type === APP_TYPES.WORKFLOW) return;
     const rows: { app_id: string }[] = await this.appRepository.manager.query(
       `SELECT DISTINCT app_id FROM app_versions
-       WHERE app_id = ANY($1::uuid[]) AND branch_id = $2::uuid AND is_synced = true`,
+       WHERE app_id = ANY($1::uuid[]) AND branch_id = $2::uuid AND is_synced = true
+         AND status = 'DRAFT' AND version_type = 'version'`,
       [apps.map((a) => a.id), branchId]
     );
     const syncedIds = new Set(rows.map((r) => r.app_id));
