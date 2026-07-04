@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { formatFileSize, resolveWidgetFieldValue } from '@/_helpers/utils';
 import { processFileContent, DEPRECATED_processFileContent, parseFileContentEnabled } from '../helpers/fileProcessing';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { registerFileHandle, releaseFileHandle, createFileFieldRef } from '@/AppBuilder/_utils/fileHandleRegistry';
 
 export const useFilePicker = ({
   validation,
@@ -158,16 +159,27 @@ export const useFilePicker = ({
           });
         }
 
+        // Keep the heavy strings (and the Blob itself) in the main-thread
+        // registry; expose lightweight string-like refs through the store.
+        // Refs materialize to real strings at the resolver boundary.
+        const handleId = fileStateKey ?? uuidv4();
+        registerFileHandle(handleId, file, {
+          content: readFileAsText,
+          base64Data: base64Data,
+          dataURL: readFileAsDataURLResult,
+        });
+
         return {
           internalId: fileStateKey,
+          handleId: handleId,
           lastModified: file.lastModified,
           lastModifiedDate: file.lastModifiedDate,
           name: file.name,
           size: file.size,
           type: file.type,
           webkitRelativePath: file.webkitRelativePath,
-          content: readFileAsText,
-          base64Data: base64Data,
+          content: createFileFieldRef(handleId, 'content'),
+          base64Data: createFileFieldRef(handleId, 'base64Data'),
           parsedValue: parsedValue,
           parsedData: parsedData,
           filePath: file.path,
@@ -333,7 +345,14 @@ export const useFilePicker = ({
         const updatedFiles = enableMultiple
           ? [...prevFiles, ...successfullyProcessedFiles]
           : [...successfullyProcessedFiles];
-        return enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
+        const finalFiles = enableMultiple ? updatedFiles.slice(0, maxFileCount) : updatedFiles;
+        // Release registry entries for files that fell out of the selection
+        // (single-mode replacement or maxFileCount overflow).
+        const keptHandles = new Set(finalFiles.map((f) => f.handleId));
+        [...prevFiles, ...successfullyProcessedFiles].forEach((f) => {
+          if (f.handleId && !keptHandles.has(f.handleId)) releaseFileHandle(f.handleId);
+        });
+        return finalFiles;
       });
 
       setFileErrors(currentErrors); // Update state with errors from this drop
@@ -439,13 +458,17 @@ export const useFilePicker = ({
       });
 
       fireEvent?.('onFileDeselected', { file: stripFileId(fileToRemove) });
+      if (fileToRemove.handleId) releaseFileHandle(fileToRemove.handleId);
     },
     [selectedFiles, fireEvent, stripFileId]
   );
 
   // --- Exposed Actions ---
   const clearFiles = useCallback(() => {
-    setSelectedFiles([]);
+    setSelectedFiles((prevFiles) => {
+      prevFiles.forEach((f) => f.handleId && releaseFileHandle(f.handleId));
+      return [];
+    });
     setFileErrors({});
     setUploadingStatus({});
   }, []);
@@ -636,6 +659,16 @@ export const useFilePicker = ({
     setDisablePicker(shouldDisable);
     // Use isDisabled from useExposeState for dropzone disabled prop
   }, [selectedFiles.length, maxFileCount, enableMultiple, isDisabled]);
+
+  // Release all registry entries when the widget unmounts — the exposed refs
+  // then materialize to '' instead of leaking Blobs/strings in the registry.
+  const selectedFilesRef = useRef(selectedFiles);
+  selectedFilesRef.current = selectedFiles;
+  useEffect(() => {
+    return () => {
+      selectedFilesRef.current.forEach((f) => f.handleId && releaseFileHandle(f.handleId));
+    };
+  }, []);
 
   // Clear UI error message when isDisabled state changes.
   // `setUiErrorMessage` is stable from useState, so we intentionally
