@@ -6,6 +6,8 @@ import { generateSchemaFromValidationDefinition, validate } from '@/AppBuilder/_
 import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
 import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
+import { evaluateCode } from '@/AppBuilder/_engine/resolver';
+import { getCompiledFn } from '@/AppBuilder/_utils/resolverCache';
 
 const acorn = require('acorn');
 
@@ -136,64 +138,47 @@ const resolveWorkspaceVariables = (query) => {
   return [valid, error, resolvedStr];
 };
 
+// Thin adapter over the engine's shared eval core. State prep (store snapshot +
+// ListView row-0 flattening) stays here; compilation/eval/guards are unified —
+// including the circular-`_` guard the other resolvers already had, so the
+// preview now matches actual resolution for that edge case.
 function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
-  let result = '';
-  let error;
+  const state = useStore.getState().getResolvedState();
 
-  // dont resolve if code starts with "queries." and ends with "run()"
-  if (code.startsWith('queries.') && code.endsWith('run()')) {
-    error = `Cannot resolve function call ${code}`;
-  } else {
-    try {
-      const state = useStore.getState().getResolvedState();
-
-      // ListView children have per-row arrays in exposedValues.components.
-      // Flatten to row 0 so the preview can resolve sibling references
-      // like {{components.button1.text}} without hitting an array.
-      let components = state?.components;
-      if (isJsCode && components) {
-        const hasArrayEntry = Object.values(components).some(Array.isArray);
-        if (hasArrayEntry) {
-          components = {};
-          for (const [name, value] of Object.entries(state.components)) {
-            components[name] = Array.isArray(value) ? value[0] || {} : value;
-          }
-        }
+  // ListView children have per-row arrays in exposedValues.components.
+  // Flatten to row 0 so the preview can resolve sibling references
+  // like {{components.button1.text}} without hitting an array.
+  let components = state?.components;
+  if (isJsCode && components) {
+    const hasArrayEntry = Object.values(components).some(Array.isArray);
+    if (hasArrayEntry) {
+      components = {};
+      for (const [name, value] of Object.entries(state.components)) {
+        components[name] = Array.isArray(value) ? value[0] || {} : value;
       }
-
-      const evalFunction = Function(
-        [
-          'variables',
-          'components',
-          'queries',
-          'globals',
-          'page',
-          'input',
-          'constants',
-          'moment',
-          '_',
-          ...Object.keys(customObjects),
-          reservedKeyword,
-        ],
-        `return ${code}`
-      );
-      result = evalFunction(
-        isJsCode ? state?.variables : undefined,
-        isJsCode ? components : undefined,
-        isJsCode ? state?.queries : undefined,
-        isJsCode ? state?.globals : undefined,
-        isJsCode ? state?.page : undefined,
-        isJsCode ? state?.input : undefined,
-        state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
-        moment,
-        _,
-        ...Object.values(customObjects),
-        null
-      );
-    } catch (err) {
-      error = err.toString();
     }
   }
+
+  const [result, rawError] = evaluateCode(
+    code,
+    [
+      ['variables', isJsCode ? state?.variables : undefined],
+      ['components', isJsCode ? components : undefined],
+      ['queries', isJsCode ? state?.queries : undefined],
+      ['globals', isJsCode ? state?.globals : undefined],
+      ['page', isJsCode ? state?.page : undefined],
+      ['input', isJsCode ? state?.input : undefined],
+      // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+      ['constants', state?.constants],
+      ['moment', moment],
+      ['_', _],
+      ...Object.entries(customObjects),
+    ],
+    true,
+    reservedKeyword ?? []
+  );
+  // This copy historically surfaced errors as strings (preview display).
+  const error = rawError == null ? rawError : String(rawError);
 
   if (withError) return [result, error];
   return result;

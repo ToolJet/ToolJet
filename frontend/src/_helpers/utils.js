@@ -12,6 +12,7 @@ import { getDateTimeFormat } from './appUtils';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/AppBuilder/WidgetManager';
+import { evaluateCode } from '@/AppBuilder/_engine/resolver';
 
 export const reservedKeyword = ['app', 'window'];
 
@@ -90,57 +91,32 @@ export function resolve(data, state) {
   }
 }
 
+// Thin adapter over the engine's shared eval core — this copy differs from the
+// store resolver only by its parameter list (secrets, no input).
 export function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
-  let result = '';
-  let error;
+  const [result, error] = evaluateCode(
+    code,
+    [
+      ['variables', isJsCode ? state?.variables : undefined],
+      ['components', isJsCode ? state?.components : undefined],
+      ['queries', isJsCode ? state?.queries : undefined],
+      ['globals', isJsCode ? state?.globals : undefined],
+      ['page', isJsCode ? state?.page : undefined],
+      ['client', isJsCode ? undefined : state?.client],
+      ['server', isJsCode ? undefined : state?.server],
+      // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+      ['constants', state?.constants],
+      ['secrets', state?.secrets || {}],
+      ['parameters', state?.parameters],
+      ['moment', moment],
+      ['_', _],
+      ...Object.entries(customObjects),
+    ],
+    true,
+    reservedKeyword ?? []
+  );
+  if (error instanceof Error) console.log('the erro is', { error, code });
 
-  if (code === '_' || code.includes('this._')) {
-    error = `Cannot resolve circular reference ${code}`;
-  } else if (code.startsWith('queries.') && code.endsWith('run()')) {
-    //! dont resolve if code starts with "queries." and ends with "run()"
-    error = `Cannot resolve function call ${code}`;
-  } else {
-    try {
-      const evalFunction = Function(
-        [
-          'variables',
-          'components',
-          'queries',
-          'globals',
-          'page',
-          'client',
-          'server',
-          'constants',
-          'secrets',
-          'parameters',
-          'moment',
-          '_',
-          ...Object.keys(customObjects),
-          reservedKeyword,
-        ],
-        `return ${code}`
-      );
-      result = evalFunction(
-        isJsCode ? state?.variables : undefined,
-        isJsCode ? state?.components : undefined,
-        isJsCode ? state?.queries : undefined,
-        isJsCode ? state?.globals : undefined,
-        isJsCode ? state?.page : undefined,
-        isJsCode ? undefined : state?.client,
-        isJsCode ? undefined : state?.server,
-        state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
-        state?.secrets || {},
-        state?.parameters,
-        moment,
-        _,
-        ...Object.values(customObjects),
-        null
-      );
-    } catch (err) {
-      error = err;
-      console.log('the erro is', { error, code });
-    }
-  }
   if (withError) return [result, error];
   return result;
 }

@@ -28,6 +28,13 @@ import {
 import moment from 'moment';
 import { getDateTimeFormat } from '@/_helpers/appUtils';
 import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import {
+  isEngineShadowActive,
+  engineShadowOnCascade,
+  isEngineCutoverActive,
+  engineCutoverPrepare,
+  resolveDependencyViaEngine,
+} from '@/AppBuilder/_engine/engineBridge';
 import { INPUT_COMPONENTS_FOR_FORM } from '@/AppBuilder/RightSideBar/Inspector/Components/Form/constants';
 import {
   TOP_ALIGNMENT_HEIGHT_INCREMENT,
@@ -2713,7 +2720,11 @@ export const createComponentsSlice = (set, get) => ({
     const key = keys.join('.');
     const unResolvedValue = getNodeData(dependency, moduleId);
     const exposedValues = preloadedExposedValues || getAllExposedValues(moduleId);
-    const resolvedValue = resolveDynamicValues(unResolvedValue, exposedValues, {}, false, []);
+    // Flag-gated engine seam: identical to the direct call while cutover is off;
+    // in 'verify'/'on' modes the ResolutionEngine supplies this value.
+    const resolvedValue = resolveDependencyViaEngine(dependency, moduleId, () =>
+      resolveDynamicValues(unResolvedValue, exposedValues, {}, false, [])
+    );
 
     if (type === undefined) {
       applyOrQueueMutation((state) => {
@@ -2811,9 +2822,19 @@ export const createComponentsSlice = (set, get) => ({
     const dependencies = getDependencies(path, moduleId);
     if (!dependencies?.length) return;
 
+    // Engine cutover (flag-gated, default off): pre-compute this cascade's flat
+    // binding values in the ResolutionEngine; applyDependencyUpdate consumes
+    // them via resolveDependencyViaEngine.
+    if (isEngineCutoverActive()) engineCutoverPrepare(path, moduleId);
+
     dependencies.forEach((dependency) => {
       applyDependencyUpdate(dependency, path, moduleId, parentIndices);
     });
+
+    // Engine continuous-shadow tap (no-op unless __tjEngineShadowStart() was
+    // called): mirrors this cascade into the ResolutionEngine and compares its
+    // output against what the store just wrote. Phase 2 cutover validation.
+    if (isEngineShadowActive()) engineShadowOnCascade(path, moduleId);
   },
   computePageSettings: (currentPageSettings) => {
     try {

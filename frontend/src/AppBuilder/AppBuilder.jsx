@@ -18,6 +18,12 @@ import RightSidebarToggle from '@/AppBuilder/RightSideBar/RightSidebarToggle';
 import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 
+// Engine shadow-diff dev hook (window.__tjEngineShadowCheck). Dynamic import:
+// keeps it out of production bundles and avoids a store↔shadow import cycle.
+if (process.env.NODE_ENV !== 'production') {
+  import('@/AppBuilder/_engine/shadow');
+}
+
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
 // const AppCanvas = lazy(() => import('@/AppBuilder/AppCanvas'));
