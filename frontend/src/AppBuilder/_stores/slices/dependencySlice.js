@@ -1,5 +1,6 @@
 import DependencyGraph from './DependencyClass';
 import { createBatchManager } from '../batchManager';
+import { invalidateEngineMirrors } from '@/AppBuilder/_engine/engineBridge';
 
 const initialState = {
   dependencyGraph: {
@@ -33,7 +34,10 @@ export const createDependencySlice = (set, get) => {
 
     startDependencyBatch: () => _depBatch.startBatch(),
 
-    flushDependencyBatch: () => _depBatch.flush('flushDependencyBatch'),
+    flushDependencyBatch: () => {
+      _depBatch.flush('flushDependencyBatch');
+      invalidateEngineMirrors();
+    },
 
     addDependency: (fromPath, toPath, nodeData, moduleId = 'canvas') => {
       if (_depBatch.isBatching()) {
@@ -47,6 +51,7 @@ export const createDependencySlice = (set, get) => {
           state.dependencyGraph.modules[moduleId].graph.addDependency(fromPath, toPath, nodeData);
           return { ...state };
         });
+        invalidateEngineMirrors(moduleId);
       }
     },
 
@@ -61,19 +66,24 @@ export const createDependencySlice = (set, get) => {
         state.dependencyGraph.modules[moduleId].graph.updateDependency(newFromPath, toPath, nodeData);
         return { ...state };
       });
+      invalidateEngineMirrors(moduleId);
     },
 
-    removeDependency: (toPath, clearToPath = false, moduleId = 'canvas') =>
+    removeDependency: (toPath, clearToPath = false, moduleId = 'canvas') => {
       set((state) => {
         state.dependencyGraph.modules[moduleId].graph.removeDependency(toPath, clearToPath);
         return { ...state };
-      }),
+      });
+      invalidateEngineMirrors(moduleId);
+    },
 
-    removeNode: (path, moduleId = 'canvas') =>
+    removeNode: (path, moduleId = 'canvas') => {
       set((state) => {
         state.dependencyGraph.modules[moduleId].graph.removeNode(path);
         return { ...state };
-      }),
+      });
+      invalidateEngineMirrors(moduleId);
+    },
 
     getNodeData: (path, moduleId = 'canvas') => get().dependencyGraph.modules[moduleId].graph.getNodeData(path),
 

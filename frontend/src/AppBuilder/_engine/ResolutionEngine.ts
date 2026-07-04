@@ -14,7 +14,17 @@
 import _ from 'lodash';
 import { resolveDynamicValues } from './resolver';
 import { deserializeGraph } from './graphSerializer';
-import type { BindingDefinition, CascadeResult, EngineCommand, RuntimeState, SerializedGraph, StatePath, UpdateNode } from './types';
+import { getContract } from './contracts';
+import type {
+  BindingDefinition,
+  CascadeResult,
+  EffectIntent,
+  EngineCommand,
+  RuntimeState,
+  SerializedGraph,
+  StatePath,
+  UpdateNode,
+} from './types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -22,15 +32,19 @@ export interface EngineInit {
   graph: SerializedGraph;
   bindings: BindingDefinition[];
   seedState?: RuntimeState;
+  /** componentId → component type, for INVOKE_CSA contract lookup. */
+  componentTypes?: Record<string, string>;
 }
 
 export class ResolutionEngine {
   private runtimeState: RuntimeState = {};
   private graph: any = null;
   private bindings = new Map<StatePath, string>();
+  private componentTypes: Record<string, string> = {};
 
-  init({ graph, bindings, seedState }: EngineInit): void {
+  init({ graph, bindings, seedState, componentTypes }: EngineInit): void {
     this.graph = deserializeGraph(graph);
+    this.componentTypes = componentTypes ?? {};
     this.bindings = new Map(bindings.map((b) => [b.path, b.code]));
     // The store persists each binding's unresolved expression as graph node
     // data (DependencyClass.addDependency → setNodeData), so the serialized
@@ -61,15 +75,44 @@ export class ResolutionEngine {
 
   applyCommands(commands: EngineCommand[]): CascadeResult {
     const updates: UpdateNode[] = [];
+    const effects: EffectIntent[] = [];
     for (const command of commands) {
       if (command.kind === 'SET_RUNTIME') {
         _.set(this.runtimeState, command.path, command.value);
         updates.push({ path: command.path, value: command.value });
         this.cascadeFrom(command.path, updates, new Set([command.path]));
+      } else if (command.kind === 'INVOKE_CSA') {
+        this.invokeCsa(command, updates, effects);
       }
-      // INVOKE_CSA / FIRE_EVENT / SET_VISIBLE_ROWS: Phase 3 (per-type contracts).
+      // FIRE_EVENT / SET_VISIBLE_ROWS: later Phase 3/4 slices.
     }
-    return { updates, effects: [] };
+    return { updates, effects };
+  }
+
+  /** Bucket B: static per-type reducer mutates runtime state and cascades.
+   *  Bucket C: emit an EffectIntent for the mounted widget's ref to execute. */
+  private invokeCsa(
+    command: Extract<EngineCommand, { kind: 'INVOKE_CSA' }>,
+    updates: UpdateNode[],
+    effects: EffectIntent[]
+  ): void {
+    const { componentId, action, args, rowIndex } = command;
+    const type = this.componentTypes[componentId];
+    const contract = type ? getContract(type) : undefined;
+    if (contract?.effectActions?.includes(action)) {
+      effects.push({ componentId, effect: action, args, rowIndex });
+      return;
+    }
+    const reducer = contract?.stateActions?.[action];
+    if (!reducer) return; // unknown action/type — host handles or ignores
+    const current = (_.get(this.runtimeState, ['components', componentId]) ?? {}) as Record<string, unknown>;
+    const patch = reducer(current, args);
+    for (const [key, value] of Object.entries(patch)) {
+      const path = `components.${componentId}.${key}`;
+      _.set(this.runtimeState, path, value);
+      updates.push({ path, value });
+      this.cascadeFrom(path, updates, new Set([path]));
+    }
   }
 
   /** Re-resolve everything that (transitively) depends on `changedPath`.

@@ -52,3 +52,18 @@ export interface BindingDefinition {
   /** The unresolved expression, e.g. "{{queries.q1.data.total}} rows" */
   code: string;
 }
+
+/* ───────── Per-component-type contracts (Phase 3: Bucket B/C) ───────── */
+
+/** Bucket B CSA as a STATIC reducer defined once per component type — not a
+ *  closure registered per mounted instance. Returns the state patch. */
+export type CsaReducer = (current: Record<string, unknown>, args: unknown[]) => Record<string, unknown>;
+
+export interface ComponentTypeContract {
+  type: string;
+  /** Bucket B: state-mutating CSAs, e.g. { setValue, setVisibility, clear }. */
+  stateActions: Record<string, CsaReducer>;
+  /** Bucket C: imperative effects — engine emits an EffectIntent; the mounted
+   *  widget executes it via ref (no-op when unmounted). */
+  effectActions?: string[];
+}

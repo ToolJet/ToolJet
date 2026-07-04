@@ -14,10 +14,9 @@
  *   window.__tjEngineShadowStats()   // { cascades, compared, matches, divergences: [...] }
  *   window.__tjEngineShadowStop()
  *
- * NOTE: definition edits (add/rename components, new bindings) change the
- * dependency graph; the mirror snapshots it at Start. After structural edits,
- * restart the shadow. (The cutover seam will subscribe to graph mutations —
- * this limitation is shadow-mode only.)
+ * Graph mutations (add/rename/remove bindings) invalidate the mirrors via
+ * dependencySlice hooks; they lazily rebuild from the live graph on the next
+ * cascade, so structural edits need no restart.
  */
 import useStore from '@/AppBuilder/_stores/store';
 import { ResolutionEngine } from './ResolutionEngine';
@@ -186,6 +185,20 @@ const cutoverStats = {
 
 export function isEngineCutoverActive(): boolean {
   return cutoverMode !== 'off';
+}
+
+/** Graph structure changed (binding added/removed/renamed): drop the affected
+ *  module's engine mirrors — they lazily rebuild from the live graph on the
+ *  next cascade. Called from dependencySlice mutation methods. */
+export function invalidateEngineMirrors(moduleId?: string): void {
+  if (moduleId) {
+    cutoverEngines.delete(moduleId);
+    session?.engines.delete(moduleId);
+  } else {
+    cutoverEngines.clear();
+    session?.engines.clear();
+  }
+  cutoverValues.clear();
 }
 
 function getOrInitCutoverEngine(moduleId: string): ResolutionEngine | null {

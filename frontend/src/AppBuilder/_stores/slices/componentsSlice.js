@@ -2791,6 +2791,10 @@ export const createComponentsSlice = (set, get) => ({
     const exposedValues = getAllExposedValues(moduleId);
     const batchedStateMutations = [];
 
+    // Engine cutover seam — mirror each batched change so flat bindings in
+    // this batch are engine-served instead of falling back (counted misses).
+    if (isEngineCutoverActive()) paths.forEach((p) => engineCutoverPrepare(p, moduleId));
+
     paths.forEach((path) => {
       const dependencies = getDependencies(path, moduleId);
       if (!dependencies?.length) return;
