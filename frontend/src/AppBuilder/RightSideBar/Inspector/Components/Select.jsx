@@ -321,6 +321,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Option label'}
               onChange={(value) => handleLabelChange(value, index)}
+              componentName={'Option Label'}
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
@@ -335,6 +336,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Option value'}
               onChange={(value) => handleValueChange(value, index)}
+              componentName={'Option Value'}
             />
           </div>
           {isCaptionEnabled && (
@@ -348,6 +350,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                 lineNumbers={false}
                 placeholder={'Optional description'}
                 onChange={(value) => handleCaptionChange(value, index)}
+                componentName={'Option Caption'}
               />
             </div>
           )}
@@ -363,6 +366,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Make this default option'}
               paramName={'isEditable'}
+              componentName={'Default Option'}
               onChange={(value) => handleMarkedAsDefaultChange(value, index)}
               onFxPress={(active) => handleOnFxPress(active, index, 'default')}
               fxActive={item?.default?.fxActive}
@@ -383,6 +387,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               component={component}
               type={'fxEditor'}
               paramLabel={'Visibility'}
+              componentName={'Option Visibility'}
               onChange={(value) => handleVisibilityChange(value, index)}
               paramName={'visible'}
               onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
@@ -404,6 +409,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Disable'}
               paramName={'disable'}
+              componentName={'Option Disable'}
               onChange={(value) => handleDisableChange(value, index)}
               onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
               fxActive={item?.disable?.fxActive}

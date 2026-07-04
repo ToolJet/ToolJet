@@ -260,6 +260,7 @@ const RenderSortFields = ({
         {/* Column */}
         <div className="codehinter-plugins col p-0">
           <CodeHinter
+            componentName={'Sort Column'}
             initialValue={column ? (typeof column === 'string' ? column : JSON.stringify(column)) : column}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
@@ -332,6 +333,7 @@ const RenderFilterFields = ({
         {/* Column */}
         <div className="field col p-0">
           <CodeHinter
+            componentName={'Filter Column'}
             initialValue={column ? (typeof column === 'string' ? column : JSON.stringify(column)) : column}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
@@ -359,6 +361,7 @@ const RenderFilterFields = ({
         <div className="col p-0" style={{ display: 'flex', alignItems: 'stretch' }}>
           <div style={{ flex: 1 }}>
             <CodeHinter
+              componentName={'Filter Value'}
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}
@@ -425,6 +428,7 @@ const RenderColumnOptions = ({
       <div className="d-flex fields-container">
         <div className="field col-4 me-3">
           <CodeHinter
+            componentName={'Bulk Update Column'}
             initialValue={column ? (typeof column === 'string' ? column : JSON.stringify(column)) : column}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
@@ -436,6 +440,7 @@ const RenderColumnOptions = ({
 
         <div className="field col-6 mx-1">
           <CodeHinter
+            componentName={'Bulk Update Value'}
             initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}

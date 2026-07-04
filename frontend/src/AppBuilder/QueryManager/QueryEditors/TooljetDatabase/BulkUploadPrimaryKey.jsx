@@ -64,6 +64,7 @@ export const BulkUploadPrimaryKey = () => {
               const [_, __, resolvedValue] = resolveReferences(newValue);
               handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged(resolvedValue);
             }}
+            componentName={'TJDB Bulk Upload Rows'}
           />
         </div>
       </div>

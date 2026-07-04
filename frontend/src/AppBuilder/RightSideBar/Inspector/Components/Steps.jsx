@@ -172,6 +172,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Option label'}
               onChange={(value) => handleLabelChange('id', value, index)}
+              componentName={'Step ID'}
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
@@ -186,6 +187,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Option label'}
               onChange={(value) => handleLabelChange('name', value, index)}
+              componentName={'Step Name'}
             />
           </div>
           <div className="field mb-3" data-cy={`input-and-label-column-name`}>
@@ -200,6 +202,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               lineNumbers={false}
               placeholder={'Tooltip'}
               onChange={(value) => handleLabelChange('tooltip', value, index)}
+              componentName={'Step Tooltip'}
             />
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
@@ -211,6 +214,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               component={component}
               type={'fxEditor'}
               paramLabel={'Visibility'}
+              componentName={'Step Visibility'}
               onChange={(value) =>
                 handleLabelChange(
                   'visible',
@@ -240,6 +244,7 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
               type={'fxEditor'}
               paramLabel={'Disable'}
               paramName={'disable'}
+              componentName={'Step Disable'}
               onChange={(value) => handleLabelChange('disabled', { value }, index)}
               onFxPress={(active) => handleOnFxPress(active, index, 'disabled')}
               fxActive={item?.disabled?.fxActive}

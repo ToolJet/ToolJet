@@ -20,6 +20,7 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
             onChange={(value) => optionchanged('successMessage', value)}
             placeholder={t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}
             cyLabel={'success-message'}
+            componentName={'Success Message'}
           />
         </div>
       </div>

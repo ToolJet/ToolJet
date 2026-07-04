@@ -22,6 +22,7 @@ export default function ConfirmationInputs({ options, darkMode, optionchanged, q
             onChange={(value) => optionchanged('requestConfirmation', value)}
             placeholder="{{}}"
             cyLabel="confirmation-fx-expression"
+            componentName={'Confirmation Expression'}
           />
         </div>
       )}
@@ -43,6 +44,7 @@ export default function ConfirmationInputs({ options, darkMode, optionchanged, q
               `Do you want to run this query - ${queryName ?? ''}?`
             )}
             cyLabel="confirmation-message"
+            componentName={'Confirmation Message'}
           />
         </div>
       </div>

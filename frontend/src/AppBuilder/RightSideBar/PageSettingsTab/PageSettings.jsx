@@ -570,6 +570,7 @@ const ShowNavigationMenu = ({ moduleId, disableMenu, darkMode, updatePageVisibil
       </div>
       {forceCodeBox && (
         <CodeHinter
+          componentName={'Page Disable Menu'}
           initialValue={disableMenu?.value}
           lang="javascript"
           lineNumbers={false}

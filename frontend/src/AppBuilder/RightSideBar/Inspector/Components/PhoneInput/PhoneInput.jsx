@@ -88,6 +88,7 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'defaultCountry' }, 'value', value, 'properties')}
+            componentName={'Phone Default Country'}
           />
         ) : (
           <Select

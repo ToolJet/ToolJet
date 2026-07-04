@@ -84,6 +84,7 @@ const FieldPopoverContent = ({
           mode="javascript"
           lineNumbers={false}
           onChange={(value) => handleFieldChange('placeholder', value)}
+          componentName={'Field Placeholder'}
         />
       </div>
     );
@@ -102,6 +103,7 @@ const FieldPopoverContent = ({
           mode="javascript"
           lineNumbers={false}
           onChange={(value) => handleFieldChange('value', value)}
+          componentName={'Field Default Value'}
         />
       </div>
     );
@@ -168,6 +170,7 @@ const FieldPopoverContent = ({
               mode="javascript"
               lineNumbers={false}
               onChange={(value) => handleFieldChange('label', value)}
+              componentName={'Field Label'}
             />
           </div>
 
@@ -183,6 +186,7 @@ const FieldPopoverContent = ({
               type={'fxEditor'}
               paramLabel={'Make this field mandatory'}
               paramName={'isMandatory'}
+              componentName={'Field Mandatory'}
               fxActive={localField.mandatory?.fxActive ?? false}
               fieldMeta={{
                 type: 'toggle',
@@ -203,6 +207,7 @@ const FieldPopoverContent = ({
                 type={'fxEditor'}
                 paramLabel={'Visibility'}
                 paramName={'visible'}
+                componentName={'Field Visibility'}
                 fxActive={localField.visibility?.fxActive ?? false}
                 fieldMeta={{
                   type: 'toggle',

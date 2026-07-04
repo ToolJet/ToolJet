@@ -70,6 +70,7 @@ const SqlColumnRow = React.memo(function SqlColumnRow({
       <div className="col p-0 sql-column-value-wrapper">
         <div className="sql-column-value-input sql-column-end">
           <CodeHinter
+            componentName={'SQL Column Value'}
             type="basic"
             initialValue={
               columnValue ? (typeof columnValue === 'string' ? columnValue : JSON.stringify(columnValue)) : columnValue

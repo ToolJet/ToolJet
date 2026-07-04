@@ -606,6 +606,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                   usePortalEditor={false}
                   component={component}
+                  componentName={'Run Only If'}
                   cyLabel={`run-only-if`}
                 />
               </FieldRow>
@@ -638,6 +639,7 @@ export const EventManager = ({
                       onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
                       component={component}
+                      componentName={'Alert Message'}
                     />
                   </div>
                 </FieldRow>
@@ -672,6 +674,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'url', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentName={'URL'}
                   />
                 </FieldRow>
                 <FieldRow label="Open in" dataCy="open-in-label">
@@ -730,6 +733,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
                   component={component}
+                  componentName={'Copy to Clipboard Text'}
                 />
               </FieldRow>
             )}
@@ -783,6 +787,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'key', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentName={'Local Storage Key'}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
@@ -792,6 +797,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'value', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentName={'Local Storage Value'}
                   />
                 </FieldRow>
               </>
@@ -815,6 +821,7 @@ export const EventManager = ({
                     initialValue={event.fileName}
                     onChange={(value) => handlerChanged(index, 'fileName', value)}
                     component={component}
+                    componentName={'File Name'}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.data', 'Data')} dataCy="data-label">
@@ -823,6 +830,7 @@ export const EventManager = ({
                     initialValue={event.data}
                     onChange={(value) => handlerChanged(index, 'data', value)}
                     component={component}
+                    componentName={'File Data'}
                   />
                 </FieldRow>
               </>
@@ -843,6 +851,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'pageIndex', value)}
                     usePortalEditor={false}
                     component={component}
+                    componentName={'Table Page Index'}
                   />
                 </FieldRow>
               </>
@@ -857,6 +866,7 @@ export const EventManager = ({
                     enablePreview={true}
                     cyLabel={`event-key`}
                     component={component}
+                    componentName={'Custom Variable Key'}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
@@ -866,6 +876,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'value', value)}
                     cyLabel={`variable`}
                     component={component}
+                    componentName={'Custom Variable Value'}
                   />
                 </FieldRow>
               </>
@@ -877,6 +888,7 @@ export const EventManager = ({
                   initialValue={event.key}
                   onChange={(value) => handlerChanged(index, 'key', value)}
                   component={component}
+                  componentName={'Unset Custom Variable Key'}
                 />
               </FieldRow>
             )}
@@ -889,6 +901,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'key', value)}
                     cyLabel={`key`}
                     component={component}
+                    componentName={'Page Variable Key'}
                   />
                 </FieldRow>
                 <FieldRow label={t('editor.inspector.eventManager.value', 'Value')} dataCy="value-label">
@@ -898,6 +911,7 @@ export const EventManager = ({
                     onChange={(value) => handlerChanged(index, 'value', value)}
                     cyLabel={`variable`}
                     component={component}
+                    componentName={'Page Variable Value'}
                   />
                 </FieldRow>
               </>
@@ -910,6 +924,7 @@ export const EventManager = ({
                   onChange={(value) => handlerChanged(index, 'key', value)}
                   cyLabel={`key`}
                   component={component}
+                  componentName={'Unset Page Variable Key'}
                 />
               </FieldRow>
             )}
@@ -1051,6 +1066,7 @@ export const EventManager = ({
                             fieldMeta={{ options: param?.options }}
                             cyLabel={`event-${param.displayName}`}
                             component={component}
+                            componentName={'Component Action Param'}
                             isEventManagerParam={true}
                           />
                         </div>
@@ -1083,6 +1099,7 @@ export const EventManager = ({
                 onChange={(value) => handlerChanged(index, 'debounce', value)}
                 usePortalEditor={false}
                 component={component}
+                componentName={'Debounce'}
                 cyLabel={'debounce'}
               />
             </FieldRow>

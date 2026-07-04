@@ -160,6 +160,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
               }
               initialValue={param.key}
               placeholder={'key'}
+              componentName={'Workflow Param Key'}
             />
           </div>
           <div className="col-7">
@@ -174,6 +175,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
               }
               initialValue={param.value}
               placeholder={'value'}
+              componentName={'Workflow Param Value'}
             />
           </div>
           <div className="col-1">

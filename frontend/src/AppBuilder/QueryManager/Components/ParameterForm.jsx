@@ -112,6 +112,7 @@ const ParameterForm = ({
                     initialValue={defaultValue}
                     delayOnChange={false}
                     cyLabel="parameter-value"
+                    componentName={'Parameter Default Value'}
                   />
                 </div>
               </div>

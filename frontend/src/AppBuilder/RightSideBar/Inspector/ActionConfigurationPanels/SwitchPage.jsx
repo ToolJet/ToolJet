@@ -43,6 +43,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, compon
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 usePortalEditor={false}
                 component={component}
+                componentName={'Switch Page Query Param Key'}
                 cyLabel="event-query-param-key"
               />
             </div>
@@ -53,6 +54,7 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, compon
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 usePortalEditor={false}
                 component={component}
+                componentName={'Switch Page Query Param Value'}
                 cyLabel="event-query-param-value"
               />
             </div>

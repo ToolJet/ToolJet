@@ -74,6 +74,7 @@ const TreeSelectItemPopover = forwardRef(
                 {...basicCodeHinterProps}
                 data-cy="inspector-treeselect-item-details-label-input"
                 initialValue={item?.label || ''}
+                componentName={'Tree Item Label'}
                 onChange={(value) => handleChange('label', value)}
               />
             </div>
@@ -90,6 +91,7 @@ const TreeSelectItemPopover = forwardRef(
                 {...basicCodeHinterProps}
                 data-cy="inspector-treeselect-item-details-value-input"
                 initialValue={item?.value || ''}
+                componentName={'Tree Item Value'}
                 onChange={(value) => handleChange('value', value)}
               />
             </div>
@@ -101,6 +103,7 @@ const TreeSelectItemPopover = forwardRef(
                 initialValue={item?.selected?.value}
                 paramLabel={'Selected'}
                 paramName={'selected'}
+                componentName={'Tree Item Selected'}
                 onChange={(value) => handleChange('selected.value', value)}
                 onFxPress={(active) => handleChange('selected.fxActive', active)}
                 fxActive={item?.selected?.fxActive}
@@ -116,6 +119,7 @@ const TreeSelectItemPopover = forwardRef(
                 initialValue={item?.expanded?.value}
                 paramLabel={'Expanded'}
                 paramName={'expanded'}
+                componentName={'Tree Item Expanded'}
                 onChange={(value) => handleChange('expanded.value', value)}
                 onFxPress={(active) => handleChange('expanded.fxActive', active)}
                 fxActive={item?.expanded?.fxActive}
@@ -132,6 +136,7 @@ const TreeSelectItemPopover = forwardRef(
                 initialValue={item?.visible?.value}
                 paramLabel={'Visibility'}
                 paramName={'visible'}
+                componentName={'Tree Item Visibility'}
                 onChange={(value) => handleChange('visible.value', value)}
                 onFxPress={(active) => handleChange('visible.fxActive', active)}
                 fxActive={item?.visible?.fxActive}
@@ -147,6 +152,7 @@ const TreeSelectItemPopover = forwardRef(
                 initialValue={item?.disable?.value}
                 paramLabel={'Disable'}
                 paramName={'disable'}
+                componentName={'Tree Item Disable'}
                 onChange={(value) => handleChange('disable.value', value)}
                 onFxPress={(active) => handleChange('disable.fxActive', active)}
                 fxActive={item?.disable?.fxActive}

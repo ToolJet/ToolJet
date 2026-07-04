@@ -50,6 +50,7 @@ const RenderColumnUI = ({
               }}
               {...(isJSonTypeColumn && { lang: 'javascript' })}
               cyLabel="column-value"
+              componentName={'TJDB Column Value'}
             />
             <ButtonSolid
               size="sm"

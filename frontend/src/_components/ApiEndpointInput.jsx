@@ -596,6 +596,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   const inputField = (param) => {
     return (
       <CodeHinter
+        componentName={'API Param Value'}
         initialValue={(type === 'request' ? options?.params[type][param] : options?.params[type][param.name]) ?? ''}
         mode="text"
         placeholder={'Value'}

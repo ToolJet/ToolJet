@@ -703,6 +703,7 @@ const HidePageOnNavigation = ({ hidden, darkMode, updatePageVisibility, page, is
       </div>
       {forceCodeBox && (
         <CodeHinter
+          componentName={'Page Hidden'}
           initialValue={hidden?.value}
           lang="javascript"
           lineNumbers={false}

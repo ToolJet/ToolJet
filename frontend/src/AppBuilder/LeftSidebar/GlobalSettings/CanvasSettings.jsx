@@ -159,6 +159,7 @@ const CanvasSettings = ({ darkMode }) => {
             {!forceCodeBox && (
               <div className="canvas-hinter-wrap-container">
                 <CodeHinter
+                  componentName={'Canvas Background Color'}
                   cyLabel={`canvas-bg-colour`}
                   initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
                   lang="javascript"

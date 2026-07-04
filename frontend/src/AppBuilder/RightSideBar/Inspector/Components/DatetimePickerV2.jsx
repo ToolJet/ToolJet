@@ -218,6 +218,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
             mode="javascript"
             lineNumbers={false}
             onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+            componentName={'Time Format'}
           />
         ) : (
           <Select
@@ -308,6 +309,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, dataCy, ...r
                           mode="javascript"
                           lineNumbers={false}
                           onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+                          componentName={'Date Format'}
                         />
                       ) : (
                         <Select

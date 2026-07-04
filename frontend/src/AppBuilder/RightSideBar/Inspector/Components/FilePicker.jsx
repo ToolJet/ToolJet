@@ -60,6 +60,7 @@ const FxSelect = ({
             mode="javascript"
             lineNumbers={false}
             onChange={onValueChange}
+            componentName={'FilePicker File Type'}
           />
         ) : (
           <Select

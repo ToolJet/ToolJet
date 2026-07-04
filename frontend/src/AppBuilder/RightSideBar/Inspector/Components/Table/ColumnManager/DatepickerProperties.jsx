@@ -142,6 +142,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                       lineNumbers={false}
                       // placeholder={validation?.placeholder ?? ''}
                       onChange={(value) => onColumnItemChange(index, 'dateFormat', value)}
+                      componentName={'Column Date Format'}
                     />
                   ) : (
                     <Select
@@ -315,6 +316,7 @@ const DatepickerProperties = ({ column, index, darkMode, currentState, onColumnI
                       lineNumbers={false}
                       // placeholder={validation?.placeholder ?? ''}
                       onChange={(value) => onColumnItemChange(index, 'parseDateFormat', value)}
+                      componentName={'Column Parse Date Format'}
                     />
                   ) : (
                     <Select
