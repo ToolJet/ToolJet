@@ -61,6 +61,7 @@ import { PermissionDeniedModal } from './PermissionDeniedModal/PermissionDeniedM
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { WorkspaceLockedBanner } from '@/_ui/WorkspaceLockedBanner';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { whenBranchResolved } from '@/_helpers/active-branch';
 import { WorkspaceSwitchBranchModal } from '@/_ui/WorkspaceBranchDropdown/SwitchBranchModal';
 import { TriangleAlert } from 'lucide-react';
 
@@ -229,10 +230,14 @@ class HomePageComponent extends React.Component {
     fetchAndSetWindowTitle({ page: pageTitles.DASHBOARD });
     // ?folder= deep-link: fetchFolders will chain to fetchApps after slug resolves.
     const urlFolderSlug = new URL(window.location.href)?.searchParams?.get('folder');
-    if (!urlFolderSlug) {
-      this.fetchApps(1, this.state.currentFolder.id);
-    }
-    this.fetchFolders();
+    // Gate the first apps/folders fetch on branch resolution so they carry the right branch_id
+    // after a hard reload on a feature branch (no-op when the URL has no `branch` param).
+    whenBranchResolved().then(() => {
+      if (!urlFolderSlug) {
+        this.fetchApps(1, this.state.currentFolder.id);
+      }
+      this.fetchFolders();
+    });
     this.fetchFeatureAccesss();
     this.fetchAppsLimit();
     this.fetchWorkflowsInstanceLimit();

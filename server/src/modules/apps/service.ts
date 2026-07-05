@@ -327,13 +327,13 @@ export class AppsService implements IAppsService {
       if (appUpdateDto.is_public !== undefined) blockedFields.push('is_public');
 
       if (blockedFields.length > 0) {
-        // Require an explicit branch_id (from the x-branch-id header). Without it the
-        // server can't tell whether the request is targeting the default branch or a
+        // Require an explicit branch_id (resolved from the branch_id query param). Without it
+        // the server can't tell whether the request is targeting the default branch or a
         // sub-branch, and util.service.update would otherwise fan the write out across
         // every VERSION row of the app — leaking sub-branch edits into the default branch.
         if (!appUpdateDto.branch_id) {
           throw new BadRequestException(
-            `Editing ${blockedFields.join(', ')} requires a feature branch context (missing x-branch-id header).`
+            `Editing ${blockedFields.join(', ')} requires a feature branch context (missing branch_id).`
           );
         }
         const branch = await this.appRepository.manager.findOne(WorkspaceBranch, {

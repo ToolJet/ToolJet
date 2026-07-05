@@ -204,7 +204,7 @@ export function BranchDropdown({ appId, organizationId }) {
       selectedVersion?.versionType === 'branch' || selectedVersion?.version_type === 'branch';
 
     // Already on a branch version — no version switch needed, but sync workspace branch context
-    // so the header shows the correct branch name and localStorage is up to date.
+    // so the header shows the correct branch name and the URL branch param is up to date.
     if (isBranchTypeVersionForSwitch) {
       const versionBranchId = selectedVersion?.branchId || selectedVersion?.branch_id;
       // allBranches from gitSyncService.getAllBranches has no workspace branch UUID field,

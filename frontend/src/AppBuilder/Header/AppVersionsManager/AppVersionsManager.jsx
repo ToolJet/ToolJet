@@ -48,6 +48,7 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
     creationMode,
     isViewer,
     currentMode,
+    allBranches,
   } = useStore(
     (state) => ({
       initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
@@ -69,6 +70,7 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
       isPublic: state.appStore.modules[moduleId].app.isPublic,
       isViewer: state.appStore.modules[moduleId].isViewer,
       currentMode: state.modeStore.modules[moduleId].currentMode,
+      allBranches: state.allBranches,
     }),
     shallow
   );
@@ -168,10 +170,24 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
       ? versionsPromotedToEnvironment.filter((v) => (v.versionType || v.version_type) !== 'branch')
       : versionsPromotedToEnvironment;
 
+  // Git branching stores a branch's working version with a UUID `name`; show the human-readable
+  // branch name instead. Prefer the backend-provided branchName (available even in the
+  // preview/viewer where the branches list isn't loaded), then fall back to resolving via
+  // allBranches. Applies to branch-type versions and any git version still named as a raw UUID —
+  // real, user-given version names (e.g. "v1") are always kept as-is.
+  const isUuid = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s || '');
+  const getVersionDisplayName = (v) => {
+    const isBranchVersion = (v.versionType || v.version_type) === 'branch';
+    const branchName =
+      v.branchName || v.branch_name || allBranches?.find((b) => b.id === (v.branchId || v.branch_id))?.name;
+    if (branchName && (isBranchVersion || isUuid(v.name))) return branchName;
+    return v.name;
+  };
+
   const options = visibleVersions.map((appVersion) => ({
     value: appVersion.id,
     isReleasedVersion: appVersion.id === releasedVersionId,
-    appVersionName: appVersion.name,
+    appVersionName: getVersionDisplayName(appVersion),
     label: (
       <div className="row align-items-center app-version-list-item">
         <div className="col-10">
@@ -182,7 +198,7 @@ export const AppVersionsManager = ({ darkMode, disabled = false }) => {
               })}
               style={{ maxWidth: '100%' }}
             >
-              {decodeEntities(appVersion.name)}
+              {decodeEntities(getVersionDisplayName(appVersion))}
             </div>
           </ToolTip>
         </div>

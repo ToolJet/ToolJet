@@ -18,6 +18,7 @@ import posthogHelper from '@/modules/common/helpers/posthogHelper';
 import { authenticationService, gitSyncService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
+import { appendBranchName } from '@/_helpers/active-branch';
 import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 import { PushValidationErrorModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushValidationErrorModal';
 const { defaultIcon } = configs;
@@ -88,7 +89,13 @@ export default function AppCard({
       } catch (_err) {
         // check failed (network error, etc.) — allow navigation
       }
-      navigate(getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }));
+      // Carry the dashboard's active branch into the editor so reload keeps the same branch.
+      navigate(
+        appendBranchName(
+          getPrivateRoute('editor', { slug: isValidSlug(app.slug) ? app.slug : app.id }),
+          wsCurrentBranch?.name
+        )
+      );
     }
     posthogHelper.captureEvent('click_edit_button_on_card', {
       workspace_id:

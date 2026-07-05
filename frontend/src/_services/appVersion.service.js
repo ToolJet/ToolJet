@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const appVersionService = {
   getAll,
@@ -23,7 +24,7 @@ export const appVersionService = {
 
 function getAll(appId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions`), requestOptions).then(handleResponse);
 }
 
 function getOne(appId, versionId) {
@@ -42,9 +43,10 @@ function promoteEnvironment(appId, versionId, currentEnvironmentId) {
 }
 function getAppVersionData(appId, versionId, mode) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    appendBranchParam(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}?mode=${mode}`),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
@@ -53,7 +55,7 @@ function getModuleVersionData(coRelationId, moduleReferenceId, mode) {
   // server resolver returns the latest non-stub on the consumer's branch.
   const refParam = moduleReferenceId ? `&ref=${encodeURIComponent(moduleReferenceId)}` : '';
   return fetch(
-    `${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}`,
+    appendBranchParam(`${config.apiUrl}/v2/apps/module/by-correlation/${coRelationId}/version?mode=${mode}${refParam}`),
     requestOptions
   ).then(handleResponse);
 }
@@ -73,7 +75,7 @@ function create(appId, versionName, versionDescription, versionFromId, currentEn
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/versions`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/versions`), requestOptions).then(handleResponse);
 }
 
 function createDraftVersion(appId, versionFromId, environmentId, versionDescription = '') {
@@ -91,7 +93,7 @@ function createDraftVersion(appId, versionFromId, environmentId, versionDescript
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/draft-versions`, requestOptions).then(handleResponse);
+  return fetch(appendBranchParam(`${config.apiUrl}/apps/${appId}/draft-versions`), requestOptions).then(handleResponse);
 }
 
 function del(appId, versionId) {

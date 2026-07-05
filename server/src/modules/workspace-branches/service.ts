@@ -6,7 +6,7 @@ import { CreateBranchDto, WorkspacePushDto } from './dto';
 
 @Injectable()
 export class WorkspaceBranchService implements IWorkspaceBranchService {
-  async list(organizationId: string): Promise<WorkspaceBranchListResponse> {
+  async list(organizationId: string, userId?: string): Promise<WorkspaceBranchListResponse> {
     throw new NotFoundException();
   }
 
@@ -17,7 +17,8 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
   async switchBranch(
     organizationId: string,
     branchId: string,
-    appId?: string
+    appId?: string,
+    userId?: string
   ): Promise<{ success: boolean; resolvedAppId?: string }> {
     throw new NotFoundException();
   }

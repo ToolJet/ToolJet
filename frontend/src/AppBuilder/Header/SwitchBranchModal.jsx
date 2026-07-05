@@ -50,23 +50,15 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
   }));
 
   const defaultBranchName = orgGit?.git_https?.github_branch || orgGit?.git_ssh?.github_branch || 'main';
-  const {
-    workspaceActiveBranch,
-    wsBranches,
-    wsActions,
-    wsRemoteBranches,
-    wsHasMoreRemote,
-    wsVisibleCount,
-    wsActiveBranchId,
-  } = useWorkspaceBranchesStore((state) => ({
-    workspaceActiveBranch: state.currentBranch,
-    wsBranches: state.branches,
-    wsActions: state.actions,
-    wsRemoteBranches: state.remoteBranches,
-    wsHasMoreRemote: state.hasMoreRemote,
-    wsVisibleCount: state.visibleCount,
-    wsActiveBranchId: state.activeBranchId,
-  }));
+  const { workspaceActiveBranch, wsBranches, wsActions, wsRemoteBranches, wsVisibleCount, wsActiveBranchId } =
+    useWorkspaceBranchesStore((state) => ({
+      workspaceActiveBranch: state.currentBranch,
+      wsBranches: state.branches,
+      wsActions: state.actions,
+      wsRemoteBranches: state.remoteBranches,
+      wsVisibleCount: state.visibleCount,
+      wsActiveBranchId: state.activeBranchId,
+    }));
 
   // Determine current branch name:
   // For platform git sync: use workspace active branch name
@@ -130,7 +122,19 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
     [wsBranches]
   );
 
-  // Platform git sync: full list is in store — sort, then slice to visibleCount
+  // Combined idle list: all ToolJet DB branches, enriched with git-remote metadata (commit
+  // dates) where the branch also exists on the remote. Ensures branches still show when the
+  // remote list is empty/unavailable (e.g. a git simulator). Dedup by name, DB fields
+  // authoritative (id / isDefault / createdAt), remote-only fields like lastCommitAt survive.
+  const wsIdleBranches = useMemo(() => {
+    if (!branchingEnabled) return [];
+    const byName = new Map();
+    (wsRemoteBranches || []).forEach((b) => byName.set(b.name, b));
+    (wsBranches || []).forEach((b) => byName.set(b.name, { ...byName.get(b.name), ...b }));
+    return Array.from(byName.values()).sort(branchSorter);
+  }, [branchingEnabled, wsRemoteBranches, wsBranches, branchSorter]);
+
+  // Platform git sync: search reads the DB list; idle view shows the combined list.
   const wsDisplayBranches = useMemo(() => {
     if (!branchingEnabled) return [];
     if (searchTerm) {
@@ -139,9 +143,9 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
         .map((r) => r.item)
         .sort(branchSorter);
     }
-    return [...(wsRemoteBranches || [])].sort(branchSorter).slice(0, wsVisibleCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [branchingEnabled, searchTerm, fuse, wsRemoteBranches, wsVisibleCount, branchSorter]);
+    return wsIdleBranches.slice(0, wsVisibleCount);
+  }, [branchingEnabled, searchTerm, fuse, wsIdleBranches, wsVisibleCount, branchSorter]);
+  const wsHasMoreIdle = wsIdleBranches.length > wsVisibleCount;
 
   // Per-app branching: simple filter + search (unchanged)
   const perAppFilteredBranches = useMemo(() => {
@@ -216,7 +220,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
           const result = await workspaceBranchesService.switchBranch(targetWsBranch.id, appId);
           const resolvedAppId = result?.resolvedAppId || result?.resolved_app_id;
           const resolvedSlug = result?.slug;
-          // Persist branch to localStorage + update store
+          // Persist branch to the URL + update store
           const branchObj = targetWsBranch;
           setActiveBranch(branchObj);
           useWorkspaceBranchesStore.setState({
@@ -413,7 +417,7 @@ export function SwitchBranchModal({ show, onClose, appId, organizationId }) {
                 })}
                 {branchingEnabled && <Tooltip id="ab-delete-branch-tooltip" place="right" style={{ zIndex: 9999 }} />}
                 {/* Load More — platform git sync only, hidden during search */}
-                {branchingEnabled && wsHasMoreRemote && !searchTerm && (
+                {branchingEnabled && wsHasMoreIdle && !searchTerm && (
                   <button
                     className="load-more-btn"
                     onClick={() => wsActions.loadMoreRemoteBranches()}

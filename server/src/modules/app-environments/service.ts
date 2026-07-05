@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { EntityManager, FindOneOptions, In } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { WorkspaceBranch } from 'src/entities/workspace_branch.entity';
 import { AppEnvironmentActions } from './constants';
 import { IAppEnvironmentService } from './interfaces/IService';
 import { AppEnvironmentActionParametersDto } from './dto';
@@ -207,7 +208,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
         }
       }
 
-      return await manager.find(AppVersion, {
+      const appVersions = await manager.find(AppVersion, {
         where: { ...conditions },
         order: {
           createdAt: 'DESC',
@@ -230,6 +231,22 @@ export class AppEnvironmentService implements IAppEnvironmentService {
           'isSynced',
         ],
       });
+
+      // Git auto-names a branch's working version with a UUID (`name`). Attach the human-readable
+      // branch name to every version that carries a branchId so the version selector can show it
+      // without a separate (client-side) branches fetch — which isn't available in the
+      // preview/viewer. The client decides when to prefer it over the raw version name.
+      const branchIds = [...new Set(appVersions.filter((v) => v.branchId).map((v) => v.branchId))];
+      if (branchIds.length) {
+        const branches = await manager.find(WorkspaceBranch, { where: { id: In(branchIds) }, select: ['id', 'name'] });
+        const nameById = new Map(branches.map((b) => [b.id, b.name]));
+        appVersions.forEach((v) => {
+          if (v.branchId) {
+            (v as AppVersion & { branchName?: string }).branchName = nameById.get(v.branchId) ?? null;
+          }
+        });
+      }
+      return appVersions;
     });
   }
 

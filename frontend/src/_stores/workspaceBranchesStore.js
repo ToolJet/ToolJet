@@ -1,13 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { workspaceBranchesService } from '@/_services/workspace_branches.service';
 import { gitSyncService } from '@/_services/git_sync.service';
-import {
-  getActiveBranch,
-  setActiveBranch,
-  cleanupStaleBranchKeys,
-  registerBranchFocusSync,
-  unregisterBranchFocusSync,
-} from '@/_helpers/active-branch';
+import { getBranchNameFromUrl, setActiveBranch } from '@/_helpers/active-branch';
 
 const initialState = {
   branches: [],
@@ -42,6 +36,18 @@ function resolveCurrentBranch(branches, activeBranchId) {
   return branches[0] || null;
 }
 
+// Resolve the active branch. The browser URL (`?branch=<name>`) is the source of truth; when
+// it's absent/unknown, fall back to the server's active/default branch.
+function resolveActiveBranch(branches, serverActiveBranchId) {
+  if (!branches || branches.length === 0) return null;
+  const urlName = getBranchNameFromUrl();
+  if (urlName) {
+    const byName = branches.find((b) => b.name === urlName);
+    if (byName) return byName;
+  }
+  return resolveCurrentBranch(branches, serverActiveBranchId);
+}
+
 export const useWorkspaceBranchesStore = create(
   zustandDevTools(
     (set, get) => ({
@@ -51,8 +57,6 @@ export const useWorkspaceBranchesStore = create(
         async initialize(workspaceId) {
           if (get().isInitialized) return;
           set({ isLoading: true });
-          // Remove stale tj_active_branch_* keys from other orgs / migration dumps
-          cleanupStaleBranchKeys();
           try {
             const [branchData, gitStatus] = await Promise.all([
               workspaceBranchesService.list().catch(() => null),
@@ -61,23 +65,17 @@ export const useWorkspaceBranchesStore = create(
 
             const branches = branchData?.branches || [];
             const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
-            // Prefer sessionStorage branch over server-returned activeBranchId
-            const storedBranch = isGitSyncEnabled ? getActiveBranch() : null;
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
-            const effectiveActiveBranchId = isGitSyncEnabled ? storedBranch?.id || serverActiveBranchId : null;
-            const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
+            // URL (`?branch=<name>`) is the source of truth; fall back to server active/default.
+            const currentBranch = isGitSyncEnabled ? resolveActiveBranch(branches, serverActiveBranchId) : null;
 
-            if (isGitSyncEnabled) {
-              if (currentBranch) setActiveBranch(currentBranch);
-              registerBranchFocusSync();
-            } else {
-              unregisterBranchFocusSync();
-              setActiveBranch(null);
-            }
+            // Cache the id (for API calls) and reflect the name into the URL — always-show,
+            // including the default branch. null clears both for non-git workspaces.
+            setActiveBranch(isGitSyncEnabled ? currentBranch : null);
 
             set({
               branches,
-              activeBranchId: isGitSyncEnabled ? currentBranch?.id || effectiveActiveBranchId : null,
+              activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
               currentBranch: isGitSyncEnabled ? currentBranch : null,
               orgGitConfig: gitStatus,
               isLoading: false,
@@ -92,12 +90,11 @@ export const useWorkspaceBranchesStore = create(
           try {
             const data = await workspaceBranchesService.list();
             const branches = data?.branches || [];
-            // Prefer sessionStorage branch over server default
-            const storedBranch = getActiveBranch();
             const serverActiveBranchId = data?.active_branch_id || data?.activeBranchId || null;
-            const effectiveActiveBranchId = storedBranch?.id || serverActiveBranchId;
-            const currentBranch = resolveCurrentBranch(branches, effectiveActiveBranchId);
-            set({ branches, activeBranchId: currentBranch?.id || effectiveActiveBranchId, currentBranch });
+            // URL is the source of truth; fall back to server active/default.
+            const currentBranch = resolveActiveBranch(branches, serverActiveBranchId);
+            setActiveBranch(currentBranch);
+            set({ branches, activeBranchId: currentBranch?.id || null, currentBranch });
           } catch (error) {
             console.error('Failed to fetch branches:', error);
           }
@@ -110,13 +107,18 @@ export const useWorkspaceBranchesStore = create(
         },
 
         async switchBranch(branchId) {
-          // No longer calling backend — branch is tracked client-side only
+          // Branch is tracked client-side (URL). We only ping the backend to persist this as the
+          // user's last-used branch for the workspace (restored on next login) — fire-and-forget,
+          // never blocks the switch.
           const branches = get().branches;
           const currentBranch = branches.find((b) => b.id === branchId) || null;
           if (currentBranch) {
             setActiveBranch(currentBranch);
           }
           set({ activeBranchId: branchId, currentBranch });
+          workspaceBranchesService.switchBranch(branchId).catch(() => {
+            /* best-effort last-branch persistence */
+          });
         },
 
         async deleteBranch(branchId) {
@@ -247,13 +249,11 @@ export const useWorkspaceBranchesStore = create(
         },
 
         clearActiveBranchContext() {
-          unregisterBranchFocusSync();
           setActiveBranch(null);
           set({ activeBranchId: null, currentBranch: null });
         },
 
         reset() {
-          unregisterBranchFocusSync();
           setActiveBranch(null);
           set(initialState);
         },
@@ -268,22 +268,15 @@ export const useWorkspaceBranchesStore = create(
 
             const branches = branchData?.branches || [];
             const isGitSyncEnabled = !!(gitStatus?.isEnabled ?? gitStatus?.is_enabled);
-            const storedBranch = isGitSyncEnabled ? getActiveBranch() : null;
             const serverActiveBranchId = branchData?.active_branch_id || branchData?.activeBranchId || null;
-            const effectiveActiveBranchId = isGitSyncEnabled ? storedBranch?.id || serverActiveBranchId : null;
-            const currentBranch = isGitSyncEnabled ? resolveCurrentBranch(branches, effectiveActiveBranchId) : null;
+            // URL (`?branch=<name>`) is the source of truth; fall back to server active/default.
+            const currentBranch = isGitSyncEnabled ? resolveActiveBranch(branches, serverActiveBranchId) : null;
 
-            if (isGitSyncEnabled) {
-              if (currentBranch) setActiveBranch(currentBranch);
-              registerBranchFocusSync();
-            } else {
-              unregisterBranchFocusSync();
-              setActiveBranch(null);
-            }
+            setActiveBranch(isGitSyncEnabled ? currentBranch : null);
 
             set({
               branches,
-              activeBranchId: isGitSyncEnabled ? currentBranch?.id || effectiveActiveBranchId : null,
+              activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
               currentBranch: isGitSyncEnabled ? currentBranch : null,
               orgGitConfig: gitStatus,
               isLoading: false,

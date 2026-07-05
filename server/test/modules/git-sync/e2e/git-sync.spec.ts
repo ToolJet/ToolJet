@@ -366,7 +366,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
 
         expect(appsResp.body.apps).toEqual([]);
@@ -433,7 +432,7 @@ describe('GitSyncController', () => {
           .get('/api/workspace-branches/remote')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         // listRemoteBranches now returns { branches: [{ id, name, isDefault, ... }] }.
         expect(remoteAfterReset.body.branches.map((b: any) => b.name)).toEqual(['main']);
@@ -447,7 +446,7 @@ describe('GitSyncController', () => {
           .query({ branch: 'main' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(checkUpdatesResp.body.hasUpdates).toBe(true);
         expect(checkUpdatesResp.body.latestCommit).toMatchObject({
@@ -464,7 +463,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -475,7 +474,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e', sourceBranchId: mainBranchId })
           .expect(201);
         expect(createBranchResp.body).toMatchObject({
@@ -497,7 +496,7 @@ describe('GitSyncController', () => {
           .get('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(twoBranchesResp.body.branches).toHaveLength(2);
         expect(twoBranchesResp.body.activeBranchId).toBe(mainBranchId);
@@ -512,7 +511,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: featBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
           .expect(200);
         expect(appsOnFeat.body.apps).toEqual([]);
         expect(appsOnFeat.body.meta.total_count).toBe(0);
@@ -524,7 +522,7 @@ describe('GitSyncController', () => {
           .get('/api/workspace-branches/remote')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .expect(200);
         // `/remote` is now backed by the GitHub GraphQL API + a Redis cache that is warmed
         // asynchronously (invalidateAndWarm, fire-and-forget) after branch mutations, so its
@@ -542,7 +540,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ icon: 'home', name: 'testing-app-1', type: 'front-end', branchId: mainBranchId })
           .expect(400);
 
@@ -553,7 +551,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .send({ icon: 'home', name: 'testing-app-1', type: 'front-end', branchId: featBranchId })
           .expect(201);
         expect(createAppResp.body).toMatchObject({
@@ -570,7 +568,7 @@ describe('GitSyncController', () => {
           .get(`/api/app-git/${orgId}/app/${appId}/branches`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .expect(200);
         expect(appGitBranchesResp.body.active_branch_id).toBe(mainBranchId);
         const branchNames = appGitBranchesResp.body.branches.map((b: any) => b.name);
@@ -585,7 +583,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${appId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .expect(200);
         const editingVersion =
           appDetail.body?.editing_version || appDetail.body?.editingVersion || appDetail.body?.app?.editing_version;
@@ -608,7 +606,7 @@ describe('GitSyncController', () => {
           .query({ app_id: appId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .expect(200);
         expect(versionsResp.body.appVersions).toHaveLength(1);
         const [version] = versionsResp.body.appVersions;
@@ -674,7 +672,7 @@ describe('GitSyncController', () => {
           .post(`/api/v2/apps/${appId}/versions/${versionId}/components`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .send({
             is_user_switched_version: false,
             pageId,
@@ -691,7 +689,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${appId}/${versionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', featBranchId)
+          .query({ branch_id: featBranchId })
           .send({
             gitAppName: 'testing-app-1',
             versionId,
@@ -725,7 +723,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -738,7 +736,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(appsOnMain.body.meta.total_count).toBe(1);
         expect(appsOnMain.body.apps).toHaveLength(1);
@@ -770,7 +767,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(hydrateResp.body.is_hydration_tried).toBe(true);
         expect(hydrateResp.body.hydration_status).toBe('success');
@@ -784,7 +781,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(reopenResp.body.is_hydration_tried).toBe(false);
         expect(reopenResp.body.not_hydrated_reason).toBe('already-up-to-date');
@@ -799,7 +796,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(appsAfterHydrate.body.meta.total_count).toBe(1);
         expect(appsAfterHydrate.body.apps).toHaveLength(1);
@@ -841,7 +837,7 @@ describe('GitSyncController', () => {
           .query({ app_id: hydratedApp.id })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         // env-versions returns all versions on this env (workspace-scoped),
         // so we'll see both the feat-branch branch-version and the new main
@@ -866,7 +862,7 @@ describe('GitSyncController', () => {
           .query({ versionName: 'v1' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(checkTagResp.body.exists).toBe(false);
         expect(checkTagResp.body.tagName).toBe(`${hydratedApp.co_relation_id}/v1`);
@@ -876,7 +872,7 @@ describe('GitSyncController', () => {
           .put(`/api/v2/apps/${hydratedApp.id}/versions/${hydratedVersion.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({
             is_user_switched_version: false,
             name: 'v1',
@@ -890,7 +886,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/${hydratedApp.id}/versions/${hydratedVersion.id}/tag`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ message: 'saving draft 1' })
           .expect(201);
 
@@ -908,7 +904,7 @@ describe('GitSyncController', () => {
           .query({ app_id: hydratedApp.id })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(versionsAfterPublish.body.appVersions).toHaveLength(3);
 
@@ -936,7 +932,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-2', sourceBranchId: mainBranchId })
           .expect(201);
         const feat2BranchId: string = createBranch2Resp.body.id;
@@ -948,7 +944,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${hydratedApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat2BranchId)
+          .query({ branch_id: feat2BranchId })
           .expect(200);
         const feat2EditingVersion = appOnFeat2.body?.editing_version || appOnFeat2.body?.editingVersion;
         expect(feat2EditingVersion).toBeDefined();
@@ -960,7 +956,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${hydratedApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat2BranchId)
+          .query({ branch_id: feat2BranchId })
           .send({
             app: {
               name: 'testing-app-2',
@@ -976,7 +972,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${hydratedApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat2BranchId)
+          .query({ branch_id: feat2BranchId })
           .send({
             app: {
               slug: 'testing-app-2-slug',
@@ -991,7 +987,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${hydratedApp.id}/icons`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat2BranchId)
+          .query({ branch_id: feat2BranchId })
           .send({ icon: 'sentfast', branch_id: feat2BranchId })
           .expect(200);
 
@@ -1001,7 +997,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${hydratedApp.id}/public`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat2BranchId)
+          .query({ branch_id: feat2BranchId })
           .send({ app: { is_public: true, branch_id: feat2BranchId } })
           .expect(200);
 
@@ -1011,7 +1007,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${hydratedApp.id}/${feat2VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat2BranchId)
+          .query({ branch_id: feat2BranchId })
           .send({
             gitAppName: 'testing-app-2',
             versionId: feat2VersionId,
@@ -1045,7 +1041,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(appsBeforePull.body.apps).toHaveLength(1);
         expect(appsBeforePull.body.apps[0].name).toBe('testing-app-1');
@@ -1057,7 +1052,7 @@ describe('GitSyncController', () => {
           .query({ branch: 'main' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(checkUpdatesAfterMerge.body.hasUpdates).toBe(true);
         expect(checkUpdatesAfterMerge.body.latestCommit.sha).toEqual(expect.any(String));
@@ -1068,7 +1063,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -1079,7 +1074,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(appsAfterPull.body.apps).toHaveLength(1);
         const renamedApp = appsAfterPull.body.apps[0];
@@ -1091,7 +1085,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
         expect(builderPull.body?.success ?? true).toBeTruthy();
@@ -1101,7 +1095,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/ensure-draft')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ appId: hydratedApp.id, branchId: mainBranchId })
           .expect(201);
         const draftVersionId: string = ensureDraftResp.body.draftVersionId;
@@ -1114,7 +1108,7 @@ describe('GitSyncController', () => {
           .query({ mode: 'edit' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(draftDetail.body.name).toBe('testing-app-2');
         expect(draftDetail.body.slug).toBe('testing-app-2-slug');
@@ -1132,7 +1126,7 @@ describe('GitSyncController', () => {
           .query({ mode: 'edit' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const savedEditingVersion = savedDetail.body.editing_version || savedDetail.body.editingVersion;
         expect(savedEditingVersion).toMatchObject({
@@ -1176,7 +1170,7 @@ describe('GitSyncController', () => {
           .query({ app_id: hydratedApp.id })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const envs = (envListResp.body.environments as any[]).sort((a, b) => a.priority - b.priority);
         expect(envs.length).toBeGreaterThanOrEqual(3);
@@ -1187,7 +1181,7 @@ describe('GitSyncController', () => {
           .put(`/api/v2/apps/${hydratedApp.id}/versions/${publishedV1Id}/promote`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ currentEnvironmentId: devEnv.id })
           .expect(200);
 
@@ -1196,7 +1190,7 @@ describe('GitSyncController', () => {
           .put(`/api/v2/apps/${hydratedApp.id}/versions/${publishedV1Id}/promote`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ currentEnvironmentId: stagingEnv.id })
           .expect(200);
 
@@ -1205,7 +1199,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${hydratedApp.id}/release`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ versionToBeReleased: publishedV1Id })
           .expect(200);
 
@@ -1215,7 +1209,7 @@ describe('GitSyncController', () => {
           .get('/api/apps/validate-released-app-access/testing-app-2-slug')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(validateAccess.body).toMatchObject({
           id: hydratedApp.id,
@@ -1227,7 +1221,7 @@ describe('GitSyncController', () => {
           .get('/api/apps/slugs/testing-app-2-slug')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
 
         const defaultEnvResp = await request
@@ -1236,7 +1230,7 @@ describe('GitSyncController', () => {
           .query({ slug: 'testing-app-2-slug' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(defaultEnvResp.body.environment).toMatchObject({
           name: 'production',
@@ -1266,7 +1260,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-3', sourceBranchId: mainBranchId })
           .expect(201);
         const feat3BranchId: string = createBranch3Resp.body.id;
@@ -1276,7 +1270,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat3BranchId)
+          .query({ branch_id: feat3BranchId })
           .send({
             icon: 'home',
             name: 'testing-app-2',
@@ -1293,7 +1287,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat3BranchId)
+          .query({ branch_id: feat3BranchId })
           .send({
             icon: 'home',
             name: 'testing-app-3',
@@ -1308,7 +1302,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${app3Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat3BranchId)
+          .query({ branch_id: feat3BranchId })
           .expect(200);
         const app3EditingVersion = app3Detail.body?.editing_version || app3Detail.body?.editingVersion;
         const app3VersionId: string = app3EditingVersion.id;
@@ -1318,7 +1312,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${app3Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat3BranchId)
+          .query({ branch_id: feat3BranchId })
           .send({ app: { slug: 'testing-app-2-slug', branch_id: feat3BranchId } })
           .expect(400);
 
@@ -1327,7 +1321,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${app3Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat3BranchId)
+          .query({ branch_id: feat3BranchId })
           .send({ app: { slug: 'testing-app-3-slug', branch_id: feat3BranchId } })
           .expect(200);
 
@@ -1340,7 +1334,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${app3Id}/${app3VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat3BranchId)
+          .query({ branch_id: feat3BranchId })
           .send({
             gitAppName: 'testing-app-3',
             versionId: app3VersionId,
@@ -1369,7 +1363,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -1379,7 +1373,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(appsAfterFeat3Merge.body.apps).toHaveLength(2);
 
@@ -1395,7 +1388,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/ensure-draft')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ appId: app3OnMain.id, branchId: mainBranchId })
           .expect(201);
         const app3DraftVersionId: string = ensureApp3Draft.body.draftVersionId;
@@ -1406,7 +1399,7 @@ describe('GitSyncController', () => {
           .query({ mode: 'edit' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(app3DraftDetail.body.name).toBe('testing-app-3');
         expect(app3DraftDetail.body.slug).toBe('testing-app-3-slug');
@@ -1418,7 +1411,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-4', sourceBranchId: mainBranchId })
           .expect(201);
         const feat4BranchId: string = createBranch4Resp.body.id;
@@ -1429,7 +1422,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .send({ icon: 'home', name: 'testing-app-4', type: 'front-end', branchId: feat4BranchId })
           .expect(201);
         const app4Id: string = createApp4Resp.body.id;
@@ -1440,14 +1433,14 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .send({ icon: 'home', name: 'testing-app-5', type: 'front-end', branchId: feat4BranchId })
           .expect(201);
         const app5Id: string = createApp5Resp.body.id;
         expect(app5Id).toBeDefined();
 
         step(42, 'create folder test-folder-1');
-        // 40. Folders are org-scoped (not branch-scoped) — no x-branch-id needed.
+        // 40. Folders are org-scoped (not branch-scoped) — no branch_id needed.
         const createFolderResp = await request
           .agent(app.getHttpServer())
           .post('/api/folders')
@@ -1471,7 +1464,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .expect(200);
         const newFolderInitial = foldersInitial.body.folders.find((f: any) => f.id === folderId);
         expect(newFolderInitial).toBeDefined();
@@ -1485,7 +1478,7 @@ describe('GitSyncController', () => {
           .post('/api/folder-apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .send({ folder_id: folderId, app_id: app4Id })
           .expect(201);
 
@@ -1496,7 +1489,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .expect(200);
         const folderWithOne = foldersAfterAdd.body.folders.find((f: any) => f.id === folderId);
         expect(folderWithOne.count).toBe(1);
@@ -1514,7 +1507,7 @@ describe('GitSyncController', () => {
           .post('/api/folder-apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .send({ app_ids: [app4Id, app5Id], folder_id: folderId })
           .expect(201);
 
@@ -1525,7 +1518,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .expect(200);
         const folderWithTwo = foldersAfterBulk.body.folders.find((f: any) => f.id === folderId);
         expect(folderWithTwo.count).toBe(2);
@@ -1545,7 +1538,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${app4Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .expect(200);
         const app4VersionId: string = (app4Detail.body?.editing_version || app4Detail.body?.editingVersion).id;
 
@@ -1554,7 +1547,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${app5Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .expect(200);
         const app5VersionId: string = (app5Detail.body?.editing_version || app5Detail.body?.editingVersion).id;
 
@@ -1564,7 +1557,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${app4Id}/${app4VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .send({
             gitAppName: 'testing-app-4',
             versionId: app4VersionId,
@@ -1579,7 +1572,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${app5Id}/${app5VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat4BranchId)
+          .query({ branch_id: feat4BranchId })
           .send({
             gitAppName: 'testing-app-5',
             versionId: app5VersionId,
@@ -1610,7 +1603,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -1621,7 +1614,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const mainApp4 = appsOnMainAfterFeat4.body.apps.find((a: any) => a.name === 'testing-app-4');
         const mainApp5 = appsOnMainAfterFeat4.body.apps.find((a: any) => a.name === 'testing-app-5');
@@ -1635,7 +1627,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const folderOnMain = foldersOnMain.body.folders.find((f: any) => f.id === folderId);
         expect(folderOnMain).toBeDefined();
@@ -1661,7 +1653,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainApp4.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(app4HydrateResp.body.is_hydration_tried).toBe(true);
         expect(app4HydrateResp.body.hydration_status).toBe('success');
@@ -1695,7 +1687,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainApp4.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(failResp.body.is_hydration_tried).toBe(true);
         expect(failResp.body.hydration_status).toBe('failed');
@@ -1724,7 +1716,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainApp4.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(healthyResp.body.is_hydration_tried).toBe(false);
         expect(healthyResp.body.not_hydrated_reason).toBe('already-up-to-date');
@@ -1743,7 +1735,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-5', sourceBranchId: mainBranchId })
           .expect(201);
         const feat5BranchId: string = createBranch5Resp.body.id;
@@ -1755,7 +1747,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .send({ icon: 'home', name: 'testing-app-6', type: 'front-end', branchId: feat5BranchId })
           .expect(201);
         const app6Id: string = createApp6Resp.body.id;
@@ -1765,7 +1757,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .send({ icon: 'home', name: 'testing-app-7', type: 'front-end', branchId: feat5BranchId })
           .expect(201);
         const app7Id: string = createApp7Resp.body.id;
@@ -1776,7 +1768,7 @@ describe('GitSyncController', () => {
           .post('/api/folder-apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .send({ app_ids: [app6Id, app7Id], folder_id: folderId })
           .expect(201);
 
@@ -1786,7 +1778,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${app6Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .expect(200);
         const app6VersionId: string = (app6Detail.body?.editing_version || app6Detail.body?.editingVersion).id;
 
@@ -1795,7 +1787,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${app7Id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .expect(200);
         const app7VersionId: string = (app7Detail.body?.editing_version || app7Detail.body?.editingVersion).id;
 
@@ -1805,7 +1797,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${app6Id}/${app6VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .send({
             gitAppName: 'testing-app-6',
             versionId: app6VersionId,
@@ -1820,7 +1812,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${app7Id}/${app7VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat5BranchId)
+          .query({ branch_id: feat5BranchId })
           .send({
             gitAppName: 'testing-app-7',
             versionId: app7VersionId,
@@ -1852,7 +1844,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -1863,7 +1855,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const mainApp6 = appsOnMainBeforeEnsure.body.apps.find((a: any) => a.name === 'testing-app-6');
         const mainApp7 = appsOnMainBeforeEnsure.body.apps.find((a: any) => a.name === 'testing-app-7');
@@ -1880,7 +1871,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const folderAfterPull = foldersAfterPull.body.folders.find((f: any) => f.id === folderId);
         expect(folderAfterPull.count).toBe(4);
@@ -1894,7 +1885,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/ensure-draft')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ appId: mainApp6.id, branchId: mainBranchId })
           .expect(201);
         expect(ensureApp6Resp.body.draftVersionId).toBeDefined();
@@ -1906,7 +1897,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const hydratedApp6 = appsAfterEnsure6.body.apps.find((a: any) => a.id === mainApp6.id);
         expect(hydratedApp6.is_stub).toBe(false);
@@ -1917,7 +1907,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const folderAfterEnsure6 = foldersAfterEnsure6.body.folders.find((f: any) => f.id === folderId);
         expect(folderAfterEnsure6.count).toBe(4);
@@ -1930,7 +1920,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/ensure-draft')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ appId: mainApp7.id, branchId: mainBranchId })
           .expect(201);
         expect(ensureApp7Resp.body.draftVersionId).toBeDefined();
@@ -1941,7 +1931,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const hydratedApp7 = appsAfterEnsure7.body.apps.find((a: any) => a.id === mainApp7.id);
         expect(hydratedApp7.is_stub).toBe(false);
@@ -1952,7 +1941,7 @@ describe('GitSyncController', () => {
           .query({ searchKey: '', type: 'front-end' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const folderAfterEnsure7 = foldersAfterEnsure7.body.folders.find((f: any) => f.id === folderId);
         expect(folderAfterEnsure7.count).toBe(4);
@@ -1969,7 +1958,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-7', sourceBranchId: mainBranchId })
           .expect(201);
         const feat7BranchId: string = createBranch7Resp.body.id;
@@ -1980,7 +1969,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat7BranchId)
+          .query({ branch_id: feat7BranchId })
           .send({ icon: 'home', name: 'local-only-app', type: 'front-end', branchId: feat7BranchId })
           .expect(201);
         const localOnlyAppId: string = localOnlyAppResp.body.id;
@@ -2000,7 +1989,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat7BranchId)
+          .query({ branch_id: feat7BranchId })
           .send({ branchId: feat7BranchId })
           .expect(201);
 
@@ -2027,7 +2016,7 @@ describe('GitSyncController', () => {
           .get('/api/app-environments')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const dsEnvs = (envListForDsResp.body.environments as any[]).sort((a: any, b: any) => a.priority - b.priority);
         expect(dsEnvs.length).toBeGreaterThanOrEqual(3);
@@ -2038,7 +2027,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-10', sourceBranchId: mainBranchId })
           .expect(201);
         const feat10BranchId: string = createBranch10Resp.body.id;
@@ -2074,7 +2063,6 @@ describe('GitSyncController', () => {
           .post(`/api/data-sources?branch_id=${feat10BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat10BranchId)
           .send({
             name: 'restapi-e2e',
             kind: 'restapi',
@@ -2092,7 +2080,6 @@ describe('GitSyncController', () => {
           .get(`/api/data-sources/${orgId}?branch_id=${feat10BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat10BranchId)
           .expect(200);
         const featDsList = dsListOnFeatResp.body.data_sources || dsListOnFeatResp.body.dataSources || [];
         expect(featDsList.find((ds: any) => ds.id === newDsId)).toBeDefined();
@@ -2130,7 +2117,6 @@ describe('GitSyncController', () => {
           .put(`/api/data-sources/${newDsId}?environment_id=${dsDevEnv.id}&branch_id=${feat10BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat10BranchId)
           .send({ name: 'restapi-e2e', options: buildUpdateOptions(devUrl) })
           .expect(200);
 
@@ -2139,7 +2125,6 @@ describe('GitSyncController', () => {
           .put(`/api/data-sources/${newDsId}?environment_id=${dsStagingEnv.id}&branch_id=${feat10BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat10BranchId)
           .send({ name: 'restapi-e2e', options: buildUpdateOptions(stagingUrl) })
           .expect(200);
 
@@ -2148,7 +2133,6 @@ describe('GitSyncController', () => {
           .put(`/api/data-sources/${newDsId}?environment_id=${dsProdEnv.id}&branch_id=${feat10BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat10BranchId)
           .send({ name: 'restapi-e2e', options: buildUpdateOptions(prodUrl) })
           .expect(200);
 
@@ -2158,7 +2142,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/push')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat10BranchId)
+          .query({ branch_id: feat10BranchId })
           .send({ commitMessage: 'data-source-commit', branchId: feat10BranchId })
           .expect(201);
 
@@ -2183,7 +2167,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -2193,7 +2177,6 @@ describe('GitSyncController', () => {
           .get(`/api/data-sources/${orgId}?branch_id=${mainBranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const mainDsList = dsListOnMainResp.body.data_sources || dsListOnMainResp.body.dataSources || [];
         const mainDs = mainDsList.find((ds: any) => ds.name === 'restapi-e2e');
@@ -2215,7 +2198,6 @@ describe('GitSyncController', () => {
           .get(`/api/data-sources/${mainDs.id}/environment/${dsDevEnv.id}?branch_id=${mainBranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(extractUrl(dsOnDevResp)).toBe(devUrl);
 
@@ -2224,7 +2206,6 @@ describe('GitSyncController', () => {
           .get(`/api/data-sources/${mainDs.id}/environment/${dsStagingEnv.id}?branch_id=${mainBranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(extractUrl(dsOnStagingResp)).toBe(stagingUrl);
 
@@ -2233,7 +2214,6 @@ describe('GitSyncController', () => {
           .get(`/api/data-sources/${mainDs.id}/environment/${dsProdEnv.id}?branch_id=${mainBranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         expect(extractUrl(dsOnProdResp)).toBe(prodUrl);
 
@@ -2248,7 +2228,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-11', sourceBranchId: mainBranchId })
           .expect(201);
         const feat11BranchId: string = createBranch11Resp.body.id;
@@ -2260,7 +2240,7 @@ describe('GitSyncController', () => {
           .post('/api/modules')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .send({ icon: 'folderupload', name: 'e2e-test-module', type: 'module', branchId: feat11BranchId })
           .expect(201);
         const moduleAppId: string = createModuleResp.body.id;
@@ -2274,7 +2254,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${moduleAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .expect(200);
         const moduleEditingVersion =
           moduleDetailResp.body?.editing_version ||
@@ -2352,7 +2332,7 @@ describe('GitSyncController', () => {
           .post(`/api/v2/apps/${moduleAppId}/versions/${moduleVersionId}/components`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .send({
             is_user_switched_version: false,
             pageId: modulePageId,
@@ -2370,7 +2350,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${moduleAppId}/${moduleVersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .send({
             gitAppName: 'e2e-test-module',
             versionId: moduleVersionId,
@@ -2386,7 +2366,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .send({ icon: 'home', name: 'e2e-app-with-module', type: 'front-end', branchId: feat11BranchId })
           .expect(201);
         const hostAppId: string = hostAppResp.body.id;
@@ -2400,7 +2380,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: feat11BranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
           .expect(200);
         const moduleInList = (moduleListResp.body.apps || []).find((m: any) => m.id === moduleAppId);
         expect(moduleInList).toBeDefined();
@@ -2413,7 +2392,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${hostAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .expect(200);
         const hostEditingVersion =
           hostAppDetail.body?.editing_version ||
@@ -2461,7 +2440,7 @@ describe('GitSyncController', () => {
           .post(`/api/v2/apps/${hostAppId}/versions/${hostVersionId}/components`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .send({
             is_user_switched_version: false,
             pageId: hostPageId,
@@ -2480,7 +2459,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${hostAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .expect(200);
 
         const linkedModules = hostAfterLinkResp.body?.modules || [];
@@ -2524,7 +2503,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${hostAppId}/${hostVersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat11BranchId)
+          .query({ branch_id: feat11BranchId })
           .send({
             gitAppName: 'e2e-app-with-module',
             versionId: hostVersionId,
@@ -2555,7 +2534,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -2566,7 +2545,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const mainHostApp = (appsOnMainAfterModulePull.body.apps || []).find(
           (a: any) => a.name === 'e2e-app-with-module'
@@ -2581,7 +2559,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const mainModule = (modulesOnMainAfterPull.body.apps || []).find((m: any) => m.name === 'e2e-test-module');
         expect(mainModule).toBeDefined();
@@ -2596,7 +2573,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainHostApp.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(hydrateHostResp.body.is_hydration_tried).toBe(true);
         expect(hydrateHostResp.body.hydration_status).toBe('success');
@@ -2618,7 +2595,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${mainModule.id}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(moduleAfterCascadeResp.body.is_hydration_tried).toBe(false);
         expect(moduleAfterCascadeResp.body.not_hydrated_reason).toBe('already-up-to-date');
@@ -2630,7 +2607,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'module', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const hydratedMainModule = (modulesAfterHydrationResp.body.apps || []).find((m: any) => m.id === mainModule.id);
         expect(hydratedMainModule).toBeDefined();
@@ -2727,7 +2703,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(409);
         const appConflictGroups = parseConflictGroups(appConflictPullResp.body);
@@ -2780,7 +2756,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(409);
         const appFolderConflictGroups = parseConflictGroups(appFolderConflictPullResp.body);
@@ -2822,7 +2798,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(409);
         const moduleConflictGroups = parseConflictGroups(moduleConflictPullResp.body);
@@ -2874,7 +2850,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(409);
         const moduleFolderConflictGroups = parseConflictGroups(moduleFolderConflictPullResp.body);
@@ -2913,7 +2889,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(409);
         const dsConflictGroups = parseConflictGroups(dsConflictPullResp.body);
@@ -2938,7 +2914,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-e2e-19', sourceBranchId: mainBranchId })
           .expect(201);
         const feat19BranchId: string = createBranch19Resp.body.id;
@@ -2948,7 +2924,6 @@ describe('GitSyncController', () => {
           .post(`/api/data-sources?branch_id=${feat19BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat19BranchId)
           .send({ name: 'del-rename-a', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
           .expect(201);
         const delRenameAId: string = delRenameAResp.body.id;
@@ -2958,7 +2933,6 @@ describe('GitSyncController', () => {
           .post(`/api/data-sources?branch_id=${feat19BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat19BranchId)
           .send({ name: 'del-rename-b', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
           .expect(201);
         const delRenameBId: string = delRenameBResp.body.id;
@@ -2969,7 +2943,6 @@ describe('GitSyncController', () => {
           .delete(`/api/data-sources/${delRenameAId}?branch_id=${feat19BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat19BranchId)
           .expect(200);
 
         // Rename B → A. Previously 400 ("already exists"); now 200.
@@ -2978,7 +2951,6 @@ describe('GitSyncController', () => {
           .put(`/api/data-sources/${delRenameBId}?environment_id=${dsDevEnv.id}&branch_id=${feat19BranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', feat19BranchId)
           .send({ name: 'del-rename-a', options: buildUpdateOptions('http://b-renamed.url.com') })
           .expect(200);
 
@@ -3013,7 +2985,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-orphan-app', sourceBranchId: mainBranchId })
           .expect(201);
         const orphanAppBranchId: string = orphanAppBranchResp.body.id;
@@ -3023,7 +2995,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', orphanAppBranchId)
+          .query({ branch_id: orphanAppBranchId })
           .send({ icon: 'home', name: 'orphan-synced-app', type: 'front-end', branchId: orphanAppBranchId })
           .expect(201);
         const orphanSyncedAppId: string = orphanSyncedAppResp.body.id;
@@ -3051,7 +3023,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const orphanAppInListBefore = orphanListBefore.body.apps.find((a: any) => a.id === orphanSyncedAppId);
         expect(orphanAppInListBefore).toBeDefined();
@@ -3062,7 +3033,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -3079,7 +3050,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${orphanSyncedAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const orphanAppEditing =
           orphanAppDetail.body?.editing_version ||
@@ -3097,7 +3068,6 @@ describe('GitSyncController', () => {
           .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const orphanAppInListAfter = orphanListAfter.body.apps.find((a: any) => a.id === orphanSyncedAppId);
         expect(orphanAppInListAfter).toBeDefined();
@@ -3111,7 +3081,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-orphan-mod', sourceBranchId: mainBranchId })
           .expect(201);
         const orphanModBranchId: string = orphanModBranchResp.body.id;
@@ -3121,7 +3091,7 @@ describe('GitSyncController', () => {
           .post('/api/modules')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', orphanModBranchId)
+          .query({ branch_id: orphanModBranchId })
           .send({ icon: 'folderupload', name: 'orphan-synced-mod', type: 'module', branchId: orphanModBranchId })
           .expect(201);
         const orphanSyncedModId: string = orphanSyncedModResp.body.id;
@@ -3136,7 +3106,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -3152,7 +3122,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${orphanSyncedModId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const orphanModEditing =
           orphanModDetail.body?.editing_version ||
@@ -3170,7 +3140,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-orphan-ds', sourceBranchId: mainBranchId })
           .expect(201);
         const orphanDsBranchId: string = orphanDsBranchResp.body.id;
@@ -3180,7 +3150,6 @@ describe('GitSyncController', () => {
           .post(`/api/data-sources?branch_id=${orphanDsBranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', orphanDsBranchId)
           .send({ name: 'orphan-synced-ds', kind: 'restapi', options: restapiCreateOptions, scope: 'global' })
           .expect(201);
         const orphanSyncedDsId: string = orphanSyncedDsResp.body.id;
@@ -3195,7 +3164,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ branchId: mainBranchId })
           .expect(201);
 
@@ -3211,7 +3180,6 @@ describe('GitSyncController', () => {
           .get(`/api/data-sources/${orgId}?branch_id=${mainBranchId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
           .expect(200);
         const orphanDsList = orphanDsListResp.body.data_sources || orphanDsListResp.body.dataSources || [];
         const orphanDsRow = orphanDsList.find((ds: any) => ds.id === orphanSyncedDsId);
@@ -3242,7 +3210,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-meta-prop-1', sourceBranchId: mainBranchId })
           .expect(201);
         const metaBranch1Id: string = metaBranch1Resp.body.id;
@@ -3252,7 +3220,7 @@ describe('GitSyncController', () => {
           .post('/api/apps')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch1Id)
+          .query({ branch_id: metaBranch1Id })
           .send({ icon: 'home', name: metaAppName, type: 'front-end', branchId: metaBranch1Id })
           .expect(201);
         const metaAppId: string = metaCreateResp.body.id;
@@ -3274,7 +3242,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${metaAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch1Id)
+          .query({ branch_id: metaBranch1Id })
           .expect(200);
         const metaBranch1Version = metaAppOnBranch1.body?.editing_version || metaAppOnBranch1.body?.editingVersion;
         const metaBranch1VersionId: string = metaBranch1Version.id;
@@ -3295,7 +3263,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${metaAppId}/${metaBranch1VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch1Id)
+          .query({ branch_id: metaBranch1Id })
           .send({
             gitAppName: metaAppName,
             versionId: metaBranch1VersionId,
@@ -3326,7 +3294,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull-app')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ appId: metaAppId, branchId: mainBranchId })
           .expect(201);
         expect(metaPull1.body.success).toBe(true);
@@ -3337,7 +3305,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${metaAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         const metaMainDraft = metaAppOnMain.body?.editing_version || metaAppOnMain.body?.editingVersion;
         const metaMainDraftId: string = metaMainDraft.id;
@@ -3354,7 +3322,7 @@ describe('GitSyncController', () => {
           .query({ versionName: 'v1' })
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .expect(200);
         expect(metaCheckTag.body.exists).toBe(false);
 
@@ -3363,7 +3331,7 @@ describe('GitSyncController', () => {
           .put(`/api/v2/apps/${metaAppId}/versions/${metaMainDraftId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ is_user_switched_version: false, name: 'v1', description: 'meta-prop save', status: 'PUBLISHED' })
           .expect(200);
 
@@ -3372,7 +3340,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/${metaAppId}/versions/${metaMainDraftId}/tag`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ message: 'meta-prop save' })
           .expect(201);
 
@@ -3401,7 +3369,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ name: 'feat-meta-prop-2', sourceBranchId: mainBranchId })
           .expect(201);
         const metaBranch2Id: string = metaBranch2Resp.body.id;
@@ -3411,7 +3379,7 @@ describe('GitSyncController', () => {
           .get(`/api/apps/${metaAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch2Id)
+          .query({ branch_id: metaBranch2Id })
           .expect(200);
         const metaBranch2Version = metaAppOnBranch2.body?.editing_version || metaAppOnBranch2.body?.editingVersion;
         const metaBranch2VersionId: string = metaBranch2Version.id;
@@ -3422,7 +3390,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${metaAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch2Id)
+          .query({ branch_id: metaBranch2Id })
           .send({ app: { name: 'meta-prop-app-v2', editingVersionId: metaBranch2VersionId, branch_id: metaBranch2Id } })
           .expect(200);
         await request
@@ -3430,7 +3398,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${metaAppId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch2Id)
+          .query({ branch_id: metaBranch2Id })
           .send({ app: { slug: 'meta-prop-slug-v2', branch_id: metaBranch2Id } })
           .expect(200);
         await request
@@ -3438,7 +3406,7 @@ describe('GitSyncController', () => {
           .put(`/api/apps/${metaAppId}/icons`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch2Id)
+          .query({ branch_id: metaBranch2Id })
           .send({ icon: 'sentfast', branch_id: metaBranch2Id })
           .expect(200);
 
@@ -3466,7 +3434,7 @@ describe('GitSyncController', () => {
           .post(`/api/app-git/gitpush/${metaAppId}/${metaBranch2VersionId}`)
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', metaBranch2Id)
+          .query({ branch_id: metaBranch2Id })
           .send({
             gitAppName: 'meta-prop-app-v2',
             versionId: metaBranch2VersionId,
@@ -3497,7 +3465,7 @@ describe('GitSyncController', () => {
           .post('/api/workspace-branches/pull-app')
           .set('Cookie', tokenCookie)
           .set('tj-workspace-id', orgId)
-          .set('x-branch-id', mainBranchId)
+          .query({ branch_id: mainBranchId })
           .send({ appId: metaAppId, branchId: mainBranchId })
           .expect(201);
         expect(metaPull2.body.success).toBe(true);
@@ -3529,6 +3497,196 @@ describe('GitSyncController', () => {
         expect(branch1RowsFinal[0].slug).not.toBe('meta-prop-slug-v2');
         expect(branch1RowsFinal[0].icon).not.toBe('sentfast');
 
+        step(69, 'unsynced-app: create feat-unsynced branch + app, relocate its version onto the default branch');
+        // Branching is enabled, so an app can only be authored on a feature branch. Create a
+        // fresh branch + app, then relocate the app's single version onto the DEFAULT branch as
+        // a real (non-stub), unsynced version — simulating an app that lives on main but was
+        // never pushed to git.
+        const unsyncedBranchResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .send({ name: 'feat-unsynced', sourceBranchId: mainBranchId })
+          .expect(201);
+        const unsyncedFeatBranchId: string = unsyncedBranchResp.body.id;
+
+        const unsyncedAppResp = await request
+          .agent(app.getHttpServer())
+          .post('/api/apps')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: unsyncedFeatBranchId })
+          .send({ icon: 'home', name: 'unsynced-app', type: 'front-end', branchId: unsyncedFeatBranchId })
+          .expect(201);
+        const unsyncedAppId: string = unsyncedAppResp.body.id;
+
+        await dataSource.query(
+          `UPDATE app_versions
+              SET branch_id = $1, version_type = 'version', is_synced = false, is_stub = false
+            WHERE app_id = $2`,
+          [mainBranchId, unsyncedAppId]
+        );
+
+        // Invariant validate-push relies on: exactly one non-stub DRAFT, on the default branch,
+        // marked unsynced.
+        const unsyncedRows = await dataSource.query(
+          `SELECT id, branch_id, status, is_stub, is_synced FROM app_versions WHERE app_id = $1`,
+          [unsyncedAppId]
+        );
+        expect(unsyncedRows).toHaveLength(1);
+        expect(unsyncedRows[0]).toMatchObject({
+          branch_id: mainBranchId,
+          status: 'DRAFT',
+          is_stub: false,
+          is_synced: false,
+        });
+        const unsyncedVersionId: string = unsyncedRows[0].id;
+
+        step(70, 'unsynced-app: absent on its feature branch, present on the default branch');
+        const unsyncedFeatListing = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: unsyncedFeatBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(unsyncedFeatListing.body.apps.find((a: any) => a.id === unsyncedAppId)).toBeUndefined();
+
+        const unsyncedMainListing = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: mainBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(unsyncedMainListing.body.apps.find((a: any) => a.id === unsyncedAppId)).toBeDefined();
+
+        step(71, 'unsynced-app: validate-push → valid (single non-stub draft)');
+        const validatePushValid = await request
+          .agent(app.getHttpServer())
+          .get(`/api/app-git/validate-push/${unsyncedAppId}`)
+          .query({ resourceType: 'app' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(validatePushValid.body).toEqual({ valid: true });
+
+        step(72, 'unsynced-app: a second non-stub draft (copy, different name) → validate-push fails MULTIPLE_DRAFTS');
+        // Copy the version row under a different name → two non-stub drafts for the app, the
+        // ambiguous state the push gate must reject. version_type is 'version' here, so the
+        // branch-scoped partial unique indexes (WHERE version_type='branch') don't apply; only
+        // the (name, branch_id) unique does — hence the '-copy' suffix on name.
+        const [copyVersion] = await dataSource.query(
+          `INSERT INTO app_versions (
+             name, definition, global_settings, page_settings, show_viewer_navigation,
+             version_type, app_id, current_environment_id, status, is_stub, is_synced,
+             branch_id, slug, app_name, icon, is_public
+           )
+           SELECT
+             name || '-copy', definition, global_settings, page_settings, show_viewer_navigation,
+             version_type, app_id, current_environment_id, status, is_stub, is_synced,
+             branch_id, slug, app_name, icon, is_public
+           FROM app_versions WHERE app_id = $1 LIMIT 1
+           RETURNING id`,
+          [unsyncedAppId]
+        );
+        const copyVersionId: string = copyVersion.id;
+
+        const validatePushInvalid = await request
+          .agent(app.getHttpServer())
+          .get(`/api/app-git/validate-push/${unsyncedAppId}`)
+          .query({ resourceType: 'app' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(validatePushInvalid.body.valid).toBe(false);
+        expect(validatePushInvalid.body.errorType).toBe('MULTIPLE_DRAFTS');
+
+        step(73, 'unsynced-app: remove the duplicate draft → back to a single pushable draft');
+        // Drop the copy created above so the app has one non-stub draft again, ready to push.
+        await dataSource.query(`DELETE FROM app_versions WHERE id = $1`, [copyVersionId]);
+        const revalidate = await request
+          .agent(app.getHttpServer())
+          .get(`/api/app-git/validate-push/${unsyncedAppId}`)
+          .query({ resourceType: 'app' })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(revalidate.body).toEqual({ valid: true });
+
+        step(74, 'unsynced-app: gitpush the default-branch version onto the feat-unsynced branch');
+        // Push the app's default-branch version to the feature branch created in step 69 —
+        // syncing the previously-unsynced app onto that branch in git.
+        await request
+          .agent(app.getHttpServer())
+          .post(`/api/app-git/gitpush/${unsyncedAppId}/${unsyncedVersionId}`)
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .send({
+            gitAppName: 'unsynced-app',
+            versionId: unsyncedVersionId,
+            lastCommitMessage: 'Committed unsynced-app',
+            gitVersionName: 'feat-unsynced',
+            sourceBranch: 'feat-unsynced',
+            targetBranch: 'feat-unsynced',
+          })
+          .expect(201);
+
+        step(75, 'unsynced-app: pull feat-unsynced → the app is now listed on the feature branch');
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: unsyncedFeatBranchId })
+          .send({ branchId: unsyncedFeatBranchId })
+          .expect(201);
+
+        const featAfterPull = await request
+          .agent(app.getHttpServer())
+          .get('/api/apps')
+          .query({ page: 1, folder: '', searchKey: '', type: 'front-end', branch_id: unsyncedFeatBranchId })
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .expect(200);
+        expect(featAfterPull.body.apps.find((a: any) => a.id === unsyncedAppId)).toBeDefined();
+
+        step(76, 'unsynced-app: merge feat-unsynced → main on Gitea');
+        // The app was committed to feat-unsynced (step 74). Land that branch on main so the
+        // app now exists in git on the default branch too.
+        const unsyncedMerge = await fetch(MERGE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: BASIC },
+          body: JSON.stringify({
+            owner: GIT_REPO_OWNER,
+            repo: `${GIT_REPO_NAME}.git`,
+            source: 'feat-unsynced',
+            target: 'main',
+            message: 'Land feat-unsynced',
+          }),
+        });
+        expect((await unsyncedMerge.json().catch(() => ({}))).ok).toBe(true);
+
+        step(77, 'unsynced-app: pull main → the default-branch version is now synced (is_synced = true)');
+        await request
+          .agent(app.getHttpServer())
+          .post('/api/workspace-branches/pull')
+          .set('Cookie', tokenCookie)
+          .set('tj-workspace-id', orgId)
+          .query({ branch_id: mainBranchId })
+          .send({ branchId: mainBranchId })
+          .expect(201);
+
+        // The previously-unsynced default-branch version(s) now match git and must be synced.
+        const mainVersionsSyncState = await dataSource.query(
+          `SELECT is_synced FROM app_versions WHERE app_id = $1 AND branch_id = $2 AND is_stub = false`,
+          [unsyncedAppId, mainBranchId]
+        );
+        expect(mainVersionsSyncState.length).toBeGreaterThan(0);
+        expect(mainVersionsSyncState.every((r: any) => r.is_synced === true)).toBe(true);
       }, 540000);
     });
   });

@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { appendBranchParam } from '@/_helpers/active-branch';
 
 export const gitSyncService = {
   create,
@@ -120,7 +121,10 @@ function gitPush(body, appId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`, requestOptions).then(handleResponse);
+  // gitpush is guarded by AppResourceGuard which reads user.branchId from the query.
+  return fetch(appendBranchParam(`${config.apiUrl}/app-git/gitpush/${appId}/${versionId}`), requestOptions).then(
+    handleResponse
+  );
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -398,10 +402,9 @@ function validatePush(appId, resourceType = 'app') {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(
-    `${config.apiUrl}/app-git/validate-push/${appId}?resourceType=${resourceType}`,
-    requestOptions
-  ).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/validate-push/${appId}?resourceType=${resourceType}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 // Remove all app-git api's to separate service from here.
