@@ -2,9 +2,26 @@ import React from 'react';
 import { ReactPortal } from './ReactPortal.js';
 import { Rnd } from 'react-rnd';
 import { Button } from '@/_ui/LeftSidebar';
+import { noop } from 'lodash';
+import {
+  readCodehinterPopupEditorDimensions,
+  getDefaultCodehinterPopupEditorDimensions,
+} from '@/_helpers/codehinterPortalDimensions';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt, isCopilotEnabled } = restProps;
+  const {
+    isOpen,
+    trigger,
+    styles,
+    className,
+    componentName,
+    dragResizePortal,
+    callgpt,
+    isCopilotEnabled,
+    onPortalDimensionsChange = noop,
+    canRefresh = false,
+  } = restProps;
 
   const [name, setName] = React.useState(componentName);
   const handleClose = (e) => {
@@ -31,7 +48,7 @@ const Portal = ({ children, ...restProps }) => {
   const portalStyles = {
     background: 'transparent',
     borderRadius: '0px',
-    width: '500px',
+    width: dragResizePortal ? '100%' : '500px',
   };
 
   return (
@@ -46,6 +63,8 @@ const Portal = ({ children, ...restProps }) => {
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
+          onPortalDimensionsChange={onPortalDimensionsChange}
+          canRefresh={canRefresh}
         >
           {children}
         </Portal.Modal>
@@ -68,8 +87,15 @@ const Modal = ({
   dragResizePortal,
   callgpt,
   isCopilotEnabled,
+  onPortalDimensionsChange,
+  canRefresh = false,
 }) => {
   const [loading, setLoading] = React.useState(false);
+
+  const codehinterPopupRndDefault = React.useMemo(() => {
+    if (!dragResizePortal) return null;
+    return readCodehinterPopupEditorDimensions() || getDefaultCodehinterPopupEditorDimensions();
+  }, [dragResizePortal]);
 
   const handleCallGpt = () => {
     setLoading(true);
@@ -79,6 +105,7 @@ const Modal = ({
 
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
+  console.log('Rendering Portal Modal with componentName:', componentName, 'and canRefresh:', canRefresh);
   const renderModalContent = () => (
     <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
@@ -93,7 +120,7 @@ const Modal = ({
             className="codehinder-popup-badge"
             data-cy="codehinder-popup-badge"
           >
-            {componentName ?? 'Editor'}
+            {componentName}
           </span>
         </div>
 
@@ -108,6 +135,20 @@ const Modal = ({
             >
               <Button.Content title={'Generate code'} />
             </Button>
+          </div>
+        )}
+
+        {canRefresh && (
+          <div className="mx-2">
+            <ButtonComponent
+              iconOnly
+              isLucid
+              leadingIcon="refresh-ccw"
+              size="medium"
+              variant="outline"
+              ariaLabel="Refresh"
+              className="codehinter-refresh-btn"
+            />
           </div>
         )}
 
@@ -136,14 +177,24 @@ const Modal = ({
       {dragResizePortal ? (
         <Rnd
           default={{
-            x: -150,
-            y: 0,
-            height: 350,
+            x: codehinterPopupRndDefault.x,
+            y: codehinterPopupRndDefault.y,
+            height: codehinterPopupRndDefault.height,
+            width: codehinterPopupRndDefault.width,
           }}
           bounds="body"
           dragHandleClassName={'resize-handle'}
           minWidth={'500px'}
           minHeight={'350px'}
+          onResizeStop={(_e, _dir, ref, delta, position) => {
+            onPortalDimensionsChange?.({
+              width: ref.offsetWidth,
+              height: ref.offsetHeight,
+              x: position.x,
+              y: position.y,
+            });
+            console.log('onResizeStop', position);
+          }}
         >
           {renderModalContent()}
         </Rnd>
