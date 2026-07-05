@@ -56,7 +56,7 @@ const Row = ({ label, value, level = 1, absolutePath, iconsList, darkMode }) => 
   const isArray = Array.isArray(value);
 
   return (
-    <div style={{ marginLeft: `${level === 1 ? '0px' : '22px'}` }}>
+    <div style={{ marginLeft: `${level === 1 ? '0px' : '0.5rem'}` }}>
       <div className="json-viewer-row-container">
         <div className="json-viewer-row" onClick={() => setIsExpanded((prev) => !prev)}>
           <div className="json-viewer-expand-icon">

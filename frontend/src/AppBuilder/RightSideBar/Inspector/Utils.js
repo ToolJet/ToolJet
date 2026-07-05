@@ -172,6 +172,9 @@ export function renderElement(
 
   if (
     componentConfig.component == 'DropDown' ||
+    componentConfig.component == 'DropdownV2' ||
+    componentConfig.component == 'MultiselectV2' ||
+    componentConfig.component == 'TagsInput' ||
     componentConfig.component == 'Form' ||
     componentConfig.component == 'Listview' ||
     componentConfig.component == 'Image' ||
@@ -184,7 +187,8 @@ export function renderElement(
     componentConfig.component == 'ButtonGroupV2' ||
     componentConfig.component == 'FilePicker' ||
     componentConfig.component == 'FileInput' ||
-    componentConfig.component == 'FileButton'
+    componentConfig.component == 'FileButton' ||
+    componentConfig.component == 'Tabs'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};

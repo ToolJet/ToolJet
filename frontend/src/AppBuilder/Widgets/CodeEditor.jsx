@@ -30,7 +30,6 @@ const CodeEditor = ({
   styles,
   setExposedVariable,
   dataCy,
-  adjustComponentPositions,
   currentLayout,
   width,
   currentMode,
@@ -48,7 +47,6 @@ const CodeEditor = ({
     id,
     height,
     value: forceDynamicHeightUpdate,
-    adjustComponentPositions,
     currentLayout,
     width,
     visibility,
@@ -129,6 +127,7 @@ const CodeEditor = ({
           basicSetup={setupConfig}
           className={`codehinter-multi-line-input code-editor-component`}
           indentWithTab={true}
+          editable={!disabledState}
         />
       </div>
     </div>
