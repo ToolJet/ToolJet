@@ -186,6 +186,22 @@
   width: 430px !important;
   height: auto !important;
 
+  &.pull-commit-expanded {
+    height: auto !important;
+
+    .pull-container {
+      height: auto !important;
+    }
+
+    .pushpull-container {
+      height: auto !important;
+    }
+
+    .modal-body {
+      height: auto !important;
+    }
+  }
+
   .pushpull-container {
     height: auto !important;
   }
