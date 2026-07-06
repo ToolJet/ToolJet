@@ -45,7 +45,7 @@ export const MarketplaceBanner = ({ marketplaceEnabled = true, showBanner = true
   return (
     <div className="marketplace-explore-banner" data-cy="marketplace-explore-banner">
       <span className="marketplace-explore-banner__text">
-        Can&apos;t find what you&apos;re looking for? Explore the marketplace to add more plugins.
+        Explore a growing collection of plugins in the Marketplace.
       </span>
       <button
         type="button"

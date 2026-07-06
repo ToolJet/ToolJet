@@ -40,7 +40,6 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const marketplaceEnabled = admin;
-  const showMarketplaceBanner = marketplaceEnabled && tooljetVersion && !checkIfToolJetCloud(tooljetVersion);
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
@@ -75,6 +74,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     }),
     shallow
   );
+  const showMarketplaceBanner = marketplaceEnabled && tooljetVersion && !checkIfToolJetCloud(tooljetVersion);
 
   useEffect(() => {
     pluginsService
