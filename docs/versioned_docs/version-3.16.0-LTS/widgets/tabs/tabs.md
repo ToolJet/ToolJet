@@ -91,7 +91,7 @@ The following actions of the component can be controlled using the component-spe
 | Disable | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Hide tabs | Hides the tab headers while keeping the content visible. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Render only active tab | When enabled, only renders the currently active tab's content. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Scroll to top on tab switch | Automatically scrolls the page to the top whenever the active tab changes. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Scroll to top on tab switch | Automatically scrolls the newly selected tab to the top whenever the user switches tabs. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Dynamic height | Automatically adjusts the component height to fit the content of the active tab. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip | Provides additional information on hover. Set a string value for display. | String (e.g., `Switch between sections.` ). |
 
