@@ -60,7 +60,7 @@ describe("Password Input widget", { testIsolation: false }, () => {
     cy.apiLogin();
     cy.apiCreateApp(`${fake.companyName}-Passwordinput-App`);
     cy.openApp();
-    cy.dragAndDropWidget("Password Input", 500, 500);
+    cy.dragAndDropWidget("Password Input", 500, 100);
   });
 
   afterEach(() => {

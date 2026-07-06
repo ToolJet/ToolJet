@@ -94,7 +94,7 @@ export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string(
-      appName.toLowerCase()
+      appName
     );
   });
 };
