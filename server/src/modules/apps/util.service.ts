@@ -98,7 +98,7 @@ export class AppsUtilService implements IAppsUtilService {
       //                a front-end app "Foo" doesn't collide with a module "Foo" —
       //                apps and modules share the table but live in separate
       //                dashboards.
-      if (!isWorkflow && name) {
+      if (name) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
@@ -139,8 +139,7 @@ export class AppsUtilService implements IAppsUtilService {
             type,
             // Workflows still carry name/icon on apps.*; non-workflows store metadata
             // on app_versions and leave apps.* fields null/placeholder.
-            name: isWorkflow ? name : null,
-            ...(isWorkflow && icon !== undefined && { icon }),
+            name: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             organizationId: user.organizationId,
@@ -154,6 +153,12 @@ export class AppsUtilService implements IAppsUtilService {
           })
         );
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+
+      // Workflows keep their historical slug placeholder (app.id, matching the
+      // pre-migration apps.subscriber.ts auto-fill and Task 1's backfill); every other
+      // type keeps the existing random-UUID placeholder (`slug`, declared above at
+      // line 84) — unchanged from before this task.
+      const versionSlug = isWorkflow ? app.id : slug;
 
       const firstPriorityEnv = await this.appEnvironmentUtilService.get(user.organizationId, null, true, manager);
 
@@ -205,14 +210,13 @@ export class AppsUtilService implements IAppsUtilService {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 ...(type === APP_TYPES.MODULE && { moduleReferenceId: uuidv4() }),
-                // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-                // slug defaults to a random UUID placeholder; user can rename later.
-                ...(!isWorkflow && {
-                  appName: name,
-                  slug,
-                  icon: icon ?? null,
-                  isPublic: false,
-                }),
+                // Every type carries slug/appName/icon/isPublic on app_versions.
+                // slug defaults to a random UUID placeholder (or app.id for workflows,
+                // see versionSlug above); user can rename later.
+                appName: name,
+                slug: versionSlug,
+                icon: icon ?? null,
+                isPublic: false,
               })
             ),
           [
@@ -316,14 +320,12 @@ export class AppsUtilService implements IAppsUtilService {
               null,
               manager,
               effectiveBranchId,
-              !isWorkflow
-                ? {
-                    appName: name,
-                    slug,
-                    icon: icon ?? null,
-                    isPublic: false,
-                  }
-                : undefined
+              {
+                appName: name,
+                slug: versionSlug,
+                icon: icon ?? null,
+                isPublic: false,
+              }
             ),
           [
             {
@@ -393,14 +395,13 @@ export class AppsUtilService implements IAppsUtilService {
           );
         }
 
-        // Non-workflows carry slug/appName/icon/isPublic on app_versions.
-        // slug defaults to a random UUID placeholder; user can rename later.
-        if (!isWorkflow) {
-          appVersion.appName = name;
-          appVersion.slug = slug;
-          appVersion.icon = icon ?? null;
-          appVersion.isPublic = false;
-        }
+        // Every type carries slug/appName/icon/isPublic on app_versions.
+        // slug defaults to a random UUID placeholder (or app.id for workflows,
+        // see versionSlug above); user can rename later.
+        appVersion.appName = name;
+        appVersion.slug = versionSlug;
+        appVersion.icon = icon ?? null;
+        appVersion.isPublic = false;
         appVersion.showViewerNavigation = type === 'module' ? false : true;
         appVersion.homePageId = defaultHomePage.id;
         appVersion.globalSettings = {
@@ -426,9 +427,7 @@ export class AppsUtilService implements IAppsUtilService {
 
       // Mirror the app_versions slug placeholder onto the in-memory App so callers
       // (e.g. AppsService.create's response) carry the value just written.
-      if (!isWorkflow) {
-        app.slug = slug;
-      }
+      app.slug = versionSlug;
 
       return app;
     }, manager);
