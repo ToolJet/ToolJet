@@ -1,7 +1,7 @@
 /** @group platform */
 import { Test } from '@nestjs/testing';
 import { NotificationService } from '@modules/notifications/service';
-import { NotificationRepository } from '@modules/notifications/repository';
+import { NotificationRepository, PersistedNotification } from '@modules/notifications/repository';
 import { NOTIFICATION_CHANNELS, NOTIFICATION_TYPE } from '@modules/notifications/constants';
 
 describe('NotificationService', () => {
@@ -22,6 +22,7 @@ describe('NotificationService', () => {
             unreadCount: jest.fn(),
             markRead: jest.fn(),
             markAllRead: jest.fn(),
+            clearReadForUser: jest.fn(),
           },
         },
         { provide: NOTIFICATION_CHANNELS, useValue: [{ key: 'in_app', deliver: inAppDeliver }] },
@@ -70,5 +71,26 @@ describe('NotificationService', () => {
   it('should mark one recipient read scoped to the user', async () => {
     await service.markRead('r1', 'u1');
     expect(repo.markRead).toHaveBeenCalledWith('r1', 'u1');
+  });
+
+  it('should pass the toast flag through to channel deliver', async () => {
+    repo.createForUser.mockResolvedValue({
+      notification: { id: 'n1' },
+      recipient: { id: 'r1' },
+    } as unknown as PersistedNotification);
+    await service.notify({
+      organizationId: 'o',
+      userId: 'u',
+      type: NOTIFICATION_TYPE.SUCCESS,
+      title: 'Sync completed',
+      toast: true,
+    });
+    expect(inAppDeliver).toHaveBeenCalledWith(expect.anything(), expect.anything(), { toast: true });
+  });
+
+  it('should clear read notifications scoped to the user', async () => {
+    repo.clearReadForUser.mockResolvedValue(3);
+    await expect(service.clearRead('u1')).resolves.toBe(3);
+    expect(repo.clearReadForUser).toHaveBeenCalledWith('u1');
   });
 });

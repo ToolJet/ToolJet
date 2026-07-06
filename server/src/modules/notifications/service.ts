@@ -32,7 +32,7 @@ export class NotificationService implements INotificationService {
       if (!enabled.includes(channel.key)) continue;
       // one channel failure must not block the others
       await channel
-        .deliver(persisted.notification, persisted.recipient)
+        .deliver(persisted.notification, persisted.recipient, { toast: params.toast })
         .catch((e) => this.logger.error(`channel ${channel.key} failed: ${e?.message}`));
     }
   }
@@ -62,5 +62,9 @@ export class NotificationService implements INotificationService {
 
   markAllRead(userId: string) {
     return this.repository.markAllRead(userId);
+  }
+
+  clearRead(userId: string) {
+    return this.repository.clearReadForUser(userId);
   }
 }

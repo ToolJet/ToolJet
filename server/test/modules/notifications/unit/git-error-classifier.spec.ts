@@ -41,7 +41,7 @@ describe('git-error-classifier', () => {
 
     it('produces a per-job title for each known job name', () => {
       expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.CREATE_BRANCH).title).toBe('Branch creation failed');
-      expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.PULL_BRANCH).title).toBe('Branch pull failed');
+      expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.PULL_BRANCH).title).toBe('Pull failed');
       expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.DELETE_BRANCH).title).toBe('Branch deletion failed');
       expect(classifyGitError(new Error('x'), GIT_SYNC_JOBS.PUSH_APP_DELETION).title).toBe('App deletion sync failed');
     });

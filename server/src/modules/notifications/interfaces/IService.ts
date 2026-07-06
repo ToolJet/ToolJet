@@ -6,4 +6,5 @@ export interface INotificationService {
   unreadCount(userId: string): Promise<number>;
   markRead(recipientId: string, userId: string): Promise<void>;
   markAllRead(userId: string): Promise<void>;
+  clearRead(userId: string): Promise<number>;
 }

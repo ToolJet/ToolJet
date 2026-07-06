@@ -99,4 +99,24 @@ export class NotificationRepository extends Repository<Notification> {
       .where('user_id = :userId AND read_at IS NULL', { userId })
       .execute();
   }
+
+  // clear-read: drop this user's READ recipients only; unread stay. Content rows
+  // are deleted once no recipient references them (v1 is single-recipient, but
+  // the guard keeps multi-recipient fan-out safe).
+  async clearReadForUser(userId: string): Promise<number> {
+    return this.manager.transaction(async (em) => {
+      const rows: { notification_id: string }[] = await em.query(
+        `DELETE FROM notification_recipients WHERE user_id = $1 AND read_at IS NOT NULL RETURNING notification_id`,
+        [userId]
+      );
+      if (rows.length === 0) return 0;
+      const ids = [...new Set(rows.map((r) => r.notification_id))];
+      await em.query(
+        `DELETE FROM notifications n WHERE n.id = ANY($1) AND NOT EXISTS
+           (SELECT 1 FROM notification_recipients r WHERE r.notification_id = n.id)`,
+        [ids]
+      );
+      return rows.length;
+    });
+  }
 }

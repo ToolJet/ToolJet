@@ -86,10 +86,15 @@ const makeJob = (name: string, data: any) => ({ name, data }) as any;
 describe('GitSyncQueueService (enqueue side)', () => {
   let queue: FakeQueue;
   let svc: GitSyncQueueService;
+  let notify: jest.Mock;
 
   beforeEach(() => {
     queue = new FakeQueue();
-    svc = new GitSyncQueueService(queue as any);
+    notify = jest.fn().mockResolvedValue(undefined);
+    svc = new GitSyncQueueService(
+      queue as unknown as ConstructorParameters<typeof GitSyncQueueService>[0],
+      { notify } as unknown as ConstructorParameters<typeof GitSyncQueueService>[1]
+    );
   });
 
   it('should enqueue git-create-branch with a deterministic org+name jobId', async () => {
@@ -118,6 +123,50 @@ describe('GitSyncQueueService (enqueue side)', () => {
         removeOnFail: true,
       },
     });
+  });
+
+  it('should emit a panel-only (toast:false) info notification when a create-branch job is enqueued', async () => {
+    await svc.enqueueCreateBranch({
+      organizationId: 'org1',
+      name: 'feature-x',
+      sourceBranchId: 'src-branch-id',
+      userId: 'user1',
+    });
+
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify.mock.calls[0][0]).toMatchObject({
+      type: 'info',
+      userId: 'user1',
+      organizationId: 'org1',
+      title: 'Branch creation started',
+      body: 'Creating branch feature-x. It will appear in the branch list once ready.',
+      toast: false,
+    });
+  });
+
+  it('should emit a panel-only info notification when a pull-branch job is enqueued', async () => {
+    await svc.enqueuePullBranch({
+      organizationId: 'org1',
+      branchId: 'branch-uuid',
+      branchName: 'main',
+      userId: 'user1',
+    });
+
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify.mock.calls[0][0]).toMatchObject({
+      type: 'info',
+      title: 'Pull started',
+      body: 'Pulling the latest changes. They will be available in a moment.',
+      toast: false,
+    });
+  });
+
+  it('should not fail the enqueue when the started notification throws', async () => {
+    notify.mockRejectedValue(new Error('db down'));
+    await expect(
+      svc.enqueueCreateBranch({ organizationId: 'org1', name: 'x', sourceBranchId: 's', userId: 'u' })
+    ).resolves.not.toThrow();
+    expect(queue.added).toHaveLength(1);
   });
 
   it('should enqueue git-pull-branch keyed by org+branchId', async () => {

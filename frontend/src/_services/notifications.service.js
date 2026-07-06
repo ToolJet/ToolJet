@@ -20,4 +20,8 @@ function markAllRead() {
   return adapter.patch(`/notifications/read-all`, {});
 }
 
-export const notificationsService = { list, unreadCount, markRead, markAllRead };
+function clearRead() {
+  return adapter.delete(`/notifications/read`);
+}
+
+export const notificationsService = { list, unreadCount, markRead, markAllRead, clearRead };

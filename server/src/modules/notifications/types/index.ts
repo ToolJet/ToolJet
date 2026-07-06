@@ -10,6 +10,7 @@ export interface NotifyParams {
   metadata?: Record<string, unknown>;
   channels?: string[];
   dedupeKey?: string; // idempotency: skip insert if a row with this key exists
+  toast?: boolean; // emphasize on live arrival; rides realtime payload only, never persisted
 }
 
 export interface NotificationListItem {

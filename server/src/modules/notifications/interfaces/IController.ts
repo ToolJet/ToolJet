@@ -6,4 +6,5 @@ export interface INotificationController {
   unreadCount(user: any): Promise<{ count: number }>;
   markRead(user: any, recipientId: string): Promise<{ success: boolean }>;
   markAllRead(user: any): Promise<{ success: boolean }>;
+  clearRead(user: any): Promise<{ success: boolean; cleared: number }>;
 }

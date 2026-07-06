@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { User } from '@modules/app/decorators/user.decorator';
 import { NotificationService } from './service';
@@ -36,5 +36,11 @@ export class NotificationController implements INotificationController {
   async markAllRead(@User() user) {
     await this.notificationService.markAllRead(user.id);
     return { success: true };
+  }
+
+  @Delete('read')
+  async clearRead(@User() user) {
+    const cleared = await this.notificationService.clearRead(user.id);
+    return { success: true, cleared };
   }
 }
