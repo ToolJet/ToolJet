@@ -310,9 +310,6 @@ export async function reconcileModuleViewerPinsFromDefault(
     if (!feat.co_relation_id) continue;
     const def = defaultByCoRel.get(feat.co_relation_id);
     if (!def?.moduleVersionId) continue; // nothing to inherit
-    // Feature branch committed DRAFT_SENTINEL explicitly (e.g. via a merged PR).
-    // Don't overwrite it with a potentially stale master DB value.
-    if (feat.moduleVersionId === DRAFT_SENTINEL) continue;
     if (feat.moduleVersionId === def.moduleVersionId && feat.moduleVersionName === def.moduleVersionName) continue;
 
     const moduleApp = def.moduleAppId
