@@ -448,6 +448,50 @@ export async function grantAppPermission(nestApp: INestApplication, application:
   }
 }
 
+/**
+ * Grants module-level permissions to a group using the granular permissions system.
+ * Creates GranularPermission (type=MODULE) -> AppsGroupPermissions (appType=MODULE), scoped to all modules.
+ */
+export async function grantModulePermission(nestApp: INestApplication, groupId: string, permissions: PermissionFlags): Promise<void> {
+  const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
+  const granularRepo = ds.getRepository(GranularPermissions);
+  const appsGroupRepo = ds.getRepository(AppsGroupPermissions);
+
+  let granular = await granularRepo.findOne({
+    where: { groupId, type: ResourceType.MODULE },
+  });
+
+  if (!granular) {
+    granular = granularRepo.create({
+      groupId,
+      name: 'Modules',
+      type: ResourceType.MODULE,
+      isAll: true,
+    });
+    granular = await granularRepo.save(granular);
+  }
+
+  let appsPerm = await appsGroupRepo.findOne({
+    where: { granularPermissionId: granular.id },
+  });
+
+  if (!appsPerm) {
+    appsPerm = appsGroupRepo.create({
+      granularPermissionId: granular.id,
+      appType: APP_TYPES.MODULE,
+      canEdit: permissions.update || false,
+      canView: permissions.read || false,
+      hideFromDashboard: false,
+    });
+    await appsGroupRepo.save(appsPerm);
+  } else {
+    await appsGroupRepo.update(appsPerm.id, {
+      canEdit: permissions.update || appsPerm.canEdit,
+      canView: permissions.read || appsPerm.canView,
+    });
+  }
+}
+
 /** Grants data source-level permissions to a group using the granular permissions system. */
 export async function createDatasourceGroupPermission(nestApp: INestApplication, dataSourceId: string, groupId: string, permissions: PermissionFlags): Promise<void> {
   const ds: TypeOrmDataSource = nestApp.get(getDataSourceToken('default')) as TypeOrmDataSource;
