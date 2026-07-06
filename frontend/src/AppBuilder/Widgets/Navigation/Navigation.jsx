@@ -53,8 +53,15 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
         </div>
       )}
       {showLabel && (
-        <div className="page-name" data-cy={`nav-label-${item.id}`}>
-          {item.label}
+        <div className="nav-item-text">
+          <div className="page-name" data-cy={`nav-label-${item.id}`}>
+            {item.label}
+          </div>
+          {item.caption ? (
+            <div className="nav-item-caption" data-cy={`nav-caption-${item.id}`}>
+              {item.caption}
+            </div>
+          ) : null}
         </div>
       )}
     </button>
@@ -62,7 +69,16 @@ const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
 };
 
 // Render nav group (collapsible) - uses page-group-wrapper class like page navigation
-const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displayStyle, orientation, darkMode }) => {
+const RenderNavGroup = ({
+  group,
+  selectedItemId,
+  onItemClick,
+  styles,
+  displayStyle,
+  orientation,
+  darkMode,
+  childAlignment,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isVisible = typeof group.visible === 'object' ? group.visible.value !== '{{true}}' : group.visible !== true;
@@ -138,7 +154,9 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content
-            className={cx('page-menu-popup', { 'dark-theme': darkMode })}
+            className={cx('page-menu-popup', childAlignment && `nav-subalign-${childAlignment}`, {
+              'dark-theme': darkMode,
+            })}
             sideOffset={6}
             align="start"
             collisionPadding={8}
@@ -185,7 +203,7 @@ const RenderNavGroup = ({ group, selectedItemId, onItemClick, styles, displaySty
         />
       </button>
       <div className={cx('accordion-body', { expanded: isExpanded, collapsed: !isExpanded })}>
-        <div className="accordion-content">
+        <div className={cx('accordion-content', childAlignment && `nav-subalign-${childAlignment}`)}>
           {deduplicatedChildren.map((child) => (
             <RenderNavItem
               key={child.id}
@@ -218,18 +236,15 @@ export const Navigation = function Navigation(props) {
     currentMode,
   } = props;
 
-  const {
-    orientation,
-    displayStyle,
-    navItemSize = 'equalWidth',
-    loadingState,
-    disabledState,
-    visibility,
-    horizontalAlignment = 'left',
-    verticalAlignment = 'top',
-  } = properties;
+  const { loadingState, disabledState, visibility } = properties;
 
   const {
+    orientation: orientationStyle,
+    displayStyle: displayStyleStyle,
+    navItemSize: navItemSizeStyle,
+    horizontalAlignment: horizontalAlignmentStyle,
+    verticalAlignment: verticalAlignmentStyle,
+    subMenuAlignment,
     backgroundColor = 'var(--cc-surface1-surface)',
     borderColor = 'var(--cc-weak-border)',
     borderRadius = 8,
@@ -238,6 +253,13 @@ export const Navigation = function Navigation(props) {
     hoverPillBackgroundColor,
     pillBorderRadius = 6,
   } = styles || {};
+
+  const orientation = orientationStyle ?? properties?.orientation;
+  const displayStyle = displayStyleStyle ?? properties?.displayStyle;
+  const navItemSize = navItemSizeStyle ?? properties?.navItemSize ?? 'equalWidth';
+  const horizontalAlignment = horizontalAlignmentStyle ?? properties?.horizontalAlignment ?? 'left';
+  const verticalAlignment = verticalAlignmentStyle ?? properties?.verticalAlignment ?? 'top';
+  const childAlignment = subMenuAlignment;
 
   // Get menu items from component definition
   const menuItems = properties.menuItems || [];
@@ -521,6 +543,7 @@ export const Navigation = function Navigation(props) {
                     displayStyle={displayStyle}
                     orientation={orientation}
                     darkMode={darkMode}
+                    childAlignment={childAlignment}
                   />
                 );
               }
@@ -571,6 +594,7 @@ export const Navigation = function Navigation(props) {
                             orientation="vertical"
                             darkMode={darkMode}
                             isInOverflow={true}
+                            childAlignment={childAlignment}
                           />
                         );
                       }
@@ -626,6 +650,7 @@ export const Navigation = function Navigation(props) {
                 displayStyle={displayStyle}
                 orientation={orientation}
                 darkMode={darkMode}
+                childAlignment={childAlignment}
               />
             );
           }

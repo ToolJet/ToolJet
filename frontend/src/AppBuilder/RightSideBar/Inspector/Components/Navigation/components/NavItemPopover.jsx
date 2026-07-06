@@ -99,6 +99,21 @@ const NavItemPopover = forwardRef(
                 />
               </div>
 
+              {!item.isGroup && (
+                <div data-cy="inspector-nav-item-details-caption-field" className="nav-item-popover-field">
+                  <label data-cy="inspector-nav-item-details-caption-label" className="nav-item-popover-field-label">
+                    Caption
+                  </label>
+                  <CodeHinter
+                    {...basicCodeHinterProps}
+                    data-cy="inspector-nav-item-details-caption-input"
+                    initialValue={item?.caption ?? ''}
+                    placeholder={'Optional description'}
+                    onChange={(value) => handleChange('caption', value)}
+                  />
+                </div>
+              )}
+
               {/* Icon field */}
               <div data-cy="inspector-nav-item-details-icon-field" className="nav-item-popover-field">
                 <CodeHinter

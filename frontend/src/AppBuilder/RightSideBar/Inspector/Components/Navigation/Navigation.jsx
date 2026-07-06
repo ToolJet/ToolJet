@@ -99,16 +99,7 @@ export const Navigation = ({ componentMeta, darkMode, ...restProps }) => {
   const sections = [
     {
       title: 'Content',
-      custom: () => (
-        <>
-          {_renderMenuItems()}
-          {createRenderElement('orientation')}
-          {createRenderElement('displayStyle')}
-          {createRenderElement('navItemSize')}
-          {createRenderElement('horizontalAlignment')}
-          {createRenderElement('verticalAlignment')}
-        </>
-      ),
+      custom: () => <>{_renderMenuItems()}</>,
     },
     {
       title: 'Events',
