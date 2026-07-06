@@ -11,6 +11,7 @@ import { OrganizationGitSyncRepository } from '@modules/git-sync/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FolderAppsModule } from '@modules/folder-apps/module';
 import { FoldersModule } from '@modules/folders/module';
+import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-flag.module';
 export class AppGitModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
     const cacheKey = this.buildCacheKey(configs, isMainImport);
@@ -66,6 +67,7 @@ export class AppGitModule extends SubModule {
         await TooljetDbModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await VersionModule.register(configs),
+        await WebhookSkipFlagModule.register(configs),
       ],
       controllers: isMainImport ? [AppGitController] : [],
       providers: [

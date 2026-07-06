@@ -44,6 +44,12 @@ export class OrganizationGitSync extends BaseEntity {
   @Column({ name: 'use_env_config', type: 'boolean', default: false })
   useEnvConfig: boolean;
 
+  @Column({ name: 'webhook_enabled', type: 'boolean', default: false })
+  webhookEnabled: boolean;
+
+  @Column({ name: 'webhook_secret', type: 'varchar', length: 64, nullable: true })
+  webhookSecret: string;
+
   // Not persisted — populated at runtime from OrganizationEnvRegistryService
   envGitProvider: GITConnectionType | null;
 

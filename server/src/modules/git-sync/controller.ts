@@ -15,12 +15,7 @@ import { UpdateGitEnvConfigDTO } from '@modules/git-sync/providers/dto/provider-
 @Controller('git-sync')
 @InitModule(MODULES.GIT_SYNC)
 export class GitSyncController implements IGitSyncController {
-  constructor() { }
-
-  @Get(':id/status')
-  async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
-    throw new NotFoundException();
-  }
+  constructor() {}
 
   @Post()
   async create(
@@ -69,7 +64,48 @@ export class GitSyncController implements IGitSyncController {
     throw new NotFoundException();
   }
 
-  // IMPORTANT : Don't modify this caution : Keep this endpoint last until refactored to avoid conflict with routes using ':id', which may lead to misinterpretation of parameters (e.g., 'gitpull').
+  @Patch('env-configs')
+  async toggleEnvConfig(@User() user: UserEntity, @Body() configData: UpdateGitEnvConfigDTO) {
+    throw new NotFoundException();
+  }
+
+  // ─── Auto-Sync Stubs (EE overrides) ───
+
+  @Post('auto-sync/enable')
+  async enableAutoSync(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Post('auto-sync/disable')
+  async disableAutoSync(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Post('auto-sync/rotate-secret')
+  async rotateAutoSyncSecret(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Get('auto-sync/status')
+  async getAutoSyncStatus(@User() user: UserEntity): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  @Get('auto-sync/events')
+  async getAutoSyncEvents(
+    @User() user: UserEntity,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ): Promise<any> {
+    throw new NotFoundException();
+  }
+
+  // IMPORTANT : Don't modify this caution : Keep parameterized :id routes last to avoid conflict with static routes like auto-sync/*
+  @Get(':id/status')
+  async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
+    throw new NotFoundException();
+  }
+
   @Get(':id')
   async getOrgGitByOrgId(
     @User() user: UserEntity,
@@ -78,10 +114,4 @@ export class GitSyncController implements IGitSyncController {
   ): Promise<any> {
     throw new NotFoundException();
   }
-
-  @Patch('env-configs')
-  async toggleEnvConfig(@User() user: UserEntity, @Body() configData: UpdateGitEnvConfigDTO) {
-    throw new NotFoundException();
-  }
-
 }

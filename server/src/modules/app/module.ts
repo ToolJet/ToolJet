@@ -51,6 +51,7 @@ import { ExternalApiModule } from '@modules/external-apis/module';
 import { GitSyncModule } from '@modules/git-sync/module';
 import { AppGitModule } from '@modules/app-git/module';
 import { WorkspaceBranchesModule } from '@modules/workspace-branches/module';
+import { GitSyncWebhookModule } from '@modules/git-sync-webhooks/module';
 import { OrganizationPaymentModule } from '@modules/organization-payments/module';
 import { CrmModule } from '@modules/CRM/module';
 import { ClearSSOResponseScheduler } from '@modules/auth/schedulers/clear-sso-response.scheduler';
@@ -148,6 +149,7 @@ export class AppModule implements OnModuleInit, NestModule {
       await GitSyncModule.register(configs, true),
       await AppGitModule.register(configs, true),
       await WorkspaceBranchesModule.register(configs, true),
+      await GitSyncWebhookModule.register(configs, true),
       await CrmModule.register(configs, true),
       await OrganizationPaymentModule.register(configs, true),
       await EmailListenerModule.register(configs),

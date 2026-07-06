@@ -8,6 +8,7 @@ import { FoldersModule } from '@modules/folders/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { BackgroundProcessorModule } from '@modules/background-processor/module';
 import { AppsModule } from '@modules/apps/module';
+import { WebhookSkipFlagModule } from '@modules/git-sync-webhooks/webhook-skip-flag.module';
 
 export class WorkspaceBranchesModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport?: boolean): Promise<DynamicModule> {
@@ -37,6 +38,7 @@ export class WorkspaceBranchesModule extends SubModule {
         await FoldersModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await BackgroundProcessorModule.register(configs),
+        await WebhookSkipFlagModule.register(configs),
       ],
       controllers: isMainImport ? [WorkspaceBranchController] : [],
       providers: [

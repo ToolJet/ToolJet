@@ -1,4 +1,5 @@
 import { DynamicModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { EncryptionModule } from '@modules/encryption/module';
 import { ImportExportResourcesModule } from '@modules/import-export-resources/module';
 import { TooljetDbModule } from '@modules/tooljet-db/module';
@@ -10,6 +11,8 @@ import { OrganizationGitSyncRepository } from './repository';
 import { VersionRepository } from '@modules/versions/repository';
 import { SubModule } from '@modules/app/sub-module';
 import { FeatureAbilityFactory } from './ability';
+import { getImportPath, TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class GitSyncModule extends SubModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }, isMainImport: boolean = false): Promise<DynamicModule> {
@@ -51,9 +54,20 @@ export class GitSyncModule extends SubModule {
       'git-object-cache.service',
     ]);
 
+    const edition = getTooljetEdition();
+    const isEEOrCloud = edition === TOOLJET_EDITIONS.EE || edition === TOOLJET_EDITIONS.Cloud;
+
+    const additionalProviders: any[] = [];
+    if (isEEOrCloud) {
+      const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
+      const { AutoSyncAdminService } = await import(`${importPath}/git-sync-webhooks/services/auto-sync-admin.service`);
+      additionalProviders.push(AutoSyncAdminService);
+    }
+
     return this.cacheModule(cacheKey, {
       module: GitSyncModule,
       imports: [
+        ConfigModule,
         await EncryptionModule.register(configs),
         await ImportExportResourcesModule.register(configs),
         await TooljetDbModule.register(configs),
@@ -81,6 +95,7 @@ export class GitSyncModule extends SubModule {
         RemoteBranchCacheService,
         EncryptionService,
         GitObjectCacheService,
+        ...additionalProviders,
       ],
       exports: [
         HTTPSGitSyncUtilityService,
