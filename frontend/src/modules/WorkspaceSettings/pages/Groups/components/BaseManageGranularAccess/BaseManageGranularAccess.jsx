@@ -930,11 +930,11 @@ class BaseManageGranularAccess extends React.Component {
                 <>
                   {[...granularPermissions]
                     .sort((a, b) => {
-                      // Define the desired order: Apps, Data Sources, Modules, Workflows
+                      // Define the desired order: Apps, Modules, Data Sources, Workflows
                       const order = [
                         RESOURCE_TYPE.APPS,
-                        RESOURCE_TYPE.DATA_SOURCES,
                         RESOURCE_TYPE.MODULES,
+                        RESOURCE_TYPE.DATA_SOURCES,
                         RESOURCE_TYPE.WORKFLOWS,
                       ];
                       return order.indexOf(a.type) - order.indexOf(b.type);

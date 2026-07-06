@@ -33,6 +33,15 @@ function AddResourcePermissionsMenu({
     [RESOURCE_TYPE.DATA_SOURCES]: 'Data source',
   };
 
+  const order = [RESOURCE_TYPE.APPS, RESOURCE_TYPE.MODULES, RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.WORKFLOWS];
+
+  const rank = (type) => {
+    const i = order.indexOf(type);
+    return i === -1 ? order.length : i; // unknown types go last
+  };
+
+  resourcesOptions.sort((a, b) => rank(a) - rank(b));
+
   return resourcesOptions.length > 1 ? (
     <OverlayTrigger
       rootClose={true}
@@ -65,7 +74,9 @@ function AddResourcePermissionsMenu({
                     currentGroupPermission.name === 'end-user' &&
                     [RESOURCE_TYPE.DATA_SOURCES, RESOURCE_TYPE.MODULES].includes(resource) ? (
                       <Tooltip id={`tooltip-${index}`} style={{ maxWidth: '120px' }}>
-                        End-user cannot access {resourceNameMapping[resource].toLowerCase()}
+                        {resource === RESOURCE_TYPE.MODULES
+                          ? 'End-user implicitly gets access'
+                          : `End-user cannot access ${resourceNameMapping[resource].toLowerCase()}`}
                       </Tooltip>
                     ) : (
                       <></>
@@ -85,7 +96,7 @@ function AddResourcePermissionsMenu({
           variant="tertiary"
           iconWidth="17"
           fill="var(--slate9)"
-          className="add-icon tj-text-xsm font-weight-600"
+          className="add-icon tj-text-xsm font-weight-600 remove-disabled-bg"
           leftIcon="plus"
           disabled={currentGroupPermission.name === 'admin' || !isEditable}
           data-cy="add-permission-button"
@@ -100,13 +111,13 @@ function AddResourcePermissionsMenu({
         variant="tertiary"
         iconWidth="17"
         fill="var(--slate9)"
-        className="add-icon tj-text-xsm font-weight-600"
+        className="add-icon tj-text-xsm font-weight-600 remove-disabled-bg"
         leftIcon="plus"
         disabled={currentGroupPermission.name === 'admin' || !isEditable}
         onClick={() => {
           openAddPermissionModal(RESOURCE_TYPE.APPS);
         }}
-        data-cy="add-apps-buton"
+        data-cy="add-apps-button"
       >
         Add apps
       </ButtonSolid>
