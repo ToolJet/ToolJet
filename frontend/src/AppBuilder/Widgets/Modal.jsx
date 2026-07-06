@@ -9,6 +9,8 @@ import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 export const Modal = function Modal({
   id,
@@ -21,6 +23,8 @@ export const Modal = function Modal({
   fireEvent,
   dataCy,
   height,
+  componentType,
+  resolveIndex,
 }) {
   const { moduleId } = useModuleContext();
   const [showModal, setShowModal] = useState(false);
@@ -53,6 +57,13 @@ export const Modal = function Modal({
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.modeStore.modules[moduleId].currentMode, shallow);
   const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
+  const { csaShims, registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+  });
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -83,17 +94,23 @@ export const Modal = function Modal({
     hideModal();
   };
 
+  // Bucket C: open/close mutate local showModal state + trigger real DOM
+  // side effects — no store patch represents them. `open` is intentionally
+  // the lighter path (no onShowSideEffects) — matches old exactly; the full
+  // onShowModal only runs via the UI trigger button / BootstrapModal's onShow.
   useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
+    return registerEffects({
+      open: async () => {
         setExposedVariable('show', true);
         setShowModal(true);
       },
-      close: async function () {
-        onHideModal();
-      },
-    };
-    setExposedVariables(exposedVariables);
+      close: async () => onHideModal(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariables({ ...csaShims() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

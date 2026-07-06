@@ -1,6 +1,13 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 export const useExposeState = ({
+  id,
+  componentType,
+  moduleId,
+  resolveIndex,
   loadingState,
   visibleState,
   disabledModalState,
@@ -10,75 +17,76 @@ export const useExposeState = ({
   onHideModal,
   onShowModal,
 }) => {
-  const [isVisible, setVisibility] = useState(visibleState ?? true);
-  const [isLoading, setLoading] = useState(loadingState ?? false);
-  const [isDisabledModal, setDisabledModal] = useState(disabledModalState ?? false);
-  const [isDisabledTrigger, setDisabledTrigger] = useState(disabledTriggerState ?? false);
+  const isInitialRender = useRef(true);
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims, registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+  });
 
-  // Track previous values to prevent redundant updates
-  const prevValues = useRef({});
+  // Store is the source of truth for the trio; the resolved properties are
+  // the pre-first-publish fallback (old useState initial values).
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibleState ?? true);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState ?? false);
+  const isDisabledModal = useExposedVariable(id, 'isDisabledModal', exposedOpts, disabledModalState ?? false);
+  const isDisabledTrigger = useExposedVariable(id, 'isDisabledTrigger', exposedOpts, disabledTriggerState ?? false);
 
-  // Effect to sync state with props (only when props change)
+  // Property-sync write-throughs (skip-initial).
   useEffect(() => {
-    setDisabledModal(disabledModalState);
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabledModal', disabledModalState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledModalState]);
 
   useEffect(() => {
-    setDisabledTrigger(disabledTriggerState);
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabledTrigger', disabledTriggerState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledTriggerState]);
 
   useEffect(() => {
-    setVisibility(visibleState);
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibleState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleState]);
 
   useEffect(() => {
-    setLoading(loadingState);
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
-  // Expose state-modifying functions only once
+  // Bucket C: open/close mutate the widget's local showModal state and
+  // trigger real DOM side effects — no store patch represents them.
   useEffect(() => {
-    setExposedVariables({
-      setDisableTrigger: async (value) => setDisabledTrigger(value),
-      setDisableModal: async (value) => setDisabledModal(value),
-      setVisibility: async (value) => setVisibility(value),
-      setLoading: async (value) => setLoading(value),
+    return registerEffects({
       open: async () => onShowModal(),
       close: async () => onHideModal(),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Prevent redundant updates to `setExposedVariable`
-  const updateExposedVariable = (key, value) => {
-    if (prevValues.current[key] !== value) {
-      prevValues.current[key] = value;
-      setExposedVariable(key, value);
-    }
-  };
-
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // for the trio (setVisibility/setLoading/setDisableTrigger/setDisableModal).
   useEffect(() => {
-    updateExposedVariable('isDisabledModal', isDisabledModal);
-  }, [isDisabledModal]);
-
-  useEffect(() => {
-    updateExposedVariable('isDisabledTrigger', isDisabledTrigger);
-  }, [isDisabledTrigger]);
-
-  useEffect(() => {
-    updateExposedVariable('isVisible', isVisible);
-  }, [isVisible]);
-
-  useEffect(() => {
-    updateExposedVariable('isLoading', isLoading);
-  }, [isLoading]);
+    setExposedVariables({
+      isDisabledTrigger: disabledTriggerState ?? false,
+      isDisabledModal: disabledModalState ?? false,
+      isVisible: visibleState ?? true,
+      isLoading: loadingState ?? false,
+      ...csaShims(),
+    });
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     isDisabledTrigger,
-    setDisabledTrigger,
     isDisabledModal,
-    setDisabledModal,
     isVisible,
-    setVisibility,
     isLoading,
-    setLoading,
   };
 };

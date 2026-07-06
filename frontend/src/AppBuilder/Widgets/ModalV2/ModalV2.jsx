@@ -34,6 +34,7 @@ export const ModalV2 = function Modal({
   componentCount,
   subContainerIndex,
   componentType,
+  resolveIndex,
 }) {
   const { moduleId } = useModuleContext();
   const { contextPath } = useSubcontainerContext();
@@ -100,20 +101,9 @@ export const ModalV2 = function Modal({
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // open/close are exposed by useExposeState below (Bucket C, wired to
+  // onShowModal/onHideModal via registerEffects) — no separate registration
+  // needed here.
 
   function hideModal() {
     fireEvent('onClose');
@@ -186,6 +176,10 @@ export const ModalV2 = function Modal({
 
   const { controlBoxRef } = useResetZIndex({ showModal, id, mode });
   const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
     loadingState: properties.loadingState,
     visibleState: properties.visibility,
     disabledModalState: properties.disabledModal,

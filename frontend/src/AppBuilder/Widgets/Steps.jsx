@@ -1,18 +1,34 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
 import './Steps.scss';
 import { getFormattedSteps, getSafeRenderableValue } from './utils';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/wave4';
+
+const sanitizeSteps = (steps) => {
+  const formattedSteps = getFormattedSteps(steps);
+  return JSON.parse(JSON.stringify(formattedSteps || [])).map((step) => ({
+    ...step,
+    visible: 'visible' in step ? step.visible : true,
+    disabled: 'disabled' in step ? step.disabled : false,
+  }));
+};
 
 export const Steps = function Steps({
   properties,
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   height,
   darkMode,
   dataCy,
   id,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { stepsSelectable, disabledState } = properties;
   const visibility = isExpectedDataType(properties.visibility, 'boolean');
@@ -22,31 +38,48 @@ export const Steps = function Steps({
   const { color, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const { completedAccent, incompletedAccent, incompletedLabel, completedLabel, currentStepLabel } = styles;
-  const [stepsArr, setStepsArr] = useState(steps);
-  const [isVisible, setIsVisible] = useState(visibility);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
-  const [activeStepId, setActiveStepId] = useState(currentStepId);
   const theme = properties.variant;
-  const [progressBarWidth, setProgressBarWidth] = useState(0);
-  const [containerPadding, setContainerPadding] = useState(0);
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [filteredSteps, setFilteredSteps] = useState([]);
   const firstLabelRef = useRef(null);
   const lastLabelRef = useRef(null);
   const containerRef = useRef(null);
+  const isInitialRender = useRef(true);
+  // Local-render state only — progress-bar geometry, never exposed.
+  const [progressBarWidth, setProgressBarWidth] = React.useState(0);
+  const [containerPadding, setContainerPadding] = React.useState(0);
 
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for isVisible/isDisabled/currentStepId/steps;
+  // the resolved properties (sanitized the same way the old mount/property
+  // effects did) are the pre-first-publish fallback.
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+  const activeStepId = useExposedVariable(id, 'currentStepId', exposedOpts, currentStepId);
+  const stepsArr = useExposedVariable(id, 'steps', exposedOpts, undefined) ?? sanitizeSteps(steps);
+
+  const filteredSteps = useMemo(() => (stepsArr || []).filter((step) => step.visible), [stepsArr]);
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
 
+  // Latest-ref: the exposed `setStep` CSA (registered once at mount) must
+  // never close over a stale disabledState from the mount-time render — its
+  // guard reads the resolved PROPERTY, not exposed isDisabled (old behavior).
+  const disabledStateRef = useRef(disabledState);
+  disabledStateRef.current = disabledState;
+
+  // Not isInitialRender-gated — matches old (unconditional resanitize on
+  // steps change, idempotent on mount since it's also the pre-publish
+  // fallback formula above).
   useEffect(() => {
-    const formattedSteps = getFormattedSteps(steps);
-    const sanitizedSteps = JSON.parse(JSON.stringify(formattedSteps || [])).map((step) => ({
-      ...step,
-      visible: 'visible' in step ? step.visible : true,
-      disabled: 'disabled' in step ? step.disabled : false,
-    }));
-    const newFilteredSteps = (sanitizedSteps || []).filter((step) => step.visible);
-    setFilteredSteps(newFilteredSteps);
-    setStepsArr(sanitizedSteps);
+    setExposedVariables({ steps: sanitizeSteps(steps) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(steps)]);
 
   // Common function to calculate progress bar width and label padding
@@ -54,7 +87,6 @@ export const Steps = function Steps({
     if (!containerRef.current || theme !== 'titles') return;
 
     const containerWidth = containerRef.current.offsetWidth;
-    setContainerWidth(containerWidth);
 
     const stepWidth = 20; // width of dot + padding
     const totalStepsWidth = filteredSteps.length * stepWidth;
@@ -72,8 +104,6 @@ export const Steps = function Steps({
 
     // Calculate container padding
     if (firstLabelRef.current && lastLabelRef.current) {
-      const labelWidth = (containerWidth - (filteredSteps.length - 1) - 4) / filteredSteps.length;
-
       const firstLabelWidth = firstLabelRef.current.offsetWidth;
       const lastLabelWidth = lastLabelRef.current.offsetWidth;
       const maxLabelWidth = Math.max(firstLabelWidth, lastLabelWidth);
@@ -99,7 +129,9 @@ export const Steps = function Steps({
     }
 
     return () => resizeObserver.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme, JSON.stringify(steps), filteredSteps]);
+
   // Dynamic styles for theming
   const dynamicStyle = {
     '--bgColor': styles.color,
@@ -111,56 +143,56 @@ export const Steps = function Steps({
     '--currentStepLabel': currentStepLabel === '#1B1F24' ? 'var(--text-primary)' : currentStepLabel,
   };
 
-  // Step click handler
-  const handleStepClick = (id) => {
-    const step = filteredSteps.find((item) => item.id == id);
+  // Step click handler — guards against the exposed isDisabled (old
+  // behavior; the exposed `setStep` CSA below guards against the resolved
+  // disabledState prop instead — two different guard sources, preserved).
+  const handleStepClick = (stepId) => {
+    const step = filteredSteps.find((item) => item.id == stepId);
     if (step && !step.disabled && !isDisabled) {
-      setActiveStepId(step.id);
-      setExposedVariable('currentStepId', step.id);
-      fireEvent('onSelect');
+      dispatch([
+        { kind: 'INVOKE_CSA', componentId: id, action: 'setStep', args: [step.id] },
+        { kind: 'FIRE_EVENT', componentId: id, event: 'onSelect' },
+      ]);
     }
   };
 
-  // Expose variables and methods
+  // Property-sync write-throughs (skip-initial).
   useEffect(() => {
-    setExposedVariable('isVisible', isVisible);
-    setExposedVariable('isDisabled', isDisabled);
-    setExposedVariable('currentStepId', activeStepId);
-    setExposedVariable('steps', stepsArr);
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
 
-    setExposedVariable('setStepVisible', (stepId, visibility) => {
-      setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, visible: visibility } : item));
-        setExposedVariable('steps', updatedSteps);
-        setFilteredSteps(updatedSteps.filter((step) => step.visible));
-        return updatedSteps;
-      });
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('currentStepId', currentStepId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStepId]);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (setStep overridden to guard against the resolved disabledState prop,
+  // matching old exactly).
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: visibility,
+      isDisabled: disabledState,
+      currentStepId: currentStepId,
+      steps: sanitizeSteps(steps),
+      ...csaShims(),
+      setStep: async (stepId) => {
+        if (!disabledStateRef.current)
+          dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setStep', args: [stepId] }]);
+      },
     });
-
-    setExposedVariable('setStepDisable', (stepId, disabled) => {
-      setStepsArr((prev) => {
-        const updatedSteps = prev.map((item) => (item.id == stepId ? { ...item, disabled: disabled } : item));
-        setExposedVariable('steps', updatedSteps);
-        setFilteredSteps(updatedSteps.filter((step) => step.visible));
-        return updatedSteps;
-      });
-    });
-
-    setExposedVariable('resetSteps', () => {
-      setActiveStepId(stepsArr.filter((step) => step.visible)?.[0]?.id);
-    });
-
-    setExposedVariable('setStep', (stepId) => {
-      if (!disabledState) setActiveStepId(stepId);
-    });
-    setExposedVariable('setVisibility', (visibility) => setIsVisible(!!visibility));
-    setExposedVariable('setDisabled', (disabled) => setIsDisabled(!!disabled));
-  }, [isVisible, isDisabled, activeStepId, stepsArr, disabledState]);
-
-  // Update state from props
-  useEffect(() => setIsVisible(visibility), [visibility]);
-  useEffect(() => setIsDisabled(disabledState), [disabledState]);
-  useEffect(() => setActiveStepId(currentStepId), [currentStepId]);
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div

@@ -19,6 +19,9 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 export const MultiselectV2 = ({
   id,
@@ -33,6 +36,9 @@ export const MultiselectV2 = ({
   validate,
   validation,
   componentName,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   let {
     label,
@@ -71,40 +77,39 @@ export const MultiselectV2 = ({
     labelFontSize,
   } = styles;
   const isInitialRender = useRef(true);
-  const [selected, setSelected] = useState([]);
   const options = properties?.options;
   const values = properties?.values;
   const isMandatory = validation?.mandatory ?? false;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
   const selectRef = React.useRef(null);
-  const [validationStatus, setValidationStatus] = useState(
-    validate(selected?.length ? selected?.map((option) => option.value) : null)
-  );
-  const { isValid, validationError } = validationStatus;
   const valueContainerRef = React.useRef(null);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
-  const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
+  const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isMultiSelectLoading = useExposedVariable(id, 'isLoading', exposedOpts, multiSelectLoadingState);
+  const isMultiSelectDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+
   const menuBackgroundColor = getInputBackgroundColor({
     fieldBackgroundColor,
     darkMode,
     isLoading: isMultiSelectLoading,
     isDisabled: isMultiSelectDisabled,
   });
-
-  const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isMultiSelectLoading !== multiSelectLoadingState) setIsMultiSelectLoading(multiSelectLoadingState);
-    if (isMultiSelectDisabled !== disabledState) setIsMultiSelectDisabled(disabledState);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, multiSelectLoadingState, disabledState]);
 
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
@@ -122,6 +127,39 @@ export const MultiselectV2 = ({
     return sortArray(_selectOptions, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
+
+  // Store is the source of truth for the exposed `values`; the resolved
+  // default-item lookup is the pre-first-publish fallback.
+  function findDefaultItem(value, isAdvanced, isDefault) {
+    if (isAdvanced) {
+      const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
+      return foundItem;
+    }
+    if (isDefault) {
+      return Array.isArray(selectOptions)
+        ? selectOptions.filter((item) => value?.find((val) => val === item.value))
+        : [];
+    } else {
+      return Array.isArray(selectOptions)
+        ? selectOptions.filter((item) => selected?.find((val) => val.value === item.value))
+        : [];
+    }
+  }
+
+  const exposedValues = useExposedVariable(id, 'values', exposedOpts, undefined);
+  const selected = useMemo(() => {
+    if (exposedValues !== undefined) {
+      return selectOptions.filter((option) => (exposedValues || []).includes(option.value));
+    }
+    return findDefaultItem(values, advanced, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectOptions, exposedValues]);
+
+  const validationStatus = useMemo(
+    () => validate(exposedValues?.length ? exposedValues : selected?.length ? selected.map((o) => o.value) : null),
+    [exposedValues, selected, validate]
+  );
+  const { isValid, validationError } = validationStatus;
 
   const hasMaxLimit = maxLimit !== '' && maxLimit !== null && maxLimit !== undefined && !Number.isNaN(Number(maxLimit));
   const maxSelectionLimit = hasMaxLimit ? Math.max(0, Math.floor(Number(maxLimit))) : null;
@@ -163,30 +201,21 @@ export const MultiselectV2 = ({
     selected,
   ]);
 
-  function findDefaultItem(value, isAdvanced, isDefault) {
-    if (isAdvanced) {
-      const foundItem = Array.isArray(schema) ? schema.filter((item) => item?.visible && item?.default) : [];
-      return foundItem;
-    }
-    if (isDefault) {
-      return Array.isArray(selectOptions)
-        ? selectOptions.filter((item) => value?.find((val) => val === item.value))
-        : [];
-    } else {
-      return Array.isArray(selectOptions)
-        ? selectOptions.filter((item) => selected?.find((val) => val.value === item.value))
-        : [];
-    }
-  }
+  // Internal property-sync write-through — writes directly, no dispatch/event
+  // (matches old setInputValue's local-effect callers, which never fired one).
+  const setInputValueDirect = (items) => {
+    setExposedVariables({
+      values: items.map((item) => item.value),
+      selectedOptions:
+        Array.isArray(items) && items?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
+    });
+  };
 
-  function hasVisibleFalse(value) {
-    for (let i = 0; i < schema?.length; i++) {
-      if (schema[i].value === value && schema[i].visible === false) {
-        return true;
-      }
-    }
-    return false;
-  }
+  // Latest-ref: the exposed selectOptions/deselectOptions CSAs (registered
+  // once at mount) must never close over stale selectOptions/selected/
+  // maxSelectionLimit from the mount-time render.
+  const ctxRef = useRef({ selectOptions, selected, maxSelectionLimit });
+  ctxRef.current = { selectOptions, selected, maxSelectionLimit };
 
   const onChangeHandler = (items, action) => {
     const SELECT_ALL = 'multiselect-custom-menulist-select-all';
@@ -195,19 +224,19 @@ export const MultiselectV2 = ({
     if (action.option?.value === SELECT_ALL) {
       // Case 1 - If select all is selected
       if (action.action === 'select-option') {
-        setInputValue(applyLimit(selectOptions));
+        setInputValueDirect(applyLimit(selectOptions));
       } else {
-        setInputValue([]);
+        setInputValueDirect([]);
       }
     } else if (items?.some((item) => item.value === SELECT_ALL)) {
       // Case 2 - If select all is not selected but selected options include select all
-      setInputValue(applyLimit(items.filter((item) => item.value !== SELECT_ALL)));
+      setInputValueDirect(applyLimit(items.filter((item) => item.value !== SELECT_ALL)));
     } else if (selectOptions?.length === items?.length) {
       // Case 3 - If all options are selected except select all
-      setInputValue(applyLimit(selectOptions));
+      setInputValueDirect(applyLimit(selectOptions));
     } else {
       // Case 4 - Normal selection
-      setInputValue(applyLimit(items));
+      setInputValueDirect(applyLimit(items));
     }
 
     fireEvent('onSelect');
@@ -216,14 +245,14 @@ export const MultiselectV2 = ({
 
   useEffect(() => {
     let foundItem = findDefaultItem(values, advanced);
-    setInputValue(foundItem);
+    setInputValueDirect(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
 
   useEffect(() => {
     if (advanced) {
       let foundItem = findDefaultItem(values, advanced, true);
-      setInputValue(foundItem);
+      setInputValueDirect(foundItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(values), JSON.stringify(schema)]);
@@ -231,7 +260,7 @@ export const MultiselectV2 = ({
   useEffect(() => {
     if (!advanced) {
       let foundItem = findDefaultItem(values, advanced, true);
-      setInputValue(foundItem);
+      setInputValueDirect(foundItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(values)]);
@@ -273,30 +302,78 @@ export const MultiselectV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const validationStatus = validate(selected?.length ? selected?.map((option) => option.value) : null);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate]);
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
+  // CSA path (RunJS / other components) — old guards preserved exactly.
+  const selectOptionsCSA = async (value) => {
+    if (!Array.isArray(value)) return;
+    const { selectOptions, selected, maxSelectionLimit } = ctxRef.current;
+    const newSelected = [...selected];
+    value.forEach((val) => {
+      // Check if array provided is a list of objects with value key
+      if (isObject(val) && has(val, 'value')) {
+        val = val.value;
+      }
+      if (selectOptions.some((option) => option.value === val) && !selected.some((option) => option.value === val)) {
+        const optionsToAdd = selectOptions.filter(
+          (option) => option.value === val && !selected.some((selectedOption) => selectedOption.value === val)
+        );
+        newSelected.push(...optionsToAdd);
+      }
+    });
+    const limited = maxSelectionLimit !== null ? newSelected.slice(0, maxSelectionLimit) : newSelected;
+    dispatch([
+      {
+        kind: 'INVOKE_CSA',
+        componentId: id,
+        action: 'setSelection',
+        args: [
+          {
+            values: limited.map((item) => item.value),
+            selectedOptions: limited.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
+          },
+        ],
+      },
+    ]);
+  };
+
+  const deselectOptionsCSA = async (value) => {
+    if (!Array.isArray(value)) return;
+    const { selected } = ctxRef.current;
+    // Check if array provided is a list of objects with value key
+    const _value = value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val));
+    const newSelected = selected.filter((option) => !_value.includes(option.value));
+    dispatch([
+      {
+        kind: 'INVOKE_CSA',
+        componentId: id,
+        action: 'setSelection',
+        args: [
+          {
+            values: newSelected.map((item) => item.value),
+            selectedOptions: newSelected.map(({ label, value, caption }) => ({
+              label,
+              value,
+              caption: caption ?? null,
+            })),
+          },
+        ],
+      },
+    ]);
+  };
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (clear/selectOptions/deselectOptions overridden — clear needs no
+  // override since it matches the contract exactly via csaShims()).
   useEffect(() => {
     const defaultItems = findDefaultItem(values, advanced, true);
 
-    const exposedVariables = {
-      clear: async function () {
-        setInputValue([]);
-      },
-      setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        setIsMultiSelectLoading(!!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      setDisable: async function (value) {
-        setIsMultiSelectDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
-      },
+    setExposedVariables({
+      ...csaShims(),
+      selectOptions: selectOptionsCSA,
+      deselectOptions: deselectOptionsCSA,
       label: label,
       isVisible: properties.visibility,
       isLoading: multiSelectLoadingState,
@@ -309,47 +386,10 @@ export const MultiselectV2 = ({
       options:
         Array.isArray(selectOptions) &&
         selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
-    };
-    setExposedVariables(exposedVariables);
+    });
     isInitialRender.current = false;
-  }, []);
-
-  useEffect(() => {
-    // Expose selectOption
-    setExposedVariable('selectOptions', async function (value) {
-      if (Array.isArray(value)) {
-        const newSelected = [...selected];
-        value.forEach((val) => {
-          // Check if array provided is a list of objects with value key
-          if (isObject(val) && has(val, 'value')) {
-            val = val.value;
-          }
-          if (
-            selectOptions.some((option) => option.value === val) &&
-            !selected.some((option) => option.value === val)
-          ) {
-            const optionsToAdd = selectOptions.filter(
-              (option) => option.value === val && !selected.some((selectedOption) => selectedOption.value === val)
-            );
-            newSelected.push(...optionsToAdd);
-          }
-        });
-        const limited = maxSelectionLimit !== null ? newSelected.slice(0, maxSelectionLimit) : newSelected;
-        setInputValue(limited);
-      }
-    });
-
-    // Expose deselectOption
-    setExposedVariable('deselectOptions', async function (value) {
-      if (Array.isArray(value)) {
-        // Check if array provided is a list of objects with value key
-        const _value = value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val));
-        const newSelected = selected.filter((option) => !_value.includes(option.value));
-        setInputValue(newSelected);
-      }
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectOptions, selected, maxSelectionLimit]);
+  }, []);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -386,19 +426,6 @@ export const MultiselectV2 = ({
         selectRef.current.focus();
       }
     }
-  };
-
-  const setInputValue = (values) => {
-    setSelected(values);
-    setExposedVariables({
-      values: values.map((item) => item.value),
-      selectedOptions:
-        Array.isArray(values) &&
-        values?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null })),
-    });
-    const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {

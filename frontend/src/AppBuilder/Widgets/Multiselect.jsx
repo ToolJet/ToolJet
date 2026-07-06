@@ -1,11 +1,14 @@
 import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { FormCheck } from 'react-bootstrap';
 import { MultiSelect } from 'react-multi-select-component';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 import './multiselect.scss';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
@@ -38,11 +41,23 @@ export const Multiselect = function Multiselect({
   componentName,
   dataCy,
   formId,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
-  const [selected, setSelected] = useState([]);
-  const [searched, setSearched] = useState('');
+  const searchedRef = useRef('');
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
 
   let selectOptions = [];
   try {
@@ -55,30 +70,29 @@ export const Multiselect = function Multiselect({
     console.log(err);
   }
 
-  // useEffect(() => {
-  //   let newValues = [];
+  // Store is the source of truth for the exposed `values`; the resolved
+  // `value` property is the pre-first-publish fallback.
+  const exposedValues = useExposedVariable(id, 'values', exposedOpts, undefined) ?? value;
+  // Render-only derivation — replaces the old `selected` useState mirror.
+  const selected = useMemo(
+    () => selectOptions.filter((option) => (exposedValues || []).includes(option.value)),
+    [selectOptions, exposedValues]
+  );
 
-  //   if (_.intersection(values, value)?.length === value?.length) newValues = value;
+  // Latest-ref: the selectOption/deselectOption/clearSelections CSAs
+  // (registered once at mount) must never close over stale selectOptions/
+  // exposedValues from the mount-time render.
+  const ctxRef = useRef({ selectOptions, exposedValues });
+  ctxRef.current = { selectOptions, exposedValues };
 
-  //   setExposedVariable('values', newValues);
-  //   setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [JSON.stringify(values), JSON.stringify(display_values)]);
-
+  // Not isInitialRender-gated — matches old (unconditional passthrough of
+  // the resolved `value` prop into exposed `values`, including at mount).
   useEffect(() => {
     setExposedVariable('values', value);
-    setSelected(selectOptions.filter((option) => value.includes(option.value)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(value), JSON.stringify(display_values)]);
 
-  useEffect(() => {
-    if (value) {
-      setSelected(selectOptions.filter((option) => properties.value.includes(option.value)));
-    }
-  }, []);
-
   const onChangeHandler = (items) => {
-    setSelected(items);
     setExposedVariable(
       'values',
       items.map((item) => item.value)
@@ -86,59 +100,44 @@ export const Multiselect = function Multiselect({
     fireEvent('onSelect');
   };
 
+  // CSA path (RunJS / other components) — old guards preserved exactly:
+  // selectOption/deselectOption require selectOptions membership PLUS the
+  // opposite current-selection state; clearSelections requires a non-empty
+  // selection. All three fire onSelect only when the guard passes.
+  const selectOption = async (targetValue) => {
+    const { selectOptions, exposedValues } = ctxRef.current;
+    if (selectOptions.some((option) => option.value === targetValue) && !(exposedValues || []).includes(targetValue)) {
+      dispatch([
+        { kind: 'INVOKE_CSA', componentId: id, action: 'selectOption', args: [targetValue] },
+        { kind: 'FIRE_EVENT', componentId: id, event: 'onSelect' },
+      ]);
+    }
+  };
+
+  const deselectOption = async (targetValue) => {
+    const { selectOptions, exposedValues } = ctxRef.current;
+    if (selectOptions.some((option) => option.value === targetValue) && (exposedValues || []).includes(targetValue)) {
+      dispatch([
+        { kind: 'INVOKE_CSA', componentId: id, action: 'deselectOption', args: [targetValue] },
+        { kind: 'FIRE_EVENT', componentId: id, event: 'onSelect' },
+      ]);
+    }
+  };
+
+  const clearSelections = async () => {
+    const { exposedValues } = ctxRef.current;
+    if ((exposedValues || []).length >= 1) {
+      dispatch([
+        { kind: 'INVOKE_CSA', componentId: id, action: 'clearSelections', args: [] },
+        { kind: 'FIRE_EVENT', componentId: id, event: 'onSelect' },
+      ]);
+    }
+  };
+
   useEffect(() => {
-    const exposedVariables = {
-      selectOption: async function (value) {
-        if (
-          selectOptions.some((option) => option.value === value) &&
-          !selected.some((option) => option.value === value)
-        ) {
-          const newSelected = [
-            ...selected,
-            ...selectOptions.filter(
-              (option) =>
-                option.value === value && !selected.map((selectedOption) => selectedOption.value).includes(value)
-            ),
-          ];
-          setSelected(newSelected);
-          setExposedVariable(
-            'values',
-            newSelected.map((item) => item.value)
-          );
-          fireEvent('onSelect');
-        }
-      },
-      deselectOption: async function (value) {
-        if (
-          selectOptions.some((option) => option.value === value) &&
-          selected.some((option) => option.value === value)
-        ) {
-          const newSelected = [
-            ...selected.filter(function (item) {
-              return item.value !== value;
-            }),
-          ];
-          setSelected(newSelected);
-          setExposedVariable(
-            'values',
-            newSelected.map((item) => item.value)
-          );
-          fireEvent('onSelect');
-        }
-      },
-      clearSelections: async function () {
-        if (selected.length >= 1) {
-          setSelected([]);
-          setExposedVariable('values', []);
-          fireEvent('onSelect');
-        }
-      },
-    };
-
-    setExposedVariables(exposedVariables);
-
+    setExposedVariables({ selectOption, deselectOption, clearSelections });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, setSelected]);
+  }, []);
 
   useEffect(() => {
     const dropdownContainer = document.querySelector(`[aria-labelledby='${id}-label']`);
@@ -148,9 +147,8 @@ export const Multiselect = function Multiselect({
   }, []);
 
   const filterOptions = (options, filter) => {
-    setSearched(filter);
-
-    if (searched !== filter) {
+    if (searchedRef.current !== filter) {
+      searchedRef.current = filter;
       setExposedVariable('searchText', filter);
       fireEvent('onSearchTextChanged');
     }
@@ -203,10 +201,6 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
-          // isOpen={isOpen}
-          // onMenuOpen={handleDropdownOpen}
-          // onMenuClose={handleDropdownClose}
-          // ArrowRenderer={() => <DropdownIndicator isOpen={isOpen} toggleDropdown={toggleDropdown} />}
           onMenuToggle={(isOpen) => {
             if (isOpen) {
               // get all instances to handle for listview

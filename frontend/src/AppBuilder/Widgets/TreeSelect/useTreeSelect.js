@@ -1,12 +1,27 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 /**
  * Hook that manages all exposed variable logic for the TreeSelect widget.
  * Handles: checked, expanded, checkedPathArray, checkedPathStrings,
- *          leafPathArray, leafPathStrings, and CSAs (setLoading, setVisibility, setDisable)
+ *          leafPathArray, leafPathStrings, and CSAs (setLoading, setVisibility,
+ *          setDisable, selectOptions, deselectOptions).
+ *
+ * Controlled: `checked` is the source of truth for isVisible/isDisabled/
+ * isLoading/checked itself (store); the derived path/leaf arrays depend on
+ * `data` (a resolved prop, not exposed) so they're recomputed and published
+ * by a widget-side effect whenever `checked` or `data` change — this
+ * replaces the four separate computeExposedVars() call sites the old
+ * per-instance-closure version had.
  */
 export function useTreeSelect({
+  id,
+  componentType,
+  moduleId,
+  resolveIndex,
   data,
   checkedData,
   expandedData,
@@ -19,95 +34,55 @@ export function useTreeSelect({
   validate,
   validation,
 }) {
-  const [checked, setChecked] = useState(checkedData);
-  const [expanded, setExpanded] = useState(expandedData);
+  const isInitialRender = useRef(true);
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+  });
+
+  // Cascading-select derivation (property-sync, not a CSA) — the OLD logic
+  // for computing the initial/resynced checked array from checkedData/data.
+  const deriveCheckedArr = (currentData, currentCheckedData) => {
+    if (allowIndependentSelection) {
+      // Independent mode: use checkedData as-is, no cascading
+      return currentCheckedData;
+    }
+    // Cascading mode: if a parent is checked, all children are also checked
+    const checkedArr = [];
+    const updateCheckedArr = (array = [], selected, isSelected = false) => {
+      array.forEach((node) => {
+        if (isSelected || selected.includes(node.value)) {
+          checkedArr.push(node.value);
+          updateCheckedArr(node.children, selected, true);
+        } else {
+          updateCheckedArr(node.children, selected);
+        }
+      });
+    };
+    updateCheckedArr(currentData, currentCheckedData);
+    return checkedArr;
+  };
+
+  const checked = useExposedVariable(id, 'checked', exposedOpts, undefined) ?? deriveCheckedArr(data, checkedData);
+  const expanded = useExposedVariable(id, 'expanded', exposedOpts, expandedData);
 
   // === Validation State ===
-  const [validationStatus, setValidationStatus] = useState(
-    validate?.(checkedData) ?? { isValid: true, validationError: null }
+  const validationStatus = useMemo(
+    () => validate?.(checked) ?? { isValid: true, validationError: null },
+    [checked, validate]
   );
   const [showValidationError, setShowValidationError] = useState(false);
   useShowValidationOnFormSubmit(setShowValidationError);
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
 
-  // === CSA Local State ===
-  const [isLoading, setIsLoading] = useState(loadingState);
-  const [isVisible, setIsVisible] = useState(visibility);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
-
-  // Sync CSA state when properties change
-  useEffect(() => {
-    setIsVisible(visibility);
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    setIsDisabled(disabledState);
-    setExposedVariable('isDisabled', disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    setIsLoading(loadingState);
-    setExposedVariable('isLoading', loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
-
-  // Helper to normalize a single value or array into a flat array of strings
-  const normalizeValues = (input) => {
-    if (Array.isArray(input)) return input;
-    if (input != null) return [input];
-    return [];
-  };
-
-  // Register CSA functions on mount
-  useEffect(() => {
-    setExposedVariables({
-      isLoading: false,
-      isVisible: visibility,
-      isDisabled: disabledState,
-      isValid: validationStatus.isValid,
-      isMandatory,
-      setLoading: async function (value) {
-        setIsLoading(!!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      setVisibility: async function (value) {
-        setIsVisible(!!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setDisable: async function (value) {
-        setIsDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      selectOptions: async function (values) {
-        const updated = normalizeValues(values);
-        setChecked(updated);
-        setExposedVariables(computeExposedVars(updated));
-        if (validate) {
-          const result = validate(updated);
-          setValidationStatus(result);
-          setExposedVariable('isValid', result.isValid);
-        }
-      },
-      deselectOptions: async function (values) {
-        const toRemove = new Set(normalizeValues(values));
-        setChecked((prev) => {
-          const updated = prev.filter((v) => !toRemove.has(v));
-          setExposedVariables(computeExposedVars(updated));
-          if (validate) {
-            const result = validate(updated);
-            setValidationStatus(result);
-            setExposedVariable('isValid', result.isValid);
-          }
-          return updated;
-        });
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
 
   // Build a map of value -> full path from root
   const pathObj = useMemo(() => {
@@ -166,7 +141,6 @@ export function useTreeSelect({
       });
 
       return {
-        checked: checkedArr,
         checkedPathArray,
         checkedPathStrings,
         leafPathArray,
@@ -176,92 +150,105 @@ export function useTreeSelect({
     [pathObj, leafValues]
   );
 
-  // Sync checked state when checkedData or data changes
+  // Latest-ref: the exposed selectOptions/deselectOptions CSAs don't need
+  // this (reducers read `checked` from current exposed state), but this
+  // effect below always runs off the latest `checked`/pathObj/leafValues by
+  // construction (React re-runs it on every relevant change) — no
+  // staleness risk.
+
+  // Publish derived path/leaf arrays + isValid whenever checked (or the
+  // data-derived path maps) change — regardless of whether checked changed
+  // via CSA dispatch, direct user interaction, or a checkedData prop resync.
   useEffect(() => {
-    let checkedArr;
+    if (isInitialRender.current) return;
+    setExposedVariables(computeExposedVars(checked || []));
+    if (validate) setExposedVariable('isValid', validationStatus?.isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked, pathObj, leafValues]);
 
-    if (allowIndependentSelection) {
-      // Independent mode: use checkedData as-is, no cascading
-      checkedArr = checkedData;
-    } else {
-      // Cascading mode: if a parent is checked, all children are also checked
-      checkedArr = [];
-      const updateCheckedArr = (array = [], selected, isSelected = false) => {
-        array.forEach((node) => {
-          if (isSelected || selected.includes(node.value)) {
-            checkedArr.push(node.value);
-            updateCheckedArr(node.children, selected, true);
-          } else {
-            updateCheckedArr(node.children, selected);
-          }
-        });
-      };
-      updateCheckedArr(data, checkedData);
-    }
+  // Re-validate when the validate function itself changes (e.g. validation
+  // config updated) independent of `checked` — matches old's separate
+  // [validate]-keyed effect.
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    if (validate) setExposedVariable('isValid', validationStatus?.isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validate]);
 
-    setChecked(checkedArr);
-    setExposedVariables(computeExposedVars(checkedArr));
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
 
-    // Run validation on checked change
-    if (validate) {
-      const result = validate(checkedArr);
-      setValidationStatus(result);
-      setExposedVariable('isValid', result.isValid);
-    }
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  // Not isInitialRender-gated — matches old (unconditional checked resync on
+  // checkedData/data/allowIndependentSelection change, idempotent on mount
+  // since deriveCheckedArr is also the pre-publish fallback above).
+  useEffect(() => {
+    const checkedArr = deriveCheckedArr(data, checkedData);
+    setExposedVariables({ checked: checkedArr, ...computeExposedVars(checkedArr) });
+    if (validate) setExposedVariable('isValid', validate(checkedArr)?.isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(checkedData), JSON.stringify(data), allowIndependentSelection]);
 
-  // Sync expanded state
+  // Not isInitialRender-gated — matches old (unconditional expanded resync).
   useEffect(() => {
     setExposedVariable('expanded', expandedData);
-    setExpanded(expandedData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(expandedData)]);
 
-  // Handler for check events
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers.
+  useEffect(() => {
+    setExposedVariables({
+      isLoading: false,
+      isVisible: visibility,
+      isDisabled: disabledState,
+      isValid: validationStatus.isValid,
+      isMandatory,
+      ...csaShims(),
+    });
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Handler for check events — direct write (user interaction fires its own
+  // event from the widget, matching old handleCheck which never fired one).
   const handleCheck = useCallback(
     (newChecked) => {
-      setChecked(newChecked);
-      setExposedVariables(computeExposedVars(newChecked));
+      setExposedVariables({ checked: newChecked });
       setShowValidationError(true);
-
-      // Run validation on user interaction
-      if (validate) {
-        const result = validate(newChecked);
-        setValidationStatus(result);
-        setExposedVariable('isValid', result.isValid);
-      }
     },
-    [computeExposedVars, setExposedVariables, validate, setExposedVariable]
+    [setExposedVariables]
   );
 
   // Handler for expand events
   const handleExpand = useCallback(
     (newExpanded) => {
-      setExpanded(newExpanded);
       setExposedVariable('expanded', newExpanded);
     },
     [setExposedVariable]
   );
 
-  // Re-validate when the validate function itself changes (e.g. validation config updated)
-  useEffect(() => {
-    if (validate) {
-      const result = validate(checked);
-      setValidationStatus(result);
-      setExposedVariable('isValid', result.isValid);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [validate]);
-
-  // Expose isMandatory when it changes
-  useEffect(() => {
-    setExposedVariable('isMandatory', isMandatory);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMandatory]);
-
   return {
-    checked,
+    checked: checked || [],
     expanded,
     handleCheck,
     handleExpand,

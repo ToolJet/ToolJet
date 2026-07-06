@@ -37,6 +37,9 @@ const TreeSelect = ({
   subContainerIndex,
   validate,
   validation,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const {
     label,
@@ -157,6 +160,10 @@ const TreeSelect = ({
     showValidationError,
     isMandatory,
   } = useTreeSelect({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
     data: rawData,
     checkedData: evaluatedCheckedData,
     expandedData: evaluatedExpandedData,
