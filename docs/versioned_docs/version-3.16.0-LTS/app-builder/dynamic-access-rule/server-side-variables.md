@@ -74,7 +74,7 @@ This is the foundation for [Row Level Security](/docs/app-builder/dynamic-access
 
 Server-side variables are also useful in REST API auth headers, request tokens, and datasource connection options, where the value must stay hidden from the client. For example, you can pass the current user's ID as a header value when calling an external service.
 
-## `globals.currentUser` vs `globals.server.currentUser`
+## Client Side Variables vs Server Side Variables
 
 ToolJet exposes the same user fields through two different variables. The difference is where and how they are resolved.
 

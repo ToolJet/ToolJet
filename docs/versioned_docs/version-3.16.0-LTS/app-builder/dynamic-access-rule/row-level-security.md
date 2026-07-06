@@ -9,7 +9,7 @@ Row-level security in ToolJet lets you control which records a user can see or i
 
 Row-level security is built on [Server-Side Variables](/docs/app-builder/dynamic-access-rule/server-side-variables). You reference the current user's identity through `globals.server.currentUser`, and ToolJet resolves those values on the server before the query runs, so users cannot tamper with the filter from the browser.
 
-:::info
+:::caution
 A filter written with the client-side `{{globals.currentUser.*}}` variable is resolved in the browser, so a user can modify its value (for example, through browser dev tools) to return another user's rows. Client-side filtering is a presentation convenience, not a security control.
 :::
 
