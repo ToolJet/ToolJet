@@ -157,6 +157,7 @@ export const Datepicker = function Datepicker({
     >
       <DatePickerComponent
         open={isCalendarOpen}
+        disabled={disabledState}
         className={`input-field form-control ${
           !isValid && showValidationError ? 'is-invalid' : ''
         } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'} ${
