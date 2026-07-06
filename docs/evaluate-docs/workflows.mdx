@@ -1,23 +1,130 @@
 ---
 id: workflows
 title: Workflow Automation
-sidebar_label: Workflow Automation
+sidebar_label: 05 — Workflow Automation
 ---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
 
 # Workflow Automation
 
-*This section covers ToolJet Workflows: the visual backend automation builder for multi-step processes, scheduled jobs, and business logic that runs server-side.*
+ToolJet Workflows is a visual backend automation builder for logic that runs server-side, independent of any app UI. Where app queries run in response to user interaction, workflows handle scheduled jobs, webhook processing, multi-step approval routing, and business logic that needs to run on a trigger — not on a click.
 
-**Coming soon.** Content is being drafted for this section.
+Workflows is available on the Business tier and above.
 
-Topics this section will cover:
+## How Workflows Differ from App Queries
 
-- What Workflows are and how they differ from app queries
-- Visual node-based builder — triggers, conditions, branches, loops
-- Trigger types — manual, scheduled (cron), webhook, event-based
-- Connecting workflows to data sources and APIs
-- Error handling and retry logic
-- Workflow availability — Workflows are a paid feature (Business tier and above)
-- Common automation patterns: approval routing, data sync, notification dispatch, report generation
+App queries are tied to an app's lifecycle: they run when a user opens a page, clicks a button, or submits a form. The result goes back to the UI.
 
-In the meantime, see [Workflows](/docs/workflows/overview) for technical reference.
+Workflows run server-side on their own trigger conditions, with no frontend required. A workflow can call multiple data sources in sequence, branch on conditions, loop over a dataset, and send results to external systems — all without a user present.
+
+| | App Queries | Workflows |
+|---|---|---|
+| Trigger | User action / page load | Cron, webhook, manual, event |
+| Execution | Client-initiated | Server-side |
+| Frontend required | Yes | No |
+| Multi-step branching | Limited | Full |
+| Scheduled runs | No | Yes |
+| Retry / error handling | Basic | Configurable |
+
+## The Workflow Builder
+
+<CapabilityGrid items={[
+  {
+    icon: '🔷',
+    title: 'Visual Node Editor',
+    description: 'A canvas where you connect trigger, logic, and action nodes. Nodes can query data sources, run JavaScript, branch on conditions, loop over arrays, and call other workflows.',
+  },
+  {
+    icon: '⏱️',
+    title: 'Trigger Types',
+    description: 'Manual (run on demand), scheduled (cron expression), webhook (inbound HTTP POST), and event-based (triggered from an app action or another workflow).',
+  },
+  {
+    icon: '🔀',
+    title: 'Branching & Loops',
+    description: 'Conditional branches based on query results or variable values. Loop nodes iterate over arrays, with configurable concurrency and early-exit conditions.',
+  },
+  {
+    icon: '🔁',
+    title: 'Error Handling & Retries',
+    description: 'Per-node retry configuration with delay intervals. Catch nodes handle errors from any step and route them to alternative logic or notifications.',
+  },
+]} />
+
+## What Workflows Connect To
+
+Workflows use the same data source connectors as apps. Any database, REST API, or SaaS tool available in the workspace can be called from a workflow node.
+
+Common workflow actions:
+- Query a database and write results to another system
+- POST to a webhook or external API
+- Send email or Slack notifications via SaaS connectors
+- Read from a queue and process records in a loop
+- Update a ToolJet Database table on a schedule
+
+## Common Automation Patterns
+
+<CapabilityGrid items={[
+  {
+    icon: '✅',
+    title: 'Approval Routing',
+    description: 'Triggered from an app action. Evaluates conditions, assigns approvers, sends notifications, and updates status based on the approval decision.',
+  },
+  {
+    icon: '🔄',
+    title: 'Data Sync',
+    description: 'Scheduled workflow that pulls from one data source and writes to another. Useful for keeping a ToolJet Database table in sync with an external CRM or warehouse.',
+  },
+  {
+    icon: '📣',
+    title: 'Notification Dispatch',
+    description: 'Event-triggered workflow that sends email, Slack, or webhook notifications when conditions are met — threshold alerts, SLA breaches, status changes.',
+  },
+  {
+    icon: '📊',
+    title: 'Scheduled Reporting',
+    description: 'Cron-triggered workflow that aggregates data, formats a report payload, and delivers it to a destination (email, Slack channel, S3 bucket, webhook).',
+  },
+  {
+    icon: '🧹',
+    title: 'Data Cleanup',
+    description: 'Scheduled jobs that archive old records, enforce retention policies, or normalize data in connected databases.',
+  },
+  {
+    icon: '🌐',
+    title: 'Webhook Processors',
+    description: 'Inbound webhook endpoint that receives payloads from external systems (Stripe events, GitHub hooks, form submissions) and processes them through multi-step logic.',
+  },
+]} />
+
+## Workflow Availability
+
+Workflows is a paid feature, available on the Business tier and above. On Free and Basic tiers, app queries cover synchronous, user-triggered data operations. Evaluate Workflows if your use case requires server-side scheduled jobs, webhook processing, or multi-step automation independent of app sessions.
+
+For current tier details, see the [ToolJet pricing page](https://www.tooljet.com/pricing).
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need scheduled backend jobs — data sync, report generation, cleanup — without deploying separate services',
+    'Your approval and review processes require multi-step routing logic with conditional branches',
+    'You receive webhook events from external systems and need to process them through multi-step logic',
+    'You want operations teams to build and modify automation logic visually, without writing backend code',
+  ]}
+  notGood={[
+    'Your automations run at high frequency or require sub-second latency — Workflows is designed for business-process automation, not high-throughput event processing',
+    'You need complex event streaming or message queue semantics (Kafka, SQS consumer groups) — Workflows can call these APIs but doesn\'t replace a stream processing layer',
+    'You\'re on Free or Basic tier and need server-side scheduled runs — Workflows requires Business tier or above',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🏗️" title="Deployment & Infrastructure" description="How ToolJet deploys on Docker, Kubernetes, cloud providers, and air-gapped environments." href="/evaluate/deployment" />
+  <NavCard icon="🔐" title="Governance & Access Control" description="RBAC, SSO, audit logs, and the permission model for enterprise teams." href="/evaluate/governance" />
+</NavCardGrid>

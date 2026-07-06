@@ -1,24 +1,123 @@
 ---
 id: deployment
 title: Deployment & Infrastructure
-sidebar_label: Deployment & Infrastructure
+sidebar_label: 06 — Deployment & Infrastructure
 ---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
 
 # Deployment & Infrastructure
 
-*This section covers how ToolJet deploys in enterprise environments: supported targets, high-availability configurations, resource requirements, and what self-hosting entails operationally.*
+ToolJet runs wherever your infrastructure is. This section covers the supported deployment targets, what a self-hosted production architecture looks like, the external dependencies, and what ongoing operations entail. If you have data residency requirements, network isolation constraints, or an existing container platform, this is where to evaluate whether ToolJet fits.
 
-**Coming soon.** Content is being drafted for this section.
+## Deployment Options
 
-Topics this section will cover:
+<CapabilityGrid items={[
+  {
+    icon: '☁️',
+    title: 'ToolJet Cloud',
+    description: 'Managed SaaS. ToolJet handles infrastructure, upgrades, and availability. Up and running in minutes. Data processed in ToolJet\'s infrastructure — not suitable if data residency requires your own cloud account.',
+  },
+  {
+    icon: '🐳',
+    title: 'Docker Compose',
+    description: 'Single-server deployment via Docker Compose. Suitable for small teams, evaluation environments, and development. Not recommended for production HA deployments.',
+  },
+  {
+    icon: '☸️',
+    title: 'Kubernetes',
+    description: 'Official Helm chart supports GKE, AKS, EKS, OpenShift, and any standards-compliant cluster. Recommended path for production self-hosting. Horizontal scaling, health checks, and rolling upgrades included.',
+  },
+  {
+    icon: '🏗️',
+    title: 'Managed Container Services',
+    description: 'Deployment guides for AWS ECS (Fargate), GCP Cloud Run, Azure Container Apps, and DigitalOcean App Platform. Suitable for teams that want container orchestration without running Kubernetes.',
+  },
+  {
+    icon: '🔒',
+    title: 'Air-gapped / On-premise',
+    description: 'Fully network-isolated deployment. ToolJet images can be mirrored to a private registry. No outbound internet access required at runtime. Used in regulated industries and government environments.',
+  },
+]} />
 
-- Deployment targets — Docker Compose, Kubernetes (GKE/AKS/EKS), AWS ECS, GCP Cloud Run, Azure Container Apps, DigitalOcean, Helm, OpenShift
-- ToolJet Cloud — managed option with no ops overhead
-- Air-gapped and on-premise deployment
-- High-availability architecture for production workloads
-- Resource requirements — CPU, memory, storage baselines
-- External dependencies — PostgreSQL (metadata), Redis (cache/sessions)
-- Environment variables and secrets management
-- Upgrade process and version compatibility
+## Architecture Components
 
-In the meantime, see [Setup ToolJet](/docs/setup/overview) for deployment guides.
+A production ToolJet deployment has three services and two external dependencies:
+
+<CapabilityGrid items={[
+  {
+    icon: '🖥️',
+    title: 'App Server',
+    description: 'Handles HTTP requests: app rendering, API calls, authentication, and query execution. Horizontally scalable — run multiple replicas behind a load balancer for HA.',
+  },
+  {
+    icon: '⚙️',
+    title: 'Worker',
+    description: 'Processes async jobs: scheduled workflows, background tasks, and large query executions. Runs as a separate process from the app server. Scale independently.',
+  },
+  {
+    icon: '🗄️',
+    title: 'PostgreSQL',
+    description: 'The metadata database. Stores app definitions, users, groups, data source configurations, and audit logs. Use your existing managed Postgres (RDS, Cloud SQL, Azure Database) or provision one.',
+  },
+  {
+    icon: '⚡',
+    title: 'Redis',
+    description: 'Session cache and job queue. Required for multi-replica deployments and for Workflows. Use a managed Redis (ElastiCache, Cloud Memorystore, Azure Cache) or a Redis-compatible service.',
+  },
+  {
+    icon: '📦',
+    title: 'Object Storage (optional)',
+    description: 'S3-compatible storage for file uploads within apps (file picker component). AWS S3, GCS, Azure Blob, or MinIO for self-hosted. Not required if apps don\'t use file upload features.',
+  },
+]} />
+
+## Resource Requirements
+
+These are baseline figures for a production HA deployment. Actual requirements depend on user count, query volume, and workflow frequency.
+
+| Component | Minimum | Recommended (production) |
+|---|---|---|
+| App Server | 2 vCPU, 2 GB RAM | 4 vCPU, 4 GB RAM × 2 replicas |
+| Worker | 1 vCPU, 1 GB RAM | 2 vCPU, 2 GB RAM × 2 replicas |
+| PostgreSQL | 2 vCPU, 4 GB RAM | Managed service (RDS db.t3.medium or equivalent) |
+| Redis | 1 vCPU, 1 GB RAM | Managed service (cache.t3.micro or equivalent) |
+
+## Upgrades
+
+ToolJet releases follow semantic versioning. The upgrade process is:
+
+1. Pull the new Docker image version
+2. Run database migrations (included in the image, auto-runs on startup)
+3. Rolling restart of app server and worker replicas
+
+Migrations are backwards-compatible within minor versions. Major version upgrades include a migration guide. The Kubernetes Helm chart supports rolling upgrades with zero downtime for the app server.
+
+## Secrets Management
+
+ToolJet reads all configuration from environment variables. Integration with secret managers (AWS Secrets Manager, HashiCorp Vault, Kubernetes Secrets, Azure Key Vault) is handled at the deployment level — inject secrets as env vars at container startup. ToolJet does not require direct access to a secrets manager.
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need to deploy in your own cloud account to meet data residency or compliance requirements',
+    'Your organization runs Kubernetes and wants to deploy ToolJet using a standard Helm chart',
+    'You need a fully air-gapped deployment with no internet access at runtime',
+    'You want to reuse your existing managed Postgres and Redis services for the ToolJet metadata layer',
+    'You need horizontal scaling and zero-downtime upgrades for a production ToolJet instance',
+  ]}
+  notGood={[
+    'You need ToolJet to manage its own HA infrastructure without any ops involvement — ToolJet Cloud is the right path for that',
+    'You have no container platform and no Kubernetes experience — Docker Compose works for evaluation but is not production-grade',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🔐" title="Governance & Access Control" description="RBAC, custom groups, IdP sync, and component-level permission rules." href="/evaluate/governance" />
+  <NavCard icon="🛡️" title="Security & Compliance" description="SOC 2, GDPR, ISO 27001, the data proxy model, and audit logs." href="/evaluate/security-compliance" />
+</NavCardGrid>

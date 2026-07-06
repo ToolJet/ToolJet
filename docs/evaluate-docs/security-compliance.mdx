@@ -1,24 +1,128 @@
 ---
 id: security-compliance
 title: Security & Compliance
-sidebar_label: Security & Compliance
+sidebar_label: 10 — Security & Compliance
 ---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
 
 # Security & Compliance
 
-*This section covers ToolJet's security model and compliance certifications: what data ToolJet touches, how credentials are protected, what auditors have reviewed, and what controls are available for regulated environments.*
+Security evaluation for an internal tools platform centers on three questions: What data does it touch? Who has independently verified its controls? What happens if there's an incident? This section covers ToolJet's security model, certifications, and the controls available for regulated environments.
 
-**Coming soon.** Content is being drafted for this section.
+## Compliance Certifications
 
-Topics this section will cover:
+<CapabilityGrid items={[
+  {
+    icon: '🏅',
+    title: 'SOC 2 Type II',
+    description: 'Annual third-party audit of security, availability, and confidentiality controls. Covers the ToolJet Cloud service. Report available under NDA for enterprise evaluations.',
+  },
+  {
+    icon: '🇪🇺',
+    title: 'GDPR',
+    description: 'ToolJet acts as a data processor. A Data Processing Agreement (DPA) is available for cloud customers. Self-hosted deployments keep all data in your own infrastructure.',
+  },
+  {
+    icon: '🔏',
+    title: 'ISO 27001',
+    description: 'Information security management certification covering the ToolJet organization and product development processes.',
+  },
+]} />
 
-- Compliance certifications — SOC 2 Type II, GDPR, ISO 27001
-- The data proxy model — ToolJet routes queries server-side but never stores result data; data flows from your source directly to the user's browser
-- Credential storage — AES-256-GCM encryption for all datasource credentials at rest
-- Transport security — TLS 1.2+ for all connections in transit
-- Audit logs (Enterprise) — comprehensive activity logging for all user actions; exportable to SIEM tools
-- Network controls — IP whitelisting, VPC deployment, private networking options
-- Vulnerability disclosure and responsible security practices
-- ToolJet Trust Center
+For the latest certification status and to request audit reports, see the ToolJet Trust Center.
 
-In the meantime, see [Security & Monitoring](/docs/security/compliance) for technical reference.
+## The Data Proxy Model
+
+Understanding what data ToolJet touches is the foundation of any security assessment.
+
+ToolJet is a **query router, not a data store**. When a user runs a query:
+
+1. The browser sends the query request to the ToolJet server
+2. ToolJet executes the query against your data source using stored credentials
+3. The result is returned to the user's browser session
+4. ToolJet does not log, cache, or persist query result data
+
+**What ToolJet stores:** app definitions, user accounts, group assignments, data source connection configurations (credentials encrypted at rest), and audit logs. It does not store any data that flows through queries.
+
+This model means: if your data source returns sensitive records, those records exist in the user's browser session but never in ToolJet's database.
+
+## Data Security Controls
+
+<CapabilityGrid items={[
+  {
+    icon: '🔐',
+    title: 'Credential Encryption',
+    description: 'All data source credentials are encrypted at rest using AES-256-GCM. Encryption keys are managed separately from the data. In self-hosted deployments, key management is yours to control.',
+  },
+  {
+    icon: '🚀',
+    title: 'Transport Security',
+    description: 'TLS 1.2+ enforced for all connections: browser to ToolJet server, ToolJet server to data sources, and internal service-to-service communication.',
+  },
+  {
+    icon: '📋',
+    title: 'Audit Logs (Enterprise)',
+    description: 'Every user action is logged: login events, app access, query execution, data source changes, user provisioning, and permission changes. Logs are exportable to SIEM tools.',
+  },
+  {
+    icon: '🌐',
+    title: 'Network Controls',
+    description: 'IP allowlisting for workspace access, VPC deployment for self-hosted environments, and private networking options for data source connections. No public egress required for air-gapped deployments.',
+  },
+]} />
+
+## Audit Logs
+
+Enterprise audit logs capture the full activity trail for a ToolJet workspace:
+
+| Category | What's logged |
+|---|---|
+| Authentication | Login, logout, SSO events, failed attempts |
+| App access | Which user accessed which app and when |
+| Data operations | Query execution events (not result data) |
+| Administration | User creation, deletion, group changes, permission updates |
+| App changes | Version publishes, promotions, rollbacks |
+| Data sources | Connection creation, modification, deletion |
+
+Logs are available in the admin console and exportable via API for ingestion into Splunk, Datadog, Elastic, or any SIEM that accepts JSON.
+
+## Self-Hosted Security Posture
+
+For organizations that self-host, the security boundary is entirely within your infrastructure:
+
+- **No outbound telemetry**: ToolJet can be configured to run with no outbound internet connections
+- **Your key management**: encryption keys for credential storage are your responsibility to protect and rotate
+- **Your network controls**: firewall rules, private subnets, and VPC peering for data source connections are configured at your infrastructure layer
+- **Your audit pipeline**: logs are written to your Postgres database and accessible via API for forwarding to your SIEM
+
+Air-gapped deployments support all enterprise features without requiring internet access at runtime. Images are mirrored to a private registry; no calls to external services are made after deployment.
+
+## Vulnerability Disclosure
+
+ToolJet maintains a responsible disclosure program. Security vulnerabilities can be reported through the ToolJet Security page. The team acknowledges reports within 48 hours and targets remediation within 90 days for validated vulnerabilities, with critical issues addressed sooner.
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'You need SOC 2 Type II or ISO 27001 certification as part of your vendor approval process',
+    'Your data cannot leave your own infrastructure — self-hosting keeps all data within your cloud account',
+    'You require audit logs for all user actions on internal tools, exportable to your SIEM',
+    'Your deployment must operate without internet access — air-gapped mode is supported',
+    'You need GDPR data processing documentation — DPA is available for cloud, self-hosted keeps data in your jurisdiction',
+  ]}
+  notGood={[
+    'You need ToolJet to enforce row-level security on query results — ToolJet routes queries but doesn\'t filter result data; row-level security belongs in your database',
+    'You require FedRAMP authorization — ToolJet does not currently hold FedRAMP ATO',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🗺️" title="Roadmap & Vision" description="Where ToolJet is headed and how to assess trajectory for a multi-year evaluation." href="/evaluate/roadmap" />
+  <NavCard icon="⚖️" title="Compare & Choose" description="How ToolJet stacks up against Retool, Appsmith, and others you may be evaluating." href="/evaluate/compare" />
+</NavCardGrid>

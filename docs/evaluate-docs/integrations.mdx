@@ -1,24 +1,132 @@
 ---
 id: integrations
 title: Integrations & Data Sources
-sidebar_label: Integrations & Data Sources
+sidebar_label: 04 — Integrations & Data Sources
 ---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
 
 # Integrations & Data Sources
 
-*This section covers how ToolJet connects to your existing data infrastructure: databases, APIs, SaaS tools, and the marketplace for custom plugins.*
+ToolJet apps query your existing data directly — databases, APIs, and SaaS tools — without ETL pipelines or middleware. This section covers what's supported, how the query layer works, and how credentials are handled.
 
-**Coming soon.** Content is being drafted for this section.
+## What ToolJet Connects To
 
-Topics this section will cover:
+50+ native data source connectors across four categories:
 
-- Supported data sources — 50+ native connectors (PostgreSQL, MySQL, MongoDB, BigQuery, Snowflake, Databricks, Redshift, and more)
-- REST, GraphQL, and gRPC API integrations
-- SaaS connectors — Stripe, Airtable, Notion, HubSpot, Salesforce, Google Sheets, and more
-- Query builder — how developers write and test queries
-- ToolJet Database — the built-in Postgres-backed database
-- Custom plugins via the Marketplace
-- Credential management — how secrets are stored and encrypted
-- Data proxy model — why ToolJet never stores query result data
+<CapabilityGrid items={[
+  {
+    icon: '🗄️',
+    title: 'Relational Databases',
+    description: 'PostgreSQL, MySQL, MariaDB, Microsoft SQL Server, Oracle DB, CockroachDB, Amazon RDS (all engines), Google AlloyDB.',
+  },
+  {
+    icon: '📦',
+    title: 'NoSQL & Warehouses',
+    description: 'MongoDB, Redis, Firestore, DynamoDB, Elasticsearch, Cassandra — plus BigQuery, Snowflake, Databricks, Amazon Redshift, ClickHouse for analytics.',
+  },
+  {
+    icon: '🌐',
+    title: 'APIs',
+    description: 'REST (any endpoint with custom headers, auth, and body), GraphQL, gRPC. Build and test requests directly in the query panel.',
+  },
+  {
+    icon: '🧩',
+    title: 'SaaS Tools',
+    description: 'Stripe, Airtable, Notion, HubSpot, Salesforce, Google Sheets, Slack, Twilio, SendGrid, GitHub, Jira, and more via the connector marketplace.',
+  },
+]} />
 
-In the meantime, see [Data Sources](/docs/data-sources/overview) for technical reference.
+If a connector doesn't exist for your tool, the REST API integration covers any HTTP endpoint. Custom connectors can also be built and published to the marketplace.
+
+## The Query Builder
+
+Every data source interaction goes through the query panel. Developers write and test queries in the editor, then bind the results to component properties using `{{ }}` expressions.
+
+<CapabilityGrid items={[
+  {
+    icon: '🔍',
+    title: 'Visual Query Editor',
+    description: 'SQL editor with syntax highlighting and autocomplete for database queries. Form-based builders for REST, GraphQL, and SaaS connectors. Test any query before binding it to a component.',
+  },
+  {
+    icon: '⚡',
+    title: 'Run Conditions',
+    description: 'Queries can run on page load, on user action, or chained from another query\'s success or failure. Multiple trigger conditions are supported per query.',
+  },
+  {
+    icon: '🔄',
+    title: 'Transformations',
+    description: 'Optional JavaScript or Python transformation step applied to query results before they reach the component. Reshape, filter, or aggregate data without a backend round-trip.',
+  },
+  {
+    icon: '🧩',
+    title: 'Preview & Debugging',
+    description: 'Run any query in the panel and inspect the raw response. Check binding expressions live in the canvas before publishing.',
+  },
+]} />
+
+## ToolJet Database
+
+Every workspace includes a built-in Postgres-backed database — no external database required for lightweight use cases.
+
+- Full table management through a GUI: create tables, add columns, set constraints
+- Query it like any other data source from the query panel
+- Accessible via REST API for external systems
+- Appropriate for small-to-medium datasets and prototyping; for high-volume transactional data, connect your own database
+
+## Credential Management
+
+<CapabilityGrid items={[
+  {
+    icon: '🔐',
+    title: 'Encrypted Storage',
+    description: 'Data source credentials are encrypted at rest. Connection details are stored at the workspace level, separate from app definitions.',
+  },
+  {
+    icon: '🌍',
+    title: 'Environment Scoping',
+    description: 'Different credentials per environment (development, staging, production) with the same connection name. Promotion between environments doesn\'t require query edits.',
+  },
+  {
+    icon: '🛡️',
+    title: 'Data Proxy Model',
+    description: 'ToolJet never stores query result data. Results flow from your data source to the user\'s browser session — ToolJet is a pass-through, not a data store.',
+  },
+  {
+    icon: '🔑',
+    title: 'OAuth Support',
+    description: 'OAuth 2.0 flows for SaaS connectors (Google, GitHub, HubSpot, Salesforce, etc.) with per-user or workspace-level token storage.',
+  },
+]} />
+
+## Connector Marketplace
+
+The marketplace lets teams publish and install custom connectors. Organizations with internal APIs or proprietary tools can build a connector once and make it available to all apps in the workspace.
+
+Marketplace connectors follow the same credential model and query panel interface as built-in connectors.
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'Your internal tools need to read from and write back to existing databases without ETL',
+    'Your team uses a mix of SQL databases, REST APIs, and SaaS tools that all need to be queryable from one place',
+    'You need environment-scoped credentials so the same app can run against staging and production data',
+    'Your compliance posture requires that query result data never passes through a third-party store',
+  ]}
+  notGood={[
+    'You need real-time streaming data (WebSocket or CDC feeds) — ToolJet queries are request/response, not streaming',
+    'Your use case requires complex multi-step ETL transformations — ToolJet transforms are lightweight post-processing, not a pipeline tool',
+    'You need connectors for highly specialized enterprise systems with no REST API — custom connectors require development work',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="⚡" title="Workflow Automation" description="The visual backend automation builder for scheduled jobs, webhooks, and multi-step processes." href="/evaluate/workflows" />
+  <NavCard icon="🏗️" title="Deployment & Infrastructure" description="How ToolJet deploys on Docker, Kubernetes, cloud providers, and air-gapped environments." href="/evaluate/deployment" />
+</NavCardGrid>

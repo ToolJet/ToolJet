@@ -1,22 +1,108 @@
 ---
 id: ai-development
 title: AI Development
-sidebar_label: AI Development
+sidebar_label: 03 — AI Development
 ---
+
+import { CapabilityGrid } from '@site/src/components/evaluate/CapabilityGrid';
+import { FitGrid } from '@site/src/components/evaluate/FitGrid';
+import { NavCard, NavCardGrid } from '@site/src/components/evaluate/NavCard';
 
 # AI Development
 
-*This section covers how AI is embedded in the ToolJet development experience: natural-language app generation, the MCP bridge for AI coding tools, and what this means for development velocity.*
+ToolJet has two distinct AI layers: one that helps developers build apps faster using natural language, and one that connects external AI coding agents to a live ToolJet instance via a standard protocol. This section covers what each layer can do, where it adds real leverage, and what still requires manual work.
 
-**Coming soon.** Content is being drafted for this section.
+## AI-Powered App Generation
 
-Topics this section will cover:
+ToolJet's built-in AI can scaffold a working application from a natural language prompt. Describe what you want to build — an approval queue, a data table with filters, a customer lookup form — and the AI generates an initial layout with components placed and configured.
 
-- Generate apps from natural language prompts — what it produces and what it doesn't
-- ToolJet MCP — connecting Cursor, GitHub Copilot, Claude, Cline, and Windsurf to a live ToolJet instance
-- What AI coding agents can do programmatically (create components, wire queries, modify layouts)
-- AI Docs Assistant — in-product help for builders
-- When to use AI generation vs manual building
-- Limitations and where human review is required
+<CapabilityGrid items={[
+  {
+    icon: '🧱',
+    title: 'Component Scaffolding',
+    description: 'Generates a canvas layout with relevant components already placed, sized, and configured. A starting point that\'s roughly 60–70% of the way to a usable app, not a blank slate.',
+  },
+  {
+    icon: '🔗',
+    title: 'Query Wiring',
+    description: 'Creates placeholder queries and binds component properties to query outputs using {{ }} expressions. You still connect your actual data source, but the binding structure is in place.',
+  },
+  {
+    icon: '✏️',
+    title: 'Iterative Editing',
+    description: 'After initial generation, prompt the AI to add a column, change a filter, restructure the layout, or add a form. Changes apply to the existing app — not regenerated from scratch.',
+  },
+  {
+    icon: '📚',
+    title: 'In-Product Docs Assistant',
+    description: 'An AI assistant inside the builder that answers questions about components, query syntax, and ToolJet features — reducing context-switching to external documentation.',
+  },
+]} />
 
-In the meantime, see [Build with AI](/docs/build-with-ai/overview) for technical reference.
+**What it produces:** A functional app skeleton with component properties configured, event handlers set up, and visual structure reflecting your description. You connect real data sources, adjust queries to match your schema, and refine the UI for your use case.
+
+**What it doesn't do:** The AI doesn't access your database schema or infer column names. It doesn't write complex business logic or generate production-ready queries. It's a head-start, not a finished build.
+
+## The MCP Bridge
+
+ToolJet exposes a Model Context Protocol (MCP) server that allows external AI coding agents to interact with a live ToolJet instance programmatically.
+
+Agents like Cursor, GitHub Copilot, Claude Code, Cline, and Windsurf can — within a conversation — create components, configure queries, modify layouts, and update app settings by calling ToolJet's MCP tools directly.
+
+<CapabilityGrid items={[
+  {
+    icon: '🤖',
+    title: 'Supported Agents',
+    description: 'Any MCP-compatible client works: Cursor, GitHub Copilot, Claude Code, Cline, Windsurf, and others as the MCP ecosystem expands.',
+  },
+  {
+    icon: '🔧',
+    title: 'Programmatic App Building',
+    description: 'Agents can create and modify apps through the same API the UI uses. Useful for teams that prefer describing changes in natural language rather than clicking through a GUI.',
+  },
+  {
+    icon: '🔄',
+    title: 'Live Instance Connection',
+    description: 'The MCP bridge connects to a real ToolJet workspace, so agent-made changes are immediately visible in the builder. No separate sync step.',
+  },
+  {
+    icon: '🏗️',
+    title: 'Schema-Aware Scaffolding',
+    description: 'When the agent has access to your database schema or API spec, it can generate ToolJet components and queries that match your actual data model — something the in-product AI can\'t do without that context.',
+  },
+]} />
+
+**When this matters:** Teams already working in AI coding environments — Cursor, Claude Code, Copilot — can route ToolJet app changes through their existing toolchain instead of switching to a separate UI. The MCP bridge makes ToolJet a target environment for agent-driven development.
+
+## When to Use AI Generation vs. Manual Building
+
+| Scenario | Recommended approach |
+|---|---|
+| Prototyping a new tool quickly | AI generation for initial scaffold, then manual refinement |
+| Complex app with a specific data model | Manual building — the AI won't know your schema |
+| Repeating patterns across multiple apps | Manual + Modules for reusable parts |
+| Team already in an AI coding environment | MCP bridge for programmatic changes |
+| Business users making UI changes | Manual — AI generation is a developer tool |
+
+## Is It a Fit?
+
+<FitGrid
+  good={[
+    'Your developers already use AI coding tools and want to extend that workflow to ToolJet',
+    'You want to reduce the time from "we need a new internal tool" to a working first draft',
+    'Your team evaluates MCP adoption as part of the AI development strategy',
+    'You want in-product help for developers learning ToolJet components and query syntax',
+  ]}
+  notGood={[
+    'You expect AI to generate production-ready apps without developer review — it produces starting points, not finished tools',
+    'You need AI to infer your schema or generate queries against real data sources automatically',
+    'Non-technical users will be driving AI generation — it requires developer judgment to refine outputs',
+  ]}
+/>
+
+## Continue the Evaluation
+
+<NavCardGrid cols={2}>
+  <NavCard icon="🔌" title="Integrations & Data Sources" description="The 50+ connectors, REST/GraphQL support, and how credentials are managed." href="/evaluate/integrations" />
+  <NavCard icon="⚡" title="Workflow Automation" description="The visual backend automation builder for scheduled jobs, webhooks, and multi-step processes." href="/evaluate/workflows" />
+</NavCardGrid>
