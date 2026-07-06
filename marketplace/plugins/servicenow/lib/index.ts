@@ -9,11 +9,11 @@ import {
   validateAndSetRequestOptionsBasedOnAuthType,
   validateUrlForSSRF,
   getSSRFProtectionOptions,
-  getAuthUrl,
   getRefreshedToken,
 } from '@tooljet-marketplace/common';
 import got, { OptionsOfJSONResponseBody } from 'got';
 import { SourceOptions, QueryOptions } from './types';
+import crypto from 'crypto';
 
 export default class Servicenow implements QueryService {
   private trimUrl(instanceUrl: string): string {
@@ -55,6 +55,39 @@ export default class Servicenow implements QueryService {
     }
     return JSON.parse(body);
   }
+  // ServiceNow's /oauth_auth.do rejects the authorization request with
+  // "Missing state parameter" if `state` isn't present in the URL. The shared
+  // getAuthUrl() helper never adds one, so we build the URL ourselves here
+  // instead of modifying shared code.
+  authUrl(sourceOptions: SourceOptions): string {
+    const host = process.env.TOOLJET_HOST;
+    const subpath = process.env.SUB_PATH;
+    const fullUrl = `${host}${subpath ? subpath : '/'}`;
+
+    const state = crypto.randomBytes(16).toString('hex');
+
+    const authUrl = new URL(sourceOptions.auth_url as string);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', sourceOptions.client_id as string);
+    authUrl.searchParams.set('redirect_uri', `${fullUrl}oauth2/authorize`);
+    if (sourceOptions.scopes) {
+      authUrl.searchParams.set('scope', sourceOptions.scopes as string);
+    }
+    authUrl.searchParams.set('state', state);
+
+    return authUrl.toString();
+  }
+  private patchNeedsOauth(result: any): any {
+    if (result?.data?.auth_url) {
+      const url = new URL(result.data.auth_url);
+      if (!url.searchParams.get('scope') || url.searchParams.get('scope') === 'undefined') {
+        url.searchParams.delete('scope');
+      }
+      url.searchParams.set('state', crypto.randomBytes(16).toString('hex'));
+      return { ...result, data: { ...result.data, auth_url: url.toString() } };
+    }
+    return result;
+  }
 
   // ---- Shared Table-API request builder -----------------------------------
   // Every Table/Stats API operation (list_tables, list_records, get_record,
@@ -90,7 +123,7 @@ export default class Servicenow implements QueryService {
       _requestOptions as any,
       { url: new URL(url) }
     );
-    if (validated && (validated as any).status === 'needs_oauth') return validated as any;
+    if (validated && (validated as any).status === 'needs_oauth') return this.patchNeedsOauth(validated);
 
     const finalOptions = getSSRFProtectionOptions(
       undefined,
@@ -288,7 +321,7 @@ export default class Servicenow implements QueryService {
             searchParams.sysparm_limit = `${queryOptions.sysparm_limit}`;
           }
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -296,7 +329,7 @@ export default class Servicenow implements QueryService {
           const url = `${baseUrl}/${table}`;
           const searchParams = this.buildSearchParams(queryOptions);
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -310,7 +343,7 @@ export default class Servicenow implements QueryService {
             searchParams.sysparm_display_value = `${queryOptions.sysparm_display_value}`;
           }
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -324,7 +357,7 @@ export default class Servicenow implements QueryService {
             undefined,
             this.parseBody(queryOptions.body)
           );
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -338,14 +371,14 @@ export default class Servicenow implements QueryService {
             undefined,
             this.parseBody(queryOptions.body)
           );
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
         case 'delete_record': {
           const url = `${baseUrl}/${table}/${encodeURIComponent(queryOptions.sys_id)}`;
           response = await this.tableRequest(sourceOptions, context, url, 'DELETE');
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -364,7 +397,7 @@ export default class Servicenow implements QueryService {
             searchParams.sysparm_limit = `${queryOptions.sysparm_limit}`;
           }
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -377,7 +410,7 @@ export default class Servicenow implements QueryService {
             sysparm_fields: 'label,value,sequence',
           };
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -401,7 +434,7 @@ export default class Servicenow implements QueryService {
             }
           }
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -454,7 +487,7 @@ export default class Servicenow implements QueryService {
             _requestOptions as any,
             { url: new URL(flowUrl) }
           );
-          if (validated && (validated as any).status === 'needs_oauth') return validated as any;
+          if (validated && (validated as any).status === 'needs_oauth') return this.patchNeedsOauth(validated);
           const finalOptions = getSSRFProtectionOptions(undefined, (validated as any).data || _requestOptions) as OptionsOfJSONResponseBody;
           const flowRes = await got.post(flowUrl, finalOptions);
           // Scripted REST wraps a returned value in { result: ... }; unwrap for consistency
@@ -484,7 +517,7 @@ export default class Servicenow implements QueryService {
             searchParams.sysparm_limit = `${queryOptions.sysparm_limit}`;
           }
           response = await this.tableRequest(sourceOptions, context, url, 'GET', searchParams);
-          if (response && (response as any).status === 'needs_oauth') return response as any;
+          if (response && (response as any).status === 'needs_oauth') return this.patchNeedsOauth(response);
           break;
         }
 
@@ -527,9 +560,6 @@ export default class Servicenow implements QueryService {
     }
   }
 
-  authUrl(sourceOptions: SourceOptions): string {
-    return getAuthUrl(sourceOptions as any);
-  }
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {
     return getRefreshedToken(sourceOptions, error, userId, isAppPublic);

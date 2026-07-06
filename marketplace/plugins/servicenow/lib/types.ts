@@ -9,6 +9,9 @@ export interface SourceOptions {
   // OAuth2 (authorization_code / standard flows)
   client_id?: string;
   client_secret?: string;
+  auth_url?: string;
+  access_token_url?: string;
+  scopes?: string;
   // Action Fabric MCP server endpoint (absolute URL, or path appended to instance_url).
   // Blank → defaults to `${instance_url}/sncapps/mcp-server/mcp/sn_mcp_server_default`.
   mcp_endpoint?: string;
