@@ -19,6 +19,7 @@ import type {
 import {
   buildPathMaps,
   computeSelection,
+  getCascaderValueKey,
 } from './utils';
 
 interface UseCascaderParams {
@@ -112,13 +113,13 @@ export function useCascader({
 
   const isValidLeaf = useCallback(
     (value: unknown): value is CascaderValue =>
-      value !== null && value !== undefined && mapsRef.current.leafSet.has(value as CascaderValue),
+      value !== null && value !== undefined && mapsRef.current.leafSet.has(getCascaderValueKey(value)),
     []
   );
 
   const [selectedValue, setSelectedValue] = useState<CascaderValue | null>(() => {
     const initialMaps = buildPathMaps(tree);
-    return defaultValue !== null && defaultValue !== undefined && initialMaps.leafSet.has(defaultValue)
+    return defaultValue !== null && defaultValue !== undefined && initialMaps.leafSet.has(getCascaderValueKey(defaultValue))
       ? defaultValue
       : null;
   });

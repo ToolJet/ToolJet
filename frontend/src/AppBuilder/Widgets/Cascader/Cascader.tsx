@@ -107,6 +107,7 @@ export const Cascader = ({
     ? properties.data
     : [];
   const tree = normalizeTree(rawSource, getResolvedValue);
+  const shouldShowOptionsLoading = Boolean(advanced && optionsLoadingState);
 
   // Static options: use the explicit "Selected value" property.
   // Dynamic options: derive the selected value from the `default: true` leaf in the schema.
@@ -135,7 +136,7 @@ export const Cascader = ({
     visibility,
     disabledState,
     loadingState,
-    optionsLoadingState,
+    optionsLoadingState: shouldShowOptionsLoading,
     setExposedVariable,
     setExposedVariables,
     fireEvent,
@@ -145,11 +146,13 @@ export const Cascader = ({
 
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const controlRef = useRef(null);
+  const controlRef = useRef<HTMLDivElement | null>(null);
+  const hasFocusEventRef = useRef(false);
   const menuRef = useRef<CascaderMenuRef | null>(null);
 
   const interactionBlocked = isDisabled || isLoading;
   const hasValue = selection.value !== null && selection.value !== undefined;
+  const showSelectedPath = hasValue && !isOptionsLoading;
   const showClear = showClearBtn && hasValue && !interactionBlocked;
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
@@ -189,9 +192,38 @@ export const Cascader = ({
     (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
   const computedIconColor = shouldUsePlaceholderTextColorForIcon ? placeholderTextColor : iconColor;
 
+  const triggerFocusEvent = () => {
+    setIsFocused(true);
+    if (hasFocusEventRef.current) return;
+    hasFocusEventRef.current = true;
+    fireEvent('onFocus');
+  };
+
+  const triggerBlurEvent = () => {
+    setIsFocused(false);
+    setShowValidationError(true);
+    if (!hasFocusEventRef.current) return;
+    hasFocusEventRef.current = false;
+    fireEvent('onBlur');
+  };
+
+  const openMenu = () => {
+    if (interactionBlocked || isOpen) return;
+    controlRef.current?.focus();
+    setIsOpen(true);
+    triggerFocusEvent();
+  };
+
+  const closeMenu = () => {
+    if (!isOpen && !hasFocusEventRef.current) return;
+    setIsOpen(false);
+    triggerBlurEvent();
+  };
+
   const toggleOpen = () => {
     if (interactionBlocked) return;
-    setIsOpen((prev) => !prev);
+    if (isOpen) closeMenu();
+    else openMenu();
   };
 
   const handleSelectLeaf = (value: CascaderValue) => {
@@ -211,13 +243,13 @@ export const Cascader = ({
     if (!isOpen) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault();
-        setIsOpen(true);
+        openMenu();
       }
       return;
     }
     if (e.key === 'Escape') {
       e.preventDefault();
-      setIsOpen(false);
+      closeMenu();
       return;
     }
     menuRef.current?.handleKeyDown?.(e);
@@ -272,7 +304,7 @@ export const Cascader = ({
         <Popover.Root
           open={isOpen}
           onOpenChange={(open) => {
-            if (!open) setIsOpen(false);
+            if (!open) closeMenu();
           }}
         >
           <Popover.Anchor asChild>
@@ -301,16 +333,8 @@ export const Cascader = ({
               }}
               onClick={toggleOpen}
               onKeyDown={handleKeyDown}
-              onFocus={() => {
-                setIsFocused(true);
-                fireEvent('onFocus');
-              }}
-              onBlur={() => {
-                setIsFocused(false);
-                setShowValidationError(true);
-                setIsOpen(false);
-                fireEvent('onBlur');
-              }}
+              onFocus={triggerFocusEvent}
+              onBlur={closeMenu}
             >
               {iconVisibility && (
                 <TablerIconComponent
@@ -331,10 +355,10 @@ export const Cascader = ({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   fontSize: '14px',
-                  color: hasValue ? textColor : placeholderTextColor || 'var(--cc-placeholder-text)',
+                  color: showSelectedPath ? textColor : placeholderTextColor || 'var(--cc-placeholder-text)',
                 }}
               >
-                {hasValue ? selection.pathString : placeholder}
+                {isOptionsLoading ? '' : showSelectedPath ? selection.pathString : placeholder}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
                 {showClear && (

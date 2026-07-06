@@ -19,6 +19,24 @@ const resolveOptionControlValue = (
   return getResolvedValue(rawValue);
 };
 
+const stableStringify = (value: unknown): string => {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+
+  return `{${Object.keys(value as Record<string, unknown>)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`)
+    .join(',')}}`;
+};
+
+export const getCascaderValueKey = (value: CascaderValue): string => {
+  const type = Array.isArray(value) ? 'array' : typeof value;
+  return `${type}:${stableStringify(value)}`;
+};
+
+export const areCascaderValuesEqual = (a: CascaderValue, b: CascaderValue): boolean =>
+  getCascaderValueKey(a) === getCascaderValueKey(b);
+
 /**
  * Recursively normalize a hierarchical option tree for the Cascader.
  *
@@ -41,8 +59,8 @@ export const normalizeTree = (
     .map((item) => {
       const children = Array.isArray(item?.children) ? normalizeTree(item.children, getResolvedValue) : undefined;
       return {
-        label: getSafeRenderableValue(item?.label) as string,
-        value: item?.value as CascaderValue,
+        label: getSafeRenderableValue(getResolvedValue(item?.label)) as string,
+        value: getResolvedValue(item?.value) as CascaderValue,
         disabled: resolveOptionControlValue(item?.disable, getResolvedValue) === true,
         children: children && children.length > 0 ? children : undefined,
       };
@@ -59,21 +77,23 @@ export const normalizeTree = (
 export const buildPathMaps = (tree: CascaderNode[]): CascaderPathMaps => {
   const valuePathObj: CascaderPathMaps['valuePathObj'] = {};
   const labelPathObj: CascaderPathMaps['labelPathObj'] = {};
-  const leafSet = new Set<CascaderValue>();
+  const leafSet = new Set<string>();
   const valueToNode: CascaderPathMaps['valueToNode'] = {};
 
   const walk = (nodes: CascaderNode[], parentValues: CascaderValue[] = [], parentLabels: string[] = []) => {
     if (!Array.isArray(nodes)) return;
     for (const node of nodes) {
+      const valueKey = getCascaderValueKey(node.value);
+      if (valueToNode[valueKey]) continue;
       const currentValues = [...parentValues, node.value];
       const currentLabels = [...parentLabels, node.label];
-      valuePathObj[node.value] = currentValues;
-      labelPathObj[node.value] = currentLabels;
-      valueToNode[node.value] = node;
+      valuePathObj[valueKey] = currentValues;
+      labelPathObj[valueKey] = currentLabels;
+      valueToNode[valueKey] = node;
       if (node.children && node.children.length > 0) {
         walk(node.children, currentValues, currentLabels);
       } else {
-        leafSet.add(node.value);
+        leafSet.add(valueKey);
       }
     }
   };
@@ -101,14 +121,19 @@ export const computeSelection = (
   pathSeparator?: string
 ): CascaderSelection => {
   const { valuePathObj, labelPathObj, leafSet, valueToNode } = maps;
-  if (value === null || value === undefined || !leafSet.has(value)) {
+  if (value === null || value === undefined) {
     return { ...emptySelection };
   }
-  const node = valueToNode[value];
-  const pathArray = valuePathObj[value] ?? [];
-  const pathLabels = labelPathObj[value] ?? [];
+
+  const valueKey = getCascaderValueKey(value);
+  if (!leafSet.has(valueKey)) {
+    return { ...emptySelection };
+  }
+  const node = valueToNode[valueKey];
+  const pathArray = valuePathObj[valueKey] ?? [];
+  const pathLabels = labelPathObj[valueKey] ?? [];
   return {
-    value,
+    value: node?.value,
     selectedOption: { label: node?.label, value: node?.value },
     pathArray,
     pathLabels,
@@ -133,7 +158,7 @@ export const findDefaultValue = (
       const found = findDefaultValue(children, getResolvedValue);
       if (found !== undefined) return found;
     } else if (resolveOptionControlValue(item?.default, getResolvedValue) === true) {
-      return item?.value;
+      return getResolvedValue(item?.value);
     }
   }
   return undefined;
@@ -143,7 +168,7 @@ export const findDefaultValue = (
 export const getNodesAtPath = (tree: CascaderNode[], pathValues: CascaderValue[]): CascaderNode[] => {
   let nodes = tree;
   for (const value of pathValues) {
-    const next = nodes?.find((n) => n.value === value);
+    const next = nodes?.find((n) => areCascaderValuesEqual(n.value, value));
     if (!next || !next.children) return [];
     nodes = next.children;
   }

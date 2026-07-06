@@ -2,7 +2,7 @@ import React, { useState, useMemo, useImperativeHandle, forwardRef, useEffect } 
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import type { CascaderMenuRef, CascaderNode, CascaderPathMaps, CascaderValue } from './types';
-import { getNodesAtPath } from './utils';
+import { areCascaderValuesEqual, getCascaderValueKey, getNodesAtPath } from './utils';
 
 const LoaderComponent = Loader as React.ComponentType<any>;
 
@@ -39,19 +39,20 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
   ({ tree, maps, selectedValue, optionsLoading, onSelectLeaf, menuTextColor, accentColor }, ref) => {
     // Restore the drilldown to the selected leaf's parent level when reopening.
     const initialPath = useMemo(() => {
-      if (selectedValue != null && maps.valuePathObj[selectedValue]) {
-        return maps.valuePathObj[selectedValue].slice(0, -1);
+      if (selectedValue != null) {
+        const valueKey = getCascaderValueKey(selectedValue);
+        if (maps.valuePathObj[valueKey]) return maps.valuePathObj[valueKey].slice(0, -1);
       }
       return [];
     }, [selectedValue, maps]);
 
-    const [activePath, setActivePath] = useState<CascaderValue[]>(initialPath);
+    const [activePath, setActivePath] = useState<CascaderValue[]>(() => initialPath);
     const currentNodes = useMemo(() => getNodesAtPath(tree, activePath), [tree, activePath]);
 
     const firstEnabledIndex = () => currentNodes.findIndex((n) => !n.disabled);
     const [highlightedIndex, setHighlightedIndex] = useState(() => {
       if (selectedValue != null) {
-        const idx = currentNodes.findIndex((n) => n.value === selectedValue);
+        const idx = currentNodes.findIndex((n) => areCascaderValuesEqual(n.value, selectedValue));
         if (idx >= 0) return idx;
       }
       return firstEnabledIndex();
@@ -59,12 +60,13 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
 
     // Reset highlight when the level changes.
     useEffect(() => {
-      const selIdx = selectedValue != null ? currentNodes.findIndex((n) => n.value === selectedValue) : -1;
+      const selIdx =
+        selectedValue != null ? currentNodes.findIndex((n) => areCascaderValuesEqual(n.value, selectedValue)) : -1;
       setHighlightedIndex(selIdx >= 0 ? selIdx : currentNodes.findIndex((n) => !n.disabled));
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activePath]);
 
-    const breadcrumb = activePath.map((v) => maps.valueToNode[v]?.label).filter(Boolean);
+    const breadcrumb = activePath.map((v) => maps.valueToNode[getCascaderValueKey(v)]?.label).filter(Boolean);
 
     const descend = (node: CascaderNode) => {
       if (node.disabled || !node.children) return;
@@ -134,7 +136,7 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
 
     return (
       <div className="cascader-menu" style={{ display: 'flex', flexDirection: 'column' }}>
-        {breadcrumb.length > 0 && (
+        {!optionsLoading && breadcrumb.length > 0 && (
           <div
             className="cascader-menu-header"
             onMouseDown={(e: React.MouseEvent<HTMLDivElement>) => e.preventDefault()}
@@ -192,11 +194,11 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
           ) : (
             currentNodes.map((node, index) => {
               const isParent = !!node.children;
-              const isSelected = !isParent && node.value === selectedValue;
+              const isSelected = !isParent && selectedValue != null && areCascaderValuesEqual(node.value, selectedValue);
               const isHighlighted = index === highlightedIndex && !node.disabled;
               return (
                 <div
-                  key={`${node.value}-${index}`}
+                  key={`${getCascaderValueKey(node.value)}-${index}`}
                   // preventDefault keeps browser focus on the input (so onBlur doesn't fire on click)
                   onMouseDown={(e: React.MouseEvent<HTMLDivElement>) => e.preventDefault()}
                   onMouseEnter={() => !node.disabled && setHighlightedIndex(index)}
