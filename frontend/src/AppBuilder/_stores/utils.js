@@ -534,38 +534,6 @@ export function createReferencesLookup(
   return suggestionList;
 }
 
-export function convertAllKeysToSnakeCase(o) {
-  if (Array.isArray(o)) {
-    return o.map(function (value) {
-      if (typeof value === 'object' && value !== null) {
-        value = convertAllKeysToSnakeCase(value);
-      }
-      return value;
-    });
-  } else if (typeof o === 'object' && o !== null) {
-    const newO = {};
-    for (const origKey in o) {
-      if (Object.prototype.hasOwnProperty.call(o, origKey)) {
-        if (!['pages', 'events'].includes(origKey)) {
-          const newKey = origKey
-            .split(/(?=[A-Z])/)
-            .join('_')
-            .toLowerCase();
-          let value = o[origKey];
-          if (typeof value === 'object' && value !== null) {
-            value = convertAllKeysToSnakeCase(value);
-          }
-          newO[newKey] = value;
-        } else {
-          newO[origKey] = o[origKey];
-        }
-      }
-    }
-    return newO;
-  }
-  return o;
-}
-
 export function convertKeysToCamelCase(object) {
   if (_.isEmpty(object)) return null;
 
