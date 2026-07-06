@@ -1,13 +1,32 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import moment from 'moment-timezone';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/dateFamily';
 
-const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExposedVariables }) => {
+const useDateInput = ({
+  id,
+  componentType,
+  moduleId,
+  resolveIndex,
+  validation = {},
+  dateFormat,
+  setExposedVariable,
+  setExposedVariables,
+}) => {
   const isInitialRender = useRef(true);
   const { disabledDates } = validation;
   const [excludedDates, setExcludedDates] = useState([]);
   const [minDate, setMinDate] = useState(moment(validation.minDate, dateFormat).toDate());
   const [maxDate, setMaxDate] = useState(moment(validation.maxDate, dateFormat).toDate());
-  console.log('This is the excludedDates ', excludedDates);
+
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+  });
+
   useEffect(() => {
     if (isInitialRender.current) return;
     const momentDate = moment(validation.minDate, dateFormat);
@@ -32,10 +51,11 @@ const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExpo
     }
   }, [validation.maxDate, dateFormat]);
 
+  // Bucket C: setMinDate/setMaxDate/setDisabledDates/clearDisabledDates all
+  // mutate local render-only state (excludedDates feeds react-datepicker's
+  // excludeDates prop; it was never exposed to the store even in old code).
   useEffect(() => {
-    const exposedVariables = {
-      minDate: validation.minDate,
-      maxDate: validation.maxDate,
+    return registerEffects({
       setMinDate: (date) => {
         const momentDate = moment(date, dateFormat);
         if (momentDate.isValid()) {
@@ -66,10 +86,17 @@ const useDateInput = ({ validation = {}, dateFormat, setExposedVariable, setExpo
       clearDisabledDates: () => {
         setExcludedDates([]);
       },
-    };
-    setExposedVariables(exposedVariables);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFormat]);
 
+  useEffect(() => {
+    setExposedVariables({
+      minDate: validation.minDate,
+      maxDate: validation.maxDate,
+    });
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateFormat]);
 
   useEffect(() => {

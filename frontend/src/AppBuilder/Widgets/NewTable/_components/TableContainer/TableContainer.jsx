@@ -8,6 +8,8 @@ import { useTable } from '../../_hooks/useTable';
 import { shallow } from 'zustand/shallow';
 import TableData from '../TableData';
 import { useTranslation } from 'react-i18next';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 export const TableContainer = ({
   id,
@@ -22,10 +24,18 @@ export const TableContainer = ({
   tableBodyRef,
   loadingState,
   moduleId = 'canvas',
+  componentType,
 }) => {
   const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
     useTableStore();
   const { t } = useTranslation();
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    setExposedVariables,
+    fireEvent,
+  });
   const columnProperties = getColumnProperties(id);
   // Table properties
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
@@ -172,8 +182,9 @@ export const TableContainer = ({
   }, [clearChangeSet, fireEvent]);
 
   useEffect(() => {
-    setExposedVariables({ resetChanges: handleChangesDiscarded });
-  }, [handleChangesDiscarded, setExposedVariables]);
+    return registerEffects({ resetChanges: handleChangesDiscarded });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleChangesDiscarded]);
 
   return (
     <>
@@ -188,6 +199,7 @@ export const TableContainer = ({
         lastClickedRowRef={lastClickedRowRef}
         hasDataChanged={hasDataChanged}
         paginationBtnClicked={paginationBtnClicked}
+        componentType={componentType}
       />
       <Header
         id={id}

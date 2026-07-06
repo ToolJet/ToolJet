@@ -6,6 +6,8 @@ import cx from 'classnames';
 import { isDateRangeValid, isDateValid } from './utils';
 import './styles.scss';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/dateFamily';
 
 export const DaterangePicker = ({
   height,
@@ -19,6 +21,9 @@ export const DaterangePicker = ({
   darkMode,
   fireEvent,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
@@ -26,7 +31,19 @@ export const DaterangePicker = ({
   const [datepickerMode, setDatePickerMode] = useState('date');
   const { defaultStartDate, defaultEndDate, format, label, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select Date Range';
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
   const inputProps = {
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
     properties,
     setExposedVariable,
     setExposedVariables,
@@ -121,8 +138,11 @@ export const DaterangePicker = ({
     }
   }, [defaultStartDate, defaultEndDate, format]);
 
+  // Bucket C: clearDateRange/setDateRange/clearStartDate/clearEndDate all
+  // mutate local startDate/endDate state — re-registered once at mount,
+  // matching old (which also registered these only once, empty deps).
   useEffect(() => {
-    const exposedVariables = {
+    return registerEffects({
       clearDateRange: () => {
         setStartDate(null);
         setEndDate(null);
@@ -163,6 +183,12 @@ export const DaterangePicker = ({
           selectedDateRange: null,
         });
       },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const exposedVariables = {
       startDate: moment(startDate).format(format),
       endDate: moment(endDate).format(format),
       selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
@@ -190,15 +216,18 @@ export const DaterangePicker = ({
   };
 
   useEffect(() => {
-    setExposedVariable('setEndDate', (end, customFormat) => {
-      const date = moment(end, customFormat || format);
-      const endDate = date.isValid() ? date.toDate() : null;
-      setEndDate(endDate);
-      setExposedVariables({
-        endDate: moment(endDate).format(format),
-        selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
-      });
+    return registerEffects({
+      setEndDate: (end, customFormat) => {
+        const date = moment(end, customFormat || format);
+        const endDate = date.isValid() ? date.toDate() : null;
+        setEndDate(endDate);
+        setExposedVariables({
+          endDate: moment(endDate).format(format),
+          selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
+        });
+      },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate, format]);
 
   useEffect(() => {
@@ -207,15 +236,18 @@ export const DaterangePicker = ({
   }, [startDate, endDate, format, textInputFocus]);
 
   useEffect(() => {
-    setExposedVariable('setStartDate', (start, customFormat) => {
-      const date = moment(start, customFormat || format);
-      const startDate = date.isValid() ? date.toDate() : null;
-      setStartDate(startDate);
-      setExposedVariables({
-        startDate: moment(startDate).format(format),
-        selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
-      });
+    return registerEffects({
+      setStartDate: (start, customFormat) => {
+        const date = moment(start, customFormat || format);
+        const startDate = date.isValid() ? date.toDate() : null;
+        setStartDate(startDate);
+        setExposedVariables({
+          startDate: moment(startDate).format(format),
+          selectedDateRange: `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`,
+        });
+      },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endDate, format]);
 
   useEffect(() => {

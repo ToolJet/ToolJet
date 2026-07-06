@@ -378,6 +378,7 @@ const Table = memo(
           hasDataChanged={hasDataChanged.current}
           tableBodyRef={tableBodyRef}
           moduleId={moduleId}
+          componentType={componentType}
         />
       </div>
     );

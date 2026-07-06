@@ -58,6 +58,8 @@ import {
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/dateFamily';
 
 export const DatetimePickerV2 = ({
   height,
@@ -72,6 +74,9 @@ export const DatetimePickerV2 = ({
   fireEvent,
   dataCy,
   resetComponent,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
@@ -86,7 +91,19 @@ export const DatetimePickerV2 = ({
     showClearBtn,
   } = properties;
   const placeholder = placeholderProp ?? 'Select date and time';
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
   const inputProps = {
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
     properties,
     setExposedVariable,
     setExposedVariables,
@@ -297,8 +314,12 @@ export const DatetimePickerV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  // Bucket C: setValue/clearValue/setValueInTimestamp/setDate/setTime all
+  // mutate local unixTimestamp/selectedTimestamp state through interlocking
+  // date/time-math effects — re-registered on the same deps as old, logic
+  // unchanged.
   useEffect(() => {
-    setExposedVariables({
+    return registerEffects({
       setValue: (value, format) => {
         setInputValue(value, format);
       },
@@ -344,6 +365,7 @@ export const DatetimePickerV2 = ({
         fireEvent('onSelect');
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedTimestamp,
     unixTimestamp,
@@ -355,8 +377,10 @@ export const DatetimePickerV2 = ({
     unixTimestamp,
   ]);
 
+  // Bucket C: setDisplayTimezone/setStoreTimezone mutate local timezone
+  // state — re-registered on the same dep as old.
   useEffect(() => {
-    setExposedVariables({
+    return registerEffects({
       setDisplayTimezone: (timezone) => {
         const value = TIMEZONE_OPTIONS_MAP[timezone];
         if (value) {
@@ -374,6 +398,7 @@ export const DatetimePickerV2 = ({
         }
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimezoneEnabled]);
 
   useEffect(() => {

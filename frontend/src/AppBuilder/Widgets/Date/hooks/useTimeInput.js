@@ -1,10 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import moment from 'moment-timezone';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/dateFamily';
 
-const useTimeInput = ({ validation = {}, timeFormat, setExposedVariable, setExposedVariables }) => {
+const useTimeInput = ({
+  id,
+  componentType,
+  moduleId,
+  resolveIndex,
+  validation = {},
+  timeFormat,
+  setExposedVariable,
+  setExposedVariables,
+}) => {
   const isInitialRender = useRef(true);
   const [minTime, setMinTime] = useState(validation.minTime);
   const [maxTime, setMaxTime] = useState(validation.maxTime);
+
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+  });
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -18,10 +37,9 @@ const useTimeInput = ({ validation = {}, timeFormat, setExposedVariable, setExpo
     setExposedVariable('maxTime', validation.maxTime);
   }, [validation.maxTime]);
 
+  // Bucket C: setMinTime/setMaxTime mutate local state, mirroring old.
   useEffect(() => {
-    const exposedVariables = {
-      minTime: validation.minTime,
-      maxTime: validation.maxTime,
+    return registerEffects({
       setMinTime: (time) => {
         const momentTime = moment(time, timeFormat);
         if (momentTime.isValid()) {
@@ -36,9 +54,17 @@ const useTimeInput = ({ validation = {}, timeFormat, setExposedVariable, setExpo
           setExposedVariable('maxTime', time);
         }
       },
-    };
-    setExposedVariables(exposedVariables);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeFormat]);
+
+  useEffect(() => {
+    setExposedVariables({
+      minTime: validation.minTime,
+      maxTime: validation.maxTime,
+    });
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFormat]);
 
   return { minTime, maxTime };

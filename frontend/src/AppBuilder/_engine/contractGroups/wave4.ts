@@ -89,6 +89,57 @@ registerContract({
   },
 });
 
+/* ── Form ─────────────────────────────────────────────────────────────────
+ * Form's isVisible/isDisabled/isLoading trio was already converted in an
+ * earlier pass (useExposeState / standard.ts's ensureStandardContract). The
+ * only remaining CSAs are resetForm/submitForm — both trigger real side
+ * effects (resetComponent(), fireEvent('onSubmit'/'onInvalid'), local
+ * submitAttemptCount) rather than producing a store patch, so they're
+ * Bucket C. This contract INCLUDES the trio explicitly (not just
+ * effectActions) so it's self-contained regardless of import order against
+ * standard.ts's ensureStandardContract — registerContract does a full
+ * replace, and ensureStandardContract no-ops once any contract exists, so
+ * whichever of the two registrations runs first must already be complete
+ * (the same collision class fixed for Tabs in mediaC.ts).
+ */
+registerContract({
+  type: 'Form',
+  stateActions: {
+    setVisibility: setVisibilityCoerced,
+    setDisable: (_cur, [disabled]) => ({ isDisabled: !!disabled }),
+    setLoading: (_cur, [loading]) => ({ isLoading: !!loading }),
+  },
+  effectActions: ['resetForm', 'submitForm'],
+});
+
+/* ── Table (NewTable) ─────────────────────────────────────────────────────
+ * Zero Bucket B state: every CSA is imperative — mutating the tanstack-table
+ * instance's own internal state (table.setRowSelection/setSorting/
+ * setColumnFilters/setPageIndex), a ref (lastClickedRowRef), or the
+ * zustand tableStore (clearEditedRows) — none of it lives in our exposed
+ * store as a value a pure reducer could patch. All Bucket C, re-registered
+ * via registerEffects with unchanged logic and dependency arrays.
+ */
+registerContract({
+  type: 'Table',
+  stateActions: {},
+  effectActions: [
+    'selectAllRows',
+    'deselectAllRows',
+    'setPage',
+    'selectRow',
+    'deselectRow',
+    'selectRows',
+    'deselectRows',
+    'setFilters',
+    'clearFilters',
+    'setSort',
+    'downloadTableData',
+    'discardChanges',
+    'resetChanges',
+  ],
+});
+
 /* ── Kanban ───────────────────────────────────────────────────────────────
  * No Bucket B state at all: updateCardData/moveCard/addCard/deleteCard all
  * mutate the widget's local drag-and-drop `items` state (needed for the

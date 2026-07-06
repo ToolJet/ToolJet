@@ -27,6 +27,8 @@ import { useSubcontainerContext } from '@/AppBuilder/_contexts/SubcontainerConte
 import './form.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import FormValidationContext from './FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/wave4';
 
 const FormComponent = (props) => {
   const {
@@ -91,6 +93,14 @@ const FormComponent = (props) => {
     setExposedVariable,
     { id, componentType, moduleId, resolveIndex }
   );
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
 
@@ -248,8 +258,11 @@ const FormComponent = (props) => {
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
 
+  // Bucket C: resetForm/submitForm trigger real side effects
+  // (resetComponent(), fireEvent) rather than a store patch — re-registered
+  // on the same deps as old so they never close over a stale `isValid`.
   useEffect(() => {
-    const exposedVariables = {
+    return registerEffects({
       resetForm: async function () {
         setSubmitAttemptCount(0);
         resetComponent();
@@ -266,11 +279,12 @@ const FormComponent = (props) => {
           if (resetOnSubmit) resetComponent();
         });
       },
-    };
-
-    setExposedVariables(exposedVariables);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetOnSubmit, validateOnSubmit, isValid]);
+  // Dispatcher publication for resetForm/submitForm is already covered by
+  // useExposeState's own csaShims() mount-publish above (same 'Form'
+  // contract) — no separate publish needed here.
 
   const extractData = (data) => {
     const result = {};

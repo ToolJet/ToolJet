@@ -14,6 +14,8 @@ import cx from 'classnames';
 
 import './styles.scss';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import '@/AppBuilder/_engine/contractGroups/dateFamily';
 
 export const DatePickerV2 = ({
   height,
@@ -27,13 +29,28 @@ export const DatePickerV2 = ({
   darkMode,
   fireEvent,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const dateInputRef = useRef(null);
   const datePickerRef = useRef(null);
   const { label, defaultValue, dateFormat, placeholder: placeholderProp, showClearBtn } = properties;
   const placeholder = placeholderProp ?? 'Select date';
+  const { registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
   const inputProps = {
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
     properties,
     setExposedVariable,
     setExposedVariables,
@@ -135,8 +152,12 @@ export const DatePickerV2 = ({
     isInitialRender.current = false;
   }, []);
 
+  // Bucket C: setValue/clearValue/setValueInTimestamp/setDate all mutate the
+  // widget's local unixTimestamp/selectedTimestamp state through
+  // interlocking date-math effects — re-registered on the same deps as old,
+  // logic unchanged.
   useEffect(() => {
-    setExposedVariables({
+    return registerEffects({
       setValue: (value, format) => {
         setInputValue(value, format);
       },
@@ -160,6 +181,7 @@ export const DatePickerV2 = ({
         fireEvent('onSelect');
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTimestamp, unixTimestamp, dateFormat]);
 
   useEffect(() => {

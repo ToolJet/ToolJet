@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/dateFamily';
 
 const useDatetimeInput = ({
+  id,
+  componentType,
+  moduleId,
+  resolveIndex,
   properties,
   setExposedVariable,
   setExposedVariables,
@@ -11,11 +18,25 @@ const useDatetimeInput = ({
 }) => {
   const isInitialRender = useRef(true);
   const { mandatory: isMandatory } = validation;
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [loading, setLoading] = useState(properties.loadingState);
-  const [disable, setDisable] = useState(properties.disabledState);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [textInputFocus, setTextInputFocus] = useState(false);
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims, registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for the trio (genuine Bucket B — pure
+  // booleans, unlike the rest of this widget family's value/timestamp
+  // state, which stays Bucket C).
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const loading = useExposedVariable(id, 'isLoading', exposedOpts, properties.loadingState);
+  const disable = useExposedVariable(id, 'isDisabled', exposedOpts, properties.disabledState);
 
   const focus = isCalendarOpen || textInputFocus;
 
@@ -27,19 +48,16 @@ const useDatetimeInput = ({
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('isVisible', properties.visibility);
-    setVisibility(properties.visibility);
   }, [properties.visibility]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('isLoading', properties.loadingState);
-    setLoading(properties.loadingState);
   }, [properties.loadingState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('isDisabled', properties.disabledState);
-    setDisable(properties.disabledState);
   }, [properties.disabledState]);
 
   useEffect(() => {
@@ -68,25 +86,9 @@ const useDatetimeInput = ({
     }
   }, [focus]);
 
+  // Bucket C: setFocus/setBlur are real DOM effects (ref.focus()/setOpen()).
   useEffect(() => {
-    const exposedVariables = {
-      isVisible: properties.visibility,
-      isLoading: properties.loadingState,
-      isDisabled: properties.disabledState,
-      label: properties.label,
-      isMandatory: isMandatory,
-      setVisibility: (visibility) => {
-        setExposedVariable('isVisible', visibility);
-        setVisibility(visibility);
-      },
-      setLoading: (loading) => {
-        setExposedVariable('isLoading', loading);
-        setLoading(loading);
-      },
-      setDisable: (disable) => {
-        setExposedVariable('isDisabled', disable);
-        setDisable(disable);
-      },
+    return registerEffects({
       setFocus: () => {
         setIsCalendarOpen(true);
         setTextInputFocus(true);
@@ -95,9 +97,23 @@ const useDatetimeInput = ({
         setIsCalendarOpen(false);
         setTextInputFocus(false);
       },
-    };
-    setExposedVariables(exposedVariables);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // for the trio.
+  useEffect(() => {
+    setExposedVariables({
+      isVisible: properties.visibility,
+      isLoading: properties.loadingState,
+      isDisabled: properties.disabledState,
+      label: properties.label,
+      isMandatory: isMandatory,
+      ...csaShims(),
+    });
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
