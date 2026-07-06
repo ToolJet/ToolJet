@@ -47,7 +47,12 @@ export class WorkspaceBranchesModule extends SubModule {
         GitConflictDetectionService,
         ...(isMainImport ? [DeletionCommitListener] : []),
       ],
-      exports: [WorkspaceBranchService, PlatformGitPullService, PlatformGitPushService, GitConflictDetectionService],
+      exports: [
+        WorkspaceBranchService,
+        PlatformGitPullService,
+        PlatformGitPushService,
+        GitConflictDetectionService,
+      ],
     });
   }
 }
