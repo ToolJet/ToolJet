@@ -28,17 +28,29 @@
       "client_secret": {
         "encrypted": true
       },
-      "oauth_username": {
+      "auth_url": {
         "type": "string"
       },
-      "oauth_password": {
-        "encrypted": true
+      "access_token_url": {
+        "type": "string"
+      },
+      "scopes": {
+        "type": "string"
       }
     }
   },
   "defaults": {
     "auth_type": {
       "value": "basic"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
     }
   },
   "properties": {
@@ -107,22 +119,29 @@
         "description": "Enter client secret",
         "encrypted": true
       },
-      "oauth_username": {
-        "label": "Username",
-        "key": "oauth_username",
+      "auth_url": {
+        "label": "Authorization URL",
+        "key": "auth_url",
         "type": "text",
-        "description": "Enter username"
+        "description": "ServiceNow OAuth authorize endpoint, e.g. https://<instance>.service-now.com/oauth_auth.do"
       },
-      "oauth_password": {
-        "label": "Password",
-        "key": "oauth_password",
-        "type": "password",
-        "description": "Enter password",
-        "encrypted": true
+      "access_token_url": {
+        "label": "Access token URL",
+        "key": "access_token_url",
+        "type": "text",
+        "description": "ServiceNow OAuth token endpoint, e.g. https://<instance>.service-now.com/oauth_token.do"
+      },
+      "scopes": {
+        "label": "Scopes",
+        "key": "scopes",
+        "type": "text",
+        "description": "Optional. Space-separated OAuth scopes (e.g. useraccount)"
       }
     }
   },
   "required": [
-    "instance_url"
+    "instance_url",
+    "auth_url",
+    "access_token_url"
   ]
 }
