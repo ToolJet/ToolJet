@@ -261,6 +261,7 @@
                 "app-builder/dynamic-access-rule/component-level",
                 "app-builder/dynamic-access-rule/page-level",
                 "app-builder/dynamic-access-rule/query-level",
+                "app-builder/dynamic-access-rule/server-side-variables",
                 "app-builder/dynamic-access-rule/row-level-security"
               ]
             }
