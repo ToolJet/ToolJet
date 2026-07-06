@@ -1,10 +1,7 @@
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 import { ResourceType } from '@modules/group-permissions/constants';
 import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
-import { GranularPermissions } from '@entities/granular_permissions.entity';
-import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
 import { APP_TYPES } from '@modules/apps/constants';
-import { dbTransactionWrap } from '@helpers/database.helper';
 
 /**
  * Backfills a module granular permission for every existing default `admin` and `builder` group so
@@ -12,66 +9,33 @@ import { dbTransactionWrap } from '@helpers/database.helper';
  * could edit/use any module). Admin + builder get isAll + Edit (can_edit) + Build-with (can_view);
  * custom groups are left empty and configured explicitly by admins.
  *
- * Template: AddWorkflowGranularPermissionsToExistingAdminGroups1758009004418.
+ * Template: AddWorkflowGranularPermissionsToExistingAdminGroups1758009004418 — reimplemented as a
+ * set-based INSERT...SELECT to avoid a per-group round trip loop at cloud scale.
  */
 export class AddModuleGranularPermissionsToExistingGroups1781869572704 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const manager = queryRunner.manager;
+    const organizationsCount = await queryRunner.manager.count('organizations');
+    if (organizationsCount === 0) {
+      return;
+    }
 
-    return dbTransactionWrap(async (manager: EntityManager) => {
-      const organizationsCount = await manager.count('organizations');
-      if (organizationsCount === 0) {
-        console.log('No organizations found, skipping migration.');
-        return;
-      }
-
-      // Default admin + builder groups across all organizations
-      const groups = await manager.query(`
-        SELECT id, organization_id, name
-        FROM permission_groups
-        WHERE name IN ('admin', 'builder') AND type = 'default'
-      `);
-
-      console.log(`[START] Add module granular permissions | Total: ${groups.length}`);
-
-      let processed = 0;
-      for (const group of groups) {
-        const { id: groupId } = group;
-
-        const existingPermission = await manager.find(GranularPermissions, {
-          where: { groupId, type: ResourceType.MODULE },
-        });
-
-        if (existingPermission.length > 0) {
-          processed++;
-          continue;
-        }
-
-        const granularPermissions = await manager.save(
-          manager.create(GranularPermissions, {
-            name: DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE],
-            type: ResourceType.MODULE,
-            groupId,
-            isAll: true,
-          })
-        );
-
-        await manager.save(
-          manager.create(AppsGroupPermissions, {
-            granularPermissionId: granularPermissions.id,
-            canEdit: true,
-            canView: false,
-            hideFromDashboard: false,
-            appType: APP_TYPES.MODULE,
-          })
-        );
-
-        processed++;
-        console.log(`[PROGRESS] ${processed}/${groups.length} (${Math.round((processed / groups.length) * 100)}%)`);
-      }
-
-      console.log('[SUCCESS] Add module granular permissions finished.');
-    }, manager);
+    await queryRunner.query(
+      `
+      WITH inserted_permissions AS (
+        INSERT INTO granular_permissions (group_id, name, type, is_all)
+        SELECT pg.id, $1, $2, true
+        FROM permission_groups pg
+        WHERE pg.name IN ('admin', 'builder') AND pg.type = 'default'
+          AND NOT EXISTS (
+            SELECT 1 FROM granular_permissions gp WHERE gp.group_id = pg.id AND gp.type = $2
+          )
+        RETURNING id
+      )
+      INSERT INTO apps_group_permissions (granular_permission_id, app_type, can_edit, can_view, hide_from_dashboard)
+      SELECT id, $3, true, false, false FROM inserted_permissions
+      `,
+      [DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE], ResourceType.MODULE, APP_TYPES.MODULE]
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}

@@ -2,6 +2,8 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddModuleCreateDeleteToGroupPermissions1782196835449 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`SET LOCAL lock_timeout = '5s';`);
+
     await queryRunner.addColumn(
       'permission_groups',
       new TableColumn({
@@ -22,13 +24,7 @@ export class AddModuleCreateDeleteToGroupPermissions1782196835449 implements Mig
       })
     );
 
-    // Backfill existing admin and builder role groups on non-fresh deployments.
-    // On a fresh DB this matches 0 rows (no groups yet); DEFAULT_GROUP_PERMISSIONS covers that path.
-    await queryRunner.query(`
-      UPDATE permission_groups
-      SET module_create = true, module_delete = true
-      WHERE name IN ('admin', 'builder') AND type = 'default'
-    `);
+    // Backfill lives in BackfillModuleCreateDeleteForDefaultGroups data migration.
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
