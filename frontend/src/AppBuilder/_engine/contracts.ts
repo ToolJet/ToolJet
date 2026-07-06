@@ -32,40 +32,81 @@ export function getContract(type: string): ComponentTypeContract | undefined {
   return registry.get(type);
 }
 
-/** Reference contract for the useInput family (TextInput et al.).
- *  Mirrors the CSA set registered in useInput.js:160-235 today, including the
- *  deprecated aliases (disable/visibility/loading) legacy apps still call. */
-const inputStateActions: ComponentTypeContract['stateActions'] = {
+/** Base CSA set for the useInput family. `setValue` MUST stay in this
+ *  object — useControlledInput.ts dispatches `action: 'setValue'`
+ *  internally for every keystroke/increment/decrement (see
+ *  useControlledInput.ts:216,265,273,282,312 and NumberInput.jsx's
+ *  handleChange/handleIncrement/handleDecrement/handleClear, all of which
+ *  call `setInputValue` → that dispatch). Removing it breaks typing itself,
+ *  not just an external API surface — confirmed by tracing the dispatch
+ *  path before making this change (an earlier attempt at this fix removed
+ *  it and would have broken every TextInput-family widget's typing).
+ *  The deprecated `loading` alias, by contrast, never existed in old
+ *  useInput.js for any input type and IS safe to drop — nothing dispatches
+ *  `action: 'loading'` internally, it was only ever a would-be external
+ *  alias name. */
+const baseInputActions: ComponentTypeContract['stateActions'] = {
   setValue: (_cur, [value]) => ({ value }),
   setText: (_cur, [text]) => ({ value: text }),
   clear: () => ({ value: '' }),
   setVisibility: (_cur, [visible]) => ({ isVisible: !!visible }),
   setDisable: (_cur, [disabled]) => ({ isDisabled: !!disabled }),
   setLoading: (_cur, [loading]) => ({ isLoading: !!loading }),
-  // deprecated aliases (useInput.js:215-224)
-  visibility: (_cur, [visible]) => ({ isVisible: !!visible }),
-  disable: (_cur, [disabled]) => ({ isDisabled: !!disabled }),
-  loading: (_cur, [loading]) => ({ isLoading: !!loading }),
 };
+
+// setValue is a dispatch target only for these four types — the
+// pre-migration widgets never exposed it externally (only Currency/Phone
+// did). `internalOnlyActions` tells useControlledInput.ts's mount effect to
+// keep dispatching through it (typing must keep working) without
+// publishing it into the widget's exposed-variables/Inspector surface.
+const TEXT_FAMILY_INTERNAL_ONLY = ['setValue'];
 
 export const TextInputContract: ComponentTypeContract = {
   type: 'TextInput',
-  stateActions: inputStateActions,
+  stateActions: {
+    ...baseInputActions,
+    // deprecated aliases — TextInput-specific in old useInput.js:215-224.
+    visibility: (_cur, [visible]) => ({ isVisible: !!visible }),
+    disable: (_cur, [disabled]) => ({ isDisabled: !!disabled }),
+  },
   effectActions: ['setFocus', 'setBlur'],
+  internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
 };
 
 registerContract(TextInputContract);
-// Password/Email/TextArea share TextInput's CSA semantics verbatim.
-registerContract({ ...TextInputContract, type: 'PasswordInput' });
-registerContract({ ...TextInputContract, type: 'EmailInput' });
-registerContract({ ...TextInputContract, type: 'TextArea' });
+// Password/Email/TextArea share setValue/setText/clear/the trio with
+// TextInput (setValue is structurally required, see comment above) but
+// never got the deprecated aliases (old useInput.js only added those for
+// inputType === 'TextInput' specifically).
+registerContract({
+  type: 'PasswordInput',
+  stateActions: baseInputActions,
+  effectActions: ['setFocus', 'setBlur'],
+  internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+});
+registerContract({
+  type: 'EmailInput',
+  stateActions: baseInputActions,
+  effectActions: ['setFocus', 'setBlur'],
+  internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+});
+registerContract({
+  type: 'TextArea',
+  stateActions: baseInputActions,
+  effectActions: ['setFocus', 'setBlur'],
+  internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+});
 
 /** NumberInput owns the NaN→null normalization (today a post-hoc widget
- *  effect, NumberInput.jsx:86-90). */
+ *  effect, NumberInput.jsx old :86-90). setValue is structurally required
+ *  here too — handleChange/handleIncrement/handleDecrement/handleClear all
+ *  dispatch through it (see comment on baseInputActions above) — but old
+ *  NumberInput never exposed a value-setting CSA externally either
+ *  (increment/decrement were UI-only), so it's internal-only here too. */
 registerContract({
   type: 'NumberInput',
   stateActions: {
-    ...inputStateActions,
+    ...baseInputActions,
     setValue: (_cur, [value]) => {
       const parsed = value === null || value === undefined || value === '' ? null : Number(value);
       return { value: parsed === null || Number.isNaN(parsed) ? null : parsed };
@@ -73,6 +114,7 @@ registerContract({
     clear: () => ({ value: null }),
   },
   effectActions: ['setFocus', 'setBlur'],
+  internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
 });
 
 /* ── CurrencyInput / PhoneInput (Phase 3a steps 5-6) ─────────────────────────
@@ -82,14 +124,8 @@ registerContract({
  * decimalPlaces/numberFormat are injected by the widget via the hook's
  * `contractState` (they are resolved properties, not exposed values). */
 
-// Currency/phone never exposed setText nor the TextInput deprecated aliases.
-const {
-  setText: _setText,
-  visibility: _visibility,
-  disable: _disable,
-  loading: _loading,
-  ...sharedInputActions
-} = inputStateActions;
+// Currency/phone never exposed setText (they had their own setValue instead).
+const { setText: _setText, ...sharedInputActions } = baseInputActions;
 
 /** value → { value: parsed number, country, formattedValue } — the derivation
  *  the CurrencyInput widget effects performed post-hoc (CurrencyInput.jsx old

@@ -66,4 +66,11 @@ export interface ComponentTypeContract {
   /** Bucket C: imperative effects — engine emits an EffectIntent; the mounted
    *  widget executes it via ref (no-op when unmounted). */
   effectActions?: string[];
+  /** Names in `stateActions` that are dispatch targets ONLY — never published
+   *  as a callable exposed variable. Use this when a reducer name is needed
+   *  internally (e.g. the useInput-family widgets all dispatch through
+   *  `setValue` for every keystroke) but the widget never exposed that name
+   *  externally in the pre-migration widget (e.g. TextInput only ever
+   *  exposed `setText`, not `setValue`). */
+  internalOnlyActions?: string[];
 }

@@ -236,7 +236,15 @@ export const useControlledInput = ({
     // E.164 rebase/countryCode/formattedValue).
     const initReducer = contract?.stateActions?.setValue;
     if (initReducer) Object.assign(exposed, initReducer(currentExposedRef.current, [properties.value ?? '']));
+    const internalOnly = new Set(contract?.internalOnlyActions ?? []);
     for (const action of Object.keys(contract?.stateActions ?? {})) {
+      // Internal-only names (e.g. setValue on TextInput/NumberInput, which
+      // never exposed it pre-migration) stay dispatchable — the widget's own
+      // typing/increment/decrement handlers still call setInputValue, which
+      // dispatches this same action — but are excluded from the published
+      // exposed-variables surface so they don't appear in the Inspector or
+      // become externally callable where they never were before.
+      if (internalOnly.has(action)) continue;
       exposed[action] = async (...args: unknown[]) => {
         const commands: EngineCommand[] = [{ kind: 'INVOKE_CSA', componentId: id, action, args }];
         if (VALUE_EVENT_ACTIONS.has(action)) commands.push({ kind: 'FIRE_EVENT', componentId: id, event: 'onChange' });

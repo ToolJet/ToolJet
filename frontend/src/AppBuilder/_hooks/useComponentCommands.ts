@@ -72,8 +72,13 @@ export function useComponentCommands(props: ComponentCommandProps) {
   const csaShims = useCallback((): Record<string, (...args: unknown[]) => Promise<void>> => {
     const contract = getContract(componentType);
     if (!contract) return {};
+    const internalOnly = new Set(contract.internalOnlyActions ?? []);
     const shims: Record<string, (...args: unknown[]) => Promise<void>> = {};
     for (const action of [...Object.keys(contract.stateActions), ...(contract.effectActions ?? [])]) {
+      // internalOnlyActions are dispatch targets only (e.g. a reducer name
+      // some other code path needs) — never published as a callable exposed
+      // variable for widget types that never had that name externally.
+      if (internalOnly.has(action)) continue;
       shims[action] = async (...args: unknown[]) =>
         dispatch([{ kind: 'INVOKE_CSA', componentId: id, action, args }]);
     }
