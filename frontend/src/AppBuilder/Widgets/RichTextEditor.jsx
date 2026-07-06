@@ -1,8 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import 'draft-js/dist/Draft.css';
 import { DraftEditor } from './DraftEditor';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export default function RichTextEditor({
   id,
@@ -10,24 +13,37 @@ export default function RichTextEditor({
   height,
   properties,
   styles,
-  setExposedVariable,
   setExposedVariables,
+  fireEvent,
   dataCy,
   currentLayout,
   currentMode,
   subContainerIndex,
   componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const isInitialRender = useRef(true);
   const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  const [currentValue, setCurrentValue] = useState(defaultValue);
 
-  const [isDisabled, setIsDisabled] = useState(disabledState);
-  const [isVisible, setIsVisible] = useState(visibility);
-  const [isLoading, setIsLoading] = useState(properties?.loadingState);
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const currentValue = useExposedVariable(id, 'value', exposedOpts, defaultValue);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, properties?.loadingState);
+
+  const { csaShims, registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -41,30 +57,39 @@ export default function RichTextEditor({
     componentType,
   });
 
-  useEffect(() => {
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
-    if (isVisible !== visibility) setIsVisible(visibility);
-    if (isLoading !== properties.loadingState) setIsLoading(properties.loadingState);
-  }, [properties.loadingState, styles.visibility, styles.disabledState]);
-
+  /* ── Property-change write-throughs (skip-initial) ────────────────────── */
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isDisabled', disabledState);
+    setExposedVariables({ isDisabled: disabledState });
   }, [disabledState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isVisible', visibility);
+    setExposedVariables({ isVisible: visibility });
   }, [visibility]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isLoading', isLoading);
-  }, [isLoading]);
+    setExposedVariables({ isLoading: properties.loadingState });
+  }, [properties.loadingState]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setValue routes to DraftEditor's effect handler — rebuilding the
+     Draft.js EditorState needs the mounted instance). ───────────────────── */
+  useEffect(() => {
+    setExposedVariables({
+      value: defaultValue,
+      isDisabled: disabledState,
+      isVisible: visibility,
+      isLoading: properties?.loadingState,
+      ...csaShims(),
+    });
+    isInitialRender.current = false;
+  }, []);
+
+  // Keystrokes / toolbar edits publish the derived HTML (old handleChange).
   function handleChange(html) {
-    setExposedVariable('value', html);
-    setCurrentValue(html);
+    setExposedVariables({ value: html });
   }
 
   return (
@@ -80,25 +105,20 @@ export default function RichTextEditor({
       className="scrollbar-container"
       component-id={id}
       aria-label="Text Editor"
-      aria-hidden={!visibility}
+      aria-hidden={!isVisible}
       aria-disabled={isDisabled}
       aria-busy={isLoading}
     >
       <DraftEditor
-        isInitialRender={isInitialRender}
         handleChange={handleChange}
+        registerEffects={registerEffects}
         height={height}
         width={width}
         placeholder={placeholder}
         defaultValue={defaultValue}
         isLoading={isLoading}
-        isVisible={visibility}
-        isDisabled={disabledState}
-        setExposedVariable={setExposedVariable}
-        setExposedVariables={setExposedVariables}
-        setIsDisabled={setIsDisabled}
-        setIsVisible={setIsVisible}
-        setIsLoading={setIsLoading}
+        isVisible={isVisible}
+        isDisabled={isDisabled}
         isDynamicHeightEnabled={isDynamicHeightEnabled}
       ></DraftEditor>
     </div>

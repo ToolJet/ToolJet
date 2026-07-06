@@ -1,109 +1,92 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export const IFrame = function IFrame({
+  id,
   width,
   height,
   properties,
   styles,
   dataCy,
-  setExposedVariable,
   setExposedVariables,
+  fireEvent,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   // ===== PROPS DESTRUCTURING =====
   const { source, loadingState, disabledState, visibility } = properties;
   const { boxShadow } = styles;
 
-  // ===== STATE MANAGEMENT =====
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState,
-    url: source,
-  });
   const iframeRef = useRef(null);
 
-  // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+  const url = useExposedVariable(id, 'url', exposedOpts, source);
 
-  // ===== EFFECTS =====
+  const { csaShims, useEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Bucket C: reload needs the mounted iframe's ref.
+  useEffects({
+    reload: () => {
+      try {
+        iframeRef.current?.contentWindow?.location?.reload();
+      } catch (e) {
+        // Cross-origin iframe — fallback to re-assigning src
+        const iframe = iframeRef.current;
+        if (iframe) {
+          const src = iframe.src;
+          iframe.src = '';
+          iframe.src = src;
+        }
+      }
+    },
+  });
+
+  /* ── Property-change write-throughs (skip-initial via the batched hook) ── */
   useBatchedUpdateEffectArray([
     {
       dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
+      sideEffect: () => setExposedVariables({ isLoading: loadingState }),
     },
     {
       dep: visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
+      sideEffect: () => setExposedVariables({ isVisible: visibility }),
     },
     {
       dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
+      sideEffect: () => setExposedVariables({ isDisabled: disabledState }),
     },
     {
       dep: source,
-      sideEffect: () => {
-        updateExposedVariablesState('url', source);
-        setExposedVariable('url', source);
-      },
+      sideEffect: () => setExposedVariables({ url: source }),
     },
   ]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setUrl/setDisable/setVisibility/setLoading/reload) ─────────────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       url: source,
       isDisabled: disabledState,
       isVisible: visibility,
       isLoading: loadingState,
-      setUrl: async function (url) {
-        if (typeof url === 'string') {
-          updateExposedVariablesState('url', url);
-          setExposedVariable('url', url);
-        }
-      },
-      setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      reload: async function () {
-        try {
-          iframeRef.current?.contentWindow?.location?.reload();
-        } catch (e) {
-          // Cross-origin iframe — fallback to re-assigning src
-          const iframe = iframeRef.current;
-          if (iframe) {
-            const src = iframe.src;
-            iframe.src = '';
-            iframe.src = src;
-          }
-        }
-      },
-    };
-
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -112,21 +95,21 @@ export const IFrame = function IFrame({
   return (
     <div
       className="tw-h-full"
-      data-disabled={exposedVariablesTemporaryState.isDisabled}
-      style={{ display: exposedVariablesTemporaryState.isVisible ? '' : 'none', boxShadow }}
+      data-disabled={isDisabled}
+      style={{ display: isVisible ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading ? (
         <div className="tw-flex tw-items-center tw-justify-center tw-h-full">
           <Spinner />
         </div>
       ) : (
         <iframe
           ref={iframeRef}
-          key={exposedVariablesTemporaryState.url}
+          key={url}
           width={width - 4}
           height={height}
-          src={exposedVariablesTemporaryState.url}
+          src={url}
           title="IFrame Widget"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

@@ -11,6 +11,9 @@ import './jsonEditor.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 export async function loadCodeMirrorTheme(theme) {
   const mod = await import('@uiw/codemirror-themes-all');
@@ -43,6 +46,8 @@ export const JSONEditor = function JSONEditor(props) {
     currentMode,
     subContainerIndex,
     componentType,
+    moduleId,
+    resolveIndex,
   } = props;
 
   const { value, shouldExpandEntireJSON, loadingState, visibility, disabledState, theme } = properties;
@@ -53,12 +58,27 @@ export const JSONEditor = function JSONEditor(props) {
 
   // ===== STATE MANAGEMENT =====
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState,
-    value: JSON.stringify(value, null, 2),
+  const isInitialRender = useRef(true);
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent: undefined,
   });
+
+  // Store is the source of truth for isVisible/isLoading/isDisabled. The
+  // editor's raw text buffer stays local — it must diverge from the parsed
+  // exposed `value` while the user is mid-typing invalid JSON (old
+  // exposedVariablesTemporaryState.value played the same role).
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+  const [displayValue, setDisplayValue] = useState(() => JSON.stringify(value, null, 2));
+
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const [resolvedTheme, setResolvedTheme] = useState(undefined);
   const editorRef = useRef(null);
@@ -77,15 +97,10 @@ export const JSONEditor = function JSONEditor(props) {
   });
 
   // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
-  const setValue = (newValue) => {
-    updateExposedVariablesState('value', newValue);
+  // Editor-driven typing path — parses the raw string; on invalid JSON the
+  // exposed `value` is left untouched (old behavior), only isValid flips.
+  const handleEditorChange = (newValue) => {
+    setDisplayValue(newValue);
     setForceDynamicHeightUpdate((prev) => !prev);
     try {
       const parsedValue = JSON.parse(newValue);
@@ -118,8 +133,8 @@ export const JSONEditor = function JSONEditor(props) {
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
     boxShadow,
-    visibility: exposedVariablesTemporaryState.isVisible ? 'visible' : 'hidden',
-    ...(exposedVariablesTemporaryState.isLoading
+    visibility: isVisible ? 'visible' : 'hidden',
+    ...(isLoading
       ? {
           display: 'flex',
           justifyContent: 'center',
@@ -193,38 +208,32 @@ export const JSONEditor = function JSONEditor(props) {
     ];
   }, [backgroundColor, darkMode, isDynamicHeightEnabled, shouldExpandEntireJSON]);
 
-  // ===== EFFECTS =====
-  useBatchedUpdateEffectArray([
-    {
-      dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
-    },
-    {
-      dep: visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
-    },
-    {
-      dep: value,
-      sideEffect: () => {
-        updateExposedVariablesState('value', JSON.stringify(value, null, 2));
-        setForceDynamicHeightUpdate((prev) => !prev);
-        setExposedVariables({ value: value, isValid: true });
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-  ]);
+  // ===== EFFECTS (property-sync write-throughs; skip-initial) ──────────
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setDisplayValue(JSON.stringify(value, null, 2));
+    setForceDynamicHeightUpdate((prev) => !prev);
+    setExposedVariables({ value: value, isValid: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
 
   // Reset the folding flag when shouldExpandEntireJSON changes
   useEffect(() => {
@@ -260,50 +269,37 @@ export const JSONEditor = function JSONEditor(props) {
     };
   }, [theme]);
 
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (setValue overridden to also update the local editor text buffer).
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       value: value,
       isValid: true,
       isLoading: loadingState,
       isVisible: visibility,
       isDisabled: disabledState,
-      setValue: async function (value) {
-        if (typeof value === 'object') {
-          setValue(JSON.stringify(value, null, 2));
-          setExposedVariables({ value: value, isValid: true });
-        } else {
-          setValue(String(value));
-          setExposedVariables({ value: value, isValid: false });
-        }
+      ...csaShims(),
+      setValue: async function (newValue) {
+        setDisplayValue(typeof newValue === 'object' ? JSON.stringify(newValue, null, 2) : String(newValue));
+        setForceDynamicHeightUpdate((prev) => !prev);
+        dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [newValue] }]);
       },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+    });
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===== MAIN RENDER =====
   return (
     <div className="json-editor-widget scrollbar-container" style={containerComputedStyles}>
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading ? (
         <Loader width="24" absolute={false} />
       ) : (
         <CodeMirror
           onCreateEditor={(view) => {
             editorRef.current = view;
           }}
-          value={exposedVariablesTemporaryState.value}
+          value={displayValue}
           onFocus={() => {
             setSelectedComponents([id]);
             setRightSidebarOpen(true);
@@ -316,7 +312,7 @@ export const JSONEditor = function JSONEditor(props) {
           theme={resolvedTheme}
           extensions={extensions}
           onChange={(newValue) => {
-            setValue(newValue);
+            handleEditorChange(newValue);
           }}
           basicSetup={basicSetup}
           // className={`codehinter-multi-line-input`}

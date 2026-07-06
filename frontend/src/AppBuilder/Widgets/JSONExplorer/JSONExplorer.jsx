@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { getBase16Theme } from 'react-base16-styling';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import './jsonExplorer.scss';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 export const JSONExplorer = function JSONExplorer(props) {
   // ===== PROPS DESTRUCTURING =====
@@ -20,6 +22,8 @@ export const JSONExplorer = function JSONExplorer(props) {
     currentMode,
     subContainerIndex,
     componentType,
+    moduleId,
+    resolveIndex,
   } = props;
 
   const { value, shouldExpandEntireJSON, shouldShowRootNode, loadingState, visibility, disabledState, theme } =
@@ -28,12 +32,24 @@ export const JSONExplorer = function JSONExplorer(props) {
 
   // ===== STATE MANAGEMENT =====
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState,
-    value: value,
+  const isInitialRender = useRef(true);
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
   });
+
+  // Store is the source of truth for the exposed value/isVisible/isLoading/isDisabled.
+  const storeValue = useExposedVariable(id, 'value', exposedOpts, undefined);
+  const displayValue = storeValue !== undefined ? storeValue : value;
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+
   const [forceDynamicHeightUpdate, setForceDynamicHeightUpdate] = useState(false);
   const containerRef = useRef(null);
 
@@ -50,13 +66,6 @@ export const JSONExplorer = function JSONExplorer(props) {
   });
 
   // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
   const shouldExpandNodeInitially = (_keyPath, _data, _level) => {
     return shouldExpandEntireJSON;
   };
@@ -75,8 +84,8 @@ export const JSONExplorer = function JSONExplorer(props) {
     border: `1px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
     boxShadow,
-    visibility: exposedVariablesTemporaryState.isVisible ? 'visible' : 'hidden',
-    ...(exposedVariablesTemporaryState.isLoading
+    visibility: isVisible ? 'visible' : 'hidden',
+    ...(isLoading
       ? {
           display: 'flex',
           justifyContent: 'center',
@@ -85,69 +94,49 @@ export const JSONExplorer = function JSONExplorer(props) {
       : {}),
   };
 
-  // ===== EFFECTS =====
-  useBatchedUpdateEffectArray([
-    {
-      dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
-    },
-    {
-      dep: visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-    {
-      dep: value,
-      sideEffect: () => {
-        setForceDynamicHeightUpdate((prev) => !prev);
-        updateExposedVariablesState('value', value);
-        setExposedVariable('value', value);
-      },
-    },
-    {
-      dep: shouldExpandEntireJSON,
-      sideEffect: () => {
-        setForceDynamicHeightUpdate((prev) => !prev);
-      },
-    },
-  ]);
+  // ===== EFFECTS (property-sync write-throughs; skip-initial) ──────────
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
   useEffect(() => {
-    const exposedVariables = {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setForceDynamicHeightUpdate((prev) => !prev);
+    setExposedVariable('value', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setForceDynamicHeightUpdate((prev) => !prev);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldExpandEntireJSON]);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (setValue matches the contract's reducer exactly — no override needed).
+  useEffect(() => {
+    setExposedVariables({
       isLoading: loadingState,
       isVisible: visibility,
       isDisabled: disabledState,
       value: value,
-      setValue: async function (value) {
-        updateExposedVariablesState('value', value);
-        setExposedVariable('value', value);
-      },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -172,12 +161,12 @@ export const JSONExplorer = function JSONExplorer(props) {
   // ===== MAIN RENDER =====
   return (
     <div ref={containerRef} className="json-explorer scrollbar-container" style={containerComputedStyles}>
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading ? (
         <Loader width="24" absolute={false} />
       ) : (
         <JSONTree
           key={`json-tree-${shouldExpandEntireJSON}`}
-          data={exposedVariablesTemporaryState.value}
+          data={displayValue}
           theme={resolvedTheme}
           shouldExpandNodeInitially={shouldExpandNodeInitially}
           hideRoot={!shouldShowRootNode}

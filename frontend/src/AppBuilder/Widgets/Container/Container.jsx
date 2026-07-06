@@ -29,13 +29,16 @@ export const Container = ({
   subContainerIndex,
   dataCy,
   componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
     properties.disabledState,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
   const { headerHeight = 80, showHeader } = properties;
   const containerRef = useRef(null);

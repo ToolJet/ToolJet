@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef, useId } from 'react';
+import React, { useEffect, useMemo, useRef, useId } from 'react';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
@@ -10,6 +10,9 @@ import {
   getLabelFontSize,
   getLabelWidthOfInput,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const RadioButtonV2 = ({
   properties,
@@ -23,6 +26,9 @@ export const RadioButtonV2 = ({
   validation,
   id,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const { label, options, disabledState, advanced, schema, optionsLoadingState, layout, loadingState } = properties;
 
@@ -47,13 +53,36 @@ export const RadioButtonV2 = ({
   const isInitialRender = useRef(true);
   const reactId = useId();
 
-  const [checkedValue, setCheckedValue] = useState(findDefaultItem(advanced ? schema : options));
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isLoading, setIsLoading] = useState(loadingState);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  function findDefaultItem(optionSchema) {
+    if (!Array.isArray(optionSchema)) {
+      return undefined;
+    }
+    const foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
+    return foundItem?.value;
+  }
+
+  // Store is the source of truth for the exposed value; the resolved default
+  // item is the pre-first-publish fallback (old checkedValue useState).
+  const storeValue = useExposedVariable(id, 'value', exposedOpts, undefined);
+  const initialValue = findDefaultItem(advanced ? schema : options);
+  const checkedValue = storeValue !== undefined ? storeValue : initialValue;
+
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
 
   const isMandatory = validation?.mandatory ?? false;
-  const [validationStatus, setValidationStatus] = useState(validate(checkedValue));
+  const validationStatus = useMemo(() => validate(checkedValue), [checkedValue, validate]);
   const { isValid, validationError } = validationStatus;
 
   const labelRef = useRef();
@@ -76,45 +105,36 @@ export const RadioButtonV2 = ({
     }
   }, [advanced, schema, options]);
 
-  function findDefaultItem(optionSchema) {
-    if (!Array.isArray(optionSchema)) {
-      return undefined;
-    }
-    const foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
-    return foundItem?.value;
-  }
-
-  function onSelect(value) {
+  // Internal property-sync write-through — writes directly, no dispatch/event
+  // (matches old onSelect's local-state path, which never fired events itself).
+  const setInputValue = (value) => {
     const _value = isObject(value) && has(value, 'value') ? value?.value : value;
-    setCheckedValue(_value);
-    setExposedVariable('value', _value);
-    const validationStatus = validate(_value);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
-  }
+    setExposedVariables({ value: _value });
+  };
 
+  // User interaction and the selectOption/deselectOption CSAs share the same
+  // command pairs (old onSelect + explicit fireEvent('onSelectionChange')).
+  const selectOptionCommands = (value) => [
+    { kind: 'INVOKE_CSA', componentId: id, action: 'selectOption', args: [value] },
+    { kind: 'FIRE_EVENT', componentId: id, event: 'onSelectionChange' },
+  ];
+  const deselectOptionCommands = () => [
+    { kind: 'INVOKE_CSA', componentId: id, action: 'deselectOption', args: [] },
+    { kind: 'FIRE_EVENT', componentId: id, event: 'onSelectionChange' },
+  ];
+
+  // Not isInitialRender-gated — matches old (onSelect ran unconditionally,
+  // including at mount; the default it computes here is identical to the
+  // pre-first-publish fallback above, so this is idempotent on mount).
   useEffect(() => {
-    onSelect(findDefaultItem(advanced ? schema : options));
+    setInputValue(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
-
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isLoading !== loadingState) setIsLoading(loadingState);
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     setExposedVariable('options', _options);
-
-    setExposedVariable('selectOption', async function (value) {
-      onSelect(value);
-      fireEvent('onSelectionChange');
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selectOptions)]);
 
@@ -126,11 +146,9 @@ export const RadioButtonV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const validationStatus = validate(checkedValue);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
+    setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [validate]);
+  }, [isValid]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -156,9 +174,12 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (selectOption/deselectOption overridden to keep the old event semantics).
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
-    const exposedVariables = {
+    setExposedVariables({
+      ...csaShims(),
       value: checkedValue,
       label: label,
       options: _options,
@@ -167,28 +188,9 @@ export const RadioButtonV2 = ({
       isLoading: loadingState,
       isVisible: properties.visibility,
       isDisabled: disabledState,
-      selectOption: async function (value) {
-        onSelect(value);
-        fireEvent('onSelectionChange');
-      },
-      deselectOption: async function () {
-        onSelect(null);
-        fireEvent('onSelectionChange');
-      },
-      setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setDisable: async function (value) {
-        setIsDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      setLoading: async function (value) {
-        setIsLoading(!!value);
-        setExposedVariable('isLoading', !!value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+      selectOption: async (value) => dispatch(selectOptionCommands(value)),
+      deselectOption: async () => dispatch(deselectOptionCommands()),
+    });
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -289,10 +291,7 @@ export const RadioButtonV2 = ({
                     checked={checkedValue == option.value}
                     type="radio"
                     value={option.value}
-                    onChange={() => {
-                      onSelect(option.value);
-                      fireEvent('onSelectionChange');
-                    }}
+                    onChange={() => dispatch(selectOptionCommands(option.value))}
                     disabled={option.isDisabled}
                     id={inputId}
                   />

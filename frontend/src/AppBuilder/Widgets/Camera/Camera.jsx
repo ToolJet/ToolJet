@@ -6,8 +6,21 @@ import { Content } from './Content';
 import { Footer } from './Footer';
 import './camera.scss';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
-export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setExposedVariables }) => {
+export const Camera = ({
+  id,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  setExposedVariables,
+  componentType,
+  moduleId,
+  resolveIndex,
+}) => {
   // Props
   const { backgroundColor, borderRadius, borderColor, boxShadow, textColor, accentColor } = styles;
   const { content: contentType, visibility, disabledState } = properties;
@@ -21,9 +34,18 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   const [recordingResult, setRecordingResult] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isVisible: visibility,
-    isDisabled: disabledState,
+
+  // Controlled: exposed flags are read from the store (resolved props are the
+  // pre-first-publish fallbacks).
+  const isVisible = useExposedVariable(id, 'isVisible', { resolveIndex, moduleId }, visibility);
+
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
   // Refs
@@ -58,14 +80,6 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     clearBlobUrl,
     error: recorderError,
   } = useReactMediaRecorder(recorderOptions);
-
-  // Helpers
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
 
   const updateCapturedImage = useCallback(
     (nextImage, { revokePrevious = true } = {}) => {
@@ -226,19 +240,17 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     }
   };
 
-  // Exposed variables sync
+  // Exposed variables sync — write-throughs (store-read state renders them).
   useBatchedUpdateEffectArray([
     {
       dep: visibility,
       sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
         setExposedVariable('isVisible', visibility);
       },
     },
     {
       dep: disabledState,
       sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
         setExposedVariable('isDisabled', disabledState);
       },
     },
@@ -247,29 +259,14 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
   // Effects
   /* eslint-disable react-hooks/exhaustive-deps */
 
+  // Mount: initial exposed snapshot + contract-generated CSA shims.
+  // resetVideo/resetImage only null the exposed data URLs (no stream/recorder
+  // teardown) so they are contract reducers, not widget effects.
   useEffect(() => {
     setExposedVariables({
-      ...exposedVariablesTemporaryState,
-      resetVideo: () => {
-        setExposedVariables({
-          // videoBlobURL: null,
-          videoDataURL: null,
-        });
-      },
-      resetImage: () => {
-        setExposedVariables({
-          // imageBlobURL: null,
-          imageDataURL: null,
-        });
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        updateExposedVariablesState('isVisible', value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        updateExposedVariablesState('isDisabled', value);
-      },
+      isVisible: visibility,
+      isDisabled: disabledState,
+      ...csaShims(),
     });
   }, []);
 
@@ -448,7 +445,7 @@ export const Camera = ({ properties, styles, fireEvent, setExposedVariable, setE
     backgroundColor,
     border: `1px solid ${borderColor}`,
     borderRadius: isFullscreen ? 0 : `${borderRadius}px`,
-    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     overflow: 'hidden',
     boxShadow,
     '--camera-button-color': backgroundColor,

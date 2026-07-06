@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState, useId } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export const Checkbox = ({
   height,
@@ -9,21 +12,21 @@ export const Checkbox = ({
   styles,
   fireEvent,
   componentName,
-  setExposedVariable,
   setExposedVariables,
   validation,
   dataCy,
   validate,
   width,
   id,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const reactId = useId();
   const inputId = `component-${reactId}`;
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const isMandatory = validation?.mandatory ?? false;
-  const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
-  const [checked, setChecked] = useState(defaultValueFromProperties);
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
 
@@ -34,132 +37,110 @@ export const Checkbox = ({
   const { loadingState, disabledState } = properties;
   const { checkboxColor, boxShadow, alignment, uncheckedColor, borderColor, handleColor } = styles;
 
-  const [loading, setLoading] = useState(properties?.loadingState);
-  const [disable, setDisable] = useState(disabledState || loadingState);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [validationStatus, setValidationStatus] = useState(validate(checked));
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const checked = useExposedVariable(id, 'value', exposedOpts, defaultValueFromProperties);
+  const loading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const disable = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState || loadingState);
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+
+  const validationStatus = useMemo(() => validate(checked), [validate, checked]);
   const { isValid, validationError } = validationStatus;
+  const validationStatusRef = useRef(validationStatus);
+  validationStatusRef.current = validationStatus;
+
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+    validate,
+  });
 
   const toggleValue = (e) => {
     const isChecked = e.target.checked;
-    setInputValue(isChecked);
-    if (isChecked) {
-      fireEvent('onCheck');
-    } else {
-      fireEvent('onUnCheck');
-    }
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [isChecked] },
+      { kind: 'FIRE_EVENT', componentId: id, event: isChecked ? 'onCheck' : 'onUnCheck' },
+    ]);
     setUserInteracted(true);
   };
 
+  /* ── Property-change effects (skip-initial, mirroring the old widget) ─── */
   useEffect(() => {
     if (isInitialRender.current) return;
-    setDefaultValue(defaultValueFromProperties);
-    setInputValue(defaultValueFromProperties);
-
+    dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [defaultValueFromProperties] }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties]);
 
   useEffect(() => {
-    if (disable !== disabledState) setDisable(properties.disabledState);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isDisabled: properties.disabledState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.disabledState]);
 
   useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isVisible: properties.visibility });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    if (loading !== loadingState) setLoading(loadingState);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isLoading: loadingState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('label', label);
+    setExposedVariables({ label });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isMandatory', isMandatory);
+    setExposedVariables({ isMandatory });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isLoading', loading);
+    setExposedVariables({ isValid: validationStatusRef.current?.isValid });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isDisabled', disable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    const validationStatus = validate(checked);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
   }, [validate]);
 
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('toggle', async function () {
-      setInputValue(!checked);
-      fireEvent('onChange');
-      setUserInteracted(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked]);
-
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers.
+     setValue/setChecked keep their conditional onCheck/onUnCheck events and
+     toggle its onChange + userInteracted flag (old closure semantics). ──── */
   useEffect(() => {
     const setCheckedAndNotify = async (status) => {
-      setInputValue(status);
-      if (status) {
-        fireEvent('onCheck');
-      } else {
-        fireEvent('onUnCheck');
-      }
+      dispatch([
+        { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [status] },
+        { kind: 'FIRE_EVENT', componentId: id, event: status ? 'onCheck' : 'onUnCheck' },
+      ]);
     };
 
-    const exposedVariables = {
+    setExposedVariables({
+      ...csaShims(),
       value: defaultValueFromProperties,
       setChecked: setCheckedAndNotify,
       setValue: setCheckedAndNotify,
-      setLoading: async function (loading) {
-        setLoading(!!loading);
-        setExposedVariable('isLoading', !!loading);
-      },
-      setVisibility: async function (visibility) {
-        setVisibility(!!visibility);
-        setExposedVariable('isVisible', !!visibility);
-      },
-      setDisable: async function (disable) {
-        setDisable(!!disable);
-        setExposedVariable('isDisabled', !!disable);
-      },
-      toggle: () => {
-        setInputValue(!checked);
-        fireEvent('onChange');
+      toggle: async () => {
+        dispatch([
+          { kind: 'INVOKE_CSA', componentId: id, action: 'toggle', args: [] },
+          { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
+        ]);
         setUserInteracted(true);
       },
       label: label,
       isMandatory: isMandatory,
-      isLoading: loading,
-      isVisible: visibility,
-      isDisabled: disable,
-      isValid: isValid,
-    };
-
-    setExposedVariables(exposedVariables);
+      isLoading: loadingState,
+      isVisible: properties.visibility,
+      isDisabled: disabledState || loadingState,
+      isValid: validationStatusRef.current?.isValid,
+    });
 
     isInitialRender.current = false;
 
@@ -168,22 +149,12 @@ export const Checkbox = ({
 
   const handleToggleChange = () => {
     const newCheckedState = !checked;
-    setInputValue(newCheckedState);
-    fireEvent('onChange');
-    if (newCheckedState) {
-      fireEvent('onCheck');
-    } else {
-      fireEvent('onUnCheck');
-    }
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [newCheckedState] },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
+      { kind: 'FIRE_EVENT', componentId: id, event: newCheckedState ? 'onCheck' : 'onUnCheck' },
+    ]);
     setUserInteracted(true);
-  };
-
-  const setInputValue = (value) => {
-    setChecked(value);
-    setExposedVariable('value', value);
-    const validationStatus = validate(value);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const renderCheckBox = () => (
@@ -217,7 +188,7 @@ export const Checkbox = ({
                 className="form-check-input"
                 type="checkbox"
                 onClick={toggleValue}
-                defaultChecked={defaultValue}
+                defaultChecked={defaultValueFromProperties}
                 checked={checked}
                 id={inputId}
                 aria-disabled={disable}

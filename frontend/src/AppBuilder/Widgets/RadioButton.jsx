@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const RadioButton = function RadioButton({
   id,
@@ -11,13 +14,32 @@ export const RadioButton = function RadioButton({
   setExposedVariables,
   darkMode,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { label, value, values, display_values } = properties;
 
   const { visibility, disabledState, activeColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
-  const [checkedValue, setValue] = useState(() => value);
-  useEffect(() => setValue(value), [value]);
+
+  const isInitialRender = useRef(true);
+  const exposedOpts = { resolveIndex, moduleId };
+
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for the exposed value; the resolved `value`
+  // property is the pre-first-publish fallback (old checkedValue useState).
+  const storeValue = useExposedVariable(id, 'value', exposedOpts, undefined);
+  const checkedValue =
+    isInitialRender.current || storeValue !== undefined ? (storeValue === undefined ? value : storeValue) : storeValue;
 
   let selectOptions = [];
 
@@ -28,25 +50,36 @@ export const RadioButton = function RadioButton({
       }),
     ];
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 
-  function onSelect(selection) {
-    setValue(selection);
-    setExposedVariable('value', selection);
-    fireEvent('onSelectionChange');
-  }
+  // User interaction and the selectOption CSA share the same command pair
+  // (old onSelect: expose value, then fireEvent('onSelectionChange')).
+  const selectOptionCommands = (selection) => [
+    { kind: 'INVOKE_CSA', componentId: id, action: 'selectOption', args: [selection] },
+    { kind: 'FIRE_EVENT', componentId: id, event: 'onSelectionChange' },
+  ];
 
+  // Property sync: old mount effect had [value] deps, re-exposing the value
+  // whenever the resolved property changed.
   useEffect(() => {
-    const exposedVariables = {
-      value: value,
-      selectOption: async function (option) {
-        onSelect(option);
-      },
-    };
-    setExposedVariables(exposedVariables);
+    if (isInitialRender.current) return;
+    setExposedVariables({ value });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+
+  // Mount shim: initial snapshot + contract-generated CSA dispatcher.
+  useEffect(() => {
+    setExposedVariables({
+      value: value,
+      ...csaShims(),
+      selectOption: async function (option) {
+        dispatch(selectOptionCommands(option));
+      },
+    });
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -79,7 +112,7 @@ export const RadioButton = function RadioButton({
               type="radio"
               value={option.value}
               name={`${id}-${uuidv4()}`}
-              onChange={() => onSelect(option.value)}
+              onChange={() => dispatch(selectOptionCommands(option.value))}
               disabled={disabledState}
               aria-disabled={disabledState}
               aria-hidden={!visibility}

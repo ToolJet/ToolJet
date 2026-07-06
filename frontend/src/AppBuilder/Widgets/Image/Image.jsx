@@ -8,6 +8,9 @@ import ZoomInImage from '@/AppBuilder/Widgets/Image/icons/zoomin-image.svg';
 import ZoomOutImage from '@/AppBuilder/Widgets/Image/icons/zoomout-image.svg';
 import RotateImage from '@/AppBuilder/Widgets/Image/icons/rotate-image.svg';
 import './image.scss';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 export default function Image({
   setExposedVariable,
@@ -21,6 +24,9 @@ export default function Image({
   parentId = null,
   dataCy,
   id,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
     properties;
@@ -42,10 +48,24 @@ export default function Image({
     return imageFormat === 'imageUrl' ? source : `data:${jsSchema?.type};base64,${jsSchema?.base64Data}`;
   };
 
-  const [sourceURL, setSourceURL] = useState(computeUrl());
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isLoading, setIsLoading] = useState(loadingState);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for the exposed value; computeUrl() is the
+  // pre-first-publish fallback (old sourceURL useState).
+  const storeImageURL = useExposedVariable(id, 'imageURL', exposedOpts, undefined);
+  const sourceURL = storeImageURL !== undefined ? storeImageURL : computeUrl();
+
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
 
   const hasOnClickEvent = false;
   const imageRef = useRef(null);
@@ -58,19 +78,13 @@ export default function Image({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isLoading !== loadingState) setIsLoading(loadingState);
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState]);
-
+  // Not isInitialRender-gated — matches old (unconditional URL recompute on
+  // format/source/schema change, idempotent on mount since computeUrl() is
+  // also the pre-first-publish fallback above).
   useEffect(() => {
     isInitialRender.current = false;
-    const url = computeUrl();
-    setSourceURL(url);
-    setExposedVariable('imageURL', url);
+    setExposedVariable('imageURL', computeUrl());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageFormat, source, jsSchema]);
 
   useEffect(() => {
@@ -113,35 +127,18 @@ export default function Image({
     forceCheck();
   }, [visibility]);
 
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (setImageURL/clearImage/trio all match the contract's reducers exactly —
+  // no overrides needed).
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       imageURL: computeUrl(),
       alternativeText: alternativeText,
       isLoading: loadingState,
       isVisible: properties.visibility,
       isDisabled: disabledState,
-      setImageURL: async function (value) {
-        setSourceURL(value);
-        setExposedVariable('imageURL', value);
-      },
-      clearImage: async function () {
-        setSourceURL('');
-        setExposedVariable('imageURL', '');
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        setIsLoading(!!value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        setIsDisabled(!!value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
 
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps

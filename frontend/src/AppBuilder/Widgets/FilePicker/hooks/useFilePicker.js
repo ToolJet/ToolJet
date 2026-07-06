@@ -22,6 +22,9 @@ export const useFilePicker = ({
   component, // component might be needed for events
   focusFn, // optional external focus handler (e.g., for FileInput)
   blurFn, // optional external blur handler (e.g., for FileInput)
+  componentType, // flows through the widgets' {...props} spread (RenderWidget)
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
 
@@ -63,7 +66,8 @@ export const useFilePicker = ({
     initialVisible,
     initialDisabled,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
 
   // --- State ---

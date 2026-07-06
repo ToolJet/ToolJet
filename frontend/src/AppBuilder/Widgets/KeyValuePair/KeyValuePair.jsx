@@ -30,6 +30,8 @@ export const KeyValuePair = ({
   currentMode,
   subContainerIndex,
   componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const {
     dataSourceSelector,
@@ -65,7 +67,8 @@ export const KeyValuePair = ({
     visibility,
     disabledState,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
 
   // Local state for editable values (changeSet)

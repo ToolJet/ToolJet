@@ -201,11 +201,11 @@ class DraftEditor extends React.Component {
       this.resizeObserver.observe(this.controlsRef.current);
     }
 
-    const exposedVariables = {
-      value: this.props.defaultValue,
-      isDisabled: this.props.isDisabled,
-      isVisible: this.props.isVisible,
-      isLoading: this.props.isLoading,
+    // Bucket C: setValue rebuilds the mounted Draft.js EditorState — the
+    // parent's contract (displayA.ts) declares it as an effectAction; value/
+    // isDisabled/isVisible/isLoading and the trio CSAs are already published
+    // by RichTextEditor.jsx's own mount snapshot.
+    this._unregisterEffects = this.props.registerEffects({
       setValue: async (text) => {
         const newContentState = stateFromHTML(DOMPurify.sanitize(text));
         const newEditorState = EditorState.createWithContent(newContentState);
@@ -213,27 +213,14 @@ class DraftEditor extends React.Component {
         this.props.handleChange(html);
         this.setState({ editorState: newEditorState });
       },
-      setDisable: async (value) => {
-        this.props.setExposedVariable('isDisabled', !!value);
-        this.props.setIsDisabled(!!value);
-      },
-      setVisibility: async (value) => {
-        this.props.setExposedVariable('isVisible', !!value);
-        this.props.setIsVisible(!!value);
-      },
-      setLoading: async (value) => {
-        this.props.setExposedVariable('isLoading', !!value);
-        this.props.setIsLoading(!!value);
-      },
-    };
-    this.props.setExposedVariables(exposedVariables);
-    this.props.isInitialRender.current = false;
+    });
   }
 
   componentWillUnmount() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this._unregisterEffects?.();
   }
 
   _handleKeyCommand(command, editorState) {

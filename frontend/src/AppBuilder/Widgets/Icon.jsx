@@ -1,18 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 const Icon = ({
+  id,
   properties,
   styles,
   fireEvent,
   height,
   width,
-  setExposedVariable,
   setExposedVariables,
   darkMode,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const { icon, loadingState, disabledState } = properties;
@@ -20,55 +26,55 @@ const Icon = ({
 
   const color = iconColor === '#000' ? (darkMode ? '#fff' : '#000') : iconColor;
 
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isLoading, setLoading] = useState(loadingState);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
 
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isLoading !== loadingState) setLoading(loadingState);
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
+  const { dispatch, csaShims, useEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState]);
+  // Bucket C: exposed `click` fires onClick unconditionally (old CSA had no
+  // enabled guard).
+  useEffects({
+    click: () => dispatch([{ kind: 'FIRE_EVENT', componentId: id, event: 'onClick' }]),
+  });
 
+  /* ── Property-change write-throughs (skip-initial) ────────────────────── */
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isVisible', properties.visibility);
+    setExposedVariables({ isVisible: properties.visibility });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isLoading', loadingState);
+    setExposedVariables({ isLoading: loadingState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isDisabled', disabledState);
+    setExposedVariables({ isDisabled: disabledState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setVisibility/setLoading/setDisable/click) ─────────────────────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       isVisible: properties.visibility,
       isLoading: loadingState,
       isDisabled: disabledState,
-      click: async function () {
-        fireEvent('onClick');
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        setLoading(!!value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        setIsDisabled(!!value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -24,6 +24,9 @@ import {
   getWidthTypeOfComponentStyles,
 } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -67,6 +70,9 @@ export const DropdownV2 = ({
   componentName,
   validation,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const {
     label,
@@ -107,20 +113,47 @@ export const DropdownV2 = ({
   } = styles;
   const isInitialRender = useRef(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
-  const [validationStatus, setValidationStatus] = useState(validate(currentValue));
-  const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
   const dropdownRef = React.useRef(null);
   const selectRef = React.useRef(null);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
-  const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  function findDefaultItem(schema) {
+    let _schema = schema;
+    if (!Array.isArray(schema)) {
+      _schema = [];
+    }
+    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
+    return defaultItem?.value;
+  }
+
+  // Store is the source of truth for the exposed value; the resolved default
+  // item is the pre-first-publish fallback (old currentValue useState).
+  const storeValue = useExposedVariable(id, 'value', exposedOpts, undefined);
+  const initialValue = findDefaultItem(advanced ? schema : options);
+  const currentValue = storeValue !== undefined ? storeValue : initialValue;
+
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isDropdownLoading = useExposedVariable(id, 'isLoading', exposedOpts, dropdownLoadingState);
+  const isDropdownDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+
+  const validationStatus = useMemo(() => validate(currentValue), [currentValue, validate]);
+  const { isValid, validationError } = validationStatus;
+
   const menuBackgroundColor = getInputBackgroundColor({
     fieldBackgroundColor,
     darkMode,
@@ -130,14 +163,6 @@ export const DropdownV2 = ({
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
-  function findDefaultItem(schema) {
-    let _schema = schema;
-    if (!Array.isArray(schema)) {
-      _schema = [];
-    }
-    const defaultItem = _schema?.find((item) => item?.visible === true && item?.default === true);
-    return defaultItem?.value;
-  }
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
@@ -158,13 +183,37 @@ export const DropdownV2 = ({
     }
   }, [advanced, schema, options, sort]);
 
-  function selectOption(value) {
-    const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
-    if (val) {
-      setInputValue(value);
-      fireEvent('onSelect');
-    }
-  }
+  // Latest-ref: the selectOption CSA (registered once at mount) must never
+  // close over a stale selectOptions from the mount-time render.
+  const selectOptionsRef = useRef(selectOptions);
+  selectOptionsRef.current = selectOptions;
+
+  // Internal property-sync write-through — writes directly, no dispatch/event
+  // (matches old setInputValue, which never fired events on its own).
+  const setInputValue = (value) => {
+    const _selectedOption = selectOptionsRef.current.find((option) => option.value === value);
+    setExposedVariables({
+      value,
+      selectedOption: _selectedOption
+        ? { ...pick(_selectedOption, ['label', 'value']), caption: _selectedOption?.caption ?? null }
+        : null,
+    });
+  };
+
+  // CSA path (RunJS / other components) — old selectOption() only exposed the
+  // value (and fired onSelect) when it matched a non-disabled option.
+  const selectOption = async (value) => {
+    let _value = value;
+    if (isObject(value) && has(value, 'value')) _value = value?.value;
+    const found = selectOptionsRef.current
+      .filter((option) => !option.isDisabled)
+      .find((option) => option.value === _value);
+    if (!found) return;
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'selectOption', args: [_value, found] },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onSelect' },
+    ]);
+  };
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -172,20 +221,6 @@ export const DropdownV2 = ({
       setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
-  };
-
-  const setInputValue = (value) => {
-    setCurrentValue(value);
-    const _selectedOption = selectOptions.find((option) => option.value === value);
-    setExposedVariables({
-      value,
-      selectedOption: _selectedOption
-        ? { ...pick(_selectedOption, ['label', 'value']), caption: _selectedOption?.caption ?? null }
-        : null,
-    });
-    const validationStatus = validate(value);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const handleClickInsideSelect = () => {
@@ -230,26 +265,12 @@ export const DropdownV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isDropdownLoading !== dropdownLoadingState) setIsDropdownLoading(dropdownLoadingState);
-    if (isDropdownDisabled !== disabledState) setIsDropdownDisabled(disabledState);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, dropdownLoadingState, disabledState]);
-
   // Exposed variables
 
   useEffect(() => {
     if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
     setExposedVariable('options', _options);
-
-    setExposedVariable('selectOption', async function (value) {
-      let _value = value;
-      if (isObject(value) && has(value, 'value')) _value = value?.value;
-      selectOption(_value);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue, JSON.stringify(selectOptions)]);
 
@@ -262,6 +283,17 @@ export const DropdownV2 = ({
     if (isInitialRender.current) return;
     setExposedVariable('searchText', searchInputValue);
   }, [searchInputValue]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -278,46 +310,16 @@ export const DropdownV2 = ({
     setExposedVariable('isDisabled', disabledState);
   }, [disabledState]);
 
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isMandatory', isMandatory);
-  }, [isMandatory]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('value', currentValue);
-  }, [currentValue]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    const validationStatus = validate(currentValue);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate, currentValue, setExposedVariable]);
-
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (selectOption/clear are overridden to keep old lookup + event semantics).
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value, caption }) => ({ label, value, caption: caption ?? null }));
-    const exposedVariables = {
+    setExposedVariables({
+      ...csaShims(),
       clear: async function () {
         setInputValue(null);
       },
-      setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        setIsDropdownLoading(!!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      setDisable: async function (value) {
-        setIsDropdownDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      selectOption: async function (value) {
-        let _value = value;
-        if (isObject(value) && has(value, 'value')) _value = value?.value;
-        selectOption(_value);
-      },
+      selectOption,
       options: _options,
       value: currentValue,
       label: label,
@@ -327,9 +329,9 @@ export const DropdownV2 = ({
       isLoading: dropdownLoadingState,
       isDisabled: disabledState,
       isMandatory: isMandatory,
-    };
-    setExposedVariables(exposedVariables);
+    });
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const triggerWidth = ref?.current?.getBoundingClientRect?.()?.width;

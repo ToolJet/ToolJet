@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getModifiedColor, getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
-import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Label from '@/_ui/Label';
 import './buttonGroupV2.scss';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
@@ -10,6 +9,9 @@ import { cx } from 'class-variance-authority';
 import { getLabelFontSize, getWidthTypeOfComponentStyles } from '@/AppBuilder/Widgets/BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const ButtonGroupV2 = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -26,6 +28,9 @@ export const ButtonGroupV2 = (props) => {
     validate,
     validation,
     darkMode,
+    componentType,
+    moduleId,
+    resolveIndex,
   } = props;
 
   const {
@@ -58,9 +63,20 @@ export const ButtonGroupV2 = (props) => {
   const { label, advanced, schema, options, multiSelection, layout, loadingState, disabledState, visibility } =
     properties;
 
+  const isInitialRender = useRef(true);
   const labelRef = useRef(null);
   const groupWrapperRef = useRef(null);
   const groupRef = useRef(null);
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
 
   // ===== COMPUTED VALUES =====
   const transformedOptions = advanced ? schema : options;
@@ -86,143 +102,106 @@ export const ButtonGroupV2 = (props) => {
 
   const validOptionValues = formattedOptions.map((option) => option.value);
 
-  // ===== STATE MANAGEMENT =====
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState || loadingState,
-    selected: defaultOptionValues(formattedOptions),
-  });
+  // ===== Controlled reads: store is the source of truth ─────────────────
+  const storeSelected = useExposedVariable(id, 'selected', exposedOpts, undefined);
+  const initialSelected = defaultOptionValues(formattedOptions);
+  const selected = storeSelected !== undefined ? storeSelected : initialSelected;
+
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState || loadingState);
 
   // ===== VALIDATION =====
   const isMandatory = validation?.mandatory ?? false;
-  const [validationStatus, setValidationStatus] = useState(
-    validate(exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null)
-  );
+  const validationStatus = useMemo(() => validate(selected?.length ? selected : null), [selected, validate]);
   const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
   const { isValid, validationError } = validationStatus;
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
 
-  // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
+  // Latest-ref: the setSelected CSA (registered once at mount) must never
+  // close over stale validOptionValues/multiSelection.
+  const setSelectedCtxRef = useRef({ validOptionValues, multiSelection });
+  setSelectedCtxRef.current = { validOptionValues, multiSelection };
 
-  // ===== EFFECTS =====
-  useBatchedUpdateEffectArray([
-    {
-      dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
-    },
-    {
-      dep: properties.visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-    {
-      dep: exposedVariablesTemporaryState.selected,
-      sideEffect: () => {
-        setExposedVariable('selected', exposedVariablesTemporaryState.selected);
-        const validationStatus = validate(
-          exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null
-        );
-        setValidationStatus(validationStatus);
-        setExposedVariable('isValid', validationStatus?.isValid);
-      },
-    },
-    {
-      dep: validate,
-      sideEffect: () => {
-        const validationStatus = validate(
-          exposedVariablesTemporaryState.selected?.length ? exposedVariablesTemporaryState.selected : null
-        );
-        setValidationStatus(validationStatus);
-        setExposedVariable('isValid', validationStatus?.isValid);
-      },
-    },
-  ]);
+  // ===== EFFECTS (property-sync write-throughs; skip-initial) ──────────
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+  }, [loadingState]);
 
   useEffect(() => {
-    const exposedVariables = {
-      ...exposedVariablesTemporaryState,
-      isValid: isValid,
-      clear: async function () {
-        updateExposedVariablesState('selected', []);
-        setUserInteracted(true);
-      },
-      setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-    };
-
-    setExposedVariables(exposedVariables);
-  }, []);
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+  }, [properties.visibility]);
 
   useEffect(() => {
-    setExposedVariable('setSelected', async function (value) {
-      if (Array.isArray(value)) {
-        if (value.length === 0) updateExposedVariablesState('selected', []);
-
-        const newSelected = value.filter((item) => validOptionValues.includes(item));
-
-        if (multiSelection) {
-          updateExposedVariablesState('selected', newSelected);
-        } else {
-          updateExposedVariablesState('selected', newSelected.length > 0 ? [newSelected[0]] : []);
-        }
-      } else if (typeof value === 'string' || typeof value === 'number') {
-        const isValidValue = validOptionValues.includes(value);
-        if (isValidValue) {
-          updateExposedVariablesState('selected', [value]);
-        }
-      }
-      setUserInteracted(true);
-    });
-  }, [multiSelection, validOptionValues, updateExposedVariablesState, setExposedVariable]);
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+  }, [disabledState]);
 
   useEffect(() => {
-    updateExposedVariablesState('selected', defaultOptionValues(formattedOptions));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
+
+  // Not isInitialRender-gated — matches old (unconditional selected reset on
+  // schema/options change, idempotent on mount since it reuses the same
+  // formula as the pre-first-publish fallback above).
+  useEffect(() => {
+    setExposedVariables({ selected: defaultOptionValues(formattedOptions) });
   }, [advanced, JSON.stringify(options), JSON.stringify(schema), multiSelection]);
 
-  const handleButtonClick = (value) => {
-    const isSelected = exposedVariablesTemporaryState.selected.includes(value);
-    if (multiSelection) {
-      updateExposedVariablesState(
-        'selected',
-        isSelected
-          ? exposedVariablesTemporaryState.selected.filter((item) => item !== value)
-          : [...exposedVariablesTemporaryState.selected, value]
-      );
-    } else {
-      updateExposedVariablesState('selected', isSelected ? [] : [value]);
+  // CSA path (RunJS / other components) — mirrors old exposed `setSelected`
+  // filtering semantics exactly (array vs single value, multiSelection).
+  const setSelected = async (value) => {
+    const { validOptionValues, multiSelection } = setSelectedCtxRef.current;
+    let newSelected;
+    if (Array.isArray(value)) {
+      const filtered = value.filter((item) => validOptionValues.includes(item));
+      newSelected = multiSelection ? filtered : filtered.length > 0 ? [filtered[0]] : [];
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      if (validOptionValues.includes(value)) newSelected = [value];
     }
-    fireEvent('onClick');
+    if (newSelected !== undefined) {
+      dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setSelected', args: [newSelected] }]);
+    }
+    setUserInteracted(true);
+  };
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (clear/setSelected overridden to keep old userInteracted/filter semantics).
+  useEffect(() => {
+    setExposedVariables({
+      ...csaShims(),
+      isLoading,
+      isVisible,
+      isDisabled,
+      selected,
+      isValid,
+      clear: async function () {
+        dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'clear', args: [] }]);
+        setUserInteracted(true);
+      },
+      setSelected,
+    });
+    isInitialRender.current = false;
+  }, []);
+
+  const toggleSelection = (value) => {
+    const isSelected = selected.includes(value);
+    if (multiSelection) {
+      return isSelected ? selected.filter((item) => item !== value) : [...selected, value];
+    }
+    return isSelected ? [] : [value];
+  };
+
+  const handleButtonClick = (value) => {
+    const newSelected = toggleSelection(value);
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'setSelected', args: [newSelected] },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onClick' },
+    ]);
     setUserInteracted(true);
   };
 
@@ -311,18 +290,18 @@ export const ButtonGroupV2 = (props) => {
             (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : '']: true,
-          'd-none': !exposedVariablesTemporaryState.isVisible,
+          'd-none': !isVisible,
           'tw-flex-row-reverse': alignment === 'side' && direction === 'right',
         })}
         role="group"
         id={`component-${id}`}
-        aria-hidden={!exposedVariablesTemporaryState.isVisible}
-        aria-disabled={exposedVariablesTemporaryState.isDisabled}
-        aria-busy={exposedVariablesTemporaryState.isLoading}
+        aria-hidden={!isVisible}
+        aria-disabled={isDisabled}
+        aria-busy={isLoading}
         aria-invalid={!isValid}
         aria-labelledby={`${id}-label`}
         data-cy={dataCy}
-        data-disabled={exposedVariablesTemporaryState.isDisabled}
+        data-disabled={isDisabled}
       >
         <Label
           label={label}
@@ -341,7 +320,7 @@ export const ButtonGroupV2 = (props) => {
           fontSize={labelFontSizeValue}
         />
         <div className="button-group-content-wrapper" style={groupWrapperStyles} ref={groupWrapperRef}>
-          {exposedVariablesTemporaryState.isLoading ? (
+          {isLoading ? (
             <Loader
               absolute={false}
               style={{ margin: '0 auto', marginTop: alignment !== 'top' ? '8px' : '0' }}
@@ -355,10 +334,10 @@ export const ButtonGroupV2 = (props) => {
                   style={{
                     ...commonStyles,
                     backgroundColor:
-                      hoveredButtonIndex === index && !exposedVariablesTemporaryState.selected?.includes(option.value)
+                      hoveredButtonIndex === index && !selected?.includes(option.value)
                         ? computedHoverBackgroundColor
                         : backgroundColor,
-                    ...(exposedVariablesTemporaryState.selected?.includes(option.value) && selectedStyles),
+                    ...(selected?.includes(option.value) && selectedStyles),
                     ...(option.isDisabled && disabledStyles),
                     fontSize: `${computedFontSize}px`,
                     lineHeight: `${computedLineHeight}px`,
@@ -391,9 +370,7 @@ export const ButtonGroupV2 = (props) => {
                         style={{
                           width: `${computedIconSize}px`,
                           height: `${computedIconSize}px`,
-                          color: exposedVariablesTemporaryState.selected?.includes(option.value)
-                            ? selectedIconColor
-                            : iconColor,
+                          color: selected?.includes(option.value) ? selectedIconColor : iconColor,
                         }}
                         stroke={1.5}
                         data-cy={`${dataCy}-icon`}
@@ -407,7 +384,7 @@ export const ButtonGroupV2 = (props) => {
           )}
         </div>
       </div>
-      {userInteracted && exposedVariablesTemporaryState.isVisible && !isValid && (
+      {userInteracted && isVisible && !isValid && (
         <div
           className="d-flex"
           style={{

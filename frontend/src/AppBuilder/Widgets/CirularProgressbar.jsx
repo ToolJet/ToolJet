@@ -1,17 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import cx from 'classnames';
 import 'react-circular-progressbar/dist/styles.css';
 import './circularProgressbar.scss';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export const CircularProgressBar = function CircularProgressBar({
+  id,
   height,
   properties,
   styles,
   dataCy,
-  setExposedVariable,
   setExposedVariables,
+  fireEvent,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { text, progress, labelType, visibility, loadingState, allowNegativeProgress } = properties;
   const {
@@ -28,26 +35,35 @@ export const CircularProgressBar = function CircularProgressBar({
     negativeColor,
   } = styles;
 
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isVisible: visibility,
-    isLoading: loadingState,
-    value: progress,
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const value = useExposedVariable(id, 'value', exposedOpts, progress);
+
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
-  const label = labelType === 'custom' ? text : `${exposedVariablesTemporaryState.value}%`;
+  const label = labelType === 'custom' ? text : `${value}%`;
   const computedStyles = {
-    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     boxShadow,
   };
 
   const innerContainerStyles = {
-    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     justifyContent: alignment,
     width: '100%',
     height: '100%',
   };
 
-  const computedProperties = exposedVariablesTemporaryState.isLoading
+  const computedProperties = isLoading
     ? {
         circleRatio: 1,
         value: 25,
@@ -56,77 +72,44 @@ export const CircularProgressBar = function CircularProgressBar({
       }
     : {
         circleRatio: circleRatio,
-        value: allowNegativeProgress
-          ? Math.abs(exposedVariablesTemporaryState.value)
-          : exposedVariablesTemporaryState.value,
-        color:
-          exposedVariablesTemporaryState.value >= 100
-            ? completionColor
-            : allowNegativeProgress
-            ? exposedVariablesTemporaryState.value >= 0
-              ? color
-              : negativeColor
-            : color,
+        value: allowNegativeProgress ? Math.abs(value) : value,
+        color: value >= 100 ? completionColor : allowNegativeProgress ? (value >= 0 ? color : negativeColor) : color,
         text: label,
       };
 
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setValue/setVisibility/setLoading) ─────────────────────────────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       isLoading: loadingState,
       isVisible: visibility,
       value: progress,
-      setValue: async function (value) {
-        setExposedVariable('value', value);
-        updateExposedVariablesState('value', value);
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        updateExposedVariablesState('isVisible', value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        updateExposedVariablesState('isLoading', value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ── Property-change write-throughs (skip-initial via the batched hook) ── */
   useBatchedUpdateEffectArray([
     {
       dep: loadingState,
-      sideEffect: () => {
-        setExposedVariable('isLoading', loadingState);
-        updateExposedVariablesState('isLoading', loadingState);
-      },
+      sideEffect: () => setExposedVariables({ isLoading: loadingState }),
     },
     {
       dep: visibility,
-      sideEffect: () => {
-        setExposedVariable('isVisible', visibility);
-        updateExposedVariablesState('isVisible', visibility);
-      },
+      sideEffect: () => setExposedVariables({ isVisible: visibility }),
     },
     {
       dep: progress,
-      sideEffect: () => {
-        setExposedVariable('value', progress);
-        updateExposedVariablesState('value', progress);
-      },
+      sideEffect: () => setExposedVariables({ value: progress }),
     },
   ]);
 
   return (
     <div style={computedStyles} data-cy={dataCy}>
-      <div style={innerContainerStyles} className={cx({ 'rotate-forever': exposedVariablesTemporaryState.isLoading })}>
+      <div style={innerContainerStyles} className={cx({ 'rotate-forever': isLoading })}>
         <CircularProgressbar
-          key={allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? 'negative' : 'positive'}
+          key={allowNegativeProgress && value < 0 ? 'negative' : 'positive'}
           value={computedProperties.value}
           text={computedProperties.text}
           styles={{
@@ -145,9 +128,7 @@ export const CircularProgressBar = function CircularProgressBar({
             },
           }}
           strokeWidth={strokeWidth}
-          counterClockwise={
-            allowNegativeProgress && exposedVariablesTemporaryState.value < 0 ? !counterClockwise : counterClockwise
-          }
+          counterClockwise={allowNegativeProgress && value < 0 ? !counterClockwise : counterClockwise}
           circleRatio={computedProperties.circleRatio}
         />
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import cx from 'classnames';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -6,10 +6,24 @@ import './reorderableList.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
-import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 export const ReorderableList = (props) => {
-  const { properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, darkMode } = props;
+  const {
+    properties,
+    styles,
+    fireEvent,
+    id,
+    dataCy,
+    setExposedVariable,
+    setExposedVariables,
+    darkMode,
+    componentType,
+    moduleId,
+    resolveIndex,
+  } = props;
 
   const { textColor } = styles;
 
@@ -17,20 +31,39 @@ export const ReorderableList = (props) => {
 
   const transformedOptions = advanced ? schema : options;
 
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState || loadingState,
+  const isInitialRender = useRef(true);
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
+  const formatOptions = (opts) => {
+    return Array.isArray(opts)
+      ? opts.map((option) => ({
+          label: option.label,
+          value: option.value,
+          format: option.format || 'plain',
+        }))
+      : [];
   };
 
-  const [currentOptions, setCurrentOptions] = useState([]);
+  // Store is the source of truth for the exposed `options` (same shape as
+  // the old currentOptions); the resolved property is the pre-first-publish
+  // fallback.
+  const storeOptions = useExposedVariable(id, 'options', exposedOpts, undefined);
+  const currentOptions =
+    storeOptions !== undefined
+      ? storeOptions
+      : formatOptions(Array.isArray(transformedOptions) ? transformedOptions : []);
+
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState || loadingState);
 
   // Ref for portal container
   const portalRef = useRef(null);
@@ -49,16 +82,6 @@ export const ReorderableList = (props) => {
     };
   }, [id]);
 
-  const formatOptions = (opts) => {
-    return Array.isArray(opts)
-      ? opts.map((option) => ({
-          label: option.label,
-          value: option.value,
-          format: option.format || 'plain',
-        }))
-      : [];
-  };
-
   // Reorder function
   const reorderOptions = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -67,7 +90,8 @@ export const ReorderableList = (props) => {
     return result;
   };
 
-  // Handle drag end
+  // Handle drag end — no CSA/contract action exists for this (Bucket A
+  // derived state), so it writes through directly, matching old.
   const onDragEnd = (result) => {
     if (!result.destination || result.source.index === result.destination.index) {
       return;
@@ -75,84 +99,62 @@ export const ReorderableList = (props) => {
 
     const reordered = reorderOptions(currentOptions, result.source.index, result.destination.index);
 
-    setCurrentOptions(reordered);
-    setExposedVariable('options', formatOptions(reordered));
-    setExposedVariable(
-      'values',
-      reordered.map((option) => option.value)
-    );
+    setExposedVariables({
+      options: formatOptions(reordered),
+      values: reordered.map((option) => option.value),
+    });
     fireEvent('onChange');
   };
 
-  useBatchedUpdateEffectArray([
-    {
-      dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
-    },
-    {
-      dep: properties.visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-    {
-      dep: transformedOptions,
-      sideEffect: () => {
-        const opts = formatOptions(Array.isArray(transformedOptions) ? transformedOptions : []);
-        setCurrentOptions(opts);
-        setExposedVariable('options', opts);
-        setExposedVariable(
-          'values',
-          opts.map((option) => option.value)
-        );
-      },
-    },
-  ]);
+  // ===== EFFECTS (property-sync write-throughs; skip-initial) ──────────
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
-  // Initial exposed variables setup
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const opts = formatOptions(Array.isArray(transformedOptions) ? transformedOptions : []);
+    setExposedVariables({
+      options: opts,
+      values: opts.map((option) => option.value),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transformedOptions]);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers.
   useEffect(() => {
     const opts = formatOptions(Array.isArray(transformedOptions) ? transformedOptions : []);
-    setCurrentOptions(opts);
 
-    const exposedVariables = {
+    setExposedVariables({
       options: opts,
       values: opts.map((option) => option.value),
       isDisabled: disabledState || loadingState,
       isVisible: visibility,
       isLoading: loadingState,
-      setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-    };
+      ...csaShims(),
+    });
 
-    setExposedVariables(exposedVariables);
-
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Compute container styles
   const containerStyle = {
-    display: exposedVariablesTemporaryState.isVisible ? 'block' : 'none',
+    display: isVisible ? 'block' : 'none',
     height: '100%',
     width: '100%',
     overflow: 'auto',
@@ -215,7 +217,7 @@ export const ReorderableList = (props) => {
       role="list"
       aria-label="Reorderable list"
     >
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading ? (
         <Loader style={{ right: '50%', top: '50%' }} width="20" />
       ) : hasNoOptions ? (
         <div className="reorderable-list-empty">No items</div>
@@ -229,7 +231,7 @@ export const ReorderableList = (props) => {
                     key={item.value || index}
                     draggableId={String(item.value || index)}
                     index={index}
-                    isDragDisabled={exposedVariablesTemporaryState.isDisabled}
+                    isDragDisabled={isDisabled}
                   >
                     {renderDraggableItem(item, index)}
                   </Draggable>

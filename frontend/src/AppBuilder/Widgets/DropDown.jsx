@@ -1,11 +1,14 @@
 import _ from 'lodash';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Select, { components } from 'react-select';
 import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
 import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 import { getModifiedColor } from './utils';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const DropDown = function DropDown({
   height,
@@ -19,15 +22,14 @@ export const DropDown = function DropDown({
   onComponentClick,
   id,
   dataCy,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const isInitialRender = useRef(true);
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
-  const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
-  const [showValidationError, setShowValidationError] = useState(false);
-  useShowValidationOnFormSubmit(setShowValidationError);
-  const [validationStatus, setValidationStatus] = useState(validate(value));
-  const { isValid, validationError } = validationStatus;
+
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
@@ -40,6 +42,32 @@ export const DropDown = function DropDown({
   } else if (!_.isArray(values)) {
     values = [];
   }
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for the exposed value; the resolved initial
+  // value (advanced default item / plain `value`) is the pre-first-publish fallback.
+  const storeValue = useExposedVariable(id, 'value', exposedOpts, undefined);
+  const initialValue = advanced ? findDefaultItem(schema) : value;
+  const currentValue = storeValue !== undefined ? storeValue : initialValue;
+
+  const [showValidationError, setShowValidationError] = useState(false);
+  useShowValidationOnFormSubmit(setShowValidationError);
+  const validationStatus = useMemo(() => validate(currentValue), [currentValue, validate]);
+  const { isValid, validationError } = validationStatus;
+
+  // Latest-ref: the selectOption CSA (registered once at mount) must never
+  // close over a stale values/display_values from the mount-time render.
+  const optionsRef = useRef({ values, display_values });
+  optionsRef.current = { values, display_values };
 
   let selectOptions = [];
 
@@ -62,24 +90,28 @@ export const DropDown = function DropDown({
     console.log(err);
   }
 
-  const setExposedItem = (value, index, onSelectFired = false) => {
-    const selectedOptionLabel = index === undefined ? undefined : display_values?.[index];
-    setInputValue(value, selectedOptionLabel);
-    if (onSelectFired) {
-      fireEvent('onSelect');
-    }
+  // CSA path (RunJS / other components) — old selectOption() always fired
+  // onSelect, exposing the value only when it's a member of `values`.
+  const selectOption = async (value) => {
+    const { values, display_values } = optionsRef.current;
+    const index = values?.indexOf(value);
+    const found = values?.includes(value);
+    dispatch([
+      {
+        kind: 'INVOKE_CSA',
+        componentId: id,
+        action: 'selectOption',
+        args: [found ? value : undefined, found ? display_values?.[index] : undefined],
+      },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onSelect' },
+    ]);
   };
 
-  function selectOption(value) {
-    let index = null;
-    index = values?.indexOf(value);
-
-    if (values?.includes(value)) {
-      setExposedItem(value, index, true);
-    } else {
-      setExposedItem(undefined, undefined, true);
-    }
-  }
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -96,13 +128,6 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const validationStatus = validate(currentValue);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
-  }, [validate]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
     if (advanced) {
       setExposedVariable(
         'optionLabels',
@@ -115,39 +140,31 @@ export const DropDown = function DropDown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
+  // Mount: initial exposed snapshot + contract-generated CSA dispatcher
+  // (selectOption is overridden to keep the old label-lookup + event semantics).
   useEffect(() => {
     const index = values?.indexOf(currentValue);
     let optionLabels = display_values;
     if (advanced) {
       optionLabels = schema?.filter((item) => item?.visible)?.map((item) => item.label);
     }
-    const exposedVariables = {
-      selectOption: async function (value) {
-        selectOption(value);
-      },
-      isValid: isValid,
+    setExposedVariables({
+      ...csaShims(),
+      selectOption,
+      isValid,
       value: currentValue,
       selectedOptionLabel: display_values?.[index],
-      label: label,
-      optionLabels: optionLabels,
-    };
-
-    setExposedVariables(exposedVariables);
+      label,
+      optionLabels,
+    });
     isInitialRender.current = false;
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const exposedVariables = {
-      selectOption: async function (value) {
-        selectOption(value);
-      },
-    };
-
-    setExposedVariables(exposedVariables);
-  }, [JSON.stringify(properties.values)]);
-
+  // Not isInitialRender-gated: on mount these run in the same effect flush,
+  // AFTER the snapshot effect below has already flipped the flag — old code
+  // relied on this ordering to apply the membership filter the snapshot
+  // itself skips (mount snapshot publishes `currentValue` unfiltered).
   useEffect(() => {
     let newValue = undefined;
     let index = null;
@@ -155,19 +172,17 @@ export const DropDown = function DropDown({
       newValue = value;
       index = values?.indexOf(value);
     }
-    setExposedItem(newValue, index);
-
+    setInputValue(newValue, index === null ? undefined : display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(value), JSON.stringify(values)]);
 
   useEffect(() => {
     let newValue = undefined;
-    let index = null;
 
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
-    index = values?.indexOf(newValue);
-    setExposedItem(newValue, index);
+    const index = values?.indexOf(newValue);
+    setInputValue(newValue, index === undefined || index === -1 ? undefined : display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
@@ -187,12 +202,11 @@ export const DropDown = function DropDown({
     }
   };
 
+  // Internal property-sync auto-correction (schema/values changed) — writes
+  // through directly, no dispatch/event (matches old setInputValue, which
+  // never fired events on its own).
   const setInputValue = (value, label) => {
-    setCurrentValue(value);
     setExposedVariables({ value, selectedOptionLabel: label });
-    const validationStatus = validate(value);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const customStyles = {

@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { getSafeRenderableValue } from '@/AppBuilder/Widgets/utils';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 import Spinner from '@/_ui/Spinner';
-import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
 import './tags.scss';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 export const Tags = function Tags({
   width,
@@ -15,6 +17,11 @@ export const Tags = function Tags({
   dataCy,
   setExposedVariable,
   setExposedVariables,
+  id,
+  fireEvent,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const {
     data,
@@ -30,18 +37,20 @@ export const Tags = function Tags({
 
   const isInitialRender = useRef(true);
   const containerRef = useRef(null);
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isVisible: visibility,
-    isLoading: tagsLoadingState,
-    isDisabled: disabledState,
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, tagsLoadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
 
   // Follow the exact same pattern as Tabs: use tagItems for static, schema/data for dynamic
   let tagsData;
@@ -75,58 +84,42 @@ export const Tags = function Tags({
       }));
   }
 
-  useBatchedUpdateEffectArray([
-    {
-      dep: visibility,
-      sideEffect: () => {
-        setExposedVariable('isVisible', visibility);
-        updateExposedVariablesState('isVisible', visibility);
-      },
-    },
-    {
-      dep: tagsLoadingState,
-      sideEffect: () => {
-        setExposedVariable('isLoading', tagsLoadingState);
-        updateExposedVariablesState('isLoading', tagsLoadingState);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        setExposedVariable('isDisabled', disabledState);
-        updateExposedVariablesState('isDisabled', disabledState);
-      },
-    },
-    {
-      dep: JSON.stringify(parsedTags ?? []),
-      sideEffect: () => {
-        const _tags = parsedTags?.map(({ title }) => title) || [];
-        setExposedVariable('tags', _tags);
-      },
-    },
-  ]);
+  // ===== EFFECTS (property-sync write-throughs; skip-initial) ──────────
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', tagsLoadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagsLoadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     const _tags = parsedTags?.map(({ title }) => title) || [];
-    const exposedVariables = {
+    setExposedVariable('tags', _tags);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(parsedTags ?? [])]);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers.
+  useEffect(() => {
+    const _tags = parsedTags?.map(({ title }) => title) || [];
+    setExposedVariables({
       tags: _tags,
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        updateExposedVariablesState('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        updateExposedVariablesState('isLoading', !!value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        updateExposedVariablesState('isDisabled', !!value);
-      },
+      ...csaShims(),
       isVisible: visibility,
       isLoading: tagsLoadingState,
       isDisabled: disabledState,
-    };
-    setExposedVariables(exposedVariables);
+    });
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -134,11 +127,11 @@ export const Tags = function Tags({
   const computedStyles = {
     width,
     height,
-    opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
-    pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
+    opacity: isDisabled ? 0.5 : 1,
+    pointerEvents: isDisabled ? 'none' : 'auto',
     ...(overflow === 'wrap'
       ? {
-          display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
+          display: isVisible ? 'flex' : 'none',
           flexWrap: 'wrap',
           overflowY: 'auto',
           overflowX: 'hidden',
@@ -148,7 +141,7 @@ export const Tags = function Tags({
           margin: '0 -3px -3px 0',
         }
       : {
-          display: exposedVariablesTemporaryState?.isVisible ? 'flex' : 'none',
+          display: isVisible ? 'flex' : 'none',
           flexWrap: 'nowrap',
           overflowX: 'auto',
           overflowY: 'hidden',
@@ -191,7 +184,7 @@ export const Tags = function Tags({
     const isTagVisible = item.visible?.value !== undefined ? item.visible.value : item.visible !== false;
     if (!isTagVisible) return null;
 
-    const isComponentDisabled = exposedVariablesTemporaryState.isDisabled;
+    const isComponentDisabled = isDisabled;
 
     const textColor = item.textColor;
 
@@ -279,9 +272,9 @@ export const Tags = function Tags({
         role="group"
         aria-label={`Tags display: ${parsedTags?.length || 0} tags`}
         aria-live="polite"
-        aria-busy={exposedVariablesTemporaryState.isLoading}
+        aria-busy={isLoading}
       >
-        {exposedVariablesTemporaryState.isLoading ? (
+        {isLoading ? (
           <div
             style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}
             data-cy={`${dataCy}-loading-spinner`}

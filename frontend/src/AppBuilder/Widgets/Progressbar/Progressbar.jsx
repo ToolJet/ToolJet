@@ -1,9 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Label from '@/_ui/Label';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import './progressbar.scss';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExposedVariables, dataCy, height }) => {
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
+
+export const ProgressBar = ({
+  id,
+  properties,
+  styles,
+  setExposedVariables,
+  fireEvent,
+  dataCy,
+  height,
+  componentType,
+  moduleId,
+  resolveIndex,
+}) => {
   // ===== PROPS DESTRUCTURING =====
   const { labelType, label, progress, visibility, loadingState } = properties;
 
@@ -33,80 +48,56 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
   const validProgressBarThickness = progressBarThickness >= 1 && progressBarThickness <= 50 ? progressBarThickness : 20;
   const barHeight = (computedHeight * validProgressBarThickness) / 100;
 
-  // ===== STATE MANAGEMENT =====
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    value: Math.min(Math.max(progress || 0, 0), 100),
-    isVisible: visibility,
-    isLoading: loadingState,
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const clampedProgress = useExposedVariable(id, 'value', exposedOpts, Math.min(Math.max(progress || 0, 0), 100));
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
-  // Clamp progress value between 0 and 100
-  const clampedProgress = exposedVariablesTemporaryState.value;
   const isCompleted = clampedProgress >= 100;
 
   // Determine label text
   const labelText = labelType === 'custom' ? label : `${Math.round(clampedProgress)}%`;
 
-  // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
-  // ===== EFFECTS =====
+  /* ── Property-change write-throughs (skip-initial via the batched hook) ── */
   useBatchedUpdateEffectArray([
     {
       dep: progress,
-      sideEffect: () => {
-        const clamped = Math.min(Math.max(progress || 0, 0), 100);
-        updateExposedVariablesState('value', clamped);
-        setExposedVariable('value', clamped);
-      },
+      sideEffect: () => setExposedVariables({ value: Math.min(Math.max(progress || 0, 0), 100) }),
     },
     {
       dep: visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
+      sideEffect: () => setExposedVariables({ isVisible: visibility }),
     },
     {
       dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
+      sideEffect: () => setExposedVariables({ isLoading: loadingState }),
     },
   ]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setValue/setVisibility/setLoading) ─────────────────────────────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       value: Math.min(Math.max(progress || 0, 0), 100),
       isVisible: visibility,
       isLoading: loadingState,
-      setValue: async function (value) {
-        const clamped = Math.min(Math.max(value || 0, 0), 100);
-        updateExposedVariablesState('value', clamped);
-        setExposedVariable('value', clamped);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-    };
-
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!exposedVariablesTemporaryState.isVisible) {
+  if (!isVisible) {
     return null;
   }
 
@@ -177,7 +168,7 @@ export const ProgressBar = ({ id, properties, styles, setExposedVariable, setExp
       {alignment === 'top' ? <div style={labelContainerStyles}>{labelElement}</div> : labelElement}
       <div style={progressBarContainerStyles}>
         <div style={progressBarWrapperStyles}>
-          {exposedVariablesTemporaryState.isLoading ? (
+          {isLoading ? (
             <div
               style={{
                 position: 'relative',

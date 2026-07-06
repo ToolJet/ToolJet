@@ -1,20 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
 
 import { cn } from '@/lib/utils';
 import { BOX_PADDING } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import WidgetIcon from '@/../assets/images/icons/widgets';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export const Statistics = function Statistics({
+  id,
   width,
   height,
   properties,
   styles,
   darkMode,
   dataCy,
-  setExposedVariable,
   setExposedVariables,
+  fireEvent,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const {
     primaryValueLabel,
@@ -53,22 +60,26 @@ export const Statistics = function Statistics({
     iconVisibility,
   } = styles;
 
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    primaryValue: primaryValue,
-    secondaryValue: secondaryValue,
-    isLoading: loadingState,
-    isVisible: visibility,
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const exposedPrimaryValue = useExposedVariable(id, 'primaryValue', exposedOpts, primaryValue);
+  const exposedSecondaryValue = useExposedVariable(id, 'secondaryValue', exposedOpts, secondaryValue);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setPrimaryValue/setSecondaryValue/setLoading/setVisibility) ────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       primaryLabel: primaryValueLabel,
       secondaryLabel: secondaryValueLabel,
       primaryValue,
@@ -76,73 +87,40 @@ export const Statistics = function Statistics({
       secondarySignDisplay,
       isLoading: loadingState,
       isVisible: visibility,
-      setPrimaryValue: async function (newValue) {
-        setExposedVariable('primaryValue', newValue);
-        updateExposedVariablesState('primaryValue', newValue);
-      },
-      setSecondaryValue: async function (newValue) {
-        setExposedVariable('secondaryValue', newValue);
-        updateExposedVariablesState('secondaryValue', newValue);
-      },
-      setLoading: async function (loading) {
-        setExposedVariable('isLoading', !!loading);
-        updateExposedVariablesState('isLoading', !!loading);
-      },
-      setVisibility: async function (visibility) {
-        setExposedVariable('isVisible', !!visibility);
-        updateExposedVariablesState('isVisible', !!visibility);
-      },
-    };
-
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ── Property-change write-throughs (skip-initial via the batched hook) ── */
   useBatchedUpdateEffectArray([
     {
       dep: primaryValueLabel,
-      sideEffect: () => {
-        setExposedVariable('primaryLabel', primaryValueLabel);
-      },
+      sideEffect: () => setExposedVariables({ primaryLabel: primaryValueLabel }),
     },
     {
       dep: secondaryValueLabel,
-      sideEffect: () => {
-        setExposedVariable('secondaryLabel', secondaryValueLabel);
-      },
+      sideEffect: () => setExposedVariables({ secondaryLabel: secondaryValueLabel }),
     },
     {
       dep: primaryValue,
-      sideEffect: () => {
-        setExposedVariable('primaryValue', primaryValue);
-        updateExposedVariablesState('primaryValue', primaryValue);
-      },
+      sideEffect: () => setExposedVariables({ primaryValue }),
     },
     {
       dep: secondaryValue,
-      sideEffect: () => {
-        setExposedVariable('secondaryValue', secondaryValue);
-        updateExposedVariablesState('secondaryValue', secondaryValue);
-      },
+      sideEffect: () => setExposedVariables({ secondaryValue }),
     },
     {
       dep: secondarySignDisplay,
-      sideEffect: () => {
-        setExposedVariable('secondarySignDisplay', secondarySignDisplay);
-      },
+      sideEffect: () => setExposedVariables({ secondarySignDisplay }),
     },
     {
       dep: loadingState,
-      sideEffect: () => {
-        setExposedVariable('isLoading', loadingState);
-        updateExposedVariablesState('isLoading', loadingState);
-      },
+      sideEffect: () => setExposedVariables({ isLoading: loadingState }),
     },
     {
       dep: visibility,
-      sideEffect: () => {
-        setExposedVariable('isVisible', visibility);
-        updateExposedVariablesState('isVisible', visibility);
-      },
+      sideEffect: () => setExposedVariables({ isVisible: visibility }),
     },
   ]);
 
@@ -152,14 +130,14 @@ export const Statistics = function Statistics({
     margin: '0px auto',
     border: `1px solid ${borderColor ?? 'var(--cc-default-border)'}`,
     fontFamily: 'Inter',
-    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     gap: '1.5rem 2rem',
     wordBreak: 'break-all',
     overflow: 'hidden',
     height: padding === 'default' ? height : height + BOX_PADDING * 2,
     boxShadow,
     padding: '1.5rem',
-    ...((dataAlignment === 'center' || exposedVariablesTemporaryState.isLoading === true) && {
+    ...((dataAlignment === 'center' || isLoading === true) && {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
@@ -203,16 +181,16 @@ export const Statistics = function Statistics({
   };
 
   const derivedPrimaryValue = `
-    ${primaryPrefixText ?? ''}${String(exposedVariablesTemporaryState.primaryValue)}${primarySuffixText ?? ''}
+    ${primaryPrefixText ?? ''}${String(exposedPrimaryValue)}${primarySuffixText ?? ''}
   `;
   const derivedSecondaryValue = `
-    ${secondaryPrefixText ?? ''}${exposedVariablesTemporaryState.secondaryValue}${secondarySuffixText ?? ''}
+    ${secondaryPrefixText ?? ''}${exposedSecondaryValue}${secondarySuffixText ?? ''}
   `;
   const trendIconSize = (secondaryValueSize ?? 14) * 1.3;
 
   return (
     <div style={baseStyle} data-cy={dataCy}>
-      {exposedVariablesTemporaryState.isLoading === true ? (
+      {isLoading === true ? (
         <div style={{ width }} className="p-2">
           <center>
             <div className="spinner-border" role="status"></div>

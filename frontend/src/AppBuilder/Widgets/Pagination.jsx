@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const Pagination = ({
   id,
@@ -7,21 +10,44 @@ export const Pagination = ({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
   darkMode,
   dataCy,
   width,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const { visibility, disabledState, loadingState } = properties;
   const { boxShadow, alignment } = styles;
-  const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
-  const [isVisible, setIsVisible] = useState(visibility);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
-  const [isLoading, setIsLoading] = useState(loadingState);
 
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for the exposed value; the resolved
+  // defaultPageIndex is the pre-first-publish fallback.
+  const currentPage = useExposedVariable(id, 'currentPageIndex', exposedOpts, properties?.defaultPageIndex ?? 1);
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+
+  // Latest-ref: the setPage CSA (registered once at mount) must never close
+  // over a stale numberOfPages from the mount-time render.
+  const totalPagesRef = useRef(properties.numberOfPages);
+  totalPagesRef.current = properties.numberOfPages;
+
+  // Direct UI navigation write-through — no bounds clamp (matches old
+  // pageChanged, which never validated against totalPages).
   const pageChanged = (number) => {
-    setCurrentPage(number);
     setExposedVariable('currentPageIndex', number);
     fireEvent('onPageChange');
   };
@@ -46,12 +72,24 @@ export const Pagination = ({
     gotoPage(currentPage - 1);
   }
 
+  // CSA path (RunJS / other components) — clamps into [1, totalPages];
+  // invalid input is a no-op (old guard), so onPageChange only fires for
+  // valid input.
+  const setPage = async (pageIndex) => {
+    const total = Number(totalPagesRef.current);
+    const n = Number(pageIndex);
+    if (!Number.isFinite(n) || !Number.isFinite(total) || total < 1) return;
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'setPage', args: [pageIndex] },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onPageChange' },
+    ]);
+  };
+
   useEffect(() => {
     if (properties.defaultPageIndex) {
       if (!isInitialRender.current) {
         pageChanged(properties.defaultPageIndex);
       } else {
-        setCurrentPage(properties.defaultPageIndex);
         setExposedVariable('currentPageIndex', properties.defaultPageIndex);
         isInitialRender.current = false;
       }
@@ -64,75 +102,30 @@ export const Pagination = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.numberOfPages]);
 
-  // sync style prop → local state
+  // Mount: register contract-generated CSA dispatchers (setPage overridden
+  // to keep the old clamp + conditional-event semantics).
   useEffect(() => {
-    isVisible !== visibility && setIsVisible(visibility);
+    setExposedVariables({
+      ...csaShims(),
+      setPage,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
-    isDisabled !== disabledState && setIsDisabled(disabledState);
+    setExposedVariable('isDisabled', disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
   useEffect(() => {
-    isLoading !== loadingState && setIsLoading(loadingState);
+    setExposedVariable('isLoading', loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
-
-  // CSA: setPage
-  useEffect(() => {
-    setExposedVariable('setPage', async function (pageIndex) {
-      const total = Number(properties.numberOfPages);
-      const n = Number(pageIndex);
-      if (!Number.isFinite(n) || !Number.isFinite(total) || total < 1) return;
-      const target = Math.min(Math.max(1, Math.floor(n)), total);
-      pageChanged(target);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.numberOfPages]);
-
-  // CSA: setVisibility
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setIsVisible(!!state);
-      setExposedVariable('isVisible', !!state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // CSA: setDisable
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (value) {
-      setIsDisabled(!!value);
-      setExposedVariable('isDisabled', !!value);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // CSA: setLoading
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (value) {
-      setIsLoading(!!value);
-      setExposedVariable('isLoading', !!value);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', isVisible);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', isDisabled);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDisabled]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', isLoading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
 
   const computedStyles = {
     height,

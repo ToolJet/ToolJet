@@ -66,6 +66,8 @@ export const Tabs = function Tabs({
   currentMode,
   subContainerIndex,
   componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { tabWidth, boxShadow } = styles;
   const { isDisabled, isVisible, isLoading } = useExposeState(
@@ -73,7 +75,8 @@ export const Tabs = function Tabs({
     properties.visibility,
     properties.disabledState,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
   const { defaultTab, hideTabs, renderOnlyActiveTab, scrollToTopOnTabSwitch, useDynamicOptions } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);

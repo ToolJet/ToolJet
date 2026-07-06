@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
@@ -9,14 +9,15 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
   center: 'center',
   bottom: 'flex-end',
 };
-
-let count = 0;
 
 export const Text = function Text({
   id,
@@ -26,13 +27,14 @@ export const Text = function Text({
   fireEvent,
   styles,
   darkMode,
-  setExposedVariable,
   setExposedVariables,
   dataCy,
   currentLayout,
   currentMode,
   subContainerIndex,
   componentType,
+  moduleId,
+  resolveIndex,
 }) {
   let {
     textSize,
@@ -56,25 +58,28 @@ export const Text = function Text({
   } = styles;
   const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
-  const [text, setText] = useState(() => computeText());
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isLoading, setLoading] = useState(loadingState);
-  const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
-  count = count + 1;
+
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const text = useExposedVariable(id, 'text', exposedOpts, computeText());
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
 
   // Create ref for height observation
   const textRef = useRef(null);
   const heightChangeValue = useHeightObserver(textRef, isDynamicHeightEnabled);
-
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isLoading !== loadingState) setLoading(loadingState);
-    if (isDisabled !== disabledState) setIsDisabled(disabledState);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState]);
 
   useDynamicHeight({
     isDynamicHeightEnabled,
@@ -88,61 +93,42 @@ export const Text = function Text({
     componentType,
   });
 
+  /* ── Property-change write-throughs (skip-initial) ────────────────────── */
   useEffect(() => {
     if (isInitialRender.current) return;
-    const text = computeText();
-    setText(text);
-    setExposedVariable('text', text);
+    setExposedVariables({ text: computeText() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isVisible', properties.visibility);
+    setExposedVariables({ isVisible: properties.visibility });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isLoading', loadingState);
+    setExposedVariables({ isLoading: loadingState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isDisabled', disabledState);
+    setExposedVariables({ isDisabled: disabledState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setText/clear/setVisibility/setLoading/setDisable + the deprecated
+     `visibility` alias) ─────────────────────────────────────────────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       text: computeText(),
-      setText: async function (text) {
-        setText(text);
-        setExposedVariable('text', text);
-      },
-      clear: async function () {
-        setText('');
-        setExposedVariable('text', '');
-      },
       isVisible: properties.visibility,
       isLoading: loadingState,
       isDisabled: disabledState,
-      visibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        setVisibility(!!value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        setLoading(!!value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        setIsDisabled(!!value);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    setText(text);
+      ...csaShims(),
+    });
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

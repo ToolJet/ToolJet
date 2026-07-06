@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState, useId } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useId } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 const Switch = ({
   on,
@@ -100,150 +103,149 @@ export const ToggleSwitchV2 = ({
   properties,
   styles,
   fireEvent,
-  setExposedVariable,
   setExposedVariables,
   dataCy,
   validation,
   componentName,
   validate,
   width,
+  id,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const reactId = useId();
   const inputId = `component-${reactId}`;
   const defaultValue = properties.defaultValue ?? false;
-  const [on, setOn] = useState(Boolean(defaultValue));
   const label = properties.label;
   const isMandatory = validation?.mandatory ?? false;
-  const [validationStatus, setValidationStatus] = useState(validate(on));
-  const { isValid, validationError } = validationStatus;
-  const [loading, setLoading] = useState(properties?.loadingState);
-  const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
-  const [visibility, setVisibility] = useState(properties.visibility);
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
 
   const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
 
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const on = useExposedVariable(id, 'value', exposedOpts, Boolean(defaultValue));
+  const loading = useExposedVariable(id, 'isLoading', exposedOpts, properties.loadingState);
+  const disable = useExposedVariable(
+    id,
+    'isDisabled',
+    exposedOpts,
+    properties.disabledState || properties.loadingState
+  );
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+
+  const validationStatus = useMemo(() => validate(on), [validate, on]);
+  const { isValid, validationError } = validationStatus;
+  const validationStatusRef = useRef(validationStatus);
+  validationStatusRef.current = validationStatus;
+
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+    validate,
+  });
+
+  // Input onChange path (old toggleValue): publishes the toggled value and
+  // fires onChange — validation folds in via the dispatch ctx.
   const toggleValue = (e) => {
     const toggled = e.target.checked;
-    setExposedVariable('value', toggled);
-    fireEvent('onChange');
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [toggled] },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
+    ]);
     setUserInteracted(true);
   };
-  // Exposing the initially set false value once on load
 
+  // Value write without events (old setInputValue).
   const setInputValue = (value) => {
-    setOn(value);
-    setExposedVariable('value', value);
-    const validationStatus = validate(value);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
+    dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [value] }]);
   };
 
+  // Input onClick path (old local toggle): flips value, no event.
+  const toggle = () => {
+    dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'toggle', args: [] }]);
+    setUserInteracted(true);
+  };
+
+  /* ── Property-change effects (skip-initial, mirroring the old widget) ─── */
   useEffect(() => {
     if (isInitialRender.current) return;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-
     setInputValue(defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
-  const toggle = () => {
-    setInputValue(!on);
-    setUserInteracted(true);
-  };
-
   useEffect(() => {
-    if (disable !== properties.disabledState) setDisable(properties.disabledState);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isDisabled: properties.disabledState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.disabledState]);
 
   useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isVisible: properties.visibility });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    if (loading !== properties.loadingState) setLoading(properties.loadingState);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isLoading: properties.loadingState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('label', label);
+    setExposedVariables({ label });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isMandatory', isMandatory);
+    setExposedVariables({ isMandatory });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    const validationStatus = validate(on);
-    setValidationStatus(validationStatus);
-    setExposedVariable('isValid', validationStatus?.isValid);
+    setExposedVariables({ isValid: validationStatusRef.current?.isValid });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validate]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers.
+     setValue keeps its userInteracted flag and toggle its onChange event
+     (old closure semantics). ────────────────────────────────────────────── */
   useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isLoading', loading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isDisabled', disable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
-  useEffect(() => {
-    const exposedVariables = {
-      setValue: async function (value) {
+    setExposedVariables({
+      ...csaShims(),
+      setValue: async (value) => {
         setInputValue(value);
         setUserInteracted(true);
       },
-      setVisibility: async function (state) {
-        setVisibility(!!state);
-        setExposedVariable('isVisible', !!state);
-      },
-      setDisable: async function (disable) {
-        setDisable(!!disable);
-        setExposedVariable('isDisabled', !!disable);
-      },
-      setLoading: async function (loading) {
-        setLoading(!!loading);
-        setExposedVariable('isLoading', !!loading);
+      toggle: async () => {
+        dispatch([
+          { kind: 'INVOKE_CSA', componentId: id, action: 'toggle', args: [] },
+          { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
+        ]);
+        setUserInteracted(true);
       },
       label: label,
       isMandatory: isMandatory,
-      isLoading: loading,
-      isVisible: visibility,
-      isDisabled: disable,
-      isValid: isValid,
+      isLoading: properties.loadingState,
+      isVisible: properties.visibility,
+      isDisabled: properties.disabledState || properties.loadingState,
+      isValid: validationStatusRef.current?.isValid,
       value: defaultValue,
-    };
-    setExposedVariables(exposedVariables);
-    isInitialRender.current = false;
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('toggle', async function () {
-      setInputValue(!on);
-      fireEvent('onChange');
-      setUserInteracted(true);
     });
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [on]);
+  }, []);
 
   const renderInput = () => (
     <div

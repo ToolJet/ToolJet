@@ -1,7 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import TablerIcon from '@/_ui/Icon/TablerIcon';
-import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useCalculateOverflow } from './hooks/useCalculateOverflow';
@@ -10,6 +9,9 @@ import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import './navigation.scss';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 // Render individual nav item - uses tj-list-item class like page navigation
 const RenderNavItem = ({ item, isSelected, onItemClick, displayStyle }) => {
@@ -216,6 +218,9 @@ export const Navigation = function Navigation(props) {
     setExposedVariables,
     darkMode,
     currentMode,
+    componentType,
+    moduleId,
+    resolveIndex,
   } = props;
 
   const {
@@ -245,25 +250,30 @@ export const Navigation = function Navigation(props) {
   // Refs for overflow calculation
   const containerRef = useRef(null);
   const measurementContainerRef = useRef(null);
+  const isInitialRender = useRef(true);
 
-  // State
-  const [selectedItemId, setSelectedItemId] = useState(null);
-  const selectedItemRef = useRef(null);
-  const selectItemRef = useRef(null);
-
-  // Local state bridge for exposed variables — allows both prop changes (sidebar)
-  // and action calls (setVisibility/setLoading) to drive rendering
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
+  // Store is the source of truth for isVisible/isLoading/selectedItem.
+  // isDisabled is exposed but (matching old) never fed back into this
+  // widget's own rendering/click-guard — those still read `disabledState`.
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const storeSelectedItem = useExposedVariable(id, 'selectedItem', exposedOpts, null);
+  const selectedItemId = storeSelectedItem?.id ?? null;
+
+  // Latest-ref: the selectItem CSA (registered once at mount) must never
+  // close over a stale menuItems from the mount-time render.
+  const menuItemsRef = useRef(menuItems);
+  menuItemsRef.current = menuItems;
 
   // Deduplicate and filter visible menu items
   const visibleMenuItems = useMemo(() => {
@@ -295,92 +305,65 @@ export const Navigation = function Navigation(props) {
     width,
   });
 
-  // Shared selection logic — updates exposed variables and ref
-  const applySelection = (item) => {
-    const parentGroup = findParentGroup(menuItems, item.id);
-
-    const clickData = {
+  const clickDataFor = (item) => {
+    const parentGroup = findParentGroup(menuItemsRef.current, item.id);
+    return {
       id: item.id,
       label: item.label,
       groupId: parentGroup?.id || null,
       groupLabel: parentGroup?.label || null,
     };
-
-    const previousSelected = selectedItemRef.current;
-    selectedItemRef.current = clickData;
-
-    setSelectedItemId(item.id);
-    setExposedVariable('selectedItem', clickData);
-    setExposedVariable('previousSelectedItem', previousSelected);
   };
 
-  // Handle item click
+  // Handle item click — dispatches the same command the CSA uses; the
+  // reducer reads `previousSelectedItem` from the CURRENT store value.
   const handleItemClick = (item) => {
     if (disabledState) return;
-    applySelection(item);
-    fireEvent('onClick');
+    dispatch([
+      { kind: 'INVOKE_CSA', componentId: id, action: 'selectItem', args: [clickDataFor(item)] },
+      { kind: 'FIRE_EVENT', componentId: id, event: 'onClick' },
+    ]);
   };
 
-  // Actions
-  const selectItem = (itemId) => {
-    const item = findItemById(menuItems, itemId);
+  // CSA path (RunJS / other components) — old guard: groups aren't selectable.
+  const selectItem = async (itemId) => {
+    const item = findItemById(menuItemsRef.current, itemId);
     if (item && !item.isGroup) {
-      applySelection(item);
+      dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'selectItem', args: [clickDataFor(item)] }]);
     }
   };
 
-  // Keep ref in sync so the mount-time useEffect closure always calls the latest version
-  selectItemRef.current = selectItem;
-
-  // Effects for syncing exposed variables
-  useBatchedUpdateEffectArray([
-    {
-      dep: loadingState,
-      sideEffect: () => {
-        setExposedVariable('isLoading', loadingState);
-        updateExposedVariablesState('isLoading', loadingState);
-      },
-    },
-    {
-      dep: visibility,
-      sideEffect: () => {
-        setExposedVariable('isVisible', visibility);
-        updateExposedVariablesState('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-  ]);
-
-  // Initialize exposed variables
+  // Property-sync write-throughs (skip-initial).
   useEffect(() => {
-    const exposedVariables = {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers.
+  useEffect(() => {
+    setExposedVariables({
       selectedItem: null,
       previousSelectedItem: null,
       isDisabled: disabledState,
       isVisible: visibility,
       isLoading: loadingState,
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        updateExposedVariablesState('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        updateExposedVariablesState('isLoading', !!value);
-      },
-      selectItem: async function (itemId) {
-        selectItemRef.current(itemId);
-      },
-    };
-
-    setExposedVariables(exposedVariables);
+      ...csaShims(),
+      selectItem,
+    });
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -451,7 +434,7 @@ export const Navigation = function Navigation(props) {
     const isHorizontal = orientation === 'horizontal';
 
     return {
-      display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+      display: isVisible ? 'flex' : 'none',
       flexDirection: isHorizontal ? 'row' : 'column',
       alignItems: isHorizontal ? mapAlignment(verticalAlignment) : undefined,
       width: '100%',
@@ -466,19 +449,10 @@ export const Navigation = function Navigation(props) {
       '--nav-container-bg': bgColor,
       '--nav-container-border': bdrColor,
     };
-  }, [
-    exposedVariablesTemporaryState.isVisible,
-    orientation,
-    backgroundColor,
-    borderColor,
-    borderRadius,
-    padding,
-    verticalAlignment,
-    viewerMaxWidth,
-  ]);
+  }, [isVisible, orientation, backgroundColor, borderColor, borderRadius, padding, verticalAlignment, viewerMaxWidth]);
 
   // Loading state
-  if (exposedVariablesTemporaryState.isLoading) {
+  if (isLoading) {
     return (
       <div
         className={cx('navigation-widget navigation-loading', { 'dark-theme': darkMode })}

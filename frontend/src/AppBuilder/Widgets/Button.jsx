@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 const tinycolor = require('tinycolor2');
 import Loader from '@/ToolJetUI/Loader/Loader';
@@ -7,9 +7,12 @@ import TablerIcon from '@/_ui/Icon/TablerIcon';
 import { getModifiedColor, getSafeRenderableValue } from './utils';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 import { generateCypressDataCy } from '@/modules/common/helpers/cypressHelpers';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariables, componentType, resolveIndex } = props;
   const {
     backgroundColor,
     hoverBackgroundMode,
@@ -31,35 +34,86 @@ export const Button = function Button(props) {
   const moduleId = useModuleId();
 
   const { loadingState, disabledState } = properties;
-  const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
-  const [disable, setDisable] = useState(disabledState || loadingState);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [loading, setLoading] = useState(loadingState);
+  const isInitialRender = useRef(true);
   const [hovered, setHovered] = useState(false);
   const iconName = styles.icon; // Replace with the name of the icon you want
 
+  /* ── Controlled reads: store is the source of truth, resolved properties
+     are the pre-first-publish fallback ─────────────────────────────────── */
+  const exposedOpts = { resolveIndex, moduleId: props.moduleId };
+  const label = useExposedVariable(
+    id,
+    'buttonText',
+    exposedOpts,
+    typeof properties.text === 'string' ? properties.text : ''
+  );
+  const disable = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState || loadingState);
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const loading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+
+  const { dispatch, csaShims, useEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId: props.moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  const canClick = !disable && !loading;
+  const canClickRef = useRef(canClick);
+  canClickRef.current = canClick;
+
+  // Bucket C: exposed `click` fires onClick only when enabled (old CSA guard);
+  // it never dispatches the form-submit DOM event — only real clicks do.
+  useEffects({
+    click: () => {
+      if (canClickRef.current) dispatch([{ kind: 'FIRE_EVENT', componentId: id, event: 'onClick' }]);
+    },
+  });
+
+  /* ── Property-change write-throughs (skip-initial; the mount snapshot
+     publishes first values) ────────────────────────────────────────────── */
   useEffect(() => {
+    if (isInitialRender.current) return;
     if (typeof properties.text === 'string') {
-      setLabel(properties.text);
-      setExposedVariable('buttonText', properties.text);
+      setExposedVariables({ buttonText: properties.text });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
 
   useEffect(() => {
-    disable !== disabledState && setDisable(disabledState);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isDisabled: disabledState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
 
   useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isVisible: properties.visibility });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    loading !== properties.loadingState && setLoading(properties.loadingState);
+    if (isInitialRender.current) return;
+    setExposedVariables({ isLoading: properties.loadingState });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.loadingState]);
+
+  /* ── Mount snapshot: initial exposed values + contract-generated CSA
+     dispatchers (setText/setLoading/setVisibility/setDisable/click + the
+     deprecated loading/visibility/disable aliases) ─────────────────────── */
+  useEffect(() => {
+    setExposedVariables({
+      ...(typeof properties.text === 'string' && { buttonText: properties.text }),
+      isLoading: loadingState,
+      isVisible: properties.visibility,
+      isDisabled: disabledState || loadingState,
+      ...csaShims(),
+    });
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const computedIconColor =
     '#FFFFFF' === iconColor ? (type === 'primary' ? iconColor : 'var(--icons-strong)') : iconColor;
@@ -120,85 +174,18 @@ export const Button = function Button(props) {
     alignItems: 'center',
   };
 
-  const canClick = !disable && !loading;
-
-  useEffect(() => {
-    const exposedVariables = {
-      click: async function () {
-        if (canClick) {
-          fireEvent('onClick');
-        }
-      },
-      setText: async function (text) {
-        setLabel(text);
-        setExposedVariable('buttonText', text);
-      },
-      disable: async function (value) {
-        setDisable(!!value);
-      },
-      visibility: async function (value) {
-        setVisibility(!!value);
-      },
-      loading: async function (value) {
-        setLoading(!!value);
-      },
-    };
-
-    setExposedVariables(exposedVariables);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(!!loading);
-      setExposedVariable('isLoading', !!loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(!!state);
-      setExposedVariable('isVisible', !!state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(!!disable);
-      setExposedVariable('isDisabled', !!disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', loading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', disable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
   useEffect(() => {
     if (hovered) {
       fireEvent('onHover');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hovered]);
 
   const handleClick = () => {
     if (!disable && !loading) {
       const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id, buttonModuleId: moduleId } });
       document.dispatchEvent(event1);
-      fireEvent('onClick');
+      dispatch([{ kind: 'FIRE_EVENT', componentId: id, event: 'onClick' }]);
     }
   };
   const renderButton = () => (

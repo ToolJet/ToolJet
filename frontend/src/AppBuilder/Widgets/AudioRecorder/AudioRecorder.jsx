@@ -10,13 +10,20 @@ import { blobToDataURL } from '@/AppBuilder/_stores/utils';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 export const AudioRecorder = ({
+  id,
   styles,
   properties,
   fireEvent,
   setExposedVariable,
   setExposedVariables,
+  componentType,
+  moduleId,
+  resolveIndex,
   dataCy: _dataCy,
 }) => {
   // Props
@@ -38,12 +45,22 @@ export const AudioRecorder = ({
   const [playTimerKey, setPlayTimerKey] = useState(0);
   const [mediaStream, setMediaStream] = useState(null);
   const [permissionState, setPermissionState] = useState('granted');
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState,
-  });
   const [IconElement, setIconElement] = useState(null);
+
+  // Controlled: exposed flags are read from the store (resolved props are the
+  // pre-first-publish fallbacks).
+  const exposedOpts = { resolveIndex, moduleId };
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+
+  const { csaShims, registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
 
   // Refs
   const audioRef = useRef(null);
@@ -62,14 +79,6 @@ export const AudioRecorder = ({
         fireEvent('onRecordingSave');
       },
     });
-
-  // Helpers
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
 
   const openMicPermissionsHelp = () => {
     window.open('https://support.google.com/chrome/answer/2693767', '_blank');
@@ -190,25 +199,23 @@ export const AudioRecorder = ({
     setIsPlaying(false);
   };
 
+  // Property-sync write-throughs (store-read state renders them).
   useBatchedUpdateEffectArray([
     {
       dep: visibility,
       sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
         setExposedVariable('isVisible', visibility);
       },
     },
     {
       dep: loadingState,
       sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
         setExposedVariable('isLoading', loadingState);
       },
     },
     {
       dep: disabledState,
       sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
         setExposedVariable('isDisabled', disabledState);
       },
     },
@@ -217,26 +224,24 @@ export const AudioRecorder = ({
   // Effects
   /* eslint-disable react-hooks/exhaustive-deps */
 
+  // resetAudio tears down MediaRecorder/stream/audio-element state — a Bucket C
+  // effect executed on the mounted widget. Latest-ref so the handler never
+  // closes over a stale clearBlobUrl/onReset.
+  const onResetRef = useRef(onReset);
+  onResetRef.current = onReset;
+
   useEffect(() => {
     setExposedVariables({
-      ...exposedVariablesTemporaryState,
-      resetAudio: () => {
-        onReset();
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', value);
-        updateExposedVariablesState('isVisible', value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', value);
-        updateExposedVariablesState('isLoading', value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', value);
-        updateExposedVariablesState('isDisabled', value);
-      },
+      isLoading: loadingState,
+      isVisible: visibility,
+      isDisabled: disabledState,
+      ...csaShims(),
+    });
+    const unregister = registerEffects({
+      resetAudio: () => onResetRef.current(),
     });
     return () => {
+      unregister();
       stopRecording();
       stopMediaStream(mediaStreamRef.current);
       if (audioRef.current && endedListenerRef.current) {
@@ -265,7 +270,7 @@ export const AudioRecorder = ({
     borderRadius: `${borderRadius}px`,
     padding: '16px',
     boxShadow: boxShadow,
-    display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     overflow: 'hidden',
     '--audio-recorder-button-color': backgroundColor,
     '--audio-recorder-button-hover-color': getModifiedColor(backgroundColor, 'hover'),
@@ -295,7 +300,7 @@ export const AudioRecorder = ({
   // Render
   return (
     <div style={wrapperContainerStyle}>
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading ? (
         <div className="audio-recorder-loader-container">
           <Loader color={accentColor} width="36" />
         </div>

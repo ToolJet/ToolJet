@@ -1,6 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useEffect, useRef, useState } from 'react';
-import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { cx } from 'class-variance-authority';
 import Label from '@/_ui/Label';
@@ -12,6 +11,9 @@ import './colorpicker.scss';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
 import { SketchPicker } from 'react-color';
 import { getTinyColorInstance, getExposedColorState } from './utils';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const ColorPicker = (props) => {
   // ===== PROPS DESTRUCTURING =====
@@ -27,6 +29,9 @@ export const ColorPicker = (props) => {
     id,
     validate,
     validation,
+    componentType,
+    moduleId,
+    resolveIndex,
   } = props;
 
   const { label, placeholder, defaultColor, format, showAlpha, showClearBtn, loadingState, visibility, disabledState } =
@@ -52,181 +57,132 @@ export const ColorPicker = (props) => {
   const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   // ===== STATE MANAGEMENT =====
+  const isInitialRender = useRef(true);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    ...getExposedColorState(getTinyColorInstance(defaultColor), showAlpha),
-    colorFormat: format,
-    allowOpacity: showAlpha,
-    isLoading: loadingState,
-    isVisible: visibility,
-    isDisabled: disabledState || loadingState,
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
+
+  // Store is the source of truth; the resolved defaultColor/showAlpha derive
+  // the pre-first-publish fallback (old exposedVariablesTemporaryState init).
+  const initialColorState = getExposedColorState(getTinyColorInstance(defaultColor), showAlpha);
+  const selectedColorHex = useExposedVariable(id, 'selectedColorHex', exposedOpts, initialColorState.selectedColorHex);
+  const selectedColorRGB = useExposedVariable(id, 'selectedColorRGB', exposedOpts, initialColorState.selectedColorRGB);
+  const selectedColorRGBA = useExposedVariable(
+    id,
+    'selectedColorRGBA',
+    exposedOpts,
+    initialColorState.selectedColorRGBA
+  );
+  const colorFormat = useExposedVariable(id, 'colorFormat', exposedOpts, format);
+  const allowOpacity = useExposedVariable(id, 'allowOpacity', exposedOpts, showAlpha);
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState || loadingState);
 
   const labelRef = useRef(null);
 
   // ===== COMPUTED VALUES =====
-  const displayedColor =
-    exposedVariablesTemporaryState.colorFormat === 'rgb'
-      ? exposedVariablesTemporaryState.selectedColorRGB
-      : exposedVariablesTemporaryState.selectedColorHex;
+  const displayedColor = colorFormat === 'rgb' ? selectedColorRGB : selectedColorHex;
 
   // ===== VALIDATION =====
   const isMandatory = validation?.mandatory ?? false;
-  const [validationStatus, setValidationStatus] = useState(
-    validate(exposedVariablesTemporaryState.selectedColorHex ?? null)
-  );
+  const validationStatus = useMemo(() => validate(selectedColorHex ?? null), [selectedColorHex, validate]);
   const { isValid, validationError } = validationStatus;
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
 
-  const updateValidationState = (selectedColorHex) => {
-    const nextValidationStatus = validate(selectedColorHex || null);
-    setValidationStatus(nextValidationStatus);
-    setExposedVariable('isValid', nextValidationStatus?.isValid);
-    return nextValidationStatus;
-  };
-
-  // ===== HELPER FUNCTIONS =====
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
-  const updateExposedVariablesStates = (values) => {
-    setExposedVariablesTemporaryState((prevState) => ({
-      ...prevState,
-      ...values,
-    }));
-  };
-
-  // ===== EFFECTS =====
-  useBatchedUpdateEffectArray([
-    {
-      dep: loadingState,
-      sideEffect: () => {
-        updateExposedVariablesState('isLoading', loadingState);
-        setExposedVariable('isLoading', loadingState);
-      },
-    },
-    {
-      dep: properties.visibility,
-      sideEffect: () => {
-        updateExposedVariablesState('isVisible', visibility);
-        setExposedVariable('isVisible', visibility);
-      },
-    },
-    {
-      dep: disabledState,
-      sideEffect: () => {
-        updateExposedVariablesState('isDisabled', disabledState);
-        setExposedVariable('isDisabled', disabledState);
-      },
-    },
-    {
-      dep: defaultColor,
-      sideEffect: () => {
-        const nextExposedColorState = getExposedColorState(
-          getTinyColorInstance(defaultColor),
-          exposedVariablesTemporaryState.allowOpacity
-        );
-
-        updateExposedVariablesStates(nextExposedColorState);
-        setExposedVariables(nextExposedColorState);
-        updateValidationState(nextExposedColorState.selectedColorHex);
-      },
-    },
-    {
-      dep: format,
-      sideEffect: () => {
-        updateExposedVariablesState('colorFormat', format);
-        setExposedVariable('colorFormat', format);
-      },
-    },
-    {
-      dep: showAlpha,
-      sideEffect: () => {
-        const nextExposedColorState = getExposedColorState(
-          getTinyColorInstance(exposedVariablesTemporaryState.selectedColorRGBA),
-          showAlpha
-        );
-
-        const formattedState = {
-          allowOpacity: showAlpha,
-          selectedColorHex: nextExposedColorState.selectedColorHex,
-        };
-
-        updateExposedVariablesStates(formattedState);
-        setExposedVariables(formattedState);
-        updateValidationState(nextExposedColorState.selectedColorHex);
-      },
-    },
-    {
-      dep: validate,
-      sideEffect: () => {
-        updateValidationState(exposedVariablesTemporaryState.selectedColorHex);
-      },
-    },
-  ]);
+  // ===== EFFECTS (property-sync write-throughs; skip-initial) ──────────
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
 
   useEffect(() => {
-    const exposedVariables = {
-      ...exposedVariablesTemporaryState,
-      isValid: isValid,
-      setDisable: async function (value) {
-        updateExposedVariablesState('isDisabled', !!value);
-        setExposedVariable('isDisabled', !!value);
-      },
-      setVisibility: async function (value) {
-        updateExposedVariablesState('isVisible', !!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        updateExposedVariablesState('isLoading', !!value);
-        setExposedVariable('isLoading', !!value);
-      },
-    };
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
 
-    setExposedVariables(exposedVariables);
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const nextExposedColorState = getExposedColorState(getTinyColorInstance(defaultColor), allowOpacity);
+    setExposedVariables(nextExposedColorState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultColor]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('colorFormat', format);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [format]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const nextExposedColorState = getExposedColorState(getTinyColorInstance(selectedColorRGBA), showAlpha);
+    setExposedVariables({
+      allowOpacity: showAlpha,
+      selectedColorHex: nextExposedColorState.selectedColorHex,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAlpha]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
+  // Mount: initial exposed snapshot + contract-generated CSA dispatcher
+  // (setColor overridden to keep old userInteracted semantics).
+  useEffect(() => {
+    setExposedVariables({
+      ...initialColorState,
+      colorFormat: format,
+      allowOpacity: showAlpha,
+      isLoading: loadingState,
+      isVisible: visibility,
+      isDisabled: disabledState || loadingState,
+      isValid,
+      ...csaShims(),
+      setColor: async (value) => {
+        dispatch([{ kind: 'INVOKE_CSA', componentId: id, action: 'setColor', args: [value] }]);
+        setUserInteracted(true);
+      },
+    });
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    setExposedVariable('setColor', async function (value) {
-      const nextExposedColorState = getExposedColorState(
-        getTinyColorInstance(value),
-        exposedVariablesTemporaryState.allowOpacity
-      );
-
-      updateExposedVariablesStates(nextExposedColorState);
-      setExposedVariables(nextExposedColorState);
-      updateValidationState(nextExposedColorState.selectedColorHex);
-
-      setUserInteracted(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariablesTemporaryState.allowOpacity]);
-
   // ===== EVENT HANDLER =====
+  // Derives directly from the picker's already-parsed rgb — bypasses the
+  // contract's tinycolor-parse path (matches old handleColorChange exactly).
   const handleColorChange = (code) => {
     const { r, g, b, a } = code.rgb;
 
     const nextExposedColorState = {
-      selectedColorHex: exposedVariablesTemporaryState.allowOpacity
-        ? getTinyColorInstance(code.hex).setAlpha(a).toHex8String()
-        : code.hex,
+      selectedColorHex: allowOpacity ? getTinyColorInstance(code.hex).setAlpha(a).toHex8String() : code.hex,
       selectedColorRGB: `rgb(${r}, ${g}, ${b})`,
       selectedColorRGBA: `rgba(${r}, ${g}, ${b}, ${a})`,
     };
 
-    updateExposedVariablesStates(nextExposedColorState);
     setExposedVariables(nextExposedColorState);
-    updateValidationState(nextExposedColorState.selectedColorHex);
-
     setUserInteracted(true);
     fireEvent('onChange');
   };
@@ -249,10 +205,10 @@ export const ColorPicker = (props) => {
     border: `1px solid ${buttonBorderColor}`,
     outline: isFocusedOrOpen ? `1px solid ${accentColor}` : 'none',
     outlineOffset: '0px',
-    color: exposedVariablesTemporaryState.selectedColorHex ? textColor : 'var(--cc-placeholder-text)',
+    color: selectedColorHex ? textColor : 'var(--cc-placeholder-text)',
     backgroundColor,
     boxShadow,
-    ...(exposedVariablesTemporaryState.isLoading && { justifyContent: 'start' }),
+    ...(isLoading && { justifyContent: 'start' }),
     ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, auto, alignment),
   };
 
@@ -301,17 +257,17 @@ export const ColorPicker = (props) => {
           ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
             ? 'flex-column'
             : 'align-items-center']: true,
-          'd-none': !exposedVariablesTemporaryState.isVisible,
+          'd-none': !isVisible,
           'tw-flex-row-reverse': alignment === 'side' && direction === 'right',
         })}
         id={`component-${id}`}
-        aria-hidden={!exposedVariablesTemporaryState.isVisible}
-        aria-disabled={exposedVariablesTemporaryState.isDisabled}
-        aria-busy={exposedVariablesTemporaryState.isLoading}
+        aria-hidden={!isVisible}
+        aria-disabled={isDisabled}
+        aria-busy={isLoading}
         aria-invalid={!isValid}
         aria-labelledby={`${id}-label`}
         data-cy={dataCy}
-        data-disabled={exposedVariablesTemporaryState.isDisabled}
+        data-disabled={isDisabled}
       >
         <Label
           label={label}
@@ -350,7 +306,7 @@ export const ColorPicker = (props) => {
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              {exposedVariablesTemporaryState.isLoading ? (
+              {isLoading ? (
                 <Loader absolute={false} width="18" />
               ) : (
                 <>
@@ -358,7 +314,7 @@ export const ColorPicker = (props) => {
                     <span
                       className="color-preview"
                       style={{
-                        background: getBackground(exposedVariablesTemporaryState.selectedColorRGBA),
+                        background: getBackground(selectedColorRGBA),
                       }}
                     ></span>
                     <span className="color-code">{getSafeRenderableValue(displayedColor || placeholder)}</span>
@@ -372,9 +328,7 @@ export const ColorPicker = (props) => {
                       onClick={(event) => {
                         event.stopPropagation();
                         const nextExposedColorState = getExposedColorState();
-                        updateExposedVariablesStates(nextExposedColorState);
                         setExposedVariables(nextExposedColorState);
-                        updateValidationState(nextExposedColorState.selectedColorHex);
                         setUserInteracted(true);
                       }}
                     >
@@ -399,7 +353,7 @@ export const ColorPicker = (props) => {
               aria-label="Color picker"
             >
               <SketchPicker
-                color={exposedVariablesTemporaryState.selectedColorRGBA}
+                color={selectedColorRGBA}
                 onChangeComplete={handleColorChange}
                 id={`component-${id}`}
                 disableAlpha={!showAlpha}
@@ -410,7 +364,7 @@ export const ColorPicker = (props) => {
           </Popover.Portal>
         </Popover.Root>
       </div>
-      {userInteracted && exposedVariablesTemporaryState.isVisible && !isValid && (
+      {userInteracted && isVisible && !isValid && (
         <div
           className="d-flex"
           style={{

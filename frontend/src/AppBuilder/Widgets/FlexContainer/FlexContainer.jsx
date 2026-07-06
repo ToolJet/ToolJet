@@ -23,13 +23,17 @@ export const FlexContainer = ({
   componentCount = 0,
   currentMode,
   subContainerIndex,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
     properties.disabledState,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
   const containerRef = useRef(null);
   // Disabled flex container blocks the mouse via `pointer-events:none`; `inert` also removes the

@@ -10,6 +10,9 @@ import {
   getWidthTypeOfComponentStyles,
   getLabelWidthOfInput,
 } from '../BaseComponents/hooks/useInput';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/selectionB';
 
 export const RangeSliderV2 = ({
   height,
@@ -20,6 +23,9 @@ export const RangeSliderV2 = ({
   fireEvent,
   dataCy,
   id,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const isInitialRender = useRef(true);
   const labelRef = useRef(null);
@@ -45,13 +51,28 @@ export const RangeSliderV2 = ({
 
   const sliderRef = useRef(null);
 
-  const [defaultSliderValue, setDefaultSliderValue] = useState(value);
-  const [defaultRangeValue, setDefaultRangeValue] = useState([startValue, endValue]);
+  const exposedOpts = { resolveIndex, moduleId };
+  const { dispatch, csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for the exposed value; the resolved
+  // properties are the pre-first-publish fallback (old defaultSliderValue/
+  // defaultRangeValue useState — old code never republished `value` at
+  // mount, relying on the resolved-property fallback the same way).
+  const storeValue = useExposedVariable(id, 'value', exposedOpts, undefined);
+  const defaultSliderValue = storeValue !== undefined ? storeValue : value;
+  const defaultRangeValue = storeValue !== undefined ? storeValue : [startValue, endValue];
+
   const [labelWidth, setLabelWidth] = useState(auto ? 'auto' : width);
-  // <- HAVE COMMENTED THIS VARIABLE FOR YOUR REFERENCE ->
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [disabled, setDisabled] = useState(properties?.disabledState);
-  const [loading, setLoading] = useState(properties?.loadingState);
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const disabled = useExposedVariable(id, 'isDisabled', exposedOpts, properties?.disabledState);
+  const loading = useExposedVariable(id, 'isLoading', exposedOpts, properties?.loadingState);
 
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
 
@@ -63,12 +84,10 @@ export const RangeSliderV2 = ({
     let defaultValue;
     if (enableTwoHandle === 'slider') {
       defaultValue = value ?? min;
-      setDefaultSliderValue(defaultValue);
     } else {
       const start = startValue ?? min;
       const end = endValue ?? max;
       defaultValue = [start, end];
-      setDefaultRangeValue(defaultValue);
     }
     setExposedVariable('value', defaultValue);
   };
@@ -81,37 +100,33 @@ export const RangeSliderV2 = ({
     }
   }, [auto, width, widthType]);
 
+  // Mount: initial exposed snapshot + contract-generated CSA dispatchers
+  // (setValue/setRangeValue overridden to keep the old unconditional
+  // onChange-firing semantics; `value` itself is not published here — matches
+  // old, which relied on the resolved-property read fallback until the user
+  // interacts, calls a CSA, or a non-initial prop change triggers resetFn).
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       label: label,
       isLoading: properties?.loadingState,
       isVisible: properties?.visibility,
       isDisabled: properties?.disabledState,
+      ...csaShims(),
       setValue: async function (value) {
-        setDefaultSliderValue(value);
-        setExposedVariable('value', Number(value));
-        fireEvent('onChange');
+        dispatch([
+          { kind: 'INVOKE_CSA', componentId: id, action: 'setValue', args: [value] },
+          { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
+        ]);
       },
       setRangeValue: async function (num1, num2) {
-        setDefaultRangeValue([num1, num2]);
-        setExposedVariable('value', [num1, num2]);
-        fireEvent('onChange');
+        dispatch([
+          { kind: 'INVOKE_CSA', componentId: id, action: 'setRangeValue', args: [num1, num2] },
+          { kind: 'FIRE_EVENT', componentId: id, event: 'onChange' },
+        ]);
       },
-      setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setDisable: async function (value) {
-        setDisabled(value);
-        setExposedVariable('isDisabled', value);
-      },
-      setLoading: async function (value) {
-        setLoading(value);
-        setExposedVariable('isLoading', value);
-      },
-    };
-    setExposedVariables(exposedVariables);
+    });
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -122,14 +137,8 @@ export const RangeSliderV2 = ({
 
   useEffect(() => {
     setExposedVariable('reset', resetFn);
-  }, [enableTwoHandle, value, min, max, startValue, endValue]);
-
-  useEffect(() => {
-    if (disabled !== properties.disabledState) setDisabled(properties.disabledState);
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (loading !== properties.loadingState) setLoading(properties.loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.disabledState, properties.visibility, properties.loadingState]);
+  }, [enableTwoHandle, value, min, max, startValue, endValue]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -153,12 +162,10 @@ export const RangeSliderV2 = ({
 
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
-    setDefaultSliderValue(value);
   };
 
   const onRangeChange = (value) => {
     setExposedVariable('value', value);
-    setDefaultRangeValue(value);
   };
 
   const rangeStyles = {
@@ -186,34 +193,6 @@ export const RangeSliderV2 = ({
       borderColor: '#ffffff',
     },
   };
-
-  // const Label = ({ label, color, defaultAlignment, direction }) => {
-  //   if (!label) return null;
-
-  //   return (
-  //     <div
-  //       ref={labelRef}
-  //       style={{
-  //         color,
-  //         width: _width,
-  //         marginRight: defaultAlignment === 'side' && direction === 'left' ? '4px' : '0px',
-  //         marginLeft: defaultAlignment === 'side' && direction === 'right' ? '4px' : '0px',
-  //         marginBottom: defaultAlignment === 'top' ? '4px' : '0px',
-  //         whiteSpace: 'nowrap',
-  //         overflow: 'hidden',
-  //         textOverflow: 'ellipsis',
-  //         textAlign: direction === 'right' ? 'right' : 'left',
-  //         minWidth: defaultAlignment === 'side' ? '40px' : 'auto',
-  //         maxWidth: defaultAlignment === 'side' ? '50%' : '100%',
-  //         lineHeight: '1.2',
-  //         fontSize: '12px',
-  //         fontWeight: '500',
-  //       }}
-  //     >
-  //       {label}
-  //     </div>
-  //   );
-  // };
 
   const containerStyle = {
     display: visibility ? 'flex' : 'none',

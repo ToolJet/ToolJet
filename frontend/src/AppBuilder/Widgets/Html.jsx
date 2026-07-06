@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import Spinner from '@/_ui/Spinner';
 import { useBatchedUpdateEffectArray } from '@/_hooks/useBatchedUpdateEffectArray';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/displayA';
 
 export const Html = function ({
   id,
@@ -13,12 +16,14 @@ export const Html = function ({
   styles,
   darkMode,
   dataCy,
-  setExposedVariable,
   setExposedVariables,
+  fireEvent,
   currentLayout,
   currentMode,
   subContainerIndex,
   componentType,
+  moduleId,
+  resolveIndex,
 }) {
   const { rawHtml: stringifyHTML, loadingState, disabledState, visibility } = properties || {};
   const baseStyle = {
@@ -28,18 +33,25 @@ export const Html = function ({
   };
   const { boxShadow } = styles || {};
 
-  const isInitialRender = useRef(true);
   const isDynamicHeightEnabled = properties.dynamicHeight && currentMode === 'view';
 
   const contentRef = useRef(null);
   const heightChangeValue = useHeightObserver(contentRef, isDynamicHeightEnabled);
 
-  const [rawHtml, setRawHtml] = useState('');
-  const [exposedVariablesTemporaryState, setExposedVariablesTemporaryState] = useState({
-    isVisible: visibility,
-    isLoading: loadingState,
-    isDisabled: disabledState,
-    rawHTML: stringifyHTML || '',
+  /* ── Controlled reads: store is the source of truth ───────────────────── */
+  const exposedOpts = { resolveIndex, moduleId };
+  const isVisible = useExposedVariable(id, 'isVisible', exposedOpts, visibility);
+  const isLoading = useExposedVariable(id, 'isLoading', exposedOpts, loadingState);
+  const isDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, disabledState);
+  const rawHtml = useExposedVariable(id, 'rawHTML', exposedOpts, stringifyHTML || '');
+
+  const { csaShims } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
   });
 
   useDynamicHeight({
@@ -49,21 +61,10 @@ export const Html = function ({
     value: heightChangeValue,
     currentLayout,
     width,
-    visibility: exposedVariablesTemporaryState.isVisible,
+    visibility: isVisible,
     subContainerIndex,
     componentType,
   });
-
-  const updateExposedVariablesState = (key, value) => {
-    setExposedVariablesTemporaryState((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  useEffect(() => {
-    setRawHtml(stringifyHTML || '');
-  }, [stringifyHTML]);
 
   useEffect(() => {
     DOMPurify.addHook('afterSanitizeAttributes', function (node) {
@@ -75,90 +76,60 @@ export const Html = function ({
     });
   }, []);
 
+  /* ── Property-change write-throughs (skip-initial via the batched hook) ── */
   useBatchedUpdateEffectArray([
     {
       dep: visibility,
-      sideEffect: () => {
-        setExposedVariable('isVisible', visibility);
-        updateExposedVariablesState('isVisible', visibility);
-      },
+      sideEffect: () => setExposedVariables({ isVisible: visibility }),
     },
     {
       dep: loadingState,
-      sideEffect: () => {
-        setExposedVariable('isLoading', loadingState);
-        updateExposedVariablesState('isLoading', loadingState);
-      },
+      sideEffect: () => setExposedVariables({ isLoading: loadingState }),
     },
     {
       dep: disabledState,
-      sideEffect: () => {
-        setExposedVariable('isDisabled', disabledState);
-        updateExposedVariablesState('isDisabled', disabledState);
-      },
+      sideEffect: () => setExposedVariables({ isDisabled: disabledState }),
     },
     {
       dep: stringifyHTML || '',
-      sideEffect: () => {
-        const rawHtmlValue = stringifyHTML || '';
-        setRawHtml(rawHtmlValue);
-        setExposedVariable('rawHTML', rawHtmlValue);
-        updateExposedVariablesState('rawHTML', rawHtmlValue);
-      },
+      sideEffect: () => setExposedVariables({ rawHTML: stringifyHTML || '' }),
     },
   ]);
 
+  /* ── Mount snapshot: initial exposed values + contract CSA dispatchers
+     (setRawHTML/setVisibility/setLoading/setDisable) ────────────────────── */
   useEffect(() => {
-    const exposedVariables = {
+    setExposedVariables({
       rawHTML: stringifyHTML || '',
-      setRawHTML: async function (value) {
-        const rawHtmlValue = value || '';
-        setRawHtml(rawHtmlValue);
-        setExposedVariable('rawHTML', rawHtmlValue);
-        updateExposedVariablesState('rawHTML', rawHtmlValue);
-      },
-      setVisibility: async function (value) {
-        setExposedVariable('isVisible', !!value);
-        updateExposedVariablesState('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        setExposedVariable('isLoading', !!value);
-        updateExposedVariablesState('isLoading', !!value);
-      },
-      setDisable: async function (value) {
-        setExposedVariable('isDisabled', !!value);
-        updateExposedVariablesState('isDisabled', !!value);
-      },
       isVisible: visibility,
       isLoading: loadingState,
       isDisabled: disabledState,
-    };
-    setExposedVariables(exposedVariables);
-    isInitialRender.current = false;
+      ...csaShims(),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div
-      className={`jet-container ${exposedVariablesTemporaryState.isLoading && 'jet-container-loading'}`}
-      data-disabled={exposedVariablesTemporaryState.isDisabled}
+      className={`jet-container ${isLoading && 'jet-container-loading'}`}
+      data-disabled={isDisabled}
       style={{
-        background: exposedVariablesTemporaryState.isLoading && 'var(--cc-surface1-surface)',
-        display: exposedVariablesTemporaryState.isVisible ? 'flex' : 'none',
-        border: exposedVariablesTemporaryState.isLoading && '1px solid var(--cc-default-border)',
-        borderRadius: exposedVariablesTemporaryState.isLoading && '6px',
+        background: isLoading && 'var(--cc-surface1-surface)',
+        display: isVisible ? 'flex' : 'none',
+        border: isLoading && '1px solid var(--cc-default-border)',
+        borderRadius: isLoading && '6px',
         width: '100%',
         height: isDynamicHeightEnabled ? 'auto' : height,
         ...(isDynamicHeightEnabled ? { minHeight: height } : { overflowY: 'auto' }),
         boxShadow,
         position: 'relative',
-        opacity: exposedVariablesTemporaryState.isDisabled ? 0.5 : 1,
-        pointerEvents: exposedVariablesTemporaryState.isDisabled ? 'none' : 'auto',
+        opacity: isDisabled ? 0.5 : 1,
+        pointerEvents: isDisabled ? 'none' : 'auto',
       }}
       data-cy={dataCy}
-      aria-busy={exposedVariablesTemporaryState.isLoading}
+      aria-busy={isLoading}
     >
-      {exposedVariablesTemporaryState.isLoading ? (
+      {isLoading ? (
         <Spinner />
       ) : (
         <div

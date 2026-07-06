@@ -19,6 +19,9 @@ import TagsInputOption from './TagsInputOption';
 import { useHeightObserver } from '@/_hooks/useHeightObserver';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { useShowValidationOnFormSubmit } from '@/AppBuilder/Widgets/Form/FormValidationContext';
+import { useComponentCommands } from '@/AppBuilder/_hooks/useComponentCommands';
+import { useExposedVariable } from '@/AppBuilder/_hooks/useExposedVariable';
+import '@/AppBuilder/_engine/contractGroups/mediaC';
 
 const TagsInput = ({
   id,
@@ -38,6 +41,8 @@ const TagsInput = ({
   currentMode,
   subContainerIndex,
   componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const {
     label,
@@ -86,14 +91,29 @@ const TagsInput = ({
     validate(selected?.length ? selected?.map((option) => option.value) : null)
   );
   const { isValid, validationError } = validationStatus;
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [isTagsLoading, setIsTagsLoading] = useState(tagsLoadingState);
-  const [isTagsDisabled, setIsTagsDisabled] = useState(properties.disabledState);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const [userInteracted, setUserInteracted] = useState(false);
   useShowValidationOnFormSubmit(setUserInteracted);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(-1); // -1 means no option focused
+
+  const exposedOpts = { resolveIndex, moduleId };
+  const { csaShims, registerEffects } = useComponentCommands({
+    id,
+    componentType,
+    moduleId,
+    resolveIndex,
+    setExposedVariables,
+    fireEvent,
+  });
+
+  // Store is the source of truth for isVisible/isLoading/isDisabled (Bucket
+  // B trio). `selected`/`newTagsAdded` stay local — clear/selectTags/
+  // deselectTags are Bucket C (mutate react-select's selection using local
+  // option objects), so they execute on the mounted widget via registerEffects.
+  const visibility = useExposedVariable(id, 'isVisible', exposedOpts, properties.visibility);
+  const isTagsLoading = useExposedVariable(id, 'isLoading', exposedOpts, tagsLoadingState);
+  const isTagsDisabled = useExposedVariable(id, 'isDisabled', exposedOpts, properties.disabledState);
 
   // Dynamic height support - only enabled in view mode (same as TextArea)
   const isDynamicHeightEnabled = dynamicHeight && currentMode === 'view';
@@ -110,12 +130,6 @@ const TagsInput = ({
     subContainerIndex,
     componentType,
   });
-
-  useEffect(() => {
-    if (visibility !== properties.visibility) setVisibility(properties.visibility);
-    if (isTagsLoading !== tagsLoadingState) setIsTagsLoading(tagsLoadingState);
-    if (isTagsDisabled !== properties.disabledState) setIsTagsDisabled(properties.disabledState);
-  }, [properties.visibility, tagsLoadingState, properties.disabledState]);
 
   // Build select options from schema or options
   const selectOptions = useMemo(() => {
@@ -529,26 +543,13 @@ const TagsInput = ({
     setExposedVariable('isValid', validationStatus?.isValid);
   }, [validate]);
 
-  // Initialize exposed variables and actions
+  // Initialize exposed variables + contract-generated CSA dispatchers for
+  // the Bucket B trio (setVisibility/setLoading/setDisable).
   useEffect(() => {
     const defaultItems = findDefaultItem(properties?.values, advanced, true);
 
     const exposedVariables = {
-      clear: async function () {
-        setInputValues([]);
-      },
-      setVisibility: async function (value) {
-        setVisibility(!!value);
-        setExposedVariable('isVisible', !!value);
-      },
-      setLoading: async function (value) {
-        setIsTagsLoading(!!value);
-        setExposedVariable('isLoading', !!value);
-      },
-      setDisable: async function (value) {
-        setIsTagsDisabled(!!value);
-        setExposedVariable('isDisabled', !!value);
-      },
+      ...csaShims(),
       label: label,
       isVisible: properties.visibility,
       isLoading: tagsLoadingState,
@@ -561,42 +562,52 @@ const TagsInput = ({
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update selectTags/deselectTags when options change
+  // Bucket C: clear/selectTags/deselectTags mutate the react-select
+  // selection using local option objects (schema/options + session-created
+  // tags) — re-registered whenever those inputs change, matching old
+  // (which re-created these closures on the same deps).
   useEffect(() => {
-    setExposedVariable('selectTags', async function (tags) {
-      if (Array.isArray(tags)) {
-        const newSelected = [...selected];
-        tags.forEach((tag) => {
-          // Support both value and label extraction from object
-          const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
-          const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
+    return registerEffects({
+      clear: async function () {
+        setInputValues([]);
+      },
+      selectTags: async function (tags) {
+        if (Array.isArray(tags)) {
+          const newSelected = [...selected];
+          tags.forEach((tag) => {
+            // Support both value and label extraction from object
+            const tagValue = typeof tag === 'object' && tag?.value ? tag.value : tag;
+            const tagLabel = typeof tag === 'object' && tag?.label ? tag.label : tag;
 
-          // Find matching option by value first, then by label as fallback
-          const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
+            // Find matching option by value first, then by label as fallback
+            const matchingOption = allOptions.find((option) => option.value === tagValue || option.label === tagLabel);
 
-          if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
-            newSelected.push(matchingOption);
-          }
-        });
-        setInputValues(newSelected);
-      }
-    });
-
-    setExposedVariable('deselectTags', async function (tags) {
-      if (Array.isArray(tags)) {
-        const tagIdentifiers = tags.map((tag) => ({
-          value: typeof tag === 'object' && tag?.value ? tag.value : tag,
-          label: typeof tag === 'object' && tag?.label ? tag.label : tag,
-        }));
-        // Filter out options that match by value OR label
-        const newSelected = selected.filter(
-          (option) =>
-            !tagIdentifiers.some((identifier) => option.value === identifier.value || option.label === identifier.label)
-        );
-        setInputValues(newSelected);
-      }
+            if (matchingOption && !selected.some((s) => s.value === matchingOption.value)) {
+              newSelected.push(matchingOption);
+            }
+          });
+          setInputValues(newSelected);
+        }
+      },
+      deselectTags: async function (tags) {
+        if (Array.isArray(tags)) {
+          const tagIdentifiers = tags.map((tag) => ({
+            value: typeof tag === 'object' && tag?.value ? tag.value : tag,
+            label: typeof tag === 'object' && tag?.label ? tag.label : tag,
+          }));
+          // Filter out options that match by value OR label
+          const newSelected = selected.filter(
+            (option) =>
+              !tagIdentifiers.some(
+                (identifier) => option.value === identifier.value || option.label === identifier.label
+              )
+          );
+          setInputValues(newSelected);
+        }
+      },
     });
   }, [allOptions, selected]);
 

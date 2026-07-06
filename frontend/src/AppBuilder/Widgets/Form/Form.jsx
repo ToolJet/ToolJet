@@ -48,6 +48,7 @@ const FormComponent = (props) => {
     subContainerIndex,
     currentMode,
     componentType,
+    resolveIndex,
   } = props;
 
   const { moduleId } = useModuleContext();
@@ -87,7 +88,8 @@ const FormComponent = (props) => {
     properties.visibility,
     properties.disabledState,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;

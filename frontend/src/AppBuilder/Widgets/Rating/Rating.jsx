@@ -25,6 +25,9 @@ export const Rating = ({
   darkMode,
   dataCy,
   id,
+  componentType,
+  moduleId,
+  resolveIndex,
 }) => {
   const {
     iconType = 'stars',
@@ -61,7 +64,8 @@ export const Rating = ({
     visibility,
     disabledState,
     setExposedVariables,
-    setExposedVariable
+    setExposedVariable,
+    { id, componentType, moduleId, resolveIndex }
   );
 
   // Generate unique ID for ARIA labelling
