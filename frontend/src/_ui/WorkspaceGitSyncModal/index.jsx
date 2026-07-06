@@ -281,6 +281,16 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
     }
   };
 
+  const handleResolveConflicts = async (resolutions) => {
+    try {
+      await actions.resolveConflicts(resolutions);
+      toast.success('Selected conflicts resolved. You can pull again now.');
+      setPullConflictGroups(null);
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
+    }
+  };
+
   // Use remote branches for dropdown, fall back to local branches
   const dropdownBranches = remoteBranches.length > 0 ? remoteBranches : branches;
 
@@ -696,6 +706,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
         show={!!pullConflictGroups}
         conflictGroups={pullConflictGroups || []}
         onClose={() => setPullConflictGroups(null)}
+        onResolve={handleResolveConflicts}
       />
     </>
   );

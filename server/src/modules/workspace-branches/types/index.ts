@@ -9,6 +9,7 @@ interface Features {
   [FEATURE_KEY.DELETE_BRANCH]: FeatureConfig;
   [FEATURE_KEY.PUSH_WORKSPACE]: FeatureConfig;
   [FEATURE_KEY.PULL_WORKSPACE]: FeatureConfig;
+  [FEATURE_KEY.RESOLVE_CONFLICTS]: FeatureConfig;
   [FEATURE_KEY.CHECK_UPDATES]: FeatureConfig;
   [FEATURE_KEY.LIST_REMOTE_BRANCHES]: FeatureConfig;
   [FEATURE_KEY.FETCH_PULL_REQUESTS]: FeatureConfig;

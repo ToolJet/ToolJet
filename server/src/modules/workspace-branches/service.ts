@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { User } from '@entities/user.entity';
 import { IWorkspaceBranchService, WorkspaceBranchListResponse, CheckUpdatesResponse } from './interfaces/IService';
-import { CreateBranchDto, WorkspacePushDto } from './dto';
+import { CreateBranchDto, WorkspacePushDto, PullConflictResolutionDto } from './dto';
 
 @Injectable()
 export class WorkspaceBranchService implements IWorkspaceBranchService {
@@ -38,7 +38,15 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     organizationId: string,
     user?: User,
     sourceBranch?: string,
-    branchId?: string,
+    branchId?: string
+  ): Promise<{ success: boolean }> {
+    throw new NotFoundException();
+  }
+
+  async resolveConflicts(
+    organizationId: string,
+    resolutions: PullConflictResolutionDto[],
+    branchId?: string
   ): Promise<{ success: boolean }> {
     throw new NotFoundException();
   }
@@ -50,7 +58,7 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     branchId?: string,
     tagSha?: string,
     tagName?: string,
-    tagDescription?: string,
+    tagDescription?: string
   ): Promise<{ success: boolean; draftVersionId: string | null }> {
     throw new NotFoundException();
   }
@@ -62,7 +70,7 @@ export class WorkspaceBranchService implements IWorkspaceBranchService {
     branchId?: string,
     tagSha?: string,
     tagName?: string,
-    tagDescription?: string,
+    tagDescription?: string
   ): Promise<{ success: boolean; draftVersionId: string | null }> {
     throw new NotFoundException();
   }

@@ -166,6 +166,11 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
+        async resolveConflicts(resolutions, targetBranchId) {
+          const branchId = targetBranchId || get().activeBranchId;
+          return workspaceBranchesService.resolveConflicts(resolutions, branchId);
+        },
+
         async pullApp(appId, tagSha, tagName, tagDescription) {
           set({ isPulling: true });
           try {

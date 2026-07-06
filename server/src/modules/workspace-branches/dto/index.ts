@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, IsOptional, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsArray, IsIn, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateBranchDto {
   @IsNotEmpty()
@@ -45,6 +46,28 @@ export class WorkspacePullDto {
   @IsOptional()
   @IsString()
   sourceBranch?: string;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
+}
+
+export class PullConflictResolutionDto {
+  @IsIn(['app', 'module', 'datasource'])
+  type: 'app' | 'module' | 'datasource';
+
+  @IsUUID()
+  existingCoRelationId: string;
+
+  @IsUUID()
+  incomingCoRelationId: string;
+}
+
+export class ResolveConflictsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => PullConflictResolutionDto)
+  resolutions: PullConflictResolutionDto[];
 
   @IsOptional()
   @IsUUID()
