@@ -497,6 +497,10 @@
 
       tbody {
         display: inline-block;
+
+        tr td:last-child {
+          flex: 1 1 auto !important;
+        }
       }
     }
 
