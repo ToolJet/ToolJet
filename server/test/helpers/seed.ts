@@ -32,6 +32,7 @@ import { Credential } from '@entities/credential.entity';
 import { SSOConfigs, SSOType, ConfigScope } from '@entities/sso_config.entity';
 import { Folder } from '@entities/folder.entity';
 import { FolderApp } from '@entities/folder_app.entity';
+import { WorkspaceBranch } from '@entities/workspace_branch.entity';
 import { getDefaultDataSource } from './setup';
 import { login } from './api';
 
@@ -608,6 +609,7 @@ export async function createApplicationVersion(
   const appVersionsRepository: Repository<AppVersion> = ds.getRepository(AppVersion);
   const appEnvironmentsRepository: Repository<AppEnvironment> = ds.getRepository(AppEnvironment);
   const pageRepository: Repository<Page> = ds.getRepository(Page);
+  const workspaceBranchRepository: Repository<WorkspaceBranch> = ds.getRepository(WorkspaceBranch);
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -621,12 +623,40 @@ export async function createApplicationVersion(
       ? environments.find((env) => env.priority === 1)?.id
       : environments[0].id;
 
+  // branch_id is NOT NULL for every app type except workflow
+  // (trg_app_versions_branch_id_required) -- resolve (or seed) the org's default branch
+  // so a plain call succeeds. Tests that need a specific branch override it afterwards
+  // via updateEntity, same as before this was required.
+  // chk_app_versions_branch_metadata requires app_name + slug whenever branch_id is set,
+  // so a non-workflow default also needs placeholder metadata -- mirrors the placeholder
+  // AppsUtilService.create writes in production (random-uuid slug, app name as app_name).
+  let branchId: string | null = null;
+  let placeholderMeta: { appName: string; slug: string } | undefined;
+  if (application.type !== APP_TYPES.WORKFLOW) {
+    let defaultBranch = await workspaceBranchRepository.findOne({
+      where: { organizationId: application.organizationId, isDefault: true },
+    });
+    if (!defaultBranch) {
+      defaultBranch = await workspaceBranchRepository.save(
+        workspaceBranchRepository.create({
+          organizationId: application.organizationId,
+          name: 'main',
+          isDefault: true,
+        })
+      );
+    }
+    branchId = defaultBranch.id;
+    placeholderMeta = { appName: application.name ?? name, slug: uuidv4() };
+  }
+
   const version = await appVersionsRepository.save(
     appVersionsRepository.create({
       appId: application.id,
       name: name + Date.now(),
       currentEnvironmentId: envId,
       definition,
+      branchId,
+      ...placeholderMeta,
     })
   );
 

@@ -293,14 +293,15 @@ export class AppsUtilService implements IAppsUtilService {
         //
         // branch_id is NOT NULL — resolve the org's default branch when no explicit
         // branchId was provided (git-sync off, or a default-branch call from the client).
-        const effectiveBranchId: string | undefined =
-          branchId ??
-          (
-            await manager.findOne(WorkspaceBranch, {
-              where: { organizationId: user.organizationId, isDefault: true },
-              select: ['id'],
-            })
-          )?.id;
+        const effectiveBranchId: string | undefined = isWorkflow
+          ? undefined
+          : (branchId ??
+            (
+              await manager.findOne(WorkspaceBranch, {
+                where: { organizationId: user.organizationId, isDefault: true },
+                select: ['id'],
+              })
+            )?.id);
 
         // Wrap so the partial unique index app_versions_slug_default_branch_unique
         // (slug, type WHERE status='DRAFT' AND branch_id IS NOT NULL AND
