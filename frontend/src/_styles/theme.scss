@@ -15617,6 +15617,12 @@ textarea.tj-text-input-widget {
   @extend .widget-version-identifier;
 }
 
+.widget-version-beta-identifier {
+  background-color: var(--indigo9);
+  @extend .widget-version-identifier;
+  width: 36px;
+}
+
 .tjdb-display-time-pill {
   height: 12px;
   gap: 10px;
@@ -16281,7 +16287,7 @@ section.ai-message-prompt-input-wrapper {
 
   div.input {
     color: var(--text-default, #1b1f24);
-    font-size: 12px;
+    font-size: var(--font-size-large);
     font-style: normal;
     font-weight: 400;
     line-height: 18px;

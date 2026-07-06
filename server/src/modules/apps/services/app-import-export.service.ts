@@ -31,6 +31,7 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { remapFlexContainerChildOrder } from '@modules/versions/helpers/version-copy-parent.helper';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
 import { LayoutDimensionUnits } from '../constants';
 import { convertAppDefinitionFromSinglePageToMultiPage } from 'src/../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -97,6 +98,7 @@ type NewRevampedComponent =
   | 'DaterangePicker'
   | 'TextArea'
   | 'Container'
+  | 'FlexContainer'
   | 'Tabs'
   | 'Form'
   | 'Image'
@@ -148,6 +150,7 @@ const NewRevampedComponents: NewRevampedComponent[] = [
   'DaterangePicker',
   'TextArea',
   'Container',
+  'FlexContainer',
   'Tabs',
   'Form',
   'Image',
@@ -240,6 +243,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'CodeEditor',
   'ColorPicker',
   'Container',
+  'FlexContainer',
   'CurrencyInput',
   'DatePickerV2',
   'DaterangePicker',
@@ -247,6 +251,7 @@ const DYNAMIC_HEIGHT_COMPONENT_TYPES = [
   'DropdownV2',
   'EmailInput',
   'Form',
+  'Html',
   'Image',
   'JSONEditor',
   'JSONExplorer',
@@ -1272,11 +1277,17 @@ export class AppImportExportService {
           if (co_relation_id) {
             component.co_relation_id = co_relation_id; // Set the coRelationId
           }
+          // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+          // remapped explicitly on import/export — same gap as draft/version copy (issue #5153).
+          remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
           updateEntityReferences(component, mappings);
           return component;
         });
       } else {
         toUpdateComponents = components.filter((component) => {
+          // FlexContainer childOrder holds raw child ids (not a {{...}} binding), so it must be
+          // remapped explicitly on import/export — same gap as draft/version copy (issue #5153).
+          remapFlexContainerChildOrder(component, resourceMapping.componentsMapping);
           return updateEntityReferences(component, mappings);
         });
       }
@@ -1709,6 +1720,8 @@ export class AppImportExportService {
                   newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                   newLayout.width = layout.width;
                   newLayout.height = layout.height;
+                  if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                  if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                   newLayout.componentId = appResourceMappings.componentsMapping[componentId];
 
                   componentLayouts.push(newLayout);
@@ -2283,6 +2296,8 @@ export class AppImportExportService {
                 newLayout.dimensionUnit = LayoutDimensionUnits.COUNT;
                 newLayout.width = layout.width;
                 newLayout.height = layout.height;
+                if (layout.widthPx != null) newLayout.widthPx = layout.widthPx;
+                if (layout.fillWidth != null) newLayout.fillWidth = layout.fillWidth;
                 newLayout.component = savedComponent;
                 newLayout.co_relation_id = layout.id;
 
@@ -2867,31 +2882,18 @@ export class AppImportExportService {
     organizationId: string,
     branchId?: string
   ): Promise<void> {
-    // Resolve target branch: use explicit branchId, or fall back to default branch
-    let targetBranchId = branchId;
-    if (!targetBranchId) {
-      const defaultBranch = await manager.findOne(WorkspaceBranch, {
-        where: { organizationId, isDefault: true },
-        select: ['id'],
-      });
-      if (!defaultBranch) return;
-      targetBranchId = defaultBranch.id;
-    }
-
-    // Check if a branch-specific DSV already exists
-    const existingBranchDsv = await manager.findOne(DataSourceVersion, {
-      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
-    });
-    if (existingBranchDsv) return;
-
-    // Find the default DSV to copy from
-    // const defaultDsv = await manager.findOne(DataSourceVersion, {
-    //   where: { dataSourceId: dataSource.id, isDefault: true },
-    // });
+    // Ensure the default DSV first — independent of any git branch. The default
+    // DSV (is_default=true, branch_id=null) is the data source's canonical version
+    // and must exist for every real data source. Dummy / optionless data sources
+    // skip the options-driven DSV creation in the import loop (gated on
+    // `importingDataSource.options`), and a non-git workspace has no branch to
+    // trigger the branch path below — so without ensuring it here the DS ends up
+    // with zero DSVs (queries bound, but the DS unusable on the data source page).
+    // Find-or-create keeps it idempotent: option-bearing DSes already created their
+    // default DSV upstream and just match here.
     let defaultDsv = await manager.findOne(DataSourceVersion, {
       where: { dataSourceId: dataSource.id, isDefault: true },
     });
-    // if (!defaultDsv) return;
     if (!defaultDsv) {
       defaultDsv = await manager.save(
         manager.create(DataSourceVersion, {
@@ -2919,6 +2921,25 @@ export class AppImportExportService {
         );
       }
     }
+
+    // Resolve target branch for the branch-specific DSV: use explicit branchId, or
+    // fall back to the default branch. Non-git workspaces have no branches — the
+    // default DSV ensured above is all that's needed, so stop here.
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const defaultBranch = await manager.findOne(WorkspaceBranch, {
+        where: { organizationId, isDefault: true },
+        select: ['id'],
+      });
+      if (!defaultBranch) return;
+      targetBranchId = defaultBranch.id;
+    }
+
+    // Check if a branch-specific DSV already exists
+    const existingBranchDsv = await manager.findOne(DataSourceVersion, {
+      where: { dataSourceId: dataSource.id, branchId: targetBranchId },
+    });
+    if (existingBranchDsv) return;
 
     // Create branch-specific DSV
     const branchDsv = await manager.save(

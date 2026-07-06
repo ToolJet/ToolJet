@@ -56,8 +56,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/Button/Button';
 import { TreeSelect } from './Components/TreeSelect/TreeSelect.jsx';
 import { useModuleContext } from '@/AppBuilder/_contexts/ModuleContext';
+import { FlexChildInspectorProvider } from './Components/FlexContainer/FlexChildInspectorContext.jsx';
 import '../ComponentManagerTab/styles.scss';
-
 const INSPECTOR_HEADER_OPTIONS = [
   {
     label: 'Inspect',
@@ -151,6 +151,7 @@ export const NEW_REVAMPED_COMPONENTS = [
   'ColorPicker',
   'FileButton',
   'ButtonGroupV2',
+  'FlexContainer',
   'Pagination',
 ];
 
@@ -522,23 +523,30 @@ export const Inspector = ({
   };
 
   const propertiesTab = isMounted && (
-    <div className={`${shouldFreeze && 'disabled'}`}>
-      <GetAccordion
-        tabsPropertiesPanelKey={tabsPropertiesPanelKey}
-        componentName={componentMeta.component}
-        layoutPropertyChanged={layoutPropertyChanged}
-        component={component}
-        paramUpdated={paramUpdated}
-        paramsUpdated={paramsUpdated}
-        dataQueries={dataQueries}
-        componentMeta={componentMeta}
-        components={allComponents}
-        currentState={currentState}
-        darkMode={darkMode}
-        pages={pages}
-        allComponents={allComponents}
-      />
-    </div>
+    <FlexChildInspectorProvider
+      selectedComponentId={selectedComponentId}
+      allComponents={allComponents}
+      widthSectionTitle={t('widget.flexChild.widthAndHeight', 'Width')}
+    >
+      <div className={`${shouldFreeze && 'disabled'}`}>
+        <GetAccordion
+          tabsPropertiesPanelKey={tabsPropertiesPanelKey}
+          componentName={componentMeta.component}
+          layoutPropertyChanged={layoutPropertyChanged}
+          component={component}
+          paramUpdated={paramUpdated}
+          paramsUpdated={paramsUpdated}
+          dataQueries={dataQueries}
+          componentMeta={componentMeta}
+          components={allComponents}
+          currentState={currentState}
+          darkMode={darkMode}
+          pages={pages}
+          allComponents={allComponents}
+          selectedComponentId={selectedComponentId}
+        />
+      </div>
+    </FlexChildInspectorProvider>
   );
   const stylesTab = (
     <div style={{ marginBottom: '6rem' }} className={`${shouldFreeze && 'disabled'}`}>
@@ -762,6 +770,10 @@ const widgetsWithStyleConditions = {
 };
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
+  // Custom CSS class (the "Advanced" group) is an enterprise feature gated by the
+  // `customStyling` license flag. When the license is absent the field is hidden, but
+  // the saved value is left untouched in the schema so it returns if the license is re-enabled.
+  const hasCustomStyling = useStore((state) => state.license.featureAccess?.customStyling);
   // Initialize an object to group properties by "accordian"
   const groupedProperties = {};
   if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
@@ -784,9 +796,16 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
     return null;
   }
 
-  return Object.keys(
-    NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles
-  ).map((style) => {
+  const isRevamped = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
+  // Universal styles (e.g. the "Advanced" group holding `cssClass`) are spread first in
+  // combineProperties, so without this they'd render at the top. Pin "Advanced" last.
+  const orderedStyleKeys = isRevamped
+    ? Object.keys(groupedProperties)
+        .filter((key) => key !== 'Advanced' || hasCustomStyling)
+        .sort((a, b) => (a === 'Advanced' ? 1 : b === 'Advanced' ? -1 : 0))
+    : Object.keys(componentMeta.styles).filter((key) => key !== 'cssClass' || hasCustomStyling);
+
+  return orderedStyleKeys.map((style) => {
     const conditionWidget = widgetsWithStyleConditions[component.component.component] ?? null;
     const condition = conditionWidget?.conditions.find((condition) => condition.property) ?? {};
 

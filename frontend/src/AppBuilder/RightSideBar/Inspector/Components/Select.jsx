@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Accordion from '@/_ui/Accordion';
+import Accordion from '@/AppBuilder/RightSideBar/Inspector/InspectorAccordion';
+import { ADDITIONAL_ACTIONS_ACCORDION_ID } from '../inspectorConstants';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -637,6 +638,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             currentState,
             allComponents
           )}
+        {isTagsInput &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'serverSideSearch',
+            'properties',
+            currentState,
+            allComponents
+          )}
         {isRadioButton &&
           renderElement(
             component,
@@ -690,6 +702,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
+    id: ADDITIONAL_ACTIONS_ACCORDION_ID,
     title: `Additional Actions`,
     isOpen: true,
     children: additionalActions.map((property) => {

@@ -121,7 +121,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     appsService
       .exportResource(requestBody, app.type)
       .then((data) => {
-        const appName = (app.appName || app.name).replace(/\s+/g, '-').toLowerCase();
+        const appName = (app.appName || app.name).replace(/\s+/g, '-');
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
         const json = JSON.stringify(data, null, 2);
