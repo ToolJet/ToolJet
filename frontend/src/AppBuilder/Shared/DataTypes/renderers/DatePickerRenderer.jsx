@@ -50,13 +50,18 @@ const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputC
 /**
  * Get combined date/time format string
  */
-const getDateTimeFormat = (dateDisplayFormat, isTimeChecked, isTwentyFourHrFormatEnabled, isDateSelectionEnabled) => {
+export const getDateTimeFormat = (
+  dateDisplayFormat,
+  isTimeChecked,
+  isTwentyFourHrFormatEnabled,
+  isDateSelectionEnabled
+) => {
   const timeFormat = isTwentyFourHrFormatEnabled ? 'HH:mm' : 'LT';
   if (isTimeChecked && !isDateSelectionEnabled) return timeFormat;
   return isTimeChecked ? `${dateDisplayFormat} ${timeFormat}` : dateDisplayFormat;
 };
 
-const parseDate = ({
+export const parseDate = ({
   value,
   parseDateFormat,
   timeZoneValue,
