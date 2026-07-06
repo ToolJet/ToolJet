@@ -199,7 +199,10 @@ export const RadioButtonV2 = ({
     height: '100%',
     flexDirection: layout === 'wrap' ? 'row' : layout,
     ...(layout === 'wrap' && { flexWrap: 'wrap', maxHeight: '100%', height: 'max-content' }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    // overflow:visible so the focus ring on .checkmark isn't clipped by this
+    // container. Trade-off: options that exceed the widget size spill instead of
+    // scrolling (CSS can't mix visible on one axis with scroll on the other).
+    overflow: 'visible',
   };
 
   return (

@@ -239,7 +239,10 @@ export const ButtonGroupV2 = (props) => {
   const groupWrapperStyles = {
     height: _height,
     ...(layout === 'column' && { justifyContent: justifyContentByAlignment }),
-    overflow: layout === 'row' ? 'auto hidden' : 'hidden auto',
+    // overflow:visible so the button focus outline isn't clipped by this wrapper.
+    // Trade-off: buttons that exceed the widget size spill instead of scrolling
+    // (CSS can't mix visible on one axis with scroll on the other).
+    overflow: 'visible',
     ...getWidthTypeOfComponentStyles('ofComponent', labelWidth, labelAutoWidth, alignment),
   };
 
