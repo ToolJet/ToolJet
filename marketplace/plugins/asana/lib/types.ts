@@ -4,6 +4,8 @@ export type SourceOptions = {
   access_token: string;
   refresh_token: string;
   oauth_type: { value: string } | string;
+  multiple_auth_enabled?: boolean;
+  tokenData?: Array<{ user_id: string; access_token: string; refresh_token: string; [key: string]: any }>;
 };
 
 export type QueryOptions = {

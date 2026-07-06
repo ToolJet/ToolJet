@@ -29,7 +29,14 @@ export default class Asana implements QueryService {
     return `${ASANA_AUTH_URL}?${params.toString()}`;
   }
 
-  async accessDetailsFrom(authCode: string, source_options: SourceOptions): Promise<object> {
+  async accessDetailsFrom(authCode: string, source_options: SourceOptions, resetSecureData = false): Promise<object> {
+    if (resetSecureData) {
+      return [
+        ['access_token', ''],
+        ['refresh_token', ''],
+      ];
+    }
+
     const { clientId, clientSecret, redirectUri } = this.getOAuthCredentials(source_options);
 
     const data = new URLSearchParams({
@@ -76,8 +83,21 @@ export default class Asana implements QueryService {
     }
   }
 
-  async refreshToken(sourceOptions: SourceOptions): Promise<{ access_token: string; refresh_token?: string }> {
-    const refreshToken = sourceOptions.refresh_token;
+  async refreshToken(
+    sourceOptions: SourceOptions,
+    _dataSourceId?: string,
+    userId?: string,
+    isAppPublic?: boolean
+  ): Promise<{ access_token: string; refresh_token?: string }> {
+    let refreshToken: string;
+    if (sourceOptions.multiple_auth_enabled) {
+      const currentToken = sourceOptions.tokenData?.find((t) =>
+        isAppPublic && !userId ? true : t.user_id === userId
+      );
+      refreshToken = currentToken?.refresh_token;
+    } else {
+      refreshToken = sourceOptions.refresh_token;
+    }
 
     if (!refreshToken) {
       throw new QueryError('Refresh token not found', 'Refresh token is required to refresh the access token', {});
@@ -138,8 +158,26 @@ export default class Asana implements QueryService {
     }
   }
 
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
-    const token = sourceOptions.access_token;
+  async run(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    _dataSourceId?: string,
+    _updatedAt?: string,
+    context?: { user?: { id?: string }; app?: any }
+  ): Promise<QueryResult> {
+    let token: string;
+    if (sourceOptions.multiple_auth_enabled) {
+      const userId = context?.user?.id;
+      const currentToken = sourceOptions.tokenData?.find((t) =>
+        userId ? t.user_id === userId : true
+      );
+      if (!currentToken) {
+        return { status: 'needs_oauth', data: { auth_url: this.authUrl(sourceOptions) } } as any;
+      }
+      token = currentToken.access_token;
+    } else {
+      token = sourceOptions.access_token;
+    }
     const { resource } = queryOptions;
 
     let result: any;
