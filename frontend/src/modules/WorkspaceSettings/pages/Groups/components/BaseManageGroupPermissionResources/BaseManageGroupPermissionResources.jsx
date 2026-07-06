@@ -1016,16 +1016,17 @@ class BaseManageGroupPermissionResources extends React.Component {
                                   </div>
                                   {/* //App till here */}
                                 </div>
-                                {/* Worklfow Permission */}
-                                <WorkflowPermissionsUI
+
+                                {/* Module Permission */}
+                                <ModulePermissionsUI
                                   groupPermission={groupPermission}
                                   disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
                                   updateState={this.updateParamState}
                                 />
 
-                                {/* Module Permission */}
-                                <ModulePermissionsUI
+                                {/* Workflow Permission */}
+                                <WorkflowPermissionsUI
                                   groupPermission={groupPermission}
                                   disablePermissionUpdate={disableNonPromoteReleasePermissions}
                                   updateGroupPermission={this.updateGroupPermission}
