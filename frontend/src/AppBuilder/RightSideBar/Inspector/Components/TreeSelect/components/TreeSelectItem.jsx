@@ -40,6 +40,10 @@ export const TreeSelectItem = ({
     onAddNestedItem?.(item.value);
   };
 
+  // Resolve dynamic ({{...}}) label/value for display in the list row.
+  const resolve = (val) => (getResolvedValue ? getResolvedValue(val) : val);
+  const displayLabel = resolve(item?.label) || resolve(item?.value);
+
   return (
     <div style={{ width: '100%' }}>
       <div
@@ -58,7 +62,7 @@ export const TreeSelectItem = ({
         }}
       >
         <div className="left">
-          <OverflowTooltip childrenClassName="option-label">{item?.label || item?.value}</OverflowTooltip>
+          <OverflowTooltip childrenClassName="option-label">{displayLabel}</OverflowTooltip>
         </div>
         <div
           className={`action-btn-wrapper tw-mr-1`}
