@@ -24,22 +24,22 @@ const CONFLICT_SECTION_HEADER_MAP = {
 const LOCAL_STATUSES = ['existing', 'local'];
 const REMOTE_STATUSES = ['incoming', 'remote'];
 
-// Color still follows the Local/Remote semantic (existing/local = emphasized
-// orange, incoming/remote = muted slate) even though the wording stays
-// "Incoming pull" / "Existing branch" (pull) or "Local" / "Remote" (import,
-// push) depending on which vocabulary the backend used for this conflict. For a
-// group where both sides are the same side (e.g. two incoming/remote entries
-// colliding with each other, neither one local), both stay the emphasized color
-// so neither looks like the muted/secondary one.
+// "existing"/"local" is always the local side, so it's always labeled "Local".
+// "incoming"/"remote" is only genuinely "Remote" when the group also has a local
+// counterpart to contrast it with. When a group is entirely one-sided (two
+// entries colliding with each other, neither one local), calling either "Remote"
+// would wrongly imply the other is local — pull's incoming-vs-incoming case keeps
+// "Incoming pull", and push/import's remote-vs-remote case shows plain "Incoming".
 function getConflictItemBadge(item, group) {
-  const isTrueLocalVsRemote =
-    group.conflicts.some((c) => LOCAL_STATUSES.includes(c.status)) &&
-    group.conflicts.some((c) => REMOTE_STATUSES.includes(c.status));
+  const hasLocalCounterpart = group.conflicts.some((c) => LOCAL_STATUSES.includes(c.status));
 
-  if (item.status === 'existing') return { label: 'Existing branch', variant: 'local' };
-  if (item.status === 'local') return { label: 'Local', variant: 'local' };
-  if (item.status === 'incoming') return { label: 'Incoming pull', variant: isTrueLocalVsRemote ? 'remote' : 'local' };
-  if (item.status === 'remote') return { label: 'Remote', variant: isTrueLocalVsRemote ? 'remote' : 'local' };
+  if (item.status === 'existing' || item.status === 'local') return { label: 'Local', variant: 'local' };
+  if (item.status === 'incoming') {
+    return hasLocalCounterpart ? { label: 'Remote', variant: 'remote' } : { label: 'Incoming pull', variant: 'local' };
+  }
+  if (item.status === 'remote') {
+    return hasLocalCounterpart ? { label: 'Remote', variant: 'remote' } : { label: 'Incoming', variant: 'local' };
+  }
   return { label: item.status, variant: item.status };
 }
 
@@ -262,7 +262,7 @@ export function PullConflictModal({ show, onClose, conflictGroups = [], context,
             Read docs
           </ButtonSolid>
 
-          {isSyncEligible && (
+          {isSyncEligible && syncableGroups.length > 0 && (
             <ButtonSolid
               variant="primary"
               size="md"

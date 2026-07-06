@@ -1104,6 +1104,21 @@ class HomePageComponent extends React.Component {
       });
   };
 
+  handleResolveImportConflicts = async (resolutions) => {
+    try {
+      const { actions } = useWorkspaceBranchesStore.getState();
+      await actions.resolveConflicts(resolutions);
+      toast.success('Selected conflicts resolved and synced from git.');
+      this.setState({ gitImportConflictGroups: null });
+      // resolveConflicts hydrates the affected apps server-side (isSynced, content),
+      // but this component's in-memory state doesn't know that happened — reload so
+      // the UI (app list, sync badges) reflects it immediately.
+      window.location.reload();
+    } catch (error) {
+      toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
+    }
+  };
+
   addAppToFolder = () => {
     const { appOperations } = this.state;
     const selectedApps = (appOperations?.selectedApps || []).filter((app) => !app?.isAllField);
@@ -1844,6 +1859,7 @@ class HomePageComponent extends React.Component {
             show={!!this.state.gitImportConflictGroups}
             conflictGroups={this.state.gitImportConflictGroups || []}
             onClose={() => this.setState({ gitImportConflictGroups: null })}
+            onResolve={this.handleResolveImportConflicts}
             context="import"
           />
           <AppActionModal

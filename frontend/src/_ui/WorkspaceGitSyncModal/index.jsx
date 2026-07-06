@@ -284,8 +284,13 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const handleResolveConflicts = async (resolutions) => {
     try {
       await actions.resolveConflicts(resolutions);
-      toast.success('Selected conflicts resolved. You can pull again now.');
+      toast.success('Selected conflicts resolved and synced from git.');
       setPullConflictGroups(null);
+      onClose();
+      // resolveConflicts hydrates the affected apps server-side (isSynced, content),
+      // but the app builder/homepage's in-memory state doesn't know that happened —
+      // reload so the UI reflects it immediately instead of on next manual refresh.
+      window.location.reload();
     } catch (error) {
       toast.error(error?.error || error?.message || 'Failed to resolve conflicts');
     }
