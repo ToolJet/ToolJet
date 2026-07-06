@@ -144,6 +144,42 @@ export class VersionUtilService implements IVersionUtilService {
   }
 
   /**
+   * Publishes `appVersion` and moves it onto `currentEnvironmentId` in one write,
+   * still firing the default-branch DRAFT → PUBLISHED hook. Deliberately bypasses
+   * `updateVersion`'s DTO allow-list — that list intentionally excludes
+   * `currentEnvironmentId` because environment moves for regular apps go through
+   * the license/adjacency-checked flows in AppsUtilService and AppUtilService's
+   * workflow promote path. Callers here (external API auto-deploy/save) already
+   * own the target environment decision and need a direct, unchecked write.
+   */
+  async publishVersionWithEnvironment(
+    appVersion: AppVersion,
+    currentEnvironmentId: string,
+    manager?: EntityManager,
+    extraParams: Partial<Pick<AppVersion, 'name'>> = {}
+  ): Promise<void> {
+    const editableParams: Partial<AppVersion> = {
+      status: AppVersionStatus.PUBLISHED,
+      currentEnvironmentId,
+      ...extraParams,
+    };
+
+    const runWrite = async (mgr: EntityManager) => {
+      await this.versionRepository.updateVersion(appVersion.id, editableParams, mgr);
+
+      if (appVersion.status !== AppVersionStatus.PUBLISHED) {
+        await this.handleDefaultBranchPublish(appVersion, mgr);
+      }
+    };
+
+    if (manager) {
+      await runWrite(manager);
+    } else {
+      await dbTransactionWrap(runWrite);
+    }
+  }
+
+  /**
    * Fires when a VERSION-type DRAFT on the workspace's default branch
    * transitions to PUBLISHED. Two actions:
    *
