@@ -1209,7 +1209,14 @@ export const EventManager = ({
                                       </TooltipContent>
                                     </Tooltip>
                                     {goToAppErrorMessage && (
-                                      <ToolTip message={goToAppErrorMessage}>
+                                      <ToolTip
+                                        message={goToAppErrorMessage}
+                                        maxWidth="360px"
+                                        placement="top-end"
+                                        popperConfig={{
+                                          modifiers: [{ name: 'offset', options: { offset: [10, 2] } }],
+                                        }}
+                                      >
                                         <AlertTriangle
                                           className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
                                           onClick={(e) => e.stopPropagation()}

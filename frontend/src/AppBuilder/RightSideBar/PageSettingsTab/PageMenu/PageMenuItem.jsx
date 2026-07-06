@@ -211,7 +211,7 @@ export const PageMenuItem = withRouter(
             </OverflowTooltip>
             <span className="color-slate09 meta-text d-flex align-items-center justify-content-center">
               {linkedAppErrorMessage && (
-                <ToolTip message={linkedAppErrorMessage}>
+                <ToolTip message={linkedAppErrorMessage} maxWidth="360px">
                   <div className="d-flex align-items-center justify-content-center">
                     <AlertTriangle
                       className="tw-h-[14px] tw-w-[14px] tw-shrink-0 tw-text-[var(--icon-warning)]"
