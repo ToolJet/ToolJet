@@ -12,10 +12,12 @@ export class BackfillModuleCreateDeleteForDefaultGroups1782197622558 implements 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const GroupPermissionRepository = queryRunner.manager.getRepository(GroupPermissions);
 
-    await GroupPermissionRepository.update(
+    const result = await GroupPermissionRepository.update(
       { type: GROUP_PERMISSIONS_TYPE.DEFAULT, name: In(['admin', 'builder']) },
       { moduleCreate: true, moduleDelete: true }
     );
+
+    console.log(`[SUCCESS] Updated module_create/module_delete for ${result.affected ?? 0} group(s).`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

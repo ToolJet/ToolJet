@@ -14,12 +14,7 @@ import { APP_TYPES } from '@modules/apps/constants';
  */
 export class AddModuleGranularPermissionsToExistingGroups1781869572704 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const organizationsCount = await queryRunner.manager.count('organizations');
-    if (organizationsCount === 0) {
-      return;
-    }
-
-    await queryRunner.query(
+    const insertedPermissions = await queryRunner.query(
       `
       WITH inserted_permissions AS (
         INSERT INTO granular_permissions (group_id, name, type, is_all)
@@ -33,9 +28,12 @@ export class AddModuleGranularPermissionsToExistingGroups1781869572704 implement
       )
       INSERT INTO apps_group_permissions (granular_permission_id, app_type, can_edit, can_view, hide_from_dashboard)
       SELECT id, $3, true, false, false FROM inserted_permissions
+      RETURNING id
       `,
       [DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.MODULE], ResourceType.MODULE, APP_TYPES.MODULE]
     );
+
+    console.log(`[SUCCESS] Added module granular permission for ${insertedPermissions.length} group(s).`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
