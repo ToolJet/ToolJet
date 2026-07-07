@@ -21,7 +21,7 @@ It is recommended to create a dedicated IAM user for the database in order to ha
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/iam-v3.png" alt="dynamo - IAM creds" />
 
-To connect to DynamoDB using an **AWS Instance Credentials**, select the option to **Use AWS Instance Credentials**. This will utilize the IAM role attached to the EC2 instance where ToolJet is running. The WebIdentityToken parameter obtained from a successful login with an identity provider is used to access the metadata service of an ECS container and the EC2 instance.
+To connect to DynamoDB using AWS Instance Credentials, select the option to **Use AWS Instance Credentials**. This will utilize the IAM role attached to the EC2 instance where ToolJet is running. The WebIdentityToken parameter obtained from a successful login with an identity provider is used to access the metadata service of an ECS container and the EC2 instance.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/awsinstance-v3.png" alt="dynamo - AWS instance creds" />
 
@@ -73,16 +73,17 @@ Retrieves a single item from a table. You must specify the primary key for the i
 
 - **Expression attribute values**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/get-v4.png" alt="Get items-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/get-v4.png" alt="Get items-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "USER_ID": 1,
   "USER_TIMESTAMP": 1709768400
 }
 ```
+</details>
 
 ### Query Table
 
@@ -97,11 +98,11 @@ Retrieves all items that have a specific partition key. You must specify the par
 
 - **Expression attribute values**
 
-<img className="screenshot-full img-full"  src="/img/datasource-reference/dynamodb/query-v4.png" alt="Query table-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full"  src="/img/datasource-reference/dynamodb/query-v4.png" alt="Query table-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "KeyConditionExpression": "USER_ID = :id",
   "ExpressionAttributeValues": {
@@ -109,6 +110,7 @@ Retrieves all items that have a specific partition key. You must specify the par
   }
 }
 ```
+</details>
 
 ### Scan Table
 
@@ -123,11 +125,11 @@ Retrieves all items in the specified table or index. You can retrieve entire ite
 
 - **Expression attribute values**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/scan-v4.png" alt="Scan table-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/scan-v4.png" alt="Scan table-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "FilterExpression": "USER_ID = :id",
   "ExpressionAttributeValues": {
@@ -135,6 +137,7 @@ Retrieves all items in the specified table or index. You can retrieve entire ite
   }
 }
 ```
+</details>
 
 ### Delete Item
 
@@ -149,16 +152,17 @@ Deletes a single item from a table. You must specify the primary key for the ite
 
 - **Expression attribute values**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/delete-item-v4.png" alt="Delete item-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/delete-item-v4.png" alt="Delete item-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "USER_ID": 1,
   "USER_TIMESTAMP": 1709768400
 }
 ```
+</details>
 
 ### Update Item
 
@@ -167,17 +171,17 @@ Update an item in DynamoDB by specifying the primary key and providing new attri
 #### Required Parameters
 
 - **Table**
-- **Update Condition**
+- **Update condition**
 
 #### Optional Parameter
 
 - **Expression attribute values**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/update-v4.png" alt="Update item-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/update-v4.png" alt="Update item-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "Key": {
     "USER_ID": 1,
@@ -190,6 +194,7 @@ Update an item in DynamoDB by specifying the primary key and providing new attri
   }
 }
 ```
+</details>
 
 ### Describe Table
 
@@ -199,7 +204,7 @@ This operation in DynamoDB retrieves metadata and configuration details about a 
 
 - **Table**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/describe-v4.png" alt="Describe table-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/describe-v4.png" alt="Describe table-DynamoDB" />
 
 ### Create Table
 
@@ -207,13 +212,13 @@ This operation in DynamoDB enables you to create a new table by specifying its n
 
 #### Required Parameter
 
-- **Table Parameters**
+- **Table parameters**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/create-v4.png" alt="Create table-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/create-v4.png" alt="Create table-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "AttributeDefinitions":
     [
@@ -238,6 +243,7 @@ This operation in DynamoDB enables you to create a new table by specifying its n
   "StreamSpecification": { "StreamEnabled": false },
 }
 ```
+</details>
 
 ### Put Item
 
@@ -246,17 +252,17 @@ This operation allows you to create or replace an item in a table. It enables yo
 #### Required Parameters
 
 - **Table**
-- **New Item Details**
+- **New item details**
 
 #### Optional Parameter
 
 - **Expression attribute values**
 
-<img className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/put-v4.png" alt="Put item-DynamoDB" />
+<img style={{marginBottom:'15px'}} className="screenshot-full img-full" src="/img/datasource-reference/dynamodb/put-v4.png" alt="Put item-DynamoDB" />
 
-#### Example
-
-```yaml
+<details id="tj-dropdown">
+<summary>**Example Values**</summary>
+```json
 {
   "Item": {
     "USER_ID": 2,
@@ -267,3 +273,4 @@ This operation allows you to create or replace an item in a table. It enables yo
   }
 }
 ```
+</details>
