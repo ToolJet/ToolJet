@@ -3,6 +3,10 @@ id: flex-container
 title: Flex Container
 ---
 
+:::warning BETA
+Flex Container is currently in beta and not recommended for production use.
+:::
+
 The **Flex Container** is a layout component that arranges the components placed inside it using CSS flexbox instead of ToolJet's fixed grid. Components can be laid out in a row or a column, with control over spacing, wrapping, and alignment, and they automatically reflow when components are added, removed, resized, or reordered.
 
 ## Layout
