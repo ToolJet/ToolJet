@@ -257,166 +257,169 @@ export const Cascader = ({
   };
 
   return (
-    <div
-      className={cx('cascader-widget', 'd-flex', {
-        [alignment === 'top' &&
-        ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
-          ? 'flex-column'
-          : 'align-items-center']: true,
-        'flex-row-reverse': direction === 'right' && alignment === 'side',
-        'text-right': direction === 'right' && alignment === 'top',
-        invisible: !isVisible,
-      })}
-      style={{
-        position: 'relative',
-        whiteSpace: 'nowrap',
-        width: '100%',
-        height: '100%',
-        visibility: isVisible ? 'visible' : 'hidden',
-      }}
-      onMouseDown={() => {
-        onComponentClick?.(id);
-        useEditorStore.getState().actions.setHoveredComponent('');
-      }}
-    >
-      <LabelComponent
-        dataCy={dataCy}
-        label={label}
-        width={labelWidth}
-        darkMode={darkMode}
-        color={labelColor}
-        defaultAlignment={alignment}
-        direction={direction}
-        auto={labelAutoWidth}
-        isMandatory={isMandatory}
-        _width={_width}
-        widthType={widthType}
-        id={`${id}-label`}
-        inputId={`component-${id}`}
-        fontSize={labelFontSizeValue}
-      />
+    <>
       <div
-        className="cascader-actionable-section"
-        data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
+        className={cx('cascader-widget', 'd-flex', {
+          [alignment === 'top' &&
+          ((labelWidth != 0 && label?.length != 0) ||
+            (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
+            ? 'flex-column'
+            : 'align-items-center']: true,
+          'flex-row-reverse': direction === 'right' && alignment === 'side',
+          'text-right': direction === 'right' && alignment === 'top',
+          invisible: !isVisible,
+        })}
         style={{
-          ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
+          position: 'relative',
+          whiteSpace: 'nowrap',
+          width: '100%',
+          height: '100%',
+          visibility: isVisible ? 'visible' : 'hidden',
+        }}
+        onMouseDown={() => {
+          onComponentClick?.(id);
+          useEditorStore.getState().actions.setHoveredComponent('');
         }}
       >
-        <Popover.Root
-          open={isOpen}
-          onOpenChange={(open) => {
-            if (!open) closeInteraction();
+        <LabelComponent
+          dataCy={dataCy}
+          label={label}
+          width={labelWidth}
+          darkMode={darkMode}
+          color={labelColor}
+          defaultAlignment={alignment}
+          direction={direction}
+          auto={labelAutoWidth}
+          isMandatory={isMandatory}
+          _width={_width}
+          widthType={widthType}
+          id={`${id}-label`}
+          inputId={`component-${id}`}
+          fontSize={labelFontSizeValue}
+        />
+        <div
+          className="cascader-actionable-section"
+          data-cy={`${String(dataCy).toLowerCase()}-actionable-section`}
+          style={{
+            ...getWidthTypeOfComponentStyles(widthType, labelWidth, labelAutoWidth, alignment),
           }}
         >
-          <Popover.Anchor asChild>
-            <div
-              ref={controlRef}
-              id={`component-${id}`}
-              role="combobox"
-              aria-expanded={isOpen}
-              aria-disabled={isDisabled}
-              aria-invalid={!isValid}
-              aria-required={isMandatory}
-              tabIndex={interactionBlocked ? -1 : 0}
-              className={cx('cascader-control', { 'is-disabled': interactionBlocked })}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                height: isTopAlignment ? '100%' : _height,
-                minHeight: _height,
-                padding: '0 10px',
-                borderRadius: Number.parseFloat(fieldBorderRadius),
-                border: `1px solid ${borderColor}`,
-                backgroundColor,
-                boxShadow,
-                cursor: interactionBlocked ? 'not-allowed' : 'pointer',
-              }}
-              onClick={toggleOpen}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-            >
-              {iconVisibility && (
-                <TablerIconComponent
-                  iconName={icon}
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    color: computedIconColor,
-                    flexShrink: 0,
-                  }}
-                />
-              )}
-              <span
-                className="cascader-display"
+          <Popover.Root
+            open={isOpen}
+            onOpenChange={(open) => {
+              if (!open) closeInteraction();
+            }}
+          >
+            <Popover.Anchor asChild>
+              <div
+                ref={controlRef}
+                id={`component-${id}`}
+                role="combobox"
+                aria-expanded={isOpen}
+                aria-disabled={isDisabled}
+                aria-invalid={!isValid}
+                aria-required={isMandatory}
+                tabIndex={interactionBlocked ? -1 : 0}
+                className={cx('cascader-control', { 'is-disabled': interactionBlocked })}
                 style={{
-                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  height: isTopAlignment ? '100%' : _height,
+                  minHeight: _height,
+                  padding: '0 10px',
+                  borderRadius: Number.parseFloat(fieldBorderRadius),
+                  border: `1px solid ${borderColor}`,
+                  backgroundColor,
+                  boxShadow,
+                  cursor: interactionBlocked ? 'not-allowed' : 'pointer',
+                }}
+                onClick={toggleOpen}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+              >
+                {iconVisibility && (
+                  <TablerIconComponent
+                    iconName={icon}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      color: computedIconColor,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <span
+                  className="cascader-display"
+                  style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontSize: '14px',
+                    color: showSelectedPath ? textColor : placeholderTextColor || 'var(--cc-placeholder-text)',
+                  }}
+                >
+                  {isOptionsLoading ? '' : showSelectedPath ? selection.pathString : placeholder}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+                  {showClear && (
+                    <span
+                      className="cascader-clear"
+                      data-cy="cascader-clear"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={handleClear}
+                      style={{ display: 'inline-flex', cursor: 'pointer' }}
+                    >
+                      <IconX size={16} color="var(--borders-strong)" />
+                    </span>
+                  )}
+                  {isLoading ? (
+                    <LoaderComponent width="16" absolute={false} />
+                  ) : isOpen ? (
+                    <TriangleUpArrow width={'18'} fill={'var(--borders-strong)'} />
+                  ) : (
+                    <TriangleDownArrow width={'18'} fill={'var(--borders-strong)'} />
+                  )}
+                </div>
+              </div>
+            </Popover.Anchor>
+            <Popover.Portal>
+              <Popover.Content
+                side="bottom"
+                align="start"
+                sideOffset={5}
+                className={cx('PopoverContent', 'cascader-popover', { 'dark-theme': darkMode })}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                onCloseAutoFocus={(e) => e.preventDefault()}
+                style={{
+                  width: menuWidthStyle,
+                  minWidth: 'var(--radix-popover-trigger-width)',
+                  maxWidth: '420px',
+                  padding: 0,
+                  backgroundColor: 'var(--cc-surface1-surface)',
+                  border: '1px solid var(--cc-weak-border, #e4e7eb)',
+                  borderRadius: '8px',
+                  boxShadow: '0px 0px 1px 0px rgba(48,50,51,0.05), 0px 8px 16px 0px rgba(48,50,51,0.1)',
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  fontSize: '14px',
-                  color: showSelectedPath ? textColor : placeholderTextColor || 'var(--cc-placeholder-text)',
+                  zIndex: 1040,
                 }}
               >
-                {isOptionsLoading ? '' : showSelectedPath ? selection.pathString : placeholder}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
-                {showClear && (
-                  <span
-                    className="cascader-clear"
-                    data-cy="cascader-clear"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={handleClear}
-                    style={{ display: 'inline-flex', cursor: 'pointer' }}
-                  >
-                    <IconX size={16} color="var(--borders-strong)" />
-                  </span>
-                )}
-                {isLoading ? (
-                  <LoaderComponent width="16" absolute={false} />
-                ) : isOpen ? (
-                  <TriangleUpArrow width={'18'} fill={'var(--borders-strong)'} />
-                ) : (
-                  <TriangleDownArrow width={'18'} fill={'var(--borders-strong)'} />
-                )}
-              </div>
-            </div>
-          </Popover.Anchor>
-          <Popover.Portal>
-            <Popover.Content
-              side="bottom"
-              align="start"
-              sideOffset={5}
-              className={cx('PopoverContent', 'cascader-popover', { 'dark-theme': darkMode })}
-              onOpenAutoFocus={(e) => e.preventDefault()}
-              onCloseAutoFocus={(e) => e.preventDefault()}
-              style={{
-                width: menuWidthStyle,
-                minWidth: 'var(--radix-popover-trigger-width)',
-                maxWidth: '420px',
-                padding: 0,
-                backgroundColor: 'var(--cc-surface1-surface)',
-                border: '1px solid var(--cc-weak-border, #e4e7eb)',
-                borderRadius: '8px',
-                boxShadow: '0px 0px 1px 0px rgba(48,50,51,0.05), 0px 8px 16px 0px rgba(48,50,51,0.1)',
-                overflow: 'hidden',
-                zIndex: 1040,
-              }}
-            >
-              <CascaderMenu
-                ref={menuRef}
-                tree={tree}
-                maps={maps}
-                selectedValue={selectedValue}
-                optionsLoading={isOptionsLoading}
-                onSelectLeaf={handleSelectLeaf}
-                menuTextColor={selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)'}
-                accentColor={accentColor}
-              />
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
+                <CascaderMenu
+                  ref={menuRef}
+                  tree={tree}
+                  maps={maps}
+                  selectedValue={selectedValue}
+                  optionsLoading={isOptionsLoading}
+                  onSelectLeaf={handleSelectLeaf}
+                  menuTextColor={selectedTextColor !== '#1B1F24' ? selectedTextColor : 'var(--cc-primary-text)'}
+                  accentColor={accentColor}
+                />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+        </div>
       </div>
       {showValidationError && isVisible && !isValid && (
         <div
@@ -432,7 +435,7 @@ export const Cascader = ({
           {validationError}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
