@@ -73,4 +73,16 @@ export interface ComponentTypeContract {
    *  externally in the pre-migration widget (e.g. TextInput only ever
    *  exposed `setText`, not `setValue`). */
   internalOnlyActions?: string[];
+  /** Bucket A: reconstructs the widget's mount-snapshot exposed values from
+   *  resolved properties/styles alone — no mounted instance required. Used
+   *  by ListView virtualization (Phase 4) to derive an off-screen row's
+   *  values when its widgets have never mounted. Must exactly mirror what
+   *  the widget's own `useEffect(() => setExposedVariables({...}), [])`
+   *  mount block would publish for that state — only safe because it's used
+   *  exclusively when NOTHING has ever mutated that row (no CSA history to
+   *  clobber). Omit when the real exposed value depends on mounted-library
+   *  state (e.g. tanstack-table, dnd-kit, Draft.js internals) rather than a
+   *  pure function of properties/styles — those widgets correctly remain
+   *  mount-required, the same way Table's own lazy-row model works today. */
+  deriveExposed?: (properties: Record<string, unknown>, styles?: Record<string, unknown>) => Record<string, unknown>;
 }

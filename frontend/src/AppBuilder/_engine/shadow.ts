@@ -71,7 +71,10 @@ export function runShadowCheck(moduleId = 'canvas'): ShadowReport {
   engine.init({
     graph: serializeGraph(liveGraph),
     bindings: [],
-    seedState: store.getAllExposedValues(moduleId),
+    // raw: true — this feeds ResolutionEngine.init, which _.cloneDeep's the
+    // seed; cloning the lazy-ListView-read Proxy from getAllExposedValues
+    // would break it (see resolvedSlice.js's getAllExposedValues comment).
+    seedState: store.getAllExposedValues(moduleId, { raw: true }),
   });
 
   const report: ShadowReport = {

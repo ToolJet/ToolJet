@@ -67,7 +67,10 @@ function getOrInitEngine(moduleId: string): ResolutionEngine | null {
     engine.init({
       graph: serializeGraph(liveGraph),
       bindings: [],
-      seedState: store.getAllExposedValues(moduleId),
+      // raw: true — this gets _.cloneDeep'd right after (ResolutionEngine.init),
+      // and cloning the lazy-ListView-read Proxy from getAllExposedValues
+      // would break it (see resolvedSlice.js's getAllExposedValues comment).
+      seedState: store.getAllExposedValues(moduleId, { raw: true }),
     });
     session.engines.set(moduleId, engine);
   }
@@ -211,7 +214,10 @@ function getOrInitCutoverEngine(moduleId: string): ResolutionEngine | null {
     engine.init({
       graph: serializeGraph(liveGraph),
       bindings: [],
-      seedState: store.getAllExposedValues(moduleId),
+      // raw: true — this gets _.cloneDeep'd right after (ResolutionEngine.init),
+      // and cloning the lazy-ListView-read Proxy from getAllExposedValues
+      // would break it (see resolvedSlice.js's getAllExposedValues comment).
+      seedState: store.getAllExposedValues(moduleId, { raw: true }),
     });
     cutoverEngines.set(moduleId, engine);
   }

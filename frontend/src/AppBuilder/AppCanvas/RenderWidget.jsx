@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TrackedSuspense } from './SuspenseTracker';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
@@ -200,12 +200,32 @@ const RenderWidget = ({
   }, []);
 
   const ComponentToRender = useMemo(() => getComponentToRender(componentType), [componentType]);
+  // Phase 4 Step 4 — off-screen Bucket B persistence. A ListView row's widget
+  // publishes a full "definition defaults" snapshot unconditionally on its
+  // very first setExposedVariable(s) call after mount (the isInitialRender
+  // idiom most widgets use). Under virtualization a row scrolling back into
+  // view remounts fresh — this ref is per-mount-instance, so its very first
+  // write is exactly that mount snapshot. For that one call only, don't let
+  // it clobber a value a CSA already set before this row scrolled away —
+  // fill only the keys currently absent. Function values (CSA shim
+  // dispatchers) are exempt: they're per-mount closures bound to this
+  // instance's dispatch context, not persisted state, and must always be
+  // (re)published. Every call after the first behaves exactly as before.
+  const isFirstExposedWriteRef = useRef(true);
   const setExposedVariable = useCallback(
     (key, value) => {
       if (nearestListviewId && resolveIndex) {
         // Inside a ListView — per-row store write
         const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
-
+        const isFirstWrite = isFirstExposedWriteRef.current;
+        isFirstExposedWriteRef.current = false;
+        if (isFirstWrite && typeof value !== 'function') {
+          const current = getExposedPropertyForAdditionalActions(id, resolveIndex, key, moduleId);
+          if (current !== undefined) {
+            if (onOptionChange !== null) onOptionChange(key, value, id, subContainerIndex);
+            return;
+          }
+        }
         setExposedValuePerRow(id, key, value, indices, moduleId);
         // updateDependencyValues called internally — no duplicate call
       } else {
@@ -222,6 +242,7 @@ const RenderWidget = ({
       id,
       setExposedValue,
       setExposedValuePerRow,
+      getExposedPropertyForAdditionalActions,
       subContainerIndex,
       onOptionChange,
       moduleId,
@@ -234,7 +255,20 @@ const RenderWidget = ({
       if (nearestListviewId && resolveIndex) {
         // Inside a ListView — per-row store write
         const indices = Array.isArray(resolveIndex) ? resolveIndex : [resolveIndex];
-        setExposedValuesPerRow(id, exposedValues, indices, moduleId);
+        let valuesToWrite = exposedValues;
+        if (isFirstExposedWriteRef.current) {
+          isFirstExposedWriteRef.current = false;
+          valuesToWrite = {};
+          Object.entries(exposedValues).forEach(([k, v]) => {
+            const current = getExposedPropertyForAdditionalActions(id, resolveIndex, k, moduleId);
+            if (typeof v === 'function' || current === undefined) {
+              valuesToWrite[k] = v;
+            }
+          });
+        }
+        if (Object.keys(valuesToWrite).length > 0) {
+          setExposedValuesPerRow(id, valuesToWrite, indices, moduleId);
+        }
       } else {
         // Not inside a ListView — flat store write (existing path)
         setExposedValues(id, 'components', exposedValues, moduleId);
@@ -247,6 +281,7 @@ const RenderWidget = ({
       id,
       setExposedValues,
       setExposedValuesPerRow,
+      getExposedPropertyForAdditionalActions,
       onOptionsChange,
       moduleId,
       subContainerIndex,

@@ -42,6 +42,14 @@ registerContract({
     setVisibility: setVisibilityCoerced,
     setDisabled: (_cur, [disabled]) => ({ isDisabled: !!disabled }),
   },
+  // Steps.jsx never exposed isLoading (no loadingState property at all).
+  // `steps`/`currentStepId` depend on the resolved `stepsSelectable`
+  // options prop via widget-local derivation — omitted, same reasoning as
+  // TreeSelect's checked array below.
+  deriveExposed: (properties) => ({
+    isVisible: properties?.visibility,
+    isDisabled: properties?.disabledState,
+  }),
 });
 
 /* ── TreeSelect ───────────────────────────────────────────────────────────
@@ -70,6 +78,14 @@ registerContract({
       return { checked: ((cur.checked as any[]) || []).filter((v) => !toRemove.has(v)) };
     },
   },
+  // `checked`/checkedPathArray etc. depend on the resolved `data` prop via
+  // widget-local derivation (see comment above) — omitted; only the trio is
+  // a pure passthrough of properties.
+  deriveExposed: (properties) => ({
+    isVisible: properties?.visibility,
+    isDisabled: properties?.disabledState,
+    isLoading: properties?.loadingState,
+  }),
 });
 
 /* ── Multiselect (legacy) ─────────────────────────────────────────────────
@@ -110,6 +126,14 @@ registerContract({
     setLoading: (_cur, [loading]) => ({ isLoading: !!loading }),
   },
   effectActions: ['resetForm', 'submitForm'],
+  // Same trio source as every other useExposeState consumer (verified at
+  // Form.jsx's own useExposeState(properties.loadingState, properties.visibility,
+  // properties.disabledState, ...) call site).
+  deriveExposed: (properties) => ({
+    isVisible: properties?.visibility,
+    isDisabled: properties?.disabledState,
+    isLoading: properties?.loadingState,
+  }),
 });
 
 /* ── Table (NewTable) ─────────────────────────────────────────────────────
@@ -177,6 +201,17 @@ registerContract({
     setDisableModal: (_cur, [value]) => ({ isDisabledModal: value }),
   },
   effectActions: ['open', 'close'],
+  // ModalV2.jsx's useExposeState call: loadingState: properties.loadingState,
+  // visibleState: properties.visibility, disabledModalState:
+  // properties.disabledModal, disabledTriggerState: properties.disabledTrigger.
+  // `showModal`/open-close animation state is pure Bucket C (no property
+  // source) — omitted.
+  deriveExposed: (properties) => ({
+    isVisible: properties?.visibility,
+    isLoading: properties?.loadingState,
+    isDisabledModal: properties?.disabledModal,
+    isDisabledTrigger: properties?.disabledTrigger,
+  }),
 });
 
 /* ── MultiselectV2 ────────────────────────────────────────────────────────
@@ -194,4 +229,12 @@ registerContract({
     clear: () => ({ values: [], selectedOptions: [] }),
     setSelection: (_cur, [patch]) => patch as Record<string, unknown>,
   },
+  // `values`/`selectedOptions` are computed by the widget wrapper from the
+  // resolved `selectOptions`/`maxSelectionLimit` props, not a pure function
+  // of `properties` alone — omitted.
+  deriveExposed: (properties) => ({
+    isVisible: properties?.visibility,
+    isDisabled: properties?.disabledState,
+    isLoading: properties?.loadingState,
+  }),
 });

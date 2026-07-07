@@ -25,6 +25,17 @@ const trioActions: Record<string, CsaReducer> = {
   setDisable: (_cur, [value]) => ({ isDisabled: value }),
 };
 
+// Verified against useDatetimeInput.js's own mount snapshot
+// (properties.visibility/loadingState/disabledState → isVisible/isLoading/
+// isDisabled, :108-110) — shared by all three date-family widgets. The
+// actual `value`/`timestamp`/timezone state is Bucket C (see file header);
+// omitted here.
+const deriveDateFamilyTrio = (properties: Record<string, unknown>) => ({
+  isVisible: properties?.visibility,
+  isLoading: properties?.loadingState,
+  isDisabled: properties?.disabledState,
+});
+
 const dateFamilyEffectActions = [
   'setFocus',
   'setBlur',
@@ -38,6 +49,7 @@ registerContract({
   type: 'DatePickerV2',
   stateActions: { ...trioActions },
   effectActions: [...dateFamilyEffectActions, 'setValue', 'clearValue', 'setValueInTimestamp', 'setDate'],
+  deriveExposed: deriveDateFamilyTrio,
 });
 
 registerContract({
@@ -55,6 +67,7 @@ registerContract({
     'setDisplayTimezone',
     'setStoreTimezone',
   ],
+  deriveExposed: deriveDateFamilyTrio,
 });
 
 registerContract({
@@ -69,4 +82,5 @@ registerContract({
     'setStartDate',
     'setEndDate',
   ],
+  deriveExposed: deriveDateFamilyTrio,
 });

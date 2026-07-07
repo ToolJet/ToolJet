@@ -36,6 +36,12 @@ registerContract({
     disable: setDisable,
   },
   effectActions: ['click'],
+  deriveExposed: (properties) => ({
+    ...(typeof properties?.text === 'string' && { buttonText: properties.text }),
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+    isDisabled: (properties?.disabledState as boolean) || (properties?.loadingState as boolean),
+  }),
 });
 
 /* Checkbox — setChecked is a legacy alias of setValue (both published the raw
@@ -53,6 +59,13 @@ registerContract({
     setVisibility,
     setDisable,
   },
+  deriveExposed: (properties) => ({
+    value: properties?.defaultValue ?? false,
+    label: properties?.label,
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+    isDisabled: (properties?.disabledState as boolean) || (properties?.loadingState as boolean),
+  }),
 });
 
 /* ToggleSwitchV2 — setValue publishes the raw argument (old setOn(value));
@@ -68,6 +81,13 @@ registerContract({
     setVisibility,
     setDisable,
   },
+  deriveExposed: (properties) => ({
+    value: Boolean(properties?.defaultValue ?? false),
+    label: properties?.label,
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+    isDisabled: (properties?.disabledState as boolean) || (properties?.loadingState as boolean),
+  }),
 });
 
 /* Icon — click fires onClick unconditionally (old CSA had no enabled guard). */
@@ -79,6 +99,11 @@ registerContract({
     setDisable,
   },
   effectActions: ['click'],
+  deriveExposed: (properties) => ({
+    isVisible: properties?.visibility,
+    isLoading: properties?.loadingState,
+    isDisabled: properties?.disabledState,
+  }),
 });
 
 /* Text — exposed text lives under `text`; `visibility` is the deprecated
@@ -94,6 +119,13 @@ registerContract({
     // deprecated alias (old Text.jsx registered `visibility`)
     visibility: setVisibility,
   },
+  deriveExposed: (properties) => ({
+    text:
+      properties?.text === 0 || properties?.text === false ? (properties.text as boolean | number)?.toString() : properties?.text,
+    isVisible: properties?.visibility,
+    isLoading: properties?.loadingState,
+    isDisabled: properties?.disabledState,
+  }),
 });
 
 /* CircularProgressBar — the old CSAs published the RAW argument for all
@@ -105,6 +137,11 @@ registerContract({
     setVisibility: (_cur, [value]) => ({ isVisible: value }),
     setLoading: (_cur, [value]) => ({ isLoading: value }),
   },
+  deriveExposed: (properties) => ({
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+    value: properties?.progress,
+  }),
 });
 
 /* ProgressBar — value is clamped to [0, 100] exactly like the old CSA. */
@@ -115,6 +152,11 @@ registerContract({
     setVisibility,
     setLoading,
   },
+  deriveExposed: (properties) => ({
+    value: Math.min(Math.max((properties?.progress as number) || 0, 0), 100),
+    isVisible: properties?.visibility,
+    isLoading: properties?.loadingState,
+  }),
 });
 
 /* Statistics — primary/secondary values publish the raw argument. */
@@ -126,6 +168,15 @@ registerContract({
     setLoading,
     setVisibility,
   },
+  deriveExposed: (properties) => ({
+    primaryLabel: properties?.primaryValueLabel,
+    secondaryLabel: properties?.secondaryValueLabel,
+    primaryValue: properties?.primaryValue,
+    secondaryValue: properties?.secondaryValue,
+    secondarySignDisplay: properties?.secondarySignDisplay,
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+  }),
 });
 
 /* Html — setRawHTML normalizes falsy input to '' like the old closure. */
@@ -137,6 +188,12 @@ registerContract({
     setLoading,
     setDisable,
   },
+  deriveExposed: (properties) => ({
+    rawHTML: properties?.rawHtml || '',
+    isVisible: properties?.visibility,
+    isLoading: properties?.loadingState,
+    isDisabled: properties?.disabledState,
+  }),
 });
 
 /* IFrame — setUrl only accepts strings (old guard); reload is Bucket C (needs
@@ -150,6 +207,12 @@ registerContract({
     setLoading,
   },
   effectActions: ['reload'],
+  deriveExposed: (properties) => ({
+    url: properties?.source,
+    isDisabled: properties?.disabledState,
+    isVisible: properties?.visibility,
+    isLoading: properties?.loadingState,
+  }),
 });
 
 /* RichTextEditor (DraftEditor) — setValue must rebuild the mounted editor's
@@ -164,4 +227,15 @@ registerContract({
     setLoading,
   },
   effectActions: ['setValue'],
+  // Unlike every other contract here, RichTextEditor.jsx sources
+  // visibility/disabledState from `styles`, not `properties` — verified
+  // against the widget's own destructuring (`const { visibility,
+  // disabledState } = styles`). `value` is only ever `defaultValue` for a
+  // row that never mounted (nothing could have typed into it yet).
+  deriveExposed: (properties, styles) => ({
+    value: properties?.defaultValue ?? '',
+    isDisabled: styles?.disabledState,
+    isVisible: styles?.visibility,
+    isLoading: properties?.loadingState,
+  }),
 });

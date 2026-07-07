@@ -25,6 +25,16 @@ const rawVisibility: CsaReducer = (_cur, [value]) => ({ isVisible: value });
 const rawLoading: CsaReducer = (_cur, [value]) => ({ isLoading: value });
 const rawDisable: CsaReducer = (_cur, [value]) => ({ isDisabled: value });
 
+/** The visibility/disabled/loading trio, `properties.visibility`/
+ *  `disabledState`/`loadingState` — verified identical across every mediaC
+ *  widget's own destructure + mount snapshot. Some types omit isLoading
+ *  (Camera never had it) — callers spread this then delete/override. */
+const deriveCoercedTrio = (properties: Record<string, unknown>) => ({
+  isVisible: properties?.visibility,
+  isDisabled: properties?.disabledState,
+  isLoading: properties?.loadingState,
+});
+
 registerContract({
   type: 'Accordion',
   stateActions: {
@@ -34,6 +44,9 @@ registerContract({
     expand: () => ({ isExpanded: true }),
     collapse: () => ({ isExpanded: false }),
   },
+  // Old widget's mount snapshot always publishes isExpanded: true regardless
+  // of any "expanded by default" property (Accordion.jsx mount effect).
+  deriveExposed: (properties) => ({ ...deriveCoercedTrio(properties), isExpanded: true }),
 });
 
 registerContract({
@@ -42,6 +55,7 @@ registerContract({
   // resetAudio stops the MediaRecorder stream and audio-element playback —
   // device state, so it executes on the mounted widget (which also nulls dataURL).
   effectActions: ['resetAudio'],
+  deriveExposed: (properties) => deriveCoercedTrio(properties),
 });
 
 registerContract({
@@ -54,6 +68,9 @@ registerContract({
     resetVideo: () => ({ videoDataURL: null }),
     resetImage: () => ({ imageDataURL: null }),
   },
+  // Camera never exposed isLoading (verified: its mount snapshot only
+  // publishes isVisible/isDisabled) — omit it rather than publish undefined.
+  deriveExposed: (properties) => ({ isVisible: properties?.visibility, isDisabled: properties?.disabledState }),
 });
 
 registerContract({
@@ -63,6 +80,19 @@ registerContract({
     setImageURL: (_cur, [value]) => ({ imageURL: value }),
     clearImage: () => ({ imageURL: '' }),
   },
+  // Image.jsx's computeUrl(): imageFormat === 'imageUrl' ? source
+  // : `data:${jsSchema?.type};base64,${jsSchema?.base64Data}` — verified
+  // against the widget's own mount snapshot (Image.jsx:47-49, 135).
+  deriveExposed: (properties) => ({
+    ...deriveCoercedTrio(properties),
+    alternativeText: properties?.alternativeText,
+    imageURL:
+      properties?.imageFormat === 'imageUrl'
+        ? properties?.source
+        : `data:${(properties?.jsSchema as { type?: string })?.type};base64,${
+            (properties?.jsSchema as { base64Data?: string })?.base64Data
+          }`,
+  }),
 });
 
 registerContract({
@@ -74,16 +104,18 @@ registerContract({
     // exposed raw with isValid false (the outer setExposedVariables always won).
     setValue: (_cur, [value]) => (typeof value === 'object' ? { value, isValid: true } : { value, isValid: false }),
   },
+  deriveExposed: (properties) => deriveCoercedTrio(properties),
 });
 
 registerContract({
   type: 'JSONExplorer',
   stateActions: { ...coercedFlags, setValue: (_cur, [value]) => ({ value }) },
+  deriveExposed: (properties) => deriveCoercedTrio(properties),
 });
 
-registerContract({ type: 'ReorderableList', stateActions: { ...coercedFlags } });
+registerContract({ type: 'ReorderableList', stateActions: { ...coercedFlags }, deriveExposed: deriveCoercedTrio });
 
-registerContract({ type: 'Tags', stateActions: { ...coercedFlags } });
+registerContract({ type: 'Tags', stateActions: { ...coercedFlags }, deriveExposed: deriveCoercedTrio });
 
 registerContract({
   type: 'TagsInput',
@@ -92,6 +124,7 @@ registerContract({
   // option objects assembled from schema/options + session-created tags, plus
   // validate() folding — so they execute on the mounted widget.
   effectActions: ['clear', 'selectTags', 'deselectTags'],
+  deriveExposed: deriveCoercedTrio,
 });
 
 registerContract({
@@ -107,4 +140,9 @@ registerContract({
   // copy, which resets whenever the tabs property re-resolves — keyed store
   // maps would outlive that reset, so these stay mounted-widget effects.
   effectActions: ['setTabDisable', 'setTabLoading', 'setTabVisibility'],
+  // currentTab's real default (defaultTab / first tab id) depends on the
+  // resolved `tabs`/`defaultTab` properties via widget-local logic not
+  // captured here — omit it, matching Tabs.jsx's own mount snapshot which
+  // relies on the same computation before publishing.
+  deriveExposed: deriveCoercedTrio,
 });

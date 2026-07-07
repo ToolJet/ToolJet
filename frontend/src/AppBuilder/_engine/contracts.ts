@@ -61,6 +61,20 @@ const baseInputActions: ComponentTypeContract['stateActions'] = {
 // publishing it into the widget's exposed-variables/Inspector surface.
 const TEXT_FAMILY_INTERNAL_ONLY = ['setValue'];
 
+/** Phase 4 Bucket A: every useInput-family widget's mount snapshot is
+ *  `{ label, isMandatory, isLoading, isVisible, isDisabled, ...setValue(defaultValue) }`
+ *  (useControlledInput.ts:224-238) — `isMandatory`/`isValid` need the
+ *  `validation` prop (not available here), so they're omitted; a never-mounted
+ *  row can't have interacted anyway, so `isValid` would just be the
+ *  not-yet-validated default. */
+const deriveTextFamilyExposed = (setValue: CsaReducer) => (properties: Record<string, unknown>) => ({
+  label: properties?.label,
+  isLoading: properties?.loadingState,
+  isVisible: properties?.visibility,
+  isDisabled: (properties?.disabledState as boolean) || (properties?.loadingState as boolean),
+  ...setValue({}, [properties?.value ?? '']),
+});
+
 export const TextInputContract: ComponentTypeContract = {
   type: 'TextInput',
   stateActions: {
@@ -71,6 +85,7 @@ export const TextInputContract: ComponentTypeContract = {
   },
   effectActions: ['setFocus', 'setBlur'],
   internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+  deriveExposed: deriveTextFamilyExposed(baseInputActions.setValue),
 };
 
 registerContract(TextInputContract);
@@ -83,18 +98,21 @@ registerContract({
   stateActions: baseInputActions,
   effectActions: ['setFocus', 'setBlur'],
   internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+  deriveExposed: deriveTextFamilyExposed(baseInputActions.setValue),
 });
 registerContract({
   type: 'EmailInput',
   stateActions: baseInputActions,
   effectActions: ['setFocus', 'setBlur'],
   internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+  deriveExposed: deriveTextFamilyExposed(baseInputActions.setValue),
 });
 registerContract({
   type: 'TextArea',
   stateActions: baseInputActions,
   effectActions: ['setFocus', 'setBlur'],
   internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+  deriveExposed: deriveTextFamilyExposed(baseInputActions.setValue),
 });
 
 /** NumberInput owns the NaN→null normalization (today a post-hoc widget
@@ -103,18 +121,20 @@ registerContract({
  *  dispatch through it (see comment on baseInputActions above) — but old
  *  NumberInput never exposed a value-setting CSA externally either
  *  (increment/decrement were UI-only), so it's internal-only here too. */
+const numberInputSetValue: CsaReducer = (_cur, [value]) => {
+  const parsed = value === null || value === undefined || value === '' ? null : Number(value);
+  return { value: parsed === null || Number.isNaN(parsed) ? null : parsed };
+};
 registerContract({
   type: 'NumberInput',
   stateActions: {
     ...baseInputActions,
-    setValue: (_cur, [value]) => {
-      const parsed = value === null || value === undefined || value === '' ? null : Number(value);
-      return { value: parsed === null || Number.isNaN(parsed) ? null : parsed };
-    },
+    setValue: numberInputSetValue,
     clear: () => ({ value: null }),
   },
   effectActions: ['setFocus', 'setBlur'],
   internalOnlyActions: TEXT_FAMILY_INTERNAL_ONLY,
+  deriveExposed: deriveTextFamilyExposed(numberInputSetValue),
 });
 
 /* ── CurrencyInput / PhoneInput (Phase 3a steps 5-6) ─────────────────────────
@@ -169,6 +189,13 @@ export const CurrencyInputContract: ComponentTypeContract = {
     },
   },
   effectActions: ['setFocus', 'setBlur'],
+  deriveExposed: (properties) => ({
+    label: properties?.label,
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+    isDisabled: (properties?.disabledState as boolean) || (properties?.loadingState as boolean),
+    ...currencySetValue({}, [properties?.value ?? '', properties?.country]),
+  }),
 };
 
 registerContract(CurrencyInputContract);
@@ -222,6 +249,13 @@ export const PhoneInputContract: ComponentTypeContract = {
     },
   },
   effectActions: ['setFocus', 'setBlur'],
+  deriveExposed: (properties) => ({
+    label: properties?.label,
+    isLoading: properties?.loadingState,
+    isVisible: properties?.visibility,
+    isDisabled: (properties?.disabledState as boolean) || (properties?.loadingState as boolean),
+    ...phoneSetValue({}, [properties?.value ?? '', properties?.country]),
+  }),
 };
 
 registerContract(PhoneInputContract);

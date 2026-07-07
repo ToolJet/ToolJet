@@ -3,7 +3,13 @@ import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast'
 import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { createBatchManager } from '@/AppBuilder/_stores/batchManager';
 import { ROW_SCOPED_WIDGET_TYPES } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { removeFunctionObjects } from '@/_helpers/appUtils';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import _ from 'lodash';
+
+// Per-moduleId cache for getAllExposedValues' lazy-ListView-read Proxy —
+// see _wrapExposedComponentsForLazyListviewRead below.
+const _lazyComponentsProxyCache = new Map();
 
 const initialState = {
   resolvedStore: {
@@ -728,8 +734,123 @@ export const createResolvedSlice = (set, get) => {
     getExposedValueOfQuery: (queryId, moduleId = 'canvas') => {
       return get().resolvedStore.modules[moduleId].exposedValues.queries[queryId] || {};
     },
-    getAllExposedValues: (moduleId = 'canvas') => {
-      return get().resolvedStore.modules[moduleId].exposedValues;
+    // Phase 4 (ListView lazy resolution): getAllExposedValues is the single
+    // chokepoint nearly every {{ }} expression resolves through (properties,
+    // queries, events, page variables — see the resolver chokepoint
+    // investigation in the Phase 4 doc). Wrapping ListView entries' own
+    // `children`/`data` here — ephemerally, never persisted — is what lets
+    // `{{components.listview1.children[50000].text1.text}}` resolve
+    // correctly for a row that has never mounted AND never been eagerly
+    // filled, without paying an O(rowCount) cost anywhere. A persisted Proxy
+    // isn't possible here: Immer (this store's middleware) clones/drafts any
+    // object it touches on every set(), which would collapse a persistent
+    // lazy Proxy into a plain snapshot the first time any sibling row
+    // writes. So the Proxy is built fresh on every call and discarded after
+    // one resolution — cheap, because it only intercepts access to KNOWN
+    // ListView component ids' `children`/`data` keys; every other read
+    // passes straight through with no wrapping at all.
+    // `raw: true` (used by engineBridge.ts's ResolutionEngine seeding, which
+    // `_.cloneDeep`s the result — cloning a Proxy breaks it) skips the
+    // wrapper and returns the live object directly.
+    getAllExposedValues: (moduleId = 'canvas', { raw = false } = {}) => {
+      const exposedValues = get().resolvedStore.modules[moduleId].exposedValues;
+      if (raw) return exposedValues;
+      return { ...exposedValues, components: get()._wrapExposedComponentsForLazyListviewRead(moduleId) };
+    },
+    // Builds the ephemeral, never-persisted Proxy described above. Kept as
+    // its own action (not inlined) so listViewComponentSlice's row-build
+    // helper stays the single source of truth for "what does row i's
+    // definition-derived data look like" — this only decides WHEN to call it.
+    //
+    // getAllExposedValues is called MANY times per resolution cascade (once
+    // per property/binding, often well before the next set() applies any
+    // result) — rebuilding a fresh Proxy tree on every single call added
+    // real overhead across the WHOLE app, not just ListView resolutions.
+    // Cache the Proxy (and its row memo) per moduleId, keyed on the identity
+    // of the underlying `components` object: Immer gives that object a new
+    // reference only when a set() actually mutates something under it, so
+    // this cache is valid for every call in between — which is exactly the
+    // common case (a cascade resolving N properties against one snapshot).
+    _wrapExposedComponentsForLazyListviewRead: (moduleId) => {
+      const components = get().resolvedStore.modules[moduleId].exposedValues.components;
+      const cached = _lazyComponentsProxyCache.get(moduleId);
+      if (cached && cached.componentsRef === components) return cached.wrapped;
+
+      const rowMemo = new Map(); // `${listviewId}|${kind}|${rowIndex}` -> value, invalidated whenever `components` itself changes
+      const wrapRows = (rowsObj, listviewId, kind) =>
+        new Proxy(rowsObj || {}, {
+          get(target, key, receiver) {
+            if (typeof key === 'string' && /^\d+$/.test(key)) {
+              if (Object.prototype.hasOwnProperty.call(target, key)) return target[key];
+              const memoKey = `${listviewId}|${kind}|${key}`;
+              if (rowMemo.has(memoKey)) return rowMemo.get(memoKey);
+              const {
+                getContainerChildrenMapping,
+                _buildListviewRowData,
+                ensureListviewRowsResolved,
+                isLazyResolvableParent,
+              } = get();
+              const rowIndex = Number(key);
+              // If this ListView is lazy-resolvable (see updateCustomResolvablesLazy)
+              // and this row's PROPERTIES have never been resolved (not just its
+              // exposed values — a separate, earlier layer), resolve them now,
+              // synchronously, before building Bucket A from them. Without this,
+              // an off-screen row outside the currently-tracked lazy set would
+              // read stale/fallback properties (getResolvedComponent's own
+              // missing-index fallback returns row 0's data) instead of its own.
+              // Skipped entirely for non-lazy ListViews (nested/dynamic-height/
+              // grid/edit-mode) — their properties are already fully resolved
+              // eagerly, so this would just be a redundant cascade trigger.
+              if (isLazyResolvableParent(listviewId, moduleId)) {
+                ensureListviewRowsResolved(listviewId, [rowIndex], moduleId, []);
+              }
+              const childIds = getContainerChildrenMapping(listviewId, moduleId);
+              const rowData = _buildListviewRowData(childIds, [], rowIndex, moduleId);
+              const value =
+                Object.keys(rowData).length === 0
+                  ? undefined
+                  : kind === 'data'
+                  ? removeFunctionObjects(deepClone(rowData))
+                  : rowData;
+              rowMemo.set(memoKey, value);
+              return value;
+            }
+            return Reflect.get(target, key, receiver);
+          },
+        });
+      // wrapListviewEntry/the outer components wrapper below build PLAIN
+      // object copies, not Proxies. Immer freezes the underlying state
+      // (non-configurable, non-writable properties) — the Proxy spec
+      // requires a `get` trap to return the EXACT SAME value as the target
+      // for such a property, never a substitute. Swapping in a wrapped
+      // Proxy for `components[listviewId]` or `entry.children`/`entry.data`
+      // violated that invariant and threw
+      // "'get' on proxy: property '...' is a read-only and non-configurable
+      // data property..." the moment anything did a strict enumeration of
+      // it (e.g. Object.entries, used by the Inspector's useIconList). A
+      // freshly-built plain object isn't frozen and isn't the target, so
+      // there's no invariant to violate — only wrapRows (below) stays a real
+      // Proxy, and it only ever substitutes a value for a row index that
+      // DOESN'T exist on the target yet, which the invariant doesn't cover.
+      const wrapListviewEntry = (entry, listviewId) => {
+        // Nested ListView-in-ListView (entry is an array of outer rows) isn't
+        // covered yet — same scope limitation as the proactive-fill work
+        // this replaces. Falls through to whatever's already persisted.
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return entry;
+        return {
+          ...entry,
+          children: wrapRows(entry.children, listviewId, 'children'),
+          data: wrapRows(entry.data, listviewId, 'data'),
+        };
+      };
+      const wrapped = { ...components };
+      for (const key of Object.keys(components)) {
+        if (get().getComponentTypeFromId(key, moduleId) === 'Listview') {
+          wrapped[key] = wrapListviewEntry(components[key], key);
+        }
+      }
+      _lazyComponentsProxyCache.set(moduleId, { componentsRef: components, wrapped });
+      return wrapped;
     },
     getResolvedValue: (value, customVariables = {}, moduleId = 'canvas') => {
       if (typeof value === 'string' && value.includes('{{') && value.includes('}}')) {

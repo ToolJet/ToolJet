@@ -26,6 +26,15 @@ export function makeStandardContract(
       ...extra?.stateActions,
     },
     ...(extra?.effectActions ? { effectActions: extra.effectActions } : {}),
+    // The shared useExposeState hook's mount snapshot is exactly this trio,
+    // sourced from `properties.visibility/disabledState/loadingState` for
+    // every STANDARD_CONTRACT_TYPES widget (verified against each type's
+    // useExposeState(...) call site — all pass properties.* directly).
+    deriveExposed: (properties) => ({
+      isVisible: properties?.visibility,
+      isDisabled: properties?.disabledState,
+      isLoading: properties?.loadingState,
+    }),
   };
 }
 

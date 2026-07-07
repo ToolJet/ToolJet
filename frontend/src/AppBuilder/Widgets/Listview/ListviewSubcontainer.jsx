@@ -24,6 +24,7 @@ export const ListviewSubcontainer = ({
   parentHeight,
   dataCy,
   componentType,
+  virtualTop,
 }) => {
   const parentContext = useSubcontainerContext();
   const contextValue = useMemo(
@@ -59,7 +60,8 @@ export const ListviewSubcontainer = ({
       <div
         className={`list-item ${mode == 'list' && 'w-100'}`}
         style={{
-          position: 'relative',
+          position: virtualTop !== undefined ? 'absolute' : 'relative',
+          ...(virtualTop !== undefined && { top: `${virtualTop}px`, left: 0 }),
           height: `${transformedRowHeight}px`,
           width: `${100 / positiveColumns}%`,
           padding: '0px',
