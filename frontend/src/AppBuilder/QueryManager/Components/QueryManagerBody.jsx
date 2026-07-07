@@ -54,14 +54,22 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
-  const ElementToRender = selectedDataSource?.plugin_id ? source : allSources[sourcecomponentName];
+  // The plugin association can live on either the query or the datasource depending on
+  // how the query was created/loaded, so we check both rather than only selectedQuery?.plugin_id.
+  const pluginId = selectedQuery?.plugin_id ?? selectedDataSource?.plugin_id;
+
+  // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
+  // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
+  // is_dummy warning below already tells user to pull.
+  const isDummyDataSource = selectedDataSource?.is_dummy === true;
+  const ElementToRender = isDummyDataSource ? null : pluginId ? source : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze());
 
   useEffect(() => {
     setDataSourceMeta(
-      selectedQuery?.plugin_id
+      pluginId
         ? selectedQuery?.manifest_file?.data?.source
         : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
     );
@@ -196,6 +204,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
   }
 
   const renderQueryElement = () => {
+    const pluginSchema =
+      selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data;
     return (
       <div
         className={cx({
@@ -236,21 +246,23 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
               </>
             )}
         </div>
-        <ElementToRender
-          renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
-          key={selectedQuery?.id}
-          pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
-          selectedDataSource={selectedDataSource}
-          options={selectedQuery?.options}
-          optionsChanged={optionsChanged}
-          optionchanged={optionchanged}
-          darkMode={darkMode}
-          isEditMode={true} // Made TRUE always to avoid setting default options again
-          queryName={queryName}
-          currentEnvironment={currentEnvironment}
-          currentAppEnvironmentId={currentEnvironment?.id}
-          onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
-        />
+        {ElementToRender && (
+          <ElementToRender
+            renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+            key={selectedQuery?.id}
+            pluginSchema={pluginSchema}
+            selectedDataSource={selectedDataSource}
+            options={selectedQuery?.options}
+            optionsChanged={optionsChanged}
+            optionchanged={optionchanged}
+            darkMode={darkMode}
+            isEditMode={true} // Made TRUE always to avoid setting default options again
+            queryName={queryName}
+            currentEnvironment={currentEnvironment}
+            currentAppEnvironmentId={currentEnvironment?.id}
+            onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
+          />
+        )}
       </div>
     );
   };
