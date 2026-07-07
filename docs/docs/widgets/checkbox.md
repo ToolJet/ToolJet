@@ -125,6 +125,16 @@ To add regex inside `Custom Validation`, you can use the below format:
 | Handle color    | Sets the color of the checked symbol inside the checkbox. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
 | Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using **fx**.                                            |
 
+## Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **Custom Styles** feature enabled.
+:::
+
 </div>
 
 

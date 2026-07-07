@@ -66,6 +66,16 @@ The following actions of the component can be controlled using the component-spe
 | Padding | Set the padding inside the component | Choose from Default or None. |
 | Box shadow | This property adds a shadow to the component. | You can use different values for box shadow property like offsets, blur, spread, and the color code. |
 
+### Advanced
+
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| CSS class | Adds a custom CSS class to the component, which can be targeted using **[Custom Styles](/docs/app-builder/customstyles)** for advanced styling. | Enter one or more class names. |
+
+:::info
+The **Advanced** section is available only if your plan has the **Custom Styles** feature enabled.
+:::
+
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
 :::
