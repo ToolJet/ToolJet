@@ -623,31 +623,28 @@ export async function createApplicationVersion(
       ? environments.find((env) => env.priority === 1)?.id
       : environments[0].id;
 
-  // branch_id is NOT NULL for every app type except workflow
-  // (trg_app_versions_branch_id_required) -- resolve (or seed) the org's default branch
-  // so a plain call succeeds. Tests that need a specific branch override it afterwards
-  // via updateEntity, same as before this was required.
+  // branch_id is NOT NULL for every app type, including workflow (Task 3.5 dropped the
+  // workflow exemption on trg_app_versions_branch_id_required / column-level NOT NULL)
+  // -- resolve (or seed) the org's default branch so a plain call succeeds. Tests that
+  // need a specific branch override it afterwards via updateEntity, same as before this
+  // was required.
   // chk_app_versions_branch_metadata requires app_name + slug whenever branch_id is set,
-  // so a non-workflow default also needs placeholder metadata -- mirrors the placeholder
+  // so every type's default also needs placeholder metadata -- mirrors the placeholder
   // AppsUtilService.create writes in production (random-uuid slug, app name as app_name).
-  let branchId: string | null = null;
-  let placeholderMeta: { appName: string; slug: string } | undefined;
-  if (application.type !== APP_TYPES.WORKFLOW) {
-    let defaultBranch = await workspaceBranchRepository.findOne({
-      where: { organizationId: application.organizationId, isDefault: true },
-    });
-    if (!defaultBranch) {
-      defaultBranch = await workspaceBranchRepository.save(
-        workspaceBranchRepository.create({
-          organizationId: application.organizationId,
-          name: 'main',
-          isDefault: true,
-        })
-      );
-    }
-    branchId = defaultBranch.id;
-    placeholderMeta = { appName: application.name ?? name, slug: uuidv4() };
+  let defaultBranch = await workspaceBranchRepository.findOne({
+    where: { organizationId: application.organizationId, isDefault: true },
+  });
+  if (!defaultBranch) {
+    defaultBranch = await workspaceBranchRepository.save(
+      workspaceBranchRepository.create({
+        organizationId: application.organizationId,
+        name: 'main',
+        isDefault: true,
+      })
+    );
   }
+  const branchId: string = defaultBranch.id;
+  const placeholderMeta: { appName: string; slug: string } = { appName: application.name ?? name, slug: uuidv4() };
 
   const version = await appVersionsRepository.save(
     appVersionsRepository.create({
