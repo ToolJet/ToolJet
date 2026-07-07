@@ -55,22 +55,22 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedQuery?.kind?.charAt(0).toUpperCase() + selectedQuery?.kind?.slice(1);
 
+  // The plugin association can live on either the query or the datasource depending on
+  // how the query was created/loaded, so we check both rather than only selectedQuery?.plugin_id.
+  const pluginId = selectedQuery?.plugin_id ?? selectedDataSource?.plugin_id;
+
   // Dummy DS = stub options + maybe no plugin relation. Mounting editor crashes:
   // built-ins read undefined options.X.value, unbundled kinds → allSources[Kind] = undefined.
   // is_dummy warning below already tells user to pull.
   const isDummyDataSource = selectedDataSource?.is_dummy === true;
-  const ElementToRender = isDummyDataSource
-    ? null
-    : selectedQuery?.plugin_id
-    ? source
-    : allSources[sourcecomponentName];
+  const ElementToRender = isDummyDataSource ? null : pluginId ? source : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze(false, isModuleEditor));
 
   useEffect(() => {
     setDataSourceMeta(
-      selectedQuery?.plugin_id
+      pluginId
         ? selectedQuery?.manifest_file?.data?.source
         : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
     );
@@ -204,6 +204,8 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   }
 
   const renderQueryElement = () => {
+    const pluginSchema =
+      selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data;
     return (
       <div
         className={cx({
@@ -248,9 +250,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
           <ElementToRender
             renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
             key={selectedQuery?.id}
-            pluginSchema={
-              selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data
-            }
+            pluginSchema={pluginSchema}
             selectedDataSource={selectedDataSource}
             options={selectedQuery?.options}
             optionsChanged={optionsChanged}
