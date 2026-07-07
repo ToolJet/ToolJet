@@ -69,6 +69,21 @@
             },
             {
               "type": "category",
+              "label": "Setup ToolJet AI",
+              "link": {
+                "type": "doc",
+                "id": "setup/tooljet-ai/overview"
+              },
+              "items": [
+                "setup/tooljet-ai/overview",
+                "setup/tooljet-ai/cloud-with-cloud",
+                "setup/tooljet-ai/cloud-with-self-hosted",
+                "setup/tooljet-ai/bring-your-own-key",
+                "setup/tooljet-ai/tj-ai-enterprise"
+              ]
+            },
+            {
+              "type": "category",
               "label": "Migrations & Upgrades",
               "items": [
                 "setup/migration/upgrade-to-lts",
@@ -165,8 +180,6 @@
         "build-with-ai/ai-best-practices",
         "build-with-ai/ai-docs-assistant",
         "build-with-ai/debug-components",
-        "build-with-ai/bring-your-own-key",
-        "build-with-ai/tj-ai-enterprise",
         "build-with-ai/ai-credits",
         "build-with-ai/tooljet-mcp",
         "build-with-ai/privacy"

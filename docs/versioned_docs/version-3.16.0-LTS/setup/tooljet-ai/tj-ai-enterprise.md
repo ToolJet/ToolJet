@@ -1,6 +1,7 @@
 ---
 id: tj-ai-enterprise
 title: ToolJet AI Enterprise
+sidebar_label: Setup ToolJet Enterprise AI
 ---
 
 <PlanBadge type="enterprise" />
@@ -10,7 +11,7 @@ ToolJet AI Enterprise is designed for organizations that require complete contro
 
 This is particularly relevant for organizations operating under strict data residency regulations, internal compliance policies, or those running in air-gapped or private-cloud environments where external network calls to third-party servers are not permitted.
 
-Unlike [Bring Your Own Key (BYOK)](/docs/build-with-ai/bring-your-own-key), which uses your API key but still processes requests via ToolJet AI Cloud, ToolJet AI Enterprise removes ToolJet from the request path entirely. 
+Unlike [Bring Your Own Key (BYOK)](/docs/setup/tooljet-ai/bring-your-own-key), which uses your API key but still processes requests via ToolJet AI Cloud, ToolJet AI Enterprise removes ToolJet from the request path entirely. 
 
 Benefits of ToolJet AI Enterprise:
 

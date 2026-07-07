@@ -1,0 +1,277 @@
+---
+id: overview
+title: Setup ToolJet AI
+sidebar_label: Overview
+---
+
+import Link from '@docusaurus/Link';
+
+ToolJet AI can be powered in a few different ways depending on how ToolJet itself is deployed and how strict your data residency requirements are. This page explains how an AI request is processed, compares the available setups side by side, and helps you pick the right one for your organization.
+
+## How an AI Request is Processed
+
+export const FlowBox = ({ children, tone = 'default' }) => {
+    const tones = {
+        default: { bg: 'var(--ifm-card-background-color)', border: 'var(--ifm-toc-border-color)', color: 'var(--ifm-font-color-base)' },
+        tooljet: { bg: '#ede9fe', border: '#c4b5fd', color: '#4c1d95' },
+        infra: { bg: '#dbeafe', border: '#93c5fd', color: '#1e3a8a' },
+        llm: { bg: '#dcfce7', border: '#86efac', color: '#14532d' },
+    };
+    const t = tones[tone];
+    return (
+        <div style={{
+            border: `1.5px solid ${t.border}`,
+            background: t.bg,
+            color: t.color,
+            borderRadius: '10px',
+            padding: '10px 16px',
+            fontSize: '13px',
+            fontWeight: 600,
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+            lineHeight: 1.4,
+            flexShrink: 0,
+        }}>{children}</div>
+    );
+};
+
+export const FlowArrow = ({ label }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 6px', flexShrink: 0 }}>
+        {label && <span style={{ fontSize: '11px', color: 'var(--ifm-color-emphasis-600)', marginBottom: '2px', whiteSpace: 'nowrap' }}>{label}</span>}
+        <span style={{ fontSize: '18px', color: 'var(--ifm-color-emphasis-600)' }}>&#8594;</span>
+    </div>
+);
+
+export const FlowRow = ({ children }) => (
+    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: '8px', margin: '14px 0', overflowX: 'auto', paddingBottom: '4px' }}>{children}</div>
+);
+
+export const SpecGrid = ({ items }) => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '6px 24px', margin: '14px 0 20px' }}>
+        {items.map(([label, value], i) => (
+            <div key={i} style={{ fontSize: '14px', lineHeight: 1.5 }}>
+                <strong>{label}</strong>: {value}
+            </div>
+        ))}
+    </div>
+);
+
+export const GuideLink = ({ href, children }) => (
+    <div style={{ marginBottom: '28px' }}>
+        <Link to={href} style={{ textDecoration: 'none' }}>
+            <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '20px', fontSize: '13px', fontWeight: 600,
+                border: '1px solid #c4b5fd', color: '#6d28d9',
+                background: '#faf5ff',
+            }}>
+                {children} &rarr;
+            </span>
+        </Link>
+    </div>
+);
+
+At a high level, every AI request follows the same path:
+
+<FlowRow>
+    <FlowBox>App Builder</FlowBox>
+    <FlowArrow />
+    <FlowBox tone="tooljet">ToolJet</FlowBox>
+    <FlowArrow />
+    <FlowBox tone="infra">AI Server</FlowBox>
+    <FlowArrow />
+    <FlowBox tone="llm">LLM Provider</FlowBox>
+</FlowRow>
+
+When you use an AI capability in the app builder, ToolJet sends the request to an AI Server, which talks to the LLM provider and returns the response. Your data source credentials and your underlying data never leave your deployment; only the prompt, app metadata, and schema needed for the AI to operate are sent to the AI Server.
+
+ToolJet provides its own AI Server to handle these requests, and it can run in more than one place depending on your deployment.
+
+## Where the AI Server Runs
+
+### ToolJet AI Cloud
+
+This is the AI Server hosted and operated by ToolJet. It's used by default whether you're on ToolJet Cloud or self-hosting ToolJet, and requests reach it over the internet.
+
+### Your Own AI Server
+
+For organizations that need complete control over where AI workloads run, ToolJet also provides a server image that you deploy within your own infrastructure. When used, the AI Server itself runs on your network, and no request ever reaches ToolJet's infrastructure.
+
+## Different Types of Setups
+
+### ToolJet Cloud AI with ToolJet Cloud
+
+This is the default setup for any workspace on ToolJet Cloud. AI requests are routed to ToolJet AI Cloud and authenticated using ToolJet-managed LLM credentials, no configuration is needed.
+
+<SpecGrid items={[
+    ['ToolJet deployment', 'ToolJet Cloud'],
+    ['Requests routed via', 'ToolJet AI Cloud'],
+    ['LLM API key', 'ToolJet-managed'],
+    ['Billing', 'ToolJet AI credits'],
+    ['Data leaves your network', 'N/A, already on ToolJet Cloud'],
+    ['Setup requirement', 'None'],
+]} />
+
+<GuideLink href="/docs/setup/tooljet-ai/cloud-with-cloud">Read the full setup guide</GuideLink>
+
+### ToolJet Cloud AI with ToolJet Self-Hosted
+
+Self-hosted instances can use the same ToolJet AI Cloud that powers ToolJet Cloud, instead of deploying a separate AI server. Your instance needs outbound network access to ToolJet AI Cloud.
+
+<SpecGrid items={[
+    ['ToolJet deployment', 'Self-hosted'],
+    ['Requests routed via', 'ToolJet AI Cloud'],
+    ['LLM API key', 'ToolJet-managed'],
+    ['Billing', 'ToolJet AI credits'],
+    ['Data leaves your network', 'Yes, to ToolJet AI Cloud'],
+    ['Setup requirement', 'Whitelisting of outbound domains'],
+]} />
+
+<GuideLink href="/docs/setup/tooljet-ai/cloud-with-self-hosted">Read the full setup guide</GuideLink>
+
+### ToolJet Cloud AI (BYOK)
+
+Bring Your Own Key (BYOK) lets you configure your own LLM provider API key instead of using ToolJet-managed credentials. Requests still route through ToolJet AI Cloud, only the credentials used to authenticate them change. This works on both ToolJet Cloud and self-hosted deployments.
+
+<SpecGrid items={[
+    ['ToolJet deployment', 'Cloud or Self-hosted'],
+    ['Requests routed via', 'ToolJet AI Cloud'],
+    ['LLM API key', 'Your own'],
+    ['Billing', 'Direct from your LLM provider'],
+    ['Data leaves your network', 'Yes, to ToolJet AI Cloud'],
+    ['Setup requirement', 'Configure your API key'],
+]} />
+
+<GuideLink href="/docs/setup/tooljet-ai/bring-your-own-key">Read the full setup guide</GuideLink>
+
+### ToolJet Enterprise AI
+
+For organizations that cannot let any AI request leave their infrastructure, ToolJet provides a server image you deploy and operate yourself, using your own LLM API key. ToolJet AI Cloud is not involved at all.
+
+<SpecGrid items={[
+    ['ToolJet deployment', 'Self-hosted only'],
+    ['Requests routed via', 'Your own AI Server'],
+    ['LLM API key', 'Your own'],
+    ['Billing', 'Direct from your LLM provider'],
+    ['Data leaves your network', 'No'],
+    ['Setup requirement', 'Deploy a separate server image'],
+]} />
+
+<GuideLink href="/docs/setup/tooljet-ai/tj-ai-enterprise">Read the full setup guide</GuideLink>
+
+## Which Setup Should I Use?
+
+<style>{`
+.tjai-tree, .tjai-tree ul, .tjai-tree li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    box-sizing: border-box;
+}
+.tjai-tree {
+    margin: 20px 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+.tjai-tree ul {
+    display: flex;
+    justify-content: center;
+    padding-top: 24px;
+    min-width: max-content;
+}
+.tjai-tree li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 8px 0 8px;
+}
+.tjai-tree li::before, .tjai-tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    width: calc(50% + 1px);
+    height: 25px;
+    border-top: 2px solid var(--ifm-toc-border-color);
+    box-sizing: border-box;
+}
+.tjai-tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 2px solid var(--ifm-toc-border-color);
+}
+.tjai-tree li:only-child {
+    padding-top: 0;
+}
+.tjai-tree li:only-child::before, .tjai-tree li:only-child::after {
+    display: none;
+}
+.tjai-tree li:first-child::before, .tjai-tree li:last-child::after {
+    border: 0 none;
+}
+.tjai-tree li:last-child::before {
+    border-right: 2px solid var(--ifm-toc-border-color);
+    border-radius: 0 6px 0 0;
+}
+.tjai-tree li:first-child::after {
+    border-radius: 6px 0 0 0;
+}
+.tjai-tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 0;
+    height: 25px;
+    border-left: 2px solid var(--ifm-toc-border-color);
+}
+.tjai-node {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    text-align: center;
+    line-height: 1.35;
+}
+.tjai-node-branch {
+    background: var(--ifm-card-background-color);
+    border: 1.5px solid var(--ifm-toc-border-color);
+    color: var(--ifm-font-color-base);
+    font-size: 14px;
+    font-weight: 700;
+}
+.tjai-node-leaf {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #14532d;
+}
+`}</style>
+
+<div className="tjai-tree">
+<ul>
+<li>
+<span className="tjai-node tjai-node-branch">ToolJet Cloud</span>
+<ul>
+<li><Link className="tjai-node tjai-node-leaf" to="/docs/setup/tooljet-ai/cloud-with-cloud">ToolJet-managed<br/>LLM Key</Link></li>
+<li><Link className="tjai-node tjai-node-leaf" to="/docs/setup/tooljet-ai/bring-your-own-key">Bring Your Own<br/>Key (BYOK)</Link></li>
+</ul>
+</li>
+<li>
+<span className="tjai-node tjai-node-branch">Self-Hosted</span>
+<ul>
+<li><Link className="tjai-node tjai-node-leaf" to="/docs/setup/tooljet-ai/cloud-with-self-hosted">ToolJet-managed<br/>LLM Key</Link></li>
+<li><Link className="tjai-node tjai-node-leaf" to="/docs/setup/tooljet-ai/bring-your-own-key">Bring Your Own<br/>Key (BYOK)</Link></li>
+<li><Link className="tjai-node tjai-node-leaf" to="/docs/setup/tooljet-ai/tj-ai-enterprise">Your Own<br/>AI Server</Link></li>
+</ul>
+</li>
+</ul>
+</div>
+
+:::info
+For a full breakdown of what data is shared with AI and how it's protected, see the [Privacy Policy](/docs/build-with-ai/privacy).
+:::

@@ -1,6 +1,7 @@
 ---
 id: bring-your-own-key
 title: Bring Your Own Key (BYOK)
+sidebar_label: Setup ToolJet Cloud AI (BYOK)
 ---
 
 <PlanBadge type="enterprise" />
@@ -12,7 +13,7 @@ This is useful when you want direct control over your AI usage and costs. Since 
 BYOK does not require any infrastructure changes. Requests continue to be processed via ToolJet AI Cloud, with the only difference being the credentials used to authenticate them.
 
 :::info
-AI requests still route through ToolJet AI Cloud when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/build-with-ai/tj-ai-enterprise).
+AI requests still route through ToolJet AI Cloud when using BYOK. If your organization requires that no data leaves your own infrastructure, refer to [ToolJet AI Enterprise](/docs/setup/tooljet-ai/tj-ai-enterprise).
 :::
 
 This means:
