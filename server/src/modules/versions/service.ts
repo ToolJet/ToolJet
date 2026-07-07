@@ -130,6 +130,15 @@ export class VersionService implements IVersionService {
         ? await listModuleVersions(this.versionRepository.manager, app, branchId, app.organizationId)
         : await this.versionRepository.getVersionsInApp(app.id, effectiveBranchId);
 
+    // For branch-type versions, the `name` column holds a UUID used as an internal
+    // unique key. Replace it with the human-readable branch name from WorkspaceBranch
+    // so all consumers (export dialog, globals.appVersion.name, etc.) display correctly.
+    for (const version of result) {
+      if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
+        version.name = version.branch.name;
+      }
+    }
+
     if (result?.length) {
       result[0].isCurrentEditingVersion = true;
     }
