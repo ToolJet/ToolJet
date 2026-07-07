@@ -374,7 +374,7 @@ export const Cascader = ({
                   </span>
                 )}
                 {isLoading ? (
-                  <LoaderComponent width="16" />
+                  <LoaderComponent width="16" absolute={false} />
                 ) : isOpen ? (
                   <TriangleUpArrow width={'18'} fill={'var(--borders-strong)'} />
                 ) : (
