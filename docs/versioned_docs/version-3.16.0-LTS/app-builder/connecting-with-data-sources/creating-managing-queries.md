@@ -24,15 +24,18 @@ Query Folders let you group related queries into named folders inside the Query 
 
 Click the **+** icon in the Query Panel header. From the menu that appears, select **New Folder**.
 
-:::info
-Folder names can only contain letters, numbers, and spaces - special characters are not allowed.
+:::info Folder naming rules
+- Only letters (a–z, A–Z) and numbers (0–9) are allowed — no spaces or special characters.
+- Cannot start with a number.
+- Must be between 1 and 32 characters.
+- Must be unique — cannot share a name with another folder or query.
 :::
 
 <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/query-folder-create.png" alt="App Builder: Create a query folder"/>
 
 ### Adding Queries to a Folder
 
-There are three ways to add queries to a folder. 
+There are three ways to add queries to a folder.
 
 :::info
 You can also use ToolJet AI's [Auto-sort Queries](/docs/build-with-ai/generate-applications#auto-sort-queries) feature to add queries inside the folder using AI.
@@ -43,6 +46,10 @@ You can also use ToolJet AI's [Auto-sort Queries](/docs/build-with-ai/generate-a
 - **Move an existing query**: Click the three-dot menu on a query and select **Move to a folder**, then choose the destination folder. <br/>
   <img className="screenshot-full img-s" src="/img/app-builder/connecting-with-datasouces/query-add-folder.png" alt="App Builder: Add query to folder"/>
 - **Drag and drop**: Drag an existing query from the list and drop it into the target folder.
+
+### Renaming a Folder
+
+Click the three-dot menu on a folder and select **Rename**. Type the new name and press **Enter** to confirm, or press **Escape** to cancel.
 
 ### Deleting a Folder
 
@@ -133,7 +140,14 @@ You can use this when you want data to be available as soon as the page loads, l
 
 ### Request Confirmation Before Running Query
 
-For actions that modify or delete data, enable this to prompt users for confirmation. It acts as a safeguard against accidental clicks that could alter critical records.
+For actions that modify or delete data, enable this to prompt users for confirmation before the query runs. It acts as a safeguard against accidental clicks that could alter critical records.
+
+**Static toggle**: Switch the toggle on to always prompt for confirmation.
+
+**fx (dynamic expression)**: Click the **fx** button next to the toggle to switch to expression mode. When fx is active, the toggle is visually disabled and a code input appears where you can enter any expression that resolves to a boolean — for example, `{{components.userRole.value === 'admin'}}` would only prompt admin users. Toggling fx off evaluates the current expression to a boolean so no state is lost.
+
+**Confirmation message**: When confirmation is enabled (either via the static toggle or fx), a **Confirmation message** field appears below. Enter any text here to replace the default prompt. The field supports `{{}}` expressions, so messages can be dynamic — for example, `Delete {{components.table1.selectedRow.name}}?`. If left empty, the default message is shown: *Do you want to run this query — queryName?*
+
 <img className="screenshot-full img-l" style={{ marginBottom:'15px'}} src="/img/app-builder/connecting-with-datasouces/confirm.png" alt="App Builder: confirmation dialog"/>
 
 ### Show Notification on Success
@@ -144,3 +158,23 @@ Let users know when actions are completed successfully. This improves UX by givi
 ### Retry on Network Errors
 
 This setting is only available for REST API queries. Here, you get an option to automatically retry REST API requests in case of certain network errors or specific HTTP status codes. By default, it retries a failed API request up to 3 times before marking it as failed. Refer to [REST API Documentation](/docs/data-sources/restapi/querying-rest-api/#retry-on-network-errors) for more details.
+
+### Disable Query
+
+Use this to conditionally prevent a query from running. Enter a code expression in the **Disable query** field — when the expression resolves to `true`, the query is blocked from executing.
+
+```js
+// Example: disable during an active edit session
+{{components.editModeToggle.value === true}}
+```
+
+When a disable expression is set, the optional **Disable message** field becomes active. Enter a message here to be surfaced to end users when they attempt to run the disabled query. If left empty, the default message is: *This query is disabled*.
+
+```js
+// Example: dynamic disable message
+Editing is in progress — save your changes before running this query.
+```
+
+:::tip
+Leave the **Disable query** field empty to keep the query always enabled.
+:::
