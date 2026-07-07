@@ -33,6 +33,7 @@ export const TableData = ({
   canvasWidth,
 }) => {
   const getResolvedValue = useStore((state) => state.getResolvedValue);
+  const flushExposedValueBatch = useStore((state) => state.flushExposedValueBatch);
 
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const rowStyle = useTableStore((state) => state.getTableStyles(id)?.rowStyle, shallow);
@@ -136,6 +137,7 @@ export const TableData = ({
         selectedRow: row?.original ?? {},
         selectedRowId: isNaN(row.index) ? String(row.index) : row.index,
       });
+      flushExposedValueBatch();
       fireEvent('onRowClicked');
       return;
     }
