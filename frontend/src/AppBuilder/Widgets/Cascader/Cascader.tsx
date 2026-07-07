@@ -147,7 +147,7 @@ export const Cascader = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const controlRef = useRef<HTMLDivElement | null>(null);
-  const hasFocusEventRef = useRef(false);
+  const isInteractingRef = useRef(false);
   const menuRef = useRef<CascaderMenuRef | null>(null);
 
   const interactionBlocked = isDisabled || isLoading;
@@ -192,50 +192,45 @@ export const Cascader = ({
     (!iconColor || iconColor === 'var(--cc-default-icon)' || iconColor === '#CFD3D859');
   const computedIconColor = shouldUsePlaceholderTextColorForIcon ? placeholderTextColor : iconColor;
 
-  const triggerFocusEvent = () => {
+  const openInteraction = () => {
+    if (interactionBlocked) return;
+
+    controlRef.current?.focus();
     setIsFocused(true);
-    if (hasFocusEventRef.current) return;
-    hasFocusEventRef.current = true;
+    setIsOpen(true);
+
+    if (isInteractingRef.current) return;
+    isInteractingRef.current = true;
     fireEvent('onFocus');
   };
 
-  const triggerBlurEvent = () => {
+  const closeInteraction = () => {
+    if (!isOpen && !isInteractingRef.current) return;
+
+    setIsOpen(false);
     setIsFocused(false);
     setShowValidationError(true);
-    if (!hasFocusEventRef.current) return;
-    hasFocusEventRef.current = false;
+
+    if (!isInteractingRef.current) return;
+    isInteractingRef.current = false;
     fireEvent('onBlur');
   };
 
-  const isDocumentInactive = () => typeof document !== 'undefined' && document.hasFocus?.() === false;
-
-  const openMenu = () => {
-    if (interactionBlocked || isOpen) return;
-    controlRef.current?.focus();
-    setIsOpen(true);
-    triggerFocusEvent();
-  };
-
-  const closeMenu = ({ shouldFireBlurEvent = !isDocumentInactive() }: { shouldFireBlurEvent?: boolean } = {}) => {
-    if (!isOpen && !hasFocusEventRef.current) return;
+  const closeAfterSelection = () => {
     setIsOpen(false);
-    if (shouldFireBlurEvent) triggerBlurEvent();
-    else {
-      setIsFocused(false);
-      setShowValidationError(true);
-    }
+    setShowValidationError(true);
+    isInteractingRef.current = false;
   };
 
   const toggleOpen = () => {
     if (interactionBlocked) return;
-    if (isOpen) closeMenu();
-    else openMenu();
+    if (isOpen) closeInteraction();
+    else openInteraction();
   };
 
   const handleSelectLeaf = (value: CascaderValue) => {
     selectLeafFromUI(value);
-    setShowValidationError(true);
-    setIsOpen(false);
+    closeAfterSelection();
   };
 
   const handleClear = (e: React.MouseEvent<HTMLSpanElement>) => {
@@ -249,13 +244,13 @@ export const Cascader = ({
     if (!isOpen) {
       if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
         e.preventDefault();
-        openMenu();
+        openInteraction();
       }
       return;
     }
     if (e.key === 'Escape') {
       e.preventDefault();
-      closeMenu();
+      closeInteraction();
       return;
     }
     menuRef.current?.handleKeyDown?.(e);
@@ -310,7 +305,7 @@ export const Cascader = ({
         <Popover.Root
           open={isOpen}
           onOpenChange={(open) => {
-            if (!open) closeMenu();
+            if (!open) closeInteraction();
           }}
         >
           <Popover.Anchor asChild>
@@ -339,8 +334,8 @@ export const Cascader = ({
               }}
               onClick={toggleOpen}
               onKeyDown={handleKeyDown}
-              onFocus={triggerFocusEvent}
-              onBlur={() => closeMenu()}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
             >
               {iconVisibility && (
                 <TablerIconComponent
