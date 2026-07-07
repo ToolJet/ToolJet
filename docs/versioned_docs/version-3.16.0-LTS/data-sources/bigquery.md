@@ -109,9 +109,9 @@ Query results can be transformed using transformations. Read our transformations
 
 ## Querying BigQuery in GUI Mode
 
-GUI mode can be used to query Bigquery data source without writing queries.
+GUI mode can be used to query BigQuery data source without writing queries.
 
-1. Create a new query and select the Bigquery data source.
+1. Create a new query and select the BigQuery data source.
 2. Select **GUI mode** from the dropdown.
 3. Choose the operation you want to perform.
 4. Enter the required parameters for the selected operation.
