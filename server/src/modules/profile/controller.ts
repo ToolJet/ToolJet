@@ -17,6 +17,7 @@ import { ProfileService } from '@modules/profile/service';
 import { ProfileUpdateDto } from './dto';
 import { IProfileController } from './interfaces/IController';
 import { FEATURE_KEY, MAX_AVATAR_FILE_SIZE } from './constants';
+import { ImageMagicBytesValidator } from './image-magic-bytes.validator';
 import { PasswordRevalidateGuard } from './guards/password-revalidate.guard';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { MODULES } from '@modules/app/constants/modules';
@@ -53,7 +54,7 @@ export class ProfileController implements IProfileController {
     @User() user: UserEntity,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: MAX_AVATAR_FILE_SIZE })],
+        validators: [new MaxFileSizeValidator({ maxSize: MAX_AVATAR_FILE_SIZE }), new ImageMagicBytesValidator()],
       })
     )
     file: any
