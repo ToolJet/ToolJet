@@ -6,7 +6,12 @@ import { IconX } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 import { getModifiedColor } from '@/AppBuilder/Widgets/utils';
 import { BOX_PADDING } from '../../AppCanvas/appCanvasConstants';
-import { getLabelWidthOfInput, getWidthTypeOfComponentStyles } from './hooks/useInput';
+import {
+  getLabelFontSize,
+  getLabelHeight,
+  getLabelWidthOfInput,
+  getWidthTypeOfComponentStyles,
+} from './hooks/useInput';
 
 import './baseInput.scss';
 
@@ -71,9 +76,11 @@ export const BaseInput = ({
     iconVisibility: showLeftIcon,
     icon,
     widthType,
+    labelFontSize,
   } = styles;
 
   const { label, placeholder } = properties;
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
   const _width = getLabelWidthOfInput(widthType, width);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const hasLabel = (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0);
@@ -188,6 +195,7 @@ export const BaseInput = ({
           top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
           widthType={widthType}
           inputId={`component-${id}`}
+          fontSize={labelFontSizeValue}
           classes={{
             labelContainer: cn({
               'tw-self-center': inputType !== 'textarea' && defaultAlignment !== 'top',
@@ -230,7 +238,9 @@ export const BaseInput = ({
             ...(isDynamicHeightEnabled && { minHeight: `${height}px` }),
             ...(defaultAlignment === 'top' &&
               label?.length != 0 && {
-                height: `calc(100% - 20px - ${padding === 'default' ? BOX_PADDING * 2 : 0}px)`, // 20px is label height
+                height: `calc(100% - ${getLabelHeight(labelFontSize)}px - ${
+                  padding === 'default' ? BOX_PADDING * 2 : 0
+                }px)`,
                 flex: 1,
               }),
             ...getWidthTypeOfComponentStyles(widthType, width, auto, alignment),
@@ -270,6 +280,7 @@ export const BaseInput = ({
             style={finalStyles}
             {...additionalInputProps}
             id={`component-${id}`}
+            disabled={disable || loading}
             aria-disabled={disable || loading}
             aria-busy={loading}
             aria-required={isMandatory}

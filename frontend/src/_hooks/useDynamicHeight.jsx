@@ -10,7 +10,6 @@ export const useDynamicHeight = ({
   id,
   height,
   value,
-  adjustComponentPositions,
   currentLayout,
   width,
   isContainer = false,
@@ -69,7 +68,7 @@ export const useDynamicHeight = ({
     // widget whose own WidgetWrapper lives at a different context (e.g.
     // ListviewSubcontainer fires for the Listview id at row index [0], but
     // the Listview's own wrapper has data-layout-context="root"). In that
-    // case we still need to kick off `adjustComponentPositions` so row
+    // case we still need to kick off `scheduleReflow` so row
     // heights get recomputed — we just can't touch the element's inline
     // style because there isn't one to touch.
 
@@ -98,7 +97,7 @@ export const useDynamicHeight = ({
           // observer connected so the next show still triggers it.
           if (element.offsetParent === null) return;
           observer.disconnect();
-          adjustComponentPositions(id, currentLayout, isContainer, contextIndices);
+          useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
         });
       });
       observer.observe(element);
@@ -112,9 +111,7 @@ export const useDynamicHeight = ({
       // so we can adjust synchronously without setting height to 'auto' first.
       // For non-containers, we need the element at 'auto' height so the DOM can be measured.
       if (!isContainer && element) element.style.height = 'auto';
-      requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, isContainer, contextIndices, moduleId);
-      });
+      useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
     } else if (!isDynamicHeightEnabled && prevDynamicHeight.current) {
       if (element) element.style.height = `${height}px`;
       // Container toggled off: drop the container's own inflated temp so
@@ -130,9 +127,7 @@ export const useDynamicHeight = ({
         const clearContainerTempLayouts = useStore.getState().clearContainerTempLayouts;
         clearContainerTempLayouts?.(id, contextIndices);
       }
-      requestAnimationFrame(() => {
-        adjustComponentPositions(id, currentLayout, isContainer, contextIndices, moduleId);
-      });
+      useStore.getState().scheduleReflow(id, currentLayout, isContainer, contextIndices, moduleId);
     }
     if (element) prevHeight.current = element.offsetHeight;
     prevDynamicHeight.current = isDynamicHeightEnabled;
@@ -140,7 +135,6 @@ export const useDynamicHeight = ({
     isDynamicHeightEnabled,
     id,
     value,
-    adjustComponentPositions,
     currentLayout,
     height,
     width,

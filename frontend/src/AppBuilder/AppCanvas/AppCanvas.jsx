@@ -63,6 +63,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility(moduleId), shallow);
 
   const isMobileLayout = currentLayout === 'mobile';
+  const pageLoader = useStore((state) => state.pageLoader, shallow);
   const [isViewerSidebarPinned, setIsSidebarPinned] = useState(
     localStorage.getItem('isPagesSidebarPinned') === null
       ? false
@@ -279,6 +280,8 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                 >
                   {environmentLoadingState !== 'loading' && (
                     <SuspenseCountProvider
+                      key={currentPageId}
+                      disabled={pageLoader}
                       onAllResolved={handleAllSuspenseResolved}
                       deferCheck={isModuleMode || appType === 'module'}
                     >
@@ -299,6 +302,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           mainCanvasContainer={mainCanvasContainer}
                           gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       ) : (
                         <DesktopLayout
@@ -324,6 +328,7 @@ export const AppCanvas = ({ appId, switchDarkMode, darkMode }) => {
                           mainCanvasContainer={mainCanvasContainer}
                           gridContent={gridContent}
                           canvasHeaderHeight={canvasHeaderHeight}
+                          pageLoader={pageLoader}
                         />
                       )}
                     </SuspenseCountProvider>

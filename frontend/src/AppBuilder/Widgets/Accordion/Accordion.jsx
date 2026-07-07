@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
+import { useDisableInert } from '@/AppBuilder/_hooks/useDisableInert';
 import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
   CONTAINER_FORM_CANVAS_PADDING,
@@ -21,7 +22,6 @@ export const Accordion = ({
   width,
   setExposedVariables,
   setExposedVariable,
-  adjustComponentPositions,
   currentLayout,
   componentCount = 0,
   currentMode,
@@ -38,6 +38,10 @@ export const Accordion = ({
     isLoading: loadingState,
     isExpanded: true, // State for expanding/collapsing accordion component
   });
+  const accordionRef = useRef(null);
+  // Disabled accordion blocks the mouse via `data-disabled`; `inert` also removes the child
+  // components from the tab order (runtime only — keeps the builder editable).
+  useDisableInert(accordionRef, exposedVariablesTemporaryState.isDisabled);
 
   const updateGrid = useStore((state) => state.incrementCanvasUpdater, shallow);
 
@@ -56,7 +60,6 @@ export const Accordion = ({
     isDynamicHeightEnabled: shouldAdjustPositions,
     id,
     height,
-    adjustComponentPositions,
     currentLayout,
     isContainer: true,
     componentCount,
@@ -176,6 +179,7 @@ export const Accordion = ({
 
   return (
     <div
+      ref={accordionRef}
       className={`jet-container ${exposedVariablesTemporaryState.isLoading ? 'jet-container-loading' : ''} ${
         exposedVariablesTemporaryState.isExpanded ? 'jet-accordion-expanded' : 'jet-accordion-collapsed'
       }`}

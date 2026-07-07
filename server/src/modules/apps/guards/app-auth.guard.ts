@@ -59,7 +59,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
       const authResult = await super.canActivate(context);
       return authResult;
     } catch {
-      let organizationSlug: string;
+      let organizationSlug: string | undefined;
       if (app?.organizationId) {
         const organization = await this.appUtilService.getAppOrganizationDetails(app);
         organizationSlug = organization.slug || organization.id;

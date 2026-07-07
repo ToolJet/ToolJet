@@ -27,6 +27,7 @@ import {
 import useTableStore from '../_stores/tableStore';
 import { normalizeButtonEvent } from './normalizeButtonEvent';
 import SelectSearch from 'react-select-search';
+import { parseDate, getDateTimeFormat } from '@/AppBuilder/Shared/DataTypes/renderers/DatePickerRenderer';
 
 // Module-level singleton for text measurement (avoids creating canvas on every call)
 let _measureCanvas = null;
@@ -91,8 +92,10 @@ export default function generateColumnsData({
   searchText,
   columnForAddNewRow = false,
   t,
+  moduleId = 'canvas',
 }) {
-  const getResolvedValue = useStore.getState().getResolvedValue;
+  const _getResolvedValue = useStore.getState().getResolvedValue;
+  const getResolvedValue = (value, customVariables = {}) => _getResolvedValue(value, customVariables, moduleId);
   const getEditedFieldsOnIndex = useTableStore.getState().getEditedFieldsOnIndex;
   const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
   const useDynamicColumn = useTableStore.getState().components?.[id]?.columnDetails?.useDynamicColumn ?? false;
@@ -609,6 +612,48 @@ export default function generateColumnsData({
           const dateA = moment(a);
           const dateB = moment(b);
           return dateA.isBefore(dateB) ? -1 : dateA.isAfter(dateB) ? 1 : 0;
+        };
+      } else if (columnType === 'datepicker') {
+        // Datepicker cells hold the formatted display string (e.g. "12 May 2026, 5:30 PM"),
+        // Parse each value back into a real Date using the same logic the renderer uses to
+        // display it, then compare chronologically.
+        columnDef.sortingFn = (rowA, rowB, columnId) => {
+          const a = rowA.getValue(columnId);
+          const b = rowB.getValue(columnId);
+
+          const aIsEmpty = a === null || a === undefined || a === '';
+          const bIsEmpty = b === null || b === undefined || b === '';
+          if (aIsEmpty && bIsEmpty) return 0;
+          if (aIsEmpty) return 1;
+          if (bIsEmpty) return -1;
+
+          const isTimeChecked = getResolvedValue(column?.isTimeChecked) ?? false;
+          const isDateSelectionEnabled = getResolvedValue(column?.isDateSelectionEnabled) ?? true;
+          const isTwentyFourHrFormatEnabled = getResolvedValue(column?.isTwentyFourHrFormatEnabled) ?? false;
+
+          const parseOptions = {
+            parseDateFormat: getDateTimeFormat(
+              column?.parseDateFormat,
+              isTimeChecked,
+              isTwentyFourHrFormatEnabled,
+              isDateSelectionEnabled
+            ),
+            timeZoneValue: column?.timeZoneValue,
+            timeZoneDisplay: column?.timeZoneDisplay,
+            unixTimestamp: column?.unixTimestamp ?? 'seconds',
+            parseInUnixTimestamp,
+            isTimeChecked,
+          };
+
+          const dateA = parseDate({ value: a, ...parseOptions });
+          const dateB = parseDate({ value: b, ...parseOptions });
+
+          // If a value can't be parsed into a date, push it to the bottom instead of breaking the sort.
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+
+          return dateA.getTime() - dateB.getTime();
         };
       }
 

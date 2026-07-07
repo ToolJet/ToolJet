@@ -5,7 +5,11 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Spinner from '@/_ui/Spinner';
 import Label from '@/_ui/Label';
 import './styles.scss';
-import { getWidthTypeOfComponentStyles, getLabelWidthOfInput } from '../BaseComponents/hooks/useInput';
+import {
+  getLabelFontSize,
+  getWidthTypeOfComponentStyles,
+  getLabelWidthOfInput,
+} from '../BaseComponents/hooks/useInput';
 
 export const RangeSliderV2 = ({
   height,
@@ -34,7 +38,10 @@ export const RangeSliderV2 = ({
     markerLabel,
     handleBorderColor,
     widthType,
+    labelFontSize,
   } = styles;
+
+  const labelFontSizeValue = getLabelFontSize(labelFontSize);
 
   const sliderRef = useRef(null);
 
@@ -264,12 +271,14 @@ export const RangeSliderV2 = ({
             widthType={widthType}
             inputId={`component-${id}`}
             id={`${id}-label`}
+            fontSize={labelFontSizeValue}
           />
 
           <div style={sliderContainerStyle}>
             {enableTwoHandle !== 'slider' ? (
               <Slider
                 range
+                disabled={disabled}
                 min={min}
                 max={max}
                 defaultValue={defaultRangeValue}
@@ -310,6 +319,7 @@ export const RangeSliderV2 = ({
               />
             ) : (
               <Slider
+                disabled={disabled}
                 min={min}
                 max={max}
                 defaultValue={defaultSliderValue}

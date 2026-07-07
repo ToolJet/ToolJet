@@ -15,6 +15,11 @@ import {
   IsUrl,
   IsInt,
   Min,
+  IsNumber,
+  IsPositive,
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { USER_ROLE } from '@modules/group-permissions/constants';
@@ -337,4 +342,130 @@ export class ModuleImportRequestDto {
   @Type(() => ImportTooljetDatabaseDto)
   @ValidateTooljetDatabaseImportSchema({ each: true })
   tooljet_database?: ImportTooljetDatabaseDto[];
+}
+
+export class UserDetailKeyValueDto {
+  @IsString()
+  @IsNotEmpty()
+  key: string;
+
+  @IsString()
+  value: string;
+}
+
+export class UpdateUserMetadataDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UserDetailKeyValueDto)
+  userDetails: UserDetailKeyValueDto[];
+}
+
+export enum TjdbFilterOperator {
+  EQUALS = 'equals',
+  GREATER_THAN = 'greater than',
+  GREATER_THAN_OR_EQUAL = 'greater than or equal',
+  LESS_THAN = 'less than',
+  LESS_THAN_OR_EQUAL = 'less than or equal',
+  NOT_EQUAL = 'not equal',
+  LIKE = 'like',
+  ILIKE = 'ilike',
+  MATCH = 'match',
+  IMATCH = 'imatch',
+  IN = 'in',
+  IS = 'is',
+}
+
+export enum TjdbSortDirection {
+  ASCENDING = 'Ascending',
+  DESCENDING = 'Descending',
+}
+
+const IS_OPERATOR_ALLOWED_VALUES = ['null', 'true', 'false', 'notNull'];
+
+function IsTjdbFilterValue(validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'IsTjdbFilterValue',
+      target: (object as any).constructor,
+      propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const filterCondition = args.object as TjdbFilterConditionDto;
+          if (filterCondition.operator === TjdbFilterOperator.IN) {
+            return Array.isArray(value) && value.length > 0;
+          }
+          if (filterCondition.operator === TjdbFilterOperator.IS) {
+            return IS_OPERATOR_ALLOWED_VALUES.includes(String(value));
+          }
+          return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+        },
+        defaultMessage(args: ValidationArguments) {
+          const filterCondition = args.object as TjdbFilterConditionDto;
+          if (filterCondition.operator === TjdbFilterOperator.IN) {
+            return 'value must be a non-empty array when operator is "in"';
+          }
+          if (filterCondition.operator === TjdbFilterOperator.IS) {
+            return `value must be one of: ${IS_OPERATOR_ALLOWED_VALUES.join(', ')} when operator is "is"`;
+          }
+          return 'value must be a string, number, or boolean';
+        },
+      },
+    });
+  };
+}
+
+export class TjdbFilterConditionDto {
+  @IsString()
+  @IsNotEmpty()
+  column!: string;
+
+  @IsEnum(TjdbFilterOperator, {
+    message: `operator must be one of: ${Object.values(TjdbFilterOperator).join(', ')}`,
+  })
+  operator!: TjdbFilterOperator;
+
+  @IsTjdbFilterValue()
+  value!: string | number | boolean | (string | number)[];
+}
+
+export class TjdbSortConditionDto {
+  @IsString()
+  @IsNotEmpty()
+  column!: string;
+
+  @IsEnum(TjdbSortDirection, {
+    message: `direction must be one of: ${Object.values(TjdbSortDirection).join(', ')}`,
+  })
+  direction!: TjdbSortDirection;
+}
+
+export class ExportTjdbTableAsCsvDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TjdbFilterConditionDto)
+  filters?: TjdbFilterConditionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TjdbSortConditionDto)
+  sort?: TjdbSortConditionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  select?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  limit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  offset?: number;
 }

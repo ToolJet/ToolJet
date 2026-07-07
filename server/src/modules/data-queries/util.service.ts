@@ -322,6 +322,19 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         this.setCookiesBackToClient(response, result.responseHeaders);
       }
 
+      result['metadata'] = {
+        ...(result['metadata'] || {}),
+        ...queryStatus.getResponseMetadata(),
+      };
+
+      if (dataSource.kind === 'restapi' || dataSource.kind === 'grpcv2') {
+        const queryDefinition =
+          dataSource.kind === 'restapi'
+            ? (result as any)['metadata']?.['request']?.['url']
+            : dataQuery.options?.['raw_message'];
+        (result as any)['metadata']['queryDefinition'] = queryDefinition;
+      }
+
       return result;
     } catch (queryError) {
       abortCtrl.cleanup();
