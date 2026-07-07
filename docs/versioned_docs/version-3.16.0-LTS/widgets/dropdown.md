@@ -30,15 +30,18 @@ Allows you to add options to the dropdown field. You can click on `Add new optio
       {
         label: "option1",
         value: 1,
+        caption: "First option",
         disable: false,
         visible: true,
         default: true,
       },
-      { label: "option2", value: 2, disable: false, visible: true },
-      { label: "option3", value: 3, disable: false, visible: true },
+      { label: "option2", value: 2, caption: null, disable: false, visible: true },
+      { label: "option3", value: 3, caption: null, disable: false, visible: true },
     ];
 }}
 ```
+
+`caption` is optional. When set, it displays additional descriptive text beneath the option label in the dropdown list. It does not appear in the selected value shown after an option is chosen. Default is `null`.
 
 2. Passing an array of objects with a default value from a **Table** component's selected row:
 
@@ -157,9 +160,9 @@ components.dropdown1.selectOption(2);
 | searchText | This variable is initially empty and holds the value whenever the user searches on the dropdown. | `{{components.dropdown1.searchText}}` |
 | label | Holds the label name of the dropdown. | `{{components.dropdown1.label}}` |
 | value | Holds the value selected by the user in the component. | `{{components.dropdown1.value}}` |
-| selectedOption | Holds the label and value of the selected option in array form. | `{{components.dropdown1.selectedOption.label}}` |
+| selectedOption | Holds the label, value, and caption of the selected option. | `{{components.dropdown1.selectedOption.label}}`, `{{components.dropdown1.selectedOption.caption}}` |
 | isValid | Indicates if the input meets validation criteria. | `{{components.dropdown1.isValid}}` |
-| options | Holds all the option values of the dropdown in array form. | `{{components.dropdown1.options}}` |
+| options | Holds all the option values of the dropdown. Each entry includes `label`, `value`, and `caption`. | `{{components.dropdown1.options}}` |
 | isVisible | Indicates if the component is visible. | `{{components.dropdown1.isVisible}}` |
 | isLoading | Indicates if the component is loading.  | `{{components.dropdown1.isLoading}}` |
 | isDisabled | Indicates if the component is disabled. | `{{components.dropdown1.isDisabled}}` |

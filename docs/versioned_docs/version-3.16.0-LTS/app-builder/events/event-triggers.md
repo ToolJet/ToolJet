@@ -40,3 +40,13 @@ This setup ensures that the _fetchData_ query is triggered automatically when th
 <img className="screenshot-full img-full" src="/img/app-builder/events/event-handler/query-dig.png" alt="Events Architecture Diagram"/>
 
 Whether it's submitting a form, running a query, or updating your UI, events and actions let you define dynamic, logic-driven behavior without writing backend code.
+
+## Managing Event Handlers
+
+Each event handler has two additional controls accessible by expanding it in the Events panel:
+
+**Enable event**: A toggle that turns the handler on or off without deleting it. When disabled, the handler is skipped at runtime — useful for testing or debugging without losing the handler configuration.
+
+**Event name**: A free-text field for assigning a custom label to the handler. Use this to distinguish between multiple handlers on the same event — for example, naming one `"log to console"` and another `"trigger refresh"` when both fire on **On click**.
+
+<img className="screenshot-full img-l" src="/img/app-builder/events/event-handler/manage.png" alt="Event handler enable toggle and name field"/>

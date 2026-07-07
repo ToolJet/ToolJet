@@ -50,10 +50,14 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| Property   | Description  | Configuration Options  |
-|:---------- |:------------ |:-----------------------|
-| Divider Color   | Sets the color of the divider.  | Select the color or click on **fx** and input code that programmatically returns a HEX color code. |
-| Visibility  | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Box Shadow   | Sets the box shadow properties of the component.  | Select the box shadow color and adjust related properties or set it programmatically using **fx**. |
+| Property | Description | Configuration Options |
+|:-------- |:----------- |:----------------------|
+| Divider color | Sets the color of the divider line. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Style | Sets the style of the divider line. | Select **Solid** or **Dashed**. |
+| Label alignment | Sets the horizontal position of the label text on the divider. | Select **Left**, **Center**, or **Right**. |
+| Label color | Sets the color of the label text. | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Text wrap | Controls whether the label text wraps onto multiple lines or stays on a single line. When set to **No wrap**, text that exceeds the divider width is truncated with an ellipsis. | Select **Wrap** (default) or **No wrap**. |
+| Visibility | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Box shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust related properties or set it programmatically using **fx**. |
 
 </div>
