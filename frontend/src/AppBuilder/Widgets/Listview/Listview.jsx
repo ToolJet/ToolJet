@@ -333,7 +333,17 @@ export const Listview = function Listview({
     return (
       <div
         className={rowContainerClassName}
-        style={{ position: 'relative', height: `${rowVirtualizer.getTotalSize()}px` }}
+        // flexShrink: 0 — parentRef is `display: flex; flex-direction: column`
+        // (`flex-column` class), and this div is one of its flex items. Flex
+        // items default to flex-shrink: 1, so without this, the flex
+        // algorithm shrinks this div's explicit height down to whatever
+        // space is left in the (much shorter) viewport, regardless of the
+        // real virtualized total — the absolutely-positioned rows inside
+        // still use their true offsets and overflow past the shrunk box, so
+        // the scrollable range only ever grows to "as far as you've already
+        // scrolled," never the real end. This is why the scrollbar could
+        // never represent (or reach) the true bottom of a large ListView.
+        style={{ position: 'relative', height: `${rowVirtualizer.getTotalSize()}px`, flexShrink: 0 }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => (
           <ListviewSubcontainer
