@@ -19,8 +19,9 @@
  * cascade, so structural edits need no restart.
  */
 import useStore from '@/AppBuilder/_stores/store';
-import { ResolutionEngine } from './ResolutionEngine';
+import { ResolutionEngine, ROW_UNRESOLVABLE } from './ResolutionEngine';
 import { serializeGraph } from './graphSerializer';
+import { buildRowScopedEngineSeed, getComparableRowIndices } from './rowScopedShadow';
 import { get as lodashGet } from 'lodash';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -39,7 +40,13 @@ interface ShadowSession {
   matches: number;
   divergences: Divergence[];
   /** Where affected paths went instead of being compared — coverage truth. */
-  skipped: { querySentinels: number; rowScoped: number; structuralNoBinding: number; nonComponent: number };
+  skipped: {
+    querySentinels: number;
+    rowScoped: number;
+    structuralNoBinding: number;
+    nonComponent: number;
+    rowUnresolvable: number;
+  };
 }
 
 let session: ShadowSession | null = null;
@@ -71,6 +78,7 @@ function getOrInitEngine(moduleId: string): ResolutionEngine | null {
       // and cloning the lazy-ListView-read Proxy from getAllExposedValues
       // would break it (see resolvedSlice.js's getAllExposedValues comment).
       seedState: store.getAllExposedValues(moduleId, { raw: true }),
+      ...buildRowScopedEngineSeed(store, moduleId),
     });
     session.engines.set(moduleId, engine);
   }
@@ -90,18 +98,41 @@ export function engineShadowOnCascade(path: string, moduleId: string): void {
   session.cascades++;
 
   const store = (useStore as any).getState();
-  const changedValue = lodashGet(store.getAllExposedValues(moduleId), path);
+
+  // Row-scoped state (containerChildrenMapping/customResolvables/
+  // lazyRowIndices) changes far more often than the structural graph this
+  // engine mirrors (e.g. every scroll tick grows the live store's
+  // lazyRowIndices) — refresh it every cascade rather than only at
+  // engine-creation time, or the engine's row-scoped resolution would
+  // quickly go stale relative to what the store actually knows.
+  engine.updateRowScopedSeed(buildRowScopedEngineSeed(store, moduleId));
 
   // Classify every affected path so stats reflect true coverage, not just the
-  // slice we can compare (query sentinels and row-scoped rows dominate real
-  // traffic in list/query-heavy apps).
+  // slice we can compare (query sentinels dominate real traffic in
+  // list/query-heavy apps).
   for (const affected of engine.getAffectedPaths(path)) {
     if (affected.endsWith('.__options__')) session.skipped.querySentinels++;
     else if (!affected.startsWith('components.')) session.skipped.nonComponent++;
     else if (!engine.hasBinding(affected)) session.skipped.structuralNoBinding++;
   }
 
-  const { updates } = engine.applyCommands([{ kind: 'SET_RUNTIME', path, value: changedValue }]);
+  // A row-scoped component's own exposed value (e.g. a TextInput inside a
+  // ListView) changing: `path` is flat (`components.<id>.value`, no row
+  // index — the graph has no row dimension), but the VALUE at that path is
+  // a per-row array. A plain SET_RUNTIME can't express "row N's .value
+  // changed" — see syncRowScopedArrayAndCascade's comment. Sync the whole
+  // (host-authoritative) array instead of one scalar.
+  const triggerComponentId = path.startsWith('components.') ? path.split('.')[1] : undefined;
+  const isTriggerRowScoped =
+    triggerComponentId !== undefined && getComparableRowIndices(store, triggerComponentId, moduleId) !== null;
+  const updates = isTriggerRowScoped
+    ? engine.syncRowScopedArrayAndCascade(
+        triggerComponentId as string,
+        lodashGet(store.getAllExposedValues(moduleId), ['components', triggerComponentId]),
+        path
+      )
+    : engine.applyCommands([{ kind: 'SET_RUNTIME', path, value: lodashGet(store.getAllExposedValues(moduleId), path) }])
+        .updates;
 
   const toCompare = updates.filter(
     (u) => u.path !== path && u.path.startsWith('components.') && !u.path.endsWith('.__options__')
@@ -116,10 +147,48 @@ export function engineShadowOnCascade(path: string, moduleId: string): void {
       const [entityType, entityId, type, ...keys] = bindingPath.split('.');
       const key = keys.join('.');
       const storeNode = resolvedModule?.[entityType]?.[entityId];
+
       if (Array.isArray(storeNode)) {
-        session.skipped.rowScoped++;
-        continue; // row-scoped — Phase 3/4 scope
+        // Row-scoped: compare only the row indices the store has actually
+        // resolved (respects isLazyResolvableParent/getLazyRowIndices) —
+        // comparing against a row the store hasn't computed yet would just
+        // be a false divergence, not a real one.
+        const comparableIndices =
+          entityType === 'components' ? getComparableRowIndices(state, entityId, moduleId) : null;
+        if (!comparableIndices) {
+          session.skipped.rowScoped++;
+          continue;
+        }
+        const engineValues = Array.isArray(engineValue) ? engineValue : [];
+        for (const i of comparableIndices) {
+          const storeRowNode = storeNode[i];
+          if (storeRowNode === undefined) continue; // store hasn't materialized this row yet
+          if (engineValues[i] === ROW_UNRESOLVABLE) {
+            session.skipped.rowUnresolvable++;
+            continue; // engine's seed has no data for a descendant this row needs — see ROW_UNRESOLVABLE
+          }
+          const validatedEngineValue = type
+            ? state.debugger.validateProperty(entityId, type, key, engineValues[i], moduleId)
+            : engineValues[i];
+          const storeValue = type ? lodashGet(storeRowNode, [type, ...key.split('.')]) : storeRowNode;
+          session.compared++;
+          if (stable(validatedEngineValue) === stable(storeValue)) {
+            session.matches++;
+          } else {
+            const rowPath = `${bindingPath}[${i}]`;
+            session.divergences.push({ path: rowPath, engineValue: validatedEngineValue, storeValue, trigger: path });
+            // eslint-disable-next-line no-console
+            console.warn('[engine-shadow] divergence', {
+              path: rowPath,
+              engineValue: validatedEngineValue,
+              storeValue,
+              trigger: path,
+            });
+          }
+        }
+        continue;
       }
+
       // Compare like-for-like: the store writes VALIDATED values.
       const validatedEngineValue =
         entityType === 'components' && entityId && type
@@ -150,7 +219,7 @@ export function startEngineShadow(): void {
     compared: 0,
     matches: 0,
     divergences: [],
-    skipped: { querySentinels: 0, rowScoped: 0, structuralNoBinding: 0, nonComponent: 0 },
+    skipped: { querySentinels: 0, rowScoped: 0, structuralNoBinding: 0, nonComponent: 0, rowUnresolvable: 0 },
   };
 }
 
@@ -218,6 +287,7 @@ function getOrInitCutoverEngine(moduleId: string): ResolutionEngine | null {
       // and cloning the lazy-ListView-read Proxy from getAllExposedValues
       // would break it (see resolvedSlice.js's getAllExposedValues comment).
       seedState: store.getAllExposedValues(moduleId, { raw: true }),
+      ...buildRowScopedEngineSeed(store, moduleId),
     });
     cutoverEngines.set(moduleId, engine);
   }
@@ -231,8 +301,23 @@ export function engineCutoverPrepare(path: string, moduleId: string): void {
   const engine = getOrInitCutoverEngine(moduleId);
   if (!engine) return;
   const store = (useStore as any).getState();
-  const changedValue = lodashGet(store.getAllExposedValues(moduleId), path);
-  const { updates } = engine.applyCommands([{ kind: 'SET_RUNTIME', path, value: changedValue }]);
+  // Same reasoning as engineShadowOnCascade: row-scoped state changes far
+  // more often than the structural graph this engine mirrors.
+  engine.updateRowScopedSeed(buildRowScopedEngineSeed(store, moduleId));
+  // Same fix as engineShadowOnCascade: a row-scoped component's own exposed
+  // value change needs the whole array synced, not a flat SET_RUNTIME (see
+  // syncRowScopedArrayAndCascade's comment).
+  const triggerComponentId = path.startsWith('components.') ? path.split('.')[1] : undefined;
+  const isTriggerRowScoped =
+    triggerComponentId !== undefined && getComparableRowIndices(store, triggerComponentId, moduleId) !== null;
+  const updates = isTriggerRowScoped
+    ? engine.syncRowScopedArrayAndCascade(
+        triggerComponentId as string,
+        lodashGet(store.getAllExposedValues(moduleId), ['components', triggerComponentId]),
+        path
+      )
+    : engine.applyCommands([{ kind: 'SET_RUNTIME', path, value: lodashGet(store.getAllExposedValues(moduleId), path) }])
+        .updates;
   for (const u of updates) {
     if (u.path !== path) cutoverValues.set(`${moduleId}|${u.path}`, u.value);
   }

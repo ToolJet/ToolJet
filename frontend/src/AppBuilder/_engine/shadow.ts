@@ -15,8 +15,9 @@
  *   window.__tjEngineShadowCheck('moduleId')  // specific module
  */
 import useStore from '@/AppBuilder/_stores/store';
-import { ResolutionEngine } from './ResolutionEngine';
+import { ResolutionEngine, ROW_UNRESOLVABLE } from './ResolutionEngine';
 import { serializeGraph } from './graphSerializer';
+import { buildRowScopedEngineSeed, getComparableRowIndices } from './rowScopedShadow';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -35,7 +36,7 @@ export interface ShadowReport {
   bindingsChecked: number;
   matches: number;
   mismatches: ShadowMismatch[];
-  skipped: { rowScoped: number; sentinels: number; nonComponent: number };
+  skipped: { rowScoped: number; sentinels: number; nonComponent: number; rowUnresolvable: number };
 }
 
 /** Read the store's resolved value for a binding path like
@@ -75,6 +76,7 @@ export function runShadowCheck(moduleId = 'canvas'): ShadowReport {
     // seed; cloning the lazy-ListView-read Proxy from getAllExposedValues
     // would break it (see resolvedSlice.js's getAllExposedValues comment).
     seedState: store.getAllExposedValues(moduleId, { raw: true }),
+    ...buildRowScopedEngineSeed(store, moduleId),
   });
 
   const report: ShadowReport = {
@@ -82,7 +84,7 @@ export function runShadowCheck(moduleId = 'canvas'): ShadowReport {
     bindingsChecked: 0,
     matches: 0,
     mismatches: [],
-    skipped: { rowScoped: 0, sentinels: 0, nonComponent: 0 },
+    skipped: { rowScoped: 0, sentinels: 0, nonComponent: 0, rowUnresolvable: 0 },
   };
 
   for (const { path, value: engineValue } of engine.resolveAllBindings()) {
@@ -96,9 +98,38 @@ export function runShadowCheck(moduleId = 'canvas'): ShadowReport {
     }
     const componentId = path.split('.')[1];
     const componentNode = resolvedModule.components?.[componentId];
+
     if (Array.isArray(componentNode)) {
-      report.skipped.rowScoped++;
-      continue; // ListView/Table child — engine row scoping lands with Phase 3/4
+      // Row-scoped (ListView/Kanban/Table child): resolveAllBindings() now
+      // returns an array (one value per row) for these instead of a single
+      // value — compare only the row indices the store has actually
+      // resolved (respects isLazyResolvableParent/getLazyRowIndices), same
+      // reasoning as engineBridge.ts's continuous-shadow path.
+      const comparableIndices = getComparableRowIndices(store, componentId, moduleId);
+      if (!comparableIndices) {
+        report.skipped.rowScoped++;
+        continue;
+      }
+      const engineValues = Array.isArray(engineValue) ? engineValue : [];
+      const parts = path.split('.');
+      for (const i of comparableIndices) {
+        if (componentNode[i] === undefined) continue; // store hasn't materialized this row yet
+        if (engineValues[i] === ROW_UNRESOLVABLE) {
+          report.skipped.rowUnresolvable++;
+          continue; // engine's seed has no data for a descendant this row needs — see ROW_UNRESOLVABLE
+        }
+        const rowPath = [parts[0], parts[1], String(i), ...parts.slice(2)].join('.');
+        report.bindingsChecked++;
+        const stored = readStoreResolvedValue(resolvedModule, rowPath);
+        if (!stored.found) {
+          report.mismatches.push({ path: rowPath, engineValue: engineValues[i], storeValue: undefined, bucket: 'store-missing' });
+        } else if (stable(stored.value) === stable(engineValues[i])) {
+          report.matches++;
+        } else {
+          report.mismatches.push({ path: rowPath, engineValue: engineValues[i], storeValue: stored.value, bucket: 'value-mismatch' });
+        }
+      }
+      continue;
     }
 
     report.bindingsChecked++;
@@ -125,7 +156,7 @@ if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
     console.log(
       `[engine-shadow] ${report.matches}/${report.bindingsChecked} match (${pct}%) · ` +
         `skipped: ${report.skipped.rowScoped} row-scoped, ${report.skipped.sentinels} sentinels, ` +
-        `${report.skipped.nonComponent} non-component`,
+        `${report.skipped.nonComponent} non-component, ${report.skipped.rowUnresolvable} row-unresolvable`,
       report.mismatches.length ? report.mismatches : ''
     );
     return report;
