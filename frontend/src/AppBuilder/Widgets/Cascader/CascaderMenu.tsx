@@ -30,7 +30,7 @@ const ROW_STYLE: React.CSSProperties = {
 };
 
 /**
- * Single-column drilldown menu for the Cascader (matches Figma).
+ * Single-column drilldown menu for the Cascader.
  * Shows one level at a time with a back/breadcrumb header. Parent rows navigate
  * deeper; leaf rows select and close. Keyboard is driven imperatively from the
  * input (via ref) so browser focus stays on the input.
@@ -58,13 +58,14 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
       return firstEnabledIndex();
     });
 
-    // Reset highlight when the level changes.
+    // Reset highlight when the level's nodes or the selection change, so the
+    // highlighted index never goes stale/out-of-range if the option tree
+    // updates (dynamic options / visibility toggles) while the path is unchanged.
     useEffect(() => {
       const selIdx =
         selectedValue != null ? currentNodes.findIndex((n) => areCascaderValuesEqual(n.value, selectedValue)) : -1;
       setHighlightedIndex(selIdx >= 0 ? selIdx : currentNodes.findIndex((n) => !n.disabled));
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activePath]);
+    }, [currentNodes, selectedValue]);
 
     const breadcrumb = activePath.map((v) => maps.valueToNode[getCascaderValueKey(v)]?.label).filter(Boolean);
 
