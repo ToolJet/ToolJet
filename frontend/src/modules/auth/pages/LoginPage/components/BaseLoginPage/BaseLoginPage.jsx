@@ -72,6 +72,10 @@ const BaseLoginPage = ({ configs, organizationId, currentOrganizationName, handl
       },
       (error) => {
         onError();
+        if (error.data?.message === 'PASSWORD_EXPIRED') {
+          navigate(`/password-expired?email=${encodeURIComponent(error.data?.email || email)}`);
+          return;
+        }
         toast.error(error.error || 'Invalid email or password', {
           id: 'toast-login-auth-error',
           position: 'top-center',

@@ -12,6 +12,7 @@ import {
   SendOrganizationUserWelcomeEmailPayload,
   SendCommentMentionEmailPayload,
   SendPasswordResetEmailPayload,
+  SendPasswordExpiredResetEmailPayload,
   SendEmailOtpPayload,
 } from '@modules/email/dto';
 import { EmailUtilService } from './util.service';
@@ -102,11 +103,29 @@ export class EmailService implements IEmailService {
       ? 'You have received this email as an invitation to join ToolJet’s workspace'
       : 'You have received this email to confirm your email address';
 
+    // Compute expiry date for Cloud signup verification emails only
+    let expiryDate: string | null = null;
+    if (!isOrgInvite && this.tooljetEdition === 'cloud') {
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+      if (!isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0) {
+        expiryDate = new Date(Date.now() + linkExpiryMinutes * 60 * 1000).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'UTC',
+          timeZoneName: 'short',
+        });
+      }
+    }
+
     const templateData = {
       name: name || '',
       inviteUrl,
       sender,
       organizationName,
+      expiryDate,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
       tooljetEdition: this.tooljetEdition,
@@ -169,9 +188,25 @@ export class EmailService implements IEmailService {
     const url = appSlug
       ? `${effectiveHost}${basePath}applications/${appSlug}/reset-password/${token}?redirectTo=${encodeURIComponent(redirectTo)}`
       : `${effectiveHost}${basePath}reset-password/${token}`;
+
+    const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+    let expiryDate: string | null = null;
+    if (!isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0) {
+      expiryDate = new Date(Date.now() + linkExpiryMinutes * 60 * 1000).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+      });
+    }
+
     const templateData = {
       name: firstName || '',
       resetLink: url,
+      expiryDate,
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
       tooljetEdition: this.tooljetEdition,
@@ -182,6 +217,32 @@ export class EmailService implements IEmailService {
     return await this.sendEmail(to, subject, {
       bodyContent: htmlEmailContent,
       footerText: 'You have received this email because a request to reset your password was made',
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+    });
+  }
+
+  async sendPasswordExpiredResetEmail(payload: SendPasswordExpiredResetEmailPayload) {
+    const { to, token, firstName, organizationId } = payload;
+    await this.init(organizationId);
+    const host = await getHostForOrganization(organizationId, this.customDomainCacheService);
+    const effectiveHost = this.stripTrailingSlash(host);
+    const subject = 'Reset your expired password';
+    const basePath = this.SUB_PATH ? this.SUB_PATH : '/';
+    const url = `${effectiveHost}${basePath}reset-password/${token}`;
+    const templateData = {
+      name: firstName || '',
+      resetLink: url,
+      whiteLabelText: this.WHITE_LABEL_TEXT,
+      whiteLabelLogo: this.WHITE_LABEL_LOGO,
+      tooljetEdition: this.tooljetEdition,
+    };
+    const templatePath = this.defaultWhiteLabelState ? 'default_password_expired.hbs' : 'password_expired.hbs';
+    const htmlEmailContent = this.compileTemplate(templatePath, templateData);
+
+    return await this.sendEmail(to, subject, {
+      bodyContent: htmlEmailContent,
+      footerText: 'You have received this email because your password has expired',
       whiteLabelText: this.WHITE_LABEL_TEXT,
       whiteLabelLogo: this.WHITE_LABEL_LOGO,
     });

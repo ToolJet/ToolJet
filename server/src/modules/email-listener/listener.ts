@@ -28,6 +28,10 @@ export class EmailListener {
           await this.emailService.sendPasswordResetEmail(payload);
           break;
 
+        case EMAIL_EVENTS.SEND_PASSWORD_EXPIRED_RESET_EMAIL:
+          await this.emailService.sendPasswordExpiredResetEmail(payload);
+          break;
+
         case EMAIL_EVENTS.SEND_COMMENT_MENTION_EMAIL:
           await this.emailService.sendCommentMentionEmail(payload);
           break;

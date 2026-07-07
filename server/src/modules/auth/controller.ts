@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, BadRequestException, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, BadRequestException, Res, UseGuards } from '@nestjs/common';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY } from './constants';
 import { InitModule } from '@modules/app/decorators/init-module';
@@ -74,6 +74,19 @@ export class AuthController implements IAuthController {
   async resetPassword(@Body() appAuthDto: AppPasswordResetDto) {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);
+    return {};
+  }
+
+  @Get('/reset-password/verify-token')
+  @InitFeature(FEATURE_KEY.VERIFY_RESET_TOKEN)
+  async verifyResetToken(@Query('token') token: string) {
+    return this.authService.verifyResetToken(token);
+  }
+
+  @Post('/password-expired-reset')
+  @InitFeature(FEATURE_KEY.PASSWORD_EXPIRED_RESET)
+  async passwordExpiredReset(@Body() body: { email: string }) {
+    await this.authService.passwordExpiredReset(body.email);
     return {};
   }
 }

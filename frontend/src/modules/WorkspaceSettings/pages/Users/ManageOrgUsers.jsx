@@ -364,6 +364,17 @@ class ManageOrgUsersComponent extends React.Component {
     toast.success('Invitation URL copied');
   };
 
+  reInviteHandler = (user) => {
+    const organizationId = authenticationService?.currentSessionValue?.current_organization_id;
+    authenticationService
+      .resendInvite(user.email, organizationId)
+      .then(() => {
+        toast.success('Invite resent successfully');
+        this.fetchUsers(this.state.currentPage, this.state.options);
+      })
+      .catch(() => toast.error('Failed to resend invite'));
+  };
+
   clearErrorState = () => {
     this.setState({
       showErrorModal: false,
@@ -516,6 +527,7 @@ class ManageOrgUsersComponent extends React.Component {
                     meta={meta}
                     generateInvitationURL={this.generateInvitationURL}
                     invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                    onReInvite={this.reInviteHandler}
                     unarchiveOrgUser={this.unarchiveOrgUser}
                     archiveOrgUser={this.archiveOrgUser}
                     pageChanged={this.pageChanged}

@@ -9,6 +9,8 @@ import Spinner from '@/_ui/Spinner';
 import { withRouter } from '@/_hoc/withRouter';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { OnboardingBackgroundWrapper } from '@/modules/onboarding/components';
+import { LinkExpiredCard } from '@/modules/common/components';
 import {
   retrieveWhiteLabelText,
   setFaviconAndTitle,
@@ -22,6 +24,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     this.state = {
       isLoading: false,
       defaultState: checkWhiteLabelsDefaultState(),
+      linkExpired: false,
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -66,14 +69,22 @@ class OrganizationInvitationPageComponent extends React.Component {
         });
         onLoginSuccess(data, this.props.navigate, this.appRedirectPath);
       })
-      .catch(() => {
-        toast.error('Error while setting up your account.', { position: 'top-center' });
-        this.setState({ isLoading: false });
+      .catch((error) => {
+        if (error?.statusCode === 410) {
+          this.setState({ linkExpired: true, isLoading: false });
+        } else {
+          toast.error('Error while setting up your account.', { position: 'top-center' });
+          this.setState({ isLoading: false });
+        }
       });
   };
 
   render() {
-    const { isLoading, defaultState } = this.state;
+    const { isLoading, defaultState, linkExpired } = this.state;
+
+    if (linkExpired) {
+      return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="invite" />} />;
+    }
     const { name, email, invitedOrganizationName: organizationName } = this.props;
     return (
       <div className="page" ref={this.formRef}>

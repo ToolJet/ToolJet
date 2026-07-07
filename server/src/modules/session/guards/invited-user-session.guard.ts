@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ExecutionContext,
   ForbiddenException,
+  GoneException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -73,6 +74,11 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
         },
       };
       throw new BadRequestException(errorResponse);
+    }
+
+    const inviteTokenExpiry = invitedUser?.invitationTokenExpiry;
+    if (inviteTokenExpiry && new Date() > inviteTokenExpiry) {
+      throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
     }
 
     request.invitedUser = user;

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  GoneException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -438,6 +439,11 @@ export class OnboardingService implements IOnboardingService {
       if (!organizationUser?.user) {
         throw new BadRequestException('Invalid invitation link');
       }
+
+      if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
+      }
+
       const user: User = organizationUser.user;
 
       if (user.invitationToken) {
@@ -503,6 +509,9 @@ export class OnboardingService implements IOnboardingService {
       });
 
       if (!user && organizationUser) {
+        if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+          throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
+        }
         return {
           redirect_url: generateOrgInviteURL(organizationToken, organizationUser.organizationId),
         };
@@ -511,10 +520,18 @@ export class OnboardingService implements IOnboardingService {
           redirect_url: generateInviteURL(token),
         };
       }
+
+      if (organizationUser?.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        throw new GoneException('WORKSPACE_INVITE_LINK_EXPIRED');
+      }
     }
 
     if (!user) {
       throw new BadRequestException('Invalid token');
+    }
+
+    if (user.invitationTokenExpiry && new Date() > user.invitationTokenExpiry) {
+      throw new GoneException('INVITATION_LINK_EXPIRED');
     }
 
     if (user.status === USER_STATUS.ARCHIVED) {
@@ -584,6 +601,10 @@ export class OnboardingService implements IOnboardingService {
         );
       }
 
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
+      const passwordExpiry = password ? new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000) : null;
+
       await this.userRepository.updateOne(
         signupUser.id,
         {
@@ -592,6 +613,7 @@ export class OnboardingService implements IOnboardingService {
           ...(password ? { password } : {}),
           ...lifecycleParams,
           updatedAt: new Date(),
+          ...(passwordExpiry ? { passwordExpiry } : {}),
         },
         manager
       );
@@ -690,6 +712,21 @@ export class OnboardingService implements IOnboardingService {
     }
 
     if (organizationUser) {
+      // Regenerate workspace invite token if it has expired
+      if (organizationUser.invitationTokenExpiry && new Date() > organizationUser.invitationTokenExpiry) {
+        const newToken = uuid.v4();
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+        const newExpiry =
+          !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+            ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+            : null;
+        await this.organizationUsersRepository.update(organizationUser.id, {
+          invitationToken: newToken,
+          invitationTokenExpiry: newExpiry,
+        });
+        organizationUser.invitationToken = newToken;
+      }
+
       const invitedOrganization = await this.organizationRepository.findOne({
         where: { id: organizationUser.organizationId },
         select: ['name', 'id'],

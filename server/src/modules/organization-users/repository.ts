@@ -28,11 +28,19 @@ export class OrganizationUsersRepository extends Repository<OrganizationUser> {
     isDefaultOrganization: boolean = false
   ): Promise<OrganizationUser> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const newInvitationToken = isInvite ? uuid.v4() : null;
+      const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+      const newInvitationTokenExpiry =
+        isInvite && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+          ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+          : null;
+
       return await manager.save(
         manager.create(OrganizationUser, {
           userId: user.id,
           organization,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: newInvitationToken,
+          invitationTokenExpiry: newInvitationTokenExpiry,
           status: isInvite ? WORKSPACE_USER_STATUS.INVITED : WORKSPACE_USER_STATUS.ACTIVE,
           source: isDefaultOrganization ? WORKSPACE_USER_SOURCE.SIGNUP : source,
           role: 'all-users',

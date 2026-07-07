@@ -50,6 +50,8 @@ export const authenticationService = {
   },
   signInViaOAuth,
   resetPassword,
+  verifyResetToken,
+  passwordExpiredReset,
   saveLoginOrganizationId,
   getLoginOrganizationId,
   deleteLoginOrganizationId,
@@ -274,6 +276,25 @@ function resetPassword(params) {
   };
 
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
+}
+
+function verifyResetToken(token) {
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  return fetch(`${config.apiUrl}/reset-password/verify-token?token=${encodeURIComponent(token)}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function passwordExpiredReset(email) {
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  };
+  return fetch(`${config.apiUrl}/password-expired-reset`, requestOptions).then(handleResponse);
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {

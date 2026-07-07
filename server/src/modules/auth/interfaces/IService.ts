@@ -10,6 +10,8 @@ export interface IAuthService {
   switchOrganization(response: Response, organizationId: string, user: User): Promise<any>;
   forgotPassword(email: string, redirectTo?: string): Promise<void>;
   resetPassword(token: string, password: string): Promise<void>;
+  verifyResetToken(token: string): Promise<{ valid: boolean }>;
+  passwordExpiredReset(email: string): Promise<void>;
 }
 
 export interface IWebsiteAuthService {

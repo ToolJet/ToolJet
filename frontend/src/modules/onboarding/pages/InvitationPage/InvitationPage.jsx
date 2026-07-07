@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { verifyToken, onboarding } from '@/modules/onboarding/services/onboarding.service';
 import { toast } from 'react-hot-toast';
-import { OnboardingQuestions } from '@/modules/onboarding/components';
+import { OnboardingQuestions, OnboardingBackgroundWrapper } from '@/modules/onboarding/components';
 import invitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
+import { LinkExpiredCard } from '@/modules/common/components';
 import { utils } from '@/modules/common/helpers';
 import { getSubpath } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -15,6 +16,7 @@ const PostOnboardingComponent = () => <TJLoader />;
 export const InvitationPage = (darkMode = false) => {
   const [isLoading, setIsLoading] = useState(true);
   const [fallBack, setFallBack] = useState(false);
+  const [linkExpiredVariant, setLinkExpiredVariant] = useState(null); // 'verification' | 'invite' | null
 
   const location = useLocation();
   const params = useParams();
@@ -77,15 +79,24 @@ export const InvitationPage = (darkMode = false) => {
         }
       })
       .catch((error) => {
-        const errMessage = utils.processErrorMessage(error);
-        toast.error(errMessage, { position: 'top-center' });
+        if (error?.statusCode === 410) {
+          const variant = error?.data?.message === 'WORKSPACE_INVITE_LINK_EXPIRED' ? 'invite' : 'verification';
+          setLinkExpiredVariant(variant);
+        } else {
+          const errMessage = utils.processErrorMessage(error);
+          toast.error(errMessage, { position: 'top-center' });
+          setFallBack(true);
+        }
         setIsLoading(false);
-        setFallBack(true);
       });
   };
 
   if (isLoading) {
     return <></>;
+  }
+
+  if (linkExpiredVariant) {
+    return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant={linkExpiredVariant} />} />;
   }
 
   if (fallBack) {

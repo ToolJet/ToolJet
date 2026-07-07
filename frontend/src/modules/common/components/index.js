@@ -27,6 +27,7 @@ import BaseSetupAdminPage from './BaseSetupAdminPage';
 import UsersTable from './UsersTable';
 import BaseColorSwatches from './BaseColorSwatches';
 import BaseComponentModuleTab from './BaseComponentModuleTab';
+import LinkExpiredCard from './LinkExpiredCard';
 
 export {
   FormTextInput,
@@ -58,4 +59,5 @@ export {
   BaseSetupAdminPage,
   UsersTable,
   BaseComponentModuleTab,
+  LinkExpiredCard,
 };

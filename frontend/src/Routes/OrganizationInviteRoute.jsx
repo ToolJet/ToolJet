@@ -5,6 +5,8 @@ import { appService, authenticationService } from '@/_services';
 import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { toast } from 'react-hot-toast';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
+import { LinkExpiredCard } from '@/modules/common/components';
+import { OnboardingBackgroundWrapper } from '@/modules/onboarding/components';
 import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { onboarding } from '@/modules/onboarding/services/onboarding.service';
 import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
@@ -12,6 +14,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
   /* Needed to pass invite token to signup page if the user doesn't exist */
   const [isLoading, setLoading] = useState(true);
   const [invalidLink, setLinkStatus] = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
   const params = useParams();
   const location = useLocation();
   const organizationToken = params.organizationToken || (isOrgazanizationOnlyInvite ? params.token : null);
@@ -80,6 +83,11 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
       const errorStatus = errorObj?.data?.statusCode;
       const errorMessage = errorObj?.error?.error || 'Something went wrong';
       switch (errorStatus) {
+        case 410: {
+          setLinkExpired(true);
+          setLoading(false);
+          break;
+        }
         case 406: {
           const isAccountNotActivated = errorObj?.error?.isAccountNotActivated;
           const redirectPath = errorObj?.error?.redirectPath;
@@ -198,6 +206,7 @@ export const OrganizationInviteRoute = ({ children, isOrgazanizationOnlyInvite, 
     }
   };
 
+  if (linkExpired) return <OnboardingBackgroundWrapper MiddleComponent={() => <LinkExpiredCard variant="invite" />} />;
   if (invalidLink) return <LinkExpiredPage />;
 
   const clonedElement = React.cloneElement(children || <></>, extraProps);

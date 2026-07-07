@@ -308,12 +308,31 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             organizationUser = await this.addUserToTheWorkspace(existingUser, signingUpOrganization, manager);
             await this.licenseUserService.validateUser(manager, organizationId);
           }
+          // Cloud: regenerate invitation token if expired before resending
+          let instanceInviteToken = existingUser.invitationToken;
+          if (
+            getTooljetEdition() === 'cloud' &&
+            existingUser.invitationTokenExpiry &&
+            new Date() > existingUser.invitationTokenExpiry
+          ) {
+            instanceInviteToken = uuid.v4();
+            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+            const newExpiry =
+              !isNaN(linkExpiryMins) && linkExpiryMins > 0
+                ? new Date(Date.now() + linkExpiryMins * 60 * 1000)
+                : null;
+            await this.userRepository.updateOne(
+              existingUser.id,
+              { invitationToken: instanceInviteToken, invitationTokenExpiry: newExpiry },
+              manager
+            );
+          }
           this.eventEmitter.emit('emailEvent', {
             type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
             payload: {
               to: existingUser.email,
               name: existingUser.firstName,
-              invitationtoken: existingUser.invitationToken,
+              invitationtoken: instanceInviteToken,
               organizationInvitationToken: organizationUser.invitationToken,
               organizationId: organizationUser.organizationId,
               organizationName: signingUpOrganization.name,
@@ -399,12 +418,31 @@ export class OnboardingUtilService implements IOnboardingUtilService {
             );
           }
           await this.licenseUserService.validateUser(manager, organizationId);
+          // Cloud: regenerate invitation token if expired before resending
+          let instanceInviteToken = existingUser.invitationToken;
+          if (
+            getTooljetEdition() === 'cloud' &&
+            existingUser.invitationTokenExpiry &&
+            new Date() > existingUser.invitationTokenExpiry
+          ) {
+            instanceInviteToken = uuid.v4();
+            const linkExpiryMins = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+            const newExpiry =
+              !isNaN(linkExpiryMins) && linkExpiryMins > 0
+                ? new Date(Date.now() + linkExpiryMins * 60 * 1000)
+                : null;
+            await this.userRepository.updateOne(
+              existingUser.id,
+              { invitationToken: instanceInviteToken, invitationTokenExpiry: newExpiry },
+              manager
+            );
+          }
           this.eventEmitter.emit('emailEvent', {
             type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
             payload: {
               to: existingUser.email,
               name: existingUser.firstName,
-              invitationtoken: existingUser.invitationToken,
+              invitationtoken: instanceInviteToken,
               organizationId: existingUser.defaultOrganizationId,
             },
           });
@@ -703,6 +741,14 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
 
       if (!existingUser) {
+        const newInvitationToken = isInvite ? uuid.v4() : null;
+        const isCloud = getTooljetEdition() === 'cloud';
+        const linkExpiryMinutes = parseInt(process.env.LINK_EXPIRY_MINUTES || '1440', 10);
+        const newInvitationTokenExpiry =
+          isInvite && isCloud && !isNaN(linkExpiryMinutes) && linkExpiryMinutes > 0
+            ? new Date(Date.now() + linkExpiryMinutes * 60 * 1000)
+            : null;
+
         user = manager.create(User, {
           email,
           firstName,
@@ -712,7 +758,8 @@ export class OnboardingUtilService implements IOnboardingUtilService {
           source,
           status,
           userType,
-          invitationToken: isInvite ? uuid.v4() : null,
+          invitationToken: newInvitationToken,
+          invitationTokenExpiry: newInvitationTokenExpiry,
           defaultOrganizationId: !shouldNotAttachWorkspace ? defaultOrganizationId || organizationId : null,
           createdAt: new Date(),
           updatedAt: new Date(),

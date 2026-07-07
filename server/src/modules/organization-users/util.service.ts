@@ -280,6 +280,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
         .filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT)
         .map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
+      ...(orgUser.invitationTokenExpiry ? { invitationTokenExpiry: orgUser.invitationTokenExpiry } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
         ? { accountSetupToken: orgUser.user.invitationToken }
         : {}),
@@ -336,6 +337,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       await manager.update(OrganizationUser, organizationUser.id, {
         status: WORKSPACE_USER_STATUS.ACTIVE,
         invitationToken: null,
+        invitationTokenExpiry: null,
       });
     }, manager);
   }

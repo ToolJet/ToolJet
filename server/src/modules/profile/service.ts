@@ -57,11 +57,15 @@ export class ProfileService implements IProfileService {
       const user = await manager.findOneOrFail(User, {
         where: { id: userId },
       });
+      const rawExpiryDays = parseInt(process.env.PASSWORD_EXPIRY_DAYS || '0', 10);
+      const passwordExpiryDays = !isNaN(rawExpiryDays) && rawExpiryDays > 0 ? rawExpiryDays : 30;
+      const passwordExpiry = new Date(Date.now() + passwordExpiryDays * 24 * 60 * 60 * 1000);
       await this.userRepository.updateOne(
         userId,
         {
           password,
           passwordRetryCount: 0,
+          passwordExpiry,
         },
         manager
       );
