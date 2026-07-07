@@ -696,32 +696,30 @@ export class AppImportExportService {
           ? await manager.find(DataQueryFolderMapping, { where: { childId: In(allChildIds) } })
           : [];
 
-      // Non-workflow apps store name/slug/icon/isPublic on app_versions, not on apps.*.
+      // All app types store name/slug/icon/isPublic on app_versions, not on apps.*.
       // Project the metadata onto the top-level export object so the consumer sees it on
       // app.json, then strip those fields from the version rows so they don't duplicate
-      // into per-version files. Workflows leave the export unchanged — apps.* already
-      // carries the canonical metadata for them.
-      if (appToExport?.type !== APP_TYPES.WORKFLOW) {
-        // The exported app-level metadata must reflect the VERSION being exported
-        // (e.g. a feature-branch row), not the default-branch canonical overlay that
-        // findById/overlayAppMetadata applies. For an app that only exists on a
-        // feature branch the default-branch row is still a stub, so the overlay
-        // resolves nothing and would serialize null name/icon/slug into git. Read the
-        // metadata from the primary exported version row (the raw app_versions columns)
-        // before stripping the per-version copies so the pushed JSON always carries it.
-        const primary = (versionId && appVersions.find((v) => v.id === versionId)) || appVersions[0];
-        if (primary) {
-          if ((primary as any).appName != null) appToExport.name = (primary as any).appName;
-          if ((primary as any).slug != null) appToExport.slug = (primary as any).slug;
-          if ((primary as any).icon != null) appToExport.icon = (primary as any).icon;
-          if ((primary as any).isPublic != null) appToExport.isPublic = (primary as any).isPublic;
-        }
-        for (const v of appVersions) {
-          delete (v as any).appName;
-          delete (v as any).slug;
-          delete (v as any).icon;
-          delete (v as any).isPublic;
-        }
+      // into per-version files.
+      //
+      // The exported app-level metadata must reflect the VERSION being exported
+      // (e.g. a feature-branch row), not the default-branch canonical overlay that
+      // findById/overlayAppMetadata applies. For an app that only exists on a
+      // feature branch the default-branch row is still a stub, so the overlay
+      // resolves nothing and would serialize null name/icon/slug into git. Read the
+      // metadata from the primary exported version row (the raw app_versions columns)
+      // before stripping the per-version copies so the pushed JSON always carries it.
+      const primary = (versionId && appVersions.find((v) => v.id === versionId)) || appVersions[0];
+      if (primary) {
+        if ((primary as any).appName != null) appToExport.name = (primary as any).appName;
+        if ((primary as any).slug != null) appToExport.slug = (primary as any).slug;
+        if ((primary as any).icon != null) appToExport.icon = (primary as any).icon;
+        if ((primary as any).isPublic != null) appToExport.isPublic = (primary as any).isPublic;
+      }
+      for (const v of appVersions) {
+        delete (v as any).appName;
+        delete (v as any).slug;
+        delete (v as any).icon;
+        delete (v as any).isPublic;
       }
 
       appToExport['components'] = componentsWithPermissionGroups;
@@ -1135,16 +1133,9 @@ export class AppImportExportService {
 
       await this.setEditingVersionAsLatestVersion(manager, resourceMapping.appVersionMapping, importedAppVersions);
 
-      // NOTE: App slug updation callback doesn't work while wrapped in transaction
-      // hence updating slug explicitly. Only workflows carry slug on apps.* —
-      // non-workflows keep apps.slug NULL (the real slug lives on app_versions).
       const newApp = await manager.findOne(App, {
         where: { id: importedApp.id },
       });
-      if (newApp.type === APP_TYPES.WORKFLOW) {
-        newApp.slug = importedApp.slug || uuid();
-        await manager.save(newApp);
-      }
       return { newApp, resourceMapping };
     }, manager);
   }
@@ -1377,15 +1368,13 @@ export class AppImportExportService {
     existingAppId?
   ): Promise<App> {
     return await catchDbException(async () => {
-      const isWorkflow = appParams?.type === APP_TYPES.WORKFLOW;
-
-      // Non-workflows store the user-facing name on app_versions.app_name and apps.name
-      // stays NULL — so the table-level APP_NAME_UNIQUE constraint doesn't catch cross-app
-      // collisions. Scoped to git-disabled workspaces only: git-enabled workspaces enforce
-      // uniqueness via the app_name trigger on the imported branch row. The imported row
-      // lands on the org's default branch (branch_id is NOT NULL now), so pre-flight there.
-      // Type-scoped so an app and a module may share a name (separate dashboards).
-      if (!isWorkflow && appParams?.name) {
+      // Name lives on app_versions.app_name for every type; apps.name stays NULL — so the
+      // table-level APP_NAME_UNIQUE constraint doesn't catch cross-app collisions. Scoped to
+      // git-disabled workspaces only: git-enabled workspaces enforce uniqueness via the
+      // app_name trigger on the imported branch row. The imported row lands on the org's
+      // default branch (branch_id is NOT NULL now), so pre-flight there. Type-scoped so an
+      // app and a module may share a name (separate dashboards).
+      if (appParams?.name) {
         const { isEnabled: isGitEnabled } = await this.gitSyncConfigsUtilService.getDetails(user?.organizationId);
         if (!isGitEnabled) {
           const conflictingNameVersion = await manager
@@ -1404,20 +1393,20 @@ export class AppImportExportService {
       }
 
       const appId = uuid();
-      // Workflows still carry name/slug/icon/isPublic on apps.*; non-workflow metadata
-      // lives on app_versions. apps.slug stays NULL for non-workflows — Postgres allows
-      // multiple NULLs on a UNIQUE column so this doesn't violate uniqueness.
+      // Metadata lives on app_versions for every type; apps.* stays NULL/null placeholder.
+      // Postgres allows multiple NULLs on apps.slug's UNIQUE column so this doesn't violate
+      // uniqueness.
       const importedApp = manager.create(App, {
         id: appId,
-        name: isWorkflow ? appParams.name : null,
+        name: null,
         type: appParams.type || APP_TYPES.FRONT_END,
         isMaintenanceOn: appParams.isMaintenanceOn || false,
         organizationId: user?.organizationId,
         userId: user.id, //fetch super admin user id for EE
         slug: null,
-        icon: isWorkflow ? appParams.icon : null,
+        icon: null,
         creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
-        isPublic: isWorkflow ? false : null,
+        isPublic: null,
         co_relation_id: appParams?.id,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1427,13 +1416,11 @@ export class AppImportExportService {
 
       // Stage metadata for downstream (createAppVersionsForImportedApp,
       // performLegacyAppImport) so they can write it to app_versions.
-      if (!isWorkflow) {
-        (importedApp as any).__importMetadata = {
-          appName: appParams.name || null,
-          icon: appParams.icon || null,
-          isPublic: appParams.isPublic ?? false,
-        };
-      }
+      (importedApp as any).__importMetadata = {
+        appName: appParams.name || null,
+        icon: appParams.icon || null,
+        isPublic: appParams.isPublic ?? false,
+      };
 
       return importedApp;
     }, [
@@ -3320,20 +3307,21 @@ export class AppImportExportService {
         }
 
         const isLastVersion = appVersion === appVersions[appVersions.length - 1];
-        // Non-workflows carry slug/appName/icon/isPublic on app_versions. Source the
+        // Every type carries slug/appName/icon/isPublic on app_versions. Source the
         // values from the staged importMetadata, falling back to per-version values
         // in the import payload.
-        const importMeta = !isWorkflow ? (importedApp as any).__importMetadata : null;
+        const importMeta = (importedApp as any).__importMetadata;
 
         // chk_app_versions_branch_metadata requires app_name AND slug to be non-null
         // whenever branch_id IS NOT NULL. Imports may carry NULL metadata (e.g. hydrate
         // temp apps, partial exports) — fall back to a random UUID placeholder for the
-        // slug so the INSERT doesn't violate the CHECK. Skipped for workflows (they store
-        // metadata on apps.* and the constraint is exempt for branch_id=NULL rows).
-        const resolvedSlug = !isWorkflow ? (appVersion.slug ?? uuid()) : undefined;
-        const resolvedAppName = !isWorkflow
-          ? (appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id)
-          : undefined;
+        // slug so the INSERT doesn't violate the CHECK. Workflows are exempt from the
+        // CHECK itself (branch_id is always NULL for them) but still get real metadata
+        // here now. importMeta?.slug carries the git-sync-preserved slug for workflow
+        // re-imports (see EE createImportedAppForUser); everything else falls through to
+        // a fresh random slug, same as before this migration.
+        const resolvedSlug = appVersion.slug ?? importMeta?.slug ?? uuid();
+        const resolvedAppName = appVersion.appName ?? importMeta?.appName ?? importedApp.name ?? importedApp.id;
 
         version = await manager.create(AppVersion, {
           appId: importedApp.id,
@@ -3359,12 +3347,10 @@ export class AppImportExportService {
           ...(importedApp.type === APP_TYPES.MODULE && {
             moduleReferenceId: appVersion.moduleReferenceId || uuid(),
           }),
-          ...(!isWorkflow && {
-            slug: resolvedSlug,
-            appName: resolvedAppName,
-            icon: appVersion.icon ?? importMeta?.icon ?? null,
-            isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
-          }),
+          slug: resolvedSlug,
+          appName: resolvedAppName,
+          icon: appVersion.icon ?? importMeta?.icon ?? null,
+          isPublic: appVersion.isPublic ?? importMeta?.isPublic ?? false,
         });
       }
       if (isNormalizedAppDefinitionSchema) {
@@ -3597,7 +3583,7 @@ export class AppImportExportService {
     const dataQueries = appParams?.dataQueries || [];
     let currentEnvironmentId = null;
 
-    const importMeta = importedApp.type !== APP_TYPES.WORKFLOW ? (importedApp as any).__importMetadata : null;
+    const importMeta = (importedApp as any).__importMetadata;
     const version = manager.create(AppVersion, {
       appId: importedApp.id,
       definition: appParams.definition,
