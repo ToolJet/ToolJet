@@ -170,6 +170,8 @@ const CascaderMenu = forwardRef<CascaderMenuRef, CascaderMenuProps>(
           style={{
             display: 'flex',
             flexDirection: 'column',
+            // Gap keeps adjacent hover/selected row backgrounds from touching.
+            gap: '2px',
             padding: '8px',
             maxHeight: '260px',
             overflowY: 'auto',
