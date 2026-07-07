@@ -1,6 +1,5 @@
 import { INestApplication } from '@nestjs/common';
 import { VersionRepository } from '@modules/versions/repository';
-import { VersionUtilService } from '@ee/versions/util.service';
 import { AppVersion } from '@entities/app_version.entity';
 import { initTestApp, closeTestApp } from 'test-helper';
 import { createAdmin, createApplication, createApplicationVersion } from 'test-helper';
@@ -13,24 +12,7 @@ describe('VersionRepository — workflow metadata overlay (post-migration)', () 
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
-    // NOTE: plain `app.get(VersionRepository)` resolves to a broken, unrelated plain
-    // TypeORM `Repository` instance (no custom methods) instead of the real
-    // `VersionRepository` singleton -- root cause is a pre-existing, unrelated bug in
-    // `apps/module.ts`: its `TypeOrmModule.forFeature([...])` call mistakenly includes
-    // `VersionRepository` in the entities list. `@nestjs/typeorm`'s `getRepositoryToken`
-    // returns the class itself as the token for any class whose prototype is already a
-    // `Repository` subclass, so this creates and *exports* a second, malformed provider
-    // under the exact same DI token (`VersionRepository`) as the correct one -- which wins
-    // a global, non-strict `app.get()` lookup (`app.select(VersionModule)` doesn't help
-    // either -- Nest can't select this dynamically-registered module by class reference
-    // from outside its own registration graph). Instead, resolve the correct instance via
-    // `VersionUtilService`, which is declared directly inside `VersionModule` (unaffected
-    // by the apps/module.ts collision) and constructor-injects the real `VersionRepository`
-    // as `protected readonly versionRepository` -- accessible at runtime via bracket
-    // notation since `protected` is compile-time-only in TS.
-    // Not fixed here: out of this task's scope, pre-existing, and unrelated to the overlay
-    // guard removal below -- flagged for the controller/human as a real, separate bug.
-    versionRepository = (app.get(VersionUtilService) as any).versionRepository;
+    versionRepository = app.get(VersionRepository);
   });
   afterAll(async () => {
     await closeTestApp(app);

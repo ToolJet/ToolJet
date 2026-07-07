@@ -7,7 +7,7 @@ import { INestApplication } from '@nestjs/common';
 // resolves AppsUtilService via a relative import). The EE subclass does not
 // override create(), so this still exercises the CE create() logic under test.
 import { AppsUtilService } from '@ee/apps/util.service';
-import { AppVersion } from '@entities/app_version.entity';
+import { VersionRepository } from '@modules/versions/repository';
 import { initTestApp, closeTestApp } from 'test-helper';
 import { createAdmin, ensureAppEnvironments } from 'test-helper';
 import { APP_TYPES } from '@modules/apps/constants';
@@ -17,10 +17,12 @@ import { getDefaultDataSource } from 'test-helper';
 describe('AppsUtilService.create — workflow metadata routing', () => {
   let app: INestApplication;
   let appsUtilService: AppsUtilService;
+  let versionRepository: VersionRepository;
 
   beforeAll(async () => {
     ({ app } = await initTestApp({ edition: 'ee', plan: 'enterprise' }));
     appsUtilService = app.get(AppsUtilService);
+    versionRepository = app.get(VersionRepository);
   });
   afterAll(async () => {
     await closeTestApp(app);
@@ -50,12 +52,7 @@ describe('AppsUtilService.create — workflow metadata routing', () => {
     expect(createdApp.name).toBeNull();
     expect(createdApp.icon).toBeUndefined();
 
-    // Fetch via the raw entity repository, not app.get(VersionRepository): AppsModule's
-    // TypeOrmModule.forFeature([...]) mistakenly lists VersionRepository as if it were an
-    // @Entity (module.ts:66), registering a second, broken provider under the identical
-    // class token. A global app.get() lookup can resolve that dormant broken provider
-    // instead of the real one, throwing EntityMetadataNotFoundError on first use.
-    const versions = await ds.getRepository(AppVersion).find({ where: { appId: createdApp.id } });
+    const versions = await versionRepository.find({ where: { appId: createdApp.id } });
     expect(versions).toHaveLength(1);
     expect(versions[0]).toMatchObject({
       appName: 'My New Workflow',
