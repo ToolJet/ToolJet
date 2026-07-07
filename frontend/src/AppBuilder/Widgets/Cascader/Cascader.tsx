@@ -207,6 +207,8 @@ export const Cascader = ({
     fireEvent('onBlur');
   };
 
+  const isDocumentInactive = () => typeof document !== 'undefined' && document.hasFocus?.() === false;
+
   const openMenu = () => {
     if (interactionBlocked || isOpen) return;
     controlRef.current?.focus();
@@ -214,10 +216,14 @@ export const Cascader = ({
     triggerFocusEvent();
   };
 
-  const closeMenu = () => {
+  const closeMenu = ({ shouldFireBlurEvent = !isDocumentInactive() }: { shouldFireBlurEvent?: boolean } = {}) => {
     if (!isOpen && !hasFocusEventRef.current) return;
     setIsOpen(false);
-    triggerBlurEvent();
+    if (shouldFireBlurEvent) triggerBlurEvent();
+    else {
+      setIsFocused(false);
+      setShowValidationError(true);
+    }
   };
 
   const toggleOpen = () => {
@@ -334,7 +340,7 @@ export const Cascader = ({
               onClick={toggleOpen}
               onKeyDown={handleKeyDown}
               onFocus={triggerFocusEvent}
-              onBlur={closeMenu}
+              onBlur={() => closeMenu()}
             >
               {iconVisibility && (
                 <TablerIconComponent
