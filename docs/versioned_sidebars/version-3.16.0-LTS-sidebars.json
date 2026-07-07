@@ -365,6 +365,7 @@
                 "widgets/file-picker",
                 "widgets/file-input",
                 "widgets/file-button",
+                "widgets/flex-container",
                 {
                   "type": "category",
                   "label": "Form",
