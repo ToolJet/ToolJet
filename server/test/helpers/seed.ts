@@ -707,14 +707,17 @@ export async function createDataSource(
     })
   );
 
-  // Create default DataSourceVersion required by DataSourceVersionOptions
+  // Create default DataSourceVersion required by DataSourceVersionOptions.
+  // data_source_versions.branch_id is column-level NOT NULL (no workflow carve-out,
+  // unlike app_versions) — mirror the app version's already-resolved branchId rather
+  // than hardcoding null, which trips the NOT NULL constraint for every non-workflow app.
   await ds.manager.save(
     ds.manager.create(DataSourceVersion, {
       dataSourceId: dataSource.id,
       name: dataSource.name,
       isDefault: true,
       isActive: true,
-      branchId: null,
+      branchId: appVersion?.branchId ?? null,
     })
   );
 
@@ -761,8 +764,12 @@ export async function createDataSourceOption(_nestApp: INestApplication, { dataS
     Object.assign(parsedOptions, options);
   }
 
+  // DataSourceVersion.isDefault was dropped by MakeDataSourceVersionBranchIdNotNullAndDropIsDefault
+  // — createDataSource only ever creates one DSV row per data source in these fixtures, so
+  // dataSourceId alone identifies it (mirrors the migration's "role now carried by the org's
+  // default-branch row" note; there's no branching here to disambiguate further).
   const dsv = await ds.manager.findOneOrFail(DataSourceVersion, {
-    where: { dataSourceId: dataSource.id, isDefault: true },
+    where: { dataSourceId: dataSource.id },
   });
 
   return await ds.manager.save(
