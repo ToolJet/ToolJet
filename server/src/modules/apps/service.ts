@@ -99,12 +99,14 @@ export class AppsService implements IAppsService {
         branchId = options.defaultBranch?.id;
       }
 
-      // Reject app creation on the default branch when branching is enabled.
+      // Reject app creation on the default branch when multi-branching is enabled.
       // Apps must be authored on feature branches and merged in; creating
       // directly on main would bypass the git-sync review flow entirely.
+      // Single-branch mode (and no-multi-branch-license) is exempt — there are no feature
+      // branches, so the default branch IS the working branch.
       if (type !== APP_TYPES.WORKFLOW && branchId) {
-        const orgGit = await this.organizationGitRepository?.findOrgGitByOrganizationId(user.organizationId);
-        if (orgGit?.isBranchingEnabled) {
+        const { isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(user.organizationId);
+        if (isMultiBranchingEnabled) {
           const targetBranch = await manager.findOne(WorkspaceBranch, {
             where: { id: branchId, organizationId: user.organizationId },
             select: ['id', 'isDefault'],
@@ -312,14 +314,17 @@ export class AppsService implements IAppsService {
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
     const { name, editingVersionId } = appUpdateDto;
-    const { isEnabled: isGitSyncEnabled } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
+    const { isEnabled: isGitSyncEnabled, isMultiBranchingEnabled } = await this.gitSyncConfigsUtilService.getDetails(
+      app.organizationId
+    );
 
-    // Block metadata edits on the default branch when git-sync is enabled. These fields
+    // Block metadata edits on the default branch when multi-branching is enabled. These fields
     // (name/slug/icon/is_public) must be edited from a feature branch — the change then
     // flows to the default branch via push + merge. Workflows are exempt because they
-    // keep metadata on apps.* and don't participate in branching. For non-git-sync
-    // workspaces no block applies; util.service.update writes to all VERSION rows.
-    if (isGitSyncEnabled && app.type !== APP_TYPES.WORKFLOW) {
+    // keep metadata on apps.* and don't participate in branching. Single-branch mode (and
+    // non-git-sync workspaces) are exempt too — the default branch is the working branch;
+    // util.service.update writes to all VERSION rows.
+    if (isGitSyncEnabled && isMultiBranchingEnabled && app.type !== APP_TYPES.WORKFLOW) {
       const blockedFields: string[] = [];
       if (appUpdateDto.name !== undefined) blockedFields.push('name');
       if (appUpdateDto.slug !== undefined) blockedFields.push('slug');

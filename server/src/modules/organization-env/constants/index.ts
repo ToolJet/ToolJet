@@ -1,4 +1,8 @@
 export const GIT_ENV_KEYS = {
+  // Workspace-level branching mode — provider-agnostic (mirrors is_branching_enabled in the
+  // git-sync config form). Value is a boolean string ('true' / 'false'); defaults to true
+  // (multi-branch). Set to 'false' for single-branch mode.
+  BRANCHING_ENABLED: 'GIT_BRANCHING_ENABLED',
   HTTPS: {
     URL: 'GITHUB_URL',
     BRANCH: 'GITHUB_BRANCH',

@@ -25,10 +25,11 @@ export function WorkspaceBranchDropdown() {
   const buttonRef = useRef(null);
   const popoverRef = useRef(null);
 
-  const { branches, currentBranch, orgGitConfig } = useWorkspaceBranchesStore((state) => ({
+  const { branches, currentBranch, orgGitConfig, isMultiBranchingEnabled } = useWorkspaceBranchesStore((state) => ({
     branches: state.branches,
     currentBranch: state.currentBranch,
     orgGitConfig: state.orgGitConfig,
+    isMultiBranchingEnabled: state.isMultiBranchingEnabled,
   }));
 
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -479,6 +480,8 @@ export function WorkspaceBranchDropdown() {
                       setShowDropdown(false);
                       setShowCreateModal(true);
                     }}
+                    disabled={!isMultiBranchingEnabled}
+                    title={!isMultiBranchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
                     data-cy="workspace-create-branch-btn"
                   >
                     <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
@@ -491,6 +494,8 @@ export function WorkspaceBranchDropdown() {
                     setShowDropdown(false);
                     setShowSwitchModal(true);
                   }}
+                  disabled={!isMultiBranchingEnabled}
+                  title={!isMultiBranchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
                   data-cy="workspace-switch-branch-btn"
                 >
                   <SolidIcon name="refresh" width="14" />

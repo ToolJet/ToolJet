@@ -20,7 +20,7 @@ const UPDATE_STATUS = {
   NONE: 'NONE',
 };
 
-export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', onClose }) {
+export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [commitMessage, setCommitMessage] = useState('');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -39,22 +39,28 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
 
-  const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
-    (state) => ({
+  const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling, isMultiBranchingEnabled } =
+    useWorkspaceBranchesStore((state) => ({
       orgGitConfig: state.orgGitConfig,
       branches: state.branches || [],
       remoteBranches: state.remoteBranches || [],
       currentBranch: state.currentBranch,
       isPushing: state.isPushing,
       isPulling: state.isPulling,
-    })
-  );
+      isMultiBranchingEnabled: state.isMultiBranchingEnabled,
+    }));
   const actions = useWorkspaceBranchesStore((state) => state.actions);
 
   const repoUrl = orgGitConfig?.repo_url || orgGitConfig?.repoUrl || '';
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const gitType = orgGitConfig?.git_type || orgGitConfig?.gitType || 'github_https';
   const currentBranchName = currentBranch?.name || defaultGitBranch;
+  // Pull-only ONLY when actually on the default branch AND multi-branching is enabled. In
+  // single-branch mode the default branch is pushable — show the push/pull tabs like a feature
+  // branch. Derived from the store (single source of truth) rather than a caller-passed prop.
+  const realOnDefaultBranch =
+    currentBranch?.is_default || currentBranch?.isDefault || currentBranch?.name === defaultGitBranch;
+  const isOnDefaultBranch = realOnDefaultBranch && isMultiBranchingEnabled !== false;
 
   const gitSyncUrl = (() => {
     if (gitType === 'gitlab') return repoUrl;
@@ -685,7 +691,7 @@ export function WorkspaceGitSyncModal({ isOnDefaultBranch, initialTab = 'push', 
                 </div>
               )}
             </div>
-            {/* {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()} */}
+            {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>{renderModalBody()}</Modal.Body>

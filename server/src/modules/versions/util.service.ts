@@ -269,7 +269,9 @@ export class VersionUtilService implements IVersionUtilService {
       manager
     );
 
-    if (organizationGit && organizationGit.isBranchingEnabled && versionType !== AppVersionType.BRANCH) {
+    // Applies whenever git sync is on (single- or multi-branch): git needs exactly one non-branch
+    // draft to push. branch_id is mandatory, so this branch-aware rule isn't gated on multi-branch.
+    if (organizationGit && versionType !== AppVersionType.BRANCH) {
       const existingDraftVersion = await this.versionRepository.findOne({
         where: {
           appId: app.id,
@@ -279,7 +281,7 @@ export class VersionUtilService implements IVersionUtilService {
       });
 
       if (existingDraftVersion) {
-        throw new BadRequestException('Only one draft version is allowed when branching is enabled.');
+        throw new BadRequestException('Only one draft version is allowed when git sync is enabled.');
       }
     }
   }
@@ -300,9 +302,10 @@ export class VersionUtilService implements IVersionUtilService {
       organizationId,
       manager
     );
-    if (organizationGit && organizationGit.isBranchingEnabled) {
-      // Only allow one draft version of type 'version' (not branch) per branch.
-      // Scoping by branchId ensures drafts on different branches don't conflict.
+    if (organizationGit) {
+      // Only allow one draft version of type 'version' (not branch) per branch. Runs for single-
+      // and multi-branch alike (branch_id is mandatory); scoping by branchId keeps drafts on
+      // different branches from conflicting.
       const isCreatingBranchVersion = versionType === AppVersionType.BRANCH;
 
       if (!isCreatingBranchVersion) {

@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { OrganizationGitSync } from '@entities/organization_git_sync.entity';
 import { WorkspaceBranch } from '@entities/workspace_branch.entity';
-import { GitSyncDetails, IGitSyncConfigsUtilService } from './Interfaces/IUtilService';
+import { GetDetailsOptions, GitSyncDetails, IGitSyncConfigsUtilService } from './Interfaces/IUtilService';
 
 const logger = new Logger('GitSyncConfigsUtilService');
 
@@ -92,19 +92,20 @@ export class GitSyncConfigsUtilService implements IGitSyncConfigsUtilService {
   async getDetails(
     organizationId: string,
     _orgGitObj?: OrganizationGitSync,
-    _isGetConfigs?: boolean,
-    isGitMandatory: boolean = false
+    options: GetDetailsOptions = {}
   ): Promise<GitSyncDetails> {
-    // Mandatory-git callers expect git to be enabled; on CE it never is, so surface the
-    // same 451 the EE license gate would. Non-mandatory callers get the disabled shape,
-    // still carrying the org's default branch.
-    if (isGitMandatory) {
+    const { isGitMandatory = false, isMultiBranchingMandatory = false } = options;
+    // Mandatory-git (or mandatory multi-branch, which requires git) callers expect git to be
+    // enabled; on CE it never is, so surface the same 451 the EE license gate would. Non-mandatory
+    // callers get the disabled shape, still carrying the org's default branch.
+    if (isGitMandatory || isMultiBranchingMandatory) {
       throw new HttpException('Git Sync is not available on the current license plan.', 451);
     }
     return dbTransactionWrap(async (manager: EntityManager) => {
       const defaultBranch = await resolveDefaultBranch(manager, organizationId);
       return {
         isEnabled: false,
+        isMultiBranchingEnabled: false,
         options: {
           type: null,
           defaultBranch: { id: defaultBranch.id, name: defaultBranch.name },

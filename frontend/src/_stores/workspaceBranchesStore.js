@@ -19,7 +19,16 @@ const initialState = {
   isDeletingBranch: false,
   deleteBranchError: null,
   hasUnsyncedDatasources: false,
+  // When false (single-branch mode) only the default branch is available; the UI hides feature
+  // branches and disables branch create / switch. Defaults to true (multi-branch).
+  isMultiBranchingEnabled: true,
 };
+
+// Reads the multi-branching flag from the list() response (snake_case via the API interceptor,
+// camelCase as a fallback). Defaults to true so non-git / older responses keep multi-branch UI.
+function readMultiBranchingEnabled(data) {
+  return data?.is_multi_branching_enabled ?? data?.isMultiBranchingEnabled ?? true;
+}
 
 // Helper to resolve current branch from branches list + active ID
 function resolveCurrentBranch(branches, activeBranchId) {
@@ -77,6 +86,7 @@ export const useWorkspaceBranchesStore = create(
               branches,
               activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
               currentBranch: isGitSyncEnabled ? currentBranch : null,
+              isMultiBranchingEnabled: readMultiBranchingEnabled(branchData),
               orgGitConfig: gitStatus,
               isLoading: false,
               isInitialized: true,
@@ -94,7 +104,12 @@ export const useWorkspaceBranchesStore = create(
             // URL is the source of truth; fall back to server active/default.
             const currentBranch = resolveActiveBranch(branches, serverActiveBranchId);
             setActiveBranch(currentBranch);
-            set({ branches, activeBranchId: currentBranch?.id || null, currentBranch });
+            set({
+              branches,
+              activeBranchId: currentBranch?.id || null,
+              currentBranch,
+              isMultiBranchingEnabled: readMultiBranchingEnabled(data),
+            });
           } catch (error) {
             console.error('Failed to fetch branches:', error);
           }
@@ -278,6 +293,7 @@ export const useWorkspaceBranchesStore = create(
               branches,
               activeBranchId: isGitSyncEnabled ? currentBranch?.id || null : null,
               currentBranch: isGitSyncEnabled ? currentBranch : null,
+              isMultiBranchingEnabled: readMultiBranchingEnabled(branchData),
               orgGitConfig: gitStatus,
               isLoading: false,
               isInitialized: true,

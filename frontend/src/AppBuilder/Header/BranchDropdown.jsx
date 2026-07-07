@@ -139,6 +139,7 @@ export function BranchDropdown({ appId, organizationId }) {
     orgGit,
     selectedVersion,
     developmentVersions,
+    isGitSyncConfigured,
   } = useStore((state) => ({
     currentBranch: state.currentBranch,
     allBranches: state.allBranches,
@@ -154,6 +155,7 @@ export function BranchDropdown({ appId, organizationId }) {
     orgGit: state.orgGit,
     selectedVersion: state.selectedVersion,
     developmentVersions: state.developmentVersions,
+    isGitSyncConfigured: state.isGitSyncConfigured,
   }));
 
   const darkMode = localStorage.getItem('darkMode') === 'true' || false;
@@ -438,7 +440,9 @@ export function BranchDropdown({ appId, organizationId }) {
     });
   };
 
-  if (!branchingEnabled) {
+  // Show whenever git sync is configured — including single-branch mode (branchingEnabled=false),
+  // where the selector still displays the default branch (branch create/switch are disabled below).
+  if (!isGitSyncConfigured) {
     return null;
   }
 
@@ -671,6 +675,8 @@ export function BranchDropdown({ appId, organizationId }) {
                     setShowDropdown(false);
                     setShowCreateModal(true);
                   }}
+                  disabled={!branchingEnabled}
+                  title={!branchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
                   data-cy="create-branch-btn"
                 >
                   <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
@@ -683,6 +689,8 @@ export function BranchDropdown({ appId, organizationId }) {
                       setShowDropdown(false);
                       setShowSwitchModal(true);
                     }}
+                    disabled={!branchingEnabled}
+                    title={!branchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
                     data-cy="switch-branch-btn"
                   >
                     <SolidIcon name="refresh" width="14" />
