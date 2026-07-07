@@ -1,282 +1,296 @@
-import {
-  listWorkspaceModules,
-  exportModule,
-  importModule,
-  importApp,
-  fetchWorkspaceApps,
-} from "Support/utils/externalApi";
 import { fake } from "Fixtures/fake";
 import { sanitize } from "Support/utils/common";
+import {
+  emptyAuthHeader,
+  exportModule,
+  fetchWorkspaceApps,
+  importApp,
+  importModule,
+  invalidAuthHeader,
+  listWorkspaceModules,
+} from "Support/utils/externalApi";
 
-describe("ToolJet: Modules API Validation", () => {
+describe("ToolJet: Modules API", () => {
   const data = {};
+  const nonExistentId = "00000000-0000-0000-0000-000000000099";
   const fixtureFile = "templates/import_module.json";
+  let workspaceId;
+  let workspaceId2;
+  let workspaceName;
+  let workspaceName2;
   let requestData;
 
-  beforeEach(() => {
-    data.workspaceName = sanitize(fake.lastName);
-    data.workspaceSlug = sanitize(fake.lastName);
-    cy.apiLogin();
-    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then(
+  const importAndGetModuleId = (moduleName) => {
+    importModule(workspaceId, { ...requestData, appName: moduleName }).then(
       (response) => {
-        Cypress.env("workspaceId", response.body.organization_id);
-      }
+        expect(response.status).to.eq(201);
+      },
     );
-    return cy.fixture(fixtureFile).then((d) => {
-      requestData = d;
+
+    return listWorkspaceModules(workspaceId).then((response) => {
+      expect(response.status).to.eq(200);
+      const importedModule = response.body.modules.find(
+        (m) => m.name === moduleName,
+      );
+      expect(importedModule, `module "${moduleName}" in listing`).to.exist;
+      return importedModule.id;
+    });
+  };
+
+  beforeEach(() => {
+    // Workspace-scoped login: the JWT must include the spec workspace or
+    // internal APIs (modules/apps cleanup) reject with 401. Also sets env workspaceId.
+    cy.then(() =>
+      workspaceId
+        ? cy.apiLogin("dev@tooljet.io", "password", workspaceId)
+        : cy.apiLogin()
+    );
+    return cy.fixture(fixtureFile).then((fixture) => {
+      requestData = fixture;
     });
   });
 
   afterEach(() => {
-    cy.apiDeleteAllApps();
+    cy.then(() => {
+      if (!workspaceId) return;
+      cy.apiDeleteAllModules();
+      cy.apiDeleteAllApps();
+    });
   });
 
-  it("should validate List Modules API flows", () => {
-    const workspaceId = Cypress.env("workspaceId");
+  // setup — shared workspaces for this spec (runs as a test so it gets retries)
+  it("should setup workspaces for the spec", () => {
+    const suffix = Date.now().toString(36);
+    workspaceName = `${sanitize(fake.lastName)}${suffix}`;
+    workspaceName2 = `${sanitize(fake.firstName)}${suffix}`;
 
-    // Fresh workspace returns empty list
+    cy.apiCreateWorkspace(workspaceName, workspaceName).then((response) => {
+      expect(response.body.organization_id, "spec workspace id").to.exist;
+      workspaceId = response.body.organization_id;
+    });
+
+    cy.apiCreateWorkspace(workspaceName2, workspaceName2).then((response) => {
+      expect(response.body.organization_id, "second workspace id").to.exist;
+      workspaceId2 = response.body.organization_id;
+      Cypress.env("workspaceId", workspaceId);
+    });
+  });
+
+  it("verify list modules API", () => {
     listWorkspaceModules(workspaceId).then((response) => {
       expect(response.status).to.eq(200);
       expect(response.body).to.have.property("modules");
       expect(response.body.modules).to.be.an("array").and.have.length(0);
     });
 
-    // Import a module so the list is non-empty
     importModule(workspaceId, requestData).then((response) => {
       expect(response.status).to.eq(201);
     });
 
-    // List returns all required fields
     listWorkspaceModules(workspaceId).then((response) => {
       expect(response.status).to.eq(200);
       const modules = response.body.modules;
       expect(modules, "modules list from API").to.be.an("array").and.not.be
         .empty;
 
-      const mod = modules[0];
-      expect(mod).to.have.property("id");
-      expect(mod).to.have.property("name");
-      expect(mod).to.have.property("icon");
-      expect(mod).to.have.property("slug");
-      expect(mod).to.have.property("isPublic");
-      expect(mod).to.have.property("createdAt");
-      expect(mod).to.have.property("updatedAt");
-      expect(mod.isPublic).to.be.a("boolean");
+      const importedModule = modules[0];
+      expect(importedModule).to.have.property("id");
+      expect(importedModule).to.have.property("name");
+      expect(importedModule).to.have.property("icon");
+      expect(importedModule).to.have.property("slug");
+      expect(importedModule).to.have.property("isPublic");
+      expect(importedModule).to.have.property("createdAt");
+      expect(importedModule).to.have.property("updatedAt");
+      expect(importedModule.isPublic).to.be.a("boolean");
 
-      // Endpoint must only return modules, not regular apps
       modules.forEach((m) => {
         if (Object.prototype.hasOwnProperty.call(m, "type")) {
           expect(m.type).to.eq("module");
         }
       });
     });
+  });
 
-    // Invalid workspace ID (non-UUID) → 400
+  it("verify list modules API fails with invalid and non-existent workspace", () => {
     listWorkspaceModules(`${workspaceId}invalid`).then((response) => {
-      expect(response.status).to.be.oneOf([400, 404]);
+      expect(response.status).to.eq(400);
+      expect(response.body.message).to.include("Workspace Id must be UUID");
     });
 
-    // Non-existent valid UUID workspace → error
-    listWorkspaceModules("00000000-0000-0000-0000-000000000099").then(
-      (response) => {
-        expect(response.status).to.be.oneOf([400, 404]);
-      }
-    );
+    listWorkspaceModules(nonExistentId).then((response) => {
+      expect(response.status).to.eq(400);
+      expect(response.body.message).to.include("Invalid workspaceId");
+    });
+  });
 
-    // Invalid auth token → 403
-    listWorkspaceModules(workspaceId, {
-      Authorization: "Basic xyz",
-    }).then((response) => {
+  it("verify list modules API rejects invalid and empty auth tokens", () => {
+    listWorkspaceModules(workspaceId, invalidAuthHeader).then((response) => {
       expect(response.status).to.eq(403);
     });
 
-    // Empty auth token → 403
-    listWorkspaceModules(workspaceId, {
-      Authorization: "",
-    }).then((response) => {
+    listWorkspaceModules(workspaceId, emptyAuthHeader).then((response) => {
       expect(response.status).to.eq(403);
     });
   });
 
-  it("should validate Export Module API flows", () => {
-    const workspaceId = Cypress.env("workspaceId");
-    let moduleId;
-
-    // Arrange: import a named module so we have a moduleId to export
-    importModule(workspaceId, {
-      ...requestData,
-      appName: `export-test-${Date.now()}`,
-    }).then((response) => {
-      expect(response.status).to.eq(201);
-    });
-
-    listWorkspaceModules(workspaceId).then((response) => {
-      expect(response.status).to.eq(200);
-      const modules = response.body.modules;
-      expect(modules, "modules list from API").to.be.an("array").and.not.be
-        .empty;
-
-      moduleId = modules[0].id;
-      expect(moduleId, "module id from API response").to.exist;
-
-      // Valid export returns app array + tooljet_version + TJDB by default
+  it("verify export module API", () => {
+    importAndGetModuleId(`export-test-${Date.now()}`).then((moduleId) => {
       exportModule(workspaceId, moduleId).then((response) => {
         expect(response.status).to.eq(201);
-        expect(response.body.app, "app array in response")
-          .to.be.an("array")
-          .and.not.be.empty;
+        expect(response.body.app, "app array in response").to.be.an("array").and
+          .not.be.empty;
         expect(response.body.tooljet_version).to.be.a("string");
         expect(
           response.body,
-          "TJDB should be included by default"
+          "TJDB should be included by default",
         ).to.have.property("tooljet_database");
       });
+    });
+  });
 
-      // exportTJDB=false → no tooljet_database key
+  it("verify export module API with exportTJDB=false and exportTJDB=true", () => {
+    importAndGetModuleId(`export-tjdb-${Date.now()}`).then((moduleId) => {
       exportModule(workspaceId, moduleId, "?exportTJDB=false").then(
         (response) => {
           expect(response.status).to.eq(201);
           expect(
             response.body,
-            "should not include tooljet_database"
+            "should not include tooljet_database",
           ).not.to.have.property("tooljet_database");
-        }
+        },
       );
 
-      // exportTJDB=true → tooljet_database key present in response
       exportModule(workspaceId, moduleId, "?exportTJDB=true").then(
         (response) => {
           expect(response.status).to.eq(201);
           expect(
             response.body,
-            "should include tooljet_database"
+            "should include tooljet_database",
           ).to.have.property("tooljet_database");
-        }
+        },
       );
+    });
+  });
 
-      // Invalid moduleId (non-UUID) → 400
-      exportModule(workspaceId, `${moduleId}invalid`).then((response) => {
-        expect(
-          response.status,
-          "invalid module ID should return 400 or 404"
-        ).to.be.oneOf([400, 404]);
-      });
-
-      // Invalid workspaceId (non-UUID) → 400
-      exportModule(`${workspaceId}invalid`, moduleId).then((response) => {
-        expect(
-          response.status,
-          "invalid workspace ID should return 400 or 404"
-        ).to.be.oneOf([400, 404]);
-      });
-
-      // Non-existent moduleId (valid UUID) → 400
-      exportModule(workspaceId, "00000000-0000-0000-0000-000000000099").then(
-        (response) => {
-          expect(response.status).to.eq(400);
-        }
-      );
-
-      // moduleId from a different workspace → 400
-      data.workspaceName = sanitize(fake.lastName);
-      data.workspaceSlug = sanitize(fake.lastName);
-      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug).then(
-        (res) => {
-          const otherWorkspaceId = res.body.organization_id;
-          exportModule(otherWorkspaceId, moduleId).then((response) => {
-            expect(response.status).to.eq(400);
-          });
-        }
-      );
-
-      // Invalid auth token → 403
-      exportModule(workspaceId, moduleId, "", {
-        Authorization: "Basic xyz",
-      }).then((response) => {
-        expect(response.status).to.eq(403);
-      });
-
-      // Empty auth token → 403
-      exportModule(workspaceId, moduleId, "", {
-        Authorization: "",
-      }).then((response) => {
-        expect(response.status).to.eq(403);
-      });
+  it("verify export module API fails with invalid and non-existent module ID", () => {
+    exportModule(workspaceId, "not-a-uuid").then((response) => {
+      expect(response.status).to.eq(400);
+      expect(response.body.message).to.include("Module Id must be UUID");
     });
 
-    // Regular app ID (not a module) passed to export → 400
+    exportModule(workspaceId, nonExistentId).then((response) => {
+      expect(response.status).to.eq(400);
+    });
+  });
+
+  it("verify export module API fails for module from another workspace", () => {
+    importAndGetModuleId(`cross-workspace-${Date.now()}`).then((moduleId) => {
+      exportModule(workspaceId2, moduleId).then((exportResponse) => {
+        expect(exportResponse.status).to.eq(400);
+      });
+    });
+  });
+
+  it("verify export module API fails for regular app ID", () => {
     cy.fixture("templates/import_unnamed_file.json").then((appData) => {
       importApp(workspaceId, appData).then((response) => {
         expect(response.status).to.eq(201);
       });
 
       fetchWorkspaceApps(workspaceId).then((response) => {
+        expect(response.status).to.eq(200);
         const apps = Array.isArray(response.body)
           ? response.body
           : response.body.apps;
         expect(apps, "apps list from API").to.be.an("array").and.not.be.empty;
-        const regularApp = apps[apps.length - 1];
+        const regularApp = apps[0];
         expect(regularApp.id, "regular app id").to.exist;
 
         exportModule(workspaceId, regularApp.id).then((exportResponse) => {
           expect(
             exportResponse.status,
-            "exporting a regular app via modules endpoint should fail"
+            "exporting a regular app via modules endpoint should fail",
           ).to.eq(400);
         });
       });
     });
   });
 
-  it("should validate Import Module API flows", () => {
-    const workspaceId = Cypress.env("workspaceId");
+  it("verify export module API rejects invalid and empty auth tokens", () => {
+    importAndGetModuleId(`export-auth-${Date.now()}`).then((moduleId) => {
+      exportModule(workspaceId, moduleId, "", invalidAuthHeader).then(
+        (response) => {
+          expect(response.status).to.eq(403);
+        },
+      );
 
-    // Valid import returns success message
-    importModule(workspaceId, requestData).then((response) => {
-      expect(response.status).to.eq(201);
-      expect(response.body.message).to.include("Module imported successfully.");
+      exportModule(workspaceId, moduleId, "", emptyAuthHeader).then(
+        (response) => {
+          expect(response.status).to.eq(403);
+        },
+      );
     });
+  });
 
-    // Import with appName override → module created with that name
-    const overrideName = `override-${Date.now()}`;
-    importModule(workspaceId, { ...requestData, appName: overrideName }).then(
+  it("verify import module API", () => {
+    const moduleName = `import-test-${Date.now()}`;
+
+    importModule(workspaceId, { ...requestData, appName: moduleName }).then(
       (response) => {
         expect(response.status).to.eq(201);
         expect(response.body.message).to.include(
-          "Module imported successfully."
+          "Module imported successfully.",
         );
-      }
+      },
     );
 
     listWorkspaceModules(workspaceId).then((response) => {
-      const found = response.body.modules.find((m) => m.name === overrideName);
-      expect(found, `module "${overrideName}" should exist`).to.exist;
+      expect(response.status).to.eq(200);
+      const importedModule = response.body.modules.find(
+        (m) => m.name === moduleName,
+      );
+      expect(importedModule, `module "${moduleName}" in listing`).to.exist;
     });
+  });
 
-    // Import without appName → original name from the definition is used
-    const payloadNoName = { ...requestData };
-    delete payloadNoName.appName;
-    importModule(workspaceId, payloadNoName).then((response) => {
+  it("verify import module API without appName generates name from definition", () => {
+    // Server names the module `${definitionName}_${timestamp}` when appName
+    // is omitted (ee/external-apis/service.ts) — assert the prefix, not equality
+    const payloadWithoutName = { ...requestData };
+    delete payloadWithoutName.appName;
+
+    importModule(workspaceId, payloadWithoutName).then((response) => {
       expect(response.status).to.eq(201);
       expect(response.body.message).to.include("Module imported successfully.");
     });
 
-    // tooljet_version higher than current → 400
+    listWorkspaceModules(workspaceId).then((response) => {
+      expect(response.status).to.eq(200);
+      const importedModule = response.body.modules.find((m) =>
+        m.name.startsWith("import_module_"),
+      );
+      expect(importedModule, "module named from definition base name").to.exist;
+    });
+  });
+
+  it("verify import module API fails with future tooljet_version", () => {
     importModule(workspaceId, {
       ...requestData,
       tooljet_version: "999.0.0",
     }).then((response) => {
       expect(response.status).to.eq(400);
       expect(response.body.message).to.include(
-        "Apps built on later versions of ToolJet cannot be imported"
+        "Apps built on later versions of ToolJet cannot be imported",
       );
     });
+  });
 
-    // tooljet_version equal to or lower than current → 201
+  it("verify import module API with older tooljet_version 1.0.0", () => {
     // Exclude tooljet_database to avoid TJDB schema re-transformation issues
     // when importing with an older version (1.0.0 triggers old-format transforms
     // that corrupt current-format TJDB schema, resulting in "Primary key is mandatory")
     const { tooljet_database: _omit, ...requestDataWithoutDb } = requestData;
+
     importModule(workspaceId, {
       ...requestDataWithoutDb,
       tooljet_version: "1.0.0",
@@ -284,84 +298,82 @@ describe("ToolJet: Modules API Validation", () => {
     }).then((response) => {
       expect(response.status).to.eq(201);
     });
+  });
 
-    // Missing tooljet_version field → 400
-    const noVersion = { ...requestData };
-    delete noVersion.tooljet_version;
-    importModule(workspaceId, noVersion).then((response) => {
+  it("verify import module API fails with missing tooljet_version", () => {
+    const payloadWithoutVersion = { ...requestData };
+    delete payloadWithoutVersion.tooljet_version;
+
+    importModule(workspaceId, payloadWithoutVersion).then((response) => {
       expect(response.status).to.eq(400);
     });
+  });
 
-    // Duplicate module name → 409
-    const dupName = `dup-${Date.now()}`;
-    importModule(workspaceId, { ...requestData, appName: dupName }).then(
+  it("verify import module API fails for duplicate module name", () => {
+    const duplicateName = `dup-${Date.now()}`;
+
+    importModule(workspaceId, { ...requestData, appName: duplicateName }).then(
       (response) => {
         expect(response.status).to.eq(201);
-      }
+      },
     );
-    importModule(workspaceId, { ...requestData, appName: dupName }).then(
+
+    importModule(workspaceId, { ...requestData, appName: duplicateName }).then(
       (response) => {
         expect(response.status).to.eq(409);
-      }
+      },
     );
+  });
 
-    // Invalid workspaceId (non-UUID) → 400
+  it("verify import module API fails with invalid and non-existent workspace", () => {
     importModule(`${workspaceId}invalid`, requestData).then((response) => {
-      expect(response.status).to.be.oneOf([400, 404]);
+      expect(response.status).to.eq(400);
+      expect(response.body.message).to.include("Workspace Id must be UUID");
     });
 
-    // Non-existent valid UUID workspace → error
-    importModule("00000000-0000-0000-0000-000000000099", requestData).then(
+    importModule(nonExistentId, requestData).then((response) => {
+      expect(response.status).to.eq(400);
+      expect(response.body.message).to.include("Invalid workspaceId");
+    });
+  });
+
+  it("verify import module API rejects invalid and empty auth tokens", () => {
+    importModule(workspaceId, requestData, invalidAuthHeader).then(
       (response) => {
-        expect(response.status).to.be.oneOf([400, 404]);
-      }
+        expect(response.status).to.eq(403);
+      },
     );
 
-    // Invalid auth token → 403
-    importModule(workspaceId, requestData, {
-      Authorization: "Basic xyz",
-    }).then((response) => {
+    importModule(workspaceId, requestData, emptyAuthHeader).then((response) => {
       expect(response.status).to.eq(403);
     });
+  });
 
-    // Empty auth token → 403
-    importModule(workspaceId, requestData, {
-      Authorization: "",
-    }).then((response) => {
-      expect(response.status).to.eq(403);
-    });
-
-    // Round-trip: import → list → export → re-import → verify
+  it("verify module import-export round trip", () => {
     const roundTripName = `round-trip-${Date.now()}`;
-    importModule(workspaceId, { ...requestData, appName: roundTripName }).then(
-      (response) => {
-        expect(response.status).to.eq(201);
-      }
-    );
+    const roundTripCopyName = `round-trip-copy-${Date.now()}`;
 
-    listWorkspaceModules(workspaceId).then((response) => {
-      const source = response.body.modules.find(
-        (m) => m.name === roundTripName
-      );
-      expect(source, `source module "${roundTripName}" should exist`).to.exist;
-
-      exportModule(workspaceId, source.id).then((exportResponse) => {
+    importAndGetModuleId(roundTripName).then((moduleId) => {
+      exportModule(workspaceId, moduleId).then((exportResponse) => {
         expect(exportResponse.status).to.eq(201);
 
         importModule(workspaceId, {
           tooljet_version: exportResponse.body.tooljet_version,
           app: exportResponse.body.app,
-          appName: `round-trip-copy-${Date.now()}`,
+          appName: roundTripCopyName,
         }).then((reimportResponse) => {
           expect(reimportResponse.status).to.eq(201);
           expect(reimportResponse.body.message).to.include(
-            "Module imported successfully."
+            "Module imported successfully.",
           );
         });
 
         listWorkspaceModules(workspaceId).then((listResponse) => {
           expect(listResponse.status).to.eq(200);
-          expect(listResponse.body.modules).to.be.an("array").and.not.be.empty;
+          const reimportedModule = listResponse.body.modules.find(
+            (m) => m.name === roundTripCopyName,
+          );
+          expect(reimportedModule, "re-imported module in listing").to.exist;
         });
       });
     });
