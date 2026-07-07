@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import cx from 'classnames';
+import moment from 'moment';
 import { Overlay, Popover } from 'react-bootstrap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
@@ -7,8 +8,10 @@ import { workspaceBranchesService } from '@/_services/workspace_branches.service
 import { WorkspaceCreateBranchModal } from './CreateBranchModal';
 import { WorkspaceSwitchBranchModal } from './SwitchBranchModal';
 import { toast } from 'react-hot-toast';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info, ExternalLink } from 'lucide-react';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { authenticationService } from '@/_services';
+import { getSubpath } from '@/_helpers/routes';
 import '@/_styles/branch-dropdown.scss';
 
 export function WorkspaceBranchDropdown() {
@@ -123,6 +126,15 @@ export function WorkspaceBranchDropdown() {
     }
 
     return null;
+  };
+
+  // Single-branch mode: open the git configuration page where branching can be enabled.
+  const handleEnableBranching = () => {
+    const session = authenticationService.currentSessionValue;
+    const org = session?.current_organization_slug || session?.current_organization_id;
+    const subpath = getSubpath() || '';
+    setShowDropdown(false);
+    window.open(`${subpath}/${org}/workspace-settings/configure-git`, '_blank', 'noopener,noreferrer');
   };
 
   // Handle Create PR action
@@ -244,59 +256,122 @@ export function WorkspaceBranchDropdown() {
     >
       <Popover.Body style={{ padding: 0 }}>
         <div className={`${darkMode ? 'theme-dark' : ''}`} data-cy="workspace-branch-dropdown-popover">
-          {/* Current Branch Header */}
-          <div className={`branch-dropdown-current-branch ${!isOnDefaultBranch ? 'with-border' : ''}`}>
-            {isOnDefaultBranch ? (
-              <>
-                <div className="branch-icon-container">
-                  <SolidIcon name="lockclosed" width="16" fill="var(--indigo9)" />
-                </div>
-                <div className="branch-info">
-                  <div className="branch-name-title">{displayBranchName}</div>
-                  <div className="branch-metadata">
-                    <span className="metadata-text">Default branch</span>
-                    {(currentBranch?.updatedAt || currentBranch?.updated_at) && (
-                      <>
-                        <span>•</span>
-                        <span className="metadata-text">
-                          {getRelativeTime(currentBranch.updatedAt || currentBranch.updated_at)}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
+          {!isMultiBranchingEnabled ? (
+            <>
+              {/* Single-branch mode: branch header + "Enable branching" info & CTA only.
+                  No PRs and no create/switch-branch actions. */}
+              <div className="branch-dropdown-current-branch">
                 <div className="branch-icon-container-feature">
                   <SolidIcon name="gitbranch" width="16" fill="var(--indigo9)" />
                 </div>
                 <div className="branch-info">
                   <div className="branch-name-title">{displayBranchName}</div>
                   <div className="branch-metadata-feature">
-                    <span className="metadata-text">
-                      Created by{' '}
-                      {currentBranch?.createdBy || currentBranch?.created_by || currentBranch?.author || 'Unknown'}
-                    </span>
+                    <span className="metadata-text">Created by default</span>
                     {(currentBranch?.createdAt || currentBranch?.created_at) && (
                       <>
                         <span>•</span>
                         <span className="metadata-text">
-                          {getRelativeTime(currentBranch?.createdAt || currentBranch?.created_at)}
+                          {moment(currentBranch?.createdAt || currentBranch?.created_at).fromNow()}
                         </span>
                       </>
                     )}
                   </div>
                 </div>
-              </>
-            )}
-          </div>
-
-          {/* Main Content Area */}
-          {isOnDefaultBranch ? (
+              </div>
+              <div
+                className="enable-branching-section"
+                style={{ padding: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}
+              >
+                <Info width={18} height={18} style={{ flexShrink: 0, color: 'var(--indigo9)', marginTop: '1px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--slate12)', lineHeight: '18px' }}>
+                      Enable branching
+                    </div>
+                    <div style={{ fontSize: '12px', fontWeight: 400, color: 'var(--slate11)', lineHeight: '18px' }}>
+                      Isolate your development work from other changes being made by your team
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleEnableBranching}
+                    data-cy="enable-branching-btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      alignSelf: 'flex-start',
+                      padding: '5px 10px',
+                      background: 'var(--slate1)',
+                      border: '1px solid var(--slate5)',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      color: 'var(--slate12)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span>Enable branching</span>
+                    <ExternalLink width={14} height={14} />
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
             <>
-              {/* Old: static info state for default branch */}
-              {/* <div className="fetch-prs-section">
+              {/* Current Branch Header */}
+              <div className={`branch-dropdown-current-branch ${!isOnDefaultBranch ? 'with-border' : ''}`}>
+                {isOnDefaultBranch ? (
+                  <>
+                    <div className="branch-icon-container">
+                      <SolidIcon name="lockclosed" width="16" fill="var(--indigo9)" />
+                    </div>
+                    <div className="branch-info">
+                      <div className="branch-name-title">{displayBranchName}</div>
+                      <div className="branch-metadata">
+                        <span className="metadata-text">Default branch</span>
+                        {(currentBranch?.updatedAt || currentBranch?.updated_at) && (
+                          <>
+                            <span>•</span>
+                            <span className="metadata-text">
+                              {getRelativeTime(currentBranch.updatedAt || currentBranch.updated_at)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="branch-icon-container-feature">
+                      <SolidIcon name="gitbranch" width="16" fill="var(--indigo9)" />
+                    </div>
+                    <div className="branch-info">
+                      <div className="branch-name-title">{displayBranchName}</div>
+                      <div className="branch-metadata-feature">
+                        <span className="metadata-text">
+                          Created by{' '}
+                          {currentBranch?.createdBy || currentBranch?.created_by || currentBranch?.author || 'Unknown'}
+                        </span>
+                        {(currentBranch?.createdAt || currentBranch?.created_at) && (
+                          <>
+                            <span>•</span>
+                            <span className="metadata-text">
+                              {getRelativeTime(currentBranch?.createdAt || currentBranch?.created_at)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Main Content Area */}
+              {isOnDefaultBranch ? (
+                <>
+                  {/* Old: static info state for default branch */}
+                  {/* <div className="fetch-prs-section">
                 <div className="empty-pr-state-box" style={{ margin: '0' }}>
                   <AlertTriangle width="18" height="18" />
                   <div className="empty-pr-content">
@@ -308,95 +383,96 @@ export function WorkspaceBranchDropdown() {
                 </div>
               </div> */}
 
-              {/* Fetch PRs Button - Shown at top for default branch, hides after fetching */}
-              {!hasFetchedPRs && (
-                <div className="fetch-prs-section">
-                  <button
-                    className={`fetch-prs-btn ${isLoadingPRs ? 'loading' : ''}`}
-                    onClick={handleFetchPRs}
-                    disabled={isLoadingPRs}
-                    data-cy="workspace-fetch-prs-btn"
-                  >
-                    {isLoadingPRs ? (
-                      <>
-                        <div className="spinner-small"></div>
-                        <span>Loading...</span>
-                      </>
-                    ) : (
-                      <>
-                        <SolidIcon name="refresh" width="14" />
-                        <span>Fetch PRs</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
+                  {/* Fetch PRs Button - Shown at top for default branch, hides after fetching */}
+                  {!hasFetchedPRs && (
+                    <div className="fetch-prs-section">
+                      <button
+                        className={`fetch-prs-btn ${isLoadingPRs ? 'loading' : ''}`}
+                        onClick={handleFetchPRs}
+                        disabled={isLoadingPRs}
+                        data-cy="workspace-fetch-prs-btn"
+                      >
+                        {isLoadingPRs ? (
+                          <>
+                            <div className="spinner-small"></div>
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <SolidIcon name="refresh" width="14" />
+                            <span>Fetch PRs</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
 
-              {/* PR Tabs and List - Only shown after fetching */}
-              {hasFetchedPRs && (
-                <>
-                  {/* PR Tabs */}
-                  <div className="pr-tabs">
-                    <button
-                      className={`pr-tab ${activeTab === 'open' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('open')}
-                    >
-                      Open PR
-                    </button>
-                    <button
-                      className={`pr-tab ${activeTab === 'closed' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('closed')}
-                    >
-                      Closed PR
-                    </button>
-                  </div>
-
-                  {/* PR List */}
-                  <div className="pr-list-container">
-                    {displayPRs.length === 0 ? (
-                      <div className="empty-pr-state-box">
-                        <AlertTriangle width="18" height="18" />
-                        <div className="empty-pr-content">
-                          <div className="empty-pr-title">
-                            {activeTab === 'open' ? 'There are no open PRs' : 'There are no closed PRs'}
-                          </div>
-                          <div className="empty-pr-description">
-                            {activeTab === 'open'
-                              ? 'Create a pull request to contribute your changes'
-                              : 'Merge a pull request to contribute your changes'}
-                          </div>
-                        </div>
+                  {/* PR Tabs and List - Only shown after fetching */}
+                  {hasFetchedPRs && (
+                    <>
+                      {/* PR Tabs */}
+                      <div className="pr-tabs">
+                        <button
+                          className={`pr-tab ${activeTab === 'open' ? 'active' : ''}`}
+                          onClick={() => setActiveTab('open')}
+                        >
+                          Open PR
+                        </button>
+                        <button
+                          className={`pr-tab ${activeTab === 'closed' ? 'active' : ''}`}
+                          onClick={() => setActiveTab('closed')}
+                        >
+                          Closed PR
+                        </button>
                       </div>
-                    ) : (
-                      displayPRs.map((pr) => (
-                        <div key={pr.id} className="pr-item" data-cy={`workspace-pr-item-${pr.id}`}>
-                          <div className="pr-icon">
-                            <SolidIcon name="gitmerge" width="20" fill="var(--slate11)" />
-                          </div>
-                          <div className="pr-content">
-                            <OverflowTooltip
-                              className="pr-title"
-                              childrenClassName="pr-title"
-                              placement="top"
-                              whiteSpace="nowrap"
-                            >
-                              {pr.title || 'Untitled PR'}
-                            </OverflowTooltip>
-                            <div className="pr-metadata">
-                              from {pr.source_branch || pr.sourceBranch} | {formatPRDate(pr.created_at || pr.createdAt)}
+
+                      {/* PR List */}
+                      <div className="pr-list-container">
+                        {displayPRs.length === 0 ? (
+                          <div className="empty-pr-state-box">
+                            <AlertTriangle width="18" height="18" />
+                            <div className="empty-pr-content">
+                              <div className="empty-pr-title">
+                                {activeTab === 'open' ? 'There are no open PRs' : 'There are no closed PRs'}
+                              </div>
+                              <div className="empty-pr-description">
+                                {activeTab === 'open'
+                                  ? 'Create a pull request to contribute your changes'
+                                  : 'Merge a pull request to contribute your changes'}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                        ) : (
+                          displayPRs.map((pr) => (
+                            <div key={pr.id} className="pr-item" data-cy={`workspace-pr-item-${pr.id}`}>
+                              <div className="pr-icon">
+                                <SolidIcon name="gitmerge" width="20" fill="var(--slate11)" />
+                              </div>
+                              <div className="pr-content">
+                                <OverflowTooltip
+                                  className="pr-title"
+                                  childrenClassName="pr-title"
+                                  placement="top"
+                                  whiteSpace="nowrap"
+                                >
+                                  {pr.title || 'Untitled PR'}
+                                </OverflowTooltip>
+                                <div className="pr-metadata">
+                                  from {pr.source_branch || pr.sourceBranch} |{' '}
+                                  {formatPRDate(pr.created_at || pr.createdAt)}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
                 </>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Old: static "Push your changes" state for feature branch */}
-              {/* <div className="no-commits-empty-state">
+              ) : (
+                <>
+                  {/* Old: static "Push your changes" state for feature branch */}
+                  {/* <div className="no-commits-empty-state">
                 <AlertTriangle width="18" height="18" />
                 <div className="empty-state-content">
                   <div className="empty-state-title">Push your changes</div>
@@ -406,123 +482,121 @@ export function WorkspaceBranchDropdown() {
                 </div>
               </div> */}
 
-              {/* Fetch Branch Info Button - Only show when not fetched yet */}
-              {!hasFetchedBranchInfo && (
-                <div className="fetch-branch-info-section">
-                  <button
-                    className="fetch-branch-info-btn"
-                    onClick={fetchLastCommit}
-                    disabled={isLoadingCommit}
-                    data-cy="workspace-fetch-branch-info-btn"
-                  >
-                    <SolidIcon name="refresh" width="14" />
-                    <span>{isLoadingCommit ? 'Fetching...' : 'Fetch branch info'}</span>
-                  </button>
-                </div>
-              )}
+                  {/* Fetch Branch Info Button - Only show when not fetched yet */}
+                  {!hasFetchedBranchInfo && (
+                    <div className="fetch-branch-info-section">
+                      <button
+                        className="fetch-branch-info-btn"
+                        onClick={fetchLastCommit}
+                        disabled={isLoadingCommit}
+                        data-cy="workspace-fetch-branch-info-btn"
+                      >
+                        <SolidIcon name="refresh" width="14" />
+                        <span>{isLoadingCommit ? 'Fetching...' : 'Fetch branch info'}</span>
+                      </button>
+                    </div>
+                  )}
 
-              {/* Latest Commit Section & Empty State - Only show after fetching */}
-              {hasFetchedBranchInfo && (
-                <>
-                  {/* Latest Commit Section - for non-default branches with commits */}
-                  {lastCommit && !isLoadingCommit && (
-                    <div className="latest-commit-section">
-                      <div className="latest-commit-header">
-                        <span className="section-label">LATEST COMMIT</span>
-                      </div>
-                      <div className="commit-info">
-                        <div className="commit-icon">
-                          <SolidIcon name="commit" width="20" />
-                        </div>
-                        <div className="commit-content">
-                          <div className="commit-title">{lastCommit.message || 'No message'}</div>
-                          <div className="commit-metadata">
-                            By {lastCommit.author || 'Unknown'} | {formatCommitDate(lastCommit.date)}
+                  {/* Latest Commit Section & Empty State - Only show after fetching */}
+                  {hasFetchedBranchInfo && (
+                    <>
+                      {/* Latest Commit Section - for non-default branches with commits */}
+                      {lastCommit && !isLoadingCommit && (
+                        <div className="latest-commit-section">
+                          <div className="latest-commit-header">
+                            <span className="section-label">LATEST COMMIT</span>
+                          </div>
+                          <div className="commit-info">
+                            <div className="commit-icon">
+                              <SolidIcon name="commit" width="20" />
+                            </div>
+                            <div className="commit-content">
+                              <div className="commit-title">{lastCommit.message || 'No message'}</div>
+                              <div className="commit-metadata">
+                                By {lastCommit.author || 'Unknown'} | {formatCommitDate(lastCommit.date)}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      )}
 
-                  {/* Empty state - no commits yet */}
-                  {!lastCommit && !isLoadingCommit && (
-                    <div className="no-commits-empty-state">
-                      <AlertTriangle width="18" height="18" />
-                      <div className="empty-state-content">
-                        <div className="empty-state-title">There are no commits yet</div>
-                        <div className="empty-state-description">
-                          Commit your changes to create a pull request to contribute them
+                      {/* Empty state - no commits yet */}
+                      {!lastCommit && !isLoadingCommit && (
+                        <div className="no-commits-empty-state">
+                          <AlertTriangle width="18" height="18" />
+                          <div className="empty-state-content">
+                            <div className="empty-state-title">There are no commits yet</div>
+                            <div className="empty-state-description">
+                              Commit your changes to create a pull request to contribute them
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      )}
 
-                  {/* Loading state for commit */}
-                  {isLoadingCommit && (
-                    <div className="loading-commit-state">
-                      <div className="spinner"></div>
-                      <span>Loading commit info...</span>
-                    </div>
+                      {/* Loading state for commit */}
+                      {isLoadingCommit && (
+                        <div className="loading-commit-state">
+                          <div className="spinner"></div>
+                          <span>Loading commit info...</span>
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
+
+              {/* Footer actions */}
+              <div className="branch-dropdown-footer">
+                {isOnDefaultBranch ? (
+                  <>
+                    {isBranchingEnabled && (
+                      <button
+                        className="create-branch-btn"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setShowCreateModal(true);
+                        }}
+                        data-cy="workspace-create-branch-btn"
+                      >
+                        <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
+                        <span>Create new branch</span>
+                      </button>
+                    )}
+                    <button
+                      className="switch-branch-btn"
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setShowSwitchModal(true);
+                      }}
+                      data-cy="workspace-switch-branch-btn"
+                    >
+                      <SolidIcon name="refresh" width="14" />
+                      <span>Switch branch</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Feature branch footer: Create PR + Switch branch */}
+                    <button className="create-pr-btn" onClick={handleCreatePR} data-cy="workspace-create-pr-btn">
+                      <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
+                      <span>Create pull request</span>
+                    </button>
+                    <button
+                      className="switch-branch-btn"
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setShowSwitchModal(true);
+                      }}
+                      data-cy="workspace-switch-branch-btn"
+                    >
+                      <SolidIcon name="refresh" width="14" />
+                      <span>Switch branch</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </>
           )}
-
-          {/* Footer actions */}
-          <div className="branch-dropdown-footer">
-            {isOnDefaultBranch ? (
-              <>
-                {isBranchingEnabled && (
-                  <button
-                    className="create-branch-btn"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setShowCreateModal(true);
-                    }}
-                    disabled={!isMultiBranchingEnabled}
-                    title={!isMultiBranchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
-                    data-cy="workspace-create-branch-btn"
-                  >
-                    <SolidIcon name="plus" width="14" fill="var(--indigo9)" />
-                    <span>Create new branch</span>
-                  </button>
-                )}
-                <button
-                  className="switch-branch-btn"
-                  onClick={() => {
-                    setShowDropdown(false);
-                    setShowSwitchModal(true);
-                  }}
-                  disabled={!isMultiBranchingEnabled}
-                  title={!isMultiBranchingEnabled ? 'Single-branch mode: branching is disabled' : undefined}
-                  data-cy="workspace-switch-branch-btn"
-                >
-                  <SolidIcon name="refresh" width="14" />
-                  <span>Switch branch</span>
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Feature branch footer: Create PR + Switch branch */}
-                <button className="create-pr-btn" onClick={handleCreatePR} data-cy="workspace-create-pr-btn">
-                  <SolidIcon name="gitmerge" width="14" fill="var(--indigo9)" />
-                  <span>Create pull request</span>
-                </button>
-                <button
-                  className="switch-branch-btn"
-                  onClick={() => {
-                    setShowDropdown(false);
-                    setShowSwitchModal(true);
-                  }}
-                  data-cy="workspace-switch-branch-btn"
-                >
-                  <SolidIcon name="refresh" width="14" />
-                  <span>Switch branch</span>
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </Popover.Body>
     </Popover>
@@ -531,7 +605,12 @@ export function WorkspaceBranchDropdown() {
   return (
     <>
       <div
-        className={`branch-dropdown-container ${showDropdown ? 'selected' : ''} ${darkMode ? 'dark-theme' : ''}`}
+        className={cx('branch-dropdown-container', {
+          selected: showDropdown,
+          'dark-theme': darkMode,
+          // Single-branch: flat/label-like at rest, normal bordered button on hover/open.
+          'single-branch': !isMultiBranchingEnabled,
+        })}
         ref={buttonRef}
         data-cy="workspace-branch-dropdown-container"
       >

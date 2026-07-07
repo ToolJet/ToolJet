@@ -178,7 +178,10 @@ function Header({
                 isGitSupportedPage && (
                   <>
                     <WorkspaceBranchDropdown />
-                    <WorkspaceGitCTA showCommit={location.pathname.split('/').includes('data-sources')} />
+                    {/* Single "Pull commit" button. WorkspaceGitCTA decides whether the modal
+                        offers push based on the page + branch state (push only on the data-sources
+                        page, and never on the multi-branch default branch). */}
+                    <WorkspaceGitCTA isDataSourcesPage={location.pathname.split('/').includes('data-sources')} />
                   </>
                 )}
               {Object.keys(featureAccess).length > 0 && (

@@ -20,7 +20,7 @@ const UPDATE_STATUS = {
   NONE: 'NONE',
 };
 
-export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
+export function WorkspaceGitSyncModal({ initialTab = 'push', allowPush = false, onClose }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [commitMessage, setCommitMessage] = useState('');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -39,28 +39,26 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
   const [actionChoiceMode, setActionChoiceMode] = useState(false);
   const [pullConflictGroups, setPullConflictGroups] = useState(null);
 
-  const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling, isMultiBranchingEnabled } =
-    useWorkspaceBranchesStore((state) => ({
+  const { orgGitConfig, branches, remoteBranches, currentBranch, isPushing, isPulling } = useWorkspaceBranchesStore(
+    (state) => ({
       orgGitConfig: state.orgGitConfig,
       branches: state.branches || [],
       remoteBranches: state.remoteBranches || [],
       currentBranch: state.currentBranch,
       isPushing: state.isPushing,
       isPulling: state.isPulling,
-      isMultiBranchingEnabled: state.isMultiBranchingEnabled,
-    }));
+    })
+  );
   const actions = useWorkspaceBranchesStore((state) => state.actions);
 
   const repoUrl = orgGitConfig?.repo_url || orgGitConfig?.repoUrl || '';
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const gitType = orgGitConfig?.git_type || orgGitConfig?.gitType || 'github_https';
   const currentBranchName = currentBranch?.name || defaultGitBranch;
-  // Pull-only ONLY when actually on the default branch AND multi-branching is enabled. In
-  // single-branch mode the default branch is pushable — show the push/pull tabs like a feature
-  // branch. Derived from the store (single source of truth) rather than a caller-passed prop.
-  const realOnDefaultBranch =
-    currentBranch?.is_default || currentBranch?.isDefault || currentBranch?.name === defaultGitBranch;
-  const isOnDefaultBranch = realOnDefaultBranch && isMultiBranchingEnabled !== false;
+  // Push (commit) is offered only when the caller allows it — i.e. single-branch mode on the
+  // data-sources dashboard, where data sources are pushed from the workspace. Everywhere else
+  // the modal is pull-only: multi-branch mode (all pages) and the apps/modules dashboard in
+  // single-branch mode. When push isn't allowed we hide the push/pull tabs and show pull only.
 
   const gitSyncUrl = (() => {
     if (gitType === 'gitlab') return repoUrl;
@@ -554,8 +552,8 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
 
   // --- Modal body ---
   const renderModalBody = () => {
-    // Default branch: pull-only
-    if (isOnDefaultBranch) {
+    // Push not allowed: pull-only
+    if (!allowPush) {
       if (actionChoiceMode) {
         return <div className="pull-container">{renderImportConfirmation()}</div>;
       }
@@ -573,8 +571,8 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
   };
 
   const renderModalFooter = () => {
-    // Pull tab active (default branch or feature branch pull tab)
-    if (activeTab === 'pull' || isOnDefaultBranch) {
+    // Pull tab active, or push not allowed (pull-only)
+    if (activeTab === 'pull' || !allowPush) {
       if (actionChoiceMode) {
         return (
           <Modal.Footer>
@@ -646,7 +644,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
       return branchExistsLocally ? `Update ${selectedBranch} from git` : `Import ${selectedBranch} from git`;
     }
 
-    if (isOnDefaultBranch) return 'Pull Commit';
+    if (!allowPush) return 'Pull Commit';
     return activeTab === 'pull' ? 'Pull Commit' : 'Push Commit';
   })();
 
@@ -660,12 +658,12 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
         centered={true}
         contentClassName={cx('git-sync-modal', {
           'theme-dark dark-theme': darkMode,
-          'pull-commit-expanded': activeTab === 'pull' || isOnDefaultBranch,
+          'pull-commit-expanded': activeTab === 'pull' || !allowPush,
         })}
       >
         <Modal.Header>
           <Modal.Title
-            className={cx('font-weight-500', { 'mt-3': !isOnDefaultBranch && !actionChoiceMode })}
+            className={cx('font-weight-500', { 'mt-3': allowPush && !actionChoiceMode })}
             data-cy="modal-title"
           >
             <div className="git-sync-title row align-items-center" style={{ width: '350px' }}>
@@ -691,7 +689,7 @@ export function WorkspaceGitSyncModal({ initialTab = 'push', onClose }) {
                 </div>
               )}
             </div>
-            {!isOnDefaultBranch && !actionChoiceMode && renderPushPullTabs()}
+            {allowPush && !actionChoiceMode && renderPushPullTabs()}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>{renderModalBody()}</Modal.Body>

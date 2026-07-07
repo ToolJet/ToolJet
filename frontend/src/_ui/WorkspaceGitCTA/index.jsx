@@ -5,21 +5,19 @@ import { useWorkspaceBranchesStore } from '@/_stores/workspaceBranchesStore';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { WorkspaceGitSyncModal } from '@/_ui/WorkspaceGitSyncModal';
 import { toast } from 'react-hot-toast';
-import { ToolTip } from '@/_components';
-import { PushAppsModal } from '@ee/modules/Appbuilder/components/GitSyncManager/PushAppsModal';
 
-export function WorkspaceGitCTA({ showCommit = true }) {
+// Single dashboard git control: one "Pull commit" button that opens the workspace git modal.
+// Push (commit) is offered only on the data-sources page, and only when the current branch is
+// actually pushable — i.e. single-branch mode OR a multi-branch feature branch. The multi-branch
+// default branch (and every apps/modules page) is pull-only.
+export function WorkspaceGitCTA({ isDataSourcesPage = false }) {
   const [showModal, setShowModal] = useState(false);
-  const [initialTab, setInitialTab] = useState('push');
-  const [showDsSyncModal, setShowDsSyncModal] = useState(false);
-  const { currentBranch, orgGitConfig, actions, hasUnsyncedDatasources, isMultiBranchingEnabled } =
-    useWorkspaceBranchesStore((state) => ({
-      currentBranch: state.currentBranch,
-      orgGitConfig: state.orgGitConfig,
-      actions: state.actions,
-      hasUnsyncedDatasources: state.hasUnsyncedDatasources,
-      isMultiBranchingEnabled: state.isMultiBranchingEnabled,
-    }));
+  const { currentBranch, orgGitConfig, actions, isMultiBranchingEnabled } = useWorkspaceBranchesStore((state) => ({
+    currentBranch: state.currentBranch,
+    orgGitConfig: state.orgGitConfig,
+    actions: state.actions,
+    isMultiBranchingEnabled: state.isMultiBranchingEnabled,
+  }));
 
   const featureAccess = useLicenseStore((state) => state.featureAccess);
 
@@ -27,16 +25,9 @@ export function WorkspaceGitCTA({ showCommit = true }) {
 
   const defaultGitBranch = orgGitConfig?.default_git_branch || orgGitConfig?.defaultGitBranch || 'main';
   const isOnDefaultBranch =
-    currentBranch?.is_default || currentBranch?.isDefault || currentBranch?.name === defaultGitBranch;
-  // In single-branch mode the default branch is the only branch you work on, so commit/push must
-  // be enabled there. Treat it as a non-default branch for push purposes (multi-branch keeps the
-  // default = pull-only behavior).
-  const canPushCurrentBranch = !isOnDefaultBranch || !isMultiBranchingEnabled;
-
-  const openModal = (tab) => {
-    setInitialTab(tab);
-    setShowModal(true);
-  };
+    !currentBranch || currentBranch.is_default || currentBranch.isDefault || currentBranch.name === defaultGitBranch;
+  // Pushable everywhere except the multi-branch default branch.
+  const allowPush = isDataSourcesPage && (!isMultiBranchingEnabled || !isOnDefaultBranch);
 
   const checkRemoteBranch = async () => {
     const branchName = currentBranch?.name;
@@ -49,55 +40,24 @@ export function WorkspaceGitCTA({ showCommit = true }) {
     return true;
   };
 
-  const handlePullClick = async () => {
-    if (await checkRemoteBranch()) openModal('pull');
-  };
-
-  const handleCommitClick = async () => {
-    if (await checkRemoteBranch()) openModal('push');
+  const handleOpen = async () => {
+    if (await checkRemoteBranch()) setShowModal(true);
   };
 
   return (
     <>
       <div className="lifecycle-cta-button">
-        <Button variant="secondary" onClick={handlePullClick} data-cy="workspace-git-pull-button">
+        <Button variant="secondary" onClick={handleOpen} data-cy="workspace-git-pull-commit-button">
           <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="pull-changes" width="16" />
-          <span>Pull</span>
+          <span>Pull commit</span>
         </Button>
       </div>
 
-      {showCommit && canPushCurrentBranch && (
-        <div className="lifecycle-cta-button">
-          <Button variant="secondary" onClick={handleCommitClick} data-cy="workspace-git-commit-button">
-            <SolidIcon fill="var(--icon-accent)" viewBox="0 0 16 16" name="commit" width="16" />
-            <span>Commit</span>
-          </Button>
-        </div>
-      )}
-
-      {showCommit && isOnDefaultBranch && isMultiBranchingEnabled && hasUnsyncedDatasources && (
-        <ToolTip message="There are data source which are not synced in remote git" placement="bottom">
-          <div className="lifecycle-cta-button">
-            <Button
-              variant="secondary"
-              onClick={() => setShowDsSyncModal(true)}
-              data-cy="workspace-ds-sync-button"
-              style={{ borderColor: '#E54D2E', color: '#E54D2E' }}
-            >
-              <SolidIcon fill="#E54D2E" name="refresh" width="16" />
-              <span>Sync</span>
-            </Button>
-          </div>
-        </ToolTip>
-      )}
-
-      {showModal && <WorkspaceGitSyncModal initialTab={initialTab} onClose={() => setShowModal(false)} />}
-      {PushAppsModal && showDsSyncModal && (
-        <PushAppsModal
-          show={showDsSyncModal}
-          onClose={() => setShowDsSyncModal(false)}
-          resourceType="datasource"
-          onSuccess={() => setShowDsSyncModal(false)}
+      {showModal && (
+        <WorkspaceGitSyncModal
+          initialTab={allowPush ? 'push' : 'pull'}
+          allowPush={allowPush}
+          onClose={() => setShowModal(false)}
         />
       )}
     </>

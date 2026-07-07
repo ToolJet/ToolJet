@@ -7,6 +7,7 @@ export const gitSyncService = {
   validatePush,
   getGitConfig,
   updateConfig,
+  updateBranchingEnabled,
   setFinalizeConfig,
   deleteConfig,
   getAppConfig,
@@ -64,6 +65,20 @@ function updateConfig(organizationGitId, updateParam, gitType = '') {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/git-sync/${organizationGitId}?gitType=${gitType}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+// Toggles only the workspace branching mode. Hits the dedicated endpoint so the config
+// save flow no longer carries the branching flag.
+function updateBranchingEnabled(organizationGitId, isBranchingEnabled) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ isBranchingEnabled }),
+  };
+  return fetch(`${config.apiUrl}/git-sync/${organizationGitId}/is-branching-enabled`, requestOptions).then(
     handleResponse
   );
 }
