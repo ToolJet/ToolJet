@@ -17,6 +17,7 @@ export const DEFAULT_USER_PERMISSIONS: UserPermissions = {
   dataSourceDelete: false,
   folderCRUD: false,
   orgConstantCRUD: false,
+  tjdbCRUD: false,
   orgVariableCRUD: false,
   [MODULES.APP]: {
     editableAppsId: [],

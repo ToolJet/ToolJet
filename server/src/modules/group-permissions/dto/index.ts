@@ -33,6 +33,10 @@ export class UpdateGroupPermissionDto {
 
   @IsBoolean()
   @IsOptional()
+  tjdbCRUD: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   workflowCreate: boolean;
 
   @IsBoolean()
