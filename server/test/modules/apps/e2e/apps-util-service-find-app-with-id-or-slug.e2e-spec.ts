@@ -10,7 +10,6 @@ import { AppVersion } from '@entities/app_version.entity';
 import { initTestApp, closeTestApp } from 'test-helper';
 import { createAdmin, createApplication, createApplicationVersion } from 'test-helper';
 import { updateEntity } from 'test-helper';
-import { v4 as uuidv4 } from 'uuid';
 
 /** @group platform */
 describe('AppsUtilService.findAppWithIdOrSlug — workflow slug resolution (post-migration)', () => {
@@ -31,20 +30,7 @@ describe('AppsUtilService.findAppWithIdOrSlug — workflow slug resolution (post
 
     const workflow = await createApplication(app, { name: 'IdOrSlug Workflow', user: orgUser, type: 'workflow' });
     const version = await createApplicationVersion(app, workflow as any);
-    // NOTE: the slug is deliberately a UUID-formatted string (not e.g. 'my-workflow'),
-    // and distinct from workflow.id. This is a workaround for a pre-existing, unrelated
-    // bug: findAppWithIdOrSlug's step 1 unconditionally calls
-    // this.appRepository.findById(slug, ...) with NO isUUID(slug) guard (the CE base
-    // class findAppWithIdOrSlug DOES guard this at util.service.ts:440). Passing a
-    // human-readable slug there throws a Postgres "invalid input syntax for type uuid"
-    // error on the `id = $1` predicate; the try/catch swallows it at the JS level, but
-    // under this repo's e2e harness (one real Postgres transaction shared per spec file,
-    // see test/helpers/setup.ts) the failed statement poisons the whole suite
-    // transaction and every later query in the test fails with "current transaction is
-    // aborted". Using a UUID-shaped-but-unmatched slug lets step 1's findById run a
-    // valid (if unmatched) query, fall through cleanly, and exercise the intended
-    // app_versions.slug resolution in step 3 — see task-6-report.md for the full finding.
-    const slug = uuidv4();
+    const slug = 'my-id-or-slug-workflow';
     await updateEntity(AppVersion, version.id, {
       slug,
       appName: 'IdOrSlug Workflow Version Name',
