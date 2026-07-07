@@ -5,27 +5,24 @@ const MIGRATION_NAME = 'MoveNavigationLayoutStylesToStyles1783372800000';
 const BATCH_SIZE = 2000;
 const COMPONENT_TYPE = 'Navigation';
 
-// These layout keys used to live under `properties`; they now belong under `styles`
-// (so they show in the Styles tab like other components). Move them per component,
-// keeping the same stored value shape ({ value: ... }).
+// Layout keys moved from `properties` to `styles`, keeping the same value shape ({ value: ... }).
 const KEYS_TO_MOVE = ['orientation', 'displayStyle', 'navItemSize', 'horizontalAlignment', 'verticalAlignment'];
 
 export class MoveNavigationLayoutStylesToStyles1783372800000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const updatedAppVersionIds = new Set<string>();
 
-    // A component needs migrating if it still has any of the keys in properties,
-    // or if it hasn't been given the new subMenuAlignment style yet.
+    // A component needs migrating if it still has any of the legacy layout keys in properties.
     const needsMigrationClause = `
       type = $1
       AND (
         properties::jsonb ?| $2::text[]
       )`;
 
-    const [{ count }] = await queryRunner.query(
-      `SELECT COUNT(*) FROM components WHERE ${needsMigrationClause}`,
-      [COMPONENT_TYPE, KEYS_TO_MOVE]
-    );
+    const [{ count }] = await queryRunner.query(`SELECT COUNT(*) FROM components WHERE ${needsMigrationClause}`, [
+      COMPONENT_TYPE,
+      KEYS_TO_MOVE,
+    ]);
     const total = parseInt(count, 10);
     console.log(`${MIGRATION_NAME}: [START] Navigation components to migrate: ${total}`);
 
@@ -46,12 +43,7 @@ export class MoveNavigationLayoutStylesToStyles1783372800000 implements Migratio
       lastId = rows[rows.length - 1].id;
       const ids = rows.map((r) => r.id);
 
-      // In a single UPDATE (all SET expressions read the pre-update row values):
-      //  - styles: copy each moved key from properties, only if styles doesn't already have it
-      //    (preserves the user's existing value; never overwrites).
-      //  - properties: drop the 5 moved keys.
-      // subMenuAlignment is intentionally NOT seeded — it stays absent on existing widgets so
-      // sub-menu alignment remains opt-in and their children render exactly as before.
+      // Copy each moved key into styles only if absent (never overwrite), then drop it from properties. subMenuAlignment is intentionally not seeded (kept opt-in).
       await queryRunner.query(
         `UPDATE components SET
            styles = (
