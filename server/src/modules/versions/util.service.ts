@@ -286,12 +286,7 @@ export class VersionUtilService implements IVersionUtilService {
 
   async createVersion(app: App, user: User, versionCreateDto: VersionCreateDto, manager?: EntityManager) {
     const { versionName, versionFromId, versionDescription, versionType } = versionCreateDto;
-    // Workflows must always have branch_id NULL — they don't participate in branching.
-    // The controller sets versionCreateDto.branchId from the resolved user.branchId
-    // (which falls back to the default branch) even for workflows; drop it here so the
-    // new row doesn't land with branch_id set + app_name/slug NULL (which would trip
-    // chk_app_versions_branch_metadata, since workflow versions don't carry those fields).
-    const branchId = app.type === APP_TYPES.WORKFLOW ? undefined : versionCreateDto.branchId;
+    const branchId = versionCreateDto.branchId;
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
@@ -324,23 +319,21 @@ export class VersionUtilService implements IVersionUtilService {
       }
     }
 
-    const result = await dbTransactionWrap(async (manager: EntityManager) => {
-      const versionFrom = await manager.findOneOrFail(AppVersion, {
+    const result = await dbTransactionWrap(async (txManager: EntityManager) => {
+      const versionFrom = await txManager.findOneOrFail(AppVersion, {
         where: { id: versionFromId, appId: app.id },
         relations: ['dataSources', 'dataSources.dataQueries'],
       });
 
-      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, manager);
+      const firstPriorityEnv = await this.appEnvironmentUtilService.get(organizationId, null, true, txManager);
 
       // Non-workflow metadata (slug/appName/icon/isPublic) lives on app_versions and
       // every row carries the same values for a given branch. Carry them over from the
       // parent version so the new row stays consistent with the rest of the app — the
       // dashboard / overlay helpers can pick any row and get the right metadata.
-      // Workflows keep these on apps.*; their version rows leave them null.
-      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
-      const appVersion = await manager.save(
+      const appVersion = await txManager.save(
         AppVersion,
-        manager.create(AppVersion, {
+        txManager.create(AppVersion, {
           name: versionName,
           appId: app.id,
           definition: versionFrom?.definition,
@@ -359,16 +352,14 @@ export class VersionUtilService implements IVersionUtilService {
           isSynced: versionFrom?.isSynced ?? false,
           ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
           ...(branchId && { branchId }),
-          ...(!isWorkflow && {
-            slug: versionFrom?.slug ?? null,
-            appName: versionFrom?.appName ?? null,
-            icon: versionFrom?.icon ?? null,
-            isPublic: versionFrom?.isPublic ?? false,
-          }),
+          slug: versionFrom?.slug ?? null,
+          appName: versionFrom?.appName ?? null,
+          icon: versionFrom?.icon ?? null,
+          isPublic: versionFrom?.isPublic ?? false,
         })
       );
 
-      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
+      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, txManager);
 
       //APP_VERSION_CREATE audit
       RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
@@ -387,7 +378,7 @@ export class VersionUtilService implements IVersionUtilService {
       });
 
       return decamelizeKeys(appVersion);
-    });
+    }, manager);
     return result;
   }
 
