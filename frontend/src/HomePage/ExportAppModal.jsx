@@ -50,7 +50,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       try {
         if (!versionId) return;
         const tbl = await appsService.getAppByVersion(app.appId || app.id, versionId); // this is used to get particular App by version
-        const { dataQueries = [] } = tbl?.editing_version || {};
+        const dataQueries = tbl?.data_queries || tbl?.editing_version?.dataQueries || [];
         const extractedIdData = [];
         dataQueries.forEach((item) => {
           if (item.kind === 'tooljetdb' && item.options?.operation === 'join_tables') {
@@ -70,7 +70,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             });
           }
 
-          if (item.kind === 'tooljetdb' && item.options.tableId) extractedIdData.push(item.options.tableId);
+          if (item.kind === 'tooljetdb' && item.options.table_id) extractedIdData.push(item.options.table_id);
         });
         const uniqueSet = new Set(extractedIdData);
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));
