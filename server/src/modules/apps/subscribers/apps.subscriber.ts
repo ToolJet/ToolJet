@@ -55,9 +55,9 @@ export class AppsSubscriber implements EntitySubscriberInterface {
     if (skipAppEditingVersionHydration.getStore()) return;
 
     // Git-sync detection via the central util — gates on license + provider + branch.
-    // Workflows are exempt — they don't participate in branching (branch_id always NULL),
-    // so the subscriber falls through and picks their single VERSION row even when git
-    // is on for the org.
+    // Workflows are exempt — they only ever use the org's default branch (no feature
+    // branches), so the subscriber falls through and picks their single VERSION row even
+    // when git is on for the org.
     const isWorkflow = app.type === APP_TYPES.WORKFLOW;
     let isGitEnabled = false;
     if (!isWorkflow) {
