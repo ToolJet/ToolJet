@@ -2,6 +2,7 @@ import Redis from 'ioredis';
 import { Queue } from 'bullmq';
 import { GitSyncQueueService, GIT_SYNC_JOBS } from '@ee/workspace-branches/git-sync-queue.service';
 import { GitSyncQueueProcessor } from '@ee/workspace-branches/git-sync-queue.processor';
+import { extractConflictGroups, formatConflictTrace } from '@ee/workspace-branches/git-error-classifier';
 import { WorkspaceBranchService } from '@ee/workspace-branches/service';
 import { RedisService } from '@modules/redis/service';
 
@@ -78,6 +79,14 @@ class FakeWorkspaceBranchService {
   };
   executePushAppDeletion = async (payload: any) => {
     this.calls.push({ method: 'executePushAppDeletion', payload });
+  };
+}
+
+/** Records notification producer calls from the processor's event hooks. */
+class FakeNotificationService {
+  notifications: any[] = [];
+  notify = async (payload: any) => {
+    this.notifications.push(payload);
   };
 }
 
@@ -248,7 +257,7 @@ describe('GitSyncQueueProcessor dispatch', () => {
   beforeEach(() => {
     service = new FakeWorkspaceBranchService();
     redis = new FakeRedisService();
-    processor = new GitSyncQueueProcessor(service as any, redis as any);
+    processor = new GitSyncQueueProcessor(service as any, redis as any, new FakeNotificationService() as any);
     (GitSyncQueueProcessor as any).LEASE_RETRY_MS = 1; // fast contention retries in tests
   });
 
@@ -297,7 +306,7 @@ describe('GitSyncQueueProcessor per-org lease', () => {
   beforeEach(() => {
     service = new FakeWorkspaceBranchService();
     redis = new FakeRedisService();
-    processor = new GitSyncQueueProcessor(service as any, redis as any);
+    processor = new GitSyncQueueProcessor(service as any, redis as any, new FakeNotificationService() as any);
     (GitSyncQueueProcessor as any).LEASE_RETRY_MS = 1;
   });
 
@@ -380,8 +389,99 @@ describe('GitSyncQueueProcessor failed-event hook', () => {
   // removeOnFail erases dead jobs from Bull Board — the onFailed log line is the
   // only durable trail. It must never itself throw, even with a missing job.
   it('should survive a failed event with an undefined job', () => {
-    const processor = new GitSyncQueueProcessor(new FakeWorkspaceBranchService() as any, new FakeRedisService() as any);
+    const processor = new GitSyncQueueProcessor(new FakeWorkspaceBranchService() as any, new FakeRedisService() as any, new FakeNotificationService() as any);
     expect(() => processor.onFailed(undefined, new Error('worker died'))).not.toThrow();
+  });
+
+  // Drift-window conflicts (detected in the worker, no HTTP 409 to ride) must
+  // land in the trace box as readable names, not a stack trace.
+  const makeFailedJob = (data: any) =>
+    ({ name: 'git-create-branch', id: 'j1', data, attemptsMade: 3, opts: { attempts: 3 } }) as any;
+  const conflictMessage = JSON.stringify({
+    conflictGroups: [
+      {
+        type: 'app',
+        label: 'Applications — name',
+        conflictField: 'name',
+        conflicts: [
+          { name: 'Orders', status: 'incoming', coRelationId: 'a044da59-ead4-450c-b1ed-53562d3067de' },
+          { name: 'Orders', status: 'existing', coRelationId: '7c21e0b3-1111-2222-3333-444455556666' },
+        ],
+      },
+    ],
+  });
+
+  it('should format conflictGroups into the notification trace instead of a stack', async () => {
+    const notifications = new FakeNotificationService();
+    const processor = new GitSyncQueueProcessor(
+      new FakeWorkspaceBranchService() as any,
+      new FakeRedisService() as any,
+      notifications as any
+    );
+
+    await processor.onFailed(makeFailedJob({ organizationId: 'org1', name: 'feature-x', userId: 'u1' }), {
+      message: conflictMessage,
+      stack: `ConflictException: ${conflictMessage}\n    at GitConflictDetectionService.detectPullConflicts`,
+    } as Error);
+
+    expect(notifications.notifications).toHaveLength(1);
+    const { error } = notifications.notifications[0].metadata;
+    expect(error.code).toBe('CONFLICT');
+    expect(error.stack).toContain('Naming conflicts detected:');
+    expect(error.stack).toContain('• Orders   (incoming)  #a044da59');
+    expect(error.stack).toContain('• Orders   (existing)  #7c21e0b3');
+    expect(error.stack).not.toContain('at GitConflictDetectionService');
+  });
+
+  it('should keep the scrubbed stack for non-conflict failures', async () => {
+    const notifications = new FakeNotificationService();
+    const processor = new GitSyncQueueProcessor(
+      new FakeWorkspaceBranchService() as any,
+      new FakeRedisService() as any,
+      notifications as any
+    );
+
+    const boom = new Error('remote: Repository not found');
+    await processor.onFailed(makeFailedJob({ organizationId: 'org1', name: 'feature-x', userId: 'u1' }), boom);
+
+    expect(notifications.notifications).toHaveLength(1);
+    const { error } = notifications.notifications[0].metadata;
+    expect(error.stack).toContain('Repository not found');
+    expect(error.stack).not.toContain('Naming conflicts detected');
+  });
+});
+
+describe('formatConflictTrace / extractConflictGroups', () => {
+  it('should return null for non-conflict errors and malformed payloads', () => {
+    expect(extractConflictGroups(new Error('boom'))).toBeNull();
+    expect(extractConflictGroups(new Error('conflictGroups but not json'))).toBeNull();
+    expect(extractConflictGroups(new Error(JSON.stringify({ conflictGroups: [] })))).toBeNull();
+    expect(extractConflictGroups(undefined)).toBeNull();
+  });
+
+  it('should cap the rendered list and count the remainder', () => {
+    const conflicts = Array.from({ length: 60 }, (_, i) => ({
+      name: `App-${i}`,
+      status: 'incoming',
+      coRelationId: `${i}`.padStart(8, '0'),
+    }));
+    const trace = formatConflictTrace([{ label: 'Applications — name', conflicts } as any]);
+
+    expect(trace).toContain('App-0');
+    expect(trace).toContain('App-49');
+    expect(trace).not.toContain('App-50 ');
+    expect(trace).toContain('…and 10 more');
+  });
+
+  it('should include the conflictKey for slug groups', () => {
+    const trace = formatConflictTrace([
+      {
+        label: 'Applications — slug',
+        conflictKey: 'orders-dashboard',
+        conflicts: [{ name: 'Orders', status: 'incoming', coRelationId: 'a044da59' }],
+      } as any,
+    ]);
+    expect(trace).toContain("Applications — slug — 'orders-dashboard'");
   });
 });
 
