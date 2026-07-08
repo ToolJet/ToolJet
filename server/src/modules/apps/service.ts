@@ -743,7 +743,7 @@ export class AppsService implements IAppsService {
     });
     if (version) {
       if (version.versionType === AppVersionType.BRANCH && version.branch?.name) {
-        version.name = version.branch.name;
+        version.displayName = version.branch.name;
       }
       app.editingVersion = version;
       (app as any).isStub = false;
