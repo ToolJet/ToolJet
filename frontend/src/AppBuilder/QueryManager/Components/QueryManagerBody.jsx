@@ -247,7 +247,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = null
         </div>
         {ElementToRender && (
           <ElementToRender
-            renderCopilot={(props) => renderCopilot({ ...props, selectedDataSource })}
+            renderCopilot={(props) => renderCopilot?.({ ...props, selectedDataSource })}
             key={selectedQuery?.id}
             pluginSchema={
               selectedDataSource?.plugin?.operations_file?.data ?? selectedQuery?.plugin?.operations_file?.data
