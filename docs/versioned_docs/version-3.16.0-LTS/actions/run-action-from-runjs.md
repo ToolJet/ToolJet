@@ -45,6 +45,26 @@ await actions.resetQuery('getSalesData')
 // replace getSalesData with your query name
 ```
 
+## Abort Query
+
+To stop a running query, one that was triggered via `run()` or Preview and is still waiting for a response, you can use the below functions:
+
+```js
+queries.getSalesData.abort()
+// replace getSalesData with your query name
+```
+or
+```js
+await actions.abortQuery('getSalesData') 
+// replace getSalesData with your query name
+```
+
+:::info
+Abort cancels the pending request on the client only. If the data source has already started processing the query, it may keep running on its end until it completes on its own.
+:::
+
+Abort is not available for **RunJS**, **RunPy**, and **Workflow** queries, since they don't execute as cancellable network requests.
+
 ## Get Query Data
 
 In the previous section, we saw how we can trigger queries. Once the queries are triggered, if you want to immediately use the data returned by the query inside the RunJS query, you can use the `getData()`, `getRawData()` and `getloadingState()` functions:
