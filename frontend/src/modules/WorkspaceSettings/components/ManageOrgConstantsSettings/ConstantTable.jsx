@@ -142,6 +142,7 @@ const ConstantTable = ({
                             data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                           >
                             <div
+                              style={{ cursor: 'pointer' }}
                               onClick={() => toggleShowValue(constant.id)}
                               data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-constant-visibility`}
                             >
