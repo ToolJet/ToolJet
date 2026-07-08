@@ -149,12 +149,14 @@ export class GranularPermissionsService implements IGranularPermissionsService {
 
   /**
    * The nested `groupApps.app` rows under each granular permission come back with
-   * NULL `name/slug/icon/isPublic` for non-workflow apps (metadata lives on
-   * app_versions post-migration). Resolve the canonical version per app in a single
-   * batched query and mirror the values onto each App entity in-place.
+   * NULL `name/slug/icon/isPublic` for every app type, including workflows (metadata
+   * lives on app_versions post-migration). Resolve the canonical version per app in a
+   * single batched query and mirror the values onto each App entity in-place.
    *
    * Source priority (per app):
    *   - Git-sync workspaces: BRANCH-type version on the workspace's default branch.
+   *     Workflows always resolve here too — their branch_id is pinned to the org's
+   *     default branch (Task 3.5), so they fall into the same default-branch match.
    *   - Non-git-sync workspaces: any version row (all rows carry identical metadata).
    */
   private async overlayGranularPermissionAppMetadata(
@@ -166,7 +168,7 @@ export class GranularPermissionsService implements IGranularPermissionsService {
     for (const perm of permissions) {
       const groupApps = perm.appsGroupPermissions?.groupApps ?? [];
       for (const ga of groupApps) {
-        if (ga.app && ga.app.type !== APP_TYPES.WORKFLOW) apps.push(ga.app);
+        if (ga.app) apps.push(ga.app);
       }
     }
     if (apps.length === 0) return;

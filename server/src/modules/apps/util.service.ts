@@ -955,11 +955,8 @@ export class AppsUtilService implements IAppsUtilService {
 
     if (searchKey) {
       viewableAppsQb.andWhere(
-        `(EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey) OR (apps.type = :workflowType AND LOWER(apps.name) LIKE :searchKey))`,
-        {
-          searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
-          workflowType: APP_TYPES.WORKFLOW,
-        }
+        `EXISTS (SELECT 1 FROM app_versions av_s WHERE av_s.app_id = apps.id AND LOWER(av_s.app_name) LIKE :searchKey)`,
+        { searchKey: `%${searchKey && searchKey.toLowerCase()}%` }
       );
     }
 
@@ -1475,7 +1472,8 @@ export class AppsUtilService implements IAppsUtilService {
   /**
    * Overlay name/slug/icon/isPublic from the right app_version row onto the App entity
    * in-memory so single-app reads (`getOne`, `getBySlug`, etc.) return the correct
-   * user-facing metadata. Workflows are skipped — they keep metadata on apps.* directly.
+   * user-facing metadata. Every type, including workflows, stores this metadata on
+   * app_versions post-migration.
    *
    * Source resolution (mirrors AppsRepository.resolveMetadataVersion):
    *   1. Detect git-sync state via the default-branch lookup.
@@ -1486,10 +1484,12 @@ export class AppsUtilService implements IAppsUtilService {
    *
    * DRAFT scoping in the git-enabled cases matches the metadata-write path
    * (AppsUtilService.update writes the DRAFT branch row) so published/released
-   * snapshots can't shadow the current metadata.
+   * snapshots can't shadow the current metadata. Workflows always have branch_id
+   * pinned to the org's default branch (Task 3.5), so they resolve through the
+   * same default-branch DRAFT lookup as every other type.
    */
   async overlayAppMetadata(app: App, branchId?: string): Promise<void> {
-    if (!app || app.type === APP_TYPES.WORKFLOW) return;
+    if (!app) return;
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       const { options } = await this.gitSyncConfigsUtilService.getDetails(app.organizationId);
