@@ -319,6 +319,7 @@
                 "widgets/button-group-v2",
                 "widgets/calendar",
                 "widgets/camera",
+                "widgets/cascader",
                 {
                   "type": "category",
                   "label": "Chart",
