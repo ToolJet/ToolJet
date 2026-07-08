@@ -118,6 +118,9 @@ export function BranchDropdown({ appId, organizationId }) {
   // Ensure workspace branch store is initialized (Layout doesn't render in app editor route)
   const workspaceActiveBranch = useWorkspaceBranchesStore((state) => state.currentBranch);
   const isWsBranchStoreInitialized = useWorkspaceBranchesStore((state) => state.isInitialized);
+  // The workspace store's configured flag is license-independent and reliable (resolved from the
+  // config endpoint), so use it as a fallback when the app-builder flag hasn't resolved.
+  const wsGitSyncConfigured = useWorkspaceBranchesStore((state) => state.isGitSyncConfigured);
   const isMultiBranchingEnabled = useWorkspaceBranchesStore((state) => state.isMultiBranchingEnabled);
 
   // Single-branch mode: open the git configuration page where branching can be enabled.
@@ -461,7 +464,9 @@ export function BranchDropdown({ appId, organizationId }) {
 
   // Show whenever git sync is configured — including single-branch mode (branchingEnabled=false),
   // where the selector still displays the default branch (branch create/switch are disabled below).
-  if (!isGitSyncConfigured) {
+  // Fall back to the workspace store's configured flag so the selector still renders when the
+  // app-builder flag is license-gated/unresolved (e.g. expired license).
+  if (!isGitSyncConfigured && !wsGitSyncConfigured) {
     return null;
   }
 

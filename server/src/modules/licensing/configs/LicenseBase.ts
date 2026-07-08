@@ -571,6 +571,7 @@ export default class LicenseBase {
       multiEnvironment: this.multiEnvironment,
       multiPlayerEdit: this.multiPlayerEdit,
       gitSync: this.gitSync,
+      gitSyncMultiBranch: this.gitSyncMultiBranch,
       comments: this.comments,
       ai: this.aiFeature,
       appWhiteLabelling: this.appWhiteLabelling,
