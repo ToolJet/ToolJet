@@ -291,7 +291,15 @@ export class VersionUtilService implements IVersionUtilService {
     // even for workflows; drop it here so the new row doesn't land with branch_id
     // set + app_name/slug NULL (which would trip chk_app_versions_branch_metadata,
     // since workflow versions don't carry those fields).
-    const branchId = app.type === APP_TYPES.WORKFLOW ? undefined : versionCreateDto.branchId;
+    // branch_id is NOT NULL in the DB — fall back to the org's default branch when
+    // the caller didn't forward x-branch-id (e.g. older clients, non-builder paths).
+    let branchId: string | undefined;
+    if (app.type !== APP_TYPES.WORKFLOW) {
+      branchId =
+        versionCreateDto.branchId ??
+        (await this.gitSyncConfigsUtilService.getDetails(user.organizationId)).options.defaultBranch?.id ??
+        undefined;
+    }
     if (!versionName || versionName.trim().length === 0) {
       throw new BadRequestException('Version name cannot be empty.');
     }
