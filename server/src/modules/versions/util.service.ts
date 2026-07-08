@@ -554,25 +554,55 @@ export class VersionUtilService implements IVersionUtilService {
   async deleteVersion(app: App, user: User, manager?: EntityManager): Promise<void> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const versionToDelete = app.appVersions[0];
-      const branchId = versionToDelete?.branchId ?? null;
+      const versionId = versionToDelete.id;
+      const resourceLabel = app.type === 'module' ? 'module' : 'app';
 
-      // For platform git sync apps, count only versions on the same branch so that
-      // versions on other branches don't inflate the count and bypass the guard.
-      // For all other apps (branchId=null), fall back to the original count across
-      // all versions - behaviour is unchanged.
-      const numVersions = branchId
-        ? await manager.count(AppVersion, { where: { appId: app.id, branchId } })
-        : await this.versionRepository.getCount(app.id);
-
-      if (numVersions <= 1) {
-        throw new ForbiddenException(`Cannot delete only version of ${app.type === 'module' ? 'module' : 'app'}`);
-      }
-
-      if (app.currentVersionId === app.appVersions[0].id || app.appVersions[0].status === AppVersionStatus.RELEASED) {
+      // A released/current version can never be deleted, regardless of git state.
+      if (app.currentVersionId === versionId || versionToDelete.status === AppVersionStatus.RELEASED) {
         throw new BadRequestException('You cannot delete a released version');
       }
 
-      const versionId = app.appVersions[0].id;
+      // getDetails().isEnabled = git sync configured AND licensed. options.defaultBranch is always
+      // resolved (every org has a default branch), even when git is off.
+      const { isEnabled: isGitSyncEnabled, options } = await this.gitSyncConfigsUtilService.getDetails(
+        app.organizationId
+      );
+      const defaultBranchId = options?.defaultBranch?.id ?? null;
+
+      // An unsynced draft (never pushed to git) has no git footprint, so it can always be deleted —
+      // skip the git-sync checks entirely.
+      const isUnsyncedDraft = versionToDelete.status === AppVersionStatus.DRAFT && versionToDelete.isSynced === false;
+
+      if (isGitSyncEnabled && !isUnsyncedDraft) {
+        // Versions on a feature branch cannot be deleted from here — only default-branch versions.
+        if (versionToDelete.branchId && defaultBranchId && versionToDelete.branchId !== defaultBranchId) {
+          throw new ForbiddenException('Cannot delete a version on a feature branch');
+        }
+
+        // On the default branch, git sync needs a draft to push to. Block deleting the draft unless
+        // another (non-branch) draft still exists for the app.
+        if (versionToDelete.status === AppVersionStatus.DRAFT) {
+          const otherDraftCount = await manager.count(AppVersion, {
+            where: {
+              appId: app.id,
+              status: AppVersionStatus.DRAFT,
+              versionType: Not(AppVersionType.BRANCH),
+              id: Not(versionId),
+            },
+          });
+          if (otherDraftCount === 0) {
+            throw new ForbiddenException(
+              `Cannot delete the last draft version of ${resourceLabel} while git sync is enabled`
+            );
+          }
+        }
+      } else if (!isGitSyncEnabled) {
+        // Git off: only guard against removing the sole version of the app/module.
+        const numVersions = await this.versionRepository.getCount(app.id);
+        if (numVersions <= 1) {
+          throw new ForbiddenException(`Cannot delete only version of ${resourceLabel}`);
+        }
+      }
 
       if (app.type === 'module') {
         await this.checkModuleVersionInUse(versionId, manager);
