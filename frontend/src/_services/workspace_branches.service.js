@@ -25,8 +25,14 @@ function list() {
   );
 }
 
-function create(name, sourceBranchId, commitSha) {
-  const body = { name, ...(sourceBranchId && { sourceBranchId }), ...(commitSha && { commitSha }) };
+function create(name, sourceBranchId, commitSha, appId, versionId) {
+  const body = {
+    name,
+    ...(sourceBranchId && { sourceBranchId }),
+    ...(commitSha && { commitSha }),
+    ...(appId && { appId }),
+    ...(versionId && { versionId }),
+  };
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),

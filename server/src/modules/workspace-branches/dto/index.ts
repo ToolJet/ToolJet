@@ -13,6 +13,14 @@ export class CreateBranchDto {
   @IsOptional()
   @IsString()
   commitSha?: string;
+
+  @IsOptional()
+  @IsUUID()
+  appId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  versionId?: string;
 }
 
 export class SwitchBranchDto {

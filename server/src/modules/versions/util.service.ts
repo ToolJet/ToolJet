@@ -391,6 +391,96 @@ export class VersionUtilService implements IVersionUtilService {
     return result;
   }
 
+  /**
+   * "Save version" for a feature-branch draft. A BRANCH-type row can never be
+   * PUBLISHED in place — chk_app_versions_branch_type_implies_draft_branched
+   * requires it stay a DRAFT — so this clones the branch draft's content into a
+   * new VERSION-type row that's PUBLISHED from creation. The branch's own draft
+   * row is left untouched. Unlike createVersion, this skips the
+   * one-draft-per-branch precheck entirely — it never creates an editable draft.
+   *
+   * The new row targets the org's DEFAULT branch id, not the source branch's id.
+   * enforce_app_versions_app_name_branch_unique only exempts same-app_id
+   * collisions on the default branch — on any other branch it blocks even a
+   * matching app_id, so reusing the feature branch's id here would collide with
+   * the branch draft's own (app_name, branch_id) row. This also matches the
+   * design intent: the saved version is meant to surface on the default branch.
+   */
+  async createPublishedVersionFromBranchDraft(
+    app: App,
+    user: User,
+    versionCreateDto: VersionCreateDto,
+    manager?: EntityManager
+  ) {
+    const { versionName, versionFromId, versionDescription } = versionCreateDto;
+    if (!versionName || versionName.trim().length === 0) {
+      throw new BadRequestException('Version name cannot be empty.');
+    }
+    const { organizationId } = user;
+    const { options } = await this.gitSyncConfigsUtilService.getDetails(organizationId);
+    const defaultBranchId = options?.defaultBranch?.id ?? null;
+
+    const result = await dbTransactionWrap(async (manager: EntityManager) => {
+      const versionFrom = await manager.findOneOrFail(AppVersion, {
+        where: { id: versionFromId, appId: app.id },
+        relations: ['dataSources', 'dataSources.dataQueries'],
+      });
+
+      const isWorkflow = app.type === APP_TYPES.WORKFLOW;
+      const appVersion = await manager.save(
+        AppVersion,
+        manager.create(AppVersion, {
+          name: versionName,
+          appId: app.id,
+          definition: versionFrom?.definition,
+          currentEnvironmentId: versionFrom?.currentEnvironmentId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: AppVersionStatus.PUBLISHED,
+          parentVersionId: versionFromId,
+          description: versionDescription ? versionDescription : null,
+          versionType: AppVersionType.VERSION,
+          createdBy: user.id,
+          co_relation_id: app.co_relation_id,
+          // Always false, regardless of the branch draft's own sync state: this row's
+          // content is a fresh DB-only clone that has never been written to git — the
+          // branch draft may carry local edits that were never pushed either.
+          isSynced: false,
+          // Target the default branch, not the source branch — see method doc.
+          // chk_app_versions_branch_metadata requires appName/slug when branch_id
+          // is set, and both are inherited below.
+          branchId: defaultBranchId,
+          ...(app.type === APP_TYPES.MODULE && { moduleReferenceId: uuid() }),
+          ...(!isWorkflow && {
+            slug: versionFrom?.slug ?? null,
+            appName: versionFrom?.appName ?? null,
+            icon: versionFrom?.icon ?? null,
+            isPublic: versionFrom?.isPublic ?? false,
+          }),
+        })
+      );
+
+      await this.createVersionService.setupNewVersion(appVersion, versionFrom, organizationId, manager);
+
+      //APP_VERSION_CREATE audit
+      RequestContext.setLocals(AUDIT_LOGS_REQUEST_CONTEXT_KEY, {
+        userId: user.id,
+        organizationId: user.organizationId,
+        resourceId: app.id,
+        resourceName: app.name,
+        metadata: {
+          data: {
+            updatedAppVersionName: versionName,
+            updatedAppVersionFrom: versionFromId,
+          },
+        },
+      });
+
+      return decamelizeKeys(appVersion);
+    });
+    return result;
+  }
+
   protected async checkModuleVersionInUse(versionId: string, manager: EntityManager): Promise<void> {
     try {
       // moduleVersionId.value stores the module_reference_id (current), the app_version id (legacy), or version name (legacy)

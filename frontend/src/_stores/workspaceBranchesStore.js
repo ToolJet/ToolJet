@@ -103,8 +103,8 @@ export const useWorkspaceBranchesStore = create(
           }
         },
 
-        async createBranch(name, sourceBranchId, commitSha) {
-          const newBranch = await workspaceBranchesService.create(name, sourceBranchId, commitSha);
+        async createBranch(name, sourceBranchId, commitSha, appId, versionId) {
+          const newBranch = await workspaceBranchesService.create(name, sourceBranchId, commitSha, appId, versionId);
           await get().actions.fetchBranches();
           return newBranch;
         },
